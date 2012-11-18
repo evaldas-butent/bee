@@ -12,4 +12,6 @@ public interface WidgetCallback {
   boolean beforeCreateWidget(String name, Element description);
   
   IdentifiableWidget createCustomWidget(String name, Element description);
+  
+  String getSupplierKey();
 }

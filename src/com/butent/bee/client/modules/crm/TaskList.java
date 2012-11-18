@@ -215,6 +215,12 @@ class TaskList {
     }
 
     @Override
+    public String getSupplierKey() {
+      return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS,
+          getType()));
+    }
+
+    @Override
     public boolean onLoad(GridDescription gridDescription) {
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());

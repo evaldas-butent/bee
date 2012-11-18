@@ -43,6 +43,7 @@ import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -72,7 +73,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
-    Printable, VisibilityChangeEvent.Handler {
+    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
@@ -258,10 +259,20 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   public HeaderView getHeader() {
     return header;
   }
-  
+
+  @Override
+  public View getMainView() {
+    return this;
+  }
+
   @Override
   public Element getPrintElement() {
     return getElement();
+  }
+
+  @Override
+  public String getSupplierKey() {
+    return CalendarKeeper.getCalendarSupplierKey(getCalendarId());
   }
 
   @Override
@@ -402,6 +413,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       registry.clear();
 
       CalendarKeeper.saveActiveView(getSettings());
+      onViewUnload();
     }
     super.onUnload();
   }

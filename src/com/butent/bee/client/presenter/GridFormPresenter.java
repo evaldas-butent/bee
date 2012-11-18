@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -94,6 +95,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   @Override
   public HeaderView getHeader() {
     return header;
+  }
+
+  @Override
+  public View getMainView() {
+    return getForm();
   }
 
   @Override

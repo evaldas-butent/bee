@@ -13,6 +13,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
@@ -236,6 +237,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   @Override
+  public String getSupplierKey() {
+    return FormFactory.getSupplierKey(getContent().getFormName(), getContent().getFormCallback());
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
@@ -448,7 +454,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private void setHeaderId(String headerId) {
     this.headerId = headerId;
   }
-
+  
   private void setInitialRowCount(int initialRowCount) {
     this.initialRowCount = initialRowCount;
   }

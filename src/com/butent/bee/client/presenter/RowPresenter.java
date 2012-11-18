@@ -4,12 +4,15 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -22,14 +25,16 @@ import java.util.EnumSet;
 
 public class RowPresenter extends AbstractPresenter implements Printable {
   
-  private static class Container extends Complex implements HasCaption {
+  private static class Container extends Complex implements HasCaption, HasWidgetSupplier {
 
     private final DataInfo dataInfo;
+    private final long rowId;
     private final String initialCaption;
     
-    private Container(DataInfo dataInfo, String initialCaption) {
+    private Container(DataInfo dataInfo, long rowId, String initialCaption) {
       super();
       this.dataInfo = dataInfo;
+      this.rowId = rowId;
       this.initialCaption = initialCaption;
     }
 
@@ -48,6 +53,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
       return "row-editor";
     }
 
+    @Override
+    public String getSupplierKey() {
+      return RowEditor.getSupplierKey(dataInfo.getViewName(), rowId);
+    }
+    
     private FormView getForm() {
       for (Widget child : getChildren()) {
         if (child instanceof FormView) {
@@ -56,7 +66,7 @@ public class RowPresenter extends AbstractPresenter implements Printable {
       }
       return null;
     }
-    
+
     private HeaderView getHeader() {
       for (Widget child : getChildren()) {
         if (child instanceof HeaderView) {
@@ -75,10 +85,10 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   
   private HandlesActions actionDelegate = null;
   
-  public RowPresenter(FormView formView, DataInfo dataInfo, String initialCaption) {
+  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption) {
     HeaderView headerView = createHeader(formView.getCaption());
 
-    this.container = new Container(dataInfo, initialCaption);
+    this.container = new Container(dataInfo, rowId, initialCaption);
     container.addStyleName(STYLE_CONTAINER);
 
     container.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
@@ -96,6 +106,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   @Override
   public HeaderView getHeader() {
     return container.getHeader();
+  }
+
+  @Override
+  public View getMainView() {
+    return container.getForm();
   }
   
   @Override

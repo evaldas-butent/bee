@@ -14,6 +14,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HasGridView;
@@ -70,7 +72,7 @@ public class FormFactory {
     FormCallback getInstance();
 
     AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
-    
+
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
@@ -105,7 +107,7 @@ public class FormFactory {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormFactory.class);
-  
+
   public static final String TAG_FORM = "Form";
 
   private static final String ATTR_TYPE = "type";
@@ -137,7 +139,7 @@ public class FormFactory {
 
     formElement.setAttribute(UiConstants.ATTR_NAME, formName.trim());
     XmlUtils.setAttributes(formElement, formAttributes);
-    
+
     if (rootWidget != null) {
       Element rootElement = doc.createElement(rootWidget.getTagName());
       XmlUtils.setAttributes(rootElement, rootAttributes);
@@ -266,10 +268,19 @@ public class FormFactory {
     }
     return info;
   }
-  
+
+  public static String getSupplierKey(String formName, FormCallback formCallback) {
+    String key = (formCallback == null) ? null : formCallback.getSupplierKey();
+    if (BeeUtils.isEmpty(key)) {
+      Assert.notEmpty(formName);
+      key = "form_" + BeeUtils.normalize(formName);
+    }
+    return key;
+  }
+
   public static FormWidget getWidgetType(BeeColumn column) {
     Assert.notNull(column);
-    
+
     if (column.isForeign()) {
       return FormWidget.DATA_SELECTOR;
     }
@@ -310,11 +321,13 @@ public class FormFactory {
     }
     return widgetType;
   }
-  
-  public static void openForm(FormDescription formDescription, FormCallback formCallback) {
+
+  public static void openForm(FormDescription formDescription, FormCallback formCallback,
+      PresenterCallback presenterCallback) {
+
     String viewName = formDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
-      showForm(formDescription, formCallback);
+      showForm(formDescription, formCallback, presenterCallback);
       return;
     }
 
@@ -322,14 +335,15 @@ public class FormFactory {
       BeeRowSet rowSet = formCallback.getRowSet();
       if (rowSet != null) {
         showForm(formDescription, viewName, rowSet.getNumberOfRows(), rowSet,
-            Provider.Type.LOCAL, CachingPolicy.NONE, formCallback);
+            Provider.Type.LOCAL, CachingPolicy.NONE, formCallback, presenterCallback);
         return;
       }
     }
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo != null) {
-      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, formCallback);
+      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, formCallback,
+          presenterCallback);
     }
   }
 
@@ -337,11 +351,40 @@ public class FormFactory {
     openForm(formName, getFormCallback(formName));
   }
 
-  public static void openForm(String formName, final FormCallback formCallback) {
+  public static void openForm(final String formName, final FormCallback formCallback) {
+
+    String supplierKey = getSupplierKey(formName, formCallback);
+    if (!WidgetFactory.hasSupplier(supplierKey)) {
+
+      WidgetSupplier supplier = new WidgetSupplier() {
+        @Override
+        public void create(final Callback<IdentifiableWidget> callback) {
+
+          final PresenterCallback presenterCallback = new PresenterCallback() {
+            @Override
+            public void onCreate(Presenter presenter) {
+              callback.onSuccess(presenter.getWidget());
+            }
+          };
+
+          Callback<FormDescription> descriptionCallback = new Callback<FormDescription>() {
+            @Override
+            public void onSuccess(FormDescription result) {
+              openForm(result, formCallback, presenterCallback);
+            }
+          };
+
+          getFormDescription(formName, descriptionCallback);
+        }
+      };
+
+      WidgetFactory.registerSupplier(supplierKey, supplier);
+    }
+
     getFormDescription(formName, new Callback<FormDescription>() {
       @Override
       public void onSuccess(FormDescription result) {
-        openForm(result, formCallback);
+        openForm(result, formCallback, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
       }
     });
   }
@@ -407,13 +450,14 @@ public class FormFactory {
   }
 
   private static void getInitialRowSet(final String viewName, final int rowCount,
-      final FormDescription formDescription, final FormCallback callback) {
+      final FormDescription formDescription, final FormCallback callback,
+      final PresenterCallback presenterCallback) {
 
     int limit = formDescription.getAsyncThreshold();
 
     final Provider.Type providerType;
     final CachingPolicy cachingPolicy;
-    
+
     if (rowCount >= limit) {
       providerType = Provider.Type.ASYNC;
       cachingPolicy = CachingPolicy.FULL;
@@ -435,27 +479,31 @@ public class FormFactory {
           @Override
           public void onSuccess(final BeeRowSet rowSet) {
             int rc = Math.max(rowCount, rowSet.getNumberOfRows());
-            showForm(formDescription, viewName, rc, rowSet, providerType, cachingPolicy, callback);
+            showForm(formDescription, viewName, rc, rowSet, providerType, cachingPolicy,
+                callback, presenterCallback);
           }
         });
   }
 
-  private static void showForm(FormDescription formDescription, FormCallback callback) {
+  private static void showForm(FormDescription formDescription, FormCallback callback,
+      PresenterCallback presenterCallback) {
     showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED,
-        CachingPolicy.NONE, callback);
+        CachingPolicy.NONE, callback, presenterCallback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
-      FormCallback callback) {
+      FormCallback callback, PresenterCallback presenterCallback) {
 
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,
         providerType, cachingPolicy, callback);
-    
+
     if (callback != null) {
       callback.onShow(presenter);
     }
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+    if (presenterCallback != null) {
+      presenterCallback.onCreate(presenter);
+    }
   }
 
   private FormFactory() {

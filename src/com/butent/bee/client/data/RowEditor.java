@@ -6,18 +6,24 @@ import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,26 +70,26 @@ public class RowEditor {
     }
   }
 
-  public static boolean openRelatedRow(Relation relation, Long rowId, final boolean modal,
-      final RowCallback rowCallback) {
+  public static String getSupplierKey(String viewName, long rowId) {
+    Assert.notEmpty(viewName);
+    return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
+  }
+  
+  public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
+      RowCallback rowCallback) {
     if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
       return false;
     }
     
-    final String viewName = relation.getViewName();
-    final DataInfo dataInfo = Data.getDataInfo(viewName);
+    String viewName = relation.getViewName();
+    DataInfo dataInfo = Data.getDataInfo(viewName);
 
-    final String formName = getFormName(relation.getEditForm(), dataInfo);
+    String formName = getFormName(relation.getEditForm(), dataInfo);
     if (BeeUtils.isEmpty(formName)) {
       return false;
     }
     
-    Queries.getRow(viewName, rowId, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        openRow(formName, dataInfo, result, modal, null, rowCallback);
-      }
-    });
+    getRow(formName, dataInfo, rowId, modal, null, rowCallback);
     return true;
   }
 
@@ -91,12 +97,13 @@ public class RowEditor {
     openRow(viewName, row, modal, null, null);
   }
 
-  public static void openRow(String viewName, BeeRow row, boolean modal, RowCallback rowCallback) {
-    openRow(viewName, row, modal, null, rowCallback);
+  public static void openRow(String viewName, BeeRow row, boolean modal, RowCallback rowCallback,
+      PresenterCallback presenterCallback) {
+    openRow(viewName, row, modal, null, rowCallback, presenterCallback);
   }
 
   public static void openRow(String viewName, BeeRow row, boolean modal, UIObject target,
-      RowCallback rowCallback) {
+      RowCallback rowCallback, PresenterCallback presenterCallback) {
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -105,23 +112,17 @@ public class RowEditor {
     }
 
     String formName = getFormName(null, dataInfo);
-    openRow(formName, dataInfo, row, modal, target, rowCallback);
+    openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
   }
 
-  public static void openRow(final String formName, final DataInfo dataInfo, long rowId,
-      final boolean modal, final UIObject target, final RowCallback rowCallback) {
+  public static void openRow(String formName, DataInfo dataInfo, long rowId,
+      boolean modal, UIObject target, RowCallback rowCallback) {
     Assert.notNull(dataInfo);
-    
-    Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow result) {
-        openRow(formName, dataInfo, result, modal, target, rowCallback);
-      }
-    });
+    getRow(formName, dataInfo, rowId, modal, target, rowCallback);
   }
   
-  public static void openRow(String formName, DataInfo dataInfo, BeeRow row,
-      boolean modal, UIObject target, RowCallback rowCallback) {
+  public static void openRow(String formName, DataInfo dataInfo, BeeRow row, boolean modal,
+      UIObject target, RowCallback rowCallback, PresenterCallback presenterCallback) {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
     
@@ -136,7 +137,7 @@ public class RowEditor {
       return;
     }
     
-    createForm(formName, dataInfo, row, modal, target, rowCallback);
+    createForm(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
   }
   
   public static void registerHasDelegate(String viewName) {
@@ -144,7 +145,8 @@ public class RowEditor {
   }
   
   private static void createForm(String formName, final DataInfo dataInfo, final BeeRow row,
-      final boolean modal, final UIObject target, final RowCallback rowCallback) {
+      final boolean modal, final UIObject target, final RowCallback rowCallback,
+      final PresenterCallback presenterCallback) {
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true,
         new FormFactory.FormViewCallback() {
@@ -154,16 +156,55 @@ public class RowEditor {
               result.setEditing(true);
               result.start(null);
 
-              openForm(result, dataInfo, row, modal || Popup.isActive(), target, rowCallback);
+              openForm(result, dataInfo, row, modal || Popup.getActivePopup() != null, target,
+                  rowCallback, presenterCallback);
             }
           }
         });
   }
 
-  private static void openForm(final FormView formView, final DataInfo dataInfo,
-      final IsRow oldRow, final boolean modal, UIObject target, final RowCallback callback) {
+  private static void getRow(final String formName, final DataInfo dataInfo, final long rowId,
+      final boolean modal, final UIObject target, final RowCallback rowCallback) {
 
-    final RowPresenter presenter = new RowPresenter(formView, dataInfo,
+    String supplierKey = getSupplierKey(dataInfo.getViewName(), rowId);
+
+    if (!modal && !WidgetFactory.hasSupplier(supplierKey)) {
+      WidgetSupplier supplier = new WidgetSupplier() {
+        @Override
+        public void create(final Callback<IdentifiableWidget> callback) {
+          getRow(formName, dataInfo, rowId, modal, null, null, new PresenterCallback() {
+            @Override
+            public void onCreate(Presenter presenter) {
+              callback.onSuccess(presenter.getWidget());
+            }
+          });
+        }
+      };
+      
+      WidgetFactory.registerSupplier(supplierKey, supplier);
+    }
+    
+    getRow(formName, dataInfo, rowId, modal, target, rowCallback,
+        PresenterCallback.SHOW_IN_NEW_TAB);
+  }
+
+  private static void getRow(final String formName, final DataInfo dataInfo, long rowId,
+      final boolean modal, final UIObject target, final RowCallback rowCallback,
+      final PresenterCallback presenterCallback) {
+
+    Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        openRow(formName, dataInfo, result, modal, target, rowCallback, presenterCallback);
+      }
+    });
+  }
+  
+  private static void openForm(final FormView formView, final DataInfo dataInfo,
+      final IsRow oldRow, final boolean modal, UIObject target, final RowCallback callback,
+      PresenterCallback presenterCallback) {
+
+    final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow));
     final ModalForm dialog =
         modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false, true) : null;
@@ -255,7 +296,9 @@ public class RowEditor {
       }
 
     } else {
-      BeeKeeper.getScreen().showWidget(presenter.getWidget(), ScrollBars.NONE, true);
+      if (presenterCallback != null) {
+        presenterCallback.onCreate(presenter);
+      }
       formView.updateRow(DataUtils.cloneRow(oldRow), true);
     }
 

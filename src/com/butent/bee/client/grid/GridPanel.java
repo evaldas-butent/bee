@@ -5,7 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 
@@ -16,7 +17,7 @@ public class GridPanel extends Simple implements HasEnabled {
   private final String gridName;
   private GridFactory.GridOptions gridOptions;
 
-  private GridPresenter presenter = null;
+  private Presenter presenter = null;
   private GridCallback gridCallback = null;
 
   public GridPanel(String gridName, GridFactory.GridOptions gridOptions) {
@@ -36,7 +37,7 @@ public class GridPanel extends Simple implements HasEnabled {
     return "grid-panel";
   }
 
-  public GridPresenter getPresenter() {
+  public Presenter getPresenter() {
     return presenter;
   }
 
@@ -44,7 +45,7 @@ public class GridPanel extends Simple implements HasEnabled {
     if (getPresenter() == null) {
       return false;
     }
-    return getPresenter().getView().isEnabled();
+    return getPresenter().getMainView().isEnabled();
   }
 
   @Override
@@ -53,7 +54,7 @@ public class GridPanel extends Simple implements HasEnabled {
 
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
-      getPresenter().getView().setEnabled(enabled);
+      getPresenter().getMainView().setEnabled(enabled);
     }
   }
 
@@ -86,8 +87,8 @@ public class GridPanel extends Simple implements HasEnabled {
     }
 
     GridFactory.createGrid(getGridName(), gcb, EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
-        new GridFactory.PresenterCallback() {
-          public void onCreate(GridPresenter gp) {
+        new PresenterCallback() {
+          public void onCreate(Presenter gp) {
             if (gp != null) {
               setPresenter(gp);
               setWidget(gp.getWidget());
@@ -105,7 +106,7 @@ public class GridPanel extends Simple implements HasEnabled {
     return gridName;
   }
 
-  private void setPresenter(GridPresenter presenter) {
+  private void setPresenter(Presenter presenter) {
     this.presenter = presenter;
   }
 }

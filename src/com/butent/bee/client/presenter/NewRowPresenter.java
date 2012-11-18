@@ -14,6 +14,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -100,6 +101,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   @Override
   public HeaderView getHeader() {
     return ViewHelper.getHeader(getWidget().asWidget());
+  }
+
+  @Override
+  public View getMainView() {
+    return formView;
   }
 
   @Override

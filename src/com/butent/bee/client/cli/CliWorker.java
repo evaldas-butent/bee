@@ -63,7 +63,6 @@ import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
@@ -83,10 +82,12 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -139,6 +140,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -257,7 +259,7 @@ public class CliWorker {
     } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
       showSupport();
     } else if (z.startsWith("hist")) {
-      showPropData(Historian.getInstance().getInfo());
+      Global.showModalGrid("History", new PropertiesData(Historian.getInstance().getInfo()));
     } else if (z.equals("id")) {
       showElement(v, arr);
     } else if (z.startsWith("inp") && z.contains("type")) {
@@ -350,6 +352,8 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       showWidgetInfo(arr);
+    } else if (z.equals("wf") || z.startsWith("suppl")) {
+      showWidgetSuppliers();
     } else if (z.startsWith("xml")) {
       showXmlInfo(arr);
     } else if (z.equals("mail")) {
@@ -366,11 +370,11 @@ public class CliWorker {
     if (BeeUtils.isEmpty(args) || BeeUtils.startsSame(args, "log")) {
       ClientLogManager.clearPanel();
 
-    } else if (BeeUtils.startsSame(args, "grids")) {
+    } else if (BeeUtils.startsSame(args, "grid")) {
       GridFactory.clearDescriptionCache();
       debugWithSeparator("grid cache cleared");
 
-    } else if (BeeUtils.startsSame(args, "forms")) {
+    } else if (BeeUtils.startsSame(args, "form")) {
       FormFactory.clearDescriptionCache();
       debugWithSeparator("form cache cleared");
 
@@ -383,8 +387,12 @@ public class CliWorker {
       debugWithSeparator("rpc list cleared");
 
     } else if (BeeUtils.startsSame(args, "hist")) {
-      Historian.getInstance().reset();
+      Historian.getInstance().clear();
       debugWithSeparator("history cleared");
+
+    } else if (BeeUtils.startsSame(args, "widget")) {
+      WidgetFactory.clear();
+      debugWithSeparator("widget factory cleared");
     }
   }
 
@@ -818,7 +826,7 @@ public class CliWorker {
               BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
 
               if (rs.isEmpty()) {
-                BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
+                logger.debug("sql: RowSet is empty");
               } else {
                 Global.showGrid(rs);
               }
@@ -881,7 +889,7 @@ public class CliWorker {
           }
 
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
-          BeeKeeper.getScreen().showWidget(fileGroup, ScrollBars.BOTH, false);
+          BeeKeeper.getScreen().updateActivePanel(fileGroup);
         }
       }
     });
@@ -960,7 +968,7 @@ public class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().showWidget(widget, ScrollBars.BOTH, false);
+    BeeKeeper.getScreen().updateActivePanel(widget);
   }
 
   private static void playVideo(String args) {
@@ -978,7 +986,7 @@ public class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().showWidget(widget, ScrollBars.BOTH, false);
+    BeeKeeper.getScreen().updateActivePanel(widget);
   }
 
   private static void print(String args) {
@@ -1180,7 +1188,8 @@ public class CliWorker {
             String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
             String xml = "<Form><ResizePanel><Frame url=\"" + url + "\" /></ResizePanel></Form>";
 
-            FormFactory.openForm(FormFactory.parseFormDescription(xml), null);
+            FormFactory.openForm(FormFactory.parseFormDescription(xml), null,
+                PresenterCallback.SHOW_IN_ACTIVE_PANEL);
           }
         } else if (response.hasResponse()) {
           showPropData(PropertyUtils.restoreProperties((String) response.getResponse()));
@@ -1701,7 +1710,7 @@ public class CliWorker {
           }
 
           if (!table.isEmpty()) {
-            BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
+            BeeKeeper.getScreen().updateActivePanel(table);
           }
         }
       };
@@ -1934,7 +1943,7 @@ public class CliWorker {
       row++;
     }
 
-    BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
+    BeeKeeper.getScreen().updateActivePanel(table);
   }
 
   private static void showMatrix(String[][] data, String... columnLabels) {
@@ -2031,7 +2040,7 @@ public class CliWorker {
       table.setHTML(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
-    BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
+    BeeKeeper.getScreen().updateActivePanel(table);
   }
 
   private static boolean showModal(int rowCount) {
@@ -2650,6 +2659,29 @@ public class CliWorker {
     showExtData(info);
   }
 
+  private static void showWidgetSuppliers() {
+    Collection<String> keys = WidgetFactory.getKeys();
+    if (keys.isEmpty()) {
+      logger.info("widget factory is empty");
+      return;
+    }
+    
+    HtmlTable table = new HtmlTable();
+    table.setBorderSpacing(10);
+    
+    int row = 0;
+    int col = 0;
+    
+    for (String key : keys) {
+      table.setText(row, col++, key);
+      if (col >= 5) {
+        row++;
+        col = 0;
+      }
+    }
+    BeeKeeper.getScreen().updateActivePanel(table);
+  }
+  
   private static void showXmlInfo(String[] arr) {
     if (arr.length >= 2) {
       String[] opt = ArrayUtils.copyOf(arr);

@@ -16,7 +16,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
-import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -37,7 +36,6 @@ import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -212,29 +210,16 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void showGrid(IdentifiableWidget grid) {
-    if (grid != null) {
-      showWidget(grid, ScrollBars.BOTH, false);
-    }
-  }
-
-  @Override
   public void showInfo() {
     getWorkspace().showInfo();
   }
 
   @Override
-  public void showResource(Resource resource) {
-    Assert.notNull(resource);
-    updateActivePanel(new ResourceEditor(resource));
-  }
-  
-  @Override
-  public void showWidget(IdentifiableWidget widget, ScrollBars scroll, boolean newPanel) {
+  public void showWidget(IdentifiableWidget widget, boolean newPanel) {
     if (newPanel) {
-      getWorkspace().openInNewPage(widget, scroll);
+      getWorkspace().openInNewPage(widget);
     } else {
-      getWorkspace().updateActivePanel(widget, scroll);
+      getWorkspace().updateActivePanel(widget);
     }
   }
 
@@ -245,7 +230,7 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void updateActivePanel(IdentifiableWidget widget) {
-    showWidget(widget, ScrollBars.NONE, false);
+    showWidget(widget, false);
   }
 
   @Override

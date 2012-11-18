@@ -25,13 +25,19 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
 
 public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
-    HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer> {
+    HasBeforeSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>>,
+    HasSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>> {
+  
+  public enum SelectionOrigin {
+    CLICK, INSERT, REMOVE, INIT, SCRIPT 
+  }
   
   private static class Deck extends Complex {
 
@@ -195,11 +201,15 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     insertPage(content, new Tab(tab));
   }
 
-  public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
+  @Override
+  public HandlerRegistration addBeforeSelectionHandler(
+      BeforeSelectionHandler<Pair<Integer, SelectionOrigin>> handler) {
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
 
-  public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
+  @Override
+  public HandlerRegistration addSelectionHandler(
+      SelectionHandler<Pair<Integer, SelectionOrigin>> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
@@ -265,7 +275,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     if (index == getSelectedIndex()) {
       setSelectedIndex(BeeConst.UNDEF);
       if (getPageCount() > 0) {
-        selectPage(Math.min(index, getPageCount() - 1));
+        selectPage(Math.min(index, getPageCount() - 1), SelectionOrigin.REMOVE);
       }
     } else if (index < getSelectedIndex()) {
       setSelectedIndex(getSelectedIndex() - 1);
@@ -274,21 +284,18 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     checkLayout();
   }
 
-  public void selectPage(int index) {
-    selectPage(index, true);
-  }
-
-  public void selectPage(int index, boolean fireEvents) {
+  public void selectPage(int index, SelectionOrigin origin) {
     checkIndex(index);
     if (index == getSelectedIndex()) {
       return;
     }
+    
+    Pair<Integer, SelectionOrigin> data = Pair.of(index, origin);
 
-    if (fireEvents) {
-      BeforeSelectionEvent<Integer> event = BeforeSelectionEvent.fire(this, index);
-      if ((event != null) && event.isCanceled()) {
-        return;
-      }
+    BeforeSelectionEvent<Pair<Integer, SelectionOrigin>> event = 
+        BeforeSelectionEvent.fire(this, data);
+    if ((event != null) && event.isCanceled()) {
+      return;
     }
 
     if (!BeeConst.isUndef(getSelectedIndex())) {
@@ -300,9 +307,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
 
     setSelectedIndex(index);
 
-    if (fireEvents) {
-      SelectionEvent.fire(this, index);
-    }
+    SelectionEvent.fire(this, data);
   }
 
   public void setTabStyle(int index, String style, boolean add) {
@@ -383,7 +388,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
       public void onClick(ClickEvent event) {
         for (int i = 0; i < getPageCount(); i++) {
           if (getTab(i).getId().equals(tabId)) {
-            selectPage(i);
+            selectPage(i, SelectionOrigin.CLICK);
             break;
           }
         }
@@ -394,7 +399,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     content.addStyleName(stylePrefix + CONTENT_STYLE_SUFFIX);
 
     if (BeeConst.isUndef(getSelectedIndex())) {
-      selectPage(0);
+      selectPage(0, SelectionOrigin.INIT);
     } else if (getSelectedIndex() >= before) {
       setSelectedIndex(getSelectedIndex() + 1);
     }

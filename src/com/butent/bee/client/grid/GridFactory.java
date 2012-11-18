@@ -25,10 +25,15 @@ import com.butent.bee.client.grid.column.LongColumn;
 import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.TextColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.RenderableCell;
 import com.butent.bee.client.render.RenderableColumn;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.shared.Assert;
@@ -107,20 +112,8 @@ public class GridFactory {
     }
   }
 
-  public interface PresenterCallback {
-    void onCreate(GridPresenter presenter);
-  }
-
-  public static final PresenterCallback SHOW = new PresenterCallback() {
-    public void onCreate(GridPresenter presenter) {
-      if (presenter != null) {
-        BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
-      }
-    }
-  };
-
   private static final BeeLogger logger = LogUtils.getLogger(GridFactory.class);
-  
+
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridCallback> gridCallbacks = Maps.newHashMap();
 
@@ -309,6 +302,15 @@ public class GridFactory {
     return order;
   }
 
+  public static String getSupplierKey(String gridName, GridCallback gridCallback) {
+    String key = (gridCallback == null) ? null : gridCallback.getSupplierKey();
+    if (BeeUtils.isEmpty(key)) {
+      Assert.notEmpty(gridName);
+      key = "grid_" + BeeUtils.normalize(gridName);
+    }
+    return key;
+  }
+
   public static void openGrid(String gridName) {
     openGrid(gridName, getGridCallback(gridName), null);
   }
@@ -317,8 +319,31 @@ public class GridFactory {
     openGrid(gridName, gridCallback, null);
   }
 
-  public static void openGrid(String gridName, GridCallback gridCallback, GridOptions gridOptions) {
-    createGrid(gridName, gridCallback, EnumSet.of(UiOption.ROOT), gridOptions, SHOW);
+  public static void openGrid(final String gridName, final GridCallback gridCallback,
+      final GridOptions gridOptions) {
+
+    final Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
+
+    String supplierKey = getSupplierKey(gridName, gridCallback);
+
+    if (!WidgetFactory.hasSupplier(supplierKey)) {
+      WidgetSupplier supplier = new WidgetSupplier() {
+        @Override
+        public void create(final Callback<IdentifiableWidget> callback) {
+          createGrid(gridName, gridCallback, uiOptions, gridOptions, new PresenterCallback() {
+            @Override
+            public void onCreate(Presenter presenter) {
+              callback.onSuccess(presenter.getWidget());
+            }
+          });
+        }
+      };
+      
+      WidgetFactory.registerSupplier(supplierKey, supplier);
+    }
+
+    createGrid(gridName, gridCallback, uiOptions, gridOptions,
+        PresenterCallback.SHOW_IN_ACTIVE_PANEL);
   }
 
   public static void registerGridCallback(String gridName, GridCallback callback) {
@@ -476,7 +501,7 @@ public class GridFactory {
     } else {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
-    
+
     final boolean requestSize = limit > 0;
     Collection<Property> queryOptions;
     if (requestSize) {

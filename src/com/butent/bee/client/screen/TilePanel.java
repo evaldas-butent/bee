@@ -8,17 +8,23 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Historian;
+import com.butent.bee.client.Place;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.HandlesHistory;
+import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -27,7 +33,8 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
-class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCaption {
+class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCaption,
+    HandlesHistory {
 
   private static class BlankTile extends CustomDiv {
     private BlankTile() {
@@ -41,32 +48,32 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(TilePanel.class);
-  
+
   private static final int MIN_SIZE = 20;
 
   private static final String ACTIVE_BLANK = "bee-activeBlank";
   private static final String ACTIVE_CONTENT = "bee-activeContent";
 
-  static TilePanel getParentTile(IdentifiableWidget widget) {
-    for (Widget parent = widget.asWidget(); parent != null; parent = parent.getParent()) {
+  static TilePanel getParentTile(Widget widget) {
+    for (Widget parent = widget; parent != null; parent = parent.getParent()) {
       if (parent instanceof TilePanel) {
         return (TilePanel) parent;
       }
     }
     return null;
   }
-  
-  static TilePanel newBlankTile(SelectionHandler<TilePanel> handler) {
-    return newTile(new BlankTile(), ScrollBars.NONE, handler);
+
+  static TilePanel newBlankTile(Workspace workspace) {
+    return newTile(workspace, new BlankTile());
   }
 
-  static TilePanel newTile(IdentifiableWidget widget, ScrollBars scroll,
-      SelectionHandler<TilePanel> handler) {
+  static TilePanel newTile(Workspace workspace, IdentifiableWidget widget) {
     TilePanel tile = new TilePanel();
-    tile.add(widget, scroll);
-    if (handler != null) {
-      tile.addSelectionHandler(handler);
-    }
+    tile.add(widget);
+
+    tile.addSelectionHandler(workspace);
+    Historian.add(new Workplace(workspace, tile.getId()));
+    
     return tile;
   }
 
@@ -87,6 +94,9 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   }
 
   private boolean active = false;
+
+  private final List<String> contentSuppliers = Lists.newArrayList();
+  private int contentIndex = BeeConst.UNDEF;
 
   private TilePanel() {
     super(5);
@@ -131,12 +141,75 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   public void onBrowserEvent(Event ev) {
     if (!isActive() && EventUtils.isMouseDown(ev.getType()) && isLeaf()) {
       ev.stopPropagation();
-      activate();
+      activate(true);
     }
     super.onBrowserEvent(ev);
   }
 
-  void activate() {
+  @Override
+  public boolean onHistory(final Place place, boolean forward) {
+    if (contentSuppliers.isEmpty()) {
+      return false;
+    }
+    
+    int oldIndex = getContentIndex();
+    int size = contentSuppliers.size();
+    
+    if (Historian.getSize() > 1) {
+      if (forward) {
+        if (oldIndex == size - 1) {
+          return false;
+        }
+      } else {
+        if (oldIndex == 0) {
+          return false;
+        }
+      }
+    }
+    
+    final int newIndex;
+    if (forward) {
+      newIndex = BeeUtils.rotateForwardExclusive(oldIndex, 0, size);
+    } else {
+      newIndex = BeeUtils.rotateBackwardExclusive(oldIndex, 0, size);
+    }
+    
+    if (newIndex == oldIndex) {
+      return false;
+    }
+    
+    WidgetFactory.create(contentSuppliers.get(newIndex), new Callback<IdentifiableWidget>() {
+      @Override
+      public void onFailure(String... reason) {
+        contentSuppliers.remove(newIndex);
+        if (getContentIndex() >= newIndex) {
+          setContentIndex(getContentIndex() - 1);
+        }
+      }
+
+      @Override
+      public void onSuccess(IdentifiableWidget result) {
+        logger.debug("tile history", newIndex, "/", contentSuppliers.size(), result.getId());
+        logger.debug(contentSuppliers);
+        
+        setContentIndex(newIndex);
+        updateContent(result, false);
+      }
+    });
+
+    return true;
+  }
+
+  @Override
+  protected void onUnload() {
+    super.onUnload();
+    
+    if (!Global.isTemporaryDetach()) {
+      Historian.remove(getId());
+    }
+  }
+
+  void activate(boolean updateHistory) {
     if (isActive()) {
       return;
     }
@@ -147,9 +220,24 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     setActive(true);
 
     SelectionEvent.fire(this, this);
+    if (updateHistory) {
+      Historian.goTo(getId());
+    }
   }
 
-  void addTile(Direction direction, SelectionHandler<TilePanel> handler) {
+  void addContentSupplier(String key) {
+    if (WidgetFactory.hasSupplier(key)) {
+      if (contentSuppliers.contains(key)) {
+        contentSuppliers.remove(key);
+      }
+      contentSuppliers.add(key);
+
+      setContentIndex(contentSuppliers.size() - 1);
+      logger.debug("added tile hist", getContentIndex(), "/", contentSuppliers.size(), key);
+    }
+  }
+
+  void addTile(Workspace workspace, Direction direction) {
     int size = direction.isHorizontal() ? getCenterWidth() : getCenterHeight();
     size = Math.round((size - getSplitterSize()) / 2);
     if (size < MIN_SIZE) {
@@ -163,24 +251,30 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     TilePanel newCenter;
 
     if (oldCenter != null) {
-      ScrollBars scroll = getWidgetScroll(oldCenter.asWidget());
-
       Global.setTemporaryDetach(true);
       remove(oldCenter);
       Global.setTemporaryDetach(false);
 
-      newCenter = newTile(oldCenter, scroll, handler);
+      newCenter = newTile(workspace, oldCenter);
       newCenter.onLayout();
     } else {
-      newCenter = newBlankTile(handler);
+      newCenter = newBlankTile(workspace);
+    }
+    
+    if (!contentSuppliers.isEmpty()) {
+      newCenter.contentSuppliers.addAll(contentSuppliers);
+      newCenter.setContentIndex(getContentIndex());
+      
+      contentSuppliers.clear();
+      setContentIndex(BeeConst.UNDEF);
     }
 
-    TilePanel tile = newBlankTile(handler);
+    TilePanel tile = newBlankTile(workspace);
 
     insert(tile, direction, size, null, null, getSplitterSize());
     add(newCenter);
 
-    tile.activate();
+    tile.activate(true);
   }
 
   TilePanel close() {
@@ -192,7 +286,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       }
       blank();
       if (wasActive) {
-        activate();
+        activate(false);
       }
       return this;
     }
@@ -218,6 +312,13 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     if (wasActive) {
       deactivate();
     }
+    
+    parent.contentSuppliers.clear();
+    parent.contentSuppliers.addAll(entangled.contentSuppliers);
+    parent.setContentIndex(entangled.getContentIndex());
+    
+    Historian.remove(getId());
+    Historian.remove(entangled.getId());
 
     Global.setTemporaryDetach(true);
     entangled.moveTo(parent);
@@ -227,7 +328,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       while (parent.getCenter() instanceof TilePanel) {
         parent = (TilePanel) parent.getCenter();
       }
-      parent.activate();
+      parent.activate(true);
     }
     return parent;
   }
@@ -235,7 +336,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   boolean closeable() {
     return !isRoot() || !isBlank();
   }
-  
+
   TilePanel getActiveTile() {
     return isActive() ? this : locateActiveChild(getRoot());
   }
@@ -244,9 +345,41 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     return isBlank() ? null : getCenter();
   }
 
+  List<IdentifiableWidget> getContentWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+
+    IdentifiableWidget content = getContent();
+    if (content != null) {
+      result.add(content);
+    }
+
+    for (Widget child : getChildren()) {
+      if (child instanceof TilePanel) {
+        result.addAll(((TilePanel) child).getContentWidgets());
+      }
+    }
+    return result;
+  }
+
+  TilePanel getRoot() {
+    return isRoot() ? this : ((TilePanel) getParent()).getRoot();
+  }
+
   TreeItem getTree(String prefix) {
     TreeItem root = new TreeItem(BeeUtils.joinWords(prefix, getId()));
 
+    if (isActive()) {
+      root.addItem("active");
+    }
+    
+    if (!contentSuppliers.isEmpty()) {
+      root.addItem(BeeUtils.joinWords("Suppliers", contentSuppliers.size(),
+          "index", getContentIndex()));
+      for (String key : contentSuppliers) {
+        root.addItem(key);
+      }
+    }
+    
     for (Widget child : getChildren()) {
       if (isSplitter(child)) {
         continue;
@@ -256,9 +389,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
           getWidgetWidth(child), getWidgetHeight(child));
 
       if (child instanceof TilePanel) {
-        if (((TilePanel) child).isActive()) {
-          root.addItem("active");
-        }
         root.addItem(((TilePanel) child).getTree(s));
       } else {
         root.addItem(BeeUtils.joinWords(s, NameUtils.getName(child), DomUtils.getId(child)));
@@ -270,30 +400,49 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   boolean isBlank() {
     return getCenter() instanceof BlankTile;
   }
-  
+
+  boolean isLeaf() {
+    for (Widget child : getChildren()) {
+      if (child instanceof TilePanel) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   boolean isRoot() {
     return !(getParent() instanceof TilePanel);
   }
 
-  void updateContent(IdentifiableWidget widget, ScrollBars scroll) {
+  void updateContent(IdentifiableWidget widget, boolean addSupplier) {
     boolean wasActive = isActive();
     if (wasActive) {
       deactivate();
     }
 
     clear();
-    add(widget, scroll);
-    
+    add(widget);
+
     if (wasActive) {
-      activate();
+      activate(false);
+    }
+    
+    if (addSupplier) {
+      if (widget instanceof HasWidgetSupplier) {
+        addContentSupplier(((HasWidgetSupplier) widget).getSupplierKey());
+      } else {
+        setContentIndex(BeeConst.UNDEF);
+      }
     }
   }
 
   private void blank() {
     clear();
     add(new BlankTile());
+    
+    setContentIndex(BeeConst.UNDEF);
   }
-  
+
   private void deactivate() {
     TilePanel tile = getActiveTile();
 
@@ -303,26 +452,16 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     }
   }
 
-  private TilePanel getRoot() {
-    return isRoot() ? this : ((TilePanel) getParent()).getRoot();
+  private int getContentIndex() {
+    return contentIndex;
   }
 
   private boolean isActive() {
     return active;
   }
 
-  private boolean isLeaf() {
-    for (Widget child : getChildren()) {
-      if (child instanceof TilePanel) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   private void moveTo(TilePanel parent) {
     IdentifiableWidget centerWidget = getCenter();
-    ScrollBars centerScroll = getWidgetScroll(centerWidget.asWidget());
 
     List<IdentifiableWidget> children = Lists.newArrayList();
     for (Widget child : getChildren()) {
@@ -337,14 +476,13 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       parent.clear();
 
       if (centerWidget != null) {
-        parent.add(centerWidget, centerScroll);
+        parent.add(centerWidget);
       }
       return;
     }
 
     Direction[] directions = new Direction[c];
     double[] sizes = new double[c];
-    ScrollBars[] scroll = new ScrollBars[c];
     int[] splSizes = new int[c];
 
     for (int i = 0; i < c; i++) {
@@ -352,7 +490,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
 
       directions[i] = getWidgetDirection(child);
       sizes[i] = directions[i].isHorizontal() ? getWidgetWidth(child) : getWidgetHeight(child);
-      scroll[i] = getWidgetScroll(child);
       splSizes[i] = getWidgetSplitterSize(child);
     }
 
@@ -360,10 +497,10 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     parent.clear();
 
     for (int i = 0; i < c; i++) {
-      parent.insert(children.get(i), directions[i], sizes[i], null, scroll[i], splSizes[i]);
+      parent.insert(children.get(i), directions[i], sizes[i], null, null, splSizes[i]);
     }
     if (centerWidget != null) {
-      parent.add(centerWidget, centerScroll);
+      parent.add(centerWidget);
     }
     parent.onLayout();
   }
@@ -388,5 +525,9 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
         getWidgetContainerElement(widget.asWidget()).removeClassName(ACTIVE_CONTENT);
       }
     }
+  }
+
+  private void setContentIndex(int contentIndex) {
+    this.contentIndex = contentIndex;
   }
 }

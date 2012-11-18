@@ -52,7 +52,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers<Popup>, IdentifiableWidget {
+public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers<Popup>,
+    IdentifiableWidget {
 
   public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
@@ -67,7 +68,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     private final int clientLeft;
     private final int clientTop;
-    
+
     private MouseHandler() {
       this.clientLeft = Document.get().getBodyOffsetLeft();
       this.clientTop = Document.get().getBodyOffsetTop();
@@ -102,12 +103,12 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
   }
-  
+
   private class ResizeAnimation extends Animation {
 
     private class GlassResizer implements ResizeHandler {
       private final Element glassElement;
-      
+
       private GlassResizer(Element glassElement) {
         this.glassElement = Assert.notNull(glassElement);
       }
@@ -210,7 +211,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
             curPanel.getGlass().getStyle().setZIndex(level);
           }
           Document.get().getBody().appendChild(curPanel.getGlass());
-          
+
           GlassResizer glassResizer = new GlassResizer(curPanel.getGlass());
           resizeRegistration = Window.addResizeHandler(glassResizer);
           glassResizer.onResize(null);
@@ -290,19 +291,20 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
   }
-  
+
   private static final String STYLE_POPUP = "bee-Popup";
-  
+
   private static final int ANIMATION_DURATION = 250;
-  
-  public static boolean isActive() {
-    RootPanel root = RootPanel.get();
-    for (Widget child : root) {
+
+  public static Popup getActivePopup() {
+    int widgetCount = RootPanel.get().getWidgetCount();
+    for (int i = widgetCount - 1; i >= 0; i--) {
+      Widget child = RootPanel.get().getWidget(i);
       if (child instanceof Popup && ((Popup) child).isShowing()) {
-        return true;
+        return (Popup) child;
       }
     }
-    return false;
+    return null;
   }
 
   private AnimationType animationType = AnimationType.CENTER;
@@ -327,7 +329,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean previewAllNativeEvents = false;
   private HandlerRegistration nativePreviewHandlerRegistration = null;
   private HandlerRegistration resizeHandlerRegistration = null;
-  
+
   private List<PreviewHandler> previewHandlers = null;
   private boolean hideOnEscape = false;
   private boolean hideOnSave = false;
@@ -336,13 +338,13 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
-  
+
   private final String popupStyleName;
 
   private int windowWidth;
   private boolean dragging = false;
   private MouseHandler mouseHandler = null;
-  
+
   public Popup(boolean autoHide, boolean modal) {
     this(autoHide, modal, STYLE_POPUP);
   }
@@ -355,7 +357,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
-    
+
     this.popupStyleName = styleName;
     setStyleName(styleName);
 
@@ -370,7 +372,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       getAutoHidePartners().add(partner);
     }
   }
-  
+
   public HandlerRegistration addCloseHandler(CloseHandler<Popup> handler) {
     return addHandler(handler, CloseEvent.getType());
   }
@@ -464,7 +466,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   public boolean hideOnEscape() {
     return hideOnEscape;
   }
-  
+
   public boolean hideOnSave() {
     return hideOnSave;
   }
@@ -522,7 +524,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       elem.getStyle().setPosition(Position.ABSOLUTE);
       elem.getStyle().setLeft(0, Unit.PX);
       elem.getStyle().setTop(0, Unit.PX);
-      
+
       setGlass(elem);
     }
   }
@@ -606,7 +608,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     if (isAttached()) {
       this.removeFromParent();
     }
-    
+
     int level = Stacking.addContext(this);
     resizeAnimation.setState(true, false, level);
   }
@@ -616,12 +618,12 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       public void setPosition(int offsetWidth, int offsetHeight) {
         int left = fitLeft(x, offsetWidth, margin);
         int top = fitTop(y, offsetHeight, margin);
-        
+
         setPopupPosition(left, top);
       }
     });
   }
-  
+
   public void showRelativeTo(final UIObject target) {
     setPopupPositionAndShow(new PositionCallback() {
       public void setPosition(int offsetWidth, int offsetHeight) {
@@ -633,7 +635,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   protected void enableDragging() {
     if (getMouseHandler() == null) {
       setMouseHandler(new MouseHandler());
-      
+
       addDomHandler(getMouseHandler(), MouseDownEvent.getType());
       addDomHandler(getMouseHandler(), MouseUpEvent.getType());
       addDomHandler(getMouseHandler(), MouseMoveEvent.getType());
@@ -641,7 +643,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   }
 
   /**
-   * @param event  
+   * @param event
    */
   protected boolean isCaptionEvent(NativeEvent event) {
     return false;
@@ -694,7 +696,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
     return false;
   }
-  
+
   private int fitLeft(int left, int width, int margin) {
     int windowLeft = Window.getScrollLeft() + margin;
     int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
@@ -705,10 +707,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private int fitTop(int top, int height, int margin) {
     int windowTop = Window.getScrollTop() + margin;
     int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
-    
+
     return Math.max(Math.min(top, windowBottom - height), windowTop);
   }
-  
+
   private List<Element> getAutoHidePartners() {
     return autoHidePartners;
   }
@@ -728,7 +730,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private int getLeftPosition() {
     return leftPosition;
   }
-  
+
   private MouseHandler getMouseHandler() {
     return mouseHandler;
   }
@@ -736,7 +738,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private HandlerRegistration getNativePreviewHandlerRegistration() {
     return nativePreviewHandlerRegistration;
   }
-  
+
   private HandlerRegistration getResizeHandlerRegistration() {
     return resizeHandlerRegistration;
   }
@@ -798,10 +800,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     } else {
       top += relativeObject.getOffsetHeight();
     }
-    
+
     left = fitLeft(left, offsetWidth, 2);
     top = fitTop(top, offsetHeight, 2);
-    
+
     setPopupPosition(left, top);
   }
 
@@ -812,7 +814,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
       return;
     }
-    
+
     onPreviewNativeEvent(event);
     if (event.isCanceled()) {
       return;
@@ -856,9 +858,9 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
           return;
         }
         break;
-      
+
       case Event.ONKEYDOWN:
-        if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE)  {
+        if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
           if (hideOnEscape()) {
             hide(true);
           }
@@ -889,7 +891,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private void setDesiredWidth(String desiredWidth) {
     this.desiredWidth = desiredWidth;
   }
-  
+
   private void setDragging(boolean dragging) {
     this.dragging = dragging;
   }
@@ -897,7 +899,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private void setGlass(Element glass) {
     this.glass = glass;
   }
-  
+
   private void setLeftPosition(int leftPosition) {
     this.leftPosition = leftPosition;
   }

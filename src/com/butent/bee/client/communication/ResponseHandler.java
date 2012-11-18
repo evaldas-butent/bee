@@ -40,7 +40,7 @@ public class ResponseHandler {
     }
 
     if (pc <= 1) {
-      BeeKeeper.getScreen().showResource(resources[0]);
+      BeeKeeper.getScreen().updateActivePanel(new ResourceEditor(resources[0]));
       return;
     }
 

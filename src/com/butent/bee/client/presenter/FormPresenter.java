@@ -30,6 +30,7 @@ import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -107,12 +108,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public IsRow getActiveRow() {
-    return getView().getContent().getActiveRow();
+    return formContainer.getContent().getActiveRow();
   }
 
   @Override
   public String getCaption() {
-    return getView().getCaption();
+    return formContainer.getCaption();
   }
   
   @Override
@@ -122,31 +123,32 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public HeaderView getHeader() {
-    return getView().getHeader();
+    return formContainer.getHeader();
   }
 
   public Filter getLastFilter() {
     return lastFilter;
   }
 
+  @Override
+  public View getMainView() {
+    return formContainer;
+  }
+  
   public NotificationListener getNotificationListener() {
-    return getView().getContent();
+    return formContainer.getContent();
   }
 
   @Override
   public Collection<SearchView> getSearchers() {
     Collection<SearchView> searchers;
 
-    if (getView() instanceof HasSearch) {
-      searchers = ((HasSearch) getView()).getSearchers();
+    if (getMainView() instanceof HasSearch) {
+      searchers = ((HasSearch) getMainView()).getSearchers();
     } else {
       searchers = null;
     }
     return searchers;
-  }
-
-  public FormContainerView getView() {
-    return formContainer;
   }
 
   @Override
@@ -159,7 +161,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public IdentifiableWidget getWidget() {
-    return getView();
+    return getMainView();
   }
 
   @Override
@@ -172,21 +174,21 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (action) {
       case CLOSE:
-        BeeKeeper.getScreen().closeWidget(getView());
+        BeeKeeper.getScreen().closeWidget(getMainView());
         break;
 
       case CONFIGURE:
         Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
-            getView().getContent().applyOptions(value);
+            formContainer.getContent().applyOptions(value);
           }
         });
         break;
 
       case DELETE:
-        if (hasData() && getView().getContent().isRowEditable(true)) {
-          IsRow row = getView().getContent().getActiveRow();
+        if (hasData() && formContainer.getContent().isRowEditable(true)) {
+          IsRow row = formContainer.getContent().getActiveRow();
           deleteRow(row.getId(), row.getVersion());
         }
         break;
@@ -199,12 +201,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case ADD:
         if (hasData()) {
-          getView().getContent().startNewRow();
+          formContainer.getContent().startNewRow();
         }
         break;
 
       case PRINT:
-        Printer.print(getView());
+        Printer.print(formContainer);
         break;
         
       default:
@@ -289,7 +291,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public void onViewUnload() {
-    getView().setViewPresenter(null);
+    getMainView().setViewPresenter(null);
 
     for (HandlerRegistration hr : filterChangeHandlers) {
       hr.removeHandler();
@@ -299,10 +301,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getDataProvider() != null) {
       getDataProvider().onUnload();
     }
+    
+    super.onViewUnload();
   }
 
   private void bind() {
-    FormContainerView view = getView();
+    FormContainerView view = formContainer;
     view.setViewPresenter(this);
     view.bind();
 
@@ -366,7 +370,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private FormCallback getFormCallback() {
-    return getView().getContent().getFormCallback();
+    return formContainer.getContent().getFormCallback();
   }
 
   private boolean hasData() {

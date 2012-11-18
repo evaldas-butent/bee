@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.ResponseData;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.JsUtils;
@@ -244,7 +245,7 @@ public class AsyncCallback implements RequestCallback {
   }
 
   private void dispatchResource(String src) {
-    BeeKeeper.getScreen().showResource(new Resource(src));
+    BeeKeeper.getScreen().updateActivePanel(new ResourceEditor(new Resource(src)));
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {

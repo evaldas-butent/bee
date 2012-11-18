@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
@@ -16,17 +17,20 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -53,7 +57,7 @@ public class CalendarKeeper {
         if (DataUtils.isId(calId)) {
           String calName = event.hasRow() ?
               Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
-          openCalendar(calId, calName, true);
+          openCalendar(calId, calName, !event.hasService(Service.OPEN_FAVORITE));
         }
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
@@ -277,6 +281,10 @@ public class CalendarKeeper {
   static BeeRowSet getAttendeeTypes() {
     return CACHE.getRowSet(VIEW_ATTENDEE_TYPES);
   }
+  
+  static String getCalendarSupplierKey(long calendarId) {
+    return "calendar_" + calendarId;
+  }
 
   static void getData(Collection<String> viewNames, final Command command) {
     CACHE.getData(viewNames, new CalendarCache.MultiCallback() {
@@ -488,7 +496,20 @@ public class CalendarKeeper {
   }
 
   private static void openCalendar(final long id, final String name, final boolean newPanel) {
-    ensureData(new Command() {
+
+    class OpenCommand extends Command {
+      private final long calendarId;
+      private final String calendarName;
+      private final Callback<IdentifiableWidget> callback;
+
+      private OpenCommand(long calendarId, String calendarName,
+          Callback<IdentifiableWidget> callback) {
+        super();
+        this.calendarId = calendarId;
+        this.calendarName = calendarName;
+        this.callback = callback;
+      }
+
       @Override
       public void execute() {
         getUserCalendar(id, new Queries.RowSetCallback() {
@@ -496,12 +517,35 @@ public class CalendarKeeper {
           public void onSuccess(BeeRowSet result) {
             CalendarSettings settings =
                 CalendarSettings.create(result.getRow(0), result.getColumns());
-            BeeKeeper.getScreen().showWidget(new CalendarPanel(id, name, settings),
-                ScrollBars.NONE, newPanel);
+            CalendarPanel calendarPanel = new CalendarPanel(calendarId, calendarName, settings);
+            
+            callback.onSuccess(calendarPanel);
           }
         });
       }
+    }
+
+    String supplierKey = getCalendarSupplierKey(id);
+    if (!WidgetFactory.hasSupplier(supplierKey)) {
+      WidgetSupplier supplier = new WidgetSupplier() {
+        @Override
+        public void create(final Callback<IdentifiableWidget> callback) {
+          OpenCommand command = new OpenCommand(id, name, callback);
+          ensureData(command);
+        }
+      };
+      
+      WidgetFactory.registerSupplier(supplierKey, supplier);
+    }
+
+    OpenCommand command = new OpenCommand(id, name, new Callback<IdentifiableWidget>() {
+      @Override
+      public void onSuccess(IdentifiableWidget result) {
+        BeeKeeper.getScreen().showWidget(result, newPanel);
+      }
     });
+    
+    ensureData(command);
   }
 
   private static void openSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {

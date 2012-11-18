@@ -86,7 +86,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     if (getPresenter() == null) {
       return false;
     }
-    return getPresenter().getView().isEnabled();
+    return getPresenter().getMainView().isEnabled();
   }
 
   @Override
@@ -118,7 +118,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   @Override
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
-      getPresenter().getView().setEnabled(enabled);
+      getPresenter().getMainView().setEnabled(enabled);
     }
   }
 

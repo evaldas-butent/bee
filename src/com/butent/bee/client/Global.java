@@ -25,6 +25,7 @@ import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
@@ -437,7 +438,10 @@ public class Global implements Module {
 
   public static void showGrid(IsTable<?, ?> table) {
     Assert.notNull(table, "showGrid: table is null");
-    BeeKeeper.getScreen().showGrid(GridFactory.simpleGrid(table));
+    CellGrid grid = GridFactory.simpleGrid(table);
+    if (grid != null) {
+      BeeKeeper.getScreen().updateActivePanel(grid);
+    }
   }
 
   public static void showModalGrid(String caption, IsTable<?, ?> table) {

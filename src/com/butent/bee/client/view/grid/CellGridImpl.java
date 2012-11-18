@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Place;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
@@ -1348,6 +1349,25 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     editableColumn.openEditor(this, event.getSourceElement(), getGrid().getElement(),
         getGrid().getZIndex() + 1, rowValue, BeeUtils.toChar(event.getCharCode()), this);
+  }
+
+  @Override
+  public boolean onHistory(Place place, boolean forward) {
+    if (BeeUtils.isEmpty(getActiveFormContainerId())) {
+      return false;
+    }
+    
+    FormView form = getForm(!isAdding());
+    if (form == null || !form.asWidget().isVisible()) {
+      return false;
+    }
+    
+    if (form.getViewPresenter() != null) {
+      form.getViewPresenter().handleAction(Action.CLOSE);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Override

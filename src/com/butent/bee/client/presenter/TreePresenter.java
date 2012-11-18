@@ -20,6 +20,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
@@ -127,6 +128,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
   
   @Override
+  public View getMainView() {
+    return getView();
+  }
+
+  @Override
   public IdentifiableWidget getWidget() {
     return getView();
   }
@@ -179,6 +185,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   @Override
   public void onViewUnload() {
     getView().setViewPresenter(null);
+    super.onViewUnload();
   }
 
   public void updateRelation(Long parentId) {
@@ -320,6 +327,27 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     return treeView;
   }
 
+  private void removeItem() {
+    final IsRow data = getView().getSelectedItem();
+
+    if (data != null) {
+      String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
+      Global.getMsgBoxen().confirm(null, message, new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          Queries.deleteRow(source, data.getId(), data.getVersion(),
+              new IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  getView().removeItem(data);
+                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(source, data.getId()));
+                }
+              });
+        }
+      }, StyleUtils.NAME_SCARY, null);
+    }
+  }
+
   private void requery() {
     Filter flt = null;
 
@@ -366,26 +394,5 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         }
       }
     });
-  }
-
-  private void removeItem() {
-    final IsRow data = getView().getSelectedItem();
-
-    if (data != null) {
-      String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
-      Global.getMsgBoxen().confirm(null, message, new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          Queries.deleteRow(source, data.getId(), data.getVersion(),
-              new IntCallback() {
-                @Override
-                public void onSuccess(Integer result) {
-                  getView().removeItem(data);
-                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(source, data.getId()));
-                }
-              });
-        }
-      }, StyleUtils.NAME_SCARY, null);
-    }
   }
 }

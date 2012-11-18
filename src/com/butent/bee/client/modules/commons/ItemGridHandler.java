@@ -11,6 +11,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -49,6 +50,12 @@ class ItemGridHandler extends AbstractGridCallback implements SelectionHandler<I
   @Override
   public String getRowCaption(IsRow row, boolean edit) {
     return (edit ? "" : "Nauja ") + (showServices() ? "Paslauga" : "Prekė");
+  }
+
+  @Override
+  public String getSupplierKey() {
+    return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid",
+        CommonsConstants.TBL_ITEMS, getCaption()));
   }
 
   @Override

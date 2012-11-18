@@ -88,6 +88,11 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
 
   @Override
+  public String getSupplierKey() {
+    return null;
+  }
+
+  @Override
   public boolean hasFooter(int rowCount) {
     return true;
   }

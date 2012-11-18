@@ -166,6 +166,11 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
+  public String getSupplierKey() {
+    return null;
+  }
+
+  @Override
   public boolean onClose(GridPresenter presenter) {
     return true;
   }
@@ -188,7 +193,7 @@ public class AbstractGridCallback implements GridCallback {
   public boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
     return true;
   }
-
+  
   @Override
   public boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
     return true;
@@ -198,7 +203,7 @@ public class AbstractGridCallback implements GridCallback {
   public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
     return true;
   }
-  
+
   @Override
   public void onShow(GridPresenter presenter) {
   }

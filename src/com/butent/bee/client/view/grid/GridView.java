@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator {
+    HasEditFormHandlers, ParentRowCreator, HandlesHistory {
 
   void applyOptions(String options);
 

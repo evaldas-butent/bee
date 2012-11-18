@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Place;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -66,6 +67,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     EditFormEvent.Handler, HasEditState {
 
   private Presenter viewPresenter = null;
+  
+  private String gridName = null;
 
   private String footerId = null;
   private String headerId = null;
@@ -91,10 +94,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public GridContainerImpl() {
     super(-1);
-    
     addStyleName("bee-GridContainer");
   }
 
+  @Override
   public void bind() {
     if (hasFooter()) {
       getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
@@ -108,6 +111,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     getGridView().addEditFormHandler(this);
   }
 
+  @Override
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
       int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
@@ -164,6 +168,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
 
     String name = gridDescription.getName();
+    setGridName(name);
 
     GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch(),
@@ -237,10 +242,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return hasHeader() ? getHeader().getCaption() : null;
   }
   
+  @Override
   public List<String> getFavorite() {
     return favorite;
   }
 
+  @Override
   public GridView getGridView() {
     if (getCenter() == null) {
       return null;
@@ -248,6 +255,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return (GridView) getCenter();
   }
 
+  @Override
   public HeaderView getHeader() {
     if (BeeUtils.isEmpty(getHeaderId())) {
       return null;
@@ -266,6 +274,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return "grid-container";
   }
 
+  @Override
   public Collection<PagerView> getPagers() {
     if (hasPaging()) {
       return ViewHelper.getPagers(this);
@@ -279,6 +288,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return getElement();
   }
 
+  @Override
   public Collection<SearchView> getSearchers() {
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
@@ -287,22 +297,32 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  @Override
+  public String getSupplierKey() {
+    return GridFactory.getSupplierKey(getGridName(), getGridView().getGridCallback());
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     IsRow rowValue = event.getRowValue();
     GridView gridView = getGridView();
@@ -336,6 +356,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setLastEnabled(rowEnabled);
   }
 
+  @Override
   public void onAddEnd(AddEndEvent event) {
     if (!event.isPopup()) {
       showChildren(true);
@@ -343,6 +364,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setEditing(false);
   }
 
+  @Override
   public void onAddStart(AddStartEvent event) {
     setEditing(true);
     if (!event.isPopup()) {
@@ -399,6 +421,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  @Override
   public void onEditForm(EditFormEvent event) {
     if (event.isOpening()) {
       setEditing(true);
@@ -412,6 +435,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
       setEditing(false);
     }
+  }
+
+  @Override
+  public boolean onHistory(Place place, boolean forward) {
+    return getGridView().onHistory(place, forward);
   }
 
   @Override
@@ -491,10 +519,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -507,6 +537,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     BeeUtils.overwrite(this.favorite, favorite);
   }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget widget : getChildren()) {
@@ -653,6 +684,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return footerId;
   }
 
+  private String getGridName() {
+    return gridName;
+  }
+
   private String getHeaderId() {
     return headerId;
   }
@@ -714,6 +749,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     this.footerId = footerId;
   }
 
+  private void setGridName(String gridName) {
+    this.gridName = gridName;
+  }
+
   private void setHasPaging(boolean hasPaging) {
     this.hasPaging = hasPaging;
   }
@@ -729,7 +768,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private void setLastEnabled(boolean lastEnabled) {
     this.lastEnabled = lastEnabled;
   }
-
+  
   private void setLastRow(IsRow lastRow) {
     this.lastRow = lastRow;
   }

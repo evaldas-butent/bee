@@ -8,9 +8,9 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Historian;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.layout.TabbedPages;
@@ -92,7 +92,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       getCaptionWidget().setText(caption);
     }
   }
-
+  
   private static final BeeLogger logger = LogUtils.getLogger(Workspace.class);
   
   private static final String STYLE_PREFIX = "bee-Workspace-";
@@ -114,11 +114,25 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       setStyleOne(true);
     }
   }
+  
+  @Override
+  public void selectPage(int index, SelectionOrigin origin) {
+    super.selectPage(index, origin);
+    
+    if (SelectionOrigin.CLICK.equals(origin)) {
+      TilePanel activePanel = getActivePanel();
+      if (activePanel != null) {
+        Historian.goTo(activePanel.getId());
+      }
+    }
+  }
 
   void closeWidget(IdentifiableWidget widget) {
-    TilePanel tile = TilePanel.getParentTile(widget);
+    TilePanel tile = TilePanel.getParentTile(widget.asWidget());
+
     if (tile == null) {
       showError("closeWidget: panel not found");
+
     } else {
       tile = tile.close();
       while (tile != null && tile.isBlank() && !tile.isRoot()) {
@@ -152,7 +166,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     return tile;
   }
 
-  void openInNewPage(IdentifiableWidget widget, ScrollBars scroll) {
+  void openInNewPage(IdentifiableWidget widget) {
     TilePanel tile = getActivePanel();
     if (tile == null || !tile.isRoot() || !tile.isBlank()) {
       int index = getSelectedIndex();
@@ -162,7 +176,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       insertEmptyPanel(index + 1);
     }
     
-    updateActivePanel(widget, scroll);
+    updateActivePanel(widget);
   }
 
   void showInfo() {
@@ -181,7 +195,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     Global.showModalWidget(tree);
   }
 
-  void updateActivePanel(IdentifiableWidget widget, ScrollBars scroll) {
+  void updateActivePanel(IdentifiableWidget widget) {
     if (widget == null) {
       showError("widget is null");
       return;
@@ -189,14 +203,14 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
 
     TilePanel tile = getActivePanel();
     if (tile != null) {
-      tile.updateContent(widget, scroll);
+      tile.updateContent(widget, true);
     }
   }
 
   private void closeActivePanel() {
-    TilePanel op = getActivePanel();
-    if (op != null) {
-      op.close();
+    TilePanel tile = getActivePanel();
+    if (tile != null) {
+      tile.close();
     }
   }
 
@@ -252,8 +266,8 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       setStyleOne(true);
     }
 
-    selectPage(before);
-    tile.activate();
+    selectPage(before, SelectionOrigin.INSERT);
+    tile.activate(true);
   }
 
   private boolean isActionEnabled(TabAction action, int index) {
@@ -327,7 +341,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   private void splitActivePanel(Direction direction) {
     TilePanel p = getActivePanel();
     if (p != null) {
-      p.addTile(direction, this);
+      p.addTile(this, direction);
     }
   }
 
