@@ -37,10 +37,10 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -49,7 +49,7 @@ import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -81,7 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MailHandler extends AbstractFormCallback {
+public class MailHandler extends AbstractFormInterceptor {
 
   private class ContentHandler implements ActiveRowChangeEvent.Handler {
     private final int unread;
@@ -264,7 +264,7 @@ public class MailHandler extends AbstractFormCallback {
     }
   }
 
-  private class MessagesGrid extends AbstractGridCallback {
+  private class MessagesGrid extends AbstractGridInterceptor {
     @Override
     public Map<String, Filter> getInitialFilters() {
       return ImmutableMap.of(MESSAGES_FILTER, Filter.isFalse());
@@ -334,7 +334,7 @@ public class MailHandler extends AbstractFormCallback {
       initDisplayModes((TabBar) widget);
 
     } else if (widget instanceof GridPanel && BeeUtils.same(name, "Messages")) {
-      ((GridPanel) widget).setGridCallback(new MessagesGrid());
+      ((GridPanel) widget).setGridInterceptor(new MessagesGrid());
 
     } else if (widget instanceof Panel && BeeUtils.same(name, "Message")) {
       messageWidget = ((Panel) widget);
@@ -381,7 +381,7 @@ public class MailHandler extends AbstractFormCallback {
   }
 
   @Override
-  public FormCallback getInstance() {
+  public FormInterceptor getInstance() {
     return new MailHandler();
   }
 

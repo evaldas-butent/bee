@@ -37,7 +37,7 @@ import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.ExtWidget;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
@@ -113,7 +113,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
-      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
@@ -128,7 +128,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (gridDescription.hasGridHeader()) {
       header = GWT.create(HeaderImpl.class);
 
-      String caption = (gridCallback == null) ? null : gridCallback.getCaption();
+      String caption = (gridInterceptor == null) ? null : gridInterceptor.getCaption();
       if (caption == null) {
         caption = (gridOptions == null) ? null : gridOptions.getCaption();
       }
@@ -171,7 +171,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setGridName(name);
 
     GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
-    content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch(),
+    content.create(dataColumns, rowCount, rowSet, gridDescription, gridInterceptor, hasSearch(),
         order);
 
     FooterView footer;
@@ -198,7 +198,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
       for (String xml : gridDescription.getWidgets()) {
         ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(), dataColumns,
-            getExtCreation(), gridCallback);
+            getExtCreation(), gridInterceptor);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
         }
@@ -299,7 +299,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return GridFactory.getSupplierKey(getGridName(), getGridView().getGridCallback());
+    return GridFactory.getSupplierKey(getGridName(), getGridView().getGridInterceptor());
   }
 
   @Override

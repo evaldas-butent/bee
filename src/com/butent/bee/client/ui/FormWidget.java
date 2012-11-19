@@ -445,7 +445,7 @@ public enum FormWidget {
   }
 
   public IdentifiableWidget create(Element element, String viewName, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
+      WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetCallback) {
     Assert.notNull(element);
 
     String name = element.getAttribute(UiConstants.ATTR_NAME);
@@ -1319,7 +1319,7 @@ public enum FormWidget {
   }
 
   private HeaderAndContent createHeaderAndContent(Element parent, String viewName,
-      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetInterceptor widgetCallback) {
     String headerTag = null;
     String headerString = null;
     IdentifiableWidget headerWidget = null;
@@ -1363,7 +1363,7 @@ public enum FormWidget {
 
   private IdentifiableWidget createIfWidget(Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
-      WidgetCallback widgetCallback) {
+      WidgetInterceptor widgetCallback) {
 
     if (element == null) {
       return null;
@@ -1376,7 +1376,7 @@ public enum FormWidget {
   }
 
   private IdentifiableWidget createIfWidgetOrHtmlOrText(Element element, String viewName,
-      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetInterceptor widgetCallback) {
     if (element == null) {
       return null;
     }
@@ -1403,7 +1403,7 @@ public enum FormWidget {
 
   private IdentifiableWidget createOneChild(Element parent, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
-      WidgetCallback widgetCallback) {
+      WidgetInterceptor widgetCallback) {
 
     for (Element child : XmlUtils.getChildrenElements(parent)) {
       IdentifiableWidget widget = createIfWidget(child, viewName, columns,
@@ -1459,7 +1459,7 @@ public enum FormWidget {
 
   private boolean createTableCell(HtmlTable table, Element element, int row, int col,
       String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
-      WidgetCallback widgetCallback) {
+      WidgetInterceptor widgetCallback) {
     boolean ok = false;
     String tag = XmlUtils.getLocalName(element);
 
@@ -1617,7 +1617,7 @@ public enum FormWidget {
 
   private void processChild(IdentifiableWidget parent, Element child, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
-      WidgetCallback widgetCallback) {
+      WidgetInterceptor widgetCallback) {
     String childTag = XmlUtils.getLocalName(child);
 
     if (hasLayers()) {

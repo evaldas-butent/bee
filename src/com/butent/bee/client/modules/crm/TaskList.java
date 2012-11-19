@@ -25,8 +25,8 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
@@ -53,7 +53,7 @@ import java.util.Map;
 
 class TaskList {
 
-  private static class GridHandler extends AbstractGridCallback {
+  private static class GridHandler extends AbstractGridInterceptor {
 
     private final Type type;
     private final Long userId;
@@ -172,16 +172,16 @@ class TaskList {
           row.getLong(provider.getColumnIndex(COL_EXECUTOR)))) {
 
         presenter.getGridView().notifyWarning("Verboten");
-        return GridCallback.DELETE_CANCEL;
+        return GridInterceptor.DELETE_CANCEL;
       }
-      return GridCallback.DELETE_DEFAULT;
+      return GridInterceptor.DELETE_DEFAULT;
     }
 
     @Override
     public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows) {
       presenter.deleteRow(activeRow, false);
-      return GridCallback.DELETE_CANCEL;
+      return GridInterceptor.DELETE_CANCEL;
     }
 
     @Override

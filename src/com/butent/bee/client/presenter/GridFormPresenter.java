@@ -19,7 +19,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -83,8 +83,8 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return null;
   }
 
-  public GridCallback getGridCallback() {
-    return gridView.getGridCallback();
+  public GridInterceptor getGridInterceptor() {
+    return gridView.getGridInterceptor();
   }
 
   @Override

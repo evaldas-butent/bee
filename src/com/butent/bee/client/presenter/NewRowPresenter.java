@@ -216,9 +216,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       return;
     }
 
-    if (formView.getFormCallback() != null) {
+    if (formView.getFormInterceptor() != null) {
       ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
-      if (!formView.getFormCallback().onReadyForInsert(event)) {
+      if (!formView.getFormInterceptor().onReadyForInsert(event)) {
         return;
       }
     }

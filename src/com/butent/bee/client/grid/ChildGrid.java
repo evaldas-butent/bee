@@ -16,7 +16,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -47,7 +47,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   private final GridFactory.GridOptions gridOptions;
 
-  private GridCallback gridCallback = null;
+  private GridInterceptor gridInterceptor = null;
   private GridDescription gridDescription = null;
   private GridPresenter presenter = null;
 
@@ -66,7 +66,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     this.relSource = relSource;
     this.gridOptions = gridOptions;
 
-    this.gridCallback = GridFactory.getGridCallback(gridName);
+    this.gridInterceptor = GridFactory.getGridInterceptor(gridName);
 
     addStyleName("bee-ChildGrid");
   }
@@ -94,7 +94,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     GridFactory.getGrid(gridName, new Callback<GridDescription>() {
       @Override
       public void onSuccess(GridDescription result) {
-        if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
+        if (getGridInterceptor() != null && !getGridInterceptor().onLoad(result)) {
           return;
         }
         setGridDescription(result);
@@ -105,8 +105,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    if (getGridCallback() != null) {
-      getGridCallback().onParentRow(event);
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onParentRow(event);
     }
 
     setPendingRow(event.getRow());
@@ -122,8 +122,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     }
   }
 
-  public void setGridCallback(GridCallback gridCallback) {
-    this.gridCallback = gridCallback;
+  public void setGridInterceptor(GridInterceptor gridInterceptor) {
+    this.gridInterceptor = gridInterceptor;
   }
 
   @Override
@@ -159,7 +159,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     GridPresenter gp = new GridPresenter(getGridDescription(), getRelSource(),
         rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
-        EnumSet.of(UiOption.CHILD), getGridCallback(), immutableFilter, initialFilters, order,
+        EnumSet.of(UiOption.CHILD), getGridInterceptor(), immutableFilter, initialFilters, order,
         getGridOptions());
 
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
@@ -187,12 +187,12 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
   
-  private GridCallback getGridCallback() {
-    return gridCallback;
-  }
-
   private GridDescription getGridDescription() {
     return gridDescription;
+  }
+
+  private GridInterceptor getGridInterceptor() {
+    return gridInterceptor;
   }
 
   private GridFactory.GridOptions getGridOptions() {
@@ -203,7 +203,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     final Filter immutableFilter =
         GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
     final Map<String, Filter> initialFilters =
-        (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
+        (getGridInterceptor() == null) ? null : getGridInterceptor().getInitialFilters();
 
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 

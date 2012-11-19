@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractGridCallback implements GridCallback {
+public class AbstractGridInterceptor implements GridInterceptor {
   
   public static final String DELETE_ROW_MESSAGE = "Išmesti eilutę ?";
 
@@ -150,7 +150,7 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
-  public GridCallback getInstance() {
+  public GridInterceptor getInstance() {
     return null;
   }
 

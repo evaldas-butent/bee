@@ -150,7 +150,7 @@ public class CalendarKeeper {
       }
     });
 
-    GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
+    GridFactory.registerGridInterceptor(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);

@@ -41,9 +41,9 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -91,13 +91,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     @Override
     public void onConfirm() {
       int count = (rows == null) ? 0 : rows.size();
-      GridCallback gcb = getGridCallback();
+      GridInterceptor gcb = getGridInterceptor();
 
       if (gcb != null) {
         if ((count == 0
             ? gcb.beforeDeleteRow(GridPresenter.this, activeRow)
             : gcb.beforeDeleteRows(GridPresenter.this, activeRow, rows))
-          == GridCallback.DELETE_CANCEL) {
+          == GridInterceptor.DELETE_CANCEL) {
           return;
         }
       }
@@ -174,15 +174,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public GridPresenter(GridDescription gridDescription, String relColumn, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
-      Collection<UiOption> uiOptions, GridCallback gridCallback, Filter immutableFilter,
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor, Filter immutableFilter,
       Map<String, Filter> initialFilters, Order order, GridFactory.GridOptions gridOptions) {
 
-    if (gridCallback != null) {
-      gridCallback.setGridPresenter(this);
+    if (gridInterceptor != null) {
+      gridInterceptor.setGridPresenter(this);
     }
 
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), relColumn,
-        rowCount, rowSet, order, gridCallback, uiOptions, gridOptions);
+        rowCount, rowSet, order, gridInterceptor, uiOptions, gridOptions);
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
@@ -194,15 +194,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void deleteRow(IsRow row, boolean confirm) {
     Assert.notNull(row);
 
-    String message = (getGridCallback() != null)
-        ? getGridCallback().getDeleteRowMessage()
-        : AbstractGridCallback.DELETE_ROW_MESSAGE;
+    String message = (getGridInterceptor() != null)
+        ? getGridInterceptor().getDeleteRowMessage()
+        : AbstractGridInterceptor.DELETE_ROW_MESSAGE;
 
-    int mode = BeeUtils.isEmpty(message) ? GridCallback.DELETE_SILENT : GridCallback.DELETE_DEFAULT;
+    int mode = BeeUtils.isEmpty(message) ? GridInterceptor.DELETE_SILENT : GridInterceptor.DELETE_DEFAULT;
 
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
 
-    if (mode == GridCallback.DELETE_SILENT || mode == GridCallback.DELETE_DEFAULT && !confirm) {
+    if (mode == GridInterceptor.DELETE_SILENT || mode == GridInterceptor.DELETE_DEFAULT && !confirm) {
       deleteCallback.onConfirm();
     } else {
       Global.getMsgBoxen().confirm(null, message, deleteCallback, StyleUtils.NAME_SCARY, null);
@@ -268,7 +268,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
-    if (getGridCallback() != null && !getGridCallback().beforeAction(action, this)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(action, this)) {
       return;
     }
 
@@ -327,8 +327,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         logger.info(action, "not implemented");
     }
 
-    if (getGridCallback() != null) {
-      getGridCallback().afterAction(action, this);
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterAction(action, this);
     }
   }
 
@@ -449,8 +449,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public void refresh(boolean updateActiveRow) {
-    if (getGridCallback() != null) {
-      getGridCallback().beforeRefresh(this);
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().beforeRefresh(this);
     }
 
     if (getGridView().likeAMotherlessChild()) {
@@ -476,15 +476,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
     
-    if (getGridCallback() != null && !getGridCallback().beforeAddRow(this)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAddRow(this)) {
       return;
     }
     getGridView().startNewRow();
   }
 
   private void afterDelete(long rowId) {
-    if (getGridCallback() != null) {
-      getGridCallback().afterDeleteRow(rowId);
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterDeleteRow(rowId);
     }
   }
 
@@ -512,7 +512,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void close() {
-    if (getGridCallback() != null && !getGridCallback().onClose(this)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onClose(this)) {
       return;
     }
     BeeKeeper.getScreen().closeWidget(getMainView());
@@ -569,11 +569,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
-      String relColumn, int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      String relColumn, int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, columns, relColumn, rowCount, rowSet, order, gridCallback,
+    view.create(gridDescription, columns, relColumn, rowCount, rowSet, order, gridInterceptor,
         uiOptions, gridOptions);
 
     return view;
@@ -582,9 +582,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
     List<String> options = Lists.newArrayList();
-    Pair<String, String> defMsg = AbstractGridCallback.deleteRowsMessage(size);
+    Pair<String, String> defMsg = AbstractGridInterceptor.deleteRowsMessage(size);
     Pair<String, String> message =
-        (getGridCallback() != null) ? getGridCallback().getDeleteRowsMessage(size) : defMsg;
+        (getGridInterceptor() != null) ? getGridInterceptor().getDeleteRowsMessage(size) : defMsg;
 
     if (message != null) {
       options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
@@ -618,8 +618,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
   
-  private GridCallback getGridCallback() {
-    return getGridView().getGridCallback();
+  private GridInterceptor getGridInterceptor() {
+    return getGridView().getGridInterceptor();
   }
 
   private Filter getLastFilter() {

@@ -42,7 +42,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -129,8 +129,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
       if (type.isDisplay()) {
         AbstractCellRenderer renderer = null;
-        if (getFormCallback() != null) {
-          renderer = getFormCallback().getRenderer(result);
+        if (getFormInterceptor() != null) {
+          renderer = getFormInterceptor().getRenderer(result);
         }
 
         if (renderer == null) {
@@ -158,8 +158,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
         result.setNullable(editableWidget.isNullable());
         result.setHasDefaults(editableWidget.hasDefaults());
 
-        if (getFormCallback() != null) {
-          getFormCallback().afterCreateEditableWidget(editableWidget);
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().afterCreateEditableWidget(editableWidget);
         }
       }
 
@@ -241,7 +241,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   private String caption = null;
 
-  private FormCallback formCallback = null;
+  private FormInterceptor formInterceptor = null;
 
   private final CreationCallback creationCallback = new CreationCallback();
   private final List<String> disablableWidgets = Lists.newArrayList();
@@ -348,16 +348,16 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
-      boolean addStyle, FormCallback callback) {
+      boolean addStyle, FormInterceptor interceptor) {
     Assert.notNull(formDescription);
 
     setViewName(BeeUtils.notEmpty(view, formDescription.getViewName()));
     setDataColumns(dataCols);
     setHasData(!BeeUtils.isEmpty(dataCols));
 
-    setFormCallback(callback);
-    if (callback != null) {
-      callback.setFormView(this);
+    setFormInterceptor(interceptor);
+    if (interceptor != null) {
+      interceptor.setFormView(this);
     }
 
     if (hasData()) {
@@ -378,7 +378,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     setDimensions(formDescription.getDimensions());
 
     IdentifiableWidget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
-        creationCallback, callback);
+        creationCallback, interceptor);
     if (root == null) {
       return;
     }
@@ -394,8 +394,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
     creationCallback.bind(this, getId());
 
-    if (callback != null) {
-      callback.afterCreate(this);
+    if (interceptor != null) {
+      interceptor.afterCreate(this);
     }
   }
 
@@ -457,8 +457,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public FormCallback getFormCallback() {
-    return formCallback;
+  public FormInterceptor getFormInterceptor() {
+    return formInterceptor;
   }
 
   @Override
@@ -877,7 +877,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     };
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
-    if (getFormCallback() != null && !getFormCallback().onReadyForInsert(event)) {
+    if (getFormInterceptor() != null && !getFormInterceptor().onReadyForInsert(event)) {
       return;
     }
     fireEvent(event);
@@ -1072,8 +1072,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
     }
 
-    if (getFormCallback() != null) {
-      getFormCallback().onStart(this);
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onStart(this);
     }
   }
 
@@ -1098,8 +1098,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
     }
 
-    if (getFormCallback() != null) {
-      getFormCallback().onStartNewRow(this, row, newRow);
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onStartNewRow(this, row, newRow);
     }
 
     setActiveRow(newRow);
@@ -1517,8 +1517,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   private void render(boolean refreshChildren) {
-    if (getFormCallback() != null) {
-      getFormCallback().beforeRefresh(this, getActiveRow());
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().beforeRefresh(this, getActiveRow());
     }
 
     Set<String> refreshed = refreshEditableWidgets();
@@ -1530,8 +1530,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
     fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 
-    if (getFormCallback() != null) {
-      getFormCallback().afterRefresh(this, getActiveRow());
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().afterRefresh(this, getActiveRow());
     }
   }
 
@@ -1540,8 +1540,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   private void setActiveRow(IsRow activeRow) {
-    if (getFormCallback() != null) {
-      getFormCallback().onSetActiveRow(activeRow);
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onSetActiveRow(activeRow);
     }
     setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
     this.activeRow = activeRow;
@@ -1563,8 +1563,8 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     this.dimensions = dimensions;
   }
 
-  private void setFormCallback(FormCallback formCallback) {
-    this.formCallback = formCallback;
+  private void setFormInterceptor(FormInterceptor formInterceptor) {
+    this.formInterceptor = formInterceptor;
   }
 
   private void setHasData(boolean hasData) {

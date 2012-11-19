@@ -10,7 +10,7 @@ import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
@@ -41,7 +41,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean checkOnSave();
 
   void create(FormDescription formDescription, String viewName, List<BeeColumn> dataColumns,
-      boolean addStyle, FormCallback callback);
+      boolean addStyle, FormInterceptor interceptor);
 
   boolean focus(String source);
 
@@ -51,7 +51,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   HasDataTable getDisplay();
 
-  FormCallback getFormCallback();
+  FormInterceptor getFormInterceptor();
 
   String getFormName();
 

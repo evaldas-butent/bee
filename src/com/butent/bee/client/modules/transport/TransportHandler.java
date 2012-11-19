@@ -24,9 +24,9 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -36,8 +36,8 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -95,7 +95,7 @@ public class TransportHandler {
     }
   }
 
-  private static class CargoFormHandler extends AbstractFormCallback {
+  private static class CargoFormHandler extends AbstractFormInterceptor {
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
@@ -106,12 +106,12 @@ public class TransportHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new CargoFormHandler();
     }
   }
 
-  private static class CargoGridHandler extends AbstractGridCallback {
+  private static class CargoGridHandler extends AbstractGridInterceptor {
     @Override
     public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
         ColumnDescription columnDescription) {
@@ -124,7 +124,7 @@ public class TransportHandler {
     }
   }
 
-  private static class CargoTripsGridHandler extends AbstractGridCallback {
+  private static class CargoTripsGridHandler extends AbstractGridInterceptor {
     @Override
     public boolean beforeAddRow(final GridPresenter presenter) {
       // TODO
@@ -188,7 +188,7 @@ public class TransportHandler {
     }
   }
 
-  private static class OrderFormHandler extends AbstractFormCallback {
+  private static class OrderFormHandler extends AbstractFormInterceptor {
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
@@ -199,7 +199,7 @@ public class TransportHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new OrderFormHandler();
     }
 
@@ -210,7 +210,7 @@ public class TransportHandler {
     }
   }
 
-  private static class SparePartsGridHandler extends AbstractGridCallback
+  private static class SparePartsGridHandler extends AbstractGridInterceptor
       implements SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
@@ -287,7 +287,7 @@ public class TransportHandler {
     }
   }
 
-  private static class TripFormHandler extends AbstractFormCallback {
+  private static class TripFormHandler extends AbstractFormInterceptor {
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
@@ -349,12 +349,12 @@ public class TransportHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new TripFormHandler();
     }
   }
 
-  private static class TripRoutesGridHandler extends AbstractGridCallback {
+  private static class TripRoutesGridHandler extends AbstractGridInterceptor {
     private String viewName;
     private Integer speedFromIndex;
     private Integer speedToIndex;
@@ -449,7 +449,7 @@ public class TransportHandler {
     }
 
     @Override
-    public GridCallback getInstance() {
+    public GridInterceptor getInstance() {
       return new TripRoutesGridHandler();
     }
 
@@ -463,7 +463,7 @@ public class TransportHandler {
     }
   }
 
-  private static class VehiclesGridHandler extends AbstractGridCallback
+  private static class VehiclesGridHandler extends AbstractGridInterceptor
       implements SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
@@ -545,19 +545,19 @@ public class TransportHandler {
 
   public static void register() {
     Global.registerCaptions(OrderStatus.class);
-    GridFactory.registerGridCallback(TransportConstants.VIEW_VEHICLES, new VehiclesGridHandler());
-    GridFactory.registerGridCallback(TransportConstants.VIEW_SPARE_PARTS,
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_SPARE_PARTS,
         new SparePartsGridHandler());
-    GridFactory.registerGridCallback(TransportConstants.VIEW_TRIP_ROUTES,
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_TRIP_ROUTES,
         new TripRoutesGridHandler());
-    GridFactory.registerGridCallback(TransportConstants.VIEW_CARGO_TRIPS,
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_CARGO_TRIPS,
         new CargoTripsGridHandler());
-    GridFactory.registerGridCallback(TransportConstants.VIEW_CARGO, new CargoGridHandler());
-    GridFactory.registerGridCallback(TransportConstants.VIEW_TRIP_CARGO, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_CARGO, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_TRIP_CARGO, new CargoGridHandler());
 
-    FormFactory.registerFormCallback(TransportConstants.FORM_ORDER, new OrderFormHandler());
-    FormFactory.registerFormCallback(TransportConstants.FORM_TRIP, new TripFormHandler());
-    FormFactory.registerFormCallback(TransportConstants.FORM_CARGO, new CargoFormHandler());
+    FormFactory.registerFormInterceptor(TransportConstants.FORM_ORDER, new OrderFormHandler());
+    FormFactory.registerFormInterceptor(TransportConstants.FORM_TRIP, new TripFormHandler());
+    FormFactory.registerFormInterceptor(TransportConstants.FORM_CARGO, new CargoFormHandler());
   }
 
   static ParameterList createArgs(String name) {

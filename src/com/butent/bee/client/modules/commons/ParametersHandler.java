@@ -11,14 +11,14 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -44,11 +44,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ParametersHandler extends AbstractGridCallback {
+public class ParametersHandler extends AbstractGridInterceptor {
 
-  public static class ParameterFormHandler extends AbstractFormCallback {
+  public static class ParameterFormHandler extends AbstractFormInterceptor {
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new ParameterFormHandler();
     }
   }
@@ -101,7 +101,7 @@ public class ParametersHandler extends AbstractGridCallback {
   @Override
   public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
     delete(row.getId());
-    return GridCallback.DELETE_CANCEL;
+    return GridInterceptor.DELETE_CANCEL;
   }
 
   @Override
@@ -117,7 +117,7 @@ public class ParametersHandler extends AbstractGridCallback {
     }
     delete(ids);
 
-    return GridCallback.DELETE_CANCEL;
+    return GridInterceptor.DELETE_CANCEL;
   }
 
   @Override
@@ -126,7 +126,7 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public GridCallback getInstance() {
+  public GridInterceptor getInstance() {
     return new ParametersHandler(module);
   }
 

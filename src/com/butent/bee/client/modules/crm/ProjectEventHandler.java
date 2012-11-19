@@ -24,9 +24,9 @@ import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.TreePresenter;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -62,10 +62,10 @@ import java.util.Set;
 
 public class ProjectEventHandler {
 
-  private static class ProjectCreateHandler extends AbstractFormCallback {
+  private static class ProjectCreateHandler extends AbstractFormInterceptor {
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new ProjectCreateHandler();
     }
 
@@ -183,7 +183,7 @@ public class ProjectEventHandler {
     }
   }
 
-  private static class ProjectEditHandler extends AbstractFormCallback
+  private static class ProjectEditHandler extends AbstractFormInterceptor
       implements SelectionHandler<IsRow> {
 
     private final Map<String, Widget> formWidgets = Maps.newHashMap();
@@ -260,7 +260,7 @@ public class ProjectEventHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new ProjectEditHandler();
     }
 
@@ -327,8 +327,8 @@ public class ProjectEventHandler {
   }
 
   public static void register() {
-    FormFactory.registerFormCallback("NewProject", new ProjectCreateHandler());
-    FormFactory.registerFormCallback("Project", new ProjectEditHandler());
+    FormFactory.registerFormInterceptor("NewProject", new ProjectCreateHandler());
+    FormFactory.registerFormInterceptor("Project", new ProjectEditHandler());
   }
 
   private static ParameterList addEventArgs(FormView form, ParameterList args, ProjectEvent event) {

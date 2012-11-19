@@ -14,7 +14,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.Evaluator;
@@ -83,7 +83,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
-      FormCallback callback) {
+      FormInterceptor interceptor) {
     Assert.notNull(formDescription);
 
     setHasData(!BeeUtils.isEmpty(dataColumns));
@@ -97,10 +97,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
         formDescription.getDisabledActions());
 
     FormView content = new FormImpl(formDescription.getName());
-    content.create(formDescription, null, dataColumns, true, callback);
+    content.create(formDescription, null, dataColumns, true, interceptor);
 
     FooterView footer;
-    if (hasData() && (callback == null || callback.hasFooter(rowCount))) {
+    if (hasData() && (interceptor == null || interceptor.hasFooter(rowCount))) {
       footer = new FooterImpl();
       footer.create(rowCount, true, false, hasSearch());
     } else {
@@ -238,7 +238,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory.getSupplierKey(getContent().getFormName(), getContent().getFormCallback());
+    return FormFactory.getSupplierKey(getContent().getFormName(), getContent().getFormInterceptor());
   }
 
   @Override

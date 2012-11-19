@@ -8,7 +8,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.WidgetCallback;
+import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler, HasCaption {
+public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption {
 
   int DELETE_CANCEL = -1;
   int DELETE_DEFAULT = 0;
@@ -76,7 +76,7 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler, Ha
 
   BeeRowSet getInitialRowSet();
 
-  GridCallback getInstance();
+  GridInterceptor getInstance();
 
   AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);

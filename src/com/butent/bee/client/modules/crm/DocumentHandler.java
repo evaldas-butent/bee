@@ -14,18 +14,18 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -43,7 +43,7 @@ import java.util.List;
 
 public class DocumentHandler {
 
-  private static class DocumentBuilder extends AbstractFormCallback {
+  private static class DocumentBuilder extends AbstractFormInterceptor {
 
     private static final BeeLogger logger = LogUtils.getLogger(DocumentBuilder.class);
 
@@ -62,7 +62,7 @@ public class DocumentHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new DocumentBuilder();
     }
 
@@ -124,7 +124,7 @@ public class DocumentHandler {
                 COL_CATEGORY, COL_CATEGORY_NAME));
 
       } else if (form.getViewPresenter() instanceof GridFormPresenter) {
-        GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
+        GridInterceptor gcb = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
 
         if (gcb instanceof DocumentGridHandler) {
           IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
@@ -181,7 +181,7 @@ public class DocumentHandler {
     }
   }
 
-  private static class DocumentGridHandler extends AbstractGridCallback implements
+  private static class DocumentGridHandler extends AbstractGridInterceptor implements
       SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
@@ -244,8 +244,8 @@ public class DocumentHandler {
   private static final String FILE_VIEW_NAME = "DocumentFiles";
 
   public static void register() {
-    GridFactory.registerGridCallback("Documents", new DocumentGridHandler());
-    FormFactory.registerFormCallback("NewDocument", new DocumentBuilder());
+    GridFactory.registerGridInterceptor("Documents", new DocumentGridHandler());
+    FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
   }
 
   private DocumentHandler() {

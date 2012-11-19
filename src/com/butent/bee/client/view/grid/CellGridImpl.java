@@ -49,14 +49,14 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
@@ -198,7 +198,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private ModalForm newRowPopup = null;
   private ModalForm editPopup = null;
 
-  private GridCallback gridCallback = null;
+  private GridInterceptor gridInterceptor = null;
 
   private SaveChangesCallback saveChangesCallback = null;
 
@@ -469,13 +469,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridCallback callback, boolean hasSearch, Order order) {
+      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
 
-    setGridCallback(callback);
-    if (callback != null) {
-      callback.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
+    setGridInterceptor(interceptor);
+    if (interceptor != null) {
+      interceptor.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
     }
 
     setDataColumns(dataCols);
@@ -541,8 +541,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     columnDescriptions = gridDescr.getVisibleColumns();
-    if (callback != null) {
-      callback.beforeCreateColumns(dataCols, columnDescriptions);
+    if (interceptor != null) {
+      interceptor.beforeCreateColumns(dataCols, columnDescriptions);
     }
 
     String idName = gridDescr.getIdName();
@@ -559,7 +559,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnName = columnDescr.getName();
-      if (callback != null && !callback.beforeCreateColumn(columnName, dataCols, columnDescr)) {
+      if (interceptor != null 
+          && !interceptor.beforeCreateColumn(columnName, dataCols, columnDescr)) {
         continue;
       }
 
@@ -641,8 +642,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       column = null;
 
       AbstractCellRenderer renderer = null;
-      if (callback != null) {
-        renderer = callback.getRenderer(columnName, dataCols, columnDescr);
+      if (interceptor != null) {
+        renderer = interceptor.getRenderer(columnName, dataCols, columnDescr);
       }
       if (renderer == null) {
         renderer = RendererFactory.getRenderer(columnDescr.getRendererDescription(),
@@ -766,8 +767,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         footer = null;
       }
 
-      if (callback != null && !callback.afterCreateColumn(columnName, dataCols, column, header,
-          footer, editableColumn)) {
+      if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
+          header, footer, editableColumn)) {
         continue;
       }
 
@@ -775,8 +776,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       getGrid().setColumnInfo(columnName, columnDescr, gridDescr, dataCols);
     }
 
-    if (callback != null) {
-      callback.afterCreateColumns(this);
+    if (interceptor != null) {
+      interceptor.afterCreateColumns(this);
     }
 
     getGrid().initRenderMode(gridDescr.getRenderMode());
@@ -829,7 +830,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
                 } else if (isSingleForm()) {
                   FormView newRowFormView = new FormImpl(newRowFormName);
                   newRowFormView.create(formDescription, viewName, dataCols, true,
-                      FormFactory.getFormCallback(newRowFormName));
+                      FormFactory.getFormInterceptor(newRowFormName));
                   embraceNewRowForm(newRowFormView);
                 }
               }
@@ -861,8 +862,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       setNewRowFormGenerated(true);
     }
 
-    if (callback != null) {
-      callback.afterCreate(this);
+    if (interceptor != null) {
+      interceptor.afterCreate(this);
     }
   }
 
@@ -1077,8 +1078,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   @Override
-  public GridCallback getGridCallback() {
-    return gridCallback;
+  public GridInterceptor getGridInterceptor() {
+    return gridInterceptor;
   }
 
   @Override
@@ -1301,8 +1302,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       IsRow row = DataUtils.cloneRow(rowValue);
 
       boolean start;
-      if (getEditForm().getFormCallback() != null) {
-        start = getEditForm().getFormCallback().onStartEdit(getEditForm(), row, focusCommand);
+      if (getEditForm().getFormInterceptor() != null) {
+        start = getEditForm().getFormInterceptor().onStartEdit(getEditForm(), row, focusCommand);
       } else {
         start = true;
       }
@@ -1433,7 +1434,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    if (getGridCallback() != null && !getGridCallback().onStartNewRow(this, oldRow, newRow)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onStartNewRow(this, oldRow, newRow)) {
       return;
     }
 
@@ -1447,8 +1448,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     showForm(false, true);
     FormView form = getForm(false);
-    if (form.getFormCallback() != null) {
-      form.getFormCallback().onStartNewRow(form, oldRow, newRow);
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().onStartNewRow(form, oldRow, newRow);
     }
 
     if (form.getViewPresenter() instanceof GridFormPresenter) {
@@ -1694,7 +1695,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     FormView form = new FormImpl(formName);
     form.create(formDescription, gridDescription.getViewName(), getDataColumns(), true,
-        new AbstractFormCallback() {
+        new AbstractFormInterceptor() {
           @Override
           public void afterCreateEditableWidget(EditableWidget editableWidget) {
             EditableColumn ec = getEditableColumn(editableWidget.getWidgetName(), true);
@@ -1711,7 +1712,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           }
 
           @Override
-          public FormCallback getInstance() {
+          public FormInterceptor getInstance() {
             return null;
           }
 
@@ -1858,10 +1859,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private String getRowCaption(IsRow row, boolean edit) {
-    if (getGridCallback() == null) {
+    if (getGridInterceptor() == null) {
       return null;
     }
-    return getGridCallback().getRowCaption(row, edit);
+    return getGridInterceptor().getRowCaption(row, edit);
   }
 
   private Evaluator getRowEditable() {
@@ -2049,10 +2050,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
 
-    if (form.getFormCallback() != null && !form.getFormCallback().onReadyForInsert(event)) {
+    if (form.getFormInterceptor() != null && !form.getFormInterceptor().onReadyForInsert(event)) {
       return;
     }
-    if (getGridCallback() != null && !getGridCallback().onReadyForInsert(this, event)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onReadyForInsert(this, event)) {
       return;
     }
 
@@ -2082,7 +2083,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     SaveChangesEvent event = new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues,
         callback);
-    if (getGridCallback() != null && !getGridCallback().onSaveChanges(this, event)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onSaveChanges(this, event)) {
       return false;
     }
 
@@ -2142,8 +2143,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.filterChangeHandler = filterChangeHandler;
   }
 
-  private void setGridCallback(GridCallback gridCallback) {
-    this.gridCallback = gridCallback;
+  private void setGridInterceptor(GridInterceptor gridInterceptor) {
+    this.gridInterceptor = gridInterceptor;
   }
 
   private void setNewRowCaption(String newRowCaption) {
@@ -2276,7 +2277,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     ReadyForUpdateEvent event =
         new ReadyForUpdateEvent(rowValue, dataColumn, oldValue, newValue, rowMode, callback);
 
-    if (getGridCallback() != null && !getGridCallback().onReadyForUpdate(this, event)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onReadyForUpdate(this, event)) {
       return;
     }
     fireEvent(event);

@@ -69,7 +69,7 @@ public class Flags {
         load(new Callback<Integer>() {
           @Override
           public void onSuccess(Integer result) {
-            logger.debug("loaded", result, "flags");
+            logger.info("loaded", result, "flags");
           }
         });
         break;
@@ -148,7 +148,7 @@ public class Flags {
     load(new Callback<Integer>() {
       @Override
       public void onSuccess(Integer result) {
-        logger.debug("loaded", result, "flags");
+        logger.info("loaded", result, "flags");
         
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
           @Override

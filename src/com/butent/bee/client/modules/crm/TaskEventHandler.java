@@ -31,9 +31,9 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.render.RendererFactory;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -74,7 +74,7 @@ import java.util.Map;
 
 class TaskEventHandler {
 
-  private static class TaskBuilder extends AbstractFormCallback {
+  private static class TaskBuilder extends AbstractFormInterceptor {
 
     private static final String NAME_START_DATE = "Start_Date";
     private static final String NAME_START_TIME = "Start_Time";
@@ -92,7 +92,7 @@ class TaskEventHandler {
     }
     
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new TaskBuilder();
     }
 
@@ -473,7 +473,7 @@ class TaskEventHandler {
     }
   }
 
-  private static class TaskEditor extends AbstractFormCallback {
+  private static class TaskEditor extends AbstractFormInterceptor {
 
     private final Map<String, IdentifiableWidget> formWidgets = Maps.newHashMap();
 
@@ -526,7 +526,7 @@ class TaskEventHandler {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return new TaskEditor();
     }
 
@@ -611,8 +611,8 @@ class TaskEventHandler {
   }
 
   static void register() {
-    FormFactory.registerFormCallback(FORM_NEW_TASK, new TaskBuilder());
-    FormFactory.registerFormCallback(FORM_TASK, new TaskEditor());
+    FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
+    FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
   }
 
   private static boolean availableEvent(TaskEvent ev, int status, FormView form) {

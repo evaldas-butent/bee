@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class AppointmentGridHandler extends AbstractGridCallback {
+class AppointmentGridHandler extends AbstractGridInterceptor {
 
   AppointmentGridHandler() {
     super();

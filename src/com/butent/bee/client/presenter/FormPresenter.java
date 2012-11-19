@@ -24,7 +24,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
@@ -95,11 +95,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
-      FormCallback callback) {
+      FormInterceptor interceptor) {
 
     List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
 
-    this.formContainer = createView(formDescription, columns, rowCount, callback);
+    this.formContainer = createView(formDescription, columns, rowCount, interceptor);
     this.dataProvider = createProvider(formContainer, viewName, columns, rowSet, providerType,
         cachingPolicy);
 
@@ -168,7 +168,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void handleAction(Action action) {
     Assert.notNull(action);
 
-    if (getFormCallback() != null && !getFormCallback().beforeAction(action, this)) {
+    if (getFormInterceptor() != null && !getFormInterceptor().beforeAction(action, this)) {
       return;
     }
 
@@ -213,8 +213,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         logger.info(action, "not implemented");
     }
 
-    if (getFormCallback() != null) {
-      getFormCallback().afterAction(action, this);
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().afterAction(action, this);
     }
   }
 
@@ -357,10 +357,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private FormContainerView createView(FormDescription formDescription,
-      List<BeeColumn> columns, int rowCount, FormCallback callback) {
+      List<BeeColumn> columns, int rowCount, FormInterceptor interceptor) {
     FormContainerView view = new FormContainerImpl();
 
-    view.create(formDescription, columns, rowCount, callback);
+    view.create(formDescription, columns, rowCount, interceptor);
     return view;
   }
 
@@ -369,8 +369,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         StyleUtils.NAME_SCARY, null);
   }
 
-  private FormCallback getFormCallback() {
-    return formContainer.getContent().getFormCallback();
+  private FormInterceptor getFormInterceptor() {
+    return formContainer.getContent().getFormInterceptor();
   }
 
   private boolean hasData() {

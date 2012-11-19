@@ -2,7 +2,7 @@ package com.butent.bee.client.view;
 
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
@@ -19,7 +19,7 @@ public interface FormContainerView extends View, Printable, HasCaption, HasWidge
   void bind();
 
   void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
-      FormCallback callback);
+      FormInterceptor interceptor);
 
   FormView getContent();
   

@@ -32,7 +32,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription, GridCallback gridCallback, boolean hasSearch, Order order);
+      GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch, Order order);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
@@ -46,7 +46,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   CellGrid getGrid();
 
-  GridCallback getGridCallback();
+  GridInterceptor getGridInterceptor();
 
   String getGridName();
 

@@ -31,7 +31,7 @@ public class ExtWidget {
   private static final String ATTR_HIDABLE = "hidable";
 
   public static ExtWidget create(String xml, String viewName, List<BeeColumn> dataColumns,
-      WidgetCreationCallback creationCallback, GridCallback gridCallback) {
+      WidgetCreationCallback creationCallback, GridInterceptor gridInterceptor) {
     Document doc = XmlUtils.parse(xml);
     if (doc == null) {
       return null;
@@ -42,7 +42,7 @@ public class ExtWidget {
       logger.severe("ext widget: document element not found", xml);
       return null;
     }
-    if (gridCallback != null && !gridCallback.onLoadExtWidget(root)) {
+    if (gridInterceptor != null && !gridInterceptor.onLoadExtWidget(root)) {
       return null;
     }
 
@@ -61,7 +61,7 @@ public class ExtWidget {
 
     IdentifiableWidget widget =
         FormFactory.createWidget(root, viewName, dataColumns, creationCallback,
-            gridCallback, "create ext widget:");
+            gridInterceptor, "create ext widget:");
     if (widget == null) {
       return null;
     }

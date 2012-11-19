@@ -8,7 +8,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 
 import java.util.EnumSet;
 
@@ -18,7 +18,7 @@ public class GridPanel extends Simple implements HasEnabled {
   private GridFactory.GridOptions gridOptions;
 
   private Presenter presenter = null;
-  private GridCallback gridCallback = null;
+  private GridInterceptor gridInterceptor = null;
 
   public GridPanel(String gridName, GridFactory.GridOptions gridOptions) {
     super();
@@ -58,8 +58,8 @@ public class GridPanel extends Simple implements HasEnabled {
     }
   }
 
-  public void setGridCallback(GridCallback gridCallback) {
-    this.gridCallback = gridCallback;
+  public void setGridInterceptor(GridInterceptor gridInterceptor) {
+    this.gridInterceptor = gridInterceptor;
   }
 
   public void setGridOptions(GridFactory.GridOptions gridOptions) {
@@ -81,9 +81,9 @@ public class GridPanel extends Simple implements HasEnabled {
       return;
     }
 
-    GridCallback gcb = getGridCallback();
+    GridInterceptor gcb = getGridInterceptor();
     if (gcb == null) {
-      gcb = GridFactory.getGridCallback(getGridName());
+      gcb = GridFactory.getGridInterceptor(getGridName());
     }
 
     GridFactory.createGrid(getGridName(), gcb, EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
@@ -98,8 +98,8 @@ public class GridPanel extends Simple implements HasEnabled {
         });
   }
 
-  private GridCallback getGridCallback() {
-    return gridCallback;
+  private GridInterceptor getGridInterceptor() {
+    return gridInterceptor;
   }
 
   private String getGridName() {

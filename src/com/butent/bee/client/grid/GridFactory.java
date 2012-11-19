@@ -35,7 +35,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -115,7 +115,7 @@ public class GridFactory {
   private static final BeeLogger logger = LogUtils.getLogger(GridFactory.class);
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
-  private static final Map<String, GridCallback> gridCallbacks = Maps.newHashMap();
+  private static final Map<String, GridInterceptor> gridInterceptors = Maps.newHashMap();
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -172,10 +172,10 @@ public class GridFactory {
 
   public static void createGrid(String gridName, Collection<UiOption> uiOptions,
       GridOptions gridOptions, PresenterCallback presenterCallback) {
-    createGrid(gridName, getGridCallback(gridName), uiOptions, gridOptions, presenterCallback);
+    createGrid(gridName, getGridInterceptor(gridName), uiOptions, gridOptions, presenterCallback);
   }
 
-  public static void createGrid(String gridName, final GridCallback gridCallback,
+  public static void createGrid(String gridName, final GridInterceptor gridInterceptor,
       final Collection<UiOption> uiOptions, final GridOptions gridOptions,
       final PresenterCallback presenterCallback) {
     Assert.notEmpty(gridName);
@@ -185,10 +185,10 @@ public class GridFactory {
       @Override
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
-        if (gridCallback != null && !gridCallback.onLoad(result)) {
+        if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
           return;
         }
-        getInitialRowSet(result, gridCallback, presenterCallback, uiOptions, gridOptions);
+        getInitialRowSet(result, gridInterceptor, presenterCallback, uiOptions, gridOptions);
       }
     });
   }
@@ -232,16 +232,16 @@ public class GridFactory {
     });
   }
 
-  public static GridCallback getGridCallback(String gridName) {
+  public static GridInterceptor getGridInterceptor(String gridName) {
     Assert.notEmpty(gridName);
-    GridCallback callback = gridCallbacks.get(BeeUtils.normalize(gridName));
-    if (callback != null) {
-      GridCallback instance = callback.getInstance();
+    GridInterceptor interceptor = gridInterceptors.get(BeeUtils.normalize(gridName));
+    if (interceptor != null) {
+      GridInterceptor instance = interceptor.getInstance();
       if (instance != null) {
         return instance;
       }
     }
-    return callback;
+    return interceptor;
   }
 
   public static GridOptions getGridOptions(Map<String, String> attributes) {
@@ -302,8 +302,8 @@ public class GridFactory {
     return order;
   }
 
-  public static String getSupplierKey(String gridName, GridCallback gridCallback) {
-    String key = (gridCallback == null) ? null : gridCallback.getSupplierKey();
+  public static String getSupplierKey(String gridName, GridInterceptor gridInterceptor) {
+    String key = (gridInterceptor == null) ? null : gridInterceptor.getSupplierKey();
     if (BeeUtils.isEmpty(key)) {
       Assert.notEmpty(gridName);
       key = "grid_" + BeeUtils.normalize(gridName);
@@ -312,25 +312,25 @@ public class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridCallback(gridName), null);
+    openGrid(gridName, getGridInterceptor(gridName), null);
   }
 
-  public static void openGrid(String gridName, GridCallback gridCallback) {
-    openGrid(gridName, gridCallback, null);
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
+    openGrid(gridName, gridInterceptor, null);
   }
 
-  public static void openGrid(final String gridName, final GridCallback gridCallback,
+  public static void openGrid(final String gridName, final GridInterceptor gridInterceptor,
       final GridOptions gridOptions) {
 
     final Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
 
-    String supplierKey = getSupplierKey(gridName, gridCallback);
+    String supplierKey = getSupplierKey(gridName, gridInterceptor);
 
     if (!WidgetFactory.hasSupplier(supplierKey)) {
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
         public void create(final Callback<IdentifiableWidget> callback) {
-          createGrid(gridName, gridCallback, uiOptions, gridOptions, new PresenterCallback() {
+          createGrid(gridName, gridInterceptor, uiOptions, gridOptions, new PresenterCallback() {
             @Override
             public void onCreate(Presenter presenter) {
               callback.onSuccess(presenter.getWidget());
@@ -338,17 +338,17 @@ public class GridFactory {
           });
         }
       };
-      
+
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
 
-    createGrid(gridName, gridCallback, uiOptions, gridOptions,
+    createGrid(gridName, gridInterceptor, uiOptions, gridOptions,
         PresenterCallback.SHOW_IN_ACTIVE_PANEL);
   }
 
-  public static void registerGridCallback(String gridName, GridCallback callback) {
+  public static void registerGridInterceptor(String gridName, GridInterceptor interceptor) {
     Assert.notEmpty(gridName);
-    gridCallbacks.put(BeeUtils.normalize(gridName), callback);
+    gridInterceptors.put(BeeUtils.normalize(gridName), interceptor);
   }
 
   public static void showGridInfo(String name) {
@@ -426,43 +426,43 @@ public class GridFactory {
 
   private static void createPresenter(GridDescription gridDescription, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
-      Collection<UiOption> uiOptions, GridCallback gridCallback,
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> initialFilters,
       Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     GridPresenter presenter = new GridPresenter(gridDescription, null, rowCount, rowSet,
-        providerType, cachingPolicy, uiOptions, gridCallback, immutableFilter, initialFilters,
+        providerType, cachingPolicy, uiOptions, gridInterceptor, immutableFilter, initialFilters,
         order, gridOptions);
 
-    if (gridCallback != null) {
-      gridCallback.onShow(presenter);
+    if (gridInterceptor != null) {
+      gridInterceptor.onShow(presenter);
     }
 
     presenterCallback.onCreate(presenter);
   }
 
   private static void getInitialRowSet(final GridDescription gridDescription,
-      final GridCallback gridCallback, final PresenterCallback presenterCallback,
+      final GridInterceptor gridInterceptor, final PresenterCallback presenterCallback,
       final Collection<UiOption> uiOptions, final GridOptions gridOptions) {
 
     final Filter immutableFilter = getImmutableFilter(gridDescription, gridOptions);
     final Map<String, Filter> initialFilters =
-        (gridCallback == null) ? null : gridCallback.getInitialFilters();
+        (gridInterceptor == null) ? null : gridInterceptor.getInitialFilters();
 
     final Order order = getOrder(gridDescription, gridOptions);
 
     String viewName = gridDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
       BeeRowSet brs = null;
-      if (gridCallback != null) {
-        brs = gridCallback.getInitialRowSet();
+      if (gridInterceptor != null) {
+        brs = gridInterceptor.getInitialRowSet();
       }
 
       if (brs == null) {
         logger.severe("grid", gridDescription.getName(), "has no initial data");
       } else {
         createPresenter(gridDescription, brs.getNumberOfRows(), brs, Provider.Type.LOCAL,
-            CachingPolicy.NONE, uiOptions, gridCallback, immutableFilter, initialFilters, order,
+            CachingPolicy.NONE, uiOptions, gridInterceptor, immutableFilter, initialFilters, order,
             gridOptions, presenterCallback);
       }
       return;
@@ -522,7 +522,7 @@ public class GridFactory {
             }
 
             createPresenter(gridDescription, rc, rowSet, providerType, cachingPolicy, uiOptions,
-                gridCallback, immutableFilter, initialFilters, order, gridOptions,
+                gridInterceptor, immutableFilter, initialFilters, order, gridOptions,
                 presenterCallback);
           }
         });

@@ -9,7 +9,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -26,7 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
 
-class ItemGridHandler extends AbstractGridCallback implements SelectionHandler<IsRow> {
+class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final BeeLogger logger = LogUtils.getLogger(ItemGridHandler.class);
   
@@ -96,7 +96,7 @@ class ItemGridHandler extends AbstractGridCallback implements SelectionHandler<I
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            logger.debug(CommonsConstants.SVC_REMOVE_CATEGORIES, response.getResponse());
+            logger.info(CommonsConstants.SVC_REMOVE_CATEGORIES, response.getResponse());
           }
         });
       }
@@ -109,7 +109,7 @@ class ItemGridHandler extends AbstractGridCallback implements SelectionHandler<I
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            logger.debug(CommonsConstants.SVC_ADD_CATEGORIES, response.getResponse());
+            logger.info(CommonsConstants.SVC_ADD_CATEGORIES, response.getResponse());
           }
         });
       }

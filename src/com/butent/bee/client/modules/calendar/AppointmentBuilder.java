@@ -52,8 +52,8 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -88,7 +88,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Set;
 
-class AppointmentBuilder extends AbstractFormCallback {
+class AppointmentBuilder extends AbstractFormInterceptor {
 
   private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
   
@@ -547,7 +547,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   @Override
-  public FormCallback getInstance() {
+  public FormInterceptor getInstance() {
     Assert.untouchable();
     return null;
   }

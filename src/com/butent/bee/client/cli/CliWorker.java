@@ -12,6 +12,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -78,6 +79,7 @@ import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
@@ -889,7 +891,7 @@ public class CliWorker {
           }
 
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
-          BeeKeeper.getScreen().updateActivePanel(fileGroup);
+          BeeKeeper.getScreen().updateActivePanel(new Simple(fileGroup, Overflow.AUTO));
         }
       }
     });
@@ -1710,7 +1712,7 @@ public class CliWorker {
           }
 
           if (!table.isEmpty()) {
-            BeeKeeper.getScreen().updateActivePanel(table);
+            BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
           }
         }
       };
@@ -2679,7 +2681,7 @@ public class CliWorker {
         col = 0;
       }
     }
-    BeeKeeper.getScreen().updateActivePanel(table);
+    BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
   }
   
   private static void showXmlInfo(String[] arr) {

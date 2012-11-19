@@ -5,7 +5,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -16,7 +16,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
-public abstract class AbstractFormCallback implements FormFactory.FormCallback {
+public abstract class AbstractFormInterceptor implements FormFactory.FormInterceptor {
   
   private FormView formView;
 
@@ -75,7 +75,7 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
 
   @Override
-  public abstract FormCallback getInstance();
+  public abstract FormInterceptor getInstance();
 
   @Override
   public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {

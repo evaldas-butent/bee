@@ -23,8 +23,8 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MessageHandler extends AbstractFormCallback {
+public class MessageHandler extends AbstractFormInterceptor {
 
   private static final int ATTA_ID = 0;
   private static final int ATTA_NAME = 1;
@@ -182,7 +182,7 @@ public class MessageHandler extends AbstractFormCallback {
   }
 
   @Override
-  public FormCallback getInstance() {
+  public FormInterceptor getInstance() {
     return new MessageHandler();
   }
 

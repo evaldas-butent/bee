@@ -9,10 +9,10 @@ import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
-import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.PasswordService;
@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModuleManager {
 
-  private static class UserFormCallback extends AbstractFormCallback {
+  private static class UserFormInterceptor extends AbstractFormInterceptor {
     @Override
     public void afterCreateWidget(String name, final IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
@@ -38,7 +38,7 @@ public class ModuleManager {
     }
 
     @Override
-    public FormCallback getInstance() {
+    public FormInterceptor getInstance() {
       return this;
     }
   }
@@ -48,7 +48,7 @@ public class ModuleManager {
   }
 
   public static void onLoad() {
-    FormFactory.registerFormCallback("User", new UserFormCallback());
+    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
 
     TransportHandler.register();
     CommonsKeeper.register();

@@ -189,9 +189,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
 
       @Override
       public void onSuccess(IdentifiableWidget result) {
-        logger.debug("tile history", newIndex, "/", contentSuppliers.size(), result.getId());
-        logger.debug(contentSuppliers);
-        
         setContentIndex(newIndex);
         updateContent(result, false);
       }
@@ -233,7 +230,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       contentSuppliers.add(key);
 
       setContentIndex(contentSuppliers.size() - 1);
-      logger.debug("added tile hist", getContentIndex(), "/", contentSuppliers.size(), key);
     }
   }
 

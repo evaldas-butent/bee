@@ -9,11 +9,11 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.presenter.GridFormPresenter;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -30,10 +30,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
-class ItemFormHandler extends AbstractFormCallback {
+class ItemFormHandler extends AbstractFormInterceptor {
 
   @Override
-  public FormCallback getInstance() {
+  public FormInterceptor getInstance() {
     return new ItemFormHandler();
   }
 
@@ -122,7 +122,7 @@ class ItemFormHandler extends AbstractFormCallback {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     if (form.getViewPresenter() instanceof GridFormPresenter) {
-      GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
+      GridInterceptor gcb = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
 
       if (gcb != null && gcb instanceof ItemGridHandler) {
         ItemGridHandler grd = (ItemGridHandler) gcb;

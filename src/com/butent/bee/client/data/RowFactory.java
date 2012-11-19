@@ -16,7 +16,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
@@ -120,13 +120,13 @@ public class RowFactory {
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, FormCallback formCallback, RowCallback rowCallback) {
+      UIObject target, FormInterceptor formInterceptor, RowCallback rowCallback) {
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formCallback, dataInfo, row, target, rowCallback);
+    getForm(formName, caption, formInterceptor, dataInfo, row, target, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
@@ -268,12 +268,12 @@ public class RowFactory {
     return result;
   }
 
-  private static void getForm(String formName, final String caption, FormCallback formCallback,
+  private static void getForm(String formName, final String caption, FormInterceptor formInterceptor,
       final DataInfo dataInfo, final BeeRow row, final UIObject target,
       final RowCallback rowCallback) {
 
-    FormCallback fcb =
-        (formCallback == null) ? FormFactory.getFormCallback(formName) : formCallback;
+    FormInterceptor fcb =
+        (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true, fcb,
         new FormFactory.FormViewCallback() {

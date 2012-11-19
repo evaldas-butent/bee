@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class CommonsKeeper {
 
   public static void register() {
-    FormFactory.registerFormCallback("Item", new ItemFormHandler());
+    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
 
     BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
       @Override
@@ -27,7 +27,7 @@ public class CommonsKeeper {
       }
     });
 
-    FormFactory.registerFormCallback("Parameter", new ParameterFormHandler());
+    FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
     BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
       @Override

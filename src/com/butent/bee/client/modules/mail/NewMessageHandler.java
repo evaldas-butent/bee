@@ -18,8 +18,8 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
@@ -34,7 +34,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 import java.util.Set;
 
-public class NewMessageHandler extends AbstractFormCallback {
+public class NewMessageHandler extends AbstractFormInterceptor {
 
   private boolean saveMode = true;
 
@@ -158,7 +158,7 @@ public class NewMessageHandler extends AbstractFormCallback {
   }
 
   @Override
-  public FormCallback getInstance() {
+  public FormInterceptor getInstance() {
     return new NewMessageHandler(sender, null, null, null, null, null, null, null, null);
   }
 

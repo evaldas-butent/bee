@@ -14,7 +14,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -41,9 +41,9 @@ public class MailKeeper {
           }
         });
 
-    FormFactory.registerFormCallback("Mail", new MailHandler());
+    FormFactory.registerFormInterceptor("Mail", new MailHandler());
 
-    GridFactory.registerGridCallback(TBL_ACCOUNTS, new AbstractGridCallback() {
+    GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AbstractGridInterceptor() {
       @Override
       public Map<String, Filter> getInitialFilters() {
         return ImmutableMap.of("UserFilter",

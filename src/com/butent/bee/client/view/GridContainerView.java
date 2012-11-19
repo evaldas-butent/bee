@@ -7,7 +7,7 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Order;
@@ -28,7 +28,7 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasG
   void bind();
 
   void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
-      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions);
 
   List<String> getFavorite();
