@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="Services" viewName="Services" caption="Transporto paslaugos"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" />
+    <RelColumn name="Item" />
+  </columns>
+</Grid>

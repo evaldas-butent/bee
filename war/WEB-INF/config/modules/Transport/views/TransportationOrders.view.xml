@@ -3,6 +3,7 @@
 
   name="TransportationOrders"
   source="TransportationOrders"
+  editForm="TransportationOrder"
   >
   <Columns>
     <SimpleColumn name="Status" />
@@ -36,9 +37,6 @@
       <AggregateColumn aggregate="MIN" name="Description" alias="MinCargo" />
       <AggregateColumn aggregate="MAX" name="Description" alias="MaxCargo" />
       <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
-      <AggregateColumn aggregate="SUM" name="Weight" />
-      <AggregateColumn aggregate="SUM" name="Volume" />
-      <AggregateColumn aggregate="SUM" name="Quantity" />
     </ExternalJoin>
   </Columns>
   <Order>

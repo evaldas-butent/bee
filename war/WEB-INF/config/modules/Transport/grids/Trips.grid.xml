@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="Trips" viewName="Trips" caption="Reisai"
-  newRowForm="Trip" editForm="Trip" newRowPopup="true" newRowCaption="Naujas reisas"
+  newRowPopup="true"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">

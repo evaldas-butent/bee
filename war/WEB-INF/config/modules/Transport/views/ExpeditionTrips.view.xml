@@ -3,7 +3,8 @@
 
   name="ExpeditionTrips"
   source="Trips"
-  filter="Expedition" 
+  filter="Expedition"
+  editForm="ExpeditionTrip" newRowForm="ExpeditionTrip" newRowCaption="Naujas ekspedijavimo reisas"
   >
   <Columns>
     <SimpleColumn name="Date" />

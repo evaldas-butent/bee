@@ -21,7 +21,6 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -112,70 +111,6 @@ public class TransportHandler {
   }
 
   private static class CargoGridHandler extends AbstractGridInterceptor {
-    @Override
-    public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
-        ColumnDescription columnDescription) {
-
-      if (BeeUtils.inListSame(columnId, "Loading", "Unloading")) {
-        return new CargoPlaceRenderer(dataColumns, columnId);
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private static class CargoTripsGridHandler extends AbstractGridInterceptor {
-    @Override
-    public boolean beforeAddRow(final GridPresenter presenter) {
-      // TODO
-//      CompoundFilter filter = Filter.and();
-//      filter.add(Filter.isEmpty("DateTo"));
-//      int index = presenter.getDataProvider().getColumnIndex("Trip");
-//
-//      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
-//        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
-//      }
-//      Queries.getRowSet(TransportConstants.VIEW_TRIPS, null, filter, null, new RowSetCallback() {
-//        @Override
-//        public void onSuccess(BeeRowSet result) {
-//          if (result.isEmpty()) {
-//            presenter.getGridView().notifyWarning("No trips available");
-//            return;
-//          }
-//          MultiSelector selector = new MultiSelector("Galimi reisai", result,
-//              Lists.newArrayList("TripNo", "VehicleNumber", "DateFrom"),
-//              new MultiSelector.SelectionCallback() {
-//                @Override
-//                public void onSelection(List<IsRow> rows) {
-//                  String cargo = BeeUtils.toString(presenter.getGridView().getRelId());
-//
-//                  List<BeeColumn> columns =
-//                      Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
-//                          new BeeColumn(ValueType.LONG, "Trip"));
-//                  BeeRowSet rowSet = new BeeRowSet(TransportConstants.VIEW_CARGO_TRIPS, columns);
-//
-//                  for (IsRow row : rows) {
-//                    rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
-//                        new String[] {cargo, BeeUtils.toString(row.getId())}));
-//                  }
-//
-//                  Queries.insertRowSet(rowSet, new RowSetCallback() {
-//                    @Override
-//                    public void onSuccess(BeeRowSet res) {
-//                      for (BeeRow row : res.getRows()) {
-//                        BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
-//                        presenter.getGridView().getGrid().insertRow(row, false);
-//                      }
-//                    }
-//                  });
-//                }
-//              });
-//          selector.center();
-//        }
-//      });
-      return false;
-    }
-
     @Override
     public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
         ColumnDescription columnDescription) {
@@ -545,7 +480,8 @@ public class TransportHandler {
 
   public static void register() {
     Global.registerCaptions(OrderStatus.class);
-    GridFactory.registerGridInterceptor(TransportConstants.VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(TransportConstants.VIEW_VEHICLES,
+        new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(TransportConstants.VIEW_SPARE_PARTS,
         new SparePartsGridHandler());
     GridFactory.registerGridInterceptor(TransportConstants.VIEW_TRIP_ROUTES,
@@ -558,6 +494,8 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(TransportConstants.FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(TransportConstants.FORM_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(TransportConstants.FORM_CARGO, new CargoFormHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
   }
 
   static ParameterList createArgs(String name) {

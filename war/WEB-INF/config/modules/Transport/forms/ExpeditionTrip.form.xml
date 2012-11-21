@@ -7,6 +7,7 @@
   xmlns:d="http://www.butent.com/decorator" 
   
   name="ExpeditionTrip" viewName="ExpeditionTrips" caption="Ekspedijavimo reisas"
+  width="900" widthUnit="px" height="600" heightUnit="px"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
@@ -37,7 +38,7 @@
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible">
-            <DataSelector source="Forwarder" caption="Vežėjas" decorator="flex-left" d:size="115" />
+            <DataSelector source="Forwarder" caption="Vežėjas" decorator="flex-left" d:size="115" required="true" />
             <InputText source="ForwarderVehicle" caption="Vežėjo transportas" decorator="flex-left" d:size="115" />
           </FlowPanel>
         </FlowPanel>

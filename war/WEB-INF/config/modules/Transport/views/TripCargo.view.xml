@@ -7,11 +7,15 @@
   >
   <Columns>
     <SimpleColumn name="Trip"/>
-    <SimpleColumn name="Cargo"/>
+    <SimpleColumn name="CargoPercent" />
+    
+    <SimpleColumn name="Cargo"/>    
     <SimpleJoin joinType="LEFT" name="Cargo">
+      <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
       </SimpleJoin>
+    
       <SimpleColumn name="Description" />
       <SimpleColumn name="Weight" />
       <SimpleColumn name="Volume" />
@@ -20,25 +24,29 @@
       <SimpleColumn name="Cmr" />
       <SimpleColumn name="Notes" />
     </SimpleJoin>
-    <SimpleColumn name="CargoPercent" />
+    
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Place" alias="LoadingPlace" />
+      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+
       <SimpleColumn name="Country" alias="LoadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="LoadingCountryName" />
       </SimpleJoin>
-      <SimpleColumn name="Place" alias="LoadingPlace" />
-      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
     </SimpleJoin>
+
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Place" alias="UnloadingPlace" />
+      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+
       <SimpleColumn name="Country" alias="UnloadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="UnloadingCountryName" />
       </SimpleJoin>
-      <SimpleColumn name="Place" alias="UnloadingPlace" />
-      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
+
     <SimpleColumn name="Income">
       <x:number>0</x:number>
     </SimpleColumn>

@@ -224,9 +224,8 @@ public class TransportModuleBean implements BeeModule {
 
     ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(cargo, "Price"),
         SqlUtils.field(cargo, "Currency"), SqlUtils.field(orders, "Date")), "CargoIncome")
-        .addSum(SqlUtils.multiply(SqlUtils.field(services, "Quantity"),
-            ExchangeUtils.exchangeField(ss, SqlUtils.field(services, "Price"),
-                SqlUtils.field(services, "Currency"), SqlUtils.field(orders, "Date"))),
+        .addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(services, "Amount"),
+            SqlUtils.field(services, "Currency"), SqlUtils.field(orders, "Date")),
             "ServicesIncome");
 
     return ss;
@@ -239,8 +238,7 @@ public class TransportModuleBean implements BeeModule {
     String tripId = "Trip";
 
     SqlSelect ss = getCargoIncomeQuery(flt)
-        .addSum(SqlUtils.multiply((Object[]) SqlUtils.fields(services, "Quantity", "CostPrice")),
-            "ServicesCost")
+        .addSum(services, "Cost", "ServicesCost")
         .addEmptyDouble("TripCost");
 
     String crsTotals = qs.sqlCreateTemp(ss);

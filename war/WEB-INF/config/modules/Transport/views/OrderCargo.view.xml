@@ -4,6 +4,7 @@
 
   name="OrderCargo"
   source="OrderCargo"
+  editForm="OrderCargo"
   >
   <Columns>
     <SimpleColumn name="Order" />
@@ -26,8 +27,10 @@
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
     <SimpleColumn name="Description" />
+
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Volume" />
+    <SimpleColumn name="LDM" />
     <SimpleColumn name="Length" />
     <SimpleColumn name="Width" />
     <SimpleColumn name="Height" />
@@ -36,6 +39,8 @@
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
+    <SimpleColumn name="LoadedKilometers" />
+    <SimpleColumn name="EmptyKilometers" />
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />

@@ -7,6 +7,7 @@
   xmlns:d="http://www.butent.com/decorator" 
   
   name="Trip" viewName="Trips" caption="Reisas"
+  width="900" widthUnit="px" height="600" heightUnit="px"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">

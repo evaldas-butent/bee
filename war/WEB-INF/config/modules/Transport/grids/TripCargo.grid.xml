@@ -14,8 +14,8 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Description" caption="Krovinys" />
+    <RelColumn name="OrderNo"  caption="Užsakymo Nr." />
+    <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true" />
     <DataColumn name="Weight" caption="Svoris" />
     <DataColumn name="Volume" caption="Tūris" />
     <DataColumn name="Quantity" caption="Kiekis" />

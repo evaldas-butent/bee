@@ -1221,7 +1221,7 @@ body, select {
   border-radius: 2px;
 }
 
-.bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass, .bee-ReportOptions-glass {
+.bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass, .bee-DialogBox-glass, .bee-ReportOptions-glass {
   background-color: white;
   opacity: 0.7;
 }

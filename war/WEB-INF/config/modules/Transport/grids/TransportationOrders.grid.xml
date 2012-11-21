@@ -36,8 +36,5 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="Weight" caption="Svoris" />
-    <DataColumn name="Volume" caption="Tūris" />
-    <DataColumn name="Quantity" caption="Kiekis" />
   </columns>
 </Grid>

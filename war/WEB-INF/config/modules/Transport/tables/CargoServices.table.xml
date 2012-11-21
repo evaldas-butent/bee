@@ -7,12 +7,10 @@
   >
   <Fields>
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="Item" notNull="true" relation="Items" />
-    <Relation name="Unit" notNull="true" relation="Units" />
-    <Double name="Quantity" notNull="true" />
-    <Numeric name="Price" precision="15" scale="5" />
+    <Relation name="Service" notNull="true" relation="Services" />
+    <Numeric name="Amount" precision="12" scale="2" />
     <Relation name="Currency" relation="Currencies" />
-    <Numeric name="CostPrice" precision="15" scale="5" />
+    <Numeric name="Cost" precision="12" scale="2" />
     <String name="Number" precision="20" />
     <Relation name="Supplier" relation="Companies" />
     <String name="Note" precision="50" />

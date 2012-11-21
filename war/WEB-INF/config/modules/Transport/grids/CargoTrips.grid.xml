@@ -14,7 +14,7 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="TripNo" caption="Reiso Nr." />
+    <ActionColumn element="link" name="TripNo" caption="Reiso Nr." />
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="ForwarderName" caption="Vežėjas" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas">

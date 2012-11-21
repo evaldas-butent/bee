@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Services"
+  source="Services"
+  newRowCaption="Nauja paslauga" newRowColumns="Name Item"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>
+ 

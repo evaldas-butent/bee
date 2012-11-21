@@ -1,89 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin: 5px; margin-bottom: 0;">
+  <!ENTITY separator "<hr/>">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
   height="70" heightUnit="%" width="80" widthUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
-    <VerticalPanel style="border-spacing: 10px;">
-      <cell>
-        <Table>
-          <row>
-            <Button name="profit" html="Pelnas" />
-            <Label html="Krovinys" horizontalAlignment="right" class="bee-required" />
-            <cell colSpan="4">
-              <InputText source="Description" style="font-weight: bold; width: 100%" />
-            </cell>
-          </row>
-          <row>
-            <Label html="CMR" horizontalAlignment="right" />
-            <InputText source="Cmr" />
-            <Label html="Svoris" horizontalAlignment="right" />
-            <InputDecimal source="Weight" format="#.000" />
-            <Label html="Ilgis" horizontalAlignment="right" />
-            <InputDecimal source="Length" format="#.00" />
-            <Label html="Pastabos" />
-          </row>
-          <row>
-            <Label html="Numeris" horizontalAlignment="right" />
-            <InputText source="Number" />
-            <Label html="Tūris" horizontalAlignment="right" />
-            <InputDecimal format="#.000" scale="1" source="Volume" />
-            <Label html="Plotis" horizontalAlignment="right" />
-            <InputDecimal source="Width" format="#.00" />
-            <cell rowSpan="2">
-              <InputArea source="Notes" characterWidth="30" style="height: 100%" />
-            </cell>
-          </row>
-          <row>
-            <cell colSpan="3">
-              <Label html="Kiekis" horizontalAlignment="right" />
-            </cell>
-            <InputInteger source="Quantity" />
-            <Label html="Aukštis" horizontalAlignment="right" />
-            <InputDecimal source="Height" format="#.00" />
-          </row>
-          <row>
-            <cell colSpan="3">
-              <Label html="Vertė" horizontalAlignment="right" />
-            </cell>
-            <InputInteger source="Value" />
-          </row>
-        </Table>
-      </cell>
-      <cell>
-        <HorizontalPanel>
-          <cell>
-            <xi:include href="widgets/CargoPlaces.widget.xml" />
-          </cell>
-          <cell>
-            <Table>
-              <row>
-                <cell colSpan="2">
-                  <Label html="Pervežimo kaina" horizontalAlignment="center" style="font-weight: bold;" />
-                </cell>
-              </row>
-              <row>
-                <InputCurrency source="Price"  style="font-weight: bold;" />
-                <DataSelector source="Currency" style="width: 50px; font-weight: bold" />
-              </row>
-            </Table>
-          </cell>
-        </HorizontalPanel>
-                </cell>
-    </VerticalPanel>
+    <FlowPanel class="flexBox-horizontal" style="&section;">
+      <InputText source="Description" caption="Krovinys" decorator="flex-left"
+        style="font-weight: bold; color: blue;" d:size="60" d:unit="px" />
+      <HorizontalPanel>
+        <InputCurrency source="Price" caption="Pervežimo kaina" style="width: 70px; font-weight: bold; color: green;" />
+        <DataSelector source="Currency" style="width: 30px; font-weight: bold; display: inline-block;" />
+      </HorizontalPanel>
+    </FlowPanel>
+    &separator;
+    <FlowPanel class="flexBox-horizontal" style="&section;">
+      <xi:include href="widgets/CargoPlaces.widget.xml" />
+      <ChildGrid class="flexible" name="CargoServices" relColumn="Cargo" caption="Papildomos paslaugos" />
+    </FlowPanel>
+    &separator;
+    <Table>
+      <row>
+        <Label html="CMR" horizontalAlignment="right" />
+        <InputText source="Cmr" />
+        <Label html="Svoris" horizontalAlignment="right" />
+        <InputDecimal source="Weight" format="#.000" />
+        <Label html="Ilgis" horizontalAlignment="right" />
+        <InputDecimal source="Length" format="#.00" />
+        <Button name="profit" html="Pelnas" style="float: right" />
+      </row>
+      <row>
+        <Label html="Numeris" horizontalAlignment="right" />
+        <InputText source="Number" />
+        <Label html="Tūris" horizontalAlignment="right" />
+        <InputDecimal format="#.000" scale="1" source="Volume" />
+        <Label html="Plotis" horizontalAlignment="right" />
+        <InputDecimal source="Width" format="#.00" />
+        <Label html="Pastabos" />
+      </row>
+      <row>
+        <Label html="Pakrauti km" horizontalAlignment="right" />
+        <InputDecimal source="LoadedKilometers" />
+        <Label html="LDM" horizontalAlignment="right" />
+        <InputDecimal source="LDM" format="#.00" />
+        <Label html="Aukštis" horizontalAlignment="right" />
+        <InputDecimal source="Height" format="#.00" />
+        <cell rowSpan="2">
+          <InputArea source="Notes" characterWidth="30" style="height: 100%" />
+        </cell>
+      </row>
+      <row>
+        <Label html="Tušti km" horizontalAlignment="right" />
+        <InputDecimal source="LoadedKilometers" />
+        <Label html="Kiekis" horizontalAlignment="right" />
+        <InputInteger source="Quantity" />
+        <Label html="Vertė" horizontalAlignment="right" />
+        <InputInteger source="Value" />
+      </row>
+    </Table>
 
-    <TabbedPages class="flexible">
-      <page>
-        <text>Reisai</text>
-        <ChildGrid name="CargoTrips" relColumn="Cargo" />
-      </page>
-      <page>
-        <text>Papildomos paslaugos</text>
-        <ChildGrid name="CargoServices" relColumn="Cargo" />
-      </page>
-    </TabbedPages>
+    <ChildGrid class="flexible" style="&section;" name="CargoTrips" relColumn="Cargo" caption="Reisai" />
   </FlowPanel>
 </f:Form>

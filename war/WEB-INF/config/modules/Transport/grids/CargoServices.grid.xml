@@ -13,19 +13,15 @@
   <footer borderWidth="0" />
 
   <columns>
-    <RelColumn name="Item" caption="Paslauga" newRowCaption="Nauja paslauga" />
-    <RelColumn name="Unit" caption="Mato v." />
-    <DataColumn name="Quantity" caption="Kiekis" />
-    <DataColumn name="Price" caption="Kaina" format="#.00" />
-    <RelColumn name="Currency" caption="Val." />
-    <CalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
+    <RelColumn name="ServiceName" caption="Paslauga" />
+    <DataColumn name="Amount" caption="Suma" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
-      <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
-    </CalcColumn>
-    <DataColumn name="CostPrice" caption="Savikaina" format="#.00" />
+    </DataColumn>
+    <RelColumn name="Currency" caption="Val." />
+    <DataColumn name="Cost" caption="Savikaina" format="#.00" />
     <DataColumn name="Number" caption="Numeris" />
     <RelColumn name="Supplier" caption="Tiekėjas" />
     <DataColumn name="Note" caption="Pastaba" />

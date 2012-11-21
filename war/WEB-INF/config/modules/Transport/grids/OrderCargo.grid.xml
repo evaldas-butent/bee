@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
-  newRowForm="OrderCargo" newRowPopup="true" newRowCaption="Naujas krovinys"
+  newRowCaption="Naujas krovinys" newRowPopup="true"
   editForm="OrderCargo" editPopup="true"
   >
   <header borderWidth="1 0" />
@@ -16,9 +16,6 @@
 
   <columns>
     <DataColumn name="Description" caption="Krovinys" />
-    <DataColumn name="Weight" caption="Svoris" />
-    <DataColumn name="Volume" caption="Tūris" />
-    <DataColumn name="Quantity" caption="Kiekis" />
     <CalcColumn name="Loading" type="string" cell="html" caption="Pakrovimas" />
     <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrovimas" />
     <DataColumn name="Number" caption="Numeris" />

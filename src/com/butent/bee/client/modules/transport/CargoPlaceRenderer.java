@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class CargoPlaceRenderer extends AbstractCellRenderer {
+class CargoPlaceRenderer extends AbstractCellRenderer {
   private final int dateIndex;
   private final int countryIndex;
   private final int placeIndex;

@@ -1,0 +1,160 @@
+package com.butent.bee.client.modules.transport;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
+
+class CargoTripsGridHandler extends AbstractGridInterceptor {
+
+  private static class Action {
+
+    private final GridView gridView;
+    private final int cargoIndex;
+    private final int tripIndex;
+    private final DialogBox dialog;
+
+    public Action(GridView gridView) {
+      CellGrid grd = gridView.getGrid();
+      this.gridView = gridView;
+      this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
+      this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
+
+      this.dialog = DialogBox.create("Priskirti reisą");
+      dialog.setHideOnEscape(true);
+      dialog.enableGlass();
+
+      HtmlTable container = new HtmlTable();
+      container.setBorderSpacing(5);
+
+      container.setText(0, 0, "Pasirinkite reisą");
+
+      Relation relation = Relation.create(VIEW_ALL_TRIPS,
+          Lists.newArrayList("TripNo", "VehicleNumber", "ExpeditionType", "ForwarderName"));
+      relation.setAttributes(ImmutableMap.of(UiConstants.ATTR_NEW_ROW_ENABLED, "0"));
+
+      CompoundFilter filter = Filter.and();
+      filter.add(Filter.isEmpty("DateTo"));
+
+      for (IsRow row : grd.getRowData()) {
+        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(tripIndex)));
+      }
+      relation.setFilter(filter);
+      final DataSelector selector = new DataSelector(relation, true);
+
+      selector.addSimpleHandler(RendererFactory.createRenderer(VIEW_ALL_TRIPS,
+          Lists.newArrayList("TripNo")));
+      selector.addEditStopHandler(new EditStopEvent.Handler() {
+        @Override
+        public void onEditStop(EditStopEvent event) {
+          if (event.isChanged()) {
+            addTrip(BeeUtils.toLong(selector.getValue()));
+          }
+        }
+      });
+      container.setWidget(0, 1, selector);
+      container.setWidget(1, 0, new BeeButton("Naujas reisas", new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          createNewTrip(VIEW_TRIPS);
+        }
+      }));
+      container.setWidget(1, 1, new BeeButton("Nauja ekspedicija", new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          createNewTrip(VIEW_EXP_TRIPS);
+        }
+      }));
+      dialog.setWidget(container);
+      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
+      UiHelper.focus(selector);
+    }
+
+    private void addTrip(long tripId) {
+      if (!DataUtils.isId(tripId)) {
+        return;
+      }
+      dialog.hide();
+
+      List<BeeColumn> columns =
+          DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);
+      List<String> values = Lists.newArrayList(BeeUtils.toString(gridView.getRelId()),
+          BeeUtils.toString(tripId));
+
+      Queries.insert(gridView.getViewName(), columns, values, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow row) {
+          BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));
+          gridView.getGrid().insertRow(row, false);
+        }
+      });
+    }
+
+    private void createNewTrip(String viewName) {
+      DataInfo dataInfo = Data.getDataInfo(viewName);
+
+      RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
+          dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow row) {
+              addTrip(row.getId());
+            }
+          });
+    }
+  }
+
+  @Override
+  public boolean beforeAddRow(GridPresenter presenter) {
+    new Action(presenter.getGridView());
+    return false;
+  }
+
+  @Override
+  public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription) {
+
+    if (BeeUtils.inListSame(columnId, "Loading", "Unloading")) {
+      return new CargoPlaceRenderer(dataColumns, columnId);
+    } else {
+      return null;
+    }
+  }
+}

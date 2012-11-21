@@ -13,11 +13,12 @@ public class TransportConstants {
     COMPLETED("Baigtas");
 
     private final String caption;
-    
+
     private OrderStatus(String caption) {
       this.caption = caption;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
@@ -39,7 +40,12 @@ public class TransportConstants {
   public static final String VIEW_CARGO_SERVICES = "CargoServices";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
 
-  public static final String VIEW_TRIPS = "Trips";
+  public static final String TBL_TRIPS = "Trips";
+
+  public static final String VIEW_TRIPS = TBL_TRIPS;
+  public static final String VIEW_EXP_TRIPS = "ExpeditionTrips";
+  public static final String VIEW_ALL_TRIPS = "AllTrips";
+
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_ROUTES = "TripRoutes";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
@@ -51,6 +57,9 @@ public class TransportConstants {
   public static final String VIEW_FUEL_TEMPERATURES = "FuelTemperatures";
 
   public static final String VIEW_SPARE_PARTS = "SpareParts";
+
+  public static final String COL_TRIP = "Trip";
+  public static final String COL_CARGO = "Cargo";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
