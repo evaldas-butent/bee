@@ -43,6 +43,8 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   private final FlowPanel rootPanel = new FlowPanel();
   
+  private final long calendarId;
+  
   private final JustDate date;
 
   private final CalendarSettings settings;
@@ -66,13 +68,14 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   private boolean layoutPending = false;
   private boolean scrollPending = false;
 
-  public CalendarWidget(CalendarSettings settings) {
-    this(TimeUtils.today(), settings);
+  public CalendarWidget(long calendarId, CalendarSettings settings) {
+    this(calendarId, TimeUtils.today(), settings);
   }
 
-  public CalendarWidget(JustDate date, CalendarSettings settings) {
+  public CalendarWidget(long calendarId, JustDate date, CalendarSettings settings) {
     super();
-
+    
+    this.calendarId = calendarId;
     this.settings = settings;
     this.appointmentManager = new AppointmentManager();
     this.date = date;
@@ -117,7 +120,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public void doLayout() {
     if (view != null) {
-      view.doLayout();
+      view.doLayout(calendarId);
     }
   }
 
@@ -206,7 +209,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public boolean onDoubleClick(Element element, Event event) {
     if (view != null && settings.isDoubleClick()) {
-      return view.onClick(element, event);
+      return view.onClick(calendarId, element, event);
     } else {
       return false;
     }
@@ -223,7 +226,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public boolean onMouseDown(Element element, Event event) {
     if (view != null && settings.isSingleClick()) {
-      return view.onClick(element, event);
+      return view.onClick(calendarId, element, event);
     } else {
       return false;
     }
@@ -271,10 +274,13 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     refresh(true);
   }
 
-  public void setAttendees(Collection<Long> attendees) {
+  public void setAttendees(Collection<Long> attendees, boolean refresh) {
     this.attendees.clear();
     this.attendees.addAll(attendees);
-    refresh(true);
+
+    if (refresh) {
+      refresh(true);
+    }
   }
 
   public void setDate(JustDate newDate) {

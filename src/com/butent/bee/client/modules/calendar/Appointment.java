@@ -2,7 +2,23 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_BACKGROUND;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COLOR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY_NAME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_END_DATE_TIME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_FOREGROUND;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_START_DATE_TIME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_STYLE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_SUMMARY;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_MODEL;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_NUMBER;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_PARENT_MODEL;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_PROPS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_REMINDERS;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
@@ -22,8 +38,15 @@ public class Appointment implements Comparable<Appointment> {
   private final List<Long> properties = Lists.newArrayList();
   private final List<Long> reminders = Lists.newArrayList();
   
+  private final Long separatedAttendee;
+  
   public Appointment(BeeRow row) {
+    this(row, null);
+  }
+  
+  public Appointment(BeeRow row, Long separatedAttendee) {
     this.row = row;
+    this.separatedAttendee = separatedAttendee;
     
     String attList = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
     if (!BeeUtils.isEmpty(attList)) {
@@ -41,6 +64,7 @@ public class Appointment implements Comparable<Appointment> {
     }
   }
   
+  @Override
   public int compareTo(Appointment appointment) {
     int compare = BeeUtils.compare(getStart(), appointment.getStart());
     if (compare == BeeConst.COMPARE_EQUAL) {
@@ -91,6 +115,10 @@ public class Appointment implements Comparable<Appointment> {
 
   public BeeRow getRow() {
     return row;
+  }
+
+  public Long getSeparatedAttendee() {
+    return separatedAttendee;
   }
 
   public DateTime getStart() {

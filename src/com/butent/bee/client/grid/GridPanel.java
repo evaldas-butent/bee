@@ -3,10 +3,10 @@ package com.butent.bee.client.grid;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridInterceptor;
 

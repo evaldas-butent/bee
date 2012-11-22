@@ -33,6 +33,27 @@ public class CalendarUtils {
     return result;
   }
 
+  public static List<Appointment> filterByAttendees(Collection<Appointment> input,
+      Collection<Long> attIds, boolean separate) {
+    List<Appointment> result = Lists.newArrayList();
+
+    for (Appointment appointment : input) {
+      for (Long id : appointment.getAttendees()) {
+        if (attIds.contains(id)) {
+    
+          if (separate) {
+            Appointment copy = new Appointment(appointment.getRow(), id);
+            result.add(copy);
+          } else {
+            result.add(appointment);
+            break;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
       int days) {
     List<Appointment> result = Lists.newArrayList();
@@ -47,15 +68,24 @@ public class CalendarUtils {
     return result;
   }
 
-  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date, int days,
-      long id) {
+  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+      int days, Collection<Long> attIds, boolean separate) {
+    List<Appointment> lst = filterMulti(input, date, days);
+    if (lst.isEmpty()) {
+      return lst;
+    }
+    return filterByAttendees(lst, attIds, separate);
+  }
+
+  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+      int days, long id) {
     List<Appointment> lst = filterMulti(input, date, days);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendee(lst, id);
   }
-
+  
   public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date) {
     List<Appointment> result = Lists.newArrayList();
 
@@ -84,6 +114,15 @@ public class CalendarUtils {
     return filterByAttendee(lst, id);
   }
 
+  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
+      Collection<Long> attIds, boolean separate) {
+    List<Appointment> lst = filterSimple(input, date);
+    if (lst.isEmpty()) {
+      return lst;
+    }
+    return filterByAttendees(lst, attIds, separate);
+  }
+  
   public static AppointmentWidget findWidget(Collection<AppointmentWidget> widgets,
       Element element) {
     if (widgets.isEmpty() || element == null) {
@@ -106,16 +145,16 @@ public class CalendarUtils {
       return totalWidth * (100 / columnCount) / 100;
     }
   }
-  
+
   public static int getCoordinateMinutesSinceDayStarted(int y, CalendarSettings settings) {
     int hour = y / settings.getHourHeight();
-    
+
     int interval = (y - hour * settings.getHourHeight()) / settings.getPixelsPerInterval();
     int minute = interval * TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
-    
+
     return hour * TimeUtils.MINUTES_PER_HOUR + minute;
   }
-  
+
   public static Appointment getDragAppointment(DragContext context) {
     AppointmentWidget appointmentWidget = getDragAppointmentWidget(context);
     return (appointmentWidget == null) ? null : appointmentWidget.getAppointment();
@@ -123,7 +162,7 @@ public class CalendarUtils {
 
   public static AppointmentWidget getDragAppointmentWidget(DragContext context) {
     Widget widget = context.draggable;
-    
+
     while (widget != null) {
       if (widget instanceof AppointmentWidget) {
         return (AppointmentWidget) widget;
@@ -132,7 +171,7 @@ public class CalendarUtils {
     }
     return null;
   }
-  
+
   public static int getEndHour(Collection<AppointmentWidget> widgets) {
     int result = BeeConst.UNDEF;
     if (widgets == null) {
@@ -174,14 +213,14 @@ public class CalendarUtils {
 
     return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
   }
-  
+
   public static int getNowY(CalendarSettings settings) {
     DateTime now = new DateTime();
     int hourHeight = settings.getHourHeight();
-    
+
     return now.getHour() * hourHeight + now.getMinute() * hourHeight / TimeUtils.MINUTES_PER_HOUR;
   }
-  
+
   public static Range<DateTime> getRange(Appointment appointment) {
     return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
   }
@@ -204,7 +243,7 @@ public class CalendarUtils {
     }
     return result;
   }
-  
+
   public static int getStartPixels(CalendarSettings settings,
       Collection<AppointmentWidget> widgets) {
     Assert.notNull(settings);
@@ -213,7 +252,7 @@ public class CalendarUtils {
     if (hour <= 0) {
       hour = Math.max(settings.getWorkingHourStart(), 0);
     }
-    
+
     int minHour = getStartHour(widgets);
     if (minHour >= 0) {
       hour = Math.min(hour, minHour);
@@ -221,7 +260,7 @@ public class CalendarUtils {
 
     return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
   }
-  
+
   public static int getTodayColumn(JustDate date, int days) {
     int diff = TimeUtils.dayDiff(date, TimeUtils.today());
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;

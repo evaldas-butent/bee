@@ -113,6 +113,9 @@ public class BeeConst {
   public static final char DRILL_DOWN = '\u25ba';
   public static final char DROP_DOWN = '\u25bc';
 
+  public static final char ARROW_UP = '\u2191';
+  public static final char ARROW_DOWN = '\u2193';
+
   public static final String CHAR_FALSE = "fFnN0";
   public static final String CHAR_TRUE = "tTyY1";
 

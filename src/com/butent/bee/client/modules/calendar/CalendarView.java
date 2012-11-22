@@ -36,7 +36,7 @@ public abstract class CalendarView {
     }
   }
 
-  public abstract void doLayout();
+  public abstract void doLayout(long calendarId);
 
   public abstract void doScroll();
 
@@ -54,7 +54,7 @@ public abstract class CalendarView {
   
   public abstract Type getType();
 
-  public abstract boolean onClick(Element element, Event event);
+  public abstract boolean onClick(long calendarId, Element element, Event event);
 
   public abstract void onClock();
   

@@ -18,8 +18,8 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;

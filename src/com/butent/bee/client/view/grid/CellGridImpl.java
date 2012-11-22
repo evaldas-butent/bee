@@ -25,7 +25,6 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -49,8 +48,9 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
@@ -1154,6 +1154,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return getGrid().isRowSelected(rowId);
   }
 
+  @Override
   public boolean likeAMotherlessChild() {
     return isChild() && !DataUtils.isId(getRelId());
   }

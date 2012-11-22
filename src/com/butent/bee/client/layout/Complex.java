@@ -20,8 +20,8 @@ import com.butent.bee.shared.Assert;
  * at the specific areas of the layout.
  */
 
-public class Complex extends ComplexPanel implements IdentifiableWidget, ProvidesResize, RequiresResize,
-    InsertPanel {
+public class Complex extends ComplexPanel implements IdentifiableWidget, ProvidesResize,
+    RequiresResize, InsertPanel {
 
   public Complex() {
     this(Position.ABSOLUTE);
@@ -181,10 +181,12 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     addTopHeightFillHorizontal(child, top, Unit.PX, height, Unit.PX);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "complex";
   }
@@ -194,6 +196,7 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     insert(w, getElement(), beforeIndex, true);
   }
 
+  @Override
   public void onResize() {
     for (Widget child : getChildren()) {
       if (child instanceof RequiresResize) {
@@ -202,6 +205,7 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

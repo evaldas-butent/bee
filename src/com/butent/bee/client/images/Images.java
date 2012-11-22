@@ -23,54 +23,24 @@ public class Images {
     @Source("add.png")
     ImageResource add();
 
-    @Source("arrowDown.png")
+    @Source("arrow_down.png")
     ImageResource arrowDown();
 
-    @Source("arrowDownDisabled.png")
-    ImageResource arrowDownDisabled();
+    @Source("arrow_in.png")
+    ImageResource arrowIn();
 
-    @Source("arrowDownHover.png")
-    ImageResource arrowDownHover();
-
-    @Source("arrowDownPressed.png")
-    ImageResource arrowDownPressed();
-
-    @Source("arrowLeft.png")
+    @Source("arrow_left.png")
     ImageResource arrowLeft();
 
-    @Source("arrowLeftDisabled.png")
-    ImageResource arrowLeftDisabled();
+    @Source("arrow_out.png")
+    ImageResource arrowOut();
 
-    @Source("arrowLeftHover.png")
-    ImageResource arrowLeftHover();
-
-    @Source("arrowLeftPressed.png")
-    ImageResource arrowLeftPressed();
-
-    @Source("arrowRight.png")
+    @Source("arrow_right.png")
     ImageResource arrowRight();
 
-    @Source("arrowRightDisabled.png")
-    ImageResource arrowRightDisabled();
-
-    @Source("arrowRightHover.png")
-    ImageResource arrowRightHover();
-
-    @Source("arrowRightPressed.png")
-    ImageResource arrowRightPressed();
-
-    @Source("arrowUp.png")
+    @Source("arrow_up.png")
     ImageResource arrowUp();
-
-    @Source("arrowUpDisabled.png")
-    ImageResource arrowUpDisabled();
-
-    @Source("arrowUpHover.png")
-    ImageResource arrowUpHover();
-
-    @Source("arrowUpPressed.png")
-    ImageResource arrowUpPressed();
-
+    
     @Source("ascending.gif")
     ImageResource ascending();
 
@@ -83,6 +53,9 @@ public class Images {
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
 
+    @Source("calendar.png")
+    ImageResource calendar();
+    
     @Source("cancel.png")
     ImageResource cancel();
 
@@ -101,6 +74,12 @@ public class Images {
     @Source("descending.gif")
     ImageResource descending();
 
+    @Source("disclosureClosed.png")
+    ImageResource disclosureClosed();
+
+    @Source("disclosureOpen.png")
+    ImageResource disclosureOpen();
+    
     @Source("edit.png")
     ImageResource edit();
 
@@ -176,6 +155,9 @@ public class Images {
     @Source("reload.png")
     ImageResource reload();
 
+    @Source("report.png")
+    ImageResource report();
+    
     @Source("rewind.png")
     ImageResource rewind();
 
@@ -247,6 +229,10 @@ public class Images {
     Assert.notEmpty(name);
     return map.get(key(name));
   }
+  
+  public static Map<String, ImageResource> getMap() {
+    return map;
+  }
 
   public static void init(Resources resources) {
     Assert.notNull(resources);
@@ -259,24 +245,11 @@ public class Images {
     map.put(key("add"), resources.add());
 
     map.put(key("arrowDown"), resources.arrowDown());
-    map.put(key("arrowDownDisabled"), resources.arrowDownDisabled());
-    map.put(key("arrowDownHover"), resources.arrowDownHover());
-    map.put(key("arrowDownPressed"), resources.arrowDownPressed());
-
+    map.put(key("arrowIn"), resources.arrowIn());
     map.put(key("arrowLeft"), resources.arrowLeft());
-    map.put(key("arrowLeftDisabled"), resources.arrowLeftDisabled());
-    map.put(key("arrowLeftHover"), resources.arrowLeftHover());
-    map.put(key("arrowLeftPressed"), resources.arrowLeftPressed());
-
+    map.put(key("arrowOut"), resources.arrowOut());
     map.put(key("arrowRight"), resources.arrowRight());
-    map.put(key("arrowRightDisabled"), resources.arrowRightDisabled());
-    map.put(key("arrowRightHover"), resources.arrowRightHover());
-    map.put(key("arrowRightPressed"), resources.arrowRightPressed());
-
     map.put(key("arrowUp"), resources.arrowUp());
-    map.put(key("arrowUpDisabled"), resources.arrowUpDisabled());
-    map.put(key("arrowUpHover"), resources.arrowUpHover());
-    map.put(key("arrowUpPressed"), resources.arrowUpPressed());
 
     map.put(key("ascending"), resources.ascending());
 
@@ -284,6 +257,8 @@ public class Images {
 
     map.put(key("bookmark"), resources.bookmark());
     map.put(key("bookmark_add"), resources.bookmarkAdd());
+
+    map.put(key("calendar"), resources.calendar());
 
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
@@ -294,6 +269,9 @@ public class Images {
     map.put(key("delete"), resources.delete());
 
     map.put(key("descending"), resources.descending());
+
+    map.put(key("disclosureClosed"), resources.disclosureClosed());
+    map.put(key("disclosureOpen"), resources.disclosureOpen());
 
     map.put(key("edit"), resources.edit());
 
@@ -334,6 +312,8 @@ public class Images {
 
     map.put(key("refresh"), resources.refresh());
     map.put(key("reload"), resources.reload());
+
+    map.put(key("report"), resources.report());
 
     map.put(key("rewind"), resources.rewind());
 

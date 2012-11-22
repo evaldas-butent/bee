@@ -1,4 +1,4 @@
-package com.butent.bee.client.dom;
+package com.butent.bee.client.style;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -22,6 +22,9 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

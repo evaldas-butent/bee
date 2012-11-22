@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -120,20 +120,20 @@ public class AppointmentWidget extends Flow {
     return multi;
   }
 
-  public void render() {
-    setBackground(appointment.getBackground());
+  public void render(long calendarId, String bg) {
+    setBackground(BeeUtils.notEmpty(bg, appointment.getBackground()));
     setForeground(appointment.getForeground());
 
-    CalendarKeeper.renderAppoinment(this, multi);
+    CalendarKeeper.renderAppoinment(calendarId, this, multi);
   }
 
-  public void renderCompact() {
-    String background = appointment.getBackground();
+  public void renderCompact(long calendarId, String bg) {
+    String background = BeeUtils.notEmpty(bg, appointment.getBackground());
     if (!BeeUtils.isEmpty(background)) {
       getCompactBar().getElement().getStyle().setBackgroundColor(background);
     }
 
-    CalendarKeeper.renderCompact(this, bodyPanel, this);
+    CalendarKeeper.renderCompact(calendarId, this, bodyPanel, this);
   }
 
   public void setBodyHtml(String html) {

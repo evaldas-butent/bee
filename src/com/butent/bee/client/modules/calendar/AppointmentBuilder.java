@@ -158,7 +158,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
         changes.add("Remonto tipas");
       }
       
-      if (!DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_ATTENDEES), resources)) {
+      if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_ATTENDEES),
+          resources)) {
         changes.add("Resursai");
       }
 
@@ -366,6 +367,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
   private DateTime lastCheckEnd = null;
 
   private final Set<String> requiredFields = Sets.newHashSet();
+
+  private final List<Long> ucAttendees = Lists.newArrayList();
   
   AppointmentBuilder(boolean isNew) {
     super();
@@ -568,7 +571,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     return requiredFields.contains(name);
   }
 
-  void setAttenddes(List<Long> attendees) {
+  void setAttendees(List<Long> attendees) {
     BeeUtils.overwrite(resources, attendees);
     refreshResourceWidget();
     checkOverlap(false);
@@ -612,6 +615,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     BeeUtils.overwrite(requiredFields, NameUtils.toSet(fieldNames));
   }
 
+  void setUcAttendees(List<Long> attendees) {
+    BeeUtils.overwrite(ucAttendees, attendees);
+  }
+  
   private void addColorHandlers() {
     colorWidget.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
       public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
@@ -649,6 +656,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     for (BeeRow row : attendees.getRows()) {
       long id = row.getId();
       if (resources.contains(id)) {
+        continue;
+      }
+      
+      if (!ucAttendees.isEmpty() && !ucAttendees.contains(id)) {
         continue;
       }
 
@@ -1482,7 +1493,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     for (Appointment appointment : overlappingAppointments) {
       boolean multi = appointment.isMultiDay();
       AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
-      widget.render();
+      widget.render(BeeConst.UNDEF, null);
 
       panel.add(widget);
     }

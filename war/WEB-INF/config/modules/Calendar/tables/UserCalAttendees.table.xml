@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="UserCalAttendees"
+  idName="UserCalAttendeeID"
+  >
+  <Fields>
+    <Relation name="UserCalendar" notNull="true" relation="UserCalendars" cascade="DELETE" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" />
+    
+    <Boolean name="Enabled" />
+    <Integer name="Ordinal" />
+    <String name="Caption" precision="100" />
+    
+    <String name="Background" precision="100" />
+    <String name="Foreground" precision="100" />
+    <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
+  </Fields>
+
+  <Keys>
+    <Key unique="true">
+      <KeyField>UserCalendar</KeyField>
+      <KeyField>Attendee</KeyField>
+    </Key>
+  </Keys>
+</Table>

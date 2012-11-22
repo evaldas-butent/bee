@@ -7,11 +7,27 @@
   <!ENTITY duration "5s">
   <!ENTITY rotClass "rotate-&axis;-&duration;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   name="EntCss" caption="Entities, CSS">
 
   <FlowPanel class="&rotClass;">
+    <css id="rotations">
+      @-webkit-keyframes rotateX {
+        from {-webkit-transform: rotateX(0deg);}
+        to {-webkit-transform: rotateX(360deg);}
+      }
+
+      @-webkit-keyframes rotateY {
+        from {-webkit-transform: rotateY(0deg);}
+        to {-webkit-transform: rotateY(360deg);}
+      }
+
+      @-webkit-keyframes rotateZ {
+        from {-webkit-transform: rotateZ(0deg);}
+        to {-webkit-transform: rotateZ(360deg);}
+      }
+    </css>
+
     <css id="w&width;">
       .width-&width; {width: &width;px;}
     </css>

@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIdentity;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

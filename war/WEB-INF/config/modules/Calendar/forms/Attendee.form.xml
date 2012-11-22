@@ -26,8 +26,13 @@
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
        style="position: absolute; left: 360px; top: 100px" />
 
-    <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 140px;" />
+    <DataSelector source="Color" renderColumns="ColorName" caption="Spalva:" style="width: 180px;"
+       d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 140px;" />
+    <DataSelector source="Style" caption="Stilius:" style="width: 180px;" d:size="80" d:unit="px"
+      d:rootStyle="position: absolute; left: 360px; top: 140px;" />
+
+    <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 180px;" />
     <InputArea source="Description" visibleLines="3"
-       style="width: 500px; position: absolute; left: 120px; top: 140px;" />
+       style="width: 500px; position: absolute; left: 120px; top: 180px;" />
   </FlowPanel>
 </f:Form>  

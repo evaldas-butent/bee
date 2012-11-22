@@ -22,14 +22,15 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements a panel, which positions all of its children absolutely, allowing them to overlap.
  */
 
-public class Absolute extends AbsolutePanel implements IdentifiableWidget, HasAllDragAndDropHandlers {
+public class Absolute extends AbsolutePanel implements IdentifiableWidget,
+    HasAllDragAndDropHandlers {
 
   public Absolute() {
     this(Position.ABSOLUTE);
@@ -38,12 +39,12 @@ public class Absolute extends AbsolutePanel implements IdentifiableWidget, HasAl
   public Absolute(Position position) {
     this(position, Overflow.AUTO);
   }
-  
+
   public Absolute(Position position, Overflow overflow) {
     super();
     init(position, overflow);
   }
-  
+
   @Override
   public HandlerRegistration addDragEndHandler(DragEndHandler handler) {
     return addBitlessDomHandler(handler, DragEndEvent.getType());
@@ -104,7 +105,7 @@ public class Absolute extends AbsolutePanel implements IdentifiableWidget, HasAl
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init(Position position, Overflow overflow) {
     DomUtils.createId(this, getIdPrefix());
     if (position != null) {

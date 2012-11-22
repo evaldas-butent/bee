@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CalendarStyleManager {

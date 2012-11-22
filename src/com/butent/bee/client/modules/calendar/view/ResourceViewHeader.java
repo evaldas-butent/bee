@@ -4,12 +4,12 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
@@ -40,7 +40,7 @@ public class ResourceViewHeader extends Horizontal {
     setCellWidth(filler, DomUtils.getScrollBarWidth());
   }
 
-  public void setAttendees(List<Long> attendees) {
+  public void setAttendees(long calendarId, List<Long> attendees) {
     HasWidgets panel = (HasWidgets) getWidget(CAPTION_CONTAINER_INDEX); 
     panel.clear();
     if (attendees.isEmpty()) {
@@ -49,7 +49,8 @@ public class ResourceViewHeader extends Horizontal {
 
     int width = 100 / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
-      BeeLabel label = new BeeLabel(CalendarKeeper.getAttendeeName(attendees.get(i)));
+      String caption = CalendarKeeper.getAttendeeCaption(calendarId, attendees.get(i));
+      BeeLabel label = new BeeLabel(caption);
       label.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CELL);
 
       StyleUtils.setLeft(label, width * i, Unit.PCT);

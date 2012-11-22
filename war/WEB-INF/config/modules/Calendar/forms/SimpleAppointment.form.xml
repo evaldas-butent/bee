@@ -8,8 +8,11 @@
   caption="=appointment" disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; margin: 2ex 1em; width: 760px; height: 360px;">
-    <InputText source="Summary" caption="Santrauka:" style="width: 660px;" d:size="80"
-      d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+    <InputText source="Summary" caption="Santrauka:" style="width: 236px;"
+      d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+
+    <InputText source="Location" caption="Kur:" style="width: 320px;"
+      d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
 
     <Label html="Resursai:" style="&absolute; left: 0; top: 40px;" />
     <Image name="AddResource" resource="add" style="&absolute; left: 0px; top: 68px;" />
@@ -42,6 +45,9 @@
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />
     <ListBox name="Reminder" caption="Priminimas:" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
+      
+    <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false"
+      style="&absolute; left: 0; top: 324px;" />
 
     <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 240px;"

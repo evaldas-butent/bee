@@ -44,6 +44,7 @@
 }
 .bee-cal .calendar-header .day-cell-today {
   font-weight: bold;
+  background-color: #f1f1f1;
 }
 
 .bee-cal .multiDayPanel {
@@ -125,7 +126,6 @@
   background-color: #fff;
 }
 .bee-cal .non-working {
-  background-color: snow;
 }
 
 .bee-cal .column-separator {
@@ -247,7 +247,7 @@
   border-right: 1px solid #ddd;
 }
 .bee-cal-MonthView .dayCell.today {
-  background-color: #ffffe8;
+  background-color: #f1f1f1;
 }
 
 .bee-cal-MonthView .dayCellLabel {
@@ -532,4 +532,106 @@
   bottom: 0;
   width: 100px;
   font-size: medium;
+}
+
+.bee-cal-Controller-disclosure {
+  position: absolute;
+  left: 15px;
+  top: 20px;
+}
+.bee-cal-Controller-open .bee-cal-Controller-disclosure-closed {
+  display: none;
+}
+.bee-cal-Controller-closed .bee-cal-Controller-disclosure-open {
+  display: none;
+}
+
+.bee-cal-Controller-datePicker {
+  position: absolute;
+  left: 45px;
+  top: 20px;
+  -webkit-transition: top 300ms;
+}
+.bee-cal-Controller-closed .bee-cal-Controller-datePicker {
+  top: -200px;
+}
+
+.bee-cal-Controller-datePicker img {
+  -webkit-filter: grayscale(100%);
+}
+
+.bee-cal-Controller-tablePanel {
+  position: absolute;
+  left: 10px;
+  right: 5px;
+  top: 250px;
+  bottom: 80px;
+  overflow: auto;
+  -webkit-transition: top 300ms;
+}
+
+.bee-cal-Controller-table {
+  border-collapse: collapse;
+}
+.bee-cal-Controller-table td {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.bee-cal-Controller-table tr:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-cal-Controller-closed .bee-cal-Controller-tablePanel {
+  top: 50px;
+}
+
+.bee-cal-Controller-color {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+}
+.bee-cal-Controller-caption {
+  padding-left: 5px;
+  padding-right: 5px;
+  color: black;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.bee-cal-Controller-table td img {
+  visibility: hidden;
+  width: 16px;
+}
+.bee-cal-Controller-table tr:hover td img {
+  visibility: visible;
+}
+
+.bee-cal-Controller-table tr:first-child .bee-cal-Controller-up {
+  display: none;
+}
+.bee-cal-Controller-table tr:last-child .bee-cal-Controller-down {
+  display: none;
+}
+.bee-cal-Controller-table tr:only-child .bee-cal-Controller-remove {
+  display: none;
+}
+
+.bee-cal-Controller-selector {
+  position: absolute;
+  left: 16px;
+  width: 180px;
+  bottom: 40px;
+  border: 1px solid #5897fb;
+  box-shadow : 0 0 4px rgba(0, 0, 0, 0.3);
+  font-weight: normal !important;
+  padding: 2px;
+  outline: none;
+} 
+
+.bee-cal-Controller-colorPicker {
+  position: absolute;
+  left: 0px;
+  top: -60px;
 }

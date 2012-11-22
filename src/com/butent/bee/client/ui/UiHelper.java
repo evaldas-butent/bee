@@ -21,10 +21,10 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.edit.Editor;

@@ -27,7 +27,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Complex;
@@ -43,6 +42,8 @@ import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
@@ -50,6 +51,8 @@ import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -73,7 +76,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
-    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier {
+    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
@@ -114,17 +117,18 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private boolean enabled = true;
 
-  public CalendarPanel(long calendarId, String caption, CalendarSettings settings) {
+  public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
+      BeeRowSet ucAttendees) {
     super();
     addStyleName(STYLE_PANEL);
 
     this.calendarId = calendarId;
 
-    this.calendar = new CalendarWidget(settings);
+    this.calendar = new CalendarWidget(calendarId, settings);
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
-        CalendarKeeper.openAppointment(event.getTarget(), false);
+        CalendarKeeper.openAppointment(event.getTarget(), false, getCalendarId());
       }
     });
 
@@ -188,7 +192,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     today.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        setDate(TimeUtils.today());
+        setDate(TimeUtils.today(), true);
       }
     });
 
@@ -237,7 +241,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     registry.add(AppointmentEvent.register(this));
     registry.add(VisibilityChangeEvent.register(this));
-
+    
+    updateUcAttendees(ucAttendees, false);
     loadAppointments();
   }
 
@@ -381,6 +386,15 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   @Override
+  public void onStateChange(State state) {
+    if (State.ACTIVATED.equals(state)) {
+      CalendarKeeper.onActivatePanel(this);
+    } else if (State.REMOVED.equals(state)) {
+      CalendarKeeper.onRemovePanel(getId(), getCalendarId());
+    }
+  }
+
+  @Override
   public void onViewUnload() {
   }
 
@@ -421,12 +435,37 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   CalendarSettings getSettings() {
     return calendar.getSettings();
   }
+  
+  void setDate(JustDate date, boolean sync) {
+    if (date != null) {
+      if (!date.equals(calendar.getDate())) {
+        calendar.setDate(date);
+        if (sync) {
+          CalendarKeeper.synchronizeDate(calendarId, date, false);
+        }
+      }
+      refreshDateBox();
+    }
+  }
 
   void updateSettings(BeeRow row, List<BeeColumn> columns) {
     getSettings().loadFrom(row, columns);
 
     int viewIndex = updateViews(getSettings());
     activateView(views.get(viewIndex), true, true);
+  }
+
+  void updateUcAttendees(BeeRowSet ucAttendees, boolean refresh) {
+    List<Long> attIds = Lists.newArrayList();
+    if (!DataUtils.isEmpty(ucAttendees)) {
+      for (BeeRow row : ucAttendees.getRows()) {
+        if (BeeUtils.isTrue(DataUtils.getBoolean(ucAttendees, row,
+            CalendarConstants.COL_ENABLED))) {
+          attIds.add(DataUtils.getLong(ucAttendees, row, CalendarConstants.COL_ATTENDEE));
+        }
+      }
+    }
+    calendar.setAttendees(attIds, refresh);
   }
 
   private void activateView(CalendarConstants.View view, boolean refresh, boolean force) {
@@ -478,6 +517,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     if (date != null) {
       calendar.setDate(date, days);
+      CalendarKeeper.synchronizeDate(calendarId, date, false);
     }
     calendar.setType(type, days);
 
@@ -555,7 +595,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         newDate = TimeUtils.startOfWeek(newDate);
       }
     }
-    setDate(newDate);
+    setDate(newDate, true);
   }
 
   private void pickDate() {
@@ -566,7 +606,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       @Override
       public void onValueChange(ValueChangeEvent<JustDate> event) {
         popup.hide();
-        setDate(event.getValue());
+        setDate(event.getValue(), true);
       }
     });
 
@@ -579,19 +619,28 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private void refreshDateBox() {
-    JustDate date = calendar.getDate();
-    DateTimeFormat format = Type.MONTH.equals(calendar.getType()) ? MONTH_FORMAT : DATE_FORMAT;
+    Type type = calendar.getType();
 
-    dateBox.setHTML(format.format(date));
+    JustDate date = calendar.getDate();
+    int days = calendar.getDisplayedDays();
+    
+    String html;
+    if (date == null) {
+      html = BeeConst.STRING_EMPTY;
+    } else if (Type.MONTH.equals(type)) {
+      html = MONTH_FORMAT.format(date);
+    } else if (type == null || Type.RESOURCE.equals(type) || days <= 1) {
+      html = DATE_FORMAT.format(date);
+    } else {
+      JustDate end = TimeUtils.nextDay(date, days - 1);
+      html = date.toString() + " - " + end.toString();  
+    }
+    
+    dateBox.setHTML(html);
   }
 
   private void setAppointments(BeeRowSet rowSet) {
     calendar.suspendLayout();
-
-    String property = rowSet.getTableProperty(CalendarConstants.VIEW_ATTENDEES);
-    if (!BeeUtils.isEmpty(property)) {
-      calendar.setAttendees(DataUtils.parseIdList(property));
-    }
 
     List<Appointment> appointments = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
@@ -601,15 +650,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.setAppointments(appointments);
     calendar.resumeLayout();
-  }
-
-  private void setDate(JustDate date) {
-    if (date != null) {
-      if (!date.equals(calendar.getDate())) {
-        calendar.setDate(date);
-      }
-      refreshDateBox();
-    }
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,

@@ -7,12 +7,15 @@
   <Columns>
     <SimpleColumn name="User" />
     <SimpleColumn name="Group" />
+    <SimpleColumn name="Key" />
     <SimpleColumn name="Item" />
     <SimpleColumn name="Order" />
     <SimpleColumn name="Html" />
   </Columns>
+
   <Order>
     <OrderBy column="Group" />
+    <OrderBy column="Key" />
     <OrderBy column="Order" />
   </Order>
 </View>

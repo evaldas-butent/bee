@@ -1,10 +1,8 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.client.style;
 
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 
-import com.butent.bee.client.dom.Font;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 

@@ -2,34 +2,28 @@ package com.butent.bee.client.screen;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
-import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.DoubleLabel;
@@ -52,6 +46,8 @@ public class ScreenImpl implements Screen {
 
   private LayoutPanel rootPanel;
   private Split screenPanel = null;
+  
+  private CentralScrutinizer centralScrutinizer = null;
 
   private Workspace workspace = null;
   private HasWidgets commandPanel = null;
@@ -59,15 +55,23 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel = null;
 
   private IdentifiableWidget signature = null;
-  private BeeCheckBox logToggle = null;
-
-  private final String logVisible = "log-visible";
 
   private Notification notification = null;
 
   private Panel progressPanel = null;
 
   public ScreenImpl() {
+  }
+
+  @Override
+  public boolean activateDomainEntry(Domain domain, Long key) {
+    return getCentralScrutinizer().activate(domain, key);
+  }
+
+  @Override
+  public void activateWidget(IdentifiableWidget widget) {
+    Assert.notNull(widget, "activateWidget: view widget is null");
+    getWorkspace().activateWidget(widget);
   }
 
   @Override
@@ -79,6 +83,11 @@ public class ScreenImpl implements Screen {
       widget.asWidget().addStyleName("bee-MainCommandPanelItem");
       getCommandPanel().add(widget.asWidget());
     }
+  }
+
+  @Override
+  public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
+    getCentralScrutinizer().add(domain, widget, key, caption);
   }
 
   @Override
@@ -99,6 +108,11 @@ public class ScreenImpl implements Screen {
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
     getWorkspace().closeWidget(widget);
+  }
+
+  @Override
+  public boolean containsDomainEntry(Domain domain, Long key) {
+    return getCentralScrutinizer().contains(domain, key);
   }
 
   @Override
@@ -202,6 +216,11 @@ public class ScreenImpl implements Screen {
     if (getNotification() != null) {
       getNotification().warning(messages);
     }
+  }
+
+  @Override
+  public boolean removeDomainEntry(Domain domain, Long key) {
+    return getCentralScrutinizer().remove(domain, key);
   }
 
   @Override
@@ -309,11 +328,7 @@ public class ScreenImpl implements Screen {
     getRootPanel().add(p);
     setScreenPanel(p);
 
-    if (getLogToggle() != null && !getLogToggle().getValue()) {
-      ClientLogManager.setPanelVisible(false);
-    }
-
-    RootPanel.get().add(createLogo());
+    ClientLogManager.setPanelVisible(false);
   }
 
   protected Notification getNotification() {
@@ -341,6 +356,8 @@ public class ScreenImpl implements Screen {
   protected IdentifiableWidget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
+    
+    panel.add(createLogo());
 
     panel.add(Global.getSearchWidget());
 
@@ -398,44 +415,9 @@ public class ScreenImpl implements Screen {
   }
 
   protected IdentifiableWidget initWest() {
-    TabbedPages tp = new TabbedPages();
-
-    tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
-    tp.setTabStyle(tp.getPageCount() - 1, "bee-FavoriteTab", true);
-
-    tp.add(Global.getReports(), "Ataskaitos");
-    tp.setTabStyle(tp.getPageCount() - 1, "bee-ReportTab", true);
-
-    Flow admPanel = new Flow();
-    admPanel.addStyleName("bee-AdminPanel");
-
-    BeeCheckBox log = new BeeCheckBox("Log");
-    log.addStyleName("bee-LogToggle");
-    log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
-
-    log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        ClientLogManager.setPanelVisible(event.getValue());
-        BeeKeeper.getStorage().setItem(getLogVisible(), BeeUtils.toString(event.getValue()));
-      }
-    });
-    setLogToggle(log);
-
-    admPanel.add(log);
-
-    BeeCheckBox debug = new BeeCheckBox(Global.getVar(Global.VAR_DEBUG));
-    debug.addStyleName("bee-DebugToggle");
-    admPanel.add(debug);
-
-    Shell shell = new Shell();
-    shell.restore();
-    shell.addStyleName("bee-AdminShell");
-    admPanel.add(shell);
-
-    tp.add(admPanel, "Admin");
-    tp.setTabStyle(tp.getPageCount() - 1, "bee-AdminTab", true);
-
-    return tp;
+    setCentralScrutinizer(new CentralScrutinizer());
+    getCentralScrutinizer().start();
+    return getCentralScrutinizer();
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {
@@ -475,12 +457,8 @@ public class ScreenImpl implements Screen {
     return container;
   }
 
-  private BeeCheckBox getLogToggle() {
-    return logToggle;
-  }
-
-  private String getLogVisible() {
-    return logVisible;
+  private CentralScrutinizer getCentralScrutinizer() {
+    return centralScrutinizer;
   }
 
   private HasWidgets getMenuPanel() {
@@ -495,12 +473,12 @@ public class ScreenImpl implements Screen {
     return workspace;
   }
 
-  private void setCommandPanel(HasWidgets commandPanel) {
-    this.commandPanel = commandPanel;
+  private void setCentralScrutinizer(CentralScrutinizer centralScrutinizer) {
+    this.centralScrutinizer = centralScrutinizer;
   }
 
-  private void setLogToggle(BeeCheckBox logToggle) {
-    this.logToggle = logToggle;
+  private void setCommandPanel(HasWidgets commandPanel) {
+    this.commandPanel = commandPanel;
   }
 
   private void setProgressPanel(Panel progressPanel) {

@@ -33,7 +33,16 @@
     <xs:complexContent>
       <xs:extension base="widgetBase">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element name="css" type="ui:styleSheet" />
+          <xs:element name="css">
+            <xs:complexType>
+              <xs:simpleContent>
+                <xs:extension base="xs:string">
+                  <xs:attribute name="id" type="xs:ID" use="required" />
+                </xs:extension>
+              </xs:simpleContent>
+            </xs:complexType>
+          </xs:element>
+          
           <xs:element name="dynStyle" type="ui:conditionalStyle" />
           <xs:element name="handler" type="ui:eventHandler" />
         </xs:choice>

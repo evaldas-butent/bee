@@ -18,8 +18,8 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.Dimensions;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

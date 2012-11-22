@@ -41,9 +41,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Stacking;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
@@ -74,6 +74,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       this.clientTop = Document.get().getBodyOffsetTop();
     }
 
+    @Override
     public void onMouseDown(MouseDownEvent event) {
       if (DOM.getCaptureElement() == null && isCaptionEvent(event.getNativeEvent())) {
         event.preventDefault();
@@ -85,6 +86,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
 
+    @Override
     public void onMouseMove(MouseMoveEvent event) {
       if (isDragging()) {
         int absX = event.getX() + getAbsoluteLeft();
@@ -96,6 +98,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
 
+    @Override
     public void onMouseUp(MouseUpEvent event) {
       if (isDragging()) {
         setDragging(false);
@@ -113,6 +116,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
         this.glassElement = Assert.notNull(glassElement);
       }
 
+      @Override
       public void onResize(ResizeEvent event) {
         Style style = glassElement.getStyle();
 
@@ -373,6 +377,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
   }
 
+  @Override
   public HandlerRegistration addCloseHandler(CloseHandler<Popup> handler) {
     return addHandler(handler, CloseEvent.getType());
   }
@@ -425,10 +430,12 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return animationType;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "popup";
   }
@@ -471,6 +478,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return hideOnSave;
   }
 
+  @Override
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
   }
@@ -506,6 +514,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
   }
 
+  @Override
   public void setAnimationEnabled(boolean enable) {
     isAnimationEnabled = enable;
   }
@@ -546,6 +555,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.hideOnSave = hideOnSave;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -615,6 +625,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public void showAt(final int x, final int y, final int margin) {
     setPopupPositionAndShow(new PositionCallback() {
+      @Override
       public void setPosition(int offsetWidth, int offsetHeight) {
         int left = fitLeft(x, offsetWidth, margin);
         int top = fitTop(y, offsetHeight, margin);
@@ -626,6 +637,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public void showRelativeTo(final UIObject target) {
     setPopupPositionAndShow(new PositionCallback() {
+      @Override
       public void setPosition(int offsetWidth, int offsetHeight) {
         position(target, offsetWidth, offsetHeight);
       }
@@ -941,12 +953,14 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     if (isShowing()) {
       setNativePreviewHandlerRegistration(Event.addNativePreviewHandler(new NativePreviewHandler() {
+        @Override
         public void onPreviewNativeEvent(NativePreviewEvent event) {
           previewNativeEvent(event);
         }
       }));
 
       setResizeHandlerRegistration(Window.addResizeHandler(new ResizeHandler() {
+        @Override
         public void onResize(ResizeEvent event) {
           setWindowWidth(event.getWidth());
         }

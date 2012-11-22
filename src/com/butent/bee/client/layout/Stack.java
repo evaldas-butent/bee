@@ -43,13 +43,14 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     AnimatedLayout, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
     IdentifiableWidget {
 
-  private class Header extends Composite implements HasClickHandlers {
+  private static class Header extends Composite implements HasClickHandlers {
     private Header(Widget child) {
       initWidget(child);
     }
 
+    @Override
     public HandlerRegistration addClickHandler(ClickHandler handler) {
-      return this.addDomHandler(handler, ClickEvent.getType());
+      return addDomHandler(handler, ClickEvent.getType());
     }
 
     @Override
@@ -74,6 +75,8 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
   private static final String HEADER_STYLE = "bee-StackHeader";
   private static final String CONTENT_STYLE = "bee-StackContent";
 
+  private static final String SELECTED_STYLE = HEADER_STYLE + "-selected";
+  
   private static final int ANIMATION_TIME = 250;
 
   private int animationDuration = ANIMATION_TIME;
@@ -95,6 +98,7 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public void add(Widget w) {
     Assert.unsupported("Single-argument add() is not supported for Stack");
   }
@@ -115,18 +119,22 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     insert(widget, header, headerSize, getWidgetCount());
   }
 
+  @Override
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  @Override
   public void animate(int duration) {
     animate(duration, null);
   }
 
+  @Override
   public void animate(int duration, AnimationCallback callback) {
     if (layoutData.isEmpty()) {
       if (callback != null) {
@@ -146,7 +154,7 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
       top += data.headerSize;
       layoutPanel.setWidgetTopHeight(data.widget, top, unit, 0, unit);
 
-      if (i == getVisibleIndex()) {
+      if (i == getSelectedIndex()) {
         break;
       }
     }
@@ -159,12 +167,13 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
       bottom += data.headerSize;
     }
 
-    LayoutData data = layoutData.get(getVisibleIndex());
+    LayoutData data = layoutData.get(getSelectedIndex());
     layoutPanel.setWidgetTopBottom(data.widget, top, unit, bottom, unit);
 
     layoutPanel.animate(duration, callback);
   }
 
+  @Override
   public void clear() {
     layoutPanel.clear();
     layoutData.clear();
@@ -172,6 +181,7 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     setSelectedIndex(BeeConst.UNDEF);
   }
 
+  @Override
   public void forceLayout() {
     layoutPanel.forceLayout();
   }
@@ -190,34 +200,39 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     return getHeaderWidget(getWidgetIndex(child));
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "stack";
   }
 
-  public int getVisibleIndex() {
+  public int getSelectedIndex() {
     return selectedIndex;
   }
 
   public Widget getVisibleWidget() {
-    if (BeeConst.isUndef(getVisibleIndex())) {
+    if (BeeConst.isUndef(getSelectedIndex())) {
       return null;
     } else {
-      return getWidget(getVisibleIndex());
+      return getWidget(getSelectedIndex());
     }
   }
 
+  @Override
   public Widget getWidget(int index) {
     return layoutPanel.getWidget(index * 2 + 1);
   }
 
+  @Override
   public int getWidgetCount() {
     return layoutPanel.getWidgetCount() / 2;
   }
 
+  @Override
   public int getWidgetIndex(Widget child) {
     int index = layoutPanel.getWidgetIndex(child);
     return BeeConst.isUndef(index) ? index : (index - 1) / 2;
@@ -245,15 +260,18 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     insert(child, new Header(header), headerSize, beforeIndex);
   }
 
+  @Override
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
       int i = 0;
       int last = -1;
 
+      @Override
       public boolean hasNext() {
         return i < layoutData.size();
       }
 
+      @Override
       public Widget next() {
         if (!hasNext()) {
           throw new NoSuchElementException();
@@ -261,6 +279,7 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
         return layoutData.get(last = i++).widget;
       }
 
+      @Override
       public void remove() {
         if (last < 0) {
           throw new IllegalStateException();
@@ -278,10 +297,12 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     layoutPanel.onResize();
   }
 
+  @Override
   public boolean remove(int index) {
     return remove(getWidget(index));
   }
 
+  @Override
   public boolean remove(Widget child) {
     if (child.getParent() != layoutPanel) {
       return false;
@@ -298,14 +319,14 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
 
         layoutData.remove(i);
 
-        if (getVisibleIndex() == i) {
+        if (getSelectedIndex() == i) {
           setSelectedIndex(BeeConst.UNDEF);
           if (!layoutData.isEmpty()) {
             showWidget(layoutData.get(0).widget);
           }
         } else {
-          if (i <= getVisibleIndex()) {
-            setSelectedIndex(getVisibleIndex() - 1);
+          if (i <= getSelectedIndex()) {
+            setSelectedIndex(getSelectedIndex() - 1);
           }
           animate(getAnimationDuration());
         }
@@ -342,6 +363,7 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     ((HasText) headerWidget).setText(text);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -361,6 +383,10 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
 
   public void showWidget(Widget child, boolean fireEvents) {
     showWidget(getWidgetIndex(child), getAnimationDuration(), fireEvents);
+  }
+  
+  protected void onHeaderClick(Widget child) {
+    showWidget(child);
   }
 
   @Override
@@ -402,29 +428,46 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     child.addStyleName(CONTENT_STYLE);
 
     header.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
-        showWidget(child);
+        Stack.this.onHeaderClick(child);
       }
     });
 
-    if (BeeConst.isUndef(getVisibleIndex())) {
+    if (BeeConst.isUndef(getSelectedIndex())) {
       showWidget(0);
-    } else if (index <= getVisibleIndex()) {
-      setSelectedIndex(getVisibleIndex() + 1);
+    } else if (index <= getSelectedIndex()) {
+      setSelectedIndex(getSelectedIndex() + 1);
     }
 
     if (isAttached()) {
       animate(getAnimationDuration());
     }
   }
-
+  
+  private boolean isIndex(int index) {
+    return index >= 0 && index < getWidgetCount();
+  }
+  
   private void setSelectedIndex(int selectedIndex) {
+    if (this.selectedIndex == selectedIndex) {
+      return;
+    }
+    
+    if (isIndex(this.selectedIndex)) {
+      getHeaderWidget(this.selectedIndex).removeStyleName(SELECTED_STYLE);
+    }
+
     this.selectedIndex = selectedIndex;
+
+    if (isIndex(selectedIndex)) {
+      getHeaderWidget(selectedIndex).addStyleName(SELECTED_STYLE);
+    }
   }
 
   private void showWidget(int index, final int duration, boolean fireEvents) {
     checkIndex(index);
-    if (index == getVisibleIndex()) {
+    if (index == getSelectedIndex()) {
       return;
     }
 

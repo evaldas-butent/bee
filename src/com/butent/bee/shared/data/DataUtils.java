@@ -234,6 +234,10 @@ public class DataUtils {
     return result;
   }
 
+  public static Boolean getBoolean(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getBoolean(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
     int index = getColumnIndex(columnId, columns);
 

@@ -14,8 +14,8 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.Animation;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;

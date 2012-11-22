@@ -5,8 +5,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
@@ -19,12 +19,14 @@ import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
 import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
 import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class ResourceView extends CalendarView {
 
@@ -56,12 +58,12 @@ public class ResourceView extends CalendarView {
   }
 
   @Override
-  public void doLayout() {
+  public void doLayout(long calendarId) {
     JustDate date = getDate();
     List<Long> attendees = getCalendarWidget().getAttendees();
     int cc = attendees.size();
 
-    viewHeader.setAttendees(attendees);
+    viewHeader.setAttendees(calendarId, attendees);
     viewHeader.setDate(date);
 
     viewMulti.setColumnCount(cc);
@@ -82,15 +84,18 @@ public class ResourceView extends CalendarView {
     appointmentWidgets.clear();
     
     int multiHeight = BeeConst.UNDEF;
+    
+    Map<Long, String> attendeeColors = CalendarKeeper.getAttendeeColors(calendarId);
 
     for (int i = 0; i < cc; i++) {
       Long id = attendees.get(i);
+      String bg = attendeeColors.get(id);
 
       List<Appointment> simple = CalendarUtils.filterSimple(getAppointments(), date, id);
       if (!simple.isEmpty()) {
         List<AppointmentAdapter> adapters =
             CalendarLayoutManager.doLayout(simple, i, cc, getSettings());
-        addAppointmentsToGrid(adapters, false, i);
+        addAppointmentsToGrid(calendarId, adapters, false, i, bg);
       }
 
       List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, 1, id);
@@ -102,7 +107,7 @@ public class ResourceView extends CalendarView {
         
         multiHeight = Math.max(multiHeight,
             CalendarLayoutManager.doMultiLayout(adapters, date, i, cc));
-        addAppointmentsToGrid(adapters, true, i);
+        addAppointmentsToGrid(calendarId, adapters, true, i, bg);
       }
     }
     
@@ -147,7 +152,7 @@ public class ResourceView extends CalendarView {
   }
 
   @Override
-  public boolean onClick(Element element, Event event) {
+  public boolean onClick(long calendarId, Element element, Event event) {
     AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
 
     if (widget != null) {
@@ -171,8 +176,8 @@ public class ResourceView extends CalendarView {
     viewBody.onClock(getSettings());
   }
   
-  private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi,
-      int columnIndex) {
+  private void addAppointmentsToGrid(long calendarId, List<AppointmentAdapter> adapters,
+      boolean multi, int columnIndex, String bg) {
 
     for (AppointmentAdapter adapter : adapters) {
       AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
@@ -184,7 +189,7 @@ public class ResourceView extends CalendarView {
       widget.setTop(adapter.getTop());
       widget.setHeight(adapter.getHeight());
 
-      widget.render();
+      widget.render(calendarId, bg);
 
       appointmentWidgets.add(widget);
 

@@ -25,6 +25,7 @@ import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -108,6 +109,21 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<TilePanel> handler) {
     return addHandler(handler, SelectionEvent.getType());
+  }
+
+  @Override
+  public void clear() {
+    if (!Global.isTemporaryDetach() && getContent() instanceof HandlesStateChange) {
+      ((HandlesStateChange) getContent()).onStateChange(State.REMOVED);
+    }
+    
+    for (Widget child : getChildren()) {
+      if (child instanceof TilePanel) {
+        ((TilePanel) child).clear();
+      }
+    }
+    
+    super.clear();
   }
 
   @Override
@@ -219,6 +235,14 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     SelectionEvent.fire(this, this);
     if (updateHistory) {
       Historian.goTo(getId());
+    }
+    
+    activateContent();
+  }
+  
+  void activateContent() {
+    if (getContent() instanceof HandlesStateChange) {
+      ((HandlesStateChange) getContent()).onStateChange(State.ACTIVATED);
     }
   }
 

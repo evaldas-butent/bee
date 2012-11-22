@@ -72,11 +72,17 @@ public class CalendarConstants {
   }
 
   public enum Visibility implements HasCaption {
-    DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL;
+    PUBLIC("Viešas"), PRIVATE("Privatus");
+
+    private final String caption;
+    
+    private Visibility(String caption) {
+      this.caption = caption;
+    }
 
     @Override
     public String getCaption() {
-      return this.name().toLowerCase();
+      return caption;
     }
   }
 
@@ -141,10 +147,12 @@ public class CalendarConstants {
   public static final String PARAM_APPOINTMENT_ID = "appointment_id";
   public static final String PARAM_APPOINTMENT_START = "appointment_start";
   public static final String PARAM_APPOINTMENT_END = "appointment_end";
+  public static final String PARAM_APPOINTMENT_SEPARATED = "appointment_separated";
   public static final String PARAM_ATTENDEES = "attendees";
   public static final String PARAM_REPORT = "report";
 
   public static final String TBL_USER_CALENDARS = "UserCalendars";
+  public static final String TBL_USER_CAL_ATTENDEES = "UserCalAttendees";
   public static final String TBL_CONFIGURATION = "Configuration";
 
   public static final String TBL_APPOINTMENTS = "Appointments";
@@ -159,6 +167,7 @@ public class CalendarConstants {
 
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
+  public static final String VIEW_USER_CAL_ATTENDEES = "UserCalAttendees";
   public static final String VIEW_CONFIGURATION = "Configuration";
 
   public static final String VIEW_PROPERTY_GROUPS = "PropertyGroups";
@@ -198,6 +207,7 @@ public class CalendarConstants {
 
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
+  public static final String COL_USER_CALENDAR = "UserCalendar";
   public static final String COL_CALENDAR_NAME = "CalendarName";
   public static final String COL_NAME = "Name";
 
@@ -212,7 +222,7 @@ public class CalendarConstants {
 
   public static final String COL_TIME_BLOCK_CLICK_NUMBER = "TimeBlockClickNumber";
 
-  public static final String COL_FAVORITE = "Favorite";
+  public static final String COL_SEPARATE_ATTENDEES = "SeparateAttendees";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "CompanyName";
@@ -226,6 +236,10 @@ public class CalendarConstants {
   public static final String COL_ATTENDEE = "Attendee";
   public static final String COL_ATTENDEE_NAME = "AttendeeName";
   public static final String COL_ATTENDEE_TYPE = "AttendeeType";
+  public static final String COL_ATTENDEE_ORDINAL = "AttendeeOrdinal";
+  public static final String COL_ATTENDEE_COLOR = "AttendeeColor";
+  public static final String COL_ATTENDEE_BACKGROUND = "AttendeeBackground";
+  public static final String COL_ATTENDEE_FOREGROUND = "AttendeeForeground";
 
   public static final String COL_TIME_ZONE = "TimeZone";
   public static final String COL_THEME = "Theme";
@@ -307,6 +321,9 @@ public class CalendarConstants {
   public static final String COL_TRANSPARENCY = "Transparency";
   public static final String COL_TYPE_TRANSPARENCY = "TypeTransparency";
 
+  public static final String COL_VISIBILITY = "Visibility";
+  public static final String COL_CREATOR = "Creator";
+
   public static final String COL_REPORT = "Report";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_LOWER_DATE = "LowerDate";
@@ -318,6 +335,9 @@ public class CalendarConstants {
 
   public static final String COL_APPOINTMENT_CREATOR = "AppointmentCreator";
   public static final String COL_APPOINTMENT_EDITOR = "AppointmentEditor";
+
+  public static final String COL_ENABLED = "Enabled";
+  public static final String COL_ORDINAL = "Ordinal";
     
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
@@ -325,6 +345,8 @@ public class CalendarConstants {
   public static final String PRM_REMINDER_TIME_FROM = "ReminderTimeFrom";
   public static final String PRM_REMINDER_TIME_UNTIL = "ReminderTimeUntil";
 
+  public static final String PROP_USER_CAL_ATTENDEES = "UserCalAttendees";
+  
   private CalendarConstants() {
   }
 }

@@ -4,9 +4,9 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.utils.BeeUtils;
 

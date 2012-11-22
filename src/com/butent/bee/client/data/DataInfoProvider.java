@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
@@ -50,7 +51,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     return views.values();
   }
 
-  public void load() {
+  public void load(final Callback<Integer> callback) {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DATA_INFO, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
@@ -64,6 +65,10 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
           }
         }
         logger.info("data info provider loaded", views.size(), "items");
+        
+        if (callback != null) {
+          callback.onSuccess(views.size());
+        }
       }
     });
   }

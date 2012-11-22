@@ -13,8 +13,8 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.IsHtmlTable;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -314,6 +314,15 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     return getWidgetImpl(row, column);
   }
   
+  public int insertRow(int beforeRow) {
+    if (beforeRow != getRowCount()) {
+      checkRowBounds(beforeRow);
+    }
+    Element tr = DOM.createTR();
+    DOM.insertChild(bodyElem, tr, beforeRow);
+    return beforeRow;
+  }
+
   public boolean isEmpty() {
     return getRowCount() <= 0;
   }
@@ -386,12 +395,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
     DOM.removeChild(bodyElem, rowFormatter.getElement(row));
   }
-
+  
   @Override
   public void setBorderSpacing(int spacing) {
     StyleUtils.setBorderSpacing(tableElem, spacing);
   }
-  
+
   @Override
   public void setDefaultCellClasses(String classes) {
     this.defaultCellClasses = classes;
@@ -441,15 +450,6 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public void setWidget(int row, int column, Widget widget, String cellStyleName) {
     setWidget(row, column, widget);
     getCellFormatter().addStyleName(row, column, cellStyleName);
-  }
-
-  protected int insertRow(int beforeRow) {
-    if (beforeRow != getRowCount()) {
-      checkRowBounds(beforeRow);
-    }
-    Element tr = DOM.createTR();
-    DOM.insertChild(bodyElem, tr, beforeRow);
-    return beforeRow;
   }
 
   private void checkCellBounds(int row, int column) {

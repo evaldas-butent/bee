@@ -6,9 +6,9 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Unit;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.style.ComputedStyles;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;

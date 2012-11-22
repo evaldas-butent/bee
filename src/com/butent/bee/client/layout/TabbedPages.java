@@ -19,8 +19,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;

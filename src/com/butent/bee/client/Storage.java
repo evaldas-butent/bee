@@ -58,7 +58,8 @@ public class Storage implements Module {
       items.clear();
     }
   }
-
+  
+  @Override
   public void end() {
   }
 
@@ -93,10 +94,12 @@ public class Storage implements Module {
     }
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -117,6 +120,7 @@ public class Storage implements Module {
     return getItem(key) != null;
   }
 
+  @Override
   public void init() {
   }
 
@@ -170,6 +174,7 @@ public class Storage implements Module {
     }
   }
 
+  @Override
   public void start() {
   }
 

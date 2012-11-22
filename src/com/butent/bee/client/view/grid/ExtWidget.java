@@ -3,9 +3,9 @@ package com.butent.bee.client.view.grid;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;

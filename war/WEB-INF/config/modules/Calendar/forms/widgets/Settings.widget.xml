@@ -44,4 +44,8 @@
     <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
     <CheckBox source="ResourceView" html="Resursai" />
   </row>
+
+  <row>
+    <CheckBox source="SeparateAttendees" html="Resursus rodyti atskirai" />
+  </row>
 </Table>

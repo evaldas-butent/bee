@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Attendees" source="Attendees" caption="Resursai"
-  editForm="Attendee" rowCaption="Name"
+  editForm="Attendee" rowCaption="Name" newRowForm="Attendee" newRowCaption="Naujas resursas"
   >
   <Columns>
     <SimpleColumn name="AttendeeType" />
@@ -29,6 +29,19 @@
 
     <SimpleColumn name="Transparency" />
     <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="Color" />
+    <SimpleJoin name="Color" joinType="LEFT">
+      <SimpleColumn alias="ColorName" name="Name" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Style" />
+    <SimpleJoin name="Style" joinType="LEFT">
+      <SimpleColumn alias="StyleName" name="Name" />
+    </SimpleJoin>
+
   </Columns>
   <Order>
     <OrderBy column="Ordinal" />

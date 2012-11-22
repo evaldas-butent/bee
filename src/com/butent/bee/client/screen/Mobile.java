@@ -13,14 +13,14 @@ import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
@@ -42,6 +42,21 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  public boolean activateDomainEntry(Domain domain, Long key) {
+    return false;
+  }
+  
+  @Override
+  public void activateWidget(IdentifiableWidget widget) {
+    notifyWarning("The white zone is for loading and unloading only");
+  }
+
+  @Override
+  public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
+    notifyWarning("The white zone is for loading and unloading only");
+  }
+
+  @Override
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
 
@@ -52,6 +67,11 @@ public class Mobile extends ScreenImpl {
     }
   }
   
+  @Override
+  public boolean containsDomainEntry(Domain domain, Long key) {
+    return false;
+  }
+
   @Override
   public int getActivePanelHeight() {
     return getScreenPanel().getCenterHeight();
@@ -65,6 +85,11 @@ public class Mobile extends ScreenImpl {
   @Override
   public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
+  }
+
+  @Override
+  public boolean removeDomainEntry(Domain domain, Long key) {
+    return false;
   }
 
   @Override

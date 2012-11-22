@@ -11,7 +11,7 @@ import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.TextAreaElement;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.shared.Assert;

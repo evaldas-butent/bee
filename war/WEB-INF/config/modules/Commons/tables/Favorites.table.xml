@@ -7,6 +7,7 @@
   <Fields>
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" />
     <Integer name="Group" notNull="true" />
+    <String name="Key" precision="100" notNull="true" />
     <Long name="Item" notNull="true" />
     <Integer name="Order" />
     <Text name="Html" notNull="true" />

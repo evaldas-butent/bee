@@ -141,7 +141,7 @@ public class RendererFactory {
       case FLAG:
         renderer = new FlagRenderer(dataIndex);
         break;
-      
+
       default:
         logger.severe("renderer", type.name(), "not supported");
     }

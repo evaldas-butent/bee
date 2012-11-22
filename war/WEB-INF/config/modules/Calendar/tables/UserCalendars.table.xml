@@ -18,6 +18,8 @@
     <Integer name="ScrollToHour" />
 
     <Integer name="TimeBlockClickNumber" />
+    
+    <Boolean name="SeparateAttendees" />
 
     <Boolean name="DayView" defValue="true" />
     <Boolean name="DaysView" defValue="true" />

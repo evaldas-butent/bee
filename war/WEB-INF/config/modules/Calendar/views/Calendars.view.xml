@@ -29,6 +29,8 @@
 
     <SimpleColumn name="TimeBlockClickNumber" />
 
+    <SimpleColumn name="SeparateAttendees" />
+
     <SimpleColumn name="DayView" />
     <SimpleColumn name="DaysView" />
     <SimpleColumn name="WorkWeekView" />

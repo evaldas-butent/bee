@@ -19,6 +19,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarFormat;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
@@ -112,7 +113,7 @@ public class MonthView extends CalendarView {
   }
 
   @Override
-  public void doLayout() {
+  public void doLayout(long calendarId) {
     grid.clear();
 
     canvas.clear();
@@ -129,17 +130,24 @@ public class MonthView extends CalendarView {
     dropController.setRowCount(requiredRows);
     dropController.setColumnCount(DAYS_IN_A_WEEK);
     dropController.setHeaderHeight(weekDayHeaderHeight);
+    
+    List<Long> attendees = getCalendarWidget().getAttendees();
+    boolean separate = getSettings().separateAttendees();
+    Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
-    Collections.sort(getAppointments(), APPOINTMENT_COMPARATOR);
+    List<Appointment> filtered = CalendarUtils.filterByAttendees(getAppointments(), attendees,
+        separate);
+
+    Collections.sort(filtered, APPOINTMENT_COMPARATOR);
     MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDate,
-        requiredRows, getAppointments(), maxCellAppointments - 1);
+        requiredRows, filtered, maxCellAppointments - 1);
 
     WeekLayoutDescription[] weeks = monthLayoutDescription.getWeekDescriptions();
     for (int i = 0; i < requiredRows; i++) {
       WeekLayoutDescription weekDescription = weeks[i];
       if (weekDescription != null) {
-        layOnTopAppointments(weekDescription, i);
-        layOnWeekDaysAppointments(weekDescription, i);
+        layOnTopAppointments(calendarId, weekDescription, i, separate, attColors);
+        layOnWeekDaysAppointments(calendarId, weekDescription, i, separate, attColors);
       }
     }
   }
@@ -177,13 +185,13 @@ public class MonthView extends CalendarView {
   }
 
   @Override
-  public boolean onClick(Element element, Event event) {
+  public boolean onClick(long calendarId, Element element, Event event) {
     if (element.equals(canvas.getElement())) {
       dayClicked(event);
       return true;
 
     } else if (moreLabels.containsKey(element.getId())) {
-      showAppointments(moreLabels.get(element.getId()));
+      showAppointments(calendarId, moreLabels.get(element.getId()));
       return true;
 
     } else {
@@ -310,14 +318,18 @@ public class MonthView extends CalendarView {
     createAppointment(start, null);
   }
 
-  private void layOnAppointment(Appointment appointment, boolean multi, int colStart, int colEnd,
-      int row, int cellPosition) {
+  private void layOnAppointment(long calendarId, Appointment appointment, boolean multi,
+      int colStart, int colEnd, int row, int cellPosition, boolean separate,
+      Map<Long, String> attColors) {
 
+    String bg = (separate && attColors != null) 
+        ?  attColors.get(appointment.getSeparatedAttendee()) : null;
+    
     AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
     if (multi) {
-      widget.render();
+      widget.render(calendarId, bg);
     } else {
-      widget.renderCompact();
+      widget.renderCompact(calendarId, bg);
     }
 
     placeItemInGrid(widget, appointment, multi, colStart, colEnd, row, cellPosition);
@@ -340,7 +352,9 @@ public class MonthView extends CalendarView {
     moreLabels.put(more.getId(), appointments);
   }
 
-  private void layOnTopAppointments(WeekLayoutDescription weekDescription, int weekOfMonth) {
+  private void layOnTopAppointments(long calendarId, WeekLayoutDescription weekDescription,
+      int weekOfMonth, boolean separate, Map<Long, String> attColors) {
+
     AppointmentStackingManager manager = weekDescription.getTopAppointmentsManager();
     for (int layer = 0; layer < maxCellAppointments; layer++) {
       List<AppointmentLayoutDescription> descriptions = manager.getDescriptionsInLayer(layer);
@@ -349,13 +363,16 @@ public class MonthView extends CalendarView {
       }
 
       for (AppointmentLayoutDescription description : descriptions) {
-        layOnAppointment(description.getAppointment(), true, description.getWeekStartDay(),
-            description.getWeekEndDay(), weekOfMonth, layer);
+        layOnAppointment(calendarId, description.getAppointment(), true,
+            description.getWeekStartDay(), description.getWeekEndDay(), weekOfMonth, layer,
+            separate, attColors);
       }
     }
   }
 
-  private void layOnWeekDaysAppointments(WeekLayoutDescription week, int weekOfMonth) {
+  private void layOnWeekDaysAppointments(long calendarId, WeekLayoutDescription week,
+      int weekOfMonth, boolean separate, Map<Long, String> attColors) {
+
     AppointmentStackingManager manager = week.getTopAppointmentsManager();
 
     for (int dayOfWeek = 0; dayOfWeek < DAYS_IN_A_WEEK; dayOfWeek++) {
@@ -373,7 +390,8 @@ public class MonthView extends CalendarView {
             int remaining = count + manager.countOverLimit(dayOfWeek) - i;
 
             if (remaining == 1) {
-              layOnAppointment(appointment, false, dayOfWeek, dayOfWeek, weekOfMonth, layer);
+              layOnAppointment(calendarId, appointment, false, dayOfWeek, dayOfWeek, weekOfMonth,
+                  layer, separate, attColors);
             } else {
               List<Appointment> overLimit = manager.getOverLimit(dayOfWeek);
               overLimit.addAll(Lists.newArrayList(dayAppointments.getAppointments()
@@ -384,7 +402,8 @@ public class MonthView extends CalendarView {
             break;
           }
 
-          layOnAppointment(appointment, false, dayOfWeek, dayOfWeek, weekOfMonth, layer);
+          layOnAppointment(calendarId, appointment, false, dayOfWeek, dayOfWeek, weekOfMonth,
+              layer, separate, attColors);
           layer++;
         }
 
@@ -449,7 +468,7 @@ public class MonthView extends CalendarView {
     widget.getElement().getStyle().setTop(BeeUtils.round(top, PERCENT_SCALE), Unit.PCT);
   }
   
-  private void showAppointments(List<Appointment> appointments) {
+  private void showAppointments(long calendarId, List<Appointment> appointments) {
     if (BeeUtils.isEmpty(appointments)) {
       return;
     }
@@ -464,7 +483,7 @@ public class MonthView extends CalendarView {
     for (Appointment appointment : appointments) {
       boolean multi = appointment.isMultiDay();
       AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
-      widget.render();
+      widget.render(calendarId, null);
       
       panel.add(widget);
     }

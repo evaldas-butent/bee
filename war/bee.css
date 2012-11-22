@@ -97,31 +97,20 @@ body, select {
   float: left;
 }
 
-@-webkit-keyframes movingLogo {
-  from {left: 50%; top: 50%; width: 110px; height: 152px;}
-  to {left: 1%; top: 1%; width: 55px; height: 76px;}
-}
 .bee-LogoContainer {
   position: absolute;
-  left: 1%;
-  top: 1%;
+  left: 5px;
+  top: 5px;
   width: 55px;
   height: 76px;
-/*   -webkit-animation: movingLogo 1s ease 500ms; */
-/*   -webkit-animation-fill-mode: forwards; */
 }
 .bee-Logo {
   width: 100%;
   height: 100%;
 }
 
-@-webkit-keyframes reveal {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
 .bee-Screen {
   background-color: white;  
-/*   -webkit-animation: reveal 1s ease-in; */
 }
 
 .bee-NorthContainer > div {
@@ -689,21 +678,6 @@ body, select {
   font-size: xx-large;
 }
 
-@-webkit-keyframes rotateX {
-  from {-webkit-transform: rotateX(0deg);}
-  to {-webkit-transform: rotateX(360deg);}
-}
-
-@-webkit-keyframes rotateY {
-  from {-webkit-transform: rotateY(0deg);}
-  to {-webkit-transform: rotateY(360deg);}
-}
-
-@-webkit-keyframes rotateZ {
-  from {-webkit-transform: rotateZ(0deg);}
-  to {-webkit-transform: rotateZ(360deg);}
-}
-
 .bee-error {
   color: red;
 }
@@ -1233,10 +1207,10 @@ body, select {
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
-  color: #6D6D6D;
+  color: #6d6d6d;
   font: 13px/25px Arial;
   background-color: white;
-  border: 1px solid #E4E4E4;
+  border: 1px solid #e4e4e4;
   padding: 0 10px;
   cursor: pointer;
 }
@@ -1254,21 +1228,12 @@ body, select {
 
 .bee-StackHeader {
   cursor: pointer;
-  padding-left: 1em;
-  padding-top: 2px;
-  color: #6D6D6D;
-  background-color: #f2f2f2;
+  color: #6d6d6d;
+  background-color: white;
   font: 13px Arial;
 }
 .bee-StackHeader:hover {
-  border-style: solid;
-  border-color: #BEBEBE;
-  border-width: 1px 0px;
-}
-
-.bee-StackContent {
-  padding-left: 2px;
-  padding-top: 1ex;
+  background-color: #f2f2f2;
 }
 
 .bee-ChoiceDialog {
@@ -1341,25 +1306,28 @@ body, select {
   text-align: center;
 }
 
-.bee-FavoritesGroup {
+.bee-FavoritesDisplay {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1ex;
+  margin-top: 2ex;
 }
-.bee-FavoritesGroup td {
+.bee-FavoritesDisplay tr td:first-child {
+  padding-left: 20px;
+}
+.bee-FavoritesDisplay td {
   padding: 5px;
 }
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
   width: 16px;
 }
 
-.bee-FavoritesGroup tr:hover {
+.bee-FavoritesDisplay tr:hover {
   background-color: #f2f2f2;
 }
 .bee-FavoritesEdit, .bee-FavoritesDelete {
   visibility: hidden;
 }
-.bee-FavoritesGroup tr:hover .bee-FavoritesEdit, .bee-FavoritesGroup tr:hover .bee-FavoritesDelete {
+.bee-FavoritesDisplay tr:hover .bee-FavoritesEdit, .bee-FavoritesDisplay tr:hover .bee-FavoritesDelete {
   visibility: visible;
 }
 
@@ -1385,7 +1353,7 @@ body, select {
   cursor: pointer;
 }
 .bee-Image:hover {
-  -webkit-filter: contrast(200%);
+  -webkit-filter: contrast(150%);
 }
 
 .bee-SearchResultHeader {
@@ -1529,31 +1497,6 @@ body, select {
   background: transparent;
 }
 
-.bee-FavoriteTab img {
-  -webkit-filter: grayscale(100%);
-}
-
-.bee-AdminTab {
-/*   display: none; */
-}
-.bee-LogToggle {
-  position: absolute;
-  left: 5px;
-  top: 10px;
-}
-.bee-DebugToggle {
-  position: absolute;
-  left: 50px;
-  top: 10px;
-}
-.bee-AdminShell {
-  position: absolute;
-  left: 1px;
-  right: 1px;
-  top: 40px;
-  bottom: 1px;
-}
-
 .bee-Workspace-tab {
   display: inline-block;
   height: 25px;
@@ -1565,6 +1508,7 @@ body, select {
   cursor: pointer;
 }
 .bee-Workspace-tabSelected {
+  color: #222;
   background-color: #f2f2f2;
   border-bottom-color: #f2f2f2;
   z-index: 1;
@@ -1625,6 +1569,19 @@ body, select {
   width: 7px;
   height: 14px;
   border-left-width: 8px;
+}
+
+.bee-Workspace-action-up {
+  cursor: n-resize !important;
+}
+.bee-Workspace-action-down {
+  cursor: s-resize !important;
+}
+.bee-Workspace-action-left {
+  cursor: w-resize !important;
+}
+.bee-Workspace-action-right {
+  cursor: e-resize !important;
 }
 
 .bee-ConfirmContainer {
@@ -1797,6 +1754,37 @@ body, select {
 }
 .bee-CellGridActiveCell.bee-EditableRelation {
   text-decoration: underline;
+}
+
+.bee-CentralScrutinizer .bee-StackHeader {
+  border-left: 5px solid white;
+}
+.bee-CentralScrutinizer .bee-StackHeader-selected {
+  border-left: 5px solid #FD6268;
+  color: #222;
+}
+
+.bee-Appliance-icon {
+  position: absolute;
+  top: 4px;
+  left: 15px;
+}
+.bee-Appliance-label {
+  position: absolute;
+  top: 4px;
+  left: 50px;
+}
+.bee-Appliance-close {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+}
+
+.bee-ApplianceFavorite .bee-Appliance-icon {
+  -webkit-filter: grayscale(50%);
+}
+.bee-ApplianceWhite_zone {
+  visibility: hidden;
 }
 
 .bee-MainSearchOptionsContainer {

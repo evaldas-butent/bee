@@ -6,10 +6,10 @@ import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Scroll;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.NavigationOrigin;

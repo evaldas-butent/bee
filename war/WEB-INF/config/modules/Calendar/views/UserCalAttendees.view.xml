@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  
+  name="UserCalAttendees"
+  source="UserCalAttendees"
+  >
+  <Columns>
+    <SimpleColumn name="UserCalendar" />
+
+    <SimpleColumn name="Attendee" />
+    <SimpleJoin name="Attendee" joinType="INNER">
+      <SimpleColumn alias="AttendeeName" name="Name" />
+      <SimpleColumn alias="AttendeeOrdinal" name="Ordinal" />
+
+      <SimpleColumn name="AttendeeType" />
+      <SimpleJoin joinType="INNER" name="AttendeeType">
+        <SimpleColumn alias="TypeName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn alias="AttendeeColor" name="Color" />
+      <SimpleJoin name="Color" joinType="LEFT">
+        <SimpleColumn alias="AttendeeColorName" name="Name" />
+        <SimpleColumn alias="AttendeeBackground" name="Background" />
+        <SimpleColumn alias="AttendeeForeground" name="Foreground" />
+      </SimpleJoin>
+    
+      <SimpleColumn alias="AttendeeStyle" name="Style" />
+      <SimpleJoin name="Style" joinType="LEFT">
+        <SimpleColumn alias="AttendeeStyleName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Enabled" />
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="Caption" />
+    
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="Style" />
+    <SimpleJoin name="Style" joinType="LEFT">
+      <SimpleColumn alias="StyleName" name="Name" />
+    </SimpleJoin>
+    
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

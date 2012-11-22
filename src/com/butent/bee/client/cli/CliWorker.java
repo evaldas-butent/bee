@@ -24,6 +24,7 @@ import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.layout.client.Layout;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
@@ -55,15 +56,12 @@ import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
-import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.Stacking;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
@@ -71,6 +69,7 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Flags;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.language.DetectionCallback;
 import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
@@ -85,6 +84,9 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.style.ComputedStyles;
+import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
@@ -177,187 +179,285 @@ public class CliWorker {
 
     if (z.equals("?")) {
       whereAmI();
+
     } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
       doAjaxKeys(arr);
+
     } else if (z.equals("audio")) {
       playAudio(args);
+
     } else if (z.equals("browser") || z.startsWith("wind")) {
       showBrowser(arr);
+
     } else if (z.equals("cache")) {
       showExtData(Global.getCache().getExtendedInfo());
+
     } else if (z.startsWith("cap")) {
       showCaptions();
+
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
+
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       doScreen(arr);
+
     } else if (z.equals("charset")) {
       getCharsets();
+
     } else if (z.startsWith("cho")) {
       showChoice(arr);
+
     } else if (z.equals("class")) {
       getClassInfo(args);
+
     } else if (z.equals("clear")) {
       clear(args);
+
     } else if (z.startsWith("client")) {
       showClientLocation();
+
     } else if (z.startsWith("collect")) {
       doCollections(arr);
+
     } else if (z.startsWith("column")) {
       showExtData(Data.getColumnMapper().getExtendedInfo());
+
     } else if (z.startsWith("data")) {
       showDataInfo(args);
+
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
+
     } else if (z.startsWith("conn") || z.equals("http")) {
       BeeKeeper.getRpc().invoke("connectionInfo");
+
     } else if (z.equals("cornify")) {
       cornify(arr);
+
     } else if (z.startsWith("dbinf")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_INFO);
+
+    } else if (z.equals("debug")) {
+      if (!BeeUtils.isEmpty(args)) {
+        Global.setDebug(BeeConst.isTrue(args));
+      }
+      logger.debug("debug", Global.isDebug());
+
     } else if (z.startsWith("decor")) {
       if (BeeUtils.isEmpty(args)) {
         showExtData(TuningFactory.getExtendedInfo());
       } else {
         TuningFactory.refresh();
       }
+
     } else if (z.startsWith("df")) {
       showDateFormat(args);
+
     } else if (z.startsWith("dim")) {
       showDimensions(args);
+
     } else if (z.equals("dsn")) {
       CompositeService.doService(new DsnService().name(), DsnService.SVC_GET_DSNS);
+
     } else if (z.startsWith("dt")) {
       showDate(z, args);
+
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
+
     } else if (z.equals("eval")) {
       eval(v, arr);
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
+
     } else if (z.equals("files") || z.startsWith("repo")) {
       getFiles();
+
     } else if (z.startsWith("flag")) {
       showFlags(arr);
+
     } else if (z.equals("font") && arr.length == 2) {
       showFont(arr[1]);
+
     } else if (z.equals("form") && arr.length == 2) {
       FormFactory.openForm(arr[1]);
+
     } else if (z.startsWith("forminf") || z.equals("ff")) {
       showPropData(FormFactory.getInfo());
+
     } else if (z.equals("fs")) {
       getFs();
+
     } else if (z.equals("gen")) {
       BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.joinWords(arr[1], arr[2],
           ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
+
     } else if (z.equals("geo")) {
       showGeo();
+
     } else if (z.equals("grid") && arr.length == 2) {
       GridFactory.openGrid(arr[1]);
+
     } else if (z.startsWith("gridinf")) {
       GridFactory.showGridInfo(args);
+
     } else if (z.equals("gwt")) {
       showGwt();
+
     } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
       showSupport();
+
     } else if (z.startsWith("hist")) {
       Global.showModalGrid("History", new PropertiesData(Historian.getInstance().getInfo()));
+
     } else if (z.equals("id")) {
       showElement(v, arr);
+
+    } else if (z.startsWith("image")) {
+      showImages(arr);
+
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
+
     } else if (z.startsWith("inp") && z.contains("box") || z.equals("prompt")) {
       showInputBox(arr);
+
     } else if (z.equals("jdbc")) {
       doJdbc();
+
     } else if (BeeUtils.inList(z, "keys", "pk")) {
       getKeys(arr);
+
     } else if (z.startsWith("like") && arr.length >= 3) {
       doLike(arr);
+
     } else if (z.equals("loaders")) {
       BeeKeeper.getRpc().invoke("loaderInfo");
+
     } else if (z.equals("locale")) {
       doLocale(arr);
+
     } else if (z.equals("log")) {
       doLog(arr);
+
     } else if (z.equals("menu")) {
       doMenu();
+
     } else if (z.equals("meter")) {
       showMeter(arr);
+
     } else if (z.equals("md5")) {
       digest(v);
+
     } else if (z.equals("nf") && arr.length >= 3) {
       logger.info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
+
     } else if (z.equals("notify") && arr.length >= 2) {
       showNotes(args);
+
     } else if (BeeUtils.inList(z, "p", "prop")) {
       showProperties(v, arr);
+
     } else if (z.startsWith("ping")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_PING);
+
     } else if (z.startsWith("print")) {
       print(args);
+
     } else if (z.equals("progress")) {
       showProgress(arr);
+
     } else if (z.equals("rebuild")) {
       rebuildSomething(args);
+
     } else if (z.equals("rpc")) {
       showRpc();
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args);
+
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
+
     } else if (z.equals("settings")) {
       showPropData(Settings.getInfo());
+
     } else if (z.startsWith("sheets")) {
       Global.showGrid(new PropertiesData(Global.getStylesheets()));
+
     } else if (z.equals("size") && arr.length >= 2) {
       showSize(arr);
+
     } else if (z.equals("slider")) {
       showSlider(arr);
+
     } else if (z.equals("sql")) {
       doSql(args);
+
     } else if (z.equals("stack")) {
       showStack();
+
     } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
       showPropData(Stacking.getInfo());
+
     } else if (z.startsWith("stor")) {
       storage(arr);
+
     } else if (z.equals("style")) {
       style(v, arr);
+
     } else if (z.equals("svg")) {
       showSvg(arr);
+
     } else if (z.equals("table")) {
       showTableInfo(args);
+
     } else if (z.equals("tables")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
+
     } else if (z.equals("tiles")) {
       BeeKeeper.getScreen().showInfo();
+
     } else if (z.startsWith("tran") || z.startsWith("detec")) {
       translate(arr, z.startsWith("detec"));
+
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       unicode(arr);
+
     } else if (z.startsWith("unit")) {
       showUnits(arr);
+
     } else if (z.startsWith("upl")) {
       upload();
+
     } else if (z.startsWith("user")) {
       showPropData(BeeKeeper.getUser().getInfo());
+
     } else if (z.equals("vars")) {
       showVars(arr);
+
     } else if (z.equals("video")) {
       playVideo(args);
+
     } else if (z.startsWith("view")) {
       showViewInfo(args);
+
     } else if (z.startsWith("viz")) {
       Showcase.open();
+
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
+
     } else if (z.equals("widget") && arr.length >= 2) {
       showWidgetInfo(arr);
+
     } else if (z.equals("wf") || z.startsWith("suppl")) {
       showWidgetSuppliers();
+
     } else if (z.startsWith("xml")) {
       showXmlInfo(arr);
+
     } else if (z.equals("mail")) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
@@ -797,7 +897,7 @@ public class CliWorker {
       return;
     }
 
-    Direction dir = DomUtils.getDirection(p1);
+    Direction dir = NameUtils.getEnumByName(Direction.class, p1);
     if (dir == null) {
       Global.sayHuh(p1, p2);
       return;
@@ -1205,8 +1305,7 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
-            + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
@@ -1432,7 +1531,7 @@ public class CliWorker {
       showMatrix(data, "view", "table", "id", "version", "cc", "vc", "rc");
 
     } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
-      Data.getDataInfoProvider().load();
+      Data.getDataInfoProvider().load(null);
 
     } else {
       DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -1661,7 +1760,7 @@ public class CliWorker {
     if (ArrayUtils.length(arr) > 1) {
       final int cnt = arr.length - 1;
       final Holder<Integer> counter = Holder.of(0);
-      
+
       for (int i = 1; i <= cnt; i++) {
         Flags.get(arr[i], new Callback<String>() {
           @Override
@@ -1674,7 +1773,7 @@ public class CliWorker {
             table.setWidget(0, counter.get(), new BeeImage(uri));
             count();
           }
-          
+
           private void count() {
             counter.set(counter.get() + 1);
             if (counter.get() == cnt && !table.isEmpty()) {
@@ -1683,14 +1782,14 @@ public class CliWorker {
           }
         });
       }
-      
+
     } else {
       Callback<Integer> callback = new Callback<Integer>() {
         @Override
         public void onSuccess(Integer result) {
           int row = 0;
           int col = 0;
-          
+
           Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
@@ -1698,11 +1797,11 @@ public class CliWorker {
             table.getCellFormatter().setHorizontalAlignment(row, col,
                 HasHorizontalAlignment.ALIGN_RIGHT);
             col++;
-            
+
             ImageElement imageElement = Document.get().createImageElement();
             imageElement.setSrc(entry.getValue());
             CustomWidget widget = new CustomWidget(imageElement);
-            
+
             table.setWidget(row, col, widget);
             col++;
             if (col > 20) {
@@ -1716,7 +1815,7 @@ public class CliWorker {
           }
         }
       };
-      
+
       if (Flags.isEmpty()) {
         Flags.load(callback);
       } else {
@@ -1724,7 +1823,7 @@ public class CliWorker {
       }
     }
   }
-  
+
   private static void showFont(String id) {
     Element el = Document.get().getElementById(id);
     if (el == null) {
@@ -1790,6 +1889,50 @@ public class CliWorker {
         "Is Script", GWT.isScript());
 
     showTable("GWT", new PropertiesData(info));
+  }
+
+  private static void showImages(String[] arr) {
+    final HtmlTable table = new HtmlTable();
+    table.setBorderSpacing(10);
+
+    if (ArrayUtils.length(arr) > 1) {
+      for (int i = 1; i < arr.length; i++) {
+        ImageResource resource = Images.getMap().get(arr[i].toLowerCase());
+        if (resource == null) {
+          logger.warning("image", arr[i], "not found");
+        } else {
+          table.setWidget(0, i - 1, new BeeImage(resource));
+        }
+      }
+
+      if (!table.isEmpty()) {
+        Global.showModalWidget(table);
+      }
+      
+    } else {
+      int row = 0;
+      int col = 0;
+
+      Map<String, ImageResource> map = new TreeMap<String, ImageResource>(Images.getMap());
+
+      for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
+        table.setText(row, col, entry.getKey());
+        table.getCellFormatter().setHorizontalAlignment(row, col,
+            HasHorizontalAlignment.ALIGN_RIGHT);
+        col++;
+        
+        table.setWidget(row, col, new BeeImage(entry.getValue()));
+        col++;
+        if (col > 10) {
+          row++;
+          col = 0;
+        }
+      }
+
+      if (!table.isEmpty()) {
+        BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
+      }
+    }
   }
 
   private static void showInputBox(String[] arr) {
@@ -2667,13 +2810,13 @@ public class CliWorker {
       logger.info("widget factory is empty");
       return;
     }
-    
+
     HtmlTable table = new HtmlTable();
     table.setBorderSpacing(10);
-    
+
     int row = 0;
     int col = 0;
-    
+
     for (String key : keys) {
       table.setText(row, col++, key);
       if (col >= 5) {
@@ -2683,7 +2826,7 @@ public class CliWorker {
     }
     BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
   }
-  
+
   private static void showXmlInfo(String[] arr) {
     if (arr.length >= 2) {
       String[] opt = ArrayUtils.copyOf(arr);

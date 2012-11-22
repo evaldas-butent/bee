@@ -1,4 +1,4 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.client.style;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JavaScriptObject;

@@ -32,10 +32,12 @@ public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget {
     }
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "bool";
   }
@@ -52,6 +54,7 @@ public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget {
     super.onBrowserEvent(event);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

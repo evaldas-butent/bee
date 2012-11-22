@@ -1,7 +1,6 @@
 package com.butent.bee.client.composite;
 
 import com.google.gwt.animation.client.Animation;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -12,25 +11,19 @@ import com.google.gwt.event.logical.shared.HasOpenHandlers;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     HasCloseHandlers<Disclosure> {
-
-  interface DefaultImages extends ClientBundle {
-    ImageResource disclosureClosed();
-
-    ImageResource disclosureOpen();
-  }
 
   private static class ContentAnimation extends Animation {
     private boolean opening;
@@ -113,10 +106,12 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
     private Header(final ImageResource openImage, final ImageResource closedImage, Widget widget) {
       this(new Imager() {
+        @Override
         public Image makeImage() {
           return new Image(closedImage);
         }
 
+        @Override
         public void updateImage(boolean open, Image image) {
           if (open) {
             image.setResource(openImage);
@@ -127,14 +122,17 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
       }, widget);
     }
 
+    @Override
     public void onClick(ClickEvent event) {
       setOpen(!isOpen());
     }
 
+    @Override
     public void onClose(CloseEvent<Disclosure> event) {
       update();
     }
 
+    @Override
     public void onOpen(OpenEvent<Disclosure> event) {
       update();
     }
@@ -169,8 +167,6 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
     void updateImage(boolean open, Image image);
   }
-
-  private static final DefaultImages DEFAULT_IMAGES = GWT.create(DefaultImages.class);
 
   private static final int DEFAULT_ANIMATION_DURATION = 350;
 
@@ -208,7 +204,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
   }
 
   public Disclosure(Widget headerWidget) {
-    this(DEFAULT_IMAGES.disclosureOpen(), DEFAULT_IMAGES.disclosureClosed(), headerWidget);
+    this(Global.getImages().disclosureOpen(), Global.getImages().disclosureClosed(), headerWidget);
   }
 
   @Override
@@ -224,10 +220,12 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     }
   }
 
+  @Override
   public HandlerRegistration addCloseHandler(CloseHandler<Disclosure> handler) {
     return addHandler(handler, CloseEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addOpenHandler(OpenHandler<Disclosure> handler) {
     return addHandler(handler, OpenEvent.getType());
   }

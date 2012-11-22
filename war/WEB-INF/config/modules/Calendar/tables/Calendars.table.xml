@@ -27,6 +27,8 @@
 
     <Integer name="TimeBlockClickNumber" defValue="1" />
 
+    <Boolean name="SeparateAttendees" />
+
     <Boolean name="DayView" defValue="true" />
     <Boolean name="DaysView" defValue="true" />
     <Boolean name="WorkWeekView" defValue="true" />

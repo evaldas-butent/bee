@@ -15,9 +15,9 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;

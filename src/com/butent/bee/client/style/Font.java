@@ -1,4 +1,4 @@
-package com.butent.bee.client.dom;
+package com.butent.bee.client.style;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ranges;
@@ -12,8 +12,8 @@ import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.client.dom.StyleUtils.FontSize;
-import com.butent.bee.client.dom.StyleUtils.FontVariant;
+import com.butent.bee.client.style.StyleUtils.FontSize;
+import com.butent.bee.client.style.StyleUtils.FontVariant;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;

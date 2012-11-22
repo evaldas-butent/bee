@@ -11,6 +11,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
  * Determines which classes have to be extended for boolean widget implementing classes.
  */
 
-public interface BooleanWidget extends Focusable, TakesValue<Boolean>, IdentifiableWidget, HasClickHandlers,
-    HasEnabled {
+public interface BooleanWidget extends Focusable, TakesValue<Boolean>, IdentifiableWidget,
+    HasClickHandlers, HasEnabled {
 }

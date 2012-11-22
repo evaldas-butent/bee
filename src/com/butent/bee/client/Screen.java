@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
@@ -13,11 +14,19 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 
 public interface Screen extends Module, NotificationListener {
 
+  boolean activateDomainEntry(Domain domain, Long key);
+
+  void activateWidget(IdentifiableWidget widget);
+  
   void addCommandItem(IdentifiableWidget widget);  
 
+  void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption);
+  
   void closeProgress(String id);
   
   void closeWidget(IdentifiableWidget widget);
+
+  boolean containsDomainEntry(Domain domain, Long key);
   
   String createProgress(String caption, double max);
 
@@ -31,6 +40,8 @@ public interface Screen extends Module, NotificationListener {
   
   Split getScreenPanel();
 
+  boolean removeDomainEntry(Domain domain, Long key);
+  
   void setRootPanel(LayoutPanel rootPanel);
   
   void showInfo();

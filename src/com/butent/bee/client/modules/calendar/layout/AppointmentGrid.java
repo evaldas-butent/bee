@@ -2,10 +2,10 @@ package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.gwt.dom.client.Style.Unit;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;

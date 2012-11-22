@@ -33,7 +33,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.style.ComputedStyles;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -552,22 +553,6 @@ public class DomUtils {
 
   public static String getDataRow(UIObject obj) {
     return getAttribute(obj, ATTRIBUTE_DATA_ROW);
-  }
-
-  public static Direction getDirection(String s) {
-    Assert.notEmpty(s);
-    Direction dir = null;
-
-    for (Direction z : Direction.values()) {
-      if (BeeUtils.same(z.name(), s)) {
-        dir = z;
-        break;
-      }
-      if (BeeUtils.startsSame(z.name(), s)) {
-        dir = (dir == null) ? z : null;
-      }
-    }
-    return dir;
   }
 
   public static Element getElement(String id) {
@@ -1260,14 +1245,6 @@ public class DomUtils {
   public static boolean isChecked(UIObject obj) {
     Assert.notNull(obj);
     return isChecked(obj.getElement());
-  }
-
-  public static boolean isDirection(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return false;
-    } else {
-      return getDirection(s) != null;
-    }
   }
 
   public static boolean isEmpty(HasWidgets container) {

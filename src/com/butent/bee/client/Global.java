@@ -57,8 +57,6 @@ public class Global implements Module {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
   
-  public static final String VAR_DEBUG = "debug";
-
   public static final LocalizableConstants CONSTANTS = GWT.create(LocalizableConstants.class);
   public static final LocalizableMessages MESSAGES = GWT.create(LocalizableMessages.class);
 
@@ -84,6 +82,8 @@ public class Global implements Module {
   private static final Reports REPORTS = new Reports();
 
   private static boolean temporaryDetach = false;
+  
+  private static boolean debug = false;
   
   public static void addReport(String caption, Command command) {
     REPORTS.addReport(caption, command);
@@ -364,7 +364,7 @@ public class Global implements Module {
   }
 
   public static boolean isDebug() {
-    return getVarBoolean(VAR_DEBUG);
+    return debug;
   }
 
   public static boolean isTemporaryDetach() {
@@ -383,7 +383,7 @@ public class Global implements Module {
     Assert.notNull(clazz);
     registerCaptions(NameUtils.getClassName(clazz), clazz);
   }
-  
+
   public static <E extends Enum<?> & HasCaption> void registerCaptions(String key, Class<E> clazz) {
     Assert.notEmpty(key);
     Assert.notNull(clazz);
@@ -399,6 +399,10 @@ public class Global implements Module {
       arr[i + 1] = messages[i];
     }
     inform(arr);
+  }
+  
+  public static void setDebug(boolean debug) {
+    Global.debug = debug;
   }
   
   public static void setTemporaryDetach(boolean temporaryDetach) {
@@ -591,7 +595,5 @@ public class Global implements Module {
     createVar(Service.VAR_JDBC_RETURN, "Jdbc return", BeeType.STRING,
         BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO, BeeConst.JDBC_RESULT_SET,
         BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
-
-    createVar(VAR_DEBUG, "Debug", BeeType.BOOLEAN, BeeUtils.toString(false));
   }
 }

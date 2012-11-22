@@ -36,6 +36,8 @@ public class CalendarSettings {
 
   private TimeBlockClick timeBlockClickNumber;
   
+  private boolean separateAttendees;
+  
   private final EnumMap<View, Boolean> views;
   
   private View activeView;
@@ -124,6 +126,8 @@ public class CalendarSettings {
     int tbcn = getInt(row, columns, CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER);
     setTimeBlockClickNumber(BeeUtils.getConstant(TimeBlockClick.class, tbcn));
     
+    setSeparateAttendees(getBool(row, columns, CalendarConstants.COL_SEPARATE_ATTENDEES));
+    
     for (View view : View.values()) {
       views.put(view, getBool(row, columns, view.getColumnId()));
     }
@@ -135,6 +139,10 @@ public class CalendarSettings {
       av = BeeConst.UNDEF;
     }
     setActiveView(BeeUtils.getConstant(View.class, av));
+  }
+
+  public boolean separateAttendees() {
+    return separateAttendees;
   }
 
   public void setActiveView(View activeView) {
@@ -166,11 +174,15 @@ public class CalendarSettings {
   private void setPixelsPerInterval(int px) {
     pixelsPerInterval = px;
   }
-
+  
   private void setScrollToHour(int hour) {
     scrollToHour = hour;
   }
-  
+
+  private void setSeparateAttendees(boolean separateAttendees) {
+    this.separateAttendees = separateAttendees;
+  }
+
   private void setTimeBlockClickNumber(TimeBlockClick timeBlockClickNumber) {
     this.timeBlockClickNumber = timeBlockClickNumber;
   }

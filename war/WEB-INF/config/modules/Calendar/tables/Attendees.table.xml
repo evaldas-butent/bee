@@ -15,5 +15,8 @@
 
     <Integer name="Transparency" />
     <Integer name="Ordinal" />
+    
+    <Relation name="Color" relation="Colors" label="Spalva" />
+    <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
   </Fields>
 </Table>

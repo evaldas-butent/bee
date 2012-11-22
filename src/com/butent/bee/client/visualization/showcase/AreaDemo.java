@@ -2,8 +2,8 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.corechart.AreaChart;
 import com.butent.bee.client.visualization.visualizations.corechart.AxisOptions;

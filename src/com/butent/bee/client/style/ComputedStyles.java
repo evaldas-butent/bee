@@ -1,4 +1,4 @@
-package com.butent.bee.client.dom;
+package com.butent.bee.client.style;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

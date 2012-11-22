@@ -115,6 +115,10 @@ public class RowEditor {
     openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
   }
 
+  public static void openRow(String formName, DataInfo dataInfo, long rowId) {
+    openRow(formName, dataInfo, rowId, false, null, null);
+  }
+  
   public static void openRow(String formName, DataInfo dataInfo, long rowId,
       boolean modal, UIObject target, RowCallback rowCallback) {
     Assert.notNull(dataInfo);

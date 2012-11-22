@@ -19,7 +19,8 @@ import elemental.html.FileList;
 
 import elemental.js.html.JsInputElement;
 
-public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled, IdentifiableWidget {
+public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled,
+    IdentifiableWidget {
 
   public InputFile() {
     super();
@@ -33,26 +34,26 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
       getInputElement().setMultiple(true);
     }
   }
-  
+
   @Override
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     return addDomHandler(handler, ChangeEvent.getType());
   }
-  
+
   public void clear() {
     if (!isEmpty()) {
       getInputElement().setValue(BeeConst.STRING_EMPTY);
     }
   }
-  
+
   public void click() {
     getInputElement().click();
   }
-  
-  public FileList getFiles() { 
+
+  public FileList getFiles() {
     return getInputElement().getFiles();
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -71,7 +72,7 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
   public boolean isEmpty() {
     return getFiles().length() <= 0;
   }
-  
+
   @Override
   public boolean isEnabled() {
     return !getInputElement().isDisabled();
@@ -96,7 +97,7 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-InputFile");
   }
-  
+
   private InputElement getInputElement() {
     return (JsInputElement) getElement().cast();
   }

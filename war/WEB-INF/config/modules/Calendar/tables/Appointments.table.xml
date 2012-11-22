@@ -10,7 +10,7 @@
     <String name="Summary" precision="100" label="Santrauka" />
     <Text name="Description" label="Aprašymas" />
 
-    <String name="Location" precision="100" />
+    <String name="Location" precision="100" label="Vieta" />
     <String name="HtmlLink" precision="200" />
 
     <Relation name="Color" relation="Colors" label="Spalva" />
@@ -35,7 +35,7 @@
     <Relation name="RecurringEventId" relation="Appointments" />
 
     <Integer name="Transparency" />
-    <Integer name="Visibility" />
+    <Integer name="Visibility" label="Matomumas" />
     <Boolean name="ReadOnly" />
 
     <String name="ICalUID" precision="100" />

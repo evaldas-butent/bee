@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -13,6 +14,7 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Span;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -20,7 +22,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -29,34 +30,57 @@ import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
 
   private enum TabAction {
-    CREATE(new BeeImage(Global.getImages().add()), "create", false, "Naujas skirtukas"),
-    NORTH(new CustomDiv(), "north", true, "Nauja sritis viršuje"),
-    SOUTH(new CustomDiv(), "south", true, "Nauja sritis apačioje"),
-    WEST(new CustomDiv(), "west", true, "Nauja sritis kairėje"),
-    EAST(new CustomDiv(), "east", true, "Nauja sritis dešinėje"),
-    CLOSE(new BeeImage(Global.getImages().noes()), "close", false, "Uždaryti");
+    CREATE(new BeeImage(Global.getImages().add()), null, null, "Naujas skirtukas"),
+
+    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, "Nauja sritis viršuje"),
+    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, "Nauja sritis apačioje"),
+    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, "Nauja sritis kairėje"),
+    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, "Nauja sritis dešinėje"),
+
+    MAXIMIZE(new BeeImage(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, "Max dydis"),
+    RESTORE(new BeeImage(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, "Atstatyti dydį"),
+
+    UP(new BeeImage(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
+        "Didinti aukštyn"),
+    DOWN(new BeeImage(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
+        "Didinti žemyn"),
+    LEFT(new BeeImage(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
+        "Didinti į kairę"),
+    RIGHT(new BeeImage(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
+        "Didinti į dešinę"),
+
+    CLOSE(new BeeImage(Global.getImages().noes()), null, null, "Uždaryti");
+
+    private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 
     private final IdentifiableWidget widget;
+    private final Direction direction;
 
-    private TabAction(IdentifiableWidget widget, String style, boolean split, String title) {
+    private TabAction(IdentifiableWidget widget, Direction direction, String styleGroup,
+        String title) {
       this.widget = widget;
+      this.direction = direction;
 
-      this.widget.asWidget().addStyleName(Workspace.STYLE_PREFIX + "action-" + style);
-      if (split) {
-        this.widget.asWidget().addStyleName(Workspace.STYLE_PREFIX + "action-split");
+      this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + this.name().toLowerCase());
+      if (!BeeUtils.isEmpty(styleGroup)) {
+        this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + styleGroup);
       }
       this.widget.asWidget().setTitle(title);
+    }
+
+    private Direction getDirection() {
+      return direction;
     }
 
     private IdentifiableWidget getWidget() {
       return widget;
     }
   }
-
   private class TabWidget extends Span implements HasCaption {
 
     private TabWidget(String caption) {
@@ -87,44 +111,82 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     private InlineLabel getCaptionWidget() {
       return (InlineLabel) getWidget(0);
     }
-    
+
     private void setCaption(String caption) {
       getCaptionWidget().setText(caption);
     }
   }
-  
+
   private static final BeeLogger logger = LogUtils.getLogger(Workspace.class);
-  
+
   private static final String STYLE_PREFIX = "bee-Workspace-";
+
+  private static final String STYLE_GROUP_SPLIT = "split";
+  private static final String STYLE_GROUP_RESIZE = "resize";
+
+  private final Map<Direction, Double> resized = Maps.newHashMap();
 
   Workspace() {
     super(STYLE_PREFIX);
     insertEmptyPanel(0);
   }
-  
+
   @Override
   public void onSelection(SelectionEvent<TilePanel> event) {
     updateCaption(event.getSelectedItem());
   }
-  
+
   @Override
   public void removePage(int index) {
+    Widget pageContent = getContentWidget(index);
+    if (pageContent instanceof TilePanel) {
+      ((TilePanel) pageContent).clear();
+    }
+    
     super.removePage(index);
+
     if (getPageCount() == 1) {
       setStyleOne(true);
     }
   }
-  
+
   @Override
   public void selectPage(int index, SelectionOrigin origin) {
     super.selectPage(index, origin);
-    
+
     if (SelectionOrigin.CLICK.equals(origin)) {
       TilePanel activePanel = getActivePanel();
       if (activePanel != null) {
         Historian.goTo(activePanel.getId());
+        activePanel.activateContent();
+      }
+
+    } else if (SelectionOrigin.REMOVE.equals(origin)) {
+      TilePanel activePanel = getActivePanel();
+      if (activePanel != null) {
+        updateCaption(activePanel);
+        activePanel.activateContent();
       }
     }
+  }
+
+  void activateWidget(IdentifiableWidget widget) {
+    TilePanel tile = TilePanel.getParentTile(widget.asWidget());
+    if (tile == null) {
+      showError("activateWidget: panel not found for " + widget.getId());
+      return;
+    }
+    
+    int index = getPageIndex(tile);
+    if (BeeConst.isUndef(index)) {
+      showError("activateWidget: page not found for " + widget.getId());
+      return;
+    }
+    
+    if (index != getSelectedIndex()) {
+      selectPage(index, SelectionOrigin.SCRIPT);
+    }
+    tile.activate(false);
   }
 
   void closeWidget(IdentifiableWidget widget) {
@@ -132,18 +194,18 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
 
     if (tile == null) {
       showError("closeWidget: panel not found");
+      return;
+    }
 
-    } else {
+    tile = tile.close();
+    while (tile != null && tile.isBlank() && !tile.isRoot()) {
       tile = tile.close();
-      while (tile != null && tile.isBlank() && !tile.isRoot()) {
-        tile = tile.close();
-      }
-      
-      if (getPageCount() > 1 && tile.isBlank() && tile.isRoot()) {
-        int index = getContentIndex(tile);
-        if (index >= 0) {
-          removePage(index);
-        }
+    }
+
+    if (getPageCount() > 1 && tile.isBlank() && tile.isRoot()) {
+      int index = getContentIndex(tile);
+      if (index >= 0) {
+        removePage(index);
       }
     }
   }
@@ -175,7 +237,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       }
       insertEmptyPanel(index + 1);
     }
-    
+
     updateActivePanel(widget);
   }
 
@@ -207,6 +269,10 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
+  private boolean canGrow(Direction direction) {
+    return BeeUtils.isPositive(getSiblingSize(direction));
+  }
+
   private void closeActivePanel() {
     TilePanel tile = getActivePanel();
     if (tile != null) {
@@ -229,18 +295,60 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
         break;
 
       case EAST:
-        splitActivePanel(Direction.EAST);
-        break;
       case NORTH:
-        splitActivePanel(Direction.NORTH);
-        break;
       case SOUTH:
-        splitActivePanel(Direction.SOUTH);
-        break;
       case WEST:
-        splitActivePanel(Direction.WEST);
+        splitActivePanel(action.getDirection());
+        break;
+
+      case MAXIMIZE:
+        for (Direction direction : Direction.values()) {
+          if (!Direction.CENTER.equals(direction)) {
+            stretch(direction);
+          }
+        }
+        break;
+
+      case RESTORE:
+        for (Map.Entry<Direction, Double> entry : resized.entrySet()) {
+          getResizeContainer().setDirectionSize(entry.getKey(), entry.getValue());
+        }
+        resized.clear();
+        break;
+
+      case UP:
+      case DOWN:
+      case LEFT:
+      case RIGHT:
+        stretch(action.getDirection());
         break;
     }
+  }
+
+  private int getPageIndex(TilePanel tile) {
+    for (int i = 0; i < getPageCount(); i++) {
+      if (getContentWidget(i).getElement().isOrHasChild(tile.getElement())) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+
+  private Split getResizeContainer() {
+    for (Widget parent = this.getParent(); parent != null; parent = parent.getParent()) {
+      if (parent instanceof Split) {
+        return (Split) parent;
+      }
+    }
+    return null;
+  }
+  
+  private Double getSiblingSize(Direction direction) {
+    Split container = getResizeContainer();
+    if (container == null) {
+      return null;
+    }
+    return container.getDirectionSize(direction);
   }
 
   private int getTabIndex(String tabId) {
@@ -271,7 +379,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   }
 
   private boolean isActionEnabled(TabAction action, int index) {
-    boolean enabled;
+    boolean enabled = false;
 
     switch (action) {
       case CREATE:
@@ -289,9 +397,22 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
         enabled = (index == getSelectedIndex());
         break;
 
-      default:
-        Assert.untouchable();
-        enabled = false;
+      case MAXIMIZE:
+        enabled = (index == getSelectedIndex() && (canGrow(Direction.NORTH)
+            || canGrow(Direction.SOUTH) || canGrow(Direction.WEST) || canGrow(Direction.EAST)));
+        break;
+
+      case RESTORE:
+        enabled = (index == getSelectedIndex() && !resized.isEmpty());
+        break;
+
+      case UP:
+      case DOWN:
+      case LEFT:
+      case RIGHT:
+        enabled = (index == getSelectedIndex() && !resized.containsKey(action.getDirection())
+            && canGrow(action.getDirection()));
+        break;
     }
 
     return enabled;
@@ -345,6 +466,14 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
+  private void stretch(Direction direction) {
+    Double size = getSiblingSize(direction);
+    if (BeeUtils.isPositive(size)) {
+      getResizeContainer().setDirectionSize(direction, BeeConst.DOUBLE_ZERO);
+      resized.put(direction, size);
+    }
+  }
+
   private void updateCaption(TilePanel tile) {
     String caption = null;
     for (Widget p = tile; p instanceof TilePanel && BeeUtils.isEmpty(caption); p = p.getParent()) {
@@ -353,19 +482,19 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     if (BeeUtils.isEmpty(caption)) {
       caption = Global.CONSTANTS.newTab();
     }
-    
+
     TabWidget tab = (TabWidget) getTabWidget(getSelectedIndex());
     if (caption.equals(tab.getCaption())) {
       return;
     }
-    
+
     boolean checkSize = isAttached() && getPageCount() > 1;
     if (checkSize) {
       saveLayout();
     }
 
     tab.setCaption(caption);
-    
+
     if (checkSize) {
       checkLayout();
     }

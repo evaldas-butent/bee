@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -118,8 +119,13 @@ public class Data {
     return COLUMN_MAPPER.getString(viewName, row, colName);
   }
 
-  public static void init() {
-    DATA_INFO_PROVIDER.load();
+  public static String getViewCaption(String viewName) {
+    DataInfo dataInfo = getDataInfo(viewName);
+    return (dataInfo == null) ? null : dataInfo.getCaption(); 
+  }
+  
+  public static void init(Callback<Integer> callback) {
+    DATA_INFO_PROVIDER.load(callback);
 
     BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);

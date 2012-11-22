@@ -63,9 +63,9 @@ import com.google.gwt.user.client.ui.WidgetCollection;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;

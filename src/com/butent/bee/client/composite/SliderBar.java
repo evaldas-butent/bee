@@ -15,11 +15,11 @@ import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.layout.Focus;
+import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.FontSize;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;

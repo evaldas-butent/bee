@@ -16,8 +16,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
 
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -203,14 +203,17 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     setDate(date);
   }
 
+  @Override
   public HandlerRegistration addHighlightHandler(HighlightHandler<JustDate> handler) {
     return addHandler(handler, HighlightEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return view.addKeyDownHandler(handler);
   }
 
+  @Override
   public HandlerRegistration addShowRangeHandler(ShowRangeHandler<JustDate> handler) {
     return addHandler(handler, ShowRangeEvent.getType());
   }
@@ -239,6 +242,7 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     }
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<JustDate> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -275,6 +279,7 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     return dateStyler.getStyleName(date);
   }
 
+  @Override
   public JustDate getValue() {
     return JustDate.copyOf(value);
   }
@@ -349,10 +354,12 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     }
   }
 
+  @Override
   public void setValue(JustDate newValue) {
     setValue(newValue, false);
   }
 
+  @Override
   public void setValue(JustDate newValue, boolean fireEvents) {
     if (!Objects.equal(value, newValue)) {
       JustDate oldValue = value;

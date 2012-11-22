@@ -19,11 +19,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
@@ -216,8 +216,8 @@ public class MessageBoxes {
     confirm(caption, message, callback, null, null);
   }
 
-  public void confirm(String caption, String message, ConfirmationCallback callback, String dialogStyle,
-      String messageStyle) {
+  public void confirm(String caption, String message, ConfirmationCallback callback,
+      String dialogStyle, String messageStyle) {
     Assert.notEmpty(message);
     confirm(caption, Lists.newArrayList(message), callback, dialogStyle, messageStyle);
   }

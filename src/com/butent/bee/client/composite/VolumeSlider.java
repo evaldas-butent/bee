@@ -7,10 +7,9 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RequiresResize;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.utils.ValueUtils;
 
 /**
@@ -28,42 +27,42 @@ public class VolumeSlider extends Absolute implements RequiresResize {
 
     @Override
     public ImageResource arrowDown() {
-      return Global.getImages().arrowLeft();
+      return IMAGES.arrowLeft();
     }
 
     @Override
     public ImageResource arrowDownDisabled() {
-      return Global.getImages().arrowLeftDisabled();
+      return IMAGES.arrowLeftDisabled();
     }
 
     @Override
     public ImageResource arrowDownHover() {
-      return Global.getImages().arrowLeftHover();
+      return IMAGES.arrowLeftHover();
     }
 
     @Override
     public ImageResource arrowDownPressed() {
-      return Global.getImages().arrowLeftPressed();
+      return IMAGES.arrowLeftPressed();
     }
 
     @Override
     public ImageResource arrowUp() {
-      return Global.getImages().arrowRight();
+      return IMAGES.arrowRight();
     }
 
     @Override
     public ImageResource arrowUpDisabled() {
-      return Global.getImages().arrowRightDisabled();
+      return IMAGES.arrowRightDisabled();
     }
 
     @Override
     public ImageResource arrowUpHover() {
-      return Global.getImages().arrowRightHover();
+      return IMAGES.arrowRightHover();
     }
 
     @Override
     public ImageResource arrowUpPressed() {
-      return Global.getImages().arrowRightPressed();
+      return IMAGES.arrowRightPressed();
     }
   }
 
@@ -75,6 +74,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
   private int padding = 1;
 
   private SpinnerListener listener = new SpinnerListener() {
+    @Override
     public void onSpinning(long value) {
       progressBar.setProgress(value);
       source = ValueUtils.setLong(source, value);

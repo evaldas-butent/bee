@@ -31,13 +31,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.HorizontalSplitter;
 import com.butent.bee.client.widget.Splitter;
 import com.butent.bee.client.widget.VerticalSplitter;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -292,6 +293,21 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return lst;
   }
 
+  public double getDirectionSize(Direction direction) {
+    Assert.isTrue(validDirection(direction, false));
+    double result = BeeConst.DOUBLE_ZERO;
+    
+    for (Widget w : getChildren()) {
+      if (!isSplitter(w) && getWidgetDirection(w) == direction) {
+        double size = getWidgetSize(w);
+        if (size > 0) {
+          result += size;
+        }
+      }
+    }
+    return result;
+  }
+
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
@@ -344,9 +360,9 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return StyleUtils.getScroll(getWidgetContainerElement(child));
   }
 
-  public int getWidgetSize(Widget child) {
+  public double getWidgetSize(Widget child) {
     LayoutData data = (LayoutData) child.getLayoutData();
-    return (int) data.size;
+    return data.size;
   }
 
   public int getWidgetSplitterSize(Widget child) {
@@ -486,22 +502,27 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
 
   public void setDirectionSize(Direction direction, double size) {
     Assert.isTrue(validDirection(direction, false));
+    
+    int cnt;
+
+    if (size > 0) {
+      cnt = 0;
+      for (Widget w : getChildren()) {
+        if (!isSplitter(w) && getWidgetDirection(w) == direction) {
+          cnt++;
+        }
+      }
+      if (cnt == 0) {
+        return;
+      }
+    } else {
+      cnt = 1;
+    }
 
     for (Widget w : getChildren()) {
       if (!isSplitter(w) && getWidgetDirection(w) == direction) {
-        setWidgetSize(w, size);
+        setWidgetSize(w, size / cnt);
       }
-    }
-  }
-
-  public boolean setDirectionSize(String s, double size) {
-    Direction dir = DomUtils.getDirection(s);
-
-    if (validDirection(dir, false)) {
-      setDirectionSize(dir, size);
-      return true;
-    } else {
-      return false;
     }
   }
 

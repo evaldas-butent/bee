@@ -43,9 +43,12 @@ public class Bee implements EntryPoint {
 
         BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
 
-        Global.getFavorites().load();
-
-        Data.init();
+        Data.init(new Callback<Integer>() {
+          @Override
+          public void onSuccess(Integer result) {
+            Global.getFavorites().load();
+          }
+        });
 
         TuningFactory.getTools();
 

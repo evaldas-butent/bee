@@ -106,10 +106,11 @@ class AppointmentRenderer {
     super();
   }
 
-  void render(AppointmentWidget appointmentWidget, String headerTemplate, String bodyTemplate,
-      String titleTemplate, boolean multi) {
+  void render(long calendarId, AppointmentWidget appointmentWidget, String headerTemplate,
+      String bodyTemplate, String titleTemplate, boolean multi) {
 
-    Map<String, String> substitutes = getSubstitutes(appointmentWidget.getAppointment());
+    Map<String, String> substitutes = getSubstitutes(calendarId, 
+        appointmentWidget.getAppointment());
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
     String template = BeeUtils.notEmpty(headerTemplate,
@@ -130,10 +131,10 @@ class AppointmentRenderer {
     appointmentWidget.setTitleText(title);
   }
 
-  void renderCompact(Appointment appointment, String compactTemplate, Widget htmlWidget,
-      String titleTemplate, Widget titleWidget) {
+  void renderCompact(long calendarId, Appointment appointment, String compactTemplate,
+      Widget htmlWidget, String titleTemplate, Widget titleWidget) {
 
-    Map<String, String> substitutes = getSubstitutes(appointment);
+    Map<String, String> substitutes = getSubstitutes(calendarId, appointment);
 
     String template = BeeUtils.notEmpty(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
     String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
@@ -151,9 +152,9 @@ class AppointmentRenderer {
     }
   }
   
-  void renderMulti(AppointmentWidget appointmentWidget) {
-    render(appointmentWidget, DEFAULT_MULTI_HEADER_TEMPLATE, DEFAULT_MULTI_BODY_TEMPLATE,
-        DEFAULT_TITLE_TEMPLATE, true);
+  void renderMulti(long calendarId, AppointmentWidget appointmentWidget) {
+    render(calendarId, appointmentWidget, DEFAULT_MULTI_HEADER_TEMPLATE,
+        DEFAULT_MULTI_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, true);
   }
 
   String renderPeriod(DateTime start, DateTime end) {
@@ -175,16 +176,17 @@ class AppointmentRenderer {
     }
   }
 
-  void renderSimple(AppointmentWidget appointmentWidget) {
-    render(appointmentWidget, DEFAULT_SIMPLE_HEADER_TEMPLATE, DEFAULT_SIMPLE_BODY_TEMPLATE,
-        DEFAULT_TITLE_TEMPLATE, false);
+  void renderSimple(long calendarId, AppointmentWidget appointmentWidget) {
+    render(calendarId, appointmentWidget, DEFAULT_SIMPLE_HEADER_TEMPLATE,
+        DEFAULT_SIMPLE_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, false);
   }
   
-  String renderString(Appointment appointment) {
-    return parseTemplate(STRING_TEMPLATE, getSubstitutes(appointment), STRING_SEPARATOR);
+  String renderString(long calendarId, Appointment appointment) {
+    return parseTemplate(STRING_TEMPLATE, getSubstitutes(calendarId, appointment),
+        STRING_SEPARATOR);
   }
 
-  private Map<String, String> getSubstitutes(Appointment appointment) {
+  private Map<String, String> getSubstitutes(long calendarId, Appointment appointment) {
     Map<String, String> result = Maps.newHashMap();
 
     BeeRow row = appointment.getRow();
@@ -209,7 +211,8 @@ class AppointmentRenderer {
 
     if (!appointment.getAttendees().isEmpty()) {
       for (Long id : appointment.getAttendees()) {
-        attNames = BeeUtils.join(CHILD_SEPARATOR, attNames, CalendarKeeper.getAttendeeName(id));
+        attNames = BeeUtils.join(CHILD_SEPARATOR, attNames,
+            CalendarKeeper.getAttendeeCaption(calendarId, id));
       }
     }
     if (!appointment.getProperties().isEmpty()) {
