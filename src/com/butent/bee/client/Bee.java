@@ -19,17 +19,23 @@ import com.butent.bee.shared.logging.LogUtils;
  */
 
 public class Bee implements EntryPoint {
+  
+  private static BeeKeeper keeper;
+  
+  public static void exit() {
+    Bee.keeper.exit();
+    BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
+  }
 
   @Override
   public void onModuleLoad() {
     BeeConst.setClient();
     LogUtils.setLoggerFactory(new ClientLogManager());
 
-    BeeKeeper bk =
-        new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
+    Bee.keeper = new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
 
-    bk.init();
-    bk.start();
+    Bee.keeper.init();
+    Bee.keeper.start();
 
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
@@ -41,7 +47,7 @@ public class Bee implements EntryPoint {
       public void onResponse(ResponseObject response) {
         ModuleManager.onLoad();
 
-        BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
+        BeeKeeper.getMenu().loadMenu();
 
         Data.init(new Callback<Integer>() {
           @Override

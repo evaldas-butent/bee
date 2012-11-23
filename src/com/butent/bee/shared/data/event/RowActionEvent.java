@@ -68,6 +68,7 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return TYPE;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -80,10 +81,12 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return rowId;
   }
 
+  @Override
   public String getService() {
     return service;
   }
   
+  @Override
   public String getViewName() {
     return viewName;
   }
@@ -108,10 +111,12 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     this.consumed = consumed;
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }
 
+  @Override
   public void setService(String service) {
     this.service = service;
   }

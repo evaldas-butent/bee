@@ -342,7 +342,7 @@ public class CliWorker {
       doLog(arr);
 
     } else if (z.equals("menu")) {
-      doMenu();
+      doMenu(args);
 
     } else if (z.equals("meter")) {
       showMeter(arr);
@@ -862,27 +862,40 @@ public class CliWorker {
 
       if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
         ClientLogManager.setPanelVisible(false);
+
+      } else if (z.equals(BeeConst.STRING_PLUS)) {
+        ClientLogManager.setPanelVisible(true);
+      
       } else if (BeeUtils.isDigit(z)) {
         ClientLogManager.setPanelSize(BeeUtils.toInt(z));
+      
       } else if (BeeUtils.startsSame(z, "clear")) {
         ClientLogManager.clearPanel();
+      
+      } else if (BeeUtils.startsSame(z, "level")) {
+        ClientLogManager.setPanelVisible(true);
+        for (LogLevel lvl : LogLevel.values()) {
+          logger.log(lvl, lvl.name().toLowerCase());
+        }
+        logger.addSeparator();
+      
       } else {
         ClientLogManager.setPanelVisible(true);
         logger.info((Object[]) arr);
         logger.addSeparator();
       }
 
-      return;
+    } else {
+      ClientLogManager.setPanelVisible(!ClientLogManager.isPanelVisible());
     }
-
-    for (LogLevel lvl : LogLevel.values()) {
-      logger.log(lvl, lvl.name().toLowerCase());
-    }
-    logger.addSeparator();
   }
 
-  private static void doMenu() {
-    BeeKeeper.getMenu().showMenuInfo();
+  private static void doMenu(String args) {
+    if (BeeUtils.isEmpty(args)) {
+      BeeKeeper.getMenu().showMenuInfo();
+    } else {
+      BeeKeeper.getMenu().loadMenu();
+    }
   }
 
   private static void doScreen(String[] arr) {

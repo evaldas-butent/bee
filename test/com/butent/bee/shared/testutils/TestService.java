@@ -85,20 +85,6 @@ public class TestService {
   }
 
   @Test
-  public final void testIsRpcService() {
-    assertTrue(Service.isRpcService("rpc_db_"));
-    assertTrue(Service.isRpcService("rpc_db__complex"));
-    assertTrue(Service.isRpcService("rpc_db_win"));
-    assertTrue(Service.isRpcService("rpc_"));
-
-    assertFalse(Service.isRpcService("\t\t\t\r rpc_db_"));
-    assertFalse(Service.isRpcService("rpc"));
-    assertFalse(Service.isRpcService("rpcdbmetaetabeta"));
-    assertFalse(Service.isRpcService("arpc_db_"));
-    assertFalse(Service.isRpcService("a rpc_"));
-  }
-
-  @Test
   public final void testIsSysService() {
     assertTrue(Service.isSysService("rpc_sys_"));
     assertTrue(Service.isSysService("rpc_sys__complex"));
@@ -110,19 +96,5 @@ public class TestService {
     assertFalse(Service.isSysService("rpc_sysdbmetaetabeta"));
     assertFalse(Service.isSysService("arpc_sys_"));
     assertFalse(Service.isSysService("a rpc_sys_"));
-  }
-
-  @Test
-  public final void testIsUiService() {
-    assertTrue(Service.isUiService("ui_"));
-    assertTrue(Service.isUiService("ui__complex"));
-    assertTrue(Service.isUiService("ui_win"));
-    assertTrue(Service.isUiService("ui_"));
-
-    assertFalse(Service.isUiService("\t\t\t\r ui_"));
-    assertFalse(Service.isUiService("ui"));
-    assertFalse(Service.isUiService("uisysdbmetaetabeta"));
-    assertFalse(Service.isUiService("aui_"));
-    assertFalse(Service.isUiService("a ui_"));
   }
 }

@@ -40,10 +40,9 @@ public class Service {
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
-  public static final String CLOSE_DIALOG = UI_SERVICE_PREFIX + "close_dialog";
-  public static final String REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
   public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
   public static final String EDIT_ROW = UI_SERVICE_PREFIX + "edit_row";
+  public static final String CELL_ACTION = UI_SERVICE_PREFIX + "cell_action";
 
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
 
@@ -196,17 +195,6 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #RPC_SERVICE_PREFIX}.
-   * 
-   * @param svc name of service
-   * @return true if name of servce starts with {@link #RPC_SERVICE_PREFIX}
-   */
-  public static boolean isRpcService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(RPC_SERVICE_PREFIX);
-  }
-
-  /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
    * 
    * @param svc name of service
@@ -215,17 +203,6 @@ public class Service {
   public static boolean isSysService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(SYS_SERVICE_PREFIX);
-  }
-
-  /**
-   * Returns true if {@code svc} value stars with {@link #UI_SERVICE_PREFIX}.
-   * 
-   * @param svc name of service
-   * @return true if name of service value starts with {@link #UI_SERVICE_PREFIX}
-   */
-  public static boolean isUiService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(UI_SERVICE_PREFIX);
   }
 
   private Service() {

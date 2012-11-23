@@ -110,7 +110,6 @@
     <xs:complexContent>
       <xs:extension base="column">
         <xs:attribute name="source" type="type:nameType" />
-        <xs:attribute name="service" type="xs:token" />
         <xs:attribute name="element" type="ui:elementType" use="required" />
       </xs:extension>
     </xs:complexContent>

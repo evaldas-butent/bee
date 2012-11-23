@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Bee;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
@@ -30,7 +30,6 @@ import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -146,10 +145,6 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void end() {
-  }
-
-  @Override
   public int getActivePanelHeight() {
     return getWorkspace().getActivePanel().getOffsetHeight();
   }
@@ -182,7 +177,7 @@ public class ScreenImpl implements Screen {
       case PRIORITY_START:
         return DO_NOT_CALL;
       case PRIORITY_END:
-        return DO_NOT_CALL;
+        return 0;
       default:
         return DO_NOT_CALL;
     }
@@ -216,6 +211,11 @@ public class ScreenImpl implements Screen {
     if (getNotification() != null) {
       getNotification().warning(messages);
     }
+  }
+
+  @Override
+  public void onExit() {
+    getRootPanel().clear();
   }
 
   @Override
@@ -387,7 +387,7 @@ public class ScreenImpl implements Screen {
         Global.confirm(Global.CONSTANTS.logout(), new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            BeeKeeper.getBus().dispatchService(Service.LOGOUT);
+            Bee.exit();
           }
         });
       }

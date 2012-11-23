@@ -14,14 +14,14 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.HasService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-public class ActionCell extends AbstractCell<String> implements HasService, HasOptions, HasViewName {
+public class ActionCell extends AbstractCell<String> implements HasOptions, HasViewName {
 
   public enum Type {
     LINK, BUTTON;
@@ -56,8 +56,6 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
         columnDescription.getElementType()));
 
     cell.setViewName(viewName);
-
-    cell.setService(columnDescription.getService());
     cell.setOptions(columnDescription.getOptions());
 
     return cell;
@@ -67,7 +65,6 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
 
   private String viewName = null;
 
-  private String service = null;
   private String options = null;
 
   public ActionCell() {
@@ -79,14 +76,12 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
     this.type = (type == null) ? DEFAULT_TYPE : type;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
 
-  public String getService() {
-    return service;
-  }
-
+  @Override
   public String getViewName() {
     return viewName;
   }
@@ -96,7 +91,7 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
       ValueUpdater<String> valueUpdater) {
     if (EventUtils.isClick(event) && context instanceof CellContext) {
       BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(),
-          ((CellContext) context).getRowValue(), getService(), getOptions()));
+          ((CellContext) context).getRowValue(), Service.CELL_ACTION, getOptions()));
     }
     super.onBrowserEvent(context, parent, value, event, valueUpdater);
   }
@@ -108,12 +103,9 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
     }
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
-  }
-
-  public void setService(String service) {
-    this.service = service;
   }
 
   public void setViewName(String viewName) {

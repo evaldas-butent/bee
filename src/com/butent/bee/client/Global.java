@@ -481,13 +481,12 @@ public class Global implements Module {
   Global() {
   }
 
-  public void end() {
-  }
-
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -501,6 +500,7 @@ public class Global implements Module {
     }
   }
 
+  @Override
   public void init() {
     initCache();
     initVars();
@@ -510,6 +510,11 @@ public class Global implements Module {
     exportMethods();
   }
 
+  @Override
+  public void onExit() {
+  }
+
+  @Override
   public void start() {
   }
 

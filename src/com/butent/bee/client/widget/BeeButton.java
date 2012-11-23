@@ -6,19 +6,16 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.HasService;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a push button user interface component.
  */
 
-public class BeeButton extends Button implements IdentifiableWidget, HasService, HasCommand {
+public class BeeButton extends Button implements IdentifiableWidget, HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 
@@ -47,13 +44,6 @@ public class BeeButton extends Button implements IdentifiableWidget, HasService,
     init();
   }
 
-  public BeeButton(String html, String svc) {
-    this(html);
-    if (!BeeUtils.isEmpty(svc)) {
-      setService(svc);
-    }
-  }
-
   @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;
@@ -70,18 +60,10 @@ public class BeeButton extends Button implements IdentifiableWidget, HasService,
   }
 
   @Override
-  public String getService() {
-    return DomUtils.getService(this);
-  }
-
-  @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
       if (getCommand() != null) {
         getCommand().execute();
-      }
-      if (!BeeUtils.isEmpty(getService())) {
-        BeeKeeper.getBus().dispatchService(getService(), this);
       }
     }
 
@@ -99,14 +81,6 @@ public class BeeButton extends Button implements IdentifiableWidget, HasService,
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
-  }
-
-  @Override
-  public void setService(String svc) {
-    DomUtils.setService(this, svc);
-    if (!BeeUtils.isEmpty(svc)) {
-      initEvents();
-    }
   }
 
   private void init() {

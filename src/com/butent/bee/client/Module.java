@@ -14,7 +14,7 @@ public interface Module {
 
   int DO_NOT_CALL = -1;
 
-  void end();
+  void onExit();
 
   String getName();
 

@@ -69,10 +69,6 @@ public class RpcFactory implements Module {
     return new ParameterList(svc);
   }
   
-  @Override
-  public void end() {
-  }
-
   public String getDsn() {
     return BeeKeeper.getUser().getDsn();
   }
@@ -235,6 +231,10 @@ public class RpcFactory implements Module {
 
   public int makePostRequest(String svc, String data, ResponseCallback callback, int timeout) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data, callback, timeout);
+  }
+
+  @Override
+  public void onExit() {
   }
 
   public int sendText(ParameterList params, String data, ResponseCallback callback) {

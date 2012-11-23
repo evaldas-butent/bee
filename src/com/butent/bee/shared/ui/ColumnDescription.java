@@ -6,7 +6,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,7 +20,7 @@ import java.util.List;
  * Contains column properties and methods for managing them.
  */
 
-public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, HasService {
+public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public enum ColType {
     DATA("DataColumn", false),
@@ -70,7 +69,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE,
-    UPDATE_MODE, AUTO_FIT, OPTIONS, SERVICE, ELEMENT_TYPE
+    UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -139,7 +138,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private RefreshType updateMode = null;
   private String elementType = null;
 
-  private String service = null;
   private String options = null;
   
   private boolean relationInitialized = false;
@@ -296,9 +294,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case OPTIONS:
           setOptions(value);
           break;
-        case SERVICE:
-          setService(value);
-          break;
         case ELEMENT_TYPE:
           setElementType(value);
           break;
@@ -370,6 +365,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return horAlign;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Col Type", getColType(),
@@ -400,7 +396,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Update Mode", getUpdateMode(),
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
-        "Service", getService(),
         "Options", getOptions());
 
     if (getRelation() != null) {
@@ -482,6 +477,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return name;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -516,10 +512,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public String getSearchBy() {
     return searchBy;
-  }
-
-  public String getService() {
-    return service;
   }
 
   public String getSortBy() {
@@ -695,9 +687,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case OPTIONS:
           arr[i++] = getOptions();
           break;
-        case SERVICE:
-          arr[i++] = getService();
-          break;
         case ELEMENT_TYPE:
           arr[i++] = getElementType();
           break;
@@ -785,6 +774,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.minWidth = minWidth;
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }
@@ -831,10 +821,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   
   public void setSearchBy(String searchBy) {
     this.searchBy = searchBy;
-  }
-
-  public void setService(String service) {
-    this.service = service;
   }
 
   public void setShowWidth(Boolean showWidth) {

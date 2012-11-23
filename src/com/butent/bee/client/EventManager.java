@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.EventBus;
@@ -14,7 +13,6 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
@@ -61,27 +59,6 @@ public class EventManager implements Module {
     return getBus(prior).addHandlerToSource(type, source, handler);
   }
 
-  public boolean dispatchService(String svc) {
-    return dispatchService(svc, null);
-  }
-
-  public boolean dispatchService(String svc, Widget source) {
-    Assert.notEmpty(svc);
-
-    if (Service.isRpcService(svc)) {
-      BeeKeeper.getRpc().makeGetRequest(svc);
-      return true;
-    } else if (Service.isUiService(svc)) {
-      return dispatchUiService(svc, source);
-    } else {
-      Global.showError("Unknown service type", svc);
-      return false;
-    }
-  }
-
-  public void end() {
-  }
-
   public void fireEvent(Event<?> event) {
     Assert.notNull(event);
 
@@ -97,10 +74,12 @@ public class EventManager implements Module {
     eventBus.fireEventFromSource(event, source);
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -114,11 +93,16 @@ public class EventManager implements Module {
     }
   }
 
+  @Override
   public void init() {
     initEvents();
   }
 
   public void initEvents() {
+  }
+
+  @Override
+  public void onExit() {
   }
 
   public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler, boolean prior) {
@@ -160,6 +144,7 @@ public class EventManager implements Module {
 
     removeExitHandler();
     this.exitRegistry = Window.addWindowClosingHandler(new ClosingHandler() {
+      @Override
       public void onWindowClosing(ClosingEvent event) {
         event.setMessage(message);
       }
@@ -219,20 +204,10 @@ public class EventManager implements Module {
     }
   }
 
+  @Override
   public void start() {
   }
 
-  private boolean dispatchUiService(String svc, Widget source) {
-    if (svc.equals(Service.CLOSE_DIALOG)) {
-      return Global.closeDialog(source);
-    } else if (svc.equals(Service.REFRESH_MENU)) {
-      return BeeKeeper.getMenu().loadMenu();
-    } else {
-      Global.showError("Unknown UI service", svc);
-      return false;
-    }
-  }
-  
   private EventBus getBus(boolean prior) {
     return prior ? priorBus : eventBus;
   }

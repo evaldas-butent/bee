@@ -118,7 +118,6 @@ import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
@@ -1887,11 +1886,6 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, ATTR_CELL_STYLE)) {
         if (widget instanceof IsHtmlTable) {
           ((IsHtmlTable) widget).setDefaultCellStyles(value);
-        }
-
-      } else if (BeeUtils.same(name, HasService.ATTR_SERVICE)) {
-        if (widget instanceof HasService) {
-          ((HasService) widget).setService(value);
         }
 
       } else if (BeeUtils.same(name, ATTR_MIN)) {

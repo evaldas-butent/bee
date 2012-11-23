@@ -10,7 +10,7 @@
         <layer left="1" leftUnit="em">
           <HorizontalPanel style="border-spacing: 5px;">
             <Button html="Login" style="background: Aquamarine;" />
-            <Button html="Logout" service="rpc_logout" class="-" />
+            <Button html="Logout" />
           </HorizontalPanel>
         </layer>
         

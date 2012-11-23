@@ -59,10 +59,6 @@ public class Storage implements Module {
     }
   }
   
-  @Override
-  public void end() {
-  }
-
   public List<Property> getAll() {
     List<Property> lst = new ArrayList<Property>();
     int len = length();
@@ -150,6 +146,10 @@ public class Storage implements Module {
     } else {
       return items.size();
     }
+  }
+
+  @Override
+  public void onExit() {
   }
 
   public void removeItem(String key) {

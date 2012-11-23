@@ -337,15 +337,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="Button" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="focusableDisplay">
-          <xs:attribute name="service" type="xs:token" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="Button" type="focusableDisplay" substitutionGroup="widget" />
 
   <xs:element name="Image" substitutionGroup="widget">
     <xs:complexType>

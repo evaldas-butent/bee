@@ -10,7 +10,6 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -588,8 +587,6 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
           dst.setItemKey(value.trim());
 
-        } else if (BeeUtils.same(key, HasService.ATTR_SERVICE)) {
-          dst.setService(value.trim());
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
         }

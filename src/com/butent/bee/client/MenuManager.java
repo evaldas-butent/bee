@@ -72,9 +72,6 @@ public class MenuManager implements Module {
     return ok;
   }
 
-  public void end() {
-  }
-
   public List<String> getLayouts() {
     return layouts;
   }
@@ -84,10 +81,12 @@ public class MenuManager implements Module {
     return menuCallbacks.get(BeeUtils.normalize(service));
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -109,6 +108,7 @@ public class MenuManager implements Module {
     return roots;
   }
 
+  @Override
   public void init() {
   }
 
@@ -128,6 +128,10 @@ public class MenuManager implements Module {
       }
     });
     return true;
+  }
+
+  @Override
+  public void onExit() {
   }
 
   public void registerMenuCallback(String service, MenuCallback callback) {

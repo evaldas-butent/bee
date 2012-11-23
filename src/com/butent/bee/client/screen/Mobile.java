@@ -4,9 +4,12 @@ import com.google.common.base.Objects;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
+import com.butent.bee.client.Bee;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
@@ -28,7 +31,6 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -215,7 +217,13 @@ public class Mobile extends ScreenImpl {
 
     Horizontal hor = new Horizontal();
 
-    BeeButton auth = new BeeButton("Exit", Service.LOGOUT);
+    BeeButton auth = new BeeButton("Exit", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Bee.exit();
+      }
+    });
+
     auth.setId("auth-button");
     hor.add(auth);
 

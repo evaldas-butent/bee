@@ -52,7 +52,7 @@ public class BeeKeeper {
 
   private Module[] modules;
 
-  public BeeKeeper(LayoutPanel root, String url) {
+  BeeKeeper(LayoutPanel root, String url) {
     SCREEN = GWT.create(Screen.class);
     SCREEN.setRootPanel(root);
 
@@ -66,21 +66,21 @@ public class BeeKeeper {
     modules = new Module[] {SCREEN, BUS, RPC, USER, GLOB, STOR, MENU};
   }
 
-  public void end() {
+  void exit() {
     List<Module> list = orderModules(Module.PRIORITY_END);
     for (Module mdl : list) {
-      mdl.end();
+      mdl.onExit();
     }
   }
 
-  public void init() {
+  void init() {
     List<Module> list = orderModules(Module.PRIORITY_INIT);
     for (Module mdl : list) {
       mdl.init();
     }
   }
 
-  public void start() {
+  void start() {
     List<Module> list = orderModules(Module.PRIORITY_START);
     for (Module mdl : list) {
       mdl.start();

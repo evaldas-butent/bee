@@ -21,13 +21,10 @@ public class UserInfo implements Module, HasInfo {
   private String sessionId = null;
   private UserData userData = null;
 
-  public void end() {
-  }
-  
   public String getConstant(String name) {
     return (userData == null) ? null : userData.getConstant(name);
   }
-
+  
   public String getDsn() {
     if (!isLoggedIn()) {
       return null;
@@ -71,10 +68,12 @@ public class UserInfo implements Module, HasInfo {
     return userData.getLogin();
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -148,11 +147,16 @@ public class UserInfo implements Module, HasInfo {
     return userData.hasModuleRight(object, state);
   }
 
+  @Override
   public void init() {
   }
 
   public boolean isLoggedIn() {
     return userData != null;
+  }
+
+  @Override
+  public void onExit() {
   }
 
   public void setDsn(String dsn) {
@@ -169,6 +173,7 @@ public class UserInfo implements Module, HasInfo {
     this.userData = userData;
   }
 
+  @Override
   public void start() {
   }
 }
