@@ -921,13 +921,12 @@ public class CliWorker {
       return;
     }
 
-    double size = BeeUtils.toDouble(p2);
-    if (Double.isNaN(size)) {
-      Global.showError(p1, p2, "NaN");
+    if (!BeeUtils.isInt(p2)) {
+      Global.showError(p1, p2, "size not an int");
       return;
     }
 
-    screen.setDirectionSize(dir, size);
+    screen.setDirectionSize(dir, BeeUtils.toInt(p2), true);
   }
 
   private static void doSql(String sql) {

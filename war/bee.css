@@ -240,6 +240,9 @@ body, select {
   background-color: #e2dfdf;
   cursor: row-resize;
 }
+.bee-SplitChild {
+  overflow: auto;
+}
 
 .bee-activeBlank, .bee-activeContent {
   border: 2px solid #676767;

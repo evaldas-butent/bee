@@ -23,7 +23,6 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
@@ -101,7 +100,7 @@ public class Mobile extends ScreenImpl {
 
   @Override
   public void showWidget(IdentifiableWidget widget, boolean newPanel) {
-    getScreenPanel().updateCenter(widget, ScrollBars.NONE);
+    getScreenPanel().updateCenter(widget);
   }
 
   @Override
@@ -156,12 +155,12 @@ public class Mobile extends ScreenImpl {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, BeeUtils.clamp(DomUtils.getClientWidth() / 5, 128, 300), ScrollBars.BOTH);
+      p.addEast(w, BeeUtils.clamp(DomUtils.getClientWidth() / 5, 128, 300));
     }
 
     w = initCenter();
     if (w != null) {
-      p.add(w, ScrollBars.BOTH);
+      p.add(w);
     }
 
     getRootPanel().add(p);

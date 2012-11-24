@@ -18,15 +18,18 @@ public class CustomWidget extends Widget implements IdentifiableWidget {
     this(element);
     setStyleName(style);
   }
-  
+
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "custom";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

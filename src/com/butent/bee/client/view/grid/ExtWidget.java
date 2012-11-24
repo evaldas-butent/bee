@@ -5,7 +5,6 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -66,34 +65,29 @@ public class ExtWidget {
       return null;
     }
 
-    ScrollBars scrollBars = XmlUtils.getAttributeScrollBars(root, FormWidget.ATTR_SCROLL_BARS,
-        ScrollBars.BOTH);
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
 
     Component precedes = NameUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
 
-    return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);
+    return new ExtWidget(widget, direction, size, splSize, precedes, hidable);
   }
 
   private final IdentifiableWidget widget;
 
   private final Direction direction;
   private final int size;
-  private final ScrollBars scrollBars;
   private final Integer splSize;
 
   private final Component precedes;
   private final boolean hidable;
 
-  private ExtWidget(IdentifiableWidget widget, Direction direction, int size,
-      ScrollBars scrollBars,
-      Integer splSize, Component precedes, boolean hidable) {
+  private ExtWidget(IdentifiableWidget widget, Direction direction, int size, Integer splSize,
+      Component precedes, boolean hidable) {
     super();
     this.widget = widget;
     this.direction = direction;
     this.size = size;
-    this.scrollBars = scrollBars;
     this.splSize = splSize;
     this.precedes = precedes;
     this.hidable = hidable;
@@ -101,10 +95,6 @@ public class ExtWidget {
 
   public Direction getDirection() {
     return direction;
-  }
-
-  public ScrollBars getScrollBars() {
-    return scrollBars;
   }
 
   public int getSize() {

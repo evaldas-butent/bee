@@ -11,7 +11,6 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -144,7 +143,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       panel.setVisible(false);
     }
 
-    add(content, ScrollBars.BOTH);
+    add(content);
 
     if (hasData()) {
       Calculation rmc = formDescription.getRowMessage();

@@ -124,7 +124,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   private static final String STYLE_GROUP_SPLIT = "split";
   private static final String STYLE_GROUP_RESIZE = "resize";
 
-  private final Map<Direction, Double> resized = Maps.newHashMap();
+  private final Map<Direction, Integer> resized = Maps.newHashMap();
 
   Workspace() {
     super(STYLE_PREFIX);
@@ -304,23 +304,25 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       case MAXIMIZE:
         for (Direction direction : Direction.values()) {
           if (!Direction.CENTER.equals(direction)) {
-            stretch(direction);
+            stretch(direction, false);
           }
         }
+        getResizeContainer().doLayout();
         break;
 
       case RESTORE:
-        for (Map.Entry<Direction, Double> entry : resized.entrySet()) {
-          getResizeContainer().setDirectionSize(entry.getKey(), entry.getValue());
+        for (Map.Entry<Direction, Integer> entry : resized.entrySet()) {
+          getResizeContainer().setDirectionSize(entry.getKey(), entry.getValue(), false);
         }
         resized.clear();
+        getResizeContainer().doLayout();
         break;
 
       case UP:
       case DOWN:
       case LEFT:
       case RIGHT:
-        stretch(action.getDirection());
+        stretch(action.getDirection(), true);
         break;
     }
   }
@@ -343,7 +345,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     return null;
   }
   
-  private Double getSiblingSize(Direction direction) {
+  private Integer getSiblingSize(Direction direction) {
     Split container = getResizeContainer();
     if (container == null) {
       return null;
@@ -466,10 +468,10 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  private void stretch(Direction direction) {
-    Double size = getSiblingSize(direction);
+  private void stretch(Direction direction, boolean doLayout) {
+    Integer size = getSiblingSize(direction);
     if (BeeUtils.isPositive(size)) {
-      getResizeContainer().setDirectionSize(direction, BeeConst.DOUBLE_ZERO);
+      getResizeContainer().setDirectionSize(direction, 0, doLayout);
       resized.put(direction, size);
     }
   }

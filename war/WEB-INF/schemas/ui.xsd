@@ -76,15 +76,6 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:simpleType name="scrollBarsType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="none" />
-      <xs:enumeration value="horizontal" />
-      <xs:enumeration value="vertical" />
-      <xs:enumeration value="both" />
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:attributeGroup name="dimension">
     <xs:attribute name="width" type="xs:decimal" />
     <xs:attribute name="widthUnit" type="cssUnit" />

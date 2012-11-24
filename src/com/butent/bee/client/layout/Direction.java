@@ -1,5 +1,7 @@
 package com.butent.bee.client.layout;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 /**
  * Contains available directions for layout elements creation.
  */
@@ -9,6 +11,10 @@ public enum Direction {
 
   public String brief() {
     return name().substring(0, 1);
+  }
+  
+  public String getStyleSuffix() {
+    return BeeUtils.proper(name());
   }
 
   public boolean isHorizontal() {

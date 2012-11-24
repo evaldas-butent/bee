@@ -216,7 +216,6 @@
           <xs:element name="center">
             <xs:complexType>
               <xs:group ref="widgetOrDecorator" />
-              <xs:attribute name="scrollBars" type="ui:scrollBarsType" />
             </xs:complexType>
           </xs:element>
         </xs:sequence>
@@ -229,7 +228,6 @@
     <xs:group ref="widgetOrDecorator" />
     <xs:attribute name="size" type="xs:positiveInteger" use="required" />
     <xs:attribute name="splitterSize" type="xs:unsignedByte" />
-    <xs:attribute name="scrollBars" type="ui:scrollBarsType" />
   </xs:complexType>
 
   <xs:element name="SplitPanel" type="splitPanel" substitutionGroup="widget" />

@@ -68,7 +68,6 @@ import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -299,7 +298,6 @@ public enum FormWidget {
 
   private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
 
-  public static final String ATTR_SCROLL_BARS = "scrollBars";
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
 
@@ -1730,18 +1728,17 @@ public enum FormWidget {
     } else if (this == SPLIT_PANEL) {
       IdentifiableWidget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof Split) {
-        ScrollBars sb = XmlUtils.getAttributeScrollBars(child, ATTR_SCROLL_BARS, ScrollBars.NONE);
         Direction direction = NameUtils.getEnumByName(Direction.class, childTag);
 
         if (direction == Direction.CENTER) {
-          ((Split) parent).add(w, sb);
+          ((Split) parent).add(w);
 
         } else if (Split.validDirection(direction, false)) {
           Integer size = XmlUtils.getAttributeInteger(child, ATTR_SIZE);
           Integer splitterSize = XmlUtils.getAttributeInteger(child, ATTR_SPLITTER_SIZE);
         
           if (BeeUtils.isPositive(size)) {
-            ((Split) parent).add(w, direction, size, sb, splitterSize);
+            ((Split) parent).add(w, direction, size, splitterSize);
           }
         }
       }

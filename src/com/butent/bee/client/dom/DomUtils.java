@@ -38,8 +38,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -54,8 +52,6 @@ import java.util.List;
  * Contains necessary functions for reading and changing DOM information.
  */
 public class DomUtils {
-
-  private static final BeeLogger logger = LogUtils.getLogger(DomUtils.class);
 
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
@@ -98,7 +94,6 @@ public class DomUtils {
 
   public static final String ATTRIBUTE_DATA_COLUMN = "data-col";
   public static final String ATTRIBUTE_DATA_ROW = "data-row";
-  public static final String ATTRIBUTE_SERVICE = "data-svc";
   public static final String ATTRIBUTE_ROLE = "data-role";
 
   public static final String TYPE_SEARCH = "search";
@@ -924,16 +919,6 @@ public class DomUtils {
     return getParentElement(obj, TAG_TR, incl);
   }
 
-  public static List<Property> getPathInfo(Widget w) {
-    Assert.notNull(w);
-    List<Property> lst = new ArrayList<Property>();
-
-    for (Widget p = w; p != null; p = p.getParent()) {
-      PropertyUtils.addProperty(lst, NameUtils.getName(p), getId(p));
-    }
-    return lst;
-  }
-
   public static Widget getPhysicalChild(Widget root, String id) {
     Assert.notNull(root);
     return getChildByElement(root, getElement(id));
@@ -1003,10 +988,6 @@ public class DomUtils {
       calculateScrollBarSize();
     }
     return scrollBarWidth;
-  }
-
-  public static String getService(Widget w) {
-    return getAttribute(w, ATTRIBUTE_SERVICE);
   }
 
   public static List<Widget> getSiblings(Widget w) {
@@ -1356,28 +1337,6 @@ public class DomUtils {
     return isVisible(obj.getElement());
   }
 
-  public static void logChildren(Widget w) {
-    Assert.notNull(w);
-    List<Property> lst = getChildrenInfo(w);
-
-    for (int i = 0; i < lst.size(); i++) {
-      logger.info(BeeUtils.progress(i + 1, lst.size()),
-          lst.get(i).getName(), lst.get(i).getValue());
-    }
-    logger.addSeparator();
-  }
-
-  public static void logPath(Widget w) {
-    Assert.notNull(w);
-    List<Property> lst = getPathInfo(w);
-
-    for (int i = 0; i < lst.size(); i++) {
-      logger.info(BeeUtils.progress(i + 1, lst.size()),
-          lst.get(i).getName(), lst.get(i).getValue());
-    }
-    logger.addSeparator();
-  }
-
   public static void makeFocusable(Element el) {
     Assert.notNull(el);
     if (getTabIndex(el) < 0) {
@@ -1724,14 +1683,6 @@ public class DomUtils {
 
     OptionElement.as(elem).setSelected(selected);
     OptionElement.as(elem).setDefaultSelected(selected);
-  }
-
-  public static void setService(Widget w, String svc) {
-    if (BeeUtils.isEmpty(svc)) {
-      removeAttribute(w, ATTRIBUTE_SERVICE);
-    } else {
-      setAttribute(w, ATTRIBUTE_SERVICE, svc);
-    }
   }
 
   public static void setStep(UIObject obj, int step) {

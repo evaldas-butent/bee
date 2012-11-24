@@ -276,7 +276,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       Global.setTemporaryDetach(false);
 
       newCenter = newTile(workspace, oldCenter);
-      newCenter.onLayout();
+      newCenter.doLayout();
     } else {
       newCenter = newBlankTile(workspace);
     }
@@ -291,7 +291,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
 
     TilePanel tile = newBlankTile(workspace);
 
-    insert(tile, direction, size, null, null, getSplitterSize());
+    insert(tile, direction, size, null, getSplitterSize());
     add(newCenter);
 
     tile.activate(true);
@@ -406,7 +406,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       }
 
       String s = BeeUtils.joinWords(getWidgetDirection(child).brief(),
-          getWidgetWidth(child), getWidgetHeight(child));
+          child.getOffsetWidth(), child.getOffsetHeight());
 
       if (child instanceof TilePanel) {
         root.addItem(((TilePanel) child).getTree(s));
@@ -502,14 +502,14 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     }
 
     Direction[] directions = new Direction[c];
-    double[] sizes = new double[c];
+    int[] sizes = new int[c];
     int[] splSizes = new int[c];
 
     for (int i = 0; i < c; i++) {
       Widget child = children.get(i).asWidget();
 
       directions[i] = getWidgetDirection(child);
-      sizes[i] = directions[i].isHorizontal() ? getWidgetWidth(child) : getWidgetHeight(child);
+      sizes[i] = getWidgetSize(child);
       splSizes[i] = getWidgetSplitterSize(child);
     }
 
@@ -517,12 +517,12 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     parent.clear();
 
     for (int i = 0; i < c; i++) {
-      parent.insert(children.get(i), directions[i], sizes[i], null, null, splSizes[i]);
+      parent.insert(children.get(i), directions[i], sizes[i], null, splSizes[i]);
     }
     if (centerWidget != null) {
       parent.add(centerWidget);
     }
-    parent.onLayout();
+    parent.doLayout();
   }
 
   private void setActive(boolean active) {
@@ -539,11 +539,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     if (widget instanceof BlankTile) {
       widget.asWidget().setStyleName(ACTIVE_BLANK, add);
     } else if (widget != null) {
-      if (add) {
-        getWidgetContainerElement(widget.asWidget()).addClassName(ACTIVE_CONTENT);
-      } else {
-        getWidgetContainerElement(widget.asWidget()).removeClassName(ACTIVE_CONTENT);
-      }
+      widget.asWidget().setStyleName(ACTIVE_CONTENT, add);
     }
   }
 

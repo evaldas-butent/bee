@@ -21,7 +21,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
@@ -307,7 +306,7 @@ public class ScreenImpl implements Screen {
 
     w = initSouth();
     if (w != null) {
-      p.addSouth(w, 0, ScrollBars.BOTH);
+      p.addSouth(w, 0);
     }
 
     w = initWest();
@@ -317,7 +316,7 @@ public class ScreenImpl implements Screen {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 256, ScrollBars.BOTH);
+      p.addEast(w, 256);
     }
 
     w = initCenter();

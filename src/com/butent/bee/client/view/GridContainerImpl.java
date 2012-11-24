@@ -26,7 +26,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
@@ -221,10 +220,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (scroller != null) {
       addEast(scroller, getScrollerWidth());
       setScrollerId(scroller.getWidgetId());
-      add(content, ScrollBars.HORIZONTAL);
+      add(content);
       sinkEvents(Event.ONMOUSEWHEEL);
     } else {
-      add(content, ScrollBars.BOTH);
+      add(content);
     }
 
     if (gridDescription.getRowMessage() != null) {
@@ -609,7 +608,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
       if (ok) {
         add(extWidget.getWidget(), extWidget.getDirection(), extWidget.getSize(),
-            extWidget.getScrollBars(), extWidget.getSplSize());
+            extWidget.getSplSize());
       }
     }
   }
