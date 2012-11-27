@@ -1,4 +1,4 @@
-package com.butent.bee.client.utils;
+package com.butent.bee.client.animation;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.Timer;

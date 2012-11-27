@@ -13,7 +13,8 @@ import com.butent.bee.client.ui.IdentifiableWidget;
  * Contains a class for panels that contain only one widget.
  */
 
-public class Simple extends SimplePanel implements IdentifiableWidget, RequiresResize, ProvidesResize {
+public class Simple extends SimplePanel implements IdentifiableWidget, RequiresResize,
+    ProvidesResize {
 
   public Simple() {
     super();
@@ -23,20 +24,22 @@ public class Simple extends SimplePanel implements IdentifiableWidget, RequiresR
   public Simple(Widget child) {
     this(child, null);
   }
-  
+
   public Simple(Widget child, Overflow overflow) {
     super(child);
     init();
-    
+
     if (overflow != null) {
       getElement().getStyle().setOverflow(overflow);
     }
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "simple";
   }
@@ -48,10 +51,11 @@ public class Simple extends SimplePanel implements IdentifiableWidget, RequiresR
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init() {
     DomUtils.createId(this, getIdPrefix());
   }

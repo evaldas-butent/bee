@@ -310,7 +310,6 @@ public enum FormWidget {
   private static final String ATTR_INLINE = "inline";
 
   private static final String ATTR_URL = "url";
-  private static final String ATTR_UNIT = "unit";
   private static final String ATTR_TAB_INDEX = "tabIndex";
 
   private static final String ATTR_LEFT = "left";
@@ -953,7 +952,7 @@ public enum FormWidget {
         break;
 
       case STACK_PANEL:
-        widget = new Stack(StyleUtils.parseUnit(attributes.get(ATTR_UNIT), Unit.PX));
+        widget = new Stack();
         break;
 
       case STRING_PICKER:
@@ -1744,7 +1743,7 @@ public enum FormWidget {
       }
 
     } else if (this == STACK_PANEL && BeeUtils.same(childTag, TAG_STACK)) {
-      Double headerSize = XmlUtils.getAttributeDouble(child, ATTR_HEADER_SIZE);
+      Integer headerSize = XmlUtils.getAttributeInteger(child, ATTR_HEADER_SIZE);
       HeaderAndContent hc = createHeaderAndContent(child, viewName, columns, wdcb, widgetCallback);
 
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()

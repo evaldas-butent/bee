@@ -1,6 +1,8 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,39 +14,46 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.layout.client.Layout.AnimationCallback;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.client.ui.AnimatedLayout;
+import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasHTML;
-import com.google.gwt.user.client.ui.HasText;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.IndexedPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import com.butent.bee.shared.State;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Contains a panel that stacks its children vertically, displaying only one at a time, with a
  * header for each child which the user can click to display.
  */
 
-public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize, IndexedPanel,
-    AnimatedLayout, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
-    IdentifiableWidget {
+public class Stack extends ComplexPanel implements ProvidesResize, RequiresResize,
+    HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, IdentifiableWidget {
 
-  private static class Header extends Composite implements HasClickHandlers {
-    private Header(Widget child) {
+  private static class Header extends Composite implements HasClickHandlers, ProvidesResize,
+      RequiresResize {
+
+    private final int size;
+
+    private Header(Widget child, int size) {
+      super();
+      this.size = size;
+      
+      Style style = child.getElement().getStyle();
+      style.setPosition(Position.ABSOLUTE);
+      style.setLeft(0, Unit.PX);
+      style.setRight(0, Unit.PX);
+
+      style.setHeight(size, Unit.PX);
+
       initWidget(child);
     }
 
@@ -54,20 +63,48 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     }
 
     @Override
+    public void onResize() {
+      if (getWidget() instanceof RequiresResize) {
+        ((RequiresResize) getWidget()).onResize();
+      }
+    }
+
+    @Override
     protected Widget getWidget() {
       return super.getWidget();
     }
+
+    private int getSize() {
+      return size;
+    }
   }
+  
+  private static class Revelation extends RafCallback {
+    private static final double FROM = 0.2;
+    private static final double TO = 1.0;
 
-  private static class LayoutData {
-    private final double headerSize;
-    private final Header header;
-    private final Widget widget;
+    private Style style;
 
-    private LayoutData(Widget widget, Header header, double headerSize) {
-      this.widget = widget;
-      this.header = header;
-      this.headerSize = headerSize;
+    private Revelation(double duration) {
+      super(duration);
+    }
+
+    @Override
+    public void onComplete() {
+      super.onComplete();
+      StyleUtils.clearTranform(style);
+    }
+    
+    @Override
+    public boolean run(double elapsed) {
+      double factor = BeeUtils.rescale(elapsed, 0, getDuration(), FROM, TO);
+      StyleUtils.setTransformScale(style, factor, factor);
+      return true;
+    }
+    
+    private void start(Style st) {
+      this.style = st;
+      super.start();
     }
   }
 
@@ -77,22 +114,12 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
 
   private static final String SELECTED_STYLE = HEADER_STYLE + "-selected";
   
-  private static final int ANIMATION_TIME = 250;
-
-  private int animationDuration = ANIMATION_TIME;
-
-  private final BeeLayoutPanel layoutPanel;
-  
-  private final Unit unit;
-
-  private final List<LayoutData> layoutData = Lists.newArrayList();
+  private final Revelation revelation = new Revelation(200);
 
   private int selectedIndex = BeeConst.UNDEF;
 
-  public Stack(Unit unit) {
-    this.unit = unit;
-    this.layoutPanel = new BeeLayoutPanel();
-    initWidget(layoutPanel);
+  public Stack() {
+    setElement(Document.get().createDivElement());
     
     setStyleName(CONTAINER_STYLE);
     DomUtils.createId(this, getIdPrefix());
@@ -103,20 +130,12 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     Assert.unsupported("Single-argument add() is not supported for Stack");
   }
 
-  public void add(Widget widget, SafeHtml header, double headerSize) {
-    add(widget, header.asString(), true, headerSize);
+  public void add(Widget widget, String header, boolean asHtml, int headerSize) {
+    insert(widget, header, asHtml, headerSize, getStackSize());
   }
 
-  public void add(Widget widget, String header, boolean asHtml, double headerSize) {
-    insert(widget, header, asHtml, headerSize, getWidgetCount());
-  }
-
-  public void add(Widget widget, String header, double headerSize) {
-    insert(widget, header, headerSize, getWidgetCount());
-  }
-
-  public void add(Widget widget, Widget header, double headerSize) {
-    insert(widget, header, headerSize, getWidgetCount());
+  public void add(Widget widget, Widget header, int headerSize) {
+    insert(widget, header, headerSize, getStackSize());
   }
 
   @Override
@@ -130,74 +149,35 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
   }
 
   @Override
-  public void animate(int duration) {
-    animate(duration, null);
-  }
-
-  @Override
-  public void animate(int duration, AnimationCallback callback) {
-    if (layoutData.isEmpty()) {
-      if (callback != null) {
-        callback.onAnimationComplete();
-      }
-      return;
-    }
-
-    double top = 0;
-    double bottom = 0;
-
-    int i = 0;
-    for (; i < layoutData.size(); i++) {
-      LayoutData data = layoutData.get(i);
-      layoutPanel.setWidgetTopHeight(data.header, top, unit, data.headerSize, unit);
-
-      top += data.headerSize;
-      layoutPanel.setWidgetTopHeight(data.widget, top, unit, 0, unit);
-
-      if (i == getSelectedIndex()) {
-        break;
-      }
-    }
-
-    for (int j = layoutData.size() - 1; j > i; j--) {
-      LayoutData data = layoutData.get(j);
-      layoutPanel.setWidgetBottomHeight(data.header, bottom, unit, data.headerSize, unit);
-      layoutPanel.setWidgetBottomHeight(data.widget, bottom, unit, 0, unit);
-
-      bottom += data.headerSize;
-    }
-
-    LayoutData data = layoutData.get(getSelectedIndex());
-    layoutPanel.setWidgetTopBottom(data.widget, top, unit, bottom, unit);
-
-    layoutPanel.animate(duration, callback);
-  }
-
-  @Override
   public void clear() {
-    layoutPanel.clear();
-    layoutData.clear();
-    
     setSelectedIndex(BeeConst.UNDEF);
+    while (!isEmpty()) {
+      remove(0);
+    }
   }
 
-  @Override
-  public void forceLayout() {
-    layoutPanel.forceLayout();
+  public void doLayout() {
+    if (isAttached()) {
+      layoutChildren();
+      if (getSelectedIndex() >= 0) {
+        onResize();
+      }
+    }
   }
 
-  public int getAnimationDuration() {
-    return animationDuration;
+  public int getContentIndex(Widget content) {
+    int index = super.getWidgetIndex(content);
+    return (index > 0) ? (index - 1) / 2 : BeeConst.UNDEF;
+  }
+
+  public Widget getContentWidget(int index) {
+    checkIndex(index);
+    return super.getWidget(index * 2 + 1);
   }
 
   public Widget getHeaderWidget(int index) {
     checkIndex(index);
-    return layoutData.get(index).header.getWidget();
-  }
-
-  public Widget getHeaderWidget(Widget child) {
-    checkChild(child);
-    return getHeaderWidget(getWidgetIndex(child));
+    return getHeader(index).getWidget();
   }
 
   @Override
@@ -214,153 +194,77 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
     return selectedIndex;
   }
 
+  public int getStackSize() {
+    return super.getWidgetCount() / 2;
+  }
+
   public Widget getVisibleWidget() {
     if (BeeConst.isUndef(getSelectedIndex())) {
       return null;
     } else {
-      return getWidget(getSelectedIndex());
+      return getContentWidget(getSelectedIndex());
     }
   }
 
-  @Override
-  public Widget getWidget(int index) {
-    return layoutPanel.getWidget(index * 2 + 1);
-  }
-
-  @Override
-  public int getWidgetCount() {
-    return layoutPanel.getWidgetCount() / 2;
-  }
-
-  @Override
-  public int getWidgetIndex(Widget child) {
-    int index = layoutPanel.getWidgetIndex(child);
-    return BeeConst.isUndef(index) ? index : (index - 1) / 2;
-  }
-
-  public void insert(Widget child, SafeHtml html, double headerSize, int beforeIndex) {
-    insert(child, html.asString(), true, headerSize, beforeIndex);
-  }
-
-  public void insert(Widget child, String text, boolean asHtml, double headerSize, int beforeIndex) {
+  public void insert(Widget child, String text, boolean asHtml, int headerSize, int before) {
     Html contents = new Html();
     if (asHtml) {
       contents.setHTML(text);
     } else {
       contents.setText(text);
     }
-    insert(child, contents, headerSize, beforeIndex);
+    insert(child, contents, headerSize, before);
   }
 
-  public void insert(Widget child, String text, double headerSize, int beforeIndex) {
-    insert(child, text, false, headerSize, beforeIndex);
+  public void insert(Widget child, Widget header, int headerSize, int before) {
+    insert(child, new Header(header, headerSize), before);
   }
 
-  public void insert(Widget child, Widget header, double headerSize, int beforeIndex) {
-    insert(child, new Header(header), headerSize, beforeIndex);
-  }
-
-  @Override
-  public Iterator<Widget> iterator() {
-    return new Iterator<Widget>() {
-      int i = 0;
-      int last = -1;
-
-      @Override
-      public boolean hasNext() {
-        return i < layoutData.size();
-      }
-
-      @Override
-      public Widget next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException();
-        }
-        return layoutData.get(last = i++).widget;
-      }
-
-      @Override
-      public void remove() {
-        if (last < 0) {
-          throw new IllegalStateException();
-        }
-
-        Stack.this.remove(layoutData.get(last).widget);
-        i = last;
-        last = -1;
-      }
-    };
+  public boolean isEmpty() {
+    return getStackSize() == 0;
   }
 
   @Override
   public void onResize() {
-    layoutPanel.onResize();
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize && child.isVisible()) {
+        ((RequiresResize) child).onResize();
+      }
+    }
   }
 
   @Override
   public boolean remove(int index) {
-    return remove(getWidget(index));
+    return remove(getContentWidget(index));
   }
 
   @Override
   public boolean remove(Widget child) {
-    if (child.getParent() != layoutPanel) {
+    if (child instanceof Header) {
+      return super.remove(child);
+    }
+
+    int index = getContentIndex(child);
+    if (BeeConst.isUndef(index)) {
       return false;
     }
 
-    for (int i = 0; i < layoutData.size(); ++i) {
-      LayoutData data = layoutData.get(i);
-      if (data.widget == child) {
-        layoutPanel.remove(data.header);
-        layoutPanel.remove(data.widget);
-
-        data.header.removeStyleName(HEADER_STYLE);
-        data.widget.removeStyleName(CONTENT_STYLE);
-
-        layoutData.remove(i);
-
-        if (getSelectedIndex() == i) {
-          setSelectedIndex(BeeConst.UNDEF);
-          if (!layoutData.isEmpty()) {
-            showWidget(layoutData.get(0).widget);
-          }
-        } else {
-          if (i <= getSelectedIndex()) {
-            setSelectedIndex(getSelectedIndex() - 1);
-          }
-          animate(getAnimationDuration());
-        }
-        return true;
-      }
+    boolean removed = super.remove(getHeader(index));
+    if (removed) {
+      removed = super.remove(child);
     }
 
-    return false;
-  }
-
-  public void setAnimationDuration(int duration) {
-    this.animationDuration = duration;
-  }
-
-  public void setHeaderHml(int index, SafeHtml html) {
-    setHeaderHtml(index, html.asString());
-  }
-
-  public void setHeaderHtml(int index, String html) {
-    checkIndex(index);
-    LayoutData data = layoutData.get(index);
-
-    Widget headerWidget = data.header.getWidget();
-    Assert.isTrue(headerWidget instanceof HasHTML, "Header widget does not implement HasHTML");
-    ((HasHTML) headerWidget).setHTML(html);
-  }
-
-  public void setHeaderText(int index, String text) {
-    checkIndex(index);
-    LayoutData data = layoutData.get(index);
-
-    Widget headerWidget = data.header.getWidget();
-    Assert.isTrue(headerWidget instanceof HasText, "Header widget does not implement HasText");
-    ((HasText) headerWidget).setText(text);
+    if (removed) {
+      if (getSelectedIndex() == index) {
+        setSelectedIndex(BeeConst.UNDEF);
+      } else {
+        if (index < getSelectedIndex()) {
+          setSelectedIndex(getSelectedIndex() - 1);
+        }
+      }
+      doLayout();
+    }
+    return removed;
   }
 
   @Override
@@ -374,99 +278,6 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
 
   public void showWidget(int index, boolean fireEvents) {
     checkIndex(index);
-    showWidget(index, getAnimationDuration(), fireEvents);
-  }
-
-  public void showWidget(Widget child) {
-    showWidget(getWidgetIndex(child));
-  }
-
-  public void showWidget(Widget child, boolean fireEvents) {
-    showWidget(getWidgetIndex(child), getAnimationDuration(), fireEvents);
-  }
-  
-  protected void onHeaderClick(Widget child) {
-    showWidget(child);
-  }
-
-  @Override
-  protected void onLoad() {
-    animate(0);
-  }
-
-  private void checkChild(Widget child) {
-    Assert.isTrue(layoutPanel.getChildren().contains(child));
-  }
-
-  private void checkIndex(int index) {
-    Assert.betweenExclusive(index, 0, getWidgetCount(), "Index out of bounds");
-  }
-
-  private void insert(final Widget child, Header header, double headerSize, int beforeIndex) {
-    Assert.betweenInclusive(beforeIndex, 0, getWidgetCount(), "beforeIndex out of bounds");
-    
-    int index = beforeIndex;
-    int oldIdx = getWidgetIndex(child);
-    if (!BeeConst.isUndef(oldIdx)) {
-      remove(child);
-      if (oldIdx < index) {
-        index--;
-      }
-    }
-
-    int widgetIndex = index * 2;
-    layoutPanel.insert(child, widgetIndex);
-    layoutPanel.insert(header, widgetIndex);
-
-    layoutPanel.setWidgetLeftRight(header, 0, Unit.PX, 0, Unit.PX);
-    layoutPanel.setWidgetLeftRight(child, 0, Unit.PX, 0, Unit.PX);
-
-    LayoutData data = new LayoutData(child, header, headerSize);
-    layoutData.add(index, data);
-
-    header.addStyleName(HEADER_STYLE);
-    child.addStyleName(CONTENT_STYLE);
-
-    header.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Stack.this.onHeaderClick(child);
-      }
-    });
-
-    if (BeeConst.isUndef(getSelectedIndex())) {
-      showWidget(0);
-    } else if (index <= getSelectedIndex()) {
-      setSelectedIndex(getSelectedIndex() + 1);
-    }
-
-    if (isAttached()) {
-      animate(getAnimationDuration());
-    }
-  }
-  
-  private boolean isIndex(int index) {
-    return index >= 0 && index < getWidgetCount();
-  }
-  
-  private void setSelectedIndex(int selectedIndex) {
-    if (this.selectedIndex == selectedIndex) {
-      return;
-    }
-    
-    if (isIndex(this.selectedIndex)) {
-      getHeaderWidget(this.selectedIndex).removeStyleName(SELECTED_STYLE);
-    }
-
-    this.selectedIndex = selectedIndex;
-
-    if (isIndex(selectedIndex)) {
-      getHeaderWidget(selectedIndex).addStyleName(SELECTED_STYLE);
-    }
-  }
-
-  private void showWidget(int index, final int duration, boolean fireEvents) {
-    checkIndex(index);
     if (index == getSelectedIndex()) {
       return;
     }
@@ -477,15 +288,158 @@ public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize
         return;
       }
     }
+    
+    if (isIndex(getSelectedIndex())) {
+      hideContent(getSelectedIndex());
+    }
 
     setSelectedIndex(index);
-
-    if (isAttached()) {
-      animate(duration);
-    }
+    doLayout();
 
     if (fireEvents) {
       SelectionEvent.fire(this, index);
+    }
+  }
+
+  public void showWidget(Widget child) {
+    showWidget(getContentIndex(child));
+  }
+
+  protected State onHeaderClick(Widget child) {
+    int index = getContentIndex(child);
+    if (!isIndex(index)) {
+      return null;
+    }
+    
+    if (index == getSelectedIndex()) {
+      hideContent(index);
+      setSelectedIndex(BeeConst.UNDEF);
+      layoutChildren();
+      return State.CLOSED;
+
+    } else {
+      showWidget(index);
+      return State.OPEN;
+    }
+  }
+
+  @Override
+  protected void onLoad() {
+    layoutChildren();
+    super.onLoad();
+  }
+
+  private void checkIndex(int index) {
+    Assert.betweenExclusive(index, 0, getStackSize(), "Index out of bounds");
+  }
+
+  private Header getHeader(int index) {
+    return (Header) super.getWidget(index * 2);
+  }
+  
+  private void hideContent(int index) {
+    getContentWidget(index).setVisible(false);
+  }
+
+  private void insert(final Widget child, Header header, int before) {
+    Assert.betweenInclusive(before, 0, getStackSize(), "before index out of bounds");
+    
+    child.setVisible(false);
+
+    header.addStyleName(HEADER_STYLE);
+    child.addStyleName(CONTENT_STYLE);
+    
+    Style style = child.getElement().getStyle();
+    style.setPosition(Position.ABSOLUTE);
+    style.setLeft(0, Unit.PX);
+    style.setRight(0, Unit.PX);
+
+    header.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Stack.this.onHeaderClick(child);
+      }
+    });
+    
+    super.insert(header, getElement(), before * 2, true);
+    super.insert(child, getElement(), before * 2 + 1, true);
+    
+    if (before >= 0 && before <= getSelectedIndex()) {
+      setSelectedIndex(getSelectedIndex() + 1);
+    }
+    doLayout();
+  }
+
+  private boolean isIndex(int index) {
+    return index >= 0 && index < getStackSize();
+  }
+
+  private void layoutChildren() {
+    if (isEmpty()) {
+      return;
+    }
+
+    int top = 0;
+    int bottom = 0;
+
+    if (isIndex(getSelectedIndex())) {
+      for (int i = 0; i <= getSelectedIndex(); i++) {
+        Header header = getHeader(i);
+        Style style = header.getElement().getStyle();
+
+        style.setTop(top, Unit.PX);
+        style.clearBottom();
+
+        top += header.getSize();
+      }
+
+      for (int i = getStackSize() - 1; i > getSelectedIndex(); i--) {
+        Header header = getHeader(i);
+        Style style = header.getElement().getStyle();
+
+        style.clearTop();
+        style.setBottom(bottom, Unit.PX);
+
+        bottom += header.getSize();
+      }
+
+      Widget widget = getVisibleWidget();
+      Style style = widget.getElement().getStyle();
+
+      style.setTop(top, Unit.PX);
+      style.setBottom(bottom, Unit.PX);
+      
+      StyleUtils.setTransformScale(style, Revelation.FROM, Revelation.FROM);
+      widget.setVisible(true);
+      
+      revelation.start(style);
+
+    } else {
+      for (int i = 0; i < getStackSize(); i++) {
+        Header header = getHeader(i);
+        Style style = header.getElement().getStyle();
+
+        style.setTop(top, Unit.PX);
+        style.clearBottom();
+
+        top += header.getSize();
+      }
+    }
+  }
+
+  private void setSelectedIndex(int selectedIndex) {
+    if (this.selectedIndex == selectedIndex) {
+      return;
+    }
+
+    if (isIndex(this.selectedIndex)) {
+      getHeaderWidget(this.selectedIndex).removeStyleName(SELECTED_STYLE);
+    }
+
+    this.selectedIndex = selectedIndex;
+
+    if (isIndex(selectedIndex)) {
+      getHeaderWidget(selectedIndex).addStyleName(SELECTED_STYLE);
     }
   }
 }

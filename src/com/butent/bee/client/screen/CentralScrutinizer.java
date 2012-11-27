@@ -1,7 +1,6 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.base.Objects;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -91,10 +90,10 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
   private static final BeeLogger logger = LogUtils.getLogger(CentralScrutinizer.class);
   
-  private static final double DEFAULT_HEADER_SIZE = 25.0;
+  private static final int DEFAULT_HEADER_SIZE = 25;
 
   CentralScrutinizer() {
-    super(Unit.PX);
+    super();
     addStyleName("bee-CentralScrutinizer");
   }
   
@@ -121,12 +120,13 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   @Override
-  protected void onHeaderClick(Widget child) {
-    super.onHeaderClick(child);
+  protected State onHeaderClick(Widget child) {
+    State state = super.onHeaderClick(child);
     
-    if (child instanceof HandlesStateChange) {
+    if (State.OPEN.equals(state) && child instanceof HandlesStateChange) {
       ((HandlesStateChange) child).onStateChange(State.ACTIVATED);
     }
+    return state;
   }
 
   boolean activate(Domain domain, Long key) {
@@ -152,8 +152,8 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       return;
     }
     
-    int before = getWidgetCount();
-    for (int i = 0; i < getWidgetCount(); i++) {
+    int before = getStackSize();
+    for (int i = 0; i < getStackSize(); i++) {
       Appliance appliance = getAppliance(i);
       if (appliance != null && appliance.getDomain().getOrdinal() > domain.getOrdinal()) {
         before = i;
@@ -193,7 +193,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
   
   private int find(Domain domain, Long key) {
-    for (int i = 0; i < getWidgetCount(); i++) {
+    for (int i = 0; i < getStackSize(); i++) {
       Appliance appliance = getAppliance(i);
       if (appliance != null && appliance.is(domain, key)) {
         return i;

@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.HasOpenHandlers;
@@ -42,9 +40,9 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     HasTimeBlockClickHandlers, HasUpdateHandlers, RequiresResize, ProvidesResize {
 
   private final FlowPanel rootPanel = new FlowPanel();
-  
+
   private final long calendarId;
-  
+
   private final JustDate date;
 
   private final CalendarSettings settings;
@@ -57,10 +55,11 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   private final Timer resizeTimer = new Timer() {
     @Override
     public void run() {
+      doSizing();
       doLayout();
     }
   };
-  
+
   private CalendarView view = null;
   private int displayedDays = BeeConst.UNDEF;
 
@@ -74,7 +73,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public CalendarWidget(long calendarId, JustDate date, CalendarSettings settings) {
     super();
-    
+
     this.calendarId = calendarId;
     this.settings = settings;
     this.appointmentManager = new AppointmentManager();
@@ -93,6 +92,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
+  @Override
   public HandlerRegistration addOpenHandler(OpenHandler<Appointment> handler) {
     return addHandler(handler, OpenEvent.getType());
   }
@@ -101,6 +101,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickEvent.Handler handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
   }
@@ -109,6 +110,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     rootPanel.add(widget);
   }
 
+  @Override
   public HandlerRegistration addUpdateHandler(UpdateEvent.Handler handler) {
     return addHandler(handler, UpdateEvent.getType());
   }
@@ -151,7 +153,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   public int getDisplayedDays() {
     return displayedDays;
   }
-  
+
   public String getId() {
     return getElement().getId();
   }
@@ -167,11 +169,11 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
       return getView().getType();
     }
   }
-  
+
   public CalendarView getView() {
     return view;
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     int eventType = event.getTypeInt();
@@ -186,7 +188,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
       }
 
       case Event.ONMOUSEDOWN: {
-        if (event.getButton() == NativeEvent.BUTTON_LEFT 
+        if (event.getButton() == NativeEvent.BUTTON_LEFT
             && EventUtils.isCurrentTarget(event, getElement())) {
           if (onMouseDown(EventUtils.getEventTargetElement(event), event)) {
             event.stopPropagation();
@@ -215,15 +217,6 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
-  @Override
-  public void onLoad() {
-    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      public void execute() {
-        doSizing();
-      }
-    });
-  }
-
   public boolean onMouseDown(Element element, Event event) {
     if (view != null && settings.isSingleClick()) {
       return view.onClick(calendarId, element, event);
@@ -232,8 +225,9 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
+  @Override
   public void onResize() {
-    resizeTimer.schedule(500);
+    resizeTimer.schedule(100);
   }
 
   public void refresh(boolean scroll) {
@@ -308,11 +302,11 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
       refresh(true);
     }
   }
-  
+
   public void setDisplayedDays(int displayedDays) {
     this.displayedDays = displayedDays;
   }
-  
+
   public void setType(CalendarView.Type viewType) {
     setType(viewType, getDisplayedDays());
   }
@@ -320,13 +314,13 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   public void setType(CalendarView.Type viewType, int days) {
     Assert.notNull(viewType);
     CalendarView cached = viewCache.get(viewType);
-    
+
     switch (viewType) {
       case DAY:
         DayView dayView = (cached instanceof DayView) ? (DayView) cached : new DayView();
         if (!(cached instanceof DayView)) {
           viewCache.put(viewType, dayView);
-        }  
+        }
 
         if (days > 0) {
           setDisplayedDays(days);
@@ -338,16 +332,17 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
         MonthView monthView = (cached instanceof MonthView) ? (MonthView) cached : new MonthView();
         if (!(cached instanceof MonthView)) {
           viewCache.put(viewType, monthView);
-        }  
+        }
 
         setView(monthView);
         break;
 
       case RESOURCE:
-        ResourceView resourceView = (cached instanceof ResourceView) ? (ResourceView) cached : new ResourceView();
+        ResourceView resourceView =
+            (cached instanceof ResourceView) ? (ResourceView) cached : new ResourceView();
         if (!(cached instanceof ResourceView)) {
           viewCache.put(viewType, resourceView);
-        }  
+        }
 
         if (days > 0) {
           setDisplayedDays(days);
@@ -368,7 +363,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     setStyleName(this.view.getStyleName());
     refresh(true);
   }
-  
+
   public void suspendLayout() {
     layoutSuspended = true;
   }

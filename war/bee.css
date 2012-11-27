@@ -232,6 +232,9 @@ body, select {
   display: block;
 }
 
+.bee-Split {
+  position: relative;
+}
 .bee-HSplitter {
   background-color: #e2dfdf;
   cursor: col-resize;
@@ -1229,6 +1232,10 @@ body, select {
   overflow: auto;
 }
 
+.bee-StackContainer {
+  position: relative;
+}
+
 .bee-StackHeader {
   cursor: pointer;
   color: #6d6d6d;
@@ -1546,6 +1553,9 @@ body, select {
   padding: 2px 4px;
   cursor: pointer;
 }
+.bee-Workspace-actionMenu-item img {
+  -webkit-filter: grayscale(50%);
+}
 
 .bee-Workspace-action-split {
   border: 1px solid #bbb;
@@ -1759,10 +1769,10 @@ body, select {
   text-decoration: underline;
 }
 
-.bee-CentralScrutinizer .bee-StackHeader {
+.bee-CentralScrutinizer > .bee-StackHeader {
   border-left: 5px solid white;
 }
-.bee-CentralScrutinizer .bee-StackHeader-selected {
+.bee-CentralScrutinizer > .bee-StackHeader-selected {
   border-left: 5px solid #FD6268;
   color: #222;
 }

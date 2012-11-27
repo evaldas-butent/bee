@@ -12,6 +12,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
@@ -41,6 +42,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
 import com.butent.bee.client.ajaxloader.ClientLocation;
+import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -374,6 +376,9 @@ public class CliWorker {
     } else if (z.equals("rpc")) {
       showRpc();
 
+    } else if (z.equals("scale")) {
+      scale(arr);
+      
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args);
 
@@ -1323,6 +1328,102 @@ public class CliWorker {
     }
   }-*/;
 
+  private static void scale(String[] arr) {
+    
+    class Raf extends RafCallback {
+      private double fromX = 1.0;
+      private double fromY = 1.0;
+
+      private double toX = 0.1;
+      private double toY = 0.1;
+      
+      private Style style = null;
+
+      private Raf(double duration) {
+        super(duration);
+      }
+
+      @Override
+      public void onComplete() {
+        super.onComplete();
+        StyleUtils.clearTranform(style);
+      }
+
+      @Override
+      public boolean run(double elapsed) {
+        double x;
+        double y;
+        
+        if (elapsed < duration / 2) {
+          x = BeeUtils.rescale(elapsed, 0, duration / 2, fromX, toX);
+          y = BeeUtils.rescale(elapsed, 0, duration / 2, fromY, toY);
+        } else {
+          x = BeeUtils.rescale(elapsed, duration / 2, duration, toX, fromX);
+          y = BeeUtils.rescale(elapsed, duration / 2, duration, toY, fromY);
+        }
+        
+        StyleUtils.setTransformScale(style, x, y);
+        return true;
+      }
+    }
+    
+    Raf raf = new Raf(5000);
+
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
+      char prop = arr[i].toLowerCase().charAt(0);
+      String value = arr[i].substring(1);
+
+      value = BeeUtils.removePrefix(value, '=');
+      value = BeeUtils.removePrefix(value, ':');
+      if (value.isEmpty()) {
+        continue;
+      }
+      
+      switch (prop) {
+        case '#':
+          Element elem = Document.get().getElementById(value);
+          if (elem == null) {
+            logger.warning("element id:", value, "not found");
+          } else {
+            raf.style = elem.getStyle();
+            logger.debug("id", value, elem.getTagName(), elem.getClassName());
+          }
+          break;
+        
+        case 'd':
+          if (BeeUtils.isPositiveDouble(value)) {
+            raf.setDuration(BeeUtils.toDouble(value));
+            logger.debug("duration", raf.getDuration());
+          }
+          break;
+
+        case 'x':
+          if (BeeUtils.isPositiveDouble(value)) {
+            raf.toX = BeeUtils.toDouble(value);
+            logger.debug("toX", raf.toX);
+          }
+          break;
+          
+        case 'y':
+          if (BeeUtils.isPositiveDouble(value)) {
+            raf.toY = BeeUtils.toDouble(value);
+            logger.debug("toY", raf.toY);
+          }
+          break;
+      }
+    }
+    
+    if (raf.style == null) {
+      IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
+      if (widget == null) {
+        widget = BeeKeeper.getScreen().getScreenPanel();
+      }
+      raf.style = widget.asWidget().getElement().getStyle();
+    }
+    
+    raf.start();
+  }
+  
   private static void showBrowser(String[] arr) {
     boolean bro = false;
     boolean wnd = false;
@@ -2689,7 +2790,7 @@ public class CliWorker {
       parent.appendChild(child);
     }
 
-    BeeKeeper.getScreen().updateActivePanel(widget);
+    BeeKeeper.getScreen().updateActivePanel(new Simple(widget, Overflow.HIDDEN));
   }
 
   private static void showTable(String caption, IsTable<?, ?> table) {

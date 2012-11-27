@@ -228,9 +228,9 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     return tile;
   }
 
-  void openInNewPage(IdentifiableWidget widget) {
+  void openInNewPlace(IdentifiableWidget widget) {
     TilePanel tile = getActivePanel();
-    if (tile == null || !tile.isRoot() || !tile.isBlank()) {
+    if (tile == null || !tile.isBlank()) {
       int index = getSelectedIndex();
       if (index < 0) {
         index = getPageCount() - 1;
@@ -484,8 +484,13 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     if (BeeUtils.isEmpty(caption)) {
       caption = Global.CONSTANTS.newTab();
     }
+    
+    int index = getPageIndex(tile);
+    if (BeeConst.isUndef(index)) {
+      return;
+    }
 
-    TabWidget tab = (TabWidget) getTabWidget(getSelectedIndex());
+    TabWidget tab = (TabWidget) getTabWidget(index);
     if (caption.equals(tab.getCaption())) {
       return;
     }

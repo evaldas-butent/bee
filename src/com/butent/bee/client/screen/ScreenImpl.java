@@ -233,9 +233,9 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPanel) {
-    if (newPanel) {
-      getWorkspace().openInNewPage(widget);
+  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
+    if (newPlace) {
+      getWorkspace().openInNewPlace(widget);
     } else {
       getWorkspace().updateActivePanel(widget);
     }

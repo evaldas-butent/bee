@@ -380,12 +380,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   @Override
-  public void onResize() {
-    super.onResize();
-    calendar.onResize();
-  }
-
-  @Override
   public void onStateChange(State state) {
     if (State.ACTIVATED.equals(state)) {
       CalendarKeeper.onActivatePanel(this);

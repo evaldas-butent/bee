@@ -99,7 +99,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPanel) {
+  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
     getScreenPanel().updateCenter(widget);
   }
 

@@ -292,6 +292,8 @@ public class StyleUtils {
   public static final String STYLE_LINE_HEIGHT = "lineHeight";
   public static final String STYLE_TEXT_TRANSFORM = "textTransform";
   public static final String STYLE_LETTER_SPACING = "letterSpacing";
+
+  public static final String STYLE_TRANSFORM = "webkitTransform";
   
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
@@ -731,6 +733,11 @@ public class StyleUtils {
     clearTableLayout(obj.getElement());
   }
 
+  public static void clearTranform(Style st) {
+    Assert.notNull(st);
+    st.clearProperty(STYLE_TRANSFORM);
+  }
+  
   public static void clearWidth(Element el) {
     Assert.notNull(el);
     el.getStyle().clearWidth();
@@ -2254,6 +2261,11 @@ public class StyleUtils {
     setTop(obj.getElement(), px);
   }
 
+  public static void setTransformScale(Style st, double x, double y) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_TRANSFORM, "scale(" + x + "," + y + ")");
+  }
+  
   public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
     Assert.notNull(el);
     setVerticalAlign(el.getStyle(), align);

@@ -164,7 +164,6 @@ public class Historian implements HasInfo {
         places.remove(index);
       }
       places.add(place);
-      logger.info("added place:", place.getId(), "size:", places.size());
     }
     setPosition(places.size() - 1);
   }
@@ -314,7 +313,6 @@ public class Historian implements HasInfo {
         setPosition(index - 1);
       }
       places.remove(index);
-      logger.info("removed place:", id, "size:", places.size());
       return true;
 
     } else {
@@ -323,9 +321,6 @@ public class Historian implements HasInfo {
   }
   
   private void setPosition(int position) {
-    if (this.position != position) {
-      logger.info("history position old:", this.position, "new:", position);
-      this.position = position;
-    }
+    this.position = position;
   }
 }

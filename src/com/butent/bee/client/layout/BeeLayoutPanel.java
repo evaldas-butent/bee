@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   
-  public static Unit defaultUnit = Unit.PX;
+  private static final Unit DEFAULT_UNIT = Unit.PX;
 
   public BeeLayoutPanel() {
     super();
@@ -52,7 +52,7 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
   
   public String addLeftRight(Widget widget, int left, int right) {
-    return addLeftRight(widget, left, defaultUnit, right, defaultUnit);
+    return addLeftRight(widget, left, DEFAULT_UNIT, right, DEFAULT_UNIT);
   }
   
   public String addLeftRightTop(Widget widget, double left, Unit leftUnit,
@@ -67,7 +67,7 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
 
   public String addLeftRightTop(Widget widget, int left, int right, int top) {
-    return addLeftRightTop(widget, left, defaultUnit, right, defaultUnit, top, defaultUnit);
+    return addLeftRightTop(widget, left, DEFAULT_UNIT, right, DEFAULT_UNIT, top, DEFAULT_UNIT);
   }
 
   public String addLeftTop(Widget widget, double left, Unit leftUnit, double top, Unit topUnit) {
@@ -82,7 +82,7 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
 
   public String addLeftTop(Widget widget, int left, int top) {
-    return addLeftTop(widget, left, defaultUnit, top, defaultUnit);
+    return addLeftTop(widget, left, DEFAULT_UNIT, top, DEFAULT_UNIT);
   }
 
   public String addLeftWidthTop(Widget widget, double left, Unit leftUnit,
@@ -97,7 +97,7 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
 
   public String addLeftWidthTop(Widget widget, int left, int width, int top) {
-    return addLeftWidthTop(widget, left, defaultUnit, width, defaultUnit, top, defaultUnit);
+    return addLeftWidthTop(widget, left, DEFAULT_UNIT, width, DEFAULT_UNIT, top, DEFAULT_UNIT);
   }
 
   public String addRightWidthTop(Widget widget, double right, Unit rightUnit,
@@ -113,13 +113,15 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
 
   public String addRightWidthTop(Widget widget, int right, int width, int top) {
-    return addRightWidthTop(widget, right, defaultUnit, width, defaultUnit, top, defaultUnit);
+    return addRightWidthTop(widget, right, DEFAULT_UNIT, width, DEFAULT_UNIT, top, DEFAULT_UNIT);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "layout";
   }
@@ -150,6 +152,7 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
     }
   }
   
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -187,6 +190,6 @@ public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   }
 
   private Unit normalizeUnit(Unit unit) {
-    return (unit == null) ? defaultUnit : unit;
+    return (unit == null) ? DEFAULT_UNIT : unit;
   }
 }

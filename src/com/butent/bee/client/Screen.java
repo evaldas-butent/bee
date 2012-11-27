@@ -46,7 +46,7 @@ public interface Screen extends Module, NotificationListener {
   
   void showInfo();
 
-  void showWidget(IdentifiableWidget widget, boolean newPanel);
+  void showWidget(IdentifiableWidget widget, boolean newPlace);
 
   void updateActivePanel(IdentifiableWidget widget);
 

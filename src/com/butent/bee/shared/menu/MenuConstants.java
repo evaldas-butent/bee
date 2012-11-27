@@ -30,9 +30,6 @@ public class MenuConstants {
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";
 
-  public static final String LAYOUT_STACK = "stack panel";
-  public static final String LAYOUT_TAB = "tab panel";
-
   public static final String LAYOUT_TREE = "simple tree";
 
   public static final String LAYOUT_LIST = "option list";

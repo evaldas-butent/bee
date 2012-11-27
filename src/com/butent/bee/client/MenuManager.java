@@ -2,12 +2,9 @@ package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.Style.Unit;
 
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.i18n.LocaleUtils;
-import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuSelectionHandler;
@@ -158,7 +155,7 @@ public class MenuManager implements Module {
     clear();
   }
 
-  private void addEntry(IdentifiableWidget rw, int itemCnt, Menu item, IdentifiableWidget cw) {
+  private void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
     String txt = LocaleUtils.maybeLocalize(item.getLabel());
     String svc = null;
     String opt = null;
@@ -184,16 +181,6 @@ public class MenuManager implements Module {
 
       if (sepAfter) {
         mb.addSeparator(new MenuSeparator());
-      }
-
-    } else if (rw instanceof Stack) {
-      if (cw != null) {
-        double header = BeeUtils.rescale(itemCnt, 10, 30, 25, 15);
-        ((Stack) rw).add(cw.asWidget(), txt, Math.ceil(header));
-      }
-    } else if (rw instanceof TabbedPages) {
-      if (cw != null) {
-        ((TabbedPages) rw).add(cw.asWidget(), txt);
       }
 
     } else if (rw instanceof Tree) {
@@ -259,7 +246,6 @@ public class MenuManager implements Module {
     IdentifiableWidget rw = createWidget(layout, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
-    int cnt = entries.size();
 
     for (Menu entry : entries) {
       List<Menu> children = null;
@@ -271,7 +257,7 @@ public class MenuManager implements Module {
       if (!BeeUtils.isEmpty(children)) {
         cw = createMenu(level + 1, children, rw);
       }
-      addEntry(rw, cnt, entry, cw);
+      addEntry(rw, entry, cw);
     }
 
     prepareWidget(rw);
@@ -285,11 +271,6 @@ public class MenuManager implements Module {
       w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
       w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
-      w = new Stack(Unit.PX);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TAB)) {
-      w = new TabbedPages();
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
       w = new Tree();

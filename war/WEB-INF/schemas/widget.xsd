@@ -262,7 +262,6 @@
           <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="stack" type="stackElement" />
           </xs:choice>
-          <xs:attribute name="unit" type="ui:cssUnit" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -339,12 +339,18 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     
     Historian.remove(getId());
     Historian.remove(entangled.getId());
+    
+    if (entangled.isActive()) {
+      entangled.setActiveStyle(false);
+    }
 
     Global.setTemporaryDetach(true);
     entangled.moveTo(parent);
     Global.setTemporaryDetach(false);
 
-    if (wasActive) {
+    parent.doLayout();
+    
+    if (wasActive || entangled.isActive()) {
       while (parent.getCenter() instanceof TilePanel) {
         parent = (TilePanel) parent.getCenter();
       }
@@ -522,7 +528,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     if (centerWidget != null) {
       parent.add(centerWidget);
     }
-    parent.doLayout();
   }
 
   private void setActive(boolean active) {
