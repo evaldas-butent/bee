@@ -41,6 +41,7 @@ public class GridPanel extends Simple implements HasEnabled {
     return presenter;
   }
 
+  @Override
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -49,9 +50,6 @@ public class GridPanel extends Simple implements HasEnabled {
   }
 
   @Override
-  public void onResize() {
-  }
-
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getMainView().setEnabled(enabled);
@@ -73,7 +71,7 @@ public class GridPanel extends Simple implements HasEnabled {
     }
     super.setWidget(w);
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -88,6 +86,7 @@ public class GridPanel extends Simple implements HasEnabled {
 
     GridFactory.createGrid(getGridName(), gcb, EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
         new PresenterCallback() {
+          @Override
           public void onCreate(Presenter gp) {
             if (gp != null) {
               setPresenter(gp);

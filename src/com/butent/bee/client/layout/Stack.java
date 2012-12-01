@@ -155,11 +155,11 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       remove(0);
     }
   }
-
-  public void doLayout() {
+  
+  public void doLayout(boolean animate) {
     if (isAttached()) {
-      layoutChildren();
-      if (getSelectedIndex() >= 0) {
+      layoutChildren(animate);
+      if (isOpen()) {
         onResize();
       }
     }
@@ -199,10 +199,10 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   }
 
   public Widget getVisibleWidget() {
-    if (BeeConst.isUndef(getSelectedIndex())) {
-      return null;
-    } else {
+    if (isOpen()) {
       return getContentWidget(getSelectedIndex());
+    } else {
+      return null;
     }
   }
 
@@ -224,6 +224,10 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     return getStackSize() == 0;
   }
 
+  public boolean isOpen() {
+    return isIndex(getSelectedIndex());
+  }
+  
   @Override
   public void onResize() {
     for (Widget child : getChildren()) {
@@ -262,7 +266,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
           setSelectedIndex(getSelectedIndex() - 1);
         }
       }
-      doLayout();
+      doLayout(false);
     }
     return removed;
   }
@@ -289,12 +293,12 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       }
     }
     
-    if (isIndex(getSelectedIndex())) {
+    if (isOpen()) {
       hideContent(getSelectedIndex());
     }
 
     setSelectedIndex(index);
-    doLayout();
+    doLayout(true);
 
     if (fireEvents) {
       SelectionEvent.fire(this, index);
@@ -305,6 +309,18 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     showWidget(getContentIndex(child));
   }
 
+  protected boolean close() {
+    if (isOpen()) {
+      hideContent(getSelectedIndex());
+      setSelectedIndex(BeeConst.UNDEF);
+      
+      layoutChildren(false);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   protected State onHeaderClick(Widget child) {
     int index = getContentIndex(child);
     if (!isIndex(index)) {
@@ -312,9 +328,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
     
     if (index == getSelectedIndex()) {
-      hideContent(index);
-      setSelectedIndex(BeeConst.UNDEF);
-      layoutChildren();
+      close();
       return State.CLOSED;
 
     } else {
@@ -325,7 +339,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
 
   @Override
   protected void onLoad() {
-    layoutChildren();
+    layoutChildren(false);
     super.onLoad();
   }
 
@@ -367,14 +381,14 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     if (before >= 0 && before <= getSelectedIndex()) {
       setSelectedIndex(getSelectedIndex() + 1);
     }
-    doLayout();
+    doLayout(false);
   }
 
   private boolean isIndex(int index) {
     return index >= 0 && index < getStackSize();
   }
 
-  private void layoutChildren() {
+  private void layoutChildren(boolean animate) {
     if (isEmpty()) {
       return;
     }
@@ -382,7 +396,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     int top = 0;
     int bottom = 0;
 
-    if (isIndex(getSelectedIndex())) {
+    if (isOpen()) {
       for (int i = 0; i <= getSelectedIndex(); i++) {
         Header header = getHeader(i);
         Style style = header.getElement().getStyle();
@@ -409,10 +423,13 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       style.setTop(top, Unit.PX);
       style.setBottom(bottom, Unit.PX);
       
-      StyleUtils.setTransformScale(style, Revelation.FROM, Revelation.FROM);
-      widget.setVisible(true);
-      
-      revelation.start(style);
+      if (animate) {
+        StyleUtils.setTransformScale(style, Revelation.FROM, Revelation.FROM);
+        widget.setVisible(true);
+        revelation.start(style);
+      } else {
+        widget.setVisible(true);
+      }
 
     } else {
       for (int i = 0; i < getStackSize(); i++) {

@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
@@ -64,9 +63,11 @@ import java.util.Set;
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler, HasEditState {
+  
+  private static final String STYLE_NAME = "bee-GridContainer";
 
   private Presenter viewPresenter = null;
-  
+
   private String gridName = null;
 
   private String footerId = null;
@@ -93,7 +94,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public GridContainerImpl() {
     super(-1);
-    addStyleName("bee-GridContainer");
+    addStyleName(STYLE_NAME);
   }
 
   @Override
@@ -111,7 +112,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
-  public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
+  public void create(GridDescription gridDescription, List<BeeColumn> dataColumns,
+      String relColumn,
       int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
@@ -220,11 +222,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (scroller != null) {
       addEast(scroller, getScrollerWidth());
       setScrollerId(scroller.getWidgetId());
-      add(content);
+
+      addStyleName(STYLE_NAME + "-scrollable");
       sinkEvents(Event.ONMOUSEWHEEL);
-    } else {
-      add(content);
     }
+
+    add(content);
 
     if (gridDescription.getRowMessage() != null) {
       setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null, dataColumns));
@@ -240,7 +243,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public String getCaption() {
     return hasHeader() ? getHeader().getCaption() : null;
   }
-  
+
   @Override
   public List<String> getFavorite() {
     return favorite;
@@ -444,14 +447,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   public boolean onPrint(Element source, Element target) {
     boolean ok;
-    
+
     if (getGridView().getGrid().getId().equals(source.getId())) {
       NodeList<Element> children = DomUtils.getChildren(target);
       List<Element> hide = Lists.newArrayList();
 
       for (int i = 0; i < children.getLength(); i++) {
         Element cell = children.getItem(i);
-        
+
         if (getGridView().getGrid().isFooterCell(cell)) {
           boolean show = false;
 
@@ -462,26 +465,26 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
               show = true;
             }
           }
-          
+
           if (!show) {
             StyleUtils.setHeight(cell, 0);
             StyleUtils.hideScroll(cell);
           }
         }
       }
-      
+
       for (Element child : hide) {
         StyleUtils.hideDisplay(child);
       }
       ok = true;
-    
+
     } else if (getGridView().getGrid().getElement().isOrHasChild(source)) {
       ok = true;
 
     } else if (getId().equals(source.getId())) {
       int width = source.getClientWidth();
       int height = source.getClientHeight();
-      
+
       Element content = getGridView().getGrid().getElement();
       int delta = content.getScrollWidth() - content.getClientWidth();
       if (delta > 0) {
@@ -497,13 +500,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
       ok = getHeader().onPrint(source, target);
-    
+
     } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
       ok = getFooter().onPrint(source, target);
 
     } else if (hasScroller() && getScroller().asWidget().getElement().isOrHasChild(source)) {
       ok = getScroller().onPrint(source, target);
-      
+
     } else {
       ok = true;
     }
@@ -549,6 +552,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   protected void onLoad() {
     super.onLoad();
+
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {
         CellGrid grid = getGridView().getGrid();
@@ -582,7 +586,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach() && getViewPresenter() != null) {
+    if (getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();
@@ -767,7 +771,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private void setLastEnabled(boolean lastEnabled) {
     this.lastEnabled = lastEnabled;
   }
-  
+
   private void setLastRow(IsRow lastRow) {
     this.lastRow = lastRow;
   }

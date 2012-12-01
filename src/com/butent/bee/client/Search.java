@@ -68,14 +68,14 @@ public class Search {
 
     private static final String STYLE_RESULT_CONTENT = "bee-SearchResultContent";
     private static final String STYLE_RESULT_VIEW = "bee-SearchResultView";
-    
+
     private final String query;
-    
+
     private final String messageWidgetId;
     private int size;
 
     private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
-    
+
     private ScheduledCommand onClose = null;
 
     private ResultPanel(String query, List<SearchResult> results) {
@@ -95,7 +95,7 @@ public class Search {
       InlineLabel message = new InlineLabel(getMessage());
       message.addStyleName(STYLE_RESULT_MESSAGE);
       header.add(message);
-      
+
       this.messageWidgetId = message.getId();
 
       BeeImage close = new BeeImage(Global.getImages().silverClose());
@@ -103,7 +103,7 @@ public class Search {
       close.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          if (getOnClose() != null)  {
+          if (getOnClose() != null) {
             getOnClose().execute();
           }
         }
@@ -135,7 +135,7 @@ public class Search {
         content.add(widget);
       }
       this.add(content);
-      
+
       this.handlerRegistry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
       this.handlerRegistry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
     }
@@ -156,7 +156,7 @@ public class Search {
       if (widget != null) {
         widget.getRow().setVersion(event.getVersion());
         widget.getRow().setValue(event.getColumnIndex(), event.getValue());
-        
+
         DataInfo dataInfo = Data.getDataInfo(event.getViewName());
         if (dataInfo != null) {
           widget.render(query, dataInfo);
@@ -173,7 +173,7 @@ public class Search {
           count++;
         }
       }
-      
+
       if (count > 0) {
         setSize(getSize() - count);
         updateMessage();
@@ -195,7 +195,7 @@ public class Search {
       if (widget != null) {
         BeeRow row = DataUtils.cloneRow(event.getRow());
         widget.setRow(row);
-        
+
         DataInfo dataInfo = Data.getDataInfo(event.getViewName());
         if (dataInfo != null) {
           widget.render(query, dataInfo);
@@ -205,16 +205,14 @@ public class Search {
 
     @Override
     protected void onUnload() {
-      if (!Global.isTemporaryDetach()) {
-        for (HandlerRegistration entry : handlerRegistry) {
-          if (entry != null) {
-            entry.removeHandler();
-          }
+      for (HandlerRegistration entry : handlerRegistry) {
+        if (entry != null) {
+          entry.removeHandler();
         }
       }
       super.onUnload();
     }
-    
+
     private ResultWidget findWidget(HasWidgets container, String viewName, long rowId) {
       for (Widget child : container) {
         if (child instanceof ResultWidget) {
@@ -232,11 +230,11 @@ public class Search {
       }
       return null;
     }
-    
+
     private String getMessage() {
       return BeeUtils.bracket(getSize());
     }
-    
+
     private ScheduledCommand getOnClose() {
       return onClose;
     }
@@ -261,26 +259,26 @@ public class Search {
     private void setSize(int size) {
       this.size = size;
     }
-    
+
     private void updateMessage() {
       DomUtils.getElement(messageWidgetId).setInnerText(getMessage());
     }
   }
-  
+
   private static class ResultWidget extends CustomWidget implements HasViewName {
 
     private static final String STYLE_RESULT_ROW = "bee-SearchResultRow";
     private static final String STYLE_RESULT_MATCH = "bee-SearchResultMatch";
-    
+
     private final String viewName;
     private BeeRow row;
 
     private ResultWidget(String viewName, BeeRow row) {
       super(Document.get().createPElement(), STYLE_RESULT_ROW);
-      
+
       this.viewName = viewName;
       this.row = row;
-      
+
       sinkEvents(Event.ONCLICK);
     }
 
@@ -305,12 +303,12 @@ public class Search {
     private BeeRow getRow() {
       return row;
     }
-    
+
     private void render(String query, DataInfo dataInfo) {
       if (isAttached()) {
         DomUtils.clear(getElement());
       }
-      
+
       String text = transformRow(dataInfo);
 
       String nt = text.toLowerCase();
@@ -460,14 +458,14 @@ public class Search {
 
   private void showResults(String query, List<SearchResult> results) {
     final ResultPanel resultPanel = new ResultPanel(query, results);
-    
+
     resultPanel.setOnClose(new ScheduledCommand() {
       @Override
       public void execute() {
         BeeKeeper.getScreen().closeWidget(resultPanel);
       }
     });
-    
+
     BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
 

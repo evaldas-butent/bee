@@ -32,14 +32,15 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch, Order order);
+      GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch,
+      Order order);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
   void formCancel();
 
   void formConfirm();
-  
+
   List<BeeColumn> getDataColumns();
 
   FormView getForm(boolean edit);
@@ -53,7 +54,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   long getRelId();
 
   Collection<RowInfo> getSelectedRows();
-  
+
   boolean isAdding();
 
   boolean isReadOnly();
@@ -67,7 +68,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void refreshCellContent(long rowId, String columnSource);
 
   void setRelId(long relId);
-  
+
   boolean validateFormData(FormView form, NotificationListener notificationListener,
       boolean focusOnError);
 }

@@ -26,7 +26,9 @@ import com.butent.bee.client.event.InputEvent;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.BeeImage;
@@ -54,7 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class CalendarController extends Flow implements HandlesStateChange, HasCaption {
+class CalendarController extends Flow implements HandlesStateChange, HasCaption, HasDomain {
 
   private enum UcaColumn {
     COLOR("color") {
@@ -219,6 +221,11 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption 
     return caption;
   }
 
+  @Override
+  public Domain getDomain() {
+    return Domain.CALENDAR;
+  }
+  
   @Override
   public String getIdPrefix() {
     return "cc";

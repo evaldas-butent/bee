@@ -22,6 +22,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
@@ -72,6 +73,9 @@ public class MessageBoxes {
   private static final String STYLE_DECISION_OPTION = "bee-DecisionOption";
   private static final String STYLE_DECISION_CELL = "-cell";
 
+  private static final String STYLE_TABLE_CONTAINER = "bee-ModalTableContainer";
+  private static final String STYLE_TABLE = "bee-ModalTable";
+  
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
@@ -445,6 +449,7 @@ public class MessageBoxes {
     }
 
     HtmlTable grid = new HtmlTable();
+    grid.addStyleName(STYLE_TABLE);
     int index = 0;
 
     if (!BeeUtils.isEmpty(caption)) {
@@ -483,11 +488,14 @@ public class MessageBoxes {
     if (c > 1) {
       grid.getCellFormatter().setColSpan(index, 0, c);
     }
+    
+    Simple container = new Simple(grid);
+    container.addStyleName(STYLE_TABLE_CONTAINER);
 
     Popup box = new Popup(true, true);
     box.setAnimationEnabled(true);
 
-    box.setWidget(grid);
+    box.setWidget(container);
 
     box.center();
     close.setFocus(true);

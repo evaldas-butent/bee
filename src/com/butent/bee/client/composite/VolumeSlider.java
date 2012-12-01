@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Absolute;
@@ -17,7 +16,7 @@ import com.butent.bee.shared.utils.ValueUtils;
  * Windows).
  */
 
-public class VolumeSlider extends Absolute implements RequiresResize {
+public class VolumeSlider extends Absolute {
 
   private class VolumeSpinner extends SpinnerBase {
     private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,

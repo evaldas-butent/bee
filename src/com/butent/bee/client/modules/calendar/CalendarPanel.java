@@ -17,7 +17,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
@@ -42,7 +41,9 @@ import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -76,7 +77,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
-    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange {
+    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
@@ -241,7 +242,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     registry.add(AppointmentEvent.register(this));
     registry.add(VisibilityChangeEvent.register(this));
-    
+
     updateUcAttendees(ucAttendees, false);
     loadAppointments();
   }
@@ -253,6 +254,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   @Override
   public String getCaption() {
     return header.getCaption();
+  }
+
+  @Override
+  public Domain getDomain() {
+    return Domain.CALENDAR;
   }
 
   @Override
@@ -414,22 +420,21 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach()) {
-      for (HandlerRegistration hr : registry) {
-        hr.removeHandler();
-      }
-      registry.clear();
-
-      CalendarKeeper.saveActiveView(getSettings());
-      onViewUnload();
+    for (HandlerRegistration hr : registry) {
+      hr.removeHandler();
     }
+    registry.clear();
+
+    CalendarKeeper.saveActiveView(getSettings());
+    onViewUnload();
+
     super.onUnload();
   }
 
   CalendarSettings getSettings() {
     return calendar.getSettings();
   }
-  
+
   void setDate(JustDate date, boolean sync) {
     if (date != null) {
       if (!date.equals(calendar.getDate())) {
@@ -617,7 +622,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     JustDate date = calendar.getDate();
     int days = calendar.getDisplayedDays();
-    
+
     String html;
     if (date == null) {
       html = BeeConst.STRING_EMPTY;
@@ -627,9 +632,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       html = DATE_FORMAT.format(date);
     } else {
       JustDate end = TimeUtils.nextDay(date, days - 1);
-      html = date.toString() + " - " + end.toString();  
+      html = date.toString() + " - " + end.toString();
     }
-    
+
     dateBox.setHTML(html);
   }
 

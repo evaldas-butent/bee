@@ -300,6 +300,7 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
+  @Override
   public void onResize() {
     redraw(false);
   }
@@ -402,6 +403,7 @@ public class SliderBar extends Focus implements RequiresResize {
     super.onLoad();
     
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      @Override
       public void execute() {
         redraw(true);
       }

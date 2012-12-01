@@ -378,7 +378,7 @@ public class CliWorker {
 
     } else if (z.equals("scale")) {
       scale(arr);
-      
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args);
 
@@ -421,8 +421,8 @@ public class CliWorker {
     } else if (z.equals("tables")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
 
-    } else if (z.equals("tiles")) {
-      BeeKeeper.getScreen().showInfo();
+    } else if (z.startsWith("tile")) {
+      doTiles(args);
 
     } else if (z.startsWith("tran") || z.startsWith("detec")) {
       translate(arr, z.startsWith("detec"));
@@ -870,20 +870,20 @@ public class CliWorker {
 
       } else if (z.equals(BeeConst.STRING_PLUS)) {
         ClientLogManager.setPanelVisible(true);
-      
+
       } else if (BeeUtils.isDigit(z)) {
         ClientLogManager.setPanelSize(BeeUtils.toInt(z));
-      
+
       } else if (BeeUtils.startsSame(z, "clear")) {
         ClientLogManager.clearPanel();
-      
+
       } else if (BeeUtils.startsSame(z, "level")) {
         ClientLogManager.setPanelVisible(true);
         for (LogLevel lvl : LogLevel.values()) {
           logger.log(lvl, lvl.name().toLowerCase());
         }
         logger.addSeparator();
-      
+
       } else {
         ClientLogManager.setPanelVisible(true);
         logger.info((Object[]) arr);
@@ -954,6 +954,29 @@ public class CliWorker {
         });
   }
 
+  private static void doTiles(String args) {
+    if (BeeUtils.isInt(args)) {
+      int cnt = BeeUtils.toInt(args);
+
+      if (cnt > 0) {
+        for (int i = 0; i < cnt; i++) {
+          BeeKeeper.getScreen().getWorkspace().randomSplit();
+        }
+      } else {
+        boolean debug = Global.isDebug();
+        for (int i = 0; i > cnt; i--) {
+          boolean ok = BeeKeeper.getScreen().getWorkspace().randomClose(debug);
+          if (!ok) {
+            break;
+          }
+        }
+      }
+
+    } else {
+      BeeKeeper.getScreen().showInfo();
+    }
+  }
+
   private static void eval(String v, String[] arr) {
     String xpr = v.substring(arr[0].length()).trim();
 
@@ -1008,7 +1031,7 @@ public class CliWorker {
           }
 
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
-          BeeKeeper.getScreen().updateActivePanel(new Simple(fileGroup, Overflow.AUTO));
+          BeeKeeper.getScreen().updateActivePanel(fileGroup);
         }
       }
     });
@@ -1329,14 +1352,14 @@ public class CliWorker {
   }-*/;
 
   private static void scale(String[] arr) {
-    
+
     class Raf extends RafCallback {
       private double fromX = 1.0;
       private double fromY = 1.0;
 
       private double toX = 0.1;
       private double toY = 0.1;
-      
+
       private Style style = null;
 
       private Raf(double duration) {
@@ -1353,7 +1376,7 @@ public class CliWorker {
       public boolean run(double elapsed) {
         double x;
         double y;
-        
+
         if (elapsed < duration / 2) {
           x = BeeUtils.rescale(elapsed, 0, duration / 2, fromX, toX);
           y = BeeUtils.rescale(elapsed, 0, duration / 2, fromY, toY);
@@ -1361,12 +1384,12 @@ public class CliWorker {
           x = BeeUtils.rescale(elapsed, duration / 2, duration, toX, fromX);
           y = BeeUtils.rescale(elapsed, duration / 2, duration, toY, fromY);
         }
-        
+
         StyleUtils.setTransformScale(style, x, y);
         return true;
       }
     }
-    
+
     Raf raf = new Raf(5000);
 
     for (int i = 1; i < ArrayUtils.length(arr); i++) {
@@ -1378,7 +1401,7 @@ public class CliWorker {
       if (value.isEmpty()) {
         continue;
       }
-      
+
       switch (prop) {
         case '#':
           Element elem = Document.get().getElementById(value);
@@ -1389,7 +1412,7 @@ public class CliWorker {
             logger.debug("id", value, elem.getTagName(), elem.getClassName());
           }
           break;
-        
+
         case 'd':
           if (BeeUtils.isPositiveDouble(value)) {
             raf.setDuration(BeeUtils.toDouble(value));
@@ -1403,7 +1426,7 @@ public class CliWorker {
             logger.debug("toX", raf.toX);
           }
           break;
-          
+
         case 'y':
           if (BeeUtils.isPositiveDouble(value)) {
             raf.toY = BeeUtils.toDouble(value);
@@ -1412,7 +1435,7 @@ public class CliWorker {
           break;
       }
     }
-    
+
     if (raf.style == null) {
       IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
       if (widget == null) {
@@ -1420,10 +1443,10 @@ public class CliWorker {
       }
       raf.style = widget.asWidget().getElement().getStyle();
     }
-    
+
     raf.start();
   }
-  
+
   private static void showBrowser(String[] arr) {
     boolean bro = false;
     boolean wnd = false;
@@ -1862,8 +1885,8 @@ public class CliWorker {
     showTable(v, table);
   }
 
-  private static void showExtData(List<ExtendedProperty> data, String... columnLabels) {
-    Global.showGrid(new ExtendedPropertiesData(data, columnLabels));
+  private static void showExtData(List<ExtendedProperty> data) {
+    Global.showGrid(new ExtendedPropertiesData(data, true));
   }
 
   private static void showFlags(String[] arr) {
@@ -1924,7 +1947,7 @@ public class CliWorker {
           }
 
           if (!table.isEmpty()) {
-            BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
+            BeeKeeper.getScreen().updateActivePanel(table);
           }
         }
       };
@@ -2021,7 +2044,7 @@ public class CliWorker {
       if (!table.isEmpty()) {
         Global.showModalWidget(table);
       }
-      
+
     } else {
       int row = 0;
       int col = 0;
@@ -2033,7 +2056,7 @@ public class CliWorker {
         table.getCellFormatter().setHorizontalAlignment(row, col,
             HasHorizontalAlignment.ALIGN_RIGHT);
         col++;
-        
+
         table.setWidget(row, col, new BeeImage(entry.getValue()));
         col++;
         if (col > 10) {
@@ -2043,7 +2066,7 @@ public class CliWorker {
       }
 
       if (!table.isEmpty()) {
-        BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
+        BeeKeeper.getScreen().updateActivePanel(table);
       }
     }
   }
@@ -2937,7 +2960,7 @@ public class CliWorker {
         col = 0;
       }
     }
-    BeeKeeper.getScreen().updateActivePanel(new Simple(table, Overflow.AUTO));
+    BeeKeeper.getScreen().updateActivePanel(table);
   }
 
   private static void showXmlInfo(String[] arr) {

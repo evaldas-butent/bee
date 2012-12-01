@@ -145,12 +145,12 @@ public class ScreenImpl implements Screen {
 
   @Override
   public int getActivePanelHeight() {
-    return getWorkspace().getActivePanel().getOffsetHeight();
+    return getWorkspace().getActiveTile().getOffsetHeight();
   }
 
   @Override
   public int getActivePanelWidth() {
-    return getWorkspace().getActivePanel().getOffsetWidth();
+    return getWorkspace().getActiveTile().getOffsetWidth();
   }
 
   @Override
@@ -185,6 +185,11 @@ public class ScreenImpl implements Screen {
   @Override
   public Split getScreenPanel() {
     return screenPanel;
+  }
+
+  @Override
+  public Workspace getWorkspace() {
+    return workspace;
   }
 
   @Override
@@ -244,6 +249,10 @@ public class ScreenImpl implements Screen {
   @Override
   public void start() {
     createUi();
+    
+    if (getCentralScrutinizer() != null && getWorkspace() != null) {
+      getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
+    }
   }
 
   @Override
@@ -466,10 +475,6 @@ public class ScreenImpl implements Screen {
 
   private Panel getProgressPanel() {
     return progressPanel;
-  }
-
-  private Workspace getWorkspace() {
-    return workspace;
   }
 
   private void setCentralScrutinizer(CentralScrutinizer centralScrutinizer) {

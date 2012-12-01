@@ -28,7 +28,6 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RowCallback;
@@ -1135,9 +1134,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach()) {
-      getOracle().onUnload();
-    }
+    getOracle().onUnload();
     super.onUnload();
   }
 

@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -23,11 +24,13 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget> {
-  
-  private static class Appliance extends Flow implements HasCloseHandlers<IdentifiableWidget> {
-    
-    private static final String STYLE_NAME = "bee-Appliance"; 
+class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget>,
+    ActiveWidgetChangeEvent.Handler {
+
+  private static class Appliance extends Flow implements HasCloseHandlers<IdentifiableWidget>,
+      HasDomain {
+
+    private static final String STYLE_NAME = "bee-Appliance";
 
     private final Domain domain;
     private final Long key;
@@ -36,31 +39,32 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       super();
       this.domain = domain;
       this.key = key;
-      
+
       addStyleName(STYLE_NAME);
       addStyleName(STYLE_NAME + BeeUtils.proper(domain.name()));
-      
+
       if (domain.getImageResource() != null) {
         BeeImage icon = new BeeImage(domain.getImageResource());
         icon.addStyleName(STYLE_NAME + "-icon");
         add(icon);
       }
-      
+
       BeeLabel label = new BeeLabel(BeeUtils.notEmpty(caption, domain.getCaption()));
       label.addStyleName(STYLE_NAME + "-label");
       add(label);
-      
-      if (domain.isClosable()) {
+
+      if (domain.isRemovable()) {
         BeeImage close = new BeeImage(Global.getImages().closeSmall());
         close.addStyleName(STYLE_NAME + "-close");
-        
+
         close.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
+            event.stopPropagation();
             CloseEvent.fire(Appliance.this, Appliance.this);
           }
         });
-        
+
         add(close);
       }
     }
@@ -71,14 +75,15 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     @Override
+    public Domain getDomain() {
+      return domain;
+    }
+
+    @Override
     public String getIdPrefix() {
       return "muffin";
     }
 
-    private Domain getDomain() {
-      return domain;
-    }
-    
     private Long getKey() {
       return key;
     }
@@ -89,17 +94,28 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(CentralScrutinizer.class);
-  
+
   private static final int DEFAULT_HEADER_SIZE = 25;
 
   CentralScrutinizer() {
     super();
     addStyleName("bee-CentralScrutinizer");
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "scrutinizer";
+  }
+
+  @Override
+  public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
+    if (event.isActive() && event.getDomain() == null && isOpen()) {
+      Appliance appliance = getAppliance(getSelectedIndex());
+
+      if (appliance != null && appliance.getDomain().isClosable()) {
+        close();
+      }
+    }
   }
 
   @Override
@@ -109,7 +125,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       remove(appliance.getDomain(), appliance.getKey());
     }
   }
-  
+
   @Override
   public boolean remove(Widget child) {
     boolean removed = super.remove(child);
@@ -122,7 +138,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   @Override
   protected State onHeaderClick(Widget child) {
     State state = super.onHeaderClick(child);
-    
+
     if (State.OPEN.equals(state) && child instanceof HandlesStateChange) {
       ((HandlesStateChange) child).onStateChange(State.ACTIVATED);
     }
@@ -146,12 +162,12 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   void add(Domain domain, IdentifiableWidget widget, Long key, String caption) {
     Assert.notNull(domain);
     Assert.notNull(widget);
-    
+
     if (find(domain, key) >= 0) {
       logger.warning("attemp to add existing appliance failed:", domain, key);
       return;
     }
-    
+
     int before = getStackSize();
     for (int i = 0; i < getStackSize(); i++) {
       Appliance appliance = getAppliance(i);
@@ -160,17 +176,17 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
         break;
       }
     }
-    
+
     Appliance appliance = new Appliance(domain, key, caption);
     appliance.addCloseHandler(this);
-    
+
     insert(widget.asWidget(), appliance, DEFAULT_HEADER_SIZE, before);
   }
 
   boolean contains(Domain domain, Long key) {
     return find(domain, key) >= 0;
   }
-  
+
   boolean remove(Domain domain, Long key) {
     int index = find(domain, key);
     if (index >= 0) {
@@ -179,19 +195,16 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       return false;
     }
   }
-  
+
   void start() {
     add(Domain.REPORT, Global.getReports());
 
     Shell shell = new Shell();
     shell.restore();
-    
+
     add(Domain.ADMIN, shell);
-    
-    add(Domain.WHITE_ZONE, new Flow());
-    activate(Domain.WHITE_ZONE, null);
   }
-  
+
   private int find(Domain domain, Long key) {
     for (int i = 0; i < getStackSize(); i++) {
       Appliance appliance = getAppliance(i);

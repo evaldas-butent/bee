@@ -18,7 +18,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.RichTextArea;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
@@ -264,9 +263,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach()) {
-      closePreview();
-    }
+    closePreview();
     super.onUnload();
   }
 

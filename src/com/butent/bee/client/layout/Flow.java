@@ -17,6 +17,9 @@ import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -27,7 +30,7 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
  */
 
 public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAndDropHandlers,
-    HasIndexedWidgets {
+    HasIndexedWidgets, ProvidesResize, RequiresResize {
 
   public Flow() {
     DomUtils.createId(this, getIdPrefix());
@@ -93,6 +96,15 @@ public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAnd
     super.onDetach();
   }
 
+  @Override
+  public void onResize() {
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize) {
+        ((RequiresResize) child).onResize();
+      }
+    }
+  }
+  
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);

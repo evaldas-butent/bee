@@ -392,7 +392,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach() && getViewPresenter() != null) {
+    if (getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();

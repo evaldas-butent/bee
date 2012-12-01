@@ -361,7 +361,7 @@ public class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo()));
+          Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
           return;
         } else {
           logger.warning("grid", name, "description was not found");

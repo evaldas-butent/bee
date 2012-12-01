@@ -559,7 +559,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnName = columnDescr.getName();
-      if (interceptor != null 
+      if (interceptor != null
           && !interceptor.beforeCreateColumn(columnName, dataCols, columnDescr)) {
         continue;
       }
@@ -781,7 +781,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     getGrid().initRenderMode(gridDescr.getRenderMode());
-    
+
     getGrid().setRowChangeSensitivityMillis(gridDescr.getRowChangeSensitivityMillis());
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
@@ -1358,12 +1358,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (BeeUtils.isEmpty(getActiveFormContainerId())) {
       return false;
     }
-    
+
     FormView form = getForm(!isAdding());
     if (form == null || !form.asWidget().isVisible()) {
       return false;
     }
-    
+
     if (form.getViewPresenter() != null) {
       form.getViewPresenter().handleAction(Action.CLOSE);
       return true;
@@ -1530,13 +1530,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach()) {
-      if (getNewRowPopup() != null) {
-        getNewRowPopup().unload();
-      }
-      if (getEditPopup() != null) {
-        getEditPopup().unload();
-      }
+    if (getNewRowPopup() != null) {
+      getNewRowPopup().unload();
+    }
+    if (getEditPopup() != null) {
+      getEditPopup().unload();
     }
 
     super.onUnload();
@@ -1968,7 +1966,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         || !editableColumn.getRelation().isEditEnabled() || row == null) {
       return false;
     }
-    
+
     boolean ok;
     if (charCode == EditStartEvent.CLICK) {
       ok = true;
@@ -1990,7 +1988,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!DataUtils.isId(id)) {
       return false;
     }
-    
+
     boolean modal = BeeUtils.nvl(editableColumn.getRelation().isEditModal(),
         charCode != EditStartEvent.CLICK) || UiHelper.isModal(this);
     RowCallback rowCallback;

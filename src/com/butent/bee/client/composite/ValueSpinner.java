@@ -14,7 +14,6 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -29,7 +28,7 @@ import com.butent.bee.shared.utils.ValueUtils;
  * input value.
  */
 
-public class ValueSpinner extends Absolute implements RequiresResize {
+public class ValueSpinner extends Absolute {
 
   private static final String STYLENAME_DEFAULT = "bee-ValueSpinner";
 
@@ -39,6 +38,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   private boolean focus = false;
 
   private SpinnerListener spinnerListener = new SpinnerListener() {
+    @Override
     public void onSpinning(long value) {
       valueBox.setText(formatValue(value));
       setSourceValue(value);
@@ -46,6 +46,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   };
 
   private KeyDownHandler keyDownHandler = new KeyDownHandler() {
+    @Override
     public void onKeyDown(KeyDownEvent event) {
       if (!isEnabled()) {
         return;
@@ -92,6 +93,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   };
 
   private KeyPressHandler keyPressHandler = new KeyPressHandler() {
+    @Override
     public void onKeyPress(KeyPressEvent event) {
       char charCode = event.getCharCode();
       if (charCode <= BeeConst.CHAR_SPACE) {
@@ -140,6 +142,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   };
 
   private MouseWheelHandler mouseWheelHandler = new MouseWheelHandler() {
+    @Override
     public void onMouseWheel(MouseWheelEvent event) {
       int z = event.getNativeEvent().getMouseWheelVelocityY();
       if (focus && isEnabled() && z != 0) {
@@ -149,16 +152,19 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   };
 
   private HandlesAllFocusEvents focusHandler = new HandlesAllFocusEvents() {
+    @Override
     public void onBlur(BlurEvent event) {
       focus = false;
     }
 
+    @Override
     public void onFocus(FocusEvent event) {
       focus = true;
     }
   };
 
   private ScheduledCommand layoutCommand = new ScheduledCommand() {
+    @Override
     public void execute() {
       setPositions();
     }
@@ -235,6 +241,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     return spinner.isEnabled();
   }
 
+  @Override
   public void onResize() {
     Scheduler.get().scheduleDeferred(layoutCommand);
   }

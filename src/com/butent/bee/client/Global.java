@@ -81,8 +81,6 @@ public class Global implements Module {
 
   private static final Reports REPORTS = new Reports();
 
-  private static boolean temporaryDetach = false;
-  
   private static boolean debug = false;
   
   public static void addReport(String caption, Command command) {
@@ -367,10 +365,6 @@ public class Global implements Module {
     return debug;
   }
 
-  public static boolean isTemporaryDetach() {
-    return temporaryDetach;
-  }
-
   public static boolean isVar(String name) {
     return VARS.containsKey(name);
   }
@@ -405,10 +399,6 @@ public class Global implements Module {
     Global.debug = debug;
   }
   
-  public static void setTemporaryDetach(boolean temporaryDetach) {
-    Global.temporaryDetach = temporaryDetach;
-  }
-
   public static void setVar(String name, Variable var) {
     Assert.notEmpty(name);
     Assert.notNull(var);

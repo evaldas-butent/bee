@@ -16,14 +16,12 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
     super();
   }
 
-  public ExtendedPropertiesData(List<ExtendedProperty> data, String... columnLabels) {
+  public ExtendedPropertiesData(List<ExtendedProperty> data, boolean addTime) {
     super();
 
-    int pc = (columnLabels == null) ? 0 : columnLabels.length;
-    String label;
-    for (int i = 0; i < ExtendedProperty.COLUMN_COUNT; i++) {
-      label = (pc > 0 && i < pc) ? columnLabels[i] : ExtendedProperty.COLUMN_HEADERS[i];
-      addColumn(ValueType.TEXT, label);
+    int c = addTime ? ExtendedProperty.COLUMN_COUNT : ExtendedProperty.COLUMN_COUNT - 1;
+    for (int i = 0; i < c; i++) {
+      addColumn(ValueType.TEXT, ExtendedProperty.COLUMN_HEADERS[i]);
     }
     
     long rowId = 0;
@@ -32,7 +30,10 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
       row.addCell(new TextValue(property.getName()));
       row.addCell(new TextValue(property.getSub()));
       row.addCell(new TextValue(property.getValue()));
-      row.addCell(new TextValue(property.getDate().toTimeString()));
+      
+      if (addTime) {
+        row.addCell(new TextValue(property.getDate().toTimeString()));
+      }
       
       addRow(row);
     }

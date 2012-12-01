@@ -5,22 +5,26 @@ import com.google.gwt.resources.client.ImageResource;
 import com.butent.bee.client.Global;
 
 public enum Domain {
-  FAVORITE(0, Global.getImages().bookmark(), null, false),
-  CALENDAR(1, Global.getImages().calendar(), null, true),
-  REPORT(2, Global.getImages().report(), "Ataskaitos", false),
-  ADMIN(3, Global.getImages().configure(), "Admin", true),
-  WHITE_ZONE(4, null, null, false);
-  
+  FAVORITE(0, Global.getImages().bookmark(), null, false, false),
+  CALENDAR(1, Global.getImages().calendar(), null, true, true),
+  REPORT(2, Global.getImages().report(), "Ataskaitos", false, false),
+  ADMIN(3, Global.getImages().configure(), "Admin", false, true);
+
   private final int ordinal;
   private final ImageResource imageResource;
   private final String caption;
-  private final boolean closable;
 
-  private Domain(int ordinal, ImageResource imageResource, String caption, boolean closable) {
+  private final boolean closable;
+  private final boolean removable;
+
+  private Domain(int ordinal, ImageResource imageResource, String caption, boolean closable,
+      boolean removable) {
     this.ordinal = ordinal;
     this.imageResource = imageResource;
     this.caption = caption;
+
     this.closable = closable;
+    this.removable = removable;
   }
 
   String getCaption() {
@@ -37,5 +41,9 @@ public enum Domain {
 
   boolean isClosable() {
     return closable;
+  }
+
+  boolean isRemovable() {
+    return removable;
   }
 }

@@ -28,7 +28,6 @@ import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.view.client.SelectionModel;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.FormWidget;
@@ -394,9 +393,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
   @Override
   protected void onUnload() {
-    if (!Global.isTemporaryDetach()) {
-      getBlurHandlers().clear();
-    }
+    getBlurHandlers().clear();
     super.onUnload();
   }
 

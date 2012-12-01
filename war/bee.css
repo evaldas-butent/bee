@@ -235,20 +235,17 @@ body, select {
 .bee-Split {
   position: relative;
 }
-.bee-HSplitter {
+.bee-Splitter {
   background-color: #e2dfdf;
+}
+.bee-HSplitter {
   cursor: col-resize;
 }
 .bee-VSplitter {
-  background-color: #e2dfdf;
   cursor: row-resize;
 }
 .bee-SplitChild {
   overflow: auto;
-}
-
-.bee-activeBlank, .bee-activeContent {
-  border: 2px solid #676767;
 }
 
 .bee-MenuRoot, .bee-MenuBar {
@@ -1704,9 +1701,6 @@ body, select {
   margin-right: 5px;
 }
 
-.bee-ProgressPanel {
-  border-top: 1px solid #b4b4b4;
-}
 .bee-ProgressItem {
   display: inline-block;
   margin-left: 2em;
@@ -1796,8 +1790,28 @@ body, select {
 .bee-ApplianceFavorite .bee-Appliance-icon {
   -webkit-filter: grayscale(50%);
 }
-.bee-ApplianceWhite_zone {
-  visibility: hidden;
+
+.bee-Tile-active {
+  outline: #5897fb solid 2px;
+}
+.bee-Tile > div {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.bee-ModalTableContainer {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.bee-GridContainer > .bee-FooterContainer {
+  overflow: hidden;
+}
+.bee-GridContainer-scrollable .bee-CellGrid {
+  overflow-y: hidden;
 }
 
 .bee-MainSearchOptionsContainer {

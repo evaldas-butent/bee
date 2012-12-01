@@ -13,7 +13,6 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -31,14 +30,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
 
-public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
+public class TabbedPages extends Flow implements
     HasBeforeSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>>,
     HasSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>> {
-  
+
   public enum SelectionOrigin {
-    CLICK, INSERT, REMOVE, INIT, SCRIPT 
+    CLICK, INSERT, REMOVE, INIT, SCRIPT
   }
-  
+
   private static class Deck extends Complex {
 
     private String visibleId = null;
@@ -66,15 +65,8 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     public void onResize() {
       pendingResize.clear();
 
-      for (Widget child : getChildren()) {
-        if (child instanceof RequiresResize) {
-          String id = DomUtils.getId(child);
-          if (BeeUtils.same(id, getVisibleId())) {
-            ((RequiresResize) child).onResize();
-          } else {
-            pendingResize.add(id);
-          }
-        }
+      for (int i = 0; i < getWidgetCount(); i++) {
+        resize(i);
       }
     }
 
@@ -98,9 +90,25 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     }
 
     private Widget getVisibleWidget() {
-      return BeeUtils.isEmpty(getVisibleId()) ? null : DomUtils.getChildById(this, getVisibleId()); 
+      return BeeUtils.isEmpty(getVisibleId()) ? null : DomUtils.getChildById(this, getVisibleId());
     }
-    
+
+    private void resize(int index) {
+      Widget widget = getWidget(index);
+
+      if (widget instanceof RequiresResize) {
+        String id = DomUtils.getId(widget);
+
+        if (!BeeUtils.isEmpty(id)) {
+          if (BeeUtils.same(id, getVisibleId())) {
+            ((RequiresResize) widget).onResize();
+          } else {
+            pendingResize.add(id);
+          }
+        }
+      }
+    }
+
     private void setVisibleId(String visibleId) {
       this.visibleId = visibleId;
     }
@@ -110,15 +118,15 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
       if (DomUtils.idEquals(widget, getVisibleId())) {
         return;
       }
-      
+
       if (!BeeUtils.isEmpty(getVisibleId())) {
         VisibilityChangeEvent.hideAndFire(getVisibleWidget());
       }
       VisibilityChangeEvent.showAndFire(widget);
-      
+
       String id = DomUtils.getId(widget);
       setVisibleId(id);
-      
+
       if (pendingResize.remove(id)) {
         ((RequiresResize) widget).onResize();
       }
@@ -157,7 +165,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
   private final Deck deckPanel = new Deck();
 
   private int selectedIndex = BeeConst.UNDEF;
-  
+
   private ElementSize tabBarSize = null;
 
   public TabbedPages() {
@@ -167,7 +175,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
   public TabbedPages(String stylePrefix) {
     this(stylePrefix, Orientation.HORIZONTAL);
   }
-  
+
   public TabbedPages(String stylePrefix, Orientation orientation) {
     super();
     this.stylePrefix = Assert.notEmpty(stylePrefix);
@@ -254,19 +262,10 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
   public void insert(Widget content, Widget tab, int beforeIndex) {
     insertPage(content, new Tab(tab), beforeIndex);
   }
-  
-  @Override
-  public void onResize() {
-    for (Widget child : getChildren()) {
-      if (child instanceof RequiresResize) {
-        ((RequiresResize) child).onResize();
-      }
-    }
-  }
 
   public void removePage(int index) {
     checkIndex(index);
-    
+
     saveLayout();
 
     tabBar.remove(index);
@@ -284,15 +283,20 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     checkLayout();
   }
 
+  public void resizePage(int index) {
+    checkIndex(index);
+    deckPanel.resize(index);
+  }
+
   public void selectPage(int index, SelectionOrigin origin) {
     checkIndex(index);
     if (index == getSelectedIndex()) {
       return;
     }
-    
+
     Pair<Integer, SelectionOrigin> data = Pair.of(index, origin);
 
-    BeforeSelectionEvent<Pair<Integer, SelectionOrigin>> event = 
+    BeforeSelectionEvent<Pair<Integer, SelectionOrigin>> event =
         BeforeSelectionEvent.fire(this, data);
     if ((event != null) && event.isCanceled()) {
       return;
@@ -324,7 +328,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
       @Override
       public void execute() {
         boolean changed = false;
-        
+
         if (getTabBarSize() != null) {
           switch (orientation) {
             case HORIZONTAL:
@@ -347,15 +351,15 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
   protected String getStylePrefix() {
     return stylePrefix;
   }
-  
+
   protected void saveLayout() {
     setTabBarSize(isAttached() ? ElementSize.forOffset(tabBar) : null);
   }
-  
+
   private void checkIndex(int index) {
     Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
   }
-  
+
   private Widget createTabWidget(String text, boolean asHtml) {
     return asHtml ? new Html(text) : new BeeLabel(text);
   }
@@ -363,7 +367,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
   private Tab getTab(int index) {
     return (Tab) tabBar.getWidget(index);
   }
-  
+
   private ElementSize getTabBarSize() {
     return tabBarSize;
   }
@@ -376,11 +380,11 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     Assert.notNull(content, "page content is null");
     Assert.notNull(tab, "page tab is null");
     Assert.betweenInclusive(before, 0, getPageCount(), "insert page: beforeIndex out of bounds");
-    
+
     saveLayout();
-    
+
     tabBar.insert(tab, before);
-   
+
     final String tabId = tab.getId();
 
     tab.addClickHandler(new ClickHandler() {
@@ -403,14 +407,14 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     } else if (getSelectedIndex() >= before) {
       setSelectedIndex(getSelectedIndex() + 1);
     }
-    
+
     checkLayout();
   }
 
   private void setSelectedIndex(int selectedIndex) {
     this.selectedIndex = selectedIndex;
   }
-  
+
   private void setTabBarSize(ElementSize tabBarSize) {
     this.tabBarSize = tabBarSize;
   }

@@ -56,7 +56,7 @@ public class Simple extends SimplePanel implements IdentifiableWidget, RequiresR
     DomUtils.setId(this, id);
   }
 
-  private void init() {
+  protected void init() {
     DomUtils.createId(this, getIdPrefix());
   }
 }

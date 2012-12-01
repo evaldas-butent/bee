@@ -6,33 +6,40 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
+import com.butent.bee.client.event.logical.CaptionChangeEvent;
+import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.List;
 import java.util.Map;
 
-class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
+public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
+    HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler {
 
   private enum TabAction {
     CREATE(new BeeImage(Global.getImages().add()), null, null, "Naujas skirtukas"),
@@ -132,17 +139,128 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   }
 
   @Override
-  public void onSelection(SelectionEvent<TilePanel> event) {
-    updateCaption(event.getSelectedItem());
+  public HandlerRegistration addActiveWidgetChangeHandler(ActiveWidgetChangeEvent.Handler handler) {
+    return addHandler(handler, ActiveWidgetChangeEvent.getType());
+  }
+
+  @Override
+  public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
+    fireEvent(event);
+  }
+
+  @Override
+  public void onCaptionChange(CaptionChangeEvent event) {
+    if (event.getSource() instanceof Tile) {
+      updateCaption((Tile) event.getSource(), event.getCaption());
+    }
+  }
+
+  public boolean randomClose(boolean debug) {
+    TilePanel panel = getActivePanel();
+    int tileCount = panel.getTileCount();
+    if (tileCount <= 1) {
+      return false;
+    }
+    
+    List<ExtendedProperty> info = debug ? panel.getExtendedInfo() : null;
+    
+    int tileIndex = BeeUtils.randomInt(0, tileCount);
+
+    int index = 0;
+    for (Widget child : panel) {
+      if (child instanceof Tile) {
+        if (index == tileIndex) {
+          if (debug) {
+            info.add(new ExtendedProperty("close", child.getElement().getId(),
+                BeeUtils.joinWords(panel.getWidgetDirection(child), panel.getWidgetSize(child))));
+          }
+
+          close((Tile) child);
+          break;
+        }
+        index++;
+      }
+    }
+    
+    if (!debug) {
+      return true;
+    }
+    
+    boolean ok = true;
+    int minSize = TilePanel.MIN_SIZE - TilePanel.TILE_MARGIN * 2; 
+
+    for (Widget child : panel) {
+      if (child instanceof Tile) {
+        if (child.getOffsetWidth() < minSize || child.getOffsetHeight() < minSize) {
+          info.add(new ExtendedProperty("small", child.getElement().getId(),
+              "W " + child.getOffsetWidth() + " H " + child.getOffsetHeight()));
+          ok = false;
+          break;
+        }
+      }
+    }
+    
+    if (!ok) {
+      Global.showModalGrid("close error", new ExtendedPropertiesData(info, false));
+    }
+    return ok;
+  }
+  
+  public void randomSplit() {
+    TilePanel panel = getActivePanel();
+    int tileIndex = BeeUtils.randomInt(0, panel.getTileCount());
+
+    int count = 0;
+    for (Widget child : panel) {
+      if (child instanceof Tile) {
+        if (count >= tileIndex) {
+          Tile tile = (Tile) child;
+
+          Direction direction;
+          int d = BeeUtils.randomInt(0, 4);
+          switch (d) {
+            case 0:
+              direction = Direction.NORTH;
+              break;
+            case 1:
+              direction = Direction.SOUTH;
+              break;
+            case 2:
+              direction = Direction.WEST;
+              break;
+            case 3:
+              direction = Direction.EAST;
+              break;
+            default:
+              Assert.untouchable();
+              direction = null;
+          }
+          
+          int size = direction.isHorizontal() ? tile.getOffsetWidth() : tile.getOffsetHeight();
+          size = (size + TilePanel.TILE_MARGIN * 2 - panel.getSplitterSize()) / 2;
+          if (size < TilePanel.MIN_SIZE) {
+            continue;
+          }
+
+          if (!tile.getId().equals(panel.getActiveTileId())) {
+            tile.activate(false);
+          }
+          panel.addTile(this, direction);
+          break;
+        }
+
+        count++;
+      }
+    }
   }
 
   @Override
   public void removePage(int index) {
-    Widget pageContent = getContentWidget(index);
-    if (pageContent instanceof TilePanel) {
-      ((TilePanel) pageContent).clear();
+    Widget widget = getContentWidget(index);
+    if (widget instanceof TilePanel) {
+      ((TilePanel) widget).onRemove();
     }
-    
+
     super.removePage(index);
 
     if (getPageCount() == 1) {
@@ -154,82 +272,55 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   public void selectPage(int index, SelectionOrigin origin) {
     super.selectPage(index, origin);
 
-    if (SelectionOrigin.CLICK.equals(origin)) {
-      TilePanel activePanel = getActivePanel();
-      if (activePanel != null) {
-        Historian.goTo(activePanel.getId());
-        activePanel.activateContent();
-      }
+    if (SelectionOrigin.CLICK.equals(origin) || SelectionOrigin.REMOVE.equals(origin)) {
+      Tile tile = getActiveTile();
 
-    } else if (SelectionOrigin.REMOVE.equals(origin)) {
-      TilePanel activePanel = getActivePanel();
-      if (activePanel != null) {
-        updateCaption(activePanel);
-        activePanel.activateContent();
-      }
+      Historian.goTo(tile.getId());
+      tile.activateContent();
     }
   }
 
   void activateWidget(IdentifiableWidget widget) {
-    TilePanel tile = TilePanel.getParentTile(widget.asWidget());
-    if (tile == null) {
-      showError("activateWidget: panel not found for " + widget.getId());
-      return;
-    }
-    
+    Tile tile = TilePanel.getTile(widget.asWidget());
+
     int index = getPageIndex(tile);
-    if (BeeConst.isUndef(index)) {
-      showError("activateWidget: page not found for " + widget.getId());
-      return;
-    }
-    
     if (index != getSelectedIndex()) {
       selectPage(index, SelectionOrigin.SCRIPT);
     }
+
     tile.activate(false);
   }
 
   void closeWidget(IdentifiableWidget widget) {
-    TilePanel tile = TilePanel.getParentTile(widget.asWidget());
-
-    if (tile == null) {
-      showError("closeWidget: panel not found");
-      return;
-    }
-
-    tile = tile.close();
-    while (tile != null && tile.isBlank() && !tile.isRoot()) {
-      tile = tile.close();
-    }
-
-    if (getPageCount() > 1 && tile.isBlank() && tile.isRoot()) {
-      int index = getContentIndex(tile);
-      if (index >= 0) {
-        removePage(index);
-      }
-    }
+    Tile tile = TilePanel.getTile(widget.asWidget());
+    close(tile);
   }
 
   IdentifiableWidget getActiveContent() {
-    return getActivePanel().getContent();
+    return getActiveTile().getContent();
   }
 
-  TilePanel getActivePanel() {
-    Widget widget = getSelectedWidget();
-    if (!(widget instanceof TilePanel)) {
-      showError("selected panel not available");
+  Tile getActiveTile() {
+    TilePanel panel = getActivePanel();
+    if (panel == null) {
       return null;
     }
 
-    TilePanel tile = ((TilePanel) widget).getActiveTile();
-    if (tile == null) {
-      showError("active panel not available");
+    return panel.getActiveTile();
+  }
+
+  int getPageIndex(Tile tile) {
+    for (int i = 0; i < getPageCount(); i++) {
+      if (getContentWidget(i).getElement().isOrHasChild(tile.getElement())) {
+        return i;
+      }
     }
-    return tile;
+    showError("page not found for tile" + tile.getId());
+    return BeeConst.UNDEF;
   }
 
   void openInNewPlace(IdentifiableWidget widget) {
-    TilePanel tile = getActivePanel();
+    Tile tile = getActiveTile();
     if (tile == null || !tile.isBlank()) {
       int index = getSelectedIndex();
       if (index < 0) {
@@ -242,19 +333,13 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   }
 
   void showInfo() {
-    Widget tiles = getSelectedWidget();
-    if (!(tiles instanceof TilePanel)) {
-      showError("tiles not available");
+    TilePanel panel = getActivePanel();
+    if (panel == null) {
       return;
     }
 
-    TreeItem item = ((TilePanel) tiles).getTree(null);
-    item.setOpenRecursive(true, false);
-
-    Tree tree = new Tree();
-    tree.addItem(item);
-
-    Global.showModalWidget(tree);
+    List<ExtendedProperty> info = panel.getExtendedInfo();
+    Global.showModalGrid("Tiles", new ExtendedPropertiesData(info, false));
   }
 
   void updateActivePanel(IdentifiableWidget widget) {
@@ -263,7 +348,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       return;
     }
 
-    TilePanel tile = getActivePanel();
+    Tile tile = getActiveTile();
     if (tile != null) {
       tile.updateContent(widget, true);
     }
@@ -273,18 +358,36 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     return BeeUtils.isPositive(getSiblingSize(direction));
   }
 
-  private void closeActivePanel() {
-    TilePanel tile = getActivePanel();
-    if (tile != null) {
-      tile.close();
+  private void close(Tile tile) {
+    TilePanel panel = tile.getPanel();
+    int pageIndex = getPageIndex(tile);
+
+    if (panel.getTileCount() > 1) {
+      boolean wasActive = tile.getId().equals(panel.getActiveTileId());
+      int tileIndex = panel.getWidgetIndex(tile);
+
+      panel.remove(tile);
+      resizePage(pageIndex);
+
+      if (wasActive) {
+        Tile nearestTile = panel.getNearestTile(tileIndex);
+        panel.setActiveTileId(nearestTile.getId());
+        nearestTile.activate(pageIndex == getSelectedIndex());
+      }
+
+    } else if (getPageCount() > 1) {
+      removePage(pageIndex);
+
+    } else if (!tile.isBlank()) {
+      tile.blank();
     }
   }
 
   private void doAction(TabAction action, int index) {
     switch (action) {
       case CLOSE:
-        if (index == getSelectedIndex() && getActivePanel().closeable()) {
-          closeActivePanel();
+        if (index == getSelectedIndex()) {
+          close(getActiveTile());
         } else {
           removePage(index);
         }
@@ -298,7 +401,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       case NORTH:
       case SOUTH:
       case WEST:
-        splitActivePanel(action.getDirection());
+        splitActiveTile(action.getDirection());
         break;
 
       case MAXIMIZE:
@@ -327,13 +430,14 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  private int getPageIndex(TilePanel tile) {
-    for (int i = 0; i < getPageCount(); i++) {
-      if (getContentWidget(i).getElement().isOrHasChild(tile.getElement())) {
-        return i;
-      }
+  private TilePanel getActivePanel() {
+    Widget widget = getSelectedWidget();
+    if (widget instanceof TilePanel) {
+      return (TilePanel) widget;
+    } else {
+      showError("selected panel not available");
+      return null;
     }
-    return BeeConst.UNDEF;
   }
 
   private Split getResizeContainer() {
@@ -344,7 +448,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
     return null;
   }
-  
+
   private Integer getSiblingSize(Direction direction) {
     Split container = getResizeContainer();
     if (container == null) {
@@ -363,21 +467,19 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   }
 
   private void insertEmptyPanel(int before) {
-    TilePanel tile = TilePanel.newBlankTile(this);
+    TilePanel panel = new TilePanel(this);
     TabWidget tab = new TabWidget(Global.CONSTANTS.newTab());
 
     if (getPageCount() == 1) {
       setStyleOne(false);
     }
 
-    insert(tile, tab, before);
-
+    insert(panel, tab, before);
     if (getPageCount() == 1) {
       setStyleOne(true);
     }
 
     selectPage(before, SelectionOrigin.INSERT);
-    tile.activate(true);
   }
 
   private boolean isActionEnabled(TabAction action, int index) {
@@ -389,7 +491,12 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
         break;
 
       case CLOSE:
-        enabled = getPageCount() > 1 || index != getSelectedIndex() || getActivePanel().closeable();
+        if (getPageCount() > 1) {
+          enabled = true;
+        } else {
+          TilePanel panel = getActivePanel();
+          enabled = panel.getTileCount() > 1 || !panel.getActiveTile().isBlank();
+        }
         break;
 
       case EAST:
@@ -461,10 +568,10 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     logger.severe(getClass().getName(), message);
   }
 
-  private void splitActivePanel(Direction direction) {
-    TilePanel p = getActivePanel();
-    if (p != null) {
-      p.addTile(this, direction);
+  private void splitActiveTile(Direction direction) {
+    TilePanel panel = getActivePanel();
+    if (panel != null) {
+      panel.addTile(this, direction);
     }
   }
 
@@ -476,19 +583,17 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  private void updateCaption(TilePanel tile) {
-    String caption = null;
-    for (Widget p = tile; p instanceof TilePanel && BeeUtils.isEmpty(caption); p = p.getParent()) {
-      caption = ((TilePanel) p).getCaption();
+  private void updateCaption(Tile tile, String tileCaption) {
+    String caption = tileCaption;
+    if (BeeUtils.isEmpty(caption)) {
+      caption = tile.getPanel().getCaption();
     }
+
     if (BeeUtils.isEmpty(caption)) {
       caption = Global.CONSTANTS.newTab();
     }
-    
+
     int index = getPageIndex(tile);
-    if (BeeConst.isUndef(index)) {
-      return;
-    }
 
     TabWidget tab = (TabWidget) getTabWidget(index);
     if (caption.equals(tab.getCaption())) {

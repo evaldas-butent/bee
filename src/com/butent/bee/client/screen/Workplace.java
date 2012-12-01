@@ -5,10 +5,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
+import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
@@ -25,31 +25,18 @@ class Workplace extends Place {
 
   @Override
   public boolean activate() {
-    TilePanel tile = getTile();
+    Tile tile = getTile();
     if (tile == null) {
       return false;
     }
     
-    if (DomUtils.idEquals(workspace.getActivePanel(), getId())) {
+    if (DomUtils.idEquals(workspace.getActiveTile(), getId())) {
       return true;
     }
-    if (!tile.isLeaf()) {
-      return false;
-    }
     
-    int index = BeeConst.UNDEF;
-    for (int i = 0; i < workspace.getPageCount(); i++) {
-      if (workspace.getContentWidget(i).getElement().isOrHasChild(tile.getElement())) {
-        index = i;
-        break;
-      }
-    }
-    if (BeeConst.isUndef(index)) {
-      logger.warning("page for workplace", getId(), "not found");
-      return false;
-    }
-
+    int index = workspace.getPageIndex(tile);
     workspace.selectPage(index, SelectionOrigin.SCRIPT);
+
     tile.activate(false);
 
     return true;
@@ -57,15 +44,11 @@ class Workplace extends Place {
 
   @Override
   public boolean onHistory(Place place, boolean forward) {
-    TilePanel tile = getTile();
+    Tile tile = getTile();
     if (tile == null) {
       return false;
     }
 
-    if (!tile.isLeaf()) {
-      return false;
-    }
-    
     IdentifiableWidget content = tile.getContent();
     if (content instanceof HandlesHistory) {
       boolean ok = ((HandlesHistory) content).onHistory(place, forward);
@@ -77,10 +60,10 @@ class Workplace extends Place {
     return tile.onHistory(place, forward);
   }
   
-  private TilePanel getTile() {
+  private Tile getTile() {
     Widget child = DomUtils.getChildQuietly(workspace, getId());
-    if (child instanceof TilePanel) {
-      return (TilePanel) child;
+    if (child instanceof Tile) {
+      return (Tile) child;
     } else {
       logger.warning("workplace", getId(), "not found");
       return null;

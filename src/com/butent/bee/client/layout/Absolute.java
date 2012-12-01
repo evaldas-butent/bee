@@ -19,6 +19,8 @@ import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -30,7 +32,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
  */
 
 public class Absolute extends AbsolutePanel implements IdentifiableWidget,
-    HasAllDragAndDropHandlers {
+    HasAllDragAndDropHandlers, ProvidesResize, RequiresResize {
 
   public Absolute() {
     this(Position.ABSOLUTE);
@@ -101,6 +103,15 @@ public class Absolute extends AbsolutePanel implements IdentifiableWidget,
     return "absolute";
   }
 
+  @Override
+  public void onResize() {
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize) {
+        ((RequiresResize) child).onResize();
+      }
+    }
+  }
+  
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);

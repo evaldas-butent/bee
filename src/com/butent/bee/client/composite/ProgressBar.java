@@ -88,10 +88,12 @@ public class ProgressBar extends Widget implements IdentifiableWidget, RequiresR
     setProgress(curProgress);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "progress";
   }
@@ -125,6 +127,7 @@ public class ProgressBar extends Widget implements IdentifiableWidget, RequiresR
     return textVisible;
   }
 
+  @Override
   public void onResize() {
     redraw();
   }
@@ -138,6 +141,7 @@ public class ProgressBar extends Widget implements IdentifiableWidget, RequiresR
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
