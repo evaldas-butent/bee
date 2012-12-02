@@ -13,7 +13,7 @@
     <DateTime name="StartTime" label="Pradžios data" />
     <DateTime name="FinishTime" notNull="true" label="Pabaigos data" />
     <DateTime name="Completed" label="Įvykdymo data" />
-    <DateTime name="Confirmed" label="Patvirtinimo data" />
+    <DateTime name="Approved" label="Patvirtinimo data" />
     <String name="ExpectedDuration" precision="10" label="Numatoma trukmė" />
 
     <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="Vadovas" />

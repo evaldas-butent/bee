@@ -2,6 +2,8 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,6 +15,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
@@ -70,6 +73,8 @@ public class HeaderImpl extends Complex implements HeaderView {
   private static final String STYLE_CAPTION = "bee-Header-caption";
   private static final String STYLE_MESSAGE = "bee-Header-message";
 
+  private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
+
   private static final String STYLE_CONTROL = "bee-Header-control";
   private static final String STYLE_CLOSE = "bee-Header-close";
   
@@ -78,18 +83,32 @@ public class HeaderImpl extends Complex implements HeaderView {
   private final InlineLabel captionWidget = new InlineLabel();
   private final InlineLabel messageWidget = new InlineLabel();
 
+  private final Flow commandPanel = new Flow();
+  
   private boolean enabled = true;
   private final Map<Action, String> actionControls = Maps.newHashMap();
 
   public HeaderImpl() {
-    super();
+    super(Position.ABSOLUTE, Overflow.AUTO);
   }
   
+  @Override
   public void addCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.addStyleName(style);
   }
 
+  @Override
+  public void addCommandItem(IdentifiableWidget widget) {
+    getCommandPanel().add(widget);
+  }
+  
+  @Override
+  public void clearCommandPanel() {
+    getCommandPanel().clear();
+  }
+
+  @Override
   public void create(String caption, boolean hasData, boolean readOnly,
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
     addStyleName(StyleUtils.WINDOW_HEADER);
@@ -109,6 +128,9 @@ public class HeaderImpl extends Complex implements HeaderView {
     panel.add(captionWidget);
     panel.add(messageWidget);
     addLeftTop(panel, CAPTION_LEFT, CAPTION_TOP);
+    
+    commandPanel.addStyleName(STYLE_COMMAND_PANEL);
+    add(commandPanel);
     
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
     
@@ -156,12 +178,16 @@ public class HeaderImpl extends Complex implements HeaderView {
       addRightTop(createControl(Global.getImages().close(), Action.CLOSE, STYLE_CLOSE),
           CLOSE_RIGHT, CLOSE_TOP);
     }
+
+    StyleUtils.setRight(commandPanel, x);
   }
-  
+
+  @Override
   public String getCaption() {
     return captionWidget.getText();
   }
 
+  @Override
   public int getHeight() {
     return HEIGHT;
   }
@@ -170,15 +196,18 @@ public class HeaderImpl extends Complex implements HeaderView {
   public Element getPrintElement() {
     return getElement();
   }
-
+      
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
-      
+  
+  @Override
   public boolean hasAction(Action action) {
     if (action == null) {
       return false;
@@ -204,7 +233,8 @@ public class HeaderImpl extends Complex implements HeaderView {
       return false;
     }
   }
-  
+
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -215,17 +245,20 @@ public class HeaderImpl extends Complex implements HeaderView {
     return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
   }
 
+  @Override
   public void removeCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.removeStyleName(style);
   }
 
+  @Override
   public void setCaption(String caption) {
     String text =
         BeeUtils.isEmpty(caption) ? BeeConst.STRING_EMPTY : LocaleUtils.maybeLocalize(caption);
     captionWidget.setText(text);
   }
-
+  
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -249,14 +282,17 @@ public class HeaderImpl extends Complex implements HeaderView {
     }
   }
 
+  @Override
   public void setMessage(String message) {
     messageWidget.setText(BeeUtils.trim(message));
   }
-  
+
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
-
+  
+  @Override
   public void showAction(Action action, boolean visible) {
     Assert.notNull(action);
     String widgetId = getActionControls().get(action);
@@ -286,9 +322,13 @@ public class HeaderImpl extends Complex implements HeaderView {
     }
     return control;
   }
-  
+
   private Map<Action, String> getActionControls() {
     return actionControls;
+  }
+
+  private Flow getCommandPanel() {
+    return commandPanel;
   }
 
   private boolean hasAction(Action action, boolean def,

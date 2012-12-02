@@ -6,21 +6,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class CrmConstants {
 
-  public enum Priority implements HasCaption {
-    LOW("Žemas"), MEDIUM("Vidutinis"), HIGH("Aukštas");
-
-    private final String caption;
-
-    private Priority(String caption) {
-      this.caption = caption;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-  }
-
   public enum ProjectEvent implements HasCaption {
     CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
     EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
@@ -32,22 +17,42 @@ public class CrmConstants {
   }
 
   public enum TaskEvent implements HasCaption {
-    ACTIVATED("Vykdoma"),
-    SUSPENDED("Sustabdyta"),
-    COMPLETED("Įvykdyta"),
-    APPROVED("Patvirtinta"),
-    CANCELED("Atšaukta"),
-    FORWARDED("Persiųsta"),
-    EXTENDED("Termino keitimas"),
-    RENEWED("Atnaujinta"),
-    COMMENTED("Komentaras"),
-    VISITED("Peržiūrėta"),
-    EDITED("Koreguota"),
-    DELETED("Panaikinta");
+    CREATED("Sukurta", null),
+    VISITED("Peržiūrėta", null),
+    COMMENTED("Komentaras", "Komentuoti"),
+    EXTENDED("Pratęsta", "Keisti terminą"),
+    SUSPENDED("Sustabdyta", "Sustabdyti"),
+    RENEWED("Atnaujinta", "Grąžinti vykdymui"),
+    FORWARDED("Persiųsta", "Persiųsti"),
+    CANCELED("Atšaukta", "Nutraukti"),
+    COMPLETED("Įvykdyta", "Užbaigti"),
+    APPROVED("Patvirtinta", "Patvirtinti"),
+    EDITED("Koreguota", null);
+
+    private final String caption;
+    private final String commandLabel;
+
+    private TaskEvent(String caption, String commandLabel) {
+      this.caption = caption;
+      this.commandLabel = commandLabel;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+
+    public String getCommandLabel() {
+      return commandLabel;
+    }
+  }
+
+  public enum TaskPriority implements HasCaption {
+    LOW("Žemas"), MEDIUM("Vidutinis"), HIGH("Aukštas");
 
     private final String caption;
 
-    private TaskEvent(String caption) {
+    private TaskPriority(String caption) {
       this.caption = caption;
     }
 
@@ -56,7 +61,35 @@ public class CrmConstants {
       return caption;
     }
   }
+  
+  public enum TaskStatus implements HasCaption {
+    ACTIVATED("Neperžiūrėta"),
+    RUNNING("Vykdoma"),
+    SUSPENDED("Sustabdyta"),
+    COMPLETED("Įvykdyta"),
+    CANCELED("Atšaukta");
+    
+    public static boolean in(int status, TaskStatus... statuses) {
+      for (TaskStatus ts : statuses) {
+        if (ts.ordinal() == status) {
+          return true;
+        }
+      }
+      return false;
+    }
 
+    private final String caption;
+
+    private TaskStatus(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+  
   public static final String CRM_MODULE = "Crm";
   public static final String CRM_METHOD = CRM_MODULE + "Method";
 
@@ -92,6 +125,7 @@ public class CrmConstants {
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
   public static final String VIEW_TASK_USERS = "TaskUsers";
+  public static final String VIEW_TASK_EVENTS = "TaskEvents";
 
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
   
@@ -146,8 +180,11 @@ public class CrmConstants {
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
 
-  public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String COL_PUBLISHER = "Publisher";
+  public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
+  public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
+
   public static final String COL_COMMENT = "Comment";
 
   public static final String COL_TASK_EVENT = "TaskEvent";
@@ -161,6 +198,8 @@ public class CrmConstants {
   public static final String COL_EVENT_DURATION = "EventDuration";
 
   public static final String COL_STAR = "Star";
+
+  public static final String COL_APPROVED = "Approved";
   
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
@@ -171,11 +210,14 @@ public class CrmConstants {
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";
+  public static final String PROP_EVENTS = "Events";
 
   public static final String GRID_TASKS = "Tasks";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+
+  public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
   private CrmConstants() {
   }

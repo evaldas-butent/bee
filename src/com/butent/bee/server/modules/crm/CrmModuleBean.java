@@ -18,7 +18,6 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -168,7 +167,7 @@ public class CrmModuleBean implements BeeModule {
     long taskId;
 
     switch (event) {
-      case ACTIVATED:
+      case CREATED:
         BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
         BeeRow row = rs.getRow(0);
 
@@ -255,6 +254,12 @@ public class CrmModuleBean implements BeeModule {
           List<StoredFile> files = getTaskFiles(taskId);
           if (!files.isEmpty()) {
             taskProperties.put(PROP_FILES, Codec.beeSerialize(files));
+          }
+          
+          BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS, 
+              ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
+          if (!DataUtils.isEmpty(events)) {
+            taskProperties.put(PROP_EVENTS, events.serialize());
           }
 
           response = ResponseObject.response(taskProperties);
@@ -345,9 +350,6 @@ public class CrmModuleBean implements BeeModule {
           response = registerTaskEvent(taskId, currentUser, event, reqInfo, null);
         }
         break;
-
-      case DELETED:
-        Assert.untouchable();
     }
 
     if (response.hasErrors()) {

@@ -28,15 +28,14 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public Complex(Position position) {
+    this(position, Overflow.HIDDEN);
+  }
+  
+  public Complex(Position position, Overflow overflow) {
     super();
     setElement(DOM.createDiv());
 
-    if (position != null) {
-      getElement().getStyle().setPosition(position);
-    }
-    getElement().getStyle().setOverflow(Overflow.HIDDEN);
-
-    init();
+    init(position, overflow);
   }
 
   @Override
@@ -210,8 +209,14 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     DomUtils.setId(this, id);
   }
 
-  private void init() {
+  private void init(Position position, Overflow overflow) {
     DomUtils.createId(this, getIdPrefix());
+    if (position != null) {
+      getElement().getStyle().setPosition(position);
+    }
+    if (overflow != null) {
+      getElement().getStyle().setOverflow(overflow);
+    }
   }
 
   private void setChildBottom(Widget child, double value, Unit unit) {

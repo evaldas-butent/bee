@@ -30,7 +30,7 @@
       <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
         newRowEnabled="false" style="&inp2;" />
       <Label html="Prioritetas:" style="&lbl3;" />
-      <Radio source="Priority" itemKey="Priority" style="&inp4;" />
+      <Radio source="Priority" itemKey="TaskPriority" style="&inp4;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

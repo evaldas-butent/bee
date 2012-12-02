@@ -3,6 +3,7 @@ package com.butent.bee.client.view;
 import com.google.gwt.user.client.ui.IndexedPanel;
 
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasCaption;
@@ -21,6 +22,10 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasCaption {
 
   void addCaptionStyle(String style);
 
+  void addCommandItem(IdentifiableWidget widget);  
+
+  void clearCommandPanel();  
+  
   int getHeight();
 
   boolean hasAction(Action action);

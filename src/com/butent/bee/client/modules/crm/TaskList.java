@@ -172,11 +172,7 @@ class TaskList {
     public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
       Provider provider = presenter.getDataProvider();
 
-      if (!TaskEventHandler.availableEvent(TaskEvent.DELETED,
-          row.getInteger(provider.getColumnIndex(COL_STATUS)),
-          row.getLong(provider.getColumnIndex(COL_OWNER)),
-          row.getLong(provider.getColumnIndex(COL_EXECUTOR)))) {
-
+      if (getUserId().equals(row.getLong(provider.getColumnIndex(COL_OWNER)))) {
         presenter.getGridView().notifyWarning("Verboten");
         return GridInterceptor.DELETE_CANCEL;
       }
@@ -345,7 +341,7 @@ class TaskList {
       }
       if (isChecked("Overdue")) {
         andFilter.add(ComparisonFilter.isLess(COL_FINISH_TIME, now),
-            getStatusFilter(TaskEvent.ACTIVATED));
+            getStatusFilter(TaskEvent.CREATED));
       } else {
         CompoundFilter orFilter = Filter.or();
 
@@ -353,7 +349,7 @@ class TaskList {
           orFilter.add(ComparisonFilter.isMore(COL_START_TIME, now));
         }
         if (isChecked("Executing")) {
-          Filter flt = getStatusFilter(TaskEvent.ACTIVATED);
+          Filter flt = getStatusFilter(TaskEvent.CREATED);
 
           if (!isChecked("Scheduled")) {
             flt = Filter.and(flt, ComparisonFilter.isLessEqual(COL_START_TIME, now));

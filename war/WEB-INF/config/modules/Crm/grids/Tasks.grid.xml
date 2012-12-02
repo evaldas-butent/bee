@@ -35,14 +35,14 @@
 
     <IdColumn name="Id" caption="ID" />
 
-    <DataColumn name="Priority" itemKey="Priority" />
+    <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
     <DataColumn name="Description" />
 
     <RelColumn name="Company" editEnabled="true" />
     <DataColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
 
-    <DataColumn name="Status" itemKey="TaskEvent" />
+    <DataColumn name="Status" itemKey="TaskStatus" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       editEnabled="true" editPopup="true" editKey="13" />

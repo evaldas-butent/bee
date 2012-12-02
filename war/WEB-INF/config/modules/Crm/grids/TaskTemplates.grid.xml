@@ -7,7 +7,7 @@
   >
   <columns>
     <DataColumn name="Name" />
-    <DataColumn name="Priority" itemKey="Priority" />
+    <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
     <DataColumn name="ExpectedDuration" />
     <DataColumn name="Description" />

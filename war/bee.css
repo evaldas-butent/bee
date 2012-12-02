@@ -515,6 +515,23 @@ body, select {
 .bee-Header-message {
   margin-left: 1em;
 }
+.bee-Header-commandPanel {
+  position: absolute;
+  top: 2px;
+  padding-right: 20px;
+}
+.bee-Header-commandPanel button {
+  background-color: #fafafa;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}
+.bee-Header-commandPanel button:hover {
+  cursor: pointer;
+  background-color: #fff;
+  color: black;
+  border-color: #5897fb;
+}
 
 .bee-FooterCell {
   position: absolute;

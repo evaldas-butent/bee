@@ -13,7 +13,7 @@
     <SimpleColumn name="StartTime" />
     <SimpleColumn name="FinishTime" />
     <SimpleColumn name="Completed" />
-    <SimpleColumn name="Confirmed" />
+    <SimpleColumn name="Approved" />
     <SimpleColumn name="ExpectedDuration" />
 
     <SimpleColumn name="Status" />

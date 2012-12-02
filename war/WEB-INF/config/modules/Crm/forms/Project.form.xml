@@ -59,8 +59,6 @@
         <text>Papildoma informacija</text>
         <FlowPanel style="&MARGIN_TOP;">
           <FlowPanel style="&ROW_STYLE; ">
-            <InlineLabel html="Prioritetas:" style="&LEFT_LABEL_STYLE;" />
-            <xi:include href="widgets/Priority.widget.xml" />
             <InlineLabel html="Numatoma trukmė min.:" style="&LABEL_STYLE;" />
             <InputLong source="ExpectedDuration" style="width: 60px;" />
           </FlowPanel>

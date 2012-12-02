@@ -2,6 +2,8 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,6 +16,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
@@ -86,6 +89,8 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private static final String STYLE_CAPTION = "bee-Header-caption";
   private static final String STYLE_MESSAGE = "bee-Header-message";
 
+  private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
+  
   private static final String STYLE_CONTROL = "bee-Header-control";
   private static final String STYLE_CLOSE = "bee-Header-close";
 
@@ -101,14 +106,26 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
 
   private final Map<Action, String> actionControls = Maps.newHashMap();
 
+  private final Flow commandPanel = new Flow();
+  
   public HeaderSilverImpl() {
-    super();
+    super(Position.ABSOLUTE, Overflow.AUTO);
   }
 
   @Override
   public void addCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.addStyleName(style);
+  }
+
+  @Override
+  public void addCommandItem(IdentifiableWidget widget) {
+    getCommandPanel().add(widget);
+  }
+
+  @Override
+  public void clearCommandPanel() {
+    getCommandPanel().clear();
   }
 
   @Override
@@ -131,6 +148,9 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     panel.add(captionWidget);
     panel.add(messageWidget);
     addLeftTop(panel, CAPTION_LEFT, CAPTION_TOP);
+    
+    commandPanel.addStyleName(STYLE_COMMAND_PANEL);
+    add(commandPanel);
 
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
 
@@ -185,6 +205,8 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       addRightTop(createControl(Global.getImages().silverClose(), Action.CLOSE, STYLE_CLOSE),
           CLOSE_RIGHT, CLOSE_TOP);
     }
+    
+    StyleUtils.setRight(commandPanel, x);
   }
 
   @Override
@@ -327,9 +349,13 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
     return control;
   }
-
+  
   private Map<Action, String> getActionControls() {
     return actionControls;
+  }
+
+  private Flow getCommandPanel() {
+    return commandPanel;
   }
 
   private boolean hasAction(Action action, boolean def,
@@ -340,4 +366,5 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       return BeeUtils.contains(enabledActions, action);
     }
   }
+  
 }

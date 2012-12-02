@@ -27,8 +27,10 @@ public class CrmKeeper {
 
     DocumentHandler.register();
     
-    Global.registerCaptions(CrmConstants.Priority.class);
+    Global.registerCaptions(CrmConstants.TaskPriority.class);
     Global.registerCaptions(CrmConstants.TaskEvent.class);
+    Global.registerCaptions(CrmConstants.TaskStatus.class);
+
     Global.registerCaptions(CrmConstants.ProjectEvent.class);
   }
 
