@@ -361,7 +361,7 @@ public class RowFactory {
     if (target == null) {
       dialog.center();
     } else {
-      dialog.showRelativeTo(target);
+      dialog.showRelativeTo(target.getElement());
     }
 
     UiHelper.focus(formView.getRootWidget().asWidget());

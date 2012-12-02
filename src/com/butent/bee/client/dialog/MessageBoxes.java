@@ -2,6 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -20,6 +21,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
@@ -75,6 +77,9 @@ public class MessageBoxes {
 
   private static final String STYLE_TABLE_CONTAINER = "bee-ModalTableContainer";
   private static final String STYLE_TABLE = "bee-ModalTable";
+
+  private static final String STYLE_STAR_PICKER = "bee-StarPicker";
+  private static final String STYLE_STAR_CLUSTER = "bee-StarCluster-";
   
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
@@ -419,6 +424,62 @@ public class MessageBoxes {
     return Window.confirm(BeeUtils.buildLines(lines));
   }
 
+  public void pickStar(Integer defaultValue, Element target, final ChoiceCallback callback) {
+    Assert.notNull(callback);
+
+    final Popup popup = new Popup(true, true, STYLE_STAR_PICKER);
+
+    TabBar cluster = new TabBar(STYLE_STAR_CLUSTER, Orientation.HORIZONTAL);
+
+    int size = Stars.count();
+    for (int i = 0; i < size; i++) {
+      BeeImage image = new BeeImage(Stars.get(i));
+      cluster.addItem(image);
+    }
+
+    final Holder<Integer> selectedIndex = Holder.absent();
+
+    cluster.addSelectionHandler(new SelectionHandler<Integer>() {
+      public void onSelection(SelectionEvent<Integer> event) {
+        selectedIndex.set(event.getSelectedItem());
+        popup.hide();
+      }
+    });
+
+    popup.setHideOnEscape(true);
+
+    popup.addCloseHandler(new CloseHandler<Popup>() {
+      public void onClose(CloseEvent<Popup> event) {
+        if (selectedIndex.isNotNull()) {
+          callback.onSuccess(selectedIndex.get());
+        } else {
+          callback.onCancel();
+        }
+      }
+    });
+    
+    popup.setWidget(cluster);
+
+    popup.setAnimationEnabled(true);
+    
+    if (target == null) {
+      popup.center();
+    } else {
+      popup.showRelativeTo(target);
+    }
+
+    int focusIndex;
+
+    if (defaultValue != null && cluster.isIndex(defaultValue)) {
+      cluster.selectTab(defaultValue, false);
+      focusIndex = defaultValue;
+    } else {
+      focusIndex = 0;
+    }
+
+    cluster.focusTab(focusIndex);
+  }
+  
   public void showError(String... messages) {
     CloseButton b = new CloseButton(DialogConstants.OK);
     Popup box = createPopup(b, messages);

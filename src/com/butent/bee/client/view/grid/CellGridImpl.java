@@ -753,11 +753,20 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (hasHeaders) {
+        String headerCaption = null;
+        if (interceptor != null) {
+          headerCaption = interceptor.getColumnCaption(columnName);
+        }
+        if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
+          headerCaption = caption;
+        }
+        
         boolean showWidth = showColumnWidths;
         if (columnDescr.showWidth() != null) {
           showWidth = columnDescr.showWidth();
         }
-        header = new ColumnHeader(columnName, caption, showWidth);
+
+        header = new ColumnHeader(columnName, headerCaption, showWidth);
       }
 
       if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())
@@ -1215,6 +1224,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
     Assert.notNull(event);
+    
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onEditStart(event);
+      if (event.isConsumed()) {
+        return;
+      }
+    }
 
     IsRow rowValue = event.getRowValue();
     String columnId = event.getColumnId();

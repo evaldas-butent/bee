@@ -455,7 +455,7 @@ public class InputBoxes {
     if (target == null) {
       dialog.center();
     } else {
-      dialog.showRelativeTo(target);
+      dialog.showRelativeTo(target.getElement());
     }
 
     UiHelper.focus(widget.asWidget());

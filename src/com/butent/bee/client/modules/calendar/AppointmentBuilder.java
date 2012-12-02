@@ -1505,7 +1505,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     if (BeeUtils.isEmpty(getOverlapWidgetId())) {
       dialog.center();
     } else {
-      dialog.showRelativeTo(getWidget(getOverlapWidgetId()));
+      dialog.showRelativeTo(getWidget(getOverlapWidgetId()).getElement());
     }
   }
 

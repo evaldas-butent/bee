@@ -107,6 +107,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       super.onBrowserEvent(event);
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
       this.enabled = enabled;
     }
@@ -151,14 +152,17 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     sinkEvents(Event.ONCLICK);
   }
 
+  @Override
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
 
+  @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
     addItems(UiHelper.getCaptions(clazz));
   }
 
+  @Override
   public void addCaptions(String captionKey) {
     addItems(Global.getCaptions(captionKey));
   }
@@ -167,6 +171,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     addItem(html.asString(), true);
   }
 
+  @Override
   public void addItem(String text) {
     insertTab(text, getItemCount());
   }
@@ -179,6 +184,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     insertTab(widget, getItemCount());
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     for (String it : items) {
@@ -186,6 +192,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
+  @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
@@ -201,18 +208,22 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     DomUtils.setFocus(getWrapper(index), true);
   }
 
+  @Override
   public String getId() {
     return panel.getId();
   }
 
+  @Override
   public String getIdPrefix() {
     return panel.getIdPrefix();
   }
 
+  @Override
   public int getItemCount() {
     return panel.getWidgetCount();
   }
   
+  @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
     for (int i = 0; i < getItemCount(); i++) {
@@ -269,10 +280,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     insertTabWidget(widget, beforeIndex);
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -335,10 +348,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     panel.setDefaultCellStyles(styles);
   }
 
+  @Override
   public void setId(String id) {
     panel.setId(id);
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (getItemCount() > 0) {
       clear();

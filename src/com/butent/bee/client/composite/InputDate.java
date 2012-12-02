@@ -734,7 +734,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     widget.addKeyDownHandler(ensureTimePickerHandler());
 
     getPopup().setWidget(widget);
-    getPopup().showRelativeTo(getBox());
+    getPopup().showRelativeTo(getBox().getElement());
 
     widget.setFocus(true);
 
@@ -791,7 +791,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     getDatePicker().setDate(date.getDate());
 
     getPopup().setWidget(datePicker);
-    getPopup().showRelativeTo(getBox());
+    getPopup().showRelativeTo(getBox().getElement());
 
     getDatePicker().setFocus(true);
   }

@@ -50,8 +50,14 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> {
     return dataType;
   }
 
-  public abstract String render(IsRow row);
-
+  protected Integer getInteger(IsRow row) {
+    if (row == null) {
+      return null;
+    } else {
+      return row.getInteger(dataIndex);
+    }
+  }
+  
   protected String getString(IsRow row) {
     if (row == null) {
       return null;

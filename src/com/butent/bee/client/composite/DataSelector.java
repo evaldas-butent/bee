@@ -575,7 +575,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         setPendingSelection(null);
       }
 
-      getPopup().showRelativeTo(target);
+      getPopup().showRelativeTo(target.getElement());
     }
   }
 

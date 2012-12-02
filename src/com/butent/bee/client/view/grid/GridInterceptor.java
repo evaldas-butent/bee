@@ -11,6 +11,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.shared.Pair;
@@ -28,7 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption {
+public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
+    EditStartEvent.Handler {
 
   int DELETE_CANCEL = -1;
   int DELETE_DEFAULT = 0;
@@ -66,6 +68,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void beforeRefresh(GridPresenter presenter);
 
+  String getColumnCaption(String columnName);
+
   String getDeleteRowMessage();
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
@@ -94,7 +98,7 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
 
   boolean onSaveChanges(GridView gridView, SaveChangesEvent event);
-  
+
   void onShow(GridPresenter presenter);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);

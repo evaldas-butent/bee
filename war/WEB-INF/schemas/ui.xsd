@@ -335,6 +335,7 @@
       <xs:enumeration value="enum" />
       <xs:enumeration value="join" />
       <xs:enumeration value="flag" />
+      <xs:enumeration value="star" />
     </xs:restriction>
   </xs:simpleType>
   

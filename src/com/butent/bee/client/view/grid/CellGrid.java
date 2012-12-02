@@ -1187,10 +1187,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (ps > 1 && availableBodyHeight % bodyRowHeight < pageSizeCalculationReserve) {
         ps--;
       }
-      logger.debug("page size", containerWidth, containerHeight, ps);
       return ps;
     }
-    logger.debug("page size", containerWidth, containerHeight, -1);
     return BeeConst.UNDEF;
   }
 

@@ -9,7 +9,8 @@ public enum RendererType {
   ENUM("enum", true),
   JOIN("join", false),
   TOKEN("token", false),
-  FLAG("flag", true);
+  FLAG("flag", true),
+  STAR("star", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

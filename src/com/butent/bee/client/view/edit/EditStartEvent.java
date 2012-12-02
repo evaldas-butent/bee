@@ -61,6 +61,8 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
   
   private final boolean readOnly;
 
+  private boolean consumed = false;
+  
   public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode,
       boolean readOnly) {
     this.rowValue = rowValue;
@@ -70,6 +72,10 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     this.readOnly = readOnly;
   }
 
+  public void consume() {
+    consumed = true;
+  }
+  
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
@@ -91,6 +97,14 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     return sourceElement;
   }
 
+  public boolean isConsumed() {
+    return consumed;
+  }
+
+  public boolean isDelete() {
+    return charCode == DELETE;
+  }
+  
   public boolean isReadOnly() {
     return readOnly;
   }

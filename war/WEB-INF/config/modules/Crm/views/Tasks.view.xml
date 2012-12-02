@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Tasks" source="Tasks"
+  name="Tasks" source="Tasks" caption="Užduotys"
   newRowForm="NewTask" editForm="Task" rowCaption="Summary" 
   >
   <Columns>
@@ -62,7 +62,7 @@
     <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT">
       <HiddenColumn name="User" />
       <AggregateColumn name="LastAccess" aggregate="MAX" />
-      <AggregateColumn name="Selected" aggregate="COUNT" />
+      <AggregateColumn name="Star" aggregate="MAX" />
     </ExternalJoin>
 
     <ExternalJoin source="TaskEvents" name="Task" joinType="LEFT">

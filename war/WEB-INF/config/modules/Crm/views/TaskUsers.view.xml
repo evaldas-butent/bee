@@ -17,7 +17,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="LastAccess" />
-    <SimpleColumn name="Selected" />
+    <SimpleColumn name="Star" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

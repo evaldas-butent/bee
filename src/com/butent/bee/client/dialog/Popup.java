@@ -36,7 +36,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -635,7 +634,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     });
   }
 
-  public void showRelativeTo(final UIObject target) {
+  public void showRelativeTo(final Element target) {
     setPopupPositionAndShow(new PositionCallback() {
       @Override
       public void setPosition(int offsetWidth, int offsetHeight) {
@@ -779,11 +778,11 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
   }
 
-  private void position(UIObject relativeObject, int offsetWidth, int offsetHeight) {
-    int objectWidth = relativeObject.getOffsetWidth();
+  private void position(Element relativeElement, int offsetWidth, int offsetHeight) {
+    int objectWidth = relativeElement.getOffsetWidth();
     int offsetWidthDiff = offsetWidth - objectWidth;
 
-    int left = relativeObject.getAbsoluteLeft();
+    int left = relativeElement.getAbsoluteLeft();
 
     if (offsetWidthDiff > 0) {
       int windowRight = Window.getClientWidth() + Window.getScrollLeft();
@@ -799,18 +798,18 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       left -= offsetWidthDiff;
     }
 
-    int top = relativeObject.getAbsoluteTop();
+    int top = relativeElement.getAbsoluteTop();
 
     int windowTop = Window.getScrollTop();
     int windowBottom = Window.getScrollTop() + Window.getClientHeight();
 
     int distanceFromWindowTop = top - windowTop;
-    int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
+    int distanceToWindowBottom = windowBottom - (top + relativeElement.getOffsetHeight());
 
     if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
       top -= offsetHeight;
     } else {
-      top += relativeObject.getOffsetHeight();
+      top += relativeElement.getOffsetHeight();
     }
 
     left = fitLeft(left, offsetWidth, 2);

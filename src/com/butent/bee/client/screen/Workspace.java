@@ -561,7 +561,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     });
 
     popup.setWidget(bar);
-    popup.showRelativeTo(getTabWidget(index));
+    popup.showRelativeTo(getTabWidget(index).getElement());
   }
 
   private void showError(String message) {

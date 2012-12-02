@@ -296,7 +296,7 @@ public class RowEditor {
       if (target == null) {
         dialog.center();
       } else {
-        dialog.showRelativeTo(target);
+        dialog.showRelativeTo(target.getElement());
       }
 
     } else {

@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -11,18 +12,23 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
@@ -199,6 +205,15 @@ class TaskList {
     }
 
     @Override
+    public String getColumnCaption(String columnName) {
+      if (COL_STAR.equals(columnName)) {
+        return Stars.getDefaultHeader();
+      } else {
+        return super.getColumnCaption(columnName);
+      }
+    }
+
+    @Override
     public Map<String, Filter> getInitialFilters() {
       CompoundFilter filter = Filter.or();
 //      filter.add(Filter.and(getStatusFilter(TaskEvent.ACTIVATED),
@@ -218,6 +233,81 @@ class TaskList {
     public String getSupplierKey() {
       return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS,
           getType()));
+    }
+
+    @Override
+    public void onEditStart(EditStartEvent event) {
+      if (COL_STAR.equals(event.getColumnId())) {
+        final IsRow row = event.getRowValue();
+        if (row == null) {
+          return;
+        }
+        
+        final int colIndex = Data.getColumnIndex(VIEW_TASKS, COL_STAR);
+        final Integer oldValue = row.getInteger(colIndex);
+        
+        final Element element = event.getSourceElement();
+        
+        if (event.isDelete()) {
+          if (oldValue != null) {
+            row.clearCell(colIndex);
+            if (element != null) {
+              element.setInnerHTML(BeeConst.STRING_EMPTY);
+            }
+            updateStar(row.getId(), null);
+          }
+
+        } else if (event.getCharCode() == BeeConst.CHAR_PLUS 
+            || event.getCharCode() == BeeConst.CHAR_MINUS) {
+          
+          boolean forward = (event.getCharCode() == BeeConst.CHAR_PLUS);
+          int count = Stars.count();
+
+          int newValue;
+          if (oldValue == null) {
+            newValue = forward ? 0 : count - 1;
+          } else if (forward) {
+            newValue = BeeUtils.rotateForwardExclusive(oldValue, 0, count);
+          } else {
+            newValue = BeeUtils.rotateBackwardExclusive(oldValue, 0, count);
+          }
+          
+          row.setValue(colIndex, newValue);
+          if (element != null) {
+            element.setInnerHTML(Stars.getHtml(newValue));
+          }
+          updateStar(row.getId(), newValue);
+          
+        } else {
+          Global.getMsgBoxen().pickStar(oldValue, element, new ChoiceCallback() {
+            @Override
+            public void onCancel() {
+              refocus();
+            }
+
+            @Override
+            public void onSuccess(int value) {
+              if (oldValue == null || value != oldValue) {
+                row.setValue(colIndex, value);
+                if (element != null) {
+                  element.setInnerHTML(Stars.getHtml(value));
+                }
+                updateStar(row.getId(), value);
+              }
+              
+              refocus();
+            }
+            
+            private void refocus() {
+              if (element != null) {
+                element.focus();
+              }
+            }
+          });
+        }
+        
+        event.consume();
+      }
     }
 
     @Override
@@ -311,6 +401,13 @@ class TaskList {
       if (presenter != null) {
         presenter.getDataProvider().setParentFilter(FILTER_KEY, getFilter());
       }
+    }
+    
+    private void updateStar(long rowId, Integer value) {
+      Filter filter = Filter.and(ComparisonFilter.isEqual(COL_TASK, new LongValue(rowId)),
+          ComparisonFilter.isEqual(COL_USER, new LongValue(getUserId())));
+
+      Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value), null);
     }
   }
 

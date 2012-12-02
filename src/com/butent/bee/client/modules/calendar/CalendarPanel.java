@@ -610,7 +610,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     });
 
     popup.setWidget(datePicker);
-    popup.showRelativeTo(dateBox);
+    popup.showRelativeTo(dateBox.getElement());
   }
 
   private void refresh() {

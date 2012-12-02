@@ -91,6 +91,7 @@ public class CrmConstants {
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
+  public static final String VIEW_TASK_USERS = "TaskUsers";
 
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
   
@@ -158,6 +159,8 @@ public class CrmConstants {
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EVENT_DURATION = "EventDuration";
+
+  public static final String COL_STAR = "Star";
   
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";

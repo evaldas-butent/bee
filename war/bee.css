@@ -1814,6 +1814,19 @@ body, select {
   overflow-y: hidden;
 }
 
+.bee-StarPicker {
+  border: 1px solid #b4b4b4;
+  border-radius: 6px;
+  padding: 3px;
+  background-color: #eee;
+}
+.bee-StarCluster-item {
+  outline: none;
+}
+.bee-StarCluster-item:focus {
+  outline: #555 solid 1px;
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

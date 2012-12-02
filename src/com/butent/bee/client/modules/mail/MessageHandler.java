@@ -110,7 +110,7 @@ public class MessageHandler extends AbstractFormInterceptor {
             }
           }
           popup.setWidget(ft);
-          popup.showRelativeTo(recipientsWidget);
+          popup.showRelativeTo(recipientsWidget.getElement());
         }
       });
     } else if (BeeUtils.same(name, "Attachments") && widget instanceof Label) {
@@ -137,7 +137,7 @@ public class MessageHandler extends AbstractFormInterceptor {
             bar.addItem(link);
           }
           popup.setWidget(bar);
-          popup.showRelativeTo(attachmentsWidget);
+          popup.showRelativeTo(attachmentsWidget.getElement());
         }
       });
     } else if (widget instanceof Label && BeeUtils.same(name, "Parts")) {

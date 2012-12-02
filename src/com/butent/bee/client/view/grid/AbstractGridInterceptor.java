@@ -11,6 +11,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -123,6 +124,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   public String getCaption() {
     return null;
   }
+  
+  @Override
+  public String getColumnCaption(String columnName) {
+    return null;
+  }
 
   @Override
   public String getDeleteRowMessage() {
@@ -173,6 +179,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean onClose(GridPresenter presenter) {
     return true;
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
   }
 
   @Override

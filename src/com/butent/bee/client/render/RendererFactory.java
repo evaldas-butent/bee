@@ -142,6 +142,10 @@ public class RendererFactory {
         renderer = new FlagRenderer(dataIndex);
         break;
 
+      case STAR:
+        renderer = new StarRenderer(dataIndex);
+        break;
+        
       default:
         logger.severe("renderer", type.name(), "not supported");
     }

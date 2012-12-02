@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="Tasks" viewName="Tasks" caption="Užduotys"
-  editShowId="true" cacheData="false"
+  editShowId="true" cacheData="false" favorite="Summary"
   >
   <north size="60">
     <w:FlowPanel style="background-color: #f8f8f8;">
@@ -26,9 +26,13 @@
   </north>
   
   <columns>
-    <DataColumn name="Selected" caption="Paž." />
-    <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
-      horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />
+    <CalcColumn name="Mode" type="string" cell="html" horizontalAlignment="center" width="20"
+      caption="-" options="greenSmall, yellowSmall" />
+
+    <DataColumn name="Star" cell="html" horizontalAlignment="center" width="30" >
+      <renderer type="star" />
+    </DataColumn>
+
     <IdColumn name="Id" caption="ID" />
 
     <DataColumn name="Priority" itemKey="Priority" />
