@@ -35,6 +35,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -190,7 +191,7 @@ public class InputBoxes {
 
     final Supplier<String> errorSupplier = new Supplier<String>() {
       public String get() {
-        return callback.getMessage(UiHelper.getValue(input.get()));
+        return callback.getMessage(EditorAssistant.getValue(input.get()));
       }
     };
 
@@ -236,10 +237,10 @@ public class InputBoxes {
 
         switch (state.get()) {
           case CONFIRMED:
-            callback.onSuccess(BeeUtils.trim(UiHelper.getValue(input.get())));
+            callback.onSuccess(BeeUtils.trim(EditorAssistant.getValue(input.get())));
             break;
           case EXPIRED:
-            callback.onTimeout(BeeUtils.trim(UiHelper.getValue(input.get())));
+            callback.onTimeout(BeeUtils.trim(EditorAssistant.getValue(input.get())));
             break;
           default:
             callback.onCancel();

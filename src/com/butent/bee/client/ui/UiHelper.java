@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -15,7 +14,6 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,22 +25,18 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -94,66 +88,6 @@ public class UiHelper {
       container.add(w);
     }
     return w;
-  }
-
-  public static void doEditorAction(Editor widget, String value, char charCode,
-      EditorAction action) {
-    Assert.notNull(widget);
-
-    boolean acceptChar;
-    if (widget instanceof HasCharacterFilter) {
-      acceptChar = ((HasCharacterFilter) widget).acceptChar(charCode);
-    } else {
-      acceptChar = Character.isLetterOrDigit(charCode);
-    }
-    String charValue = acceptChar ? BeeUtils.toString(charCode) : BeeConst.STRING_EMPTY;
-
-    String v;
-
-    if (BeeUtils.isEmpty(value)) {
-      v = charValue;
-    } else if (!acceptChar) {
-      v = value;
-    } else if (action == null || action == EditorAction.REPLACE) {
-      v = charValue;
-    } else if (action == EditorAction.ADD_FIRST) {
-      v = charValue + BeeUtils.trim(value);
-    } else if (action == EditorAction.ADD_LAST) {
-      v = BeeUtils.trimRight(value) + charValue;
-    } else {
-      v = value;
-    }
-    widget.setValue(BeeUtils.trimRight(v));
-
-    if (widget instanceof ValueBoxBase && !BeeUtils.isEmpty(value) && action != null) {
-      ValueBoxBase<?> box = (ValueBoxBase<?>) widget;
-      int p = BeeConst.UNDEF;
-      int len = box.getText().length();
-
-      switch (action) {
-        case ADD_FIRST:
-          p = acceptChar ? 1 : 0;
-          break;
-        case ADD_LAST:
-          p = len;
-          break;
-        case END:
-          p = len;
-          break;
-        case HOME:
-          p = 0;
-          break;
-        case REPLACE:
-          p = len;
-          break;
-        case SELECT:
-          box.selectAll();
-          break;
-      }
-      if (p >= 0 && p <= len) {
-        box.setCursorPos(p);
-      }
-    }
   }
 
   public static boolean focus(Widget target) {
@@ -325,18 +259,6 @@ public class UiHelper {
     }
   }
 
-  public static String getValue(Widget widget) {
-    if (widget instanceof Editor) {
-      return ((Editor) widget).getValue();
-    } else if (widget instanceof TextBoxBase) {
-      return ((TextBoxBase) widget).getValue();
-    } else if (widget instanceof HasStringValue) {
-      return ((HasStringValue) widget).getString();
-    } else {
-      return null;
-    }
-  }
-
   public static Widget initialize(Widget widget, WidgetInitializer initializer, String name) {
     if (widget == null) {
       return null;
@@ -498,11 +420,6 @@ public class UiHelper {
 
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
-  }
-
-  public static void registerSave(UIObject obj) {
-    Assert.notNull(obj);
-    obj.sinkEvents(Event.ONKEYDOWN);
   }
 
   public static void selectDeferred(final ValueBoxBase<?> widget) {

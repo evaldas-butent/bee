@@ -18,6 +18,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
@@ -247,7 +248,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void startEdit(String value, char charCode, EditorAction onEntry, Element sourceElement) {
     EditorAction action = (onEntry == null) ? getDefaultEntryAction() : onEntry;
-    UiHelper.doEditorAction(this, value, charCode, action);
+    EditorAssistant.doEditorAction(this, value, charCode, action);
   }
 
   @Override

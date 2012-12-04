@@ -1543,8 +1543,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (target == getElement()) {
       targetType = TargetType.CONTAINER;
+
     } else if (isResizerOrResizerChild(target)) {
       targetType = TargetType.RESIZER;
+    
     } else if (getElement().isOrHasChild(target)) {
       while (target != null && target != getElement()) {
         rowIdx = DomUtils.getDataRow(target);
@@ -1553,6 +1555,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
         target = target.getParentElement();
       }
+
       if (!BeeUtils.isEmpty(rowIdx)) {
         col = BeeUtils.toInt(DomUtils.getDataColumn(target));
         checkColumnBounds(col);
@@ -1579,12 +1582,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (handleMouseMove(event, target, targetType, rowIdx, col)) {
         return;
       }
+
     } else if (EventUtils.isMouseDown(eventType)) {
       if (targetType == TargetType.RESIZER) {
         startResizing(event);
         event.preventDefault();
         return;
       }
+    
     } else if (EventUtils.isMouseUp(eventType)) {
       if (isResizing()) {
         stopResizing();
@@ -1595,6 +1600,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (isCellActive(row, col)) {
         checkCellSize(target, row, col);
       }
+    
     } else if (EventUtils.isMouseOut(eventType)) {
       if (targetType == TargetType.RESIZER && !isResizing()) {
         hideResizer();

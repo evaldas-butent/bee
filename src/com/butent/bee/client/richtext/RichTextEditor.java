@@ -24,11 +24,11 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.AdjustmentListener;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
@@ -243,7 +243,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     EditorAction action = (onEntry == null) ? EditorAction.ADD_LAST : onEntry;
-    UiHelper.doEditorAction(this, oldValue, charCode, action);
+    EditorAssistant.doEditorAction(this, oldValue, charCode, action);
 
     if (!isEmbedded()) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {

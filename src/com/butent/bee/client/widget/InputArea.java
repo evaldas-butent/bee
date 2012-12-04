@@ -17,6 +17,7 @@ import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Resource;
@@ -211,7 +212,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     }
 
     EditorAction action = (onEntry == null) ? EditorAction.ADD_LAST : onEntry;
-    UiHelper.doEditorAction(this, oldValue, charCode, action);
+    EditorAssistant.doEditorAction(this, oldValue, charCode, action);
   }
 
   public String updateDigest() {
@@ -238,7 +239,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   private void initEditor() {
-    UiHelper.registerSave(this);
+    sinkEvents(Event.ONKEYDOWN);
   }
 
   private boolean isEditorInitialized() {

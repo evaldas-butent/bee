@@ -27,9 +27,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputText;
@@ -401,7 +401,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     }
 
     EditorAction action = (onEntry == null) ? EditorAction.REPLACE : onEntry;
-    UiHelper.doEditorAction(getBox(), getBox().getValue(), charCode, action);
+    EditorAssistant.doEditorAction(getBox(), getBox().getValue(), charCode, action);
   }
 
   @Override

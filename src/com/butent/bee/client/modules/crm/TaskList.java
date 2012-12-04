@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -15,7 +14,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -31,14 +29,17 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -155,7 +156,7 @@ class TaskList {
 
       } else if (widget instanceof Editor) {
         if (Type.DELEGATED.equals(getType()) && BeeUtils.same(name, "Completed")) {
-//          ((Editor) widget).setValue(BeeConst.STRING_TRUE);
+          // ((Editor) widget).setValue(BeeConst.STRING_TRUE);
         }
         this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
       }
@@ -212,13 +213,13 @@ class TaskList {
     @Override
     public Map<String, Filter> getInitialFilters() {
       CompoundFilter filter = Filter.or();
-//      filter.add(Filter.and(getStatusFilter(TaskEvent.ACTIVATED),
-//          ComparisonFilter.isLessEqual(COL_START_TIME, new LongValue(new DateTime().getTime()))));
-//      filter.add(getStatusFilter(TaskEvent.SUSPENDED));
-//
-//      if (Type.DELEGATED.equals(getType())) {
-//        filter.add(getStatusFilter(TaskEvent.COMPLETED));
-//      }
+      // filter.add(Filter.and(getStatusFilter(TaskEvent.ACTIVATED),
+      // ComparisonFilter.isLessEqual(COL_START_TIME, new LongValue(new DateTime().getTime()))));
+      // filter.add(getStatusFilter(TaskEvent.SUSPENDED));
+      //
+      // if (Type.DELEGATED.equals(getType())) {
+      // filter.add(getStatusFilter(TaskEvent.COMPLETED));
+      // }
 
       Map<String, Filter> result = Maps.newHashMap();
       result.put(FILTER_KEY, filter);
@@ -232,77 +233,16 @@ class TaskList {
     }
 
     @Override
-    public void onEditStart(EditStartEvent event) {
+    public void onEditStart(final EditStartEvent event) {
       if (COL_STAR.equals(event.getColumnId())) {
-        final IsRow row = event.getRowValue();
-        if (row == null) {
-          return;
-        }
-        
-        final int colIndex = Data.getColumnIndex(VIEW_TASKS, COL_STAR);
-        final Integer oldValue = row.getInteger(colIndex);
-        
-        final Element element = event.getSourceElement();
-        
-        if (event.isDelete()) {
-          if (oldValue != null) {
-            row.clearCell(colIndex);
-            if (element != null) {
-              element.setInnerHTML(BeeConst.STRING_EMPTY);
-            }
-            updateStar(row.getId(), null);
-          }
+        final int colIndex = Data.getColumnIndex(VIEW_TASKS, event.getColumnId());
 
-        } else if (event.getCharCode() == BeeConst.CHAR_PLUS 
-            || event.getCharCode() == BeeConst.CHAR_MINUS) {
-          
-          boolean forward = (event.getCharCode() == BeeConst.CHAR_PLUS);
-          int count = Stars.count();
-
-          int newValue;
-          if (oldValue == null) {
-            newValue = forward ? 0 : count - 1;
-          } else if (forward) {
-            newValue = BeeUtils.rotateForwardExclusive(oldValue, 0, count);
-          } else {
-            newValue = BeeUtils.rotateBackwardExclusive(oldValue, 0, count);
+        EditorAssistant.editStarCell(event, colIndex, new Procedure<Integer>() {
+          @Override
+          public void call(Integer parameter) {
+            updateStar(event, colIndex, parameter);
           }
-          
-          row.setValue(colIndex, newValue);
-          if (element != null) {
-            element.setInnerHTML(Stars.getHtml(newValue));
-          }
-          updateStar(row.getId(), newValue);
-          
-        } else {
-          Global.getMsgBoxen().pickStar(oldValue, element, new ChoiceCallback() {
-            @Override
-            public void onCancel() {
-              refocus();
-            }
-
-            @Override
-            public void onSuccess(int value) {
-              if (oldValue == null || value != oldValue) {
-                row.setValue(colIndex, value);
-                if (element != null) {
-                  element.setInnerHTML(Stars.getHtml(value));
-                }
-                updateStar(row.getId(), value);
-              }
-              
-              refocus();
-            }
-            
-            private void refocus() {
-              if (element != null) {
-                element.focus();
-              }
-            }
-          });
-        }
-        
-        event.consume();
+        });
       }
     }
 
@@ -326,7 +266,7 @@ class TaskList {
                 ComparisonFilter.isNotEqual(COL_EXECUTOR, user));
             break;
         }
-//        gridDescription.setFilter(filter);
+        // gridDescription.setFilter(filter);
       }
       return true;
     }
@@ -398,12 +338,22 @@ class TaskList {
         presenter.getDataProvider().setParentFilter(FILTER_KEY, getFilter());
       }
     }
-    
-    private void updateStar(long rowId, Integer value) {
+
+    private void updateStar(final EditStartEvent event, final int colIndex, final Integer value) {
+      final long rowId = event.getRowValue().getId();
+
       Filter filter = Filter.and(ComparisonFilter.isEqual(COL_TASK, new LongValue(rowId)),
           ComparisonFilter.isEqual(COL_USER, new LongValue(getUserId())));
 
-      Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value), null);
+      Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value),
+          new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              BeeKeeper.getBus().fireEvent(new CellUpdateEvent(VIEW_TASKS, rowId,
+                  event.getRowValue().getVersion(), event.getColumnId(), colIndex,
+                  (value == null) ? null : BeeUtils.toString(value)));
+            }
+          });
     }
   }
 
