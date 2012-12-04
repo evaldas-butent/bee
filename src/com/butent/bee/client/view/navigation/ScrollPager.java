@@ -10,27 +10,23 @@ import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.ScrollBars;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
-
-/**
- * Enables to use scroll function in pager user interface elements.
- */
 
 public class ScrollPager extends AbstractPager implements RequiresResize {
 
   public static int maxHeight = 10000;
 
   private int lastPos = BeeConst.UNDEF;
-  private long lastHeight = BeeConst.UNDEF;
+  private long lastHeight = 0;
 
   private boolean isScrolling = false;
   private boolean isUpdating = false;
 
   public ScrollPager() {
-    Widget widget = new Html();
+    Widget widget = new CustomDiv();
     StyleUtils.setWidth(widget, 0);
     StyleUtils.setHeight(widget, 0);
 
@@ -41,6 +37,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     StyleUtils.alwaysScroll(scroll, ScrollBars.VERTICAL);
 
     scroll.addScrollHandler(new ScrollHandler() {
+      @Override
       public void onScroll(ScrollEvent event) {
         if (isUpdating) {
           isUpdating = false;
@@ -104,9 +101,10 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
     if (pageSize <= 0 || rowCount < pageSize || widgetHeight <= 0) {
-      return BeeConst.UNDEF;
+      return 0;
+    } else {
+      return (long) widgetHeight * rowCount / pageSize;
     }
-    return (long) widgetHeight * rowCount / pageSize;
   }
 
   private Widget getInnerWidget() {
