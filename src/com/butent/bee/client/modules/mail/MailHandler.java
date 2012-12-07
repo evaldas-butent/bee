@@ -411,10 +411,10 @@ public class MailHandler extends AbstractFormInterceptor {
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          if (currentAccount < 0 || BeeUtils.isTrue(rs.getBoolean(i, "Main"))) {
+          if (currentAccount < 0 || BeeUtils.isTrue(rs.getBoolean(i, COL_ACCOUNT_DEFAULT))) {
             currentAccount = i;
           }
-          accountsWidget.addItem(rs.getValue(i, "Description"));
+          accountsWidget.addItem(rs.getValue(i, COL_ACCOUNT_DESCRIPTION));
           accounts.add(rs.getLong(i, COL_ADDRESS));
         }
         accountsWidget.setEnabled(rs.getNumberOfRows() > 1);

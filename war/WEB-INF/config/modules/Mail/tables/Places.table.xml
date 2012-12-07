@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Places"
+  idName="PlaceID"
+  >
+  <Fields>
+    <Relation name="Recipient" relation="Recipients" notNull="true" cascade="DELETE" />
+    <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
+    <Long name="MessageUID" notNull="true" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Folder</KeyField>
+      <KeyField>MessageUID</KeyField>
+    </Key>
+  </Keys>
+</Table>

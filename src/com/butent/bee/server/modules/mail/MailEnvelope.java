@@ -7,6 +7,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Enumeration;
@@ -26,13 +28,15 @@ public class MailEnvelope {
   private final Multimap<AddressType, Address> recipients = HashMultimap.create();
   private final String header;
 
+  private final String uniqueId;
+
   public MailEnvelope(Message message) throws MessagingException {
     Assert.state(message instanceof MimeMessage,
         "Unknown message type: " + message.getClass().getName());
 
     MimeMessage msg = (MimeMessage) message;
     messageId = msg.getMessageID();
-    date = new DateTime(msg.getReceivedDate() == null ? msg.getSentDate() : msg.getReceivedDate());
+    date = new DateTime(msg.getSentDate());
     sender = ArrayUtils.getQuietly(msg.getFrom(), 0);
     subject = msg.getSubject();
 
@@ -57,6 +61,7 @@ public class MailEnvelope {
       }
     }
     header = hdr.toString();
+    uniqueId = Codec.md5(BeeUtils.joinWords(messageId, date, sender, subject));
   }
 
   public DateTime getDate() {
@@ -81,5 +86,9 @@ public class MailEnvelope {
 
   public String getSubject() {
     return subject;
+  }
+
+  public String getUniqueId() {
+    return uniqueId;
   }
 }

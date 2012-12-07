@@ -68,7 +68,6 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -319,19 +318,17 @@ public class UiServiceBean {
     if (c < 3) {
       return ResponseObject.error("Syntax: mail <ToAddress>;<Subject>;<Body>");
     }
-    Map<String, String> data = qs.getRow(new SqlSelect()
-        .addFields(TBL_ACCOUNTS, "TransportServer", "TransportPort", COL_ADDRESS)
+    Long sender = qs.getLong(new SqlSelect()
+        .addFields(TBL_ACCOUNTS, COL_ADDRESS)
         .addFrom(TBL_ACCOUNTS)
         .setWhere(SqlUtils.and(SqlUtils.equal(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
-            SqlUtils.notNull(TBL_ACCOUNTS, "Main"))));
+            SqlUtils.notNull(TBL_ACCOUNTS, COL_ACCOUNT_DEFAULT))));
 
-    if (data == null) {
+    if (!DataUtils.isId(sender)) {
       return ResponseObject.error("No default mail account for user:", usr.getCurrentUser());
     }
     try {
-      mail.sendMail(data.get("TransportServer"),
-          BeeUtils.toIntOrNull(data.get("TransportPort")),
-          BeeUtils.toLongOrNull(data.get(COL_ADDRESS)),
+      mail.sendMail(mail.getAccount(sender),
           Sets.newHashSet(mail.storeAddress(new InternetAddress(to))),
           null, null, subject, body, null);
     } catch (MessagingException e) {
@@ -707,12 +704,12 @@ public class UiServiceBean {
   private ResponseObject updateCell(RequestInfo reqInfo) {
     BeeRowSet rs = BeeRowSet.restore(reqInfo.getContent());
     ResponseObject response = deb.commitRow(rs, false);
-    
+
     if (!response.hasErrors()) {
       long rowId = rs.getRow(0).getId();
       BeeRowSet updated = qs.getViewData(rs.getViewName(), ComparisonFilter.compareId(rowId), null,
           BeeConst.UNDEF, BeeConst.UNDEF, DataUtils.getColumnNames(rs.getColumns()));
-      
+
       if (DataUtils.isEmpty(updated)) {
         response = ResponseObject.error("could not read updated row");
       } else {

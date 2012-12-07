@@ -23,7 +23,7 @@ public class TransportActionHandler implements Handler {
             .isEmpty(Data.getString(VIEW_CARGO_TRIPS, event.getRow(), "ExpeditionType"))
             ? VIEW_TRIPS : VIEW_EXP_TRIPS);
 
-        RowEditor.openRow(data.getEditForm(), data, tripId, false, null, null);
+        RowEditor.openRow(data.getEditForm(), data, tripId);
       }
     }
   }

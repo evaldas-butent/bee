@@ -59,6 +59,7 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
@@ -481,7 +482,7 @@ public class CalendarModuleBean implements BeeModule {
 
   private BeeRowSet getAppointments(Filter filter, Order order) {
     long userId = usr.getCurrentUserId();
-    
+
     Filter visible = Filter.or().add(
         ComparisonFilter.isEqual(COL_CREATOR, new LongValue(userId)),
         Filter.isEmpty(COL_CREATOR),
@@ -821,19 +822,19 @@ public class CalendarModuleBean implements BeeModule {
     if (!calAttendees.isEmpty()) {
       attFilter.add(Filter.idIn(DataUtils.getDistinct(calAttendees, COL_ATTENDEE)));
     }
-    
+
     if (attFilter.isEmpty()) {
       String tblUsers = UserServiceBean.TBL_USERS;
       Long cp = qs.getLong(new SqlSelect()
           .addFields(tblUsers, UserServiceBean.FLD_COMPANY_PERSON)
           .addFrom(tblUsers)
           .setWhere(SqlUtils.equal(tblUsers, sys.getIdName(tblUsers), userId)));
-      
+
       if (cp != null) {
         Filter cpFilter = ComparisonFilter.isEqual(COL_COMPANY_PERSON, new LongValue(cp));
         BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES, cpFilter);
         if (!attendees.isEmpty()) {
-          return attendees;          
+          return attendees;
         }
       }
     }
@@ -1036,7 +1037,7 @@ public class CalendarModuleBean implements BeeModule {
       if (!DataUtils.isEmpty(ucAttendees)) {
         row.setProperty(PROP_USER_CAL_ATTENDEES, ucAttendees.serialize());
       }
-      
+
       return ResponseObject.response(ucRowSet);
     }
 
@@ -1080,13 +1081,13 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
           "user calendar not created");
     }
-    
+
     BeeRow row = result.getRow(0);
     BeeRowSet ucAttendees = getUserCalAttendees(row.getId(), userId, calendarId, true);
     if (!DataUtils.isEmpty(ucAttendees)) {
       row.setProperty(PROP_USER_CAL_ATTENDEES, ucAttendees.serialize());
     }
-    
+
     return ResponseObject.response(result);
   }
 
@@ -1160,22 +1161,18 @@ public class CalendarModuleBean implements BeeModule {
             BeeUtils.toIntOrNull(data.get(COL_REMINDER_METHOD)));
 
         if (method == ReminderMethod.EMAIL) {
-          String server = prm.getText(MailConstants.MAIL_MODULE, "SMTPServer");
           Long sender = prm.getLong(MailConstants.MAIL_MODULE, "DefaultAccount");
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.get(personEmail),
               data.get(CommonsConstants.COL_EMAIL)));
 
-          if (BeeUtils.isEmpty(server)) {
-            error = "No default SMTP server specified (parameter SMTPServer)";
-          } else if (!DataUtils.isId(sender)) {
+          if (!DataUtils.isId(sender)) {
             error = "No default sender specified (parameter DefaultAccount)";
           } else if (!DataUtils.isId(email)) {
             error = "No recipient email address specified";
-          }
-          if (BeeUtils.isEmpty(error)) {
+          } else {
             try {
-              mail.sendMail(server, prm.getInteger(MailConstants.MAIL_MODULE, "SMTPServerPort"),
-                  sender, Sets.newHashSet(email), null, null, subject, template.replace("{time}",
+              mail.sendMail(mail.getAccount(sender), Sets.newHashSet(email), null, null, subject,
+                  template.replace("{time}",
                       TimeUtils.toDateTimeOrNull(data.get(COL_START_DATE_TIME)).toString()), null);
             } catch (MessagingException e) {
               error = e.toString();
