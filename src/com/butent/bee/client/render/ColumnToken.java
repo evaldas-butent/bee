@@ -10,11 +10,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale {
+public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale, HasValueType {
   
   public static ColumnToken create(int dataIndex, ValueType valueType,
       RenderableToken renderableToken) {
@@ -78,10 +79,12 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     return dateTimeformat;
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return dateTimeformat;
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return numberFormat;
   }
@@ -90,6 +93,7 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     return prefix;
   }
 
+  @Override
   public int getScale() {
     return scale;
   }
@@ -98,6 +102,7 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     return suffix;
   }
 
+  @Override
   public ValueType getValueType() {
     return valueType;
   }
@@ -134,10 +139,12 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     this.dateTimeformat = dateTimeformat;
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.dateTimeformat = format;
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     this.numberFormat = format;
   }
@@ -146,6 +153,7 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     this.prefix = prefix;
   }
   
+  @Override
   public void setScale(int scale) {
     this.scale = scale;
   }

@@ -124,7 +124,7 @@ public class NewMessageHandler extends AbstractFormInterceptor {
       if (!BeeUtils.isEmpty(defaultAttachments)) {
         ((FileCollector) widget).addFiles(defaultAttachments.values());
       }
-      ((FileCollector) widget).bindDnd(getFormView());
+      ((FileCollector) widget).bindDnd(getFormView(), getFormView().asWidget().getElement());
       ((FileCollector) widget).addSelectionHandler(new SelectionHandler<NewFileInfo>() {
         @Override
         public void onSelection(SelectionEvent<NewFileInfo> ev) {

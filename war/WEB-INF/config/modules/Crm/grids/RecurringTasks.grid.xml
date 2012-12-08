@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+  
+  name="RecurringTasks" viewName="RecurringTasks" caption="Periodinės užduotys"
+  editShowId="true"
+  >
+  <columns>
+    <IdColumn name="Id" caption="ID" />
+
+    <DataColumn name="Priority" itemKey="TaskPriority" />
+    <DataColumn name="Summary" />
+    <DataColumn name="Description" />
+
+    <RelColumn name="Company" editEnabled="true" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
+
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />
+
+    <DataColumn name="StartTime" />
+    <DataColumn name="FinishTime" />
+
+    <DataColumn name="Recurrence" />
+  </columns>
+</Grid>

@@ -3,7 +3,7 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
 import java.math.BigDecimal;
@@ -14,16 +14,16 @@ import java.math.BigDecimal;
 
 public class DecimalColumn extends NumberColumn<BigDecimal> {
 
-  public DecimalColumn(int index, IsColumn dataColumn) {
-    this(Format.getDecimalFormat(dataColumn.getScale()), index, dataColumn);
+  public DecimalColumn(CellSource cellSource) {
+    this(Format.getDecimalFormat(cellSource.getScale()), cellSource);
   }
 
-  public DecimalColumn(NumberFormat format, int index, IsColumn dataColumn) {
-    super(format, index, dataColumn);
+  public DecimalColumn(NumberFormat format, CellSource cellSource) {
+    super(format, cellSource);
   }
 
   @Override
-  protected BigDecimal getValue(IsRow row, int colIndex) {
-    return row.getDecimal(colIndex);
+  protected BigDecimal getNumber(IsRow row) {
+    return getCellSource().getDecimal(row);
   }
 }

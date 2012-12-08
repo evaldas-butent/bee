@@ -1,9 +1,6 @@
 package com.butent.bee.client.view.search;
 
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -24,6 +21,7 @@ import java.util.List;
 public class SearchBox extends InputText implements SearchView {
 
   private Presenter presenter = null;
+  private FilterChangeHandler filterChangeHandler = null;
 
   public SearchBox() {
     this("paieška...");
@@ -40,15 +38,11 @@ public class SearchBox extends InputText implements SearchView {
   }
   
   @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
-  }
-  
-  @Override
   public String getDefaultStyleName() {
     return "bee-SearchBox";
   }
 
+  @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName) {
     return DataUtils.parseCondition(getValue(), columns, idColumnName, versionColumnName);
@@ -59,25 +53,37 @@ public class SearchBox extends InputText implements SearchView {
     return "search";
   }
   
+  @Override
   public Presenter getViewPresenter() {
     return presenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      event.preventDefault();
-      ValueChangeEvent.fire(this, getValue());
-    } else {
-      super.onBrowserEvent(event);
+    if (getFilterChangeHandler() != null && EventUtils.isKeyDown(event.getType()) 
+        && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+      getFilterChangeHandler().onFilterChange();
     }
+
+    super.onBrowserEvent(event);
   }
 
+  @Override
+  public void setFilterChangeHandler(FilterChangeHandler filterChangeHandler) {
+    this.filterChangeHandler = filterChangeHandler;
+  }
+
+  @Override
   public void setViewPresenter(Presenter presenter) {
     this.presenter = presenter;
+  }
+
+  private FilterChangeHandler getFilterChangeHandler() {
+    return filterChangeHandler;
   }
 }

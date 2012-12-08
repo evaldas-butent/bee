@@ -8,7 +8,7 @@ import com.google.common.collect.Range;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -37,8 +37,8 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
   
   private final RangeOptions rangeOptions;
 
-  public RangeRenderer(int dataIndex, IsColumn dataColumn, String sep, String opt) {
-    super(dataIndex, dataColumn);
+  public RangeRenderer(CellSource cellSource, String sep, String opt) {
+    super(cellSource);
     
     this.separator = BeeUtils.notEmpty(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).trimResults().limit(3);
@@ -47,6 +47,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
         RangeOptions.hasUpperOpen(opt, DEFAULT_UPPER_OPEN), false, false);
   }
 
+  @Override
   public void addItem(String item) {
     Assert.notNull(item);
 
@@ -58,10 +59,10 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     for (String s : splitter.split(item)) {
       switch (index) {
         case 0:
-          low = parse(s);
+          low = parse(s, true);
           break;
         case 1:
-          upp = parse(s);
+          upp = parse(s, true);
           break;
         case 2:
           value = s;
@@ -94,6 +95,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     for (String item : items) {
@@ -101,10 +103,12 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public int getItemCount() {
     return map.size();
   }
 
+  @Override
   public List<String> getItems() {
     List<String> result = Lists.newArrayList();
     String low;
@@ -124,10 +128,12 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     return result;
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -147,6 +153,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     return v.toString();
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (!map.isEmpty()) {
       map.clear();

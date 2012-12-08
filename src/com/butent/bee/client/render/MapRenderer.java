@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -29,13 +29,14 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
   private final String separator;
   private final Splitter splitter;
 
-  public MapRenderer(int dataIndex, IsColumn dataColumn, String sep) {
-    super(dataIndex, dataColumn);
+  public MapRenderer(CellSource cellSource, String sep) {
+    super(cellSource);
     
     this.separator = BeeUtils.notEmpty(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).omitEmptyStrings().trimResults().limit(2);
   }
 
+  @Override
   public void addItem(String item) {
     Assert.notNull(item);
     Value key = null;
@@ -45,7 +46,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     for (String s : splitter.split(item)) {
       switch (index) {
         case 0:
-          key = parse(s);
+          key = parse(s, true);
           break;
         case 1:
           value = s;
@@ -61,6 +62,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     for (String item : items) {
@@ -68,14 +70,16 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public int getItemCount() {
     return map.size();
   }
 
+  @Override
   public List<String> getItems() {
     List<String> result = Lists.newArrayList();
     for (Map.Entry<String, String> entry : map.entrySet()) {
-      String key = Value.parseValue(getDataType(), entry.getKey(), false).toString();
+      String key = Value.parseValue(getValueType(), entry.getKey(), false).toString();
       if (!BeeUtils.isEmpty(key)) {
         result.add(BeeUtils.joinWords(key, separator, entry.getValue()));
       }
@@ -83,10 +87,12 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     return result;
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -103,6 +109,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (!map.isEmpty()) {
       map.clear();

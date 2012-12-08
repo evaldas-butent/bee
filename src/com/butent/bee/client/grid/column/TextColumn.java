@@ -3,7 +3,8 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,16 +16,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class TextColumn extends DataColumn<String> {
   private int maxDisplaySize;
 
-  public TextColumn(int index, IsColumn dataColumn) {
-    this(new TextCell(), index, dataColumn, -1);
+  public TextColumn(CellSource cellSource) {
+    this(new TextCell(), cellSource, BeeConst.UNDEF);
   }
 
-  public TextColumn(Cell<String> cell, int index, IsColumn dataColumn) {
-    this(cell, index, dataColumn, -1);
+  public TextColumn(Cell<String> cell, CellSource cellSource) {
+    this(cell, cellSource, BeeConst.UNDEF);
   }
 
-  public TextColumn(Cell<String> cell, int index, IsColumn dataColumn, int maxDisplaySize) {
-    super(cell, index, dataColumn);
+  public TextColumn(Cell<String> cell, CellSource cellSource, int maxDisplaySize) {
+    super(cell, cellSource);
     this.maxDisplaySize = maxDisplaySize;
   }
 
@@ -37,7 +38,8 @@ public class TextColumn extends DataColumn<String> {
     if (row == null) {
       return null;
     }
-    String v = row.getString(getIndex());
+    
+    String v = getCellSource().getString(row);
     if (v == null) {
       return null;
     }

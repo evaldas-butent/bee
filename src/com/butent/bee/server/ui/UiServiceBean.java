@@ -40,6 +40,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
@@ -165,6 +166,8 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(svc, Service.SEARCH)) {
       response = search.processQuery(reqInfo.getParameter(0));
+    } else if (BeeUtils.same(svc, Service.HISTOGRAM)) {
+      response = getHistogram(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
@@ -455,6 +458,22 @@ public class UiServiceBean {
     return ResponseObject.error("Grid", gridName, "not found");
   }
 
+  private ResponseObject getHistogram(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String columns = reqInfo.getParameter(Service.VAR_VIEW_COLUMNS);
+
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
+
+    String options = reqInfo.getParameter(Service.VAR_OPTIONS);
+    
+    Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+    SimpleRowSet res = qs.getHistogram(viewName, filter, NameUtils.toList(columns),
+        NameUtils.toList(order), options);
+    return ResponseObject.response(res);
+  }
+  
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();

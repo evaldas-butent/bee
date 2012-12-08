@@ -67,6 +67,7 @@ public class Service {
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
+  public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -150,6 +151,8 @@ public class Service {
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
   public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
+
+  public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
   
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

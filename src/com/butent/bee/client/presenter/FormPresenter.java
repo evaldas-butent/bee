@@ -3,8 +3,6 @@ package com.butent.bee.client.presenter;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -34,11 +32,13 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.search.FilterChangeHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
@@ -146,7 +146,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getMainView() instanceof HasSearch) {
       searchers = ((HasSearch) getMainView()).getSearchers();
     } else {
-      searchers = null;
+      searchers = Sets.newHashSet();
     }
     return searchers;
   }
@@ -273,10 +273,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (rowMode) {
           BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
         } else {
+
+          CellSource source = CellSource.forColumn(event.getColumn(),
+              getDataProvider().getColumnIndex(columnId));          
           String value = row.getString(0);
-          BeeKeeper.getBus().fireEvent(
-              new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
-                  getDataProvider().getColumnIndex(columnId), value));
+
+          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), rowId, row.getVersion(),
+              source, value));
         }
       }
     };
@@ -312,14 +315,16 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (hasData()) {
       Collection<SearchView> searchers = getSearchers();
-      if (searchers != null) {
+      if (!searchers.isEmpty()) {
+        FilterChangeHandler handler = new FilterChangeHandler() {
+          @Override
+          public void onFilterChange() {
+            FormPresenter.this.updateFilter();
+          }
+        };
+
         for (SearchView search : searchers) {
-          filterChangeHandlers.add(search.addValueChangeHandler(new ValueChangeHandler<String>() {
-            @Override
-            public void onValueChange(ValueChangeEvent<String> event) {
-              updateFilter();
-            }
-          }));
+          search.setFilterChangeHandler(handler);
         }
       }
 

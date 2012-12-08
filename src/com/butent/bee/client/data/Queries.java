@@ -53,6 +53,29 @@ public class Queries {
 
   private static final int RESPONSE_FROM_CACHE = 0;
 
+  public static boolean checkResponse(String service, String viewName, ResponseObject response,
+      Class<?> clazz, Callback<?> callback) {
+
+    if (response == null) {
+      error(callback, Lists.newArrayList(service, viewName, "response is null"));
+      return false;
+
+    } else if (response.hasErrors()) {
+      if (callback != null) {
+        callback.onFailure(response.getErrors());
+      }
+      return false;
+
+    } else if (clazz != null && !response.hasResponse(clazz)) {
+      error(callback, Lists.newArrayList(service, viewName, "response type:", response.getType(),
+          "expected:", NameUtils.getClassName(clazz)));
+      return false;
+
+    } else {
+      return true;
+    }
+  }
+
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row) {
     return createRowSetForInsert(viewName, columns, row, null, false);
@@ -388,7 +411,7 @@ public class Queries {
       }
     });
   }
-
+  
   public static int update(String viewName, List<BeeColumn> columns, IsRow oldRow, IsRow newRow,
       RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -405,7 +428,7 @@ public class Queries {
     updateRow(rs, callback);
     return rs.getNumberOfColumns();
   }
-  
+
   public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -434,29 +457,6 @@ public class Queries {
 
   public static void updateRow(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.UPDATE_ROW, rowSet, callback);
-  }
-
-  private static boolean checkResponse(String service, String viewName, ResponseObject response,
-      Class<?> clazz, Callback<?> callback) {
-
-    if (response == null) {
-      error(callback, Lists.newArrayList(service, viewName, "response is null"));
-      return false;
-
-    } else if (response.hasErrors()) {
-      if (callback != null) {
-        callback.onFailure(response.getErrors());
-      }
-      return false;
-
-    } else if (clazz != null && !response.hasResponse(clazz)) {
-      error(callback, Lists.newArrayList(service, viewName, "response type:", response.getType(),
-          "expected:", NameUtils.getClassName(clazz)));
-      return false;
-
-    } else {
-      return true;
-    }
   }
 
   private static boolean checkRowSet(String service, BeeRowSet rowSet, Callback<?> callback) {

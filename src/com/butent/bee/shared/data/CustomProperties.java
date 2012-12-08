@@ -45,6 +45,7 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
     return properties;
   }
 
+  @Override
   public void deserialize(String s) {
     clear();
     if (BeeUtils.isEmpty(s)) {
@@ -60,6 +61,7 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
     }
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> lst = Lists.newArrayList();
     if (isEmpty()) {
@@ -73,6 +75,7 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
     return lst;
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(this);
   }

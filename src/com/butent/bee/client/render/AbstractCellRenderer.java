@@ -2,87 +2,58 @@ package com.butent.bee.client.render;
 
 import com.google.gwt.text.shared.AbstractRenderer;
 
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
-public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> {
+public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> implements HasValueType {
 
-  private final int dataIndex;
-  private final IsColumn dataColumn;
-  
-  private final ValueType dataType;
+  private final CellSource cellSource;
 
-  public AbstractCellRenderer() {
-    this(ValueType.TEXT);
+  public AbstractCellRenderer(CellSource cellSource) {
+    this.cellSource = cellSource;
   }
 
-  public AbstractCellRenderer(int dataIndex, IsColumn dataColumn) {
-    this(dataIndex, dataColumn, (dataColumn == null) ? null : dataColumn.getType());
+  @Override
+  public ValueType getValueType() {
+    return (cellSource == null) ? null : cellSource.getValueType();
   }
   
-  public AbstractCellRenderer(int dataIndex, ValueType dataType) {
-    this(dataIndex, null, dataType);
-  }
-
-  public AbstractCellRenderer(ValueType dataType) {
-    this(BeeConst.UNDEF, null, dataType);
-  }
-  
-  private AbstractCellRenderer(int dataIndex, IsColumn dataColumn, ValueType dataType) {
-    super();
-    this.dataIndex = dataIndex;
-    this.dataColumn = dataColumn;
-    this.dataType = dataType;
-  }
-
-  public IsColumn getDataColumn() {
-    return dataColumn;
-  }
-
-  public int getDataIndex() {
-    return dataIndex;
-  }
-  
-  public ValueType getDataType() {
-    return dataType;
+  protected CellSource getCellSource() {
+    return cellSource;
   }
 
   protected Integer getInteger(IsRow row) {
-    if (row == null) {
+    if (row == null || cellSource == null) {
       return null;
     } else {
-      return row.getInteger(dataIndex);
+      return cellSource.getInteger(row);
     }
   }
   
   protected String getString(IsRow row) {
-    if (row == null) {
+    if (row == null || cellSource == null) {
       return null;
     } else {
-      return row.getString(dataIndex);
+      return cellSource.getString(row);
     }
   }
   
   protected Value getValue(IsRow row) {
-    if (row == null || row.isNull(dataIndex)) {
+    if (row == null || cellSource == null) {
       return null;
     } else {
-      return row.getValue(dataIndex, dataType);
+      return cellSource.getValue(row);
     }
-  }
-
-  protected Value parse(String value) {
-    return parse(value, true);
   }
   
   protected Value parse(String value, boolean parseDates) {
-    if (value == null || value.isEmpty()) {
+    if (value == null || value.isEmpty() || cellSource == null) {
       return null;
     } else {
-      return Value.parseValue(dataType, value, parseDates);
+      return Value.parseValue(getValueType(), value, parseDates);
     }
   }
 }

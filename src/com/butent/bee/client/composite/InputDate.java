@@ -22,6 +22,8 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -114,7 +116,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     Assert.notNull(type, "input date: type not specified");
 
     this.box = new InputText();
-    this.popup = new Popup(true, false, STYLE_POPUP);
+    this.popup = new Popup(OutsideClick.CLOSE, Modality.MODELESS, STYLE_POPUP);
 
     this.format = format;
     this.dataType = type;

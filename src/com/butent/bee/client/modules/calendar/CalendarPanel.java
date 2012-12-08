@@ -25,6 +25,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -598,7 +600,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private void pickDate() {
-    final Popup popup = new Popup(true, false);
+    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODELESS);
     DatePicker datePicker = new DatePicker(calendar.getDate());
 
     datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {

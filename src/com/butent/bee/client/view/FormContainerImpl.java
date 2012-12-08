@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
@@ -217,7 +218,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (hasData()) {
       return ViewHelper.getPagers(this);
     } else {
-      return null;
+      return Sets.newHashSet();
     }
   }
 
@@ -231,7 +232,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
     } else {
-      return null;
+      return Sets.newHashSet();
     }
   }
 

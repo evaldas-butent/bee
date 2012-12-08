@@ -73,7 +73,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   }
 
   public int addRow(long id, long version, List<String> data) {
-    return addRow(new BeeRow(id, version, ArrayUtils.toArray(data)));
+    return addRow(new BeeRow(id, version, data));
   }
   
   @Override

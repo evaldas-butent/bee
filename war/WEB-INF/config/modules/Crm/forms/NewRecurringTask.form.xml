@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY header "font-style: italic;">
+  <!ENTITY separator "<hr/>">
+
+  <!ENTITY lbl1 "&inline; width: 128px; padding-top: 2px;">
+  <!ENTITY top1 "float: left; width: 128px; padding-top: 2px;">
+  <!ENTITY inp2 "&inline; width: 150px;">
+  <!ENTITY inp2x "&inline; width: 500px;">
+  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 20px;">
+  <!ENTITY inp4 "&inline;">
+
+  <!ENTITY dateStyle "&inline; width: 90px;">
+  <!ENTITY timeStyle "&inline; width: 50px; margin-left: 6px;">
+  <!ENTITY timeStep "30">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="NewRecurringTask" caption="Nauja periodinė užduotis">
+
+  <FlowPanel style="margin: 10px 5px 2px 5px;">
+
+    <FlowPanel style="&section;">
+      <Label html="Prioritetas:" style="&lbl3;" />
+      <Radio source="Priority" itemKey="TaskPriority" style="&inp4;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Pradžios data:" style="&lbl1;" />
+      <InputDate name="Start_Date" style="&dateStyle;" />
+      <InputTime name="Start_Time" step="&timeStep;" style="&timeStyle;" />
+      <Label html="Numatoma trukmė:" style="&lbl3;" />
+      <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Pabaigos data:" style="&lbl1;" />
+      <InputDate name="End_Date" style="&dateStyle;" />
+      <InputTime name="End_Time" step="&timeStep;" style="&timeStyle;" />
+      <Label html="Įmonė:" style="&lbl3;" />
+      <DataSelector source="Company" editEnabled="true" editPopup="true"
+        style="&inp4; width: 200px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Priminimas:" style="&lbl1;" />
+      <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
+        style="&inp2;" />
+      <Label html="Kontaktinis asmuo:" style="&lbl3;" />
+      <DataSelector source="Contact" style="&inp4; width: 200px;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;">
+      <Label html="Tema:" class="bee-required" style="&lbl1;" />
+      <InputText source="Summary" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Aprašymas:" style="&top1;" />
+      <InputArea source="Description" style="width: 500px; height: 60px;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;">
+      <Label html="Bylos:" style="&top1;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;">
+      <Label html="Vykdytojai:" class="bee-required" style="&top1;" />
+      <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
+        editEnabled="true" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Stebėtojai:" style="&top1;" />
+      <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
+        editEnabled="true" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;">
+      <Label html="Susijusi su:" style="&header;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Įmonės:" style="&top1;" />
+      <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+        editEnabled="true" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Asmenys:" style="&top1;" />
+      <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+        editEnabled="true" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>  

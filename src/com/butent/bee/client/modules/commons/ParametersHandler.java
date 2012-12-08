@@ -25,6 +25,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -230,7 +231,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
 
         if (response.hasErrors()) {
           if (callback == null) {
-            Global.showError(response.getErrors());
+            Global.showError(Lists.newArrayList(response.getErrors()));
           } else {
             callback.onFailure(response.getErrors());
           }
@@ -244,8 +245,10 @@ public class ParametersHandler extends AbstractGridInterceptor {
             prm.setValue(value);
             gridView.getGrid().getRowById(id).setValue(id(VALUE), value);
           }
-          gridView.getGrid().onCellUpdate(new CellUpdateEvent(null, id, 0, USER_VALUE,
-              id(USER_VALUE), value));
+          
+          int colIndex = id(USER_VALUE);
+          gridView.getGrid().onCellUpdate(new CellUpdateEvent(null, id, 0,
+              CellSource.forColumn(columns.get(colIndex), colIndex), value));
           if (callback != null) {
             callback.onSuccess(null);
           }
@@ -280,7 +283,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError(response.getErrors());
+          Global.showError(Lists.newArrayList(response.getErrors()));
 
         } else if (response.hasResponse(Boolean.class)) {
           requery();
@@ -336,7 +339,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError(response.getErrors());
+          Global.showError(Lists.newArrayList(response.getErrors()));
 
         } else if (response.hasResponse()) {
           params.clear();
@@ -367,7 +370,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
 
         if (response.hasErrors()) {
           if (callback == null) {
-            Global.showError(response.getErrors());
+            Global.showError(Lists.newArrayList(response.getErrors()));
           } else {
             callback.onFailure(response.getErrors());
           }

@@ -4,6 +4,8 @@ import com.butent.bee.shared.data.BeeRow;
 
 public interface HasRelatedRow {
   
+  Long getRelatedId();
+  
   BeeRow getRelatedRow();
   
   void setRelatedRow(BeeRow row);

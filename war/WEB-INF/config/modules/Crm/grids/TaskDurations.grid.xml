@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="TaskDurations" viewName="TaskDurations" caption="Registruoti laikai" readOnly="true">
+
+  <columns>
+    <DataColumn name="DurationDate" />
+    <DataColumn name="DurationType" />
+    <DataColumn name="Duration" />
+
+    <DataColumn name="Comment" />
+
+    <DataColumn name="CompanyName" />
+
+    <RelColumn name="Task" editEnabled="true" renderColumns="Summary" />
+
+    <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />
+  </columns>
+</Grid>

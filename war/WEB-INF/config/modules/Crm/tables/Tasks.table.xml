@@ -25,20 +25,7 @@
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="Priminimas" />
 
     <Integer name="Status" notNull="true" defValue="0" label="Būsena" />
+    
+    <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL" />
   </Fields>
-
-  <Keys>
-    <Key>
-      <KeyField>Priority</KeyField>
-    </Key>
-    <Key>
-      <KeyField>StartTime</KeyField>
-    </Key>
-    <Key>
-      <KeyField>FinishTime</KeyField>
-    </Key>
-    <Key>
-      <KeyField>Status</KeyField>
-    </Key>
-  </Keys>
 </Table>

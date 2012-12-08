@@ -20,6 +20,7 @@
     <SimpleColumn name="EventNote" />
     <SimpleJoin name="EventDuration" joinType="LEFT">
       <SimpleColumn name="Duration" />
+      <SimpleColumn name="DurationDate" />
       <SimpleJoin name="DurationType" joinType="LEFT">
         <SimpleColumn alias="DurationType" name="Name" />
       </SimpleJoin>

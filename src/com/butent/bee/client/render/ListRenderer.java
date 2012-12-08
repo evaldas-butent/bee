@@ -3,7 +3,7 @@ package com.butent.bee.client.render;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 
@@ -17,35 +17,34 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
 
   private int valueStartIndex = 0;
 
-  public ListRenderer(int dataIndex, IsColumn dataColumn) {
-    this(dataIndex, dataColumn, null);
+  public ListRenderer(CellSource cellSource) {
+    this(cellSource, null);
   }
 
-  public ListRenderer(int dataIndex, IsColumn dataColumn, Collection<String> items) {
-    this(dataIndex, dataColumn, items, 0);
+  public ListRenderer(CellSource cellSource, Collection<String> items) {
+    this(cellSource, items, 0);
   }
 
-  public ListRenderer(int dataIndex, IsColumn dataColumn, Collection<String> items,
-      int valueStartIndex) {
-    this(dataIndex, dataColumn, items, valueStartIndex, false, null);
+  public ListRenderer(CellSource cellSource, Collection<String> items, int valueStartIndex) {
+    this(cellSource, items, valueStartIndex, false, null);
   }
 
-  public ListRenderer(int dataIndex, IsColumn dataColumn, boolean useProxy, HasItems proxy) {
-    this(dataIndex, dataColumn, null, 0, useProxy, proxy);
+  public ListRenderer(CellSource cellSource, boolean useProxy, HasItems proxy) {
+    this(cellSource, null, 0, useProxy, proxy);
 
     if (useProxy && proxy instanceof HasValueStartIndex) {
       setValueStartIndex(((HasValueStartIndex) proxy).getValueStartIndex());
     }
   }
 
-  public ListRenderer(int dataIndex, IsColumn dataColumn, boolean useProxy, HasItems proxy,
+  public ListRenderer(CellSource cellSource, boolean useProxy, HasItems proxy,
       int valueStartIndex) {
-    this(dataIndex, dataColumn, null, valueStartIndex, useProxy, proxy);
+    this(cellSource, null, valueStartIndex, useProxy, proxy);
   }
 
-  private ListRenderer(int dataIndex, IsColumn dataColumn, Collection<String> items,
+  private ListRenderer(CellSource cellSource, Collection<String> items,
       int valueStartIndex, boolean useProxy, HasItems proxy) {
-    super(dataIndex, dataColumn);
+    super(cellSource);
 
     if (!useProxy || proxy == null) {
       this.itemList = Lists.newArrayList();
@@ -59,20 +58,24 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
     this.valueStartIndex = valueStartIndex;
   }
 
+  @Override
   public void addItem(String item) {
     getItems().add(item);
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     if (items != null) {
       getItems().addAll(items);
     }
   }
 
+  @Override
   public int getItemCount() {
     return getItems().size();
   }
 
+  @Override
   public List<String> getItems() {
     if (itemProxy == null) {
       return itemList;
@@ -81,14 +84,17 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
     }
   }
 
+  @Override
   public int getValueStartIndex() {
     return valueStartIndex;
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -99,7 +105,7 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
       return null;
     }
 
-    Integer value = row.getInteger(getDataIndex());
+    Integer value = getInteger(row);
     if (value == null) {
       return null;
     }
@@ -112,6 +118,7 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
     }
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (!getItems().isEmpty()) {
       getItems().clear();
@@ -119,6 +126,7 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
     addItems(items);
   }
 
+  @Override
   public void setValueStartIndex(int valueStartIndex) {
     this.valueStartIndex = valueStartIndex;
   }

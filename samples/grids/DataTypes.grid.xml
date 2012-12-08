@@ -5,7 +5,7 @@
 
   name="DataTypes" viewName="DataTypes"
   maxColumnWidth="500" caption="Types" asyncThreshold="50" filter="Integer > 0"
-  order="Integer desc, Version" footerEvents="change"
+  order="Integer desc, Version"
   >
   <header borderWidth="2">
     <style>

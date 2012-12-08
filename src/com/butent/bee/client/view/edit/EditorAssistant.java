@@ -12,6 +12,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -78,22 +79,24 @@ public class EditorAssistant {
     }
   }
 
-  public static void editStarCell(EditStartEvent event, final int colIndex,
+  public static void editStarCell(EditStartEvent event, final CellSource source,
       final Procedure<Integer> updater) {
+
     Assert.notNull(event);
+    Assert.notNull(source);
 
     final IsRow row = event.getRowValue();
     if (row == null) {
       return;
     }
 
-    final Integer oldValue = row.getInteger(colIndex);
+    final Integer oldValue = source.getInteger(row);
 
     final Element element = event.getSourceElement();
 
     if (event.isDelete()) {
       if (oldValue != null) {
-        row.clearCell(colIndex);
+        source.clear(row);
         if (element != null) {
           element.setInnerHTML(BeeConst.STRING_EMPTY);
         }
@@ -118,7 +121,7 @@ public class EditorAssistant {
         newValue = BeeUtils.rotateBackwardExclusive(oldValue, 0, count);
       }
 
-      row.setValue(colIndex, newValue);
+      source.set(row, newValue);
       if (element != null) {
         element.setInnerHTML(Stars.getHtml(newValue));
       }
@@ -137,7 +140,7 @@ public class EditorAssistant {
         @Override
         public void onSuccess(int value) {
           if (oldValue == null || value != oldValue) {
-            row.setValue(colIndex, value);
+            source.set(row, value);
             if (element != null) {
               element.setInnerHTML(Stars.getHtml(value));
             }
@@ -160,7 +163,7 @@ public class EditorAssistant {
 
     event.consume();
   }
-
+  
   public static String getValue(Widget widget) {
     if (widget instanceof Editor) {
       return ((Editor) widget).getValue();
@@ -172,7 +175,7 @@ public class EditorAssistant {
       return null;
     }
   }
-
+  
   private EditorAssistant() {
   }
 }

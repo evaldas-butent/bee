@@ -3,7 +3,7 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 
 /**
  * Enables using columns for currency expressions.
@@ -11,11 +11,11 @@ import com.butent.bee.shared.data.IsColumn;
 
 public class CurrencyColumn extends DecimalColumn {
 
-  public CurrencyColumn(int index, IsColumn dataColumn) {
-    this(Format.getDefaultCurrencyFormat(), index, dataColumn);
+  public CurrencyColumn(CellSource cellSource) {
+    this(Format.getDefaultCurrencyFormat(), cellSource);
   }
 
-  public CurrencyColumn(NumberFormat format, int index, IsColumn dataColumn) {
-    super(format, index, dataColumn);
+  public CurrencyColumn(NumberFormat format, CellSource cellSource) {
+    super(format, cellSource);
   }
 }

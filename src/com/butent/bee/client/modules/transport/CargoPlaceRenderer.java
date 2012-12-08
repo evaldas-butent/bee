@@ -16,7 +16,7 @@ class CargoPlaceRenderer extends AbstractCellRenderer {
   private final int terminalIndex;
 
   public CargoPlaceRenderer(List<? extends IsColumn> columns, String prefix) {
-    super();
+    super(null);
 
     dateIndex = DataUtils.getColumnIndex(prefix + "Date", columns);
     countryIndex = DataUtils.getColumnIndex(prefix + "CountryName", columns);

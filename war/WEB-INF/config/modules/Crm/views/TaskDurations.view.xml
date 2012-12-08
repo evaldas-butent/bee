@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TaskDurations" source="TaskEvents" caption="Registruoti laikai"
+  >
+  <Columns>
+    <SimpleColumn name="Task" />
+    <SimpleJoin name="Task" joinType="LEFT">
+      <SimpleColumn name="Summary" />
+      <SimpleColumn name="StartTime" />
+      <SimpleColumn name="FinishTime" />
+      <SimpleColumn name="Completed" />
+      <SimpleColumn name="Approved" />
+      <SimpleColumn name="ExpectedDuration" />
+      <SimpleColumn name="Status" />
+  
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Publisher" />
+    <SimpleJoin name="Publisher" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PublisherFirstName" name="FirstName" />
+          <SimpleColumn alias="PublisherLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="PublishTime" />
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="Event" />
+    <SimpleColumn name="EventNote" />
+
+    <SimpleColumn name="EventDuration" />
+    <SimpleJoin name="EventDuration" joinType="INNER">
+      <SimpleColumn name="Duration" />
+      <SimpleColumn name="DurationDate" />
+      <SimpleJoin name="DurationType" joinType="LEFT">
+        <SimpleColumn alias="DurationType" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="DurationDate" />
+    <OrderBy column="PublishTime" />
+  </Order>
+</View>
+ 

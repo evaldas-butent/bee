@@ -59,6 +59,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -88,8 +89,8 @@ import java.util.Set;
  * Manages the structure and behavior of a cell grid user interface component.
  */
 
-public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable, HasEditStartHandlers,
-    HasEnabled, HasActiveRow {
+public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable,
+    HasEditStartHandlers, HasEnabled, HasActiveRow {
 
   /**
    * Contains templates which facilitates compile-time binding of HTML templates to generate
@@ -188,8 +189,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private class ColumnInfo {
     private final String columnId;
-    private final int dataIndex;
-    private final String source;
+
+    private final CellSource source;
 
     private final AbstractColumn<?> column;
     private final ColumnHeader header;
@@ -215,10 +216,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     private boolean colReadOnly = false;
 
-    private ColumnInfo(String columnId, int dataIndex, String source,
+    private ColumnInfo(String columnId, CellSource source,
         AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
       this.columnId = columnId;
-      this.dataIndex = dataIndex;
       this.source = source;
 
       this.column = column;
@@ -310,10 +310,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return BeeUtils.clamp(w, minW, maxW);
     }
 
-    private int getDataIndex() {
-      return dataIndex;
-    }
-
     private ConditionalStyle getDynStyles() {
       return dynStyles;
     }
@@ -361,7 +357,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return getColumn().getSortBy();
     }
 
-    private String getSource() {
+    private CellSource getSource() {
       return source;
     }
 
@@ -897,7 +893,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public static Edges defaultBodyBorderWidth = new Edges(1);
   public static Edges defaultBodyCellMargin = null;
 
-  public static int defaultFooterCellHeight = 25;
+  public static int defaultFooterCellHeight = 22;
   public static Edges defaultFooterCellPadding = new Edges(1, 2, 0);
   public static Edges defaultFooterBorderWidth = new Edges(1);
   public static Edges defaultFooterCellMargin = null;
@@ -1037,14 +1033,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return addHandler(handler, ActiveRowChangeEvent.getType());
   }
 
-  public void addColumn(String columnId, int dataIndex, String source,
-      AbstractColumn<?> col, ColumnHeader header) {
-    insertColumn(getColumnCount(), columnId, dataIndex, source, col, header, null);
+  public void addColumn(String columnId, CellSource source, AbstractColumn<?> col,
+      ColumnHeader header) {
+    insertColumn(getColumnCount(), columnId, source, col, header, null);
   }
 
-  public void addColumn(String columnId, int dataIndex, String source,
-      AbstractColumn<?> col, ColumnHeader header, ColumnFooter footer) {
-    insertColumn(getColumnCount(), columnId, dataIndex, source, col, header, footer);
+  public void addColumn(String columnId, CellSource source, AbstractColumn<?> col,
+      ColumnHeader header, ColumnFooter footer) {
+    insertColumn(getColumnCount(), columnId, source, col, header, footer);
   }
 
   @Override
@@ -1237,10 +1233,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return getColumnInfo(col).getColumnId();
   }
 
-  public String getColumnIdBySource(String source) {
-    Assert.notEmpty(source);
+  public String getColumnIdBySourceName(String name) {
+    Assert.notEmpty(name);
     for (int i = 0; i < getColumnCount(); i++) {
-      if (BeeUtils.same(columns.get(i).getSource(), source)) {
+      CellSource source = columns.get(i).getSource();
+      if (source != null && BeeUtils.same(source.getName(), name)) {
         return columns.get(i).getColumnId();
       }
     }
@@ -1706,9 +1703,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     long rowId = event.getRowId();
     long version = event.getVersion();
-    String source = event.getColumnName();
-    int dataIndex = event.getColumnIndex();
-    String value = event.getValue();
 
     RowInfo selectedRowInfo = getSelectedRows().get(rowId);
     if (selectedRowInfo != null) {
@@ -1721,10 +1715,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     IsRow rowValue = getDataItem(row);
-    rowValue.setVersion(version);
-    rowValue.setValue(dataIndex, value);
+    event.applyTo(rowValue);
 
-    List<Integer> indexBySource = getColumnIndexBySource(source);
+    List<Integer> indexBySource = getColumnIndexBySourceName(event.getSourceName());
     Integer col;
 
     if (indexBySource.size() == 1) {
@@ -1762,8 +1755,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (checkZindex && col != null) {
       bringToFront(row, col);
     }
-    
-    logger.info("grid updated cell:", rowId, source, value);
   }
 
   @Override
@@ -1819,7 +1810,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return;
     }
 
-    for (int col : getColumnIndexBySource(source)) {
+    List<Integer> colIndexes = getColumnIndexBySourceName(source);
+    for (int col : colIndexes) {
       Element cellElement = getCellElement(row, col);
       if (cellElement == null) {
         continue;
@@ -1831,8 +1823,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
 
       IsRow rowValue = getDataItem(row).copy();
-      int dataIndex = getColumnInfo(col).getDataIndex();
-      rowValue.setValue(dataIndex, value);
+      getColumnInfo(col).getSource().set(rowValue, value);
 
       AbstractColumn<?> column = getColumn(col);
 
@@ -1857,14 +1848,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     render(true);
   }
 
-  public void refreshCellContent(long rowId, String source) {
+  public void refreshCellContent(long rowId, String sourceName) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
       logger.warning("refreshCell: row id", rowId, "is not visible");
       return;
     }
-
-    for (int col : getColumnIndexBySource(source)) {
+    
+    List<Integer> colIndexes = getColumnIndexBySourceName(sourceName);
+    for (int col : colIndexes) {
       updateCellContent(row, col);
     }
   }
@@ -2802,11 +2794,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return BeeConst.UNDEF;
   }
 
-  private List<Integer> getColumnIndexBySource(String source) {
-    Assert.notEmpty(source);
+  private List<Integer> getColumnIndexBySourceName(String name) {
+    Assert.notEmpty(name);
     List<Integer> result = Lists.newArrayList();
+
     for (int i = 0; i < getColumnCount(); i++) {
-      if (BeeUtils.same(columns.get(i).getSource(), source)) {
+      CellSource source = columns.get(i).getSource();
+      if (source != null && BeeUtils.same(source.getName(), name)) {
         result.add(i);
       }
     }
@@ -3416,14 +3410,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return z;
   }
 
-  private void insertColumn(int beforeIndex, String columnId, int dataIndex, String source,
+  private void insertColumn(int beforeIndex, String columnId, CellSource source,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
     checkColumnId(columnId);
 
-    columns.add(beforeIndex, new ColumnInfo(columnId, dataIndex, source, column, header, footer));
+    columns.add(beforeIndex, new ColumnInfo(columnId, source, column, header, footer));
 
     Set<String> consumedEvents = Sets.newHashSet();
     {

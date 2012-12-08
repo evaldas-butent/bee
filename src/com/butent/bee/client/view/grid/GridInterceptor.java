@@ -14,6 +14,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -73,6 +74,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   String getDeleteRowMessage();
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
+  
+  AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
   GridPresenter getGridPresenter();
 

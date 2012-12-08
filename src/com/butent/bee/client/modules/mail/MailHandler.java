@@ -142,6 +142,8 @@ public class MailHandler extends AbstractFormInterceptor {
     private final int attachmentCount;
 
     public EnvelopeRenderer(List<? extends IsColumn> dataColumns) {
+      super(null);
+
       unread = DataUtils.getColumnIndex(COL_UNREAD, dataColumns);
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
       senderLabel = DataUtils.getColumnIndex("SenderLabel", dataColumns);

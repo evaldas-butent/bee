@@ -25,11 +25,13 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
   public DateRenderer(String pattern) {
     this.format = BeeUtils.isEmpty(pattern) ? null : Format.getDateTimeFormat(pattern);
   }
-
+  
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }
 
+  @Override
   public String render(JustDate object) {
     if (object == null) {
       return BeeConst.STRING_EMPTY;
@@ -40,6 +42,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
     }
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.format = format;
   }

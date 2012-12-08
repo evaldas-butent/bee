@@ -24,7 +24,7 @@ class AppointmentTimeRenderer extends AbstractCellRenderer {
   private final int effectiveIndex;
 
   AppointmentTimeRenderer(List<? extends IsColumn> columns, boolean start) {
-    super();
+    super(null);
     
     String name = start ? CalendarConstants.COL_START_DATE : CalendarConstants.COL_END_DATE;
     this.dateIndex = DataUtils.getColumnIndex(name, columns);

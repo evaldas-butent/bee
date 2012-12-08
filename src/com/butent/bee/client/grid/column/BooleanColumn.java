@@ -3,21 +3,17 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.cell.client.Cell;
 
 import com.butent.bee.client.grid.cell.BooleanCell;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
-
-/**
- * Implements boolean type column, enables to get value for a specified row or index point.
- */
 
 public class BooleanColumn extends DataColumn<Boolean> {
 
-  public BooleanColumn(int index, IsColumn dataColumn) {
-    this(new BooleanCell(), index, dataColumn);
+  public BooleanColumn(CellSource cellSource) {
+    this(new BooleanCell(), cellSource);
   }
 
-  public BooleanColumn(Cell<Boolean> cell, int index, IsColumn dataColumn) {
-    super(cell, index, dataColumn);
+  public BooleanColumn(Cell<Boolean> cell, CellSource cellSource) {
+    super(cell, cellSource);
     setHorizontalAlignment(ALIGN_CENTER);
   }
 
@@ -26,6 +22,6 @@ public class BooleanColumn extends DataColumn<Boolean> {
     if (row == null) {
       return null;
     }
-    return row.getBoolean(getIndex());
+    return getCellSource().getBoolean(row);
   }
 }

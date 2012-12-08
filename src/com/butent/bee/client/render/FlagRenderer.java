@@ -1,9 +1,8 @@
 package com.butent.bee.client.render;
 
 import com.butent.bee.client.images.Flags;
-import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
@@ -14,8 +13,8 @@ public class FlagRenderer extends AbstractCellRenderer {
   
   private static final ImageElement imageElement = Browser.getDocument().createImageElement(); 
 
-  public FlagRenderer(int dataIndex) {
-    super(Assert.nonNegative(dataIndex), ValueType.TEXT);
+  public FlagRenderer(CellSource cellSource) {
+    super(cellSource);
   }
 
   @Override

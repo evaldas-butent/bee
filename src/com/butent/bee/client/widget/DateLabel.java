@@ -23,10 +23,12 @@ public class DateLabel extends ValueLabel<JustDate> implements HasDateTimeFormat
     super(new DateRenderer(pattern), inline);
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return ((DateRenderer) getRenderer()).getDateTimeFormat();
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     ((DateRenderer) getRenderer()).setDateTimeFormat(format);
   }

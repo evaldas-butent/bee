@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="DurationType" notNull="true" relation="DurationTypes" />
-    <Date name="DurationDate" notNull="true" />
-    <DateTime name="Duration" notNull="true" />
+    <DateTime name="DurationDate" notNull="true" label="Data" />
+    <String name="Duration" precision="20" notNull="true" label="Sugaištas laikas" />
   </Fields>
 </Table>

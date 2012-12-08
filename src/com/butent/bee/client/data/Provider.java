@@ -14,9 +14,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
-import com.butent.bee.shared.data.event.MultiDeleteEvent;
-import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
@@ -128,36 +125,32 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public String getVersionColumnName() {
     return versionColumnName;
   }
-
+  
+  @Override
   public String getViewName() {
     return viewName;
   }
 
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onCellUpdate(event);
     }
   }
 
+  @Override
   public void onDataRequest(DataRequestEvent event) {
     onRequest(false);
   }
 
   public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow);
 
-  public abstract void onMultiDelete(MultiDeleteEvent event);
-
-  public abstract void onRowDelete(RowDeleteEvent event);
-
-  public abstract void onRowInsert(RowInsertEvent event);
-
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onRowUpdate(event);
     }
   }
-
-  public abstract void onSort(SortEvent event);
 
   public void onUnload() {
     for (HandlerRegistration entry : handlerRegistry) {

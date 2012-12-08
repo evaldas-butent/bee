@@ -57,7 +57,7 @@ public class DocumentHandler {
         WidgetDescriptionCallback callback) {
       if (widget instanceof FileCollector) {
         this.collector = (FileCollector) widget;
-        this.collector.bindDnd(getFormView());
+        this.collector.bindDnd(getFormView(), getFormView().asWidget().getElement());
       }
     }
 

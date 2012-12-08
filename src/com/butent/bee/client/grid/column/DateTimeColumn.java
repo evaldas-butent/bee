@@ -6,28 +6,25 @@ import com.butent.bee.client.grid.cell.DateTimeCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.time.DateTime;
 
-/**
- * Implements DateTime type column, enables to get value for a specified row or index point.
- */
-
 public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeFormat {
 
-  public DateTimeColumn(int index, IsColumn dataColumn) {
-    this(Format.getDefaultDateTimeFormat(), index, dataColumn);
+  public DateTimeColumn(CellSource cellSource) {
+    this(Format.getDefaultDateTimeFormat(), cellSource);
   }
 
-  public DateTimeColumn(DateTimeFormat format, int index, IsColumn dataColumn) {
-    this(new DateTimeCell(format), index, dataColumn);
+  public DateTimeColumn(DateTimeFormat format, CellSource cellSource) {
+    this(new DateTimeCell(format), cellSource);
   }
 
-  public DateTimeColumn(Cell<DateTime> cell, int index, IsColumn dataColumn) {
-    super(cell, index, dataColumn);
+  public DateTimeColumn(Cell<DateTime> cell, CellSource cellSource) {
+    super(cell, cellSource);
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     if (getCell() instanceof HasDateTimeFormat) {
       return ((HasDateTimeFormat) getCell()).getDateTimeFormat();
@@ -41,9 +38,10 @@ public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeF
     if (row == null) {
       return null;
     }
-    return row.getDateTime(getIndex());
+    return getCellSource().getDateTime(row);
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     if (getCell() instanceof HasDateTimeFormat) {
       ((HasDateTimeFormat) getCell()).setDateTimeFormat(format);

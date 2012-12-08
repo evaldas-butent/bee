@@ -17,17 +17,18 @@ public class CrmConstants {
   }
 
   public enum TaskEvent implements HasCaption {
-    CREATED("Sukurta", null),
-    VISITED("Peržiūrėta", null),
-    COMMENTED("Komentaras", "Komentuoti"),
-    EXTENDED("Pratęsta", "Keisti terminą"),
-    SUSPENDED("Sustabdyta", "Sustabdyti"),
-    RENEWED("Atnaujinta", "Grąžinti vykdymui"),
-    FORWARDED("Persiųsta", "Persiųsti"),
-    CANCELED("Atšaukta", "Nutraukti"),
-    COMPLETED("Įvykdyta", "Užbaigti"),
-    APPROVED("Patvirtinta", "Patvirtinti"),
-    EDITED("Koreguota", null);
+    CREATE("Sukurta", null),
+    VISIT("Peržiūrėta", null),
+    ACTIVATE("Perduota vykdymui", "Perduoti vykdymui"),
+    COMMENT("Komentaras", "Komentuoti"),
+    EXTEND("Pratęsta", "Keisti terminą"),
+    SUSPEND("Sustabdyta", "Sustabdyti"),
+    RENEW("Atnaujinta", "Grąžinti vykdymui"),
+    FORWARD("Persiųsta", "Persiųsti"),
+    CANCEL("Atšaukta", "Nutraukti"),
+    COMPLETE("Įvykdyta", "Užbaigti"),
+    APPROVE("Patvirtinta", "Patvirtinti"),
+    EDIT("Koreguota", null);
 
     private final String caption;
     private final String commandLabel;
@@ -63,8 +64,9 @@ public class CrmConstants {
   }
   
   public enum TaskStatus implements HasCaption {
-    ACTIVATED("Neperžiūrėta"),
-    RUNNING("Vykdoma"),
+    NOT_VISITED("Neperžiūrėta"),
+    ACTIVE("Vykdoma"),
+    SCHEDULED("Suplanuota"),
     SUSPENDED("Sustabdyta"),
     COMPLETED("Įvykdyta"),
     CANCELED("Atšaukta");
@@ -98,8 +100,9 @@ public class CrmConstants {
 
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
+  public static final String VAR_TASK_EXCLUDE = Service.RPC_VAR_PREFIX + "task_exclude";
+  public static final String VAR_TASK_STATUS = Service.RPC_VAR_PREFIX + "task_status";
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
-  public static final String VAR_TASK_OBSERVE = Service.RPC_VAR_PREFIX + "task_observe";
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
@@ -132,16 +135,16 @@ public class CrmConstants {
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
-  public static final String COL_LAST_ACCESS = "LastAccess";
-  public static final String COL_LAST_PUBLISH = "LastPublish";
-
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
 
   public static final String COL_PRIORITY = "Priority";
 
   public static final String COL_OWNER = "Owner";
+
   public static final String COL_EXECUTOR = "Executor";
+  public static final String COL_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
+  public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
   public static final String COL_PROJECT = "Project";
   public static final String COL_TASK = "Task";
@@ -174,6 +177,7 @@ public class CrmConstants {
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
   public static final String COL_COMPANY = "Company";
+  public static final String COL_COMPANY_NAME = "CompanyName";
   public static final String COL_CONTACT = "Contact";
 
   public static final String COL_REMINDER = "Reminder";
@@ -197,8 +201,10 @@ public class CrmConstants {
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EVENT_DURATION = "EventDuration";
 
+  public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_STAR = "Star";
 
+  public static final String COL_COMPLETED = "Completed";
   public static final String COL_APPROVED = "Approved";
   
   public static final String PROP_EXECUTORS = "Executors";
@@ -212,6 +218,11 @@ public class CrmConstants {
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
 
+  public static final String PROP_USER = "User";
+  public static final String PROP_STAR = "Star";
+  public static final String PROP_LAST_ACCESS = "LastAccess";
+  public static final String PROP_LAST_PUBLISH = "LastPublish";
+  
   public static final String GRID_TASKS = "Tasks";
 
   public static final String FORM_NEW_TASK = "NewTask";

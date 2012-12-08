@@ -57,7 +57,7 @@ class CalendarCache implements HandlesAllDataEvents {
     if (isEventRelevant(event)) {
       BeeRowSet rowSet = data.get(event.getViewName());
       if (rowSet != null) {
-        rowSet.updateCell(event.getRowId(), event.getColumnIndex(), event.getValue());
+        event.applyTo(rowSet);
       }
     }
   }

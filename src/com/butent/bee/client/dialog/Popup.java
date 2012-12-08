@@ -58,6 +58,14 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
   }
 
+  public enum OutsideClick {
+    CLOSE, IGNORE
+  }
+
+  public enum Modality {
+    MODAL, MODELESS
+  }
+
   public interface PositionCallback {
     void setPosition(int offsetWidth, int offsetHeight);
   }
@@ -312,9 +320,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   private AnimationType animationType = AnimationType.CENTER;
 
-  private final boolean autoHide;
-
-  private final boolean modal;
+  private final OutsideClick onOutsideClick;
+  private final Modality modality;
 
   private boolean showing = false;
 
@@ -348,15 +355,15 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean dragging = false;
   private MouseHandler mouseHandler = null;
 
-  public Popup(boolean autoHide, boolean modal) {
-    this(autoHide, modal, STYLE_POPUP);
+  public Popup(OutsideClick onOutsideClick, Modality modality) {
+    this(onOutsideClick, modality, STYLE_POPUP);
   }
 
-  public Popup(boolean autoHide, boolean modal, String styleName) {
+  public Popup(OutsideClick onOutsideClick, Modality modality, String styleName) {
     super();
 
-    this.autoHide = autoHide;
-    this.modal = modal;
+    this.onOutsideClick = onOutsideClick;
+    this.modality = modality;
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
@@ -482,16 +489,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return isAnimationEnabled;
   }
 
-  public boolean isAutoHideEnabled() {
-    return autoHide;
-  }
-
   public boolean isGlassEnabled() {
     return isGlassEnabled;
-  }
-
-  public boolean isModal() {
-    return modal;
   }
 
   public boolean isPreviewingAllNativeEvents() {
@@ -634,13 +633,36 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     });
   }
 
+  public void showOnTop(final Element target, final int margin) {
+    if (target == null) {
+      center();
+    } else {
+      setPopupPositionAndShow(new PositionCallback() {
+        @Override
+        public void setPosition(int offsetWidth, int offsetHeight) {
+          int x = target.getAbsoluteLeft();
+          int y = target.getAbsoluteTop();
+
+          int left = fitLeft(x, offsetWidth, margin);
+          int top = fitTop(y, offsetHeight, margin);
+
+          setPopupPosition(left, top);
+        }
+      });
+    }
+  }
+  
   public void showRelativeTo(final Element target) {
-    setPopupPositionAndShow(new PositionCallback() {
-      @Override
-      public void setPosition(int offsetWidth, int offsetHeight) {
-        position(target, offsetWidth, offsetHeight);
-      }
-    });
+    if (target == null) {
+      center();
+    } else {
+      setPopupPositionAndShow(new PositionCallback() {
+        @Override
+        public void setPosition(int offsetWidth, int offsetHeight) {
+          position(target, offsetWidth, offsetHeight);
+        }
+      });
+    }
   }
 
   protected void enableDragging() {
@@ -779,11 +801,13 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   }
 
   private void position(Element relativeElement, int offsetWidth, int offsetHeight) {
-    int objectWidth = relativeElement.getOffsetWidth();
-    int offsetWidthDiff = offsetWidth - objectWidth;
-
     int left = relativeElement.getAbsoluteLeft();
+    int top = relativeElement.getAbsoluteTop();
 
+    int objectWidth = relativeElement.getOffsetWidth();
+    int objectHeight = relativeElement.getOffsetHeight();
+
+    int offsetWidthDiff = offsetWidth - objectWidth;
     if (offsetWidthDiff > 0) {
       int windowRight = Window.getClientWidth() + Window.getScrollLeft();
       int windowLeft = Window.getScrollLeft();
@@ -798,18 +822,16 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       left -= offsetWidthDiff;
     }
 
-    int top = relativeElement.getAbsoluteTop();
-
     int windowTop = Window.getScrollTop();
     int windowBottom = Window.getScrollTop() + Window.getClientHeight();
 
     int distanceFromWindowTop = top - windowTop;
-    int distanceToWindowBottom = windowBottom - (top + relativeElement.getOffsetHeight());
+    int distanceToWindowBottom = windowBottom - (top + objectHeight);
 
     if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
       top -= offsetHeight;
     } else {
-      top += relativeElement.getOffsetHeight();
+      top += objectHeight;
     }
 
     left = fitLeft(left, offsetWidth, 2);
@@ -819,8 +841,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   }
 
   private void previewNativeEvent(NativePreviewEvent event) {
+    boolean modal = Modality.MODAL.equals(modality);
+
     if (event.isCanceled() || (!isPreviewingAllNativeEvents() && event.isConsumed())) {
-      if (isModal()) {
+      if (modal) {
         event.cancel();
       }
       return;
@@ -838,7 +862,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       event.consume();
     }
 
-    if (isModal()) {
+    if (modal) {
       event.cancel();
     }
 
@@ -847,7 +871,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       case Event.ONMOUSEDOWN:
         if (DOM.getCaptureElement() != null) {
           event.consume();
-        } else if (!eventTargetsPopupOrPartner && isAutoHideEnabled()) {
+        } else if (!eventTargetsPopupOrPartner && OutsideClick.CLOSE.equals(onOutsideClick)) {
           hide(true);
         }
         break;
@@ -863,7 +887,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
       case Event.ONFOCUS:
         Element target = EventUtils.getEventTargetElement(nativeEvent);
-        if (isModal() && !eventTargetsPopupOrPartner && (target != null)) {
+        if (modal && !eventTargetsPopupOrPartner && (target != null)) {
           blur(target);
           event.cancel();
           return;

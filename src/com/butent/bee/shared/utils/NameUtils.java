@@ -9,12 +9,15 @@ import com.google.common.collect.Sets;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public class NameUtils {
 
   public static final char QUALIFIED_NAME_SEPARATOR = ':';
+
+  public static final String DEFAULT_NAME_SEPARATOR = ",";
 
   public static final Splitter NAME_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
@@ -241,6 +244,10 @@ public class NameUtils {
       }
     }
     return ok;
+  }
+  
+  public static String join(Collection<String> names) {
+    return BeeUtils.join(DEFAULT_NAME_SEPARATOR, names);
   }
 
   public static List<String> toList(String s) {

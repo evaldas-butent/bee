@@ -356,7 +356,7 @@ public class TimeUtils {
   public static boolean isLess(HasDateValue d1, HasDateValue d2) {
     return compare(d1, d2) < 0;
   }
-
+  
   public static boolean isMeq(HasDateValue d1, HasDateValue d2) {
     return compare(d1, d2) >= 0;
   }
@@ -373,6 +373,10 @@ public class TimeUtils {
     return (dt == null) ? false : dt.getDow() >= 6;
   }
 
+  public static HasDateValue max(HasDateValue d1, HasDateValue d2) {
+    return isMeq(d1, d2) ? d1 : d2;
+  }
+
   /**
    * @param millis the value to convert
    * @return the String representation of milliseconds.
@@ -383,6 +387,10 @@ public class TimeUtils {
     } else {
       return Integer.toString(millis);
     }
+  }
+
+  public static HasDateValue min(HasDateValue d1, HasDateValue d2) {
+    return isLeq(d1, d2) ? d1 : d2;
   }
 
   public static int minuteDiff(DateTime start, DateTime end) {
@@ -441,6 +449,41 @@ public class TimeUtils {
     }
   }
 
+  public static DateTime nowHours() {
+    return nowHours(0);
+  }
+  
+  public static DateTime nowHours(int increment) {
+    long millis = System.currentTimeMillis() / MILLIS_PER_HOUR * MILLIS_PER_HOUR;
+    return new DateTime(millis + increment * MILLIS_PER_HOUR);
+  }
+  
+  public static DateTime nowMillis() {
+    return new DateTime();
+  }
+
+  public static DateTime nowMillis(long increment) {
+    return new DateTime(System.currentTimeMillis() + increment);
+  }
+
+  public static DateTime nowMinutes() {
+    return nowMinutes(0);
+  }
+  
+  public static DateTime nowMinutes(int increment) {
+    long millis = System.currentTimeMillis() / MILLIS_PER_MINUTE * MILLIS_PER_MINUTE;
+    return new DateTime(millis + increment * MILLIS_PER_MINUTE);
+  }
+  
+  public static DateTime nowSeconds() {
+    return nowSeconds(0);
+  }
+  
+  public static DateTime nowSeconds(int increment) {
+    long millis = System.currentTimeMillis() / MILLIS_PER_SECOND * MILLIS_PER_SECOND;
+    return new DateTime(millis + increment * MILLIS_PER_SECOND);
+  }
+  
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
    * 
@@ -480,7 +523,7 @@ public class TimeUtils {
     }
     return arr;
   }
-
+  
   public static int parseTime(String s) {
     if (BeeUtils.isEmpty(s)) {
       return 0;
@@ -499,7 +542,7 @@ public class TimeUtils {
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
   }
-  
+
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -720,7 +763,7 @@ public class TimeUtils {
   public static JustDate today() {
     return new JustDate();
   }
-
+  
   public static JustDate today(int increment) {
     JustDate date = new JustDate();
     if (increment != 0) {
@@ -728,7 +771,7 @@ public class TimeUtils {
     }
     return date;
   }
-
+  
   /**
    * Converts {@code x} to a Date format.
    * 

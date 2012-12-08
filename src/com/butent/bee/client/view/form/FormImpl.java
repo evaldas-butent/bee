@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -74,6 +76,7 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -124,6 +127,16 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       } else {
         index = BeeConst.UNDEF;
       }
+      
+      CellSource cellSource;
+      if (index >= 0) {
+        cellSource = CellSource.forColumn(getDataColumns().get(index), index);
+      } else if (!BeeUtils.isEmpty(result.getRowProperty()) && widget instanceof HasValueType) {
+        cellSource = CellSource.forProperty(result.getRowProperty(),
+            ((HasValueType) widget).getValueType());
+      } else {
+        cellSource = null;
+      }
 
       DisplayWidget displayWidget = null;
 
@@ -136,7 +149,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
         if (renderer == null) {
           renderer = RendererFactory.getRenderer(result.getRendererDescription(),
               result.getRender(), result.getRenderTokens(), result.getItemKey(),
-              NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
+              NameUtils.toList(result.getRenderColumns()), getDataColumns(), cellSource, 
               result.getRelation());
         }
 
@@ -204,7 +217,9 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
   private static final String STYLE_FORM = "bee-Form";
-  private static final String STYLE_DISABLED = "bee-Form-disabled";
+  private static final String STYLE_FORM_DISABLED = "bee-Form-disabled";
+
+  private static final String STYLE_WIDGET_DISABLED = "bee-disabled";
 
   private static final String NEW_ROW_CAPTION = "Create New";
 
@@ -396,6 +411,25 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
     if (interceptor != null) {
       interceptor.afterCreate(this);
+    }
+  }
+
+  @Override
+  public void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand) {
+    IsRow row = DataUtils.cloneRow(rowValue);
+
+    boolean upd;
+    if (getFormInterceptor() != null) {
+      upd = getFormInterceptor().onStartEdit(this, row, focusCommand);
+    } else {
+      upd = true;
+    }
+
+    if (upd) {
+      updateRow(row, true);
+      if (focusCommand != null) {
+        focusCommand.execute();
+      }
     }
   }
 
@@ -640,20 +674,15 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     if (rowValue == null || rowValue.getId() != rowId) {
       return;
     }
-
-    long version = event.getVersion();
-    String source = event.getColumnName();
-    String value = event.getValue();
+    
+    event.applyTo(rowValue);
+    String source = event.getSourceName();
 
     boolean wasRowEnabled = isRowEnabled(rowValue);
 
-    rowValue.setVersion(version);
-    int dataIndex = getDataIndex(source);
-    rowValue.setValue(dataIndex, value);
-
     Set<String> refreshed = Sets.newHashSet();
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (BeeUtils.same(source, editableWidget.getColumnId())) {
+      if (editableWidget.hasSource(source)) {
         editableWidget.refresh(rowValue);
         refreshed.add(editableWidget.getWidgetId());
       }
@@ -674,6 +703,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
         boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
         if (editable != editor.isEnabled()) {
           editor.setEnabled(editable);
+          editor.asWidget().setStyleName(STYLE_WIDGET_DISABLED, !editable);
         }
       }
 
@@ -946,10 +976,11 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       Widget widget = getWidgetById(id);
       if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
         ((HasEnabled) widget).setEnabled(enabled);
+        widget.setStyleName(STYLE_WIDGET_DISABLED, !enabled);
       }
     }
 
-    getRootWidget().asWidget().setStyleName(STYLE_DISABLED, !enabled);
+    getRootWidget().asWidget().setStyleName(STYLE_FORM_DISABLED, !enabled);
   }
 
   @Override
@@ -1139,7 +1170,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
     }
   }
-
+  
   @Override
   public void updateRow(IsRow rowValue, boolean refreshChildren) {
     setActiveRow(rowValue);
@@ -1509,6 +1540,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       editableWidget.refresh(getActiveRow());
       if (editable != editor.isEnabled()) {
         editor.setEnabled(editable);
+        editor.asWidget().setStyleName(STYLE_WIDGET_DISABLED, !editable);
       }
 
       refreshed.add(editableWidget.getWidgetId());

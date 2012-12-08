@@ -54,22 +54,27 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     return ColType.CALCULATED;
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return dateTimeformat;
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return numberFormat;
   }
 
+  @Override
   public int getPrecision() {
     return precision;
   }
 
+  @Override
   public AbstractCellRenderer getRenderer() {
     return renderer;
   }
 
+  @Override
   public int getScale() {
     return scale;
   }
@@ -105,22 +110,27 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
         sb);
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.dateTimeformat = format;
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     this.numberFormat = format;
   }
 
+  @Override
   public void setPrecision(int precision) {
     this.precision = precision;
   }
 
+  @Override
   public void setRenderer(AbstractCellRenderer renderer) {
     this.renderer = renderer;
   }
 
+  @Override
   public void setScale(int scale) {
     this.scale = scale;
   }

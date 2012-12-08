@@ -1,14 +1,13 @@
 package com.butent.bee.client.render;
 
 import com.butent.bee.client.images.star.Stars;
-import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.ValueType;
 
 public class StarRenderer extends AbstractCellRenderer {
   
-  public StarRenderer(int dataIndex) {
-    super(Assert.nonNegative(dataIndex), ValueType.INTEGER);
+  public StarRenderer(CellSource cellSource) {
+    super(cellSource);
   }
 
   @Override

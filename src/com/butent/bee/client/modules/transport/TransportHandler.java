@@ -81,7 +81,7 @@ public class TransportHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            Global.showError(response.getErrors());
+            Global.showError(Lists.newArrayList(response.getErrors()));
 
           } else if (response.hasArrayResponse(String.class)) {
             form.notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
@@ -262,7 +262,7 @@ public class TransportHandler {
                     Assert.notNull(response);
 
                     if (response.hasErrors()) {
-                      Global.showError(response.getErrors());
+                      Global.showError(Lists.newArrayList(response.getErrors()));
 
                     } else if (response.hasArrayResponse(String.class)) {
                       String[] r = Codec.beeDeserializeCollection((String) response.getResponse());

@@ -14,6 +14,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
@@ -33,7 +34,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch,
-      Order order);
+      Filter immutableFilter, Order order);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 

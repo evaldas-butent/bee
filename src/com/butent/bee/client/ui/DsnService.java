@@ -53,7 +53,7 @@ public class DsnService extends CompositeService {
                       }
                     });
               } else {
-                Global.showError("No DSN's available");
+                Global.showError(Lists.newArrayList("No DSN's available"));
                 destroy();
               }
             }
@@ -82,7 +82,7 @@ public class DsnService extends CompositeService {
 
     } else {
       ok = false;
-      Global.showError("Unknown service [", name(), "] stage:", stg);
+      Global.showError("Unknown service [" + name() + "] stage: " + stg);
     }
     destroy();
     return ok;

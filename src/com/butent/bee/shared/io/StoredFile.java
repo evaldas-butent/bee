@@ -1,5 +1,7 @@
 package com.butent.bee.shared.io;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -28,6 +30,26 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     StoredFile result = new StoredFile();
     result.deserialize(s);
     
+    return result;
+  }
+
+  public static List<StoredFile> restoreCollection(String s) {
+    List<StoredFile> result = Lists.newArrayList();
+    if (BeeUtils.isEmpty(s)) {
+      return result;
+    }
+    
+    String[] arr = Codec.beeDeserializeCollection(s);
+    if (arr == null) {
+      return result;
+    }
+
+    for (String item : arr) {
+      StoredFile storedFile = restore(item);
+      if (storedFile != null) {
+        result.add(storedFile);
+      }
+    }
     return result;
   }
   

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="RecurringTasks"
+  idName="RecurringTaskID"
+  >
+  <Fields>
+    <String name="Summary" notNull="true" precision="100" label="Tema" />
+    <Text name="Description" label="Aprašymas" />
+    <Integer name="Priority" notNull="true" defValue="1" label="Prioritetas" />
+
+    <DateTime name="Created" defExpr="CURRENT_TIME" label="Įkelta" />
+    <DateTime name="StartTime" label="Pradžios data" />
+    <DateTime name="FinishTime" label="Pabaigos data" />
+    <String name="ExpectedDuration" precision="10" label="Numatoma trukmė" />
+
+    <Text name="Recurrence" label="Periodiškumas" />
+
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="Vadovas" />
+    <Relation name="Executor" notNull="true" relation="Users" label="Vykdytojas" />
+
+    <Relation name="Company" relation="Companies" label="Įmonė" />
+    <Relation name="Contact" relation="CompanyPersons" label="Kontaktinis asmuo" />
+
+    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="Priminimas" />
+  </Fields>
+</Table>

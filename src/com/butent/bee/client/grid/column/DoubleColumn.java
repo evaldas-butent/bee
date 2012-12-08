@@ -3,7 +3,7 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
 /**
@@ -12,16 +12,16 @@ import com.butent.bee.shared.data.IsRow;
 
 public class DoubleColumn extends NumberColumn<Double> {
 
-  public DoubleColumn(int index, IsColumn dataColumn) {
-    this(Format.getDefaultDoubleFormat(), index, dataColumn);
+  public DoubleColumn(CellSource cellSource) {
+    this(Format.getDefaultDoubleFormat(), cellSource);
   }
 
-  public DoubleColumn(NumberFormat format, int index, IsColumn dataColumn) {
-    super(format, index, dataColumn);
+  public DoubleColumn(NumberFormat format, CellSource cellSource) {
+    super(format, cellSource);
   }
 
   @Override
-  protected Double getValue(IsRow row, int colIndex) {
-    return row.getDouble(colIndex);
+  protected Double getNumber(IsRow row) {
+    return getCellSource().getDouble(row);
   }
 }

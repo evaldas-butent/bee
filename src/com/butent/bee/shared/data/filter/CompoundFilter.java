@@ -173,6 +173,10 @@ public class CompoundFilter extends Filter {
     return super.serialize(arr);
   }
 
+  public int size() {
+    return subFilters.size();
+  }
+  
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

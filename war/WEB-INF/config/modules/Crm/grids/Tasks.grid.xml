@@ -6,32 +6,13 @@
   name="Tasks" viewName="Tasks" caption="Užduotys"
   editShowId="true" cacheData="false" favorite="Summary"
   >
-  <north size="60">
-    <w:FlowPanel style="background-color: #f8f8f8;">
-      <w:FlowPanel>
-        <w:CheckBox name="Scheduled" html="Suplanuotos" />
-        <w:CheckBox name="Executing" html="Vykdomos" />
-        <w:CheckBox name="Suspended" html="Sustabdytos" />
-        <w:CheckBox name="Completed" html="Įvykdytos" />
-        <w:CheckBox name="Canceled" html="Nutrauktos" />
-        <w:CheckBox name="Approved" html="Baigtos" />
-      </w:FlowPanel>
-      <w:FlowPanel style="float: left;">
-        <w:CheckBox name="Overdue" html="Tik vėluojančios" />
-        <w:CheckBox name="Updated" html="Tik pasikeitusios" />
-        <w:CheckBox name="Selected" html="Tik pažymėtos" />
-      </w:FlowPanel>
-      <w:Button name="Filter" html="Filtruoti" style="float: right;"/>
-    </w:FlowPanel>
-  </north>
-  
   <columns>
     <CalcColumn name="Mode" type="string" cell="html" horizontalAlignment="center" width="20"
       caption="-" options="greenSmall, yellowSmall" />
 
-    <DataColumn name="Star" cell="html" horizontalAlignment="center" width="30" >
+    <PropColumn name="Star" type="integer" cell="html" horizontalAlignment="center" width="30" filterSupplier="star">
       <renderer type="star" />
-    </DataColumn>
+    </PropColumn>
 
     <IdColumn name="Id" caption="ID" />
 
@@ -40,24 +21,22 @@
     <DataColumn name="Description" />
 
     <RelColumn name="Company" editEnabled="true" />
-    <DataColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
 
     <DataColumn name="Status" itemKey="TaskStatus" />
 
-    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      editEnabled="true" editPopup="true" editKey="13" />
-    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" readOnly="true"
-      editEnabled="true" editPopup="false" editKey="42" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />
 
-    <DataColumn name="FinishTime" readOnly="true" />
+    <DataColumn name="StartTime" />
+    <DataColumn name="FinishTime" />
+
+    <PropColumn name="LastAccess" type="datetime" format="DATE_TIME_MEDIUM" />
+    <PropColumn name="LastPublish" type="datetime" format="DATE_TIME_MEDIUM" />
   </columns>
 
   <rowStyle>
     <ui:inline>color: red;</ui:inline>
-    <ui:expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
-  </rowStyle>
-  <rowStyle>
-    <ui:inline>color: gray;</ui:inline>
-    <ui:expression>row.Event > 0</ui:expression>
+    <ui:expression>row.Status &lt;= 1 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
   </rowStyle>
 </Grid>

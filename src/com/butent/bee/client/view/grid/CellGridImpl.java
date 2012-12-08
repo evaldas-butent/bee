@@ -5,10 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -77,6 +75,9 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.view.search.FilterChangeHandler;
+import com.butent.bee.client.view.search.FilterSupplierFactory;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
@@ -86,6 +87,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -126,14 +128,6 @@ import java.util.Set;
 public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler,
     EditEndEvent.Handler, ActionEvent.Handler {
 
-  private class FilterUpdater implements ValueUpdater<String> {
-    public void update(String value) {
-      if (getFilterChangeHandler() != null) {
-        getFilterChangeHandler().onValueChange(null);
-      }
-    }
-  }
-
   private class SaveChangesCallback extends Callback<IsRow> {
     @Override
     public void onFailure(String... reason) {
@@ -152,9 +146,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final DataInfo dataInfo;
 
   private GridPresenter viewPresenter = null;
-
-  private ValueChangeHandler<String> filterChangeHandler = null;
-  private final FilterUpdater filterUpdater = new FilterUpdater();
 
   private final CellGrid grid = new CellGrid();
 
@@ -247,16 +238,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   @Override
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    setFilterChangeHandler(handler);
-    return new HandlerRegistration() {
-      public void removeHandler() {
-        setFilterChangeHandler(null);
-      }
-    };
   }
 
   @Override
@@ -469,7 +450,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
+      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch,
+      Filter immutableFilter, Order order) {
+
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
 
@@ -484,13 +467,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     boolean hasFooters = hasSearch;
     if (hasFooters && BeeUtils.isFalse(gridDescr.hasFooters())) {
       hasFooters = false;
-    }
-
-    Set<String> footerEvents;
-    if (hasFooters) {
-      footerEvents = NameUtils.toSet(gridDescr.getFooterEvents());
-    } else {
-      footerEvents = null;
     }
 
     boolean showColumnWidths = false;
@@ -637,9 +613,39 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           caption = LocaleUtils.maybeLocalize(caption);
         }
       }
+      
+      CellSource cellSource;
+      
+      switch (colType) {
+        case ID:
+          source = idName;
+          cellSource = CellSource.forRowId(idName);
+          break;
 
-      CellType cellType = columnDescr.getCellType();
-      column = null;
+        case VERSION:
+          source = versionName;
+          cellSource = CellSource.forRowVersion(versionName);
+          break;
+
+        case PROPERTY:
+          String property = BeeUtils.notEmpty(columnDescr.getProperty(), columnName);
+          cellSource = CellSource.forProperty(property, columnDescr.getValueType());
+
+          if (columnDescr.getPrecision() != null) {
+            cellSource.setPrecision(columnDescr.getPrecision());
+          }
+          if (columnDescr.getScale() != null) {
+            cellSource.setScale(columnDescr.getScale());
+          }
+          break;
+
+        default:
+          if (dataIndex >= 0) {
+            cellSource = CellSource.forColumn(dataCols.get(dataIndex), dataIndex);
+          } else {
+            cellSource = null;
+          }
+      }
 
       AbstractCellRenderer renderer = null;
       if (interceptor != null) {
@@ -648,31 +654,25 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (renderer == null) {
         renderer = RendererFactory.getRenderer(columnDescr.getRendererDescription(),
             columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
-            renderColumns, dataCols, dataIndex, columnDescr.getRelation());
+            renderColumns, dataCols, cellSource, columnDescr.getRelation());
       }
 
+      CellType cellType = columnDescr.getCellType();
+      column = null;
+      
       switch (colType) {
         case ID:
           column = new RowIdColumn();
-          source = idName;
           break;
 
         case VERSION:
           column = new RowVersionColumn();
-          source = versionName;
           break;
 
         case DATA:
         case RELATED:
           if (dataIndex >= 0) {
-            BeeColumn dataColumn = dataCols.get(dataIndex);
-
-            if (renderer == null) {
-              column = GridFactory.createColumn(dataColumn, dataIndex, cellType);
-            } else {
-              column = GridFactory.createRenderableColumn(renderer, dataColumn, dataIndex,
-                  cellType);
-            }
+            column = GridFactory.createColumn(cellSource, cellType, renderer);
 
             if (relationEditable) {
               column.setClasses(RowEditor.EDITABLE_RELATION_STYLE);
@@ -711,6 +711,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         case ACTION:
           column = new ActionColumn(ActionCell.create(viewName, columnDescr), dataIndex, renderer);
+          break;
+
+        case PROPERTY:
+          column = GridFactory.createColumn(cellSource, cellType, renderer);
           break;
       }
 
@@ -760,7 +764,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
           headerCaption = caption;
         }
-        
+
         boolean showWidth = showColumnWidths;
         if (columnDescr.showWidth() != null) {
           showWidth = columnDescr.showWidth();
@@ -769,11 +773,24 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         header = new ColumnHeader(columnName, headerCaption, showWidth);
       }
 
-      if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())
-          && !BeeUtils.isEmpty(column.getSearchBy())) {
-        footer = new ColumnFooter(column.getSearchBy(), footerEvents, getFilterUpdater());
-      } else {
-        footer = null;
+      footer = null;
+      if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())) {
+        AbstractFilterSupplier filterSupplier = null;
+        if (interceptor != null) {
+          filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
+        }
+
+        if (filterSupplier == null && !BeeConst.isUndef(dataIndex)
+            && !BeeUtils.isEmpty(column.getSearchBy())) {
+          filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), immutableFilter,
+              dataCols.get(dataIndex), columnDescr.getFilterSupplierType(),
+              columnDescr.getFilterOptions(), column.getSearchBy(), renderColumns,
+              columnDescr.getItemKey(), columnDescr.getRelation());
+        }
+
+        if (filterSupplier != null) {
+          footer = new ColumnFooter(filterSupplier, this);
+        }
       }
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
@@ -781,7 +798,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      getGrid().addColumn(columnName, dataIndex, source, column, header, footer);
+      getGrid().addColumn(columnName, cellSource, column, header, footer);
       getGrid().setColumnInfo(columnName, columnDescr, gridDescr, dataCols);
     }
 
@@ -1025,48 +1042,19 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName) {
     List<ColumnFooter> footers = getGrid().getFooters();
-
-    if (footers == null || footers.isEmpty()) {
+    if (footers.isEmpty()) {
       return null;
     }
+
     Filter filter = null;
-
     for (ColumnFooter footer : footers) {
-      if (footer == null) {
-        continue;
-      }
-      String input = BeeUtils.trim(footer.getValue());
-      if (BeeUtils.isEmpty(input)) {
-        continue;
-      }
-
-      List<String> sources = footer.getSources();
-      if (BeeUtils.isEmpty(sources)) {
-        continue;
-      }
-
-      Filter flt = null;
-      for (String source : sources) {
-        Filter f = DataUtils.parseExpression(source + " " + input, columns, idColumnName,
-            versionColumnName);
-        if (f == null) {
-          continue;
-        }
-
-        if (flt == null) {
-          flt = f;
+      Filter columnFilter = footer.getFilter();
+      if (columnFilter != null) {
+        if (filter == null) {
+          filter = columnFilter;
         } else {
-          flt = Filter.or(flt, f);
+          filter = Filter.and(filter, columnFilter);
         }
-      }
-
-      if (flt == null) {
-        continue;
-      }
-      if (filter == null) {
-        filter = flt;
-      } else {
-        filter = Filter.and(filter, flt);
       }
     }
     return filter;
@@ -1224,7 +1212,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
     Assert.notNull(event);
-    
+
     if (getGridInterceptor() != null) {
       getGridInterceptor().onEditStart(event);
       if (event.isConsumed()) {
@@ -1315,20 +1303,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           }
         }
       };
-
-      IsRow row = DataUtils.cloneRow(rowValue);
-
-      boolean start;
-      if (getEditForm().getFormInterceptor() != null) {
-        start = getEditForm().getFormInterceptor().onStartEdit(getEditForm(), row, focusCommand);
-      } else {
-        start = true;
-      }
-
-      if (start) {
-        getEditForm().updateRow(row, true);
-        focusCommand.execute();
-      }
+      
+      getEditForm().editRow(rowValue, focusCommand);
       return;
     }
 
@@ -1401,6 +1377,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   @Override
   public void setEnabled(boolean enabled) {
     getGrid().setEnabled(enabled);
+  }
+
+  @Override
+  public void setFilterChangeHandler(FilterChangeHandler filterChangeHandler) {
+    List<ColumnFooter> footers = getGrid().getFooters();
+    for (ColumnFooter footer : footers) {
+      footer.setFilterChangeHandler(filterChangeHandler);
+    }
   }
 
   @Override
@@ -1805,14 +1789,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editShowId;
   }
 
-  private ValueChangeHandler<String> getFilterChangeHandler() {
-    return filterChangeHandler;
-  }
-
-  private FilterUpdater getFilterUpdater() {
-    return filterUpdater;
-  }
-
   private String getNewRowCaption() {
     return newRowCaption;
   }
@@ -1944,7 +1920,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     for (Order.Column oc : viewOrder.getColumns()) {
-      String columnId = getGrid().getColumnIdBySource(oc.getName());
+      String columnId = getGrid().getColumnIdBySourceName(oc.getName());
       if (!BeeUtils.isEmpty(columnId)) {
         gridOrder.add(columnId, oc.getSources(), oc.isAscending());
       }
@@ -2152,10 +2128,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private void setEditShowId(boolean editShowId) {
     this.editShowId = editShowId;
-  }
-
-  private void setFilterChangeHandler(ValueChangeHandler<String> filterChangeHandler) {
-    this.filterChangeHandler = filterChangeHandler;
   }
 
   private void setGridInterceptor(GridInterceptor gridInterceptor) {

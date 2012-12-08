@@ -19,6 +19,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.star.Stars;
@@ -55,7 +57,7 @@ import java.util.List;
 public class MessageBoxes {
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
-  
+
   private static final String STYLE_CHOICE_DIALOG = "bee-ChoiceDialog";
   private static final String STYLE_CHOICE_PANEL = "bee-ChoicePanel";
   private static final String STYLE_CHOICE_PROMPT = "bee-ChoicePrompt";
@@ -73,14 +75,21 @@ public class MessageBoxes {
   private static final String STYLE_DECISION_MESSAGE = "bee-DecisionMessage";
   private static final String STYLE_DECISION_GROUP = "bee-DecisionGroup";
   private static final String STYLE_DECISION_OPTION = "bee-DecisionOption";
-  private static final String STYLE_DECISION_CELL = "-cell";
 
   private static final String STYLE_TABLE_CONTAINER = "bee-ModalTableContainer";
   private static final String STYLE_TABLE = "bee-ModalTable";
 
   private static final String STYLE_STAR_PICKER = "bee-StarPicker";
   private static final String STYLE_STAR_CLUSTER = "bee-StarCluster-";
-  
+
+  private static final String STYLE_ERROR_DIALOG = "bee-ErrorDialog";
+  private static final String STYLE_ERROR_PANEL = "bee-ErrorPanel";
+  private static final String STYLE_ERROR_ICON = "bee-ErrorIcon";
+  private static final String STYLE_ERROR_MESSAGE = "bee-ErrorMessage";
+  private static final String STYLE_ERROR_CLOSE = "bee-ErrorClose";
+
+  private static final String CELL_STYLE_SUFFIX = "-cell";
+
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
@@ -230,7 +239,7 @@ public class MessageBoxes {
     Assert.notEmpty(message);
     confirm(caption, Lists.newArrayList(message), callback, dialogStyle, messageStyle);
   }
-  
+
   public void confirm(String caption, List<String> messages, final ConfirmationCallback callback,
       String dialogStyle, String messageStyle) {
     Assert.notEmpty(messages);
@@ -238,14 +247,14 @@ public class MessageBoxes {
 
     final Popup panel;
     if (BeeUtils.isEmpty(caption)) {
-      panel = new Popup(false, true);
+      panel = new Popup(OutsideClick.IGNORE, Modality.MODAL);
     } else {
       panel = DialogBox.create(caption);
     }
 
     HtmlTable content = new HtmlTable();
     content.addStyleName(STYLE_CONFIRM_CONTAINER);
-    
+
     int row = 0;
     for (String message : messages) {
       if (message != null) {
@@ -306,7 +315,7 @@ public class MessageBoxes {
       int defaultValue) {
     decide(caption, messages, callback, defaultValue, null, null);
   }
-  
+
   public void decide(String caption, List<String> messages, final DecisionCallback callback,
       int defaultValue, String dialogStyle, String messageStyle) {
     Assert.notEmpty(messages);
@@ -315,7 +324,7 @@ public class MessageBoxes {
     final Popup popup;
     final String styleName = BeeUtils.notEmpty(dialogStyle, STYLE_DECISION_DIALOG);
     if (BeeUtils.isEmpty(caption)) {
-      popup = new Popup(false, true, styleName);
+      popup = new Popup(OutsideClick.IGNORE, Modality.MODAL, styleName);
     } else {
       popup = DialogBox.create(caption, styleName);
     }
@@ -323,18 +332,18 @@ public class MessageBoxes {
     HtmlTable panel = new HtmlTable();
     panel.addStyleName(STYLE_DECISION_PANEL);
 
-    setDecisionCell(panel, 0, 0, new BeeImage(Global.getImages().question()), STYLE_DECISION_ICON);
-    
+    setCell(panel, 0, 0, new BeeImage(Global.getImages().question()), STYLE_DECISION_ICON);
+
     int row = 0;
     for (String message : messages) {
       if (message != null) {
-        setDecisionCell(panel, row++, 1, new BeeLabel(message),
+        setCell(panel, row++, 1, new BeeLabel(message),
             BeeUtils.notEmpty(messageStyle, STYLE_DECISION_MESSAGE));
       }
     }
-    
+
     Horizontal group = new Horizontal();
-    
+
     final BeeButton yes = new BeeButton(Global.CONSTANTS.yes(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -361,12 +370,12 @@ public class MessageBoxes {
       }
     });
     group.add(cancel);
-    
+
     for (Widget widget : group) {
       widget.addStyleName(STYLE_DECISION_OPTION);
     }
-    
-    setDecisionCell(panel, row, 1, group, STYLE_DECISION_GROUP);
+
+    setCell(panel, row, 1, group, STYLE_DECISION_GROUP);
 
     popup.setWidget(panel);
     popup.setAnimationEnabled(true);
@@ -379,7 +388,7 @@ public class MessageBoxes {
         callback.onCancel();
       }
     });
-    
+
     if (defaultValue >= 0 && defaultValue < group.getWidgetCount()) {
       UiHelper.focus(group.getWidget(defaultValue));
 
@@ -393,7 +402,7 @@ public class MessageBoxes {
           }
         }
       });
-      
+
       no.addKeyDownHandler(new KeyDownHandler() {
         @Override
         public void onKeyDown(KeyDownEvent event) {
@@ -417,7 +426,7 @@ public class MessageBoxes {
       });
     }
   }
-  
+
   public boolean nativeConfirm(String... lines) {
     Assert.notNull(lines);
     Assert.parameterCount(lines.length, 1);
@@ -427,7 +436,7 @@ public class MessageBoxes {
   public void pickStar(Integer defaultValue, Element target, final ChoiceCallback callback) {
     Assert.notNull(callback);
 
-    final Popup popup = new Popup(true, true, STYLE_STAR_PICKER);
+    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, STYLE_STAR_PICKER);
 
     TabBar cluster = new TabBar(STYLE_STAR_CLUSTER, Orientation.HORIZONTAL);
 
@@ -457,11 +466,11 @@ public class MessageBoxes {
         }
       }
     });
-    
+
     popup.setWidget(cluster);
 
     popup.setAnimationEnabled(true);
-    
+
     if (target == null) {
       popup.center();
     } else {
@@ -479,14 +488,44 @@ public class MessageBoxes {
 
     cluster.focusTab(focusIndex);
   }
-  
-  public void showError(String... messages) {
-    CloseButton b = new CloseButton(DialogConstants.OK);
-    Popup box = createPopup(b, messages);
-    box.addStyleName(StyleUtils.NAME_ERROR);
 
-    box.center();
-    b.setFocus(true);
+  public void showError(String caption, List<String> messages, String dialogStyle,
+      String closeHtml) {
+
+    Popup popup;
+    String styleName = BeeUtils.notEmpty(dialogStyle, STYLE_ERROR_DIALOG);
+    if (BeeUtils.isEmpty(caption)) {
+      popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, styleName);
+    } else {
+      popup = DialogBox.create(caption, styleName);
+    }
+
+    HtmlTable panel = new HtmlTable();
+    panel.addStyleName(STYLE_ERROR_PANEL);
+
+    setCell(panel, 0, 0, new BeeImage(Global.getImages().error()), STYLE_ERROR_ICON);
+
+    int row = 0;
+    if (BeeUtils.isEmpty(messages)) {
+      setCell(panel, row++, 1, new Html("where is my errors"), STYLE_ERROR_MESSAGE);
+    } else {
+      for (String message : messages) {
+        if (message != null) {
+          setCell(panel, row++, 1, new Html(message), STYLE_ERROR_MESSAGE);
+        }
+      }
+    }
+
+    CloseButton close = new CloseButton(BeeUtils.notEmpty(closeHtml, Global.CONSTANTS.ok()));
+    setCell(panel, row, 1, close, STYLE_ERROR_CLOSE);
+
+    popup.setHideOnEscape(true);
+
+    popup.setWidget(panel);
+    popup.setAnimationEnabled(true);
+
+    popup.center();
+    close.setFocus(true);
   }
 
   public void showInfo(String... messages) {
@@ -549,11 +588,11 @@ public class MessageBoxes {
     if (c > 1) {
       grid.getCellFormatter().setColSpan(index, 0, c);
     }
-    
+
     Simple container = new Simple(grid);
     container.addStyleName(STYLE_TABLE_CONTAINER);
 
-    Popup box = new Popup(true, true);
+    Popup box = new Popup(OutsideClick.CLOSE, Modality.MODAL);
     box.setAnimationEnabled(true);
 
     box.setWidget(container);
@@ -565,13 +604,13 @@ public class MessageBoxes {
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
-    Popup box = new Popup(true, true);
+    Popup box = new Popup(OutsideClick.CLOSE, Modality.MODAL);
     box.setAnimationEnabled(true);
 
     box.setWidget(widget);
     box.center();
   }
-  
+
   private Popup createPopup(Widget bottom, String... messages) {
     Assert.notNull(messages);
 
@@ -585,15 +624,15 @@ public class MessageBoxes {
       vp.add(bottom);
     }
 
-    Popup popup = new Popup(true, true);
+    Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL);
     popup.setAnimationEnabled(true);
 
     popup.setWidget(vp);
     return popup;
   }
 
-  private void setDecisionCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
+  private void setCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
     widget.addStyleName(styleName);
-    table.setWidget(row, col, widget, styleName + STYLE_DECISION_CELL);
+    table.setWidget(row, col, widget, styleName + CELL_STYLE_SUFFIX);
   }
 }

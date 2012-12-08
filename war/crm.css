@@ -1,18 +1,43 @@
-.bee-crm-event-row {
+.bee-crm-taskEvent-row {
   display: -webkit-flex;
   border-left: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
   padding: 2px 5px 2px;
 }
 
-.bee-crm-event-col-1, .bee-crm-event-col-2 {
+.bee-crm-taskEvent-col-1, .bee-crm-taskEvent-col-2 {
   margin-left: 1em;
 }
 
-.bee-crm-event-Event, .bee-crm-event-Duration {
+.bee-crm-taskEvent-Event, .bee-crm-taskEvent-Duration {
   font-weight: bolder;
 }
 
-.bee-crm-event-Comment {
+.bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
 }
+
+.bee-crm-taskDialog {
+  background-color: WhiteSmoke;
+  border: 1px solid #b4b4b4;
+  border-radius: 2px;
+}
+.bee-crm-taskDialog .bee-Dialog-caption {
+  background-color: #e8e8e8;
+  padding: 1px 45px 1px 8px;
+  border-bottom: 1px solid #ddd;
+  line-height: 27px;
+}
+
+.bee-crm-taskDialog-container td {
+  padding: 6px;
+}
+
+.bee-crm-taskDialog-commentlabelCell {
+  vertical-align: top;
+}
+.bee-crm-taskDialog-commentArea {
+  width: 300px;
+  height: 100px;
+}
+

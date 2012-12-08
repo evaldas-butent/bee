@@ -45,7 +45,6 @@
     <xs:attribute name="showColumnWidths" type="xs:boolean" />
     <xs:attribute name="headerMode" type="headerMode" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
-    <xs:attribute name="footerEvents" type="ui:eventList" />
     <xs:attribute name="cacheData" type="xs:boolean" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
     <xs:attribute name="asyncThreshold" type="xs:int" default="100" />

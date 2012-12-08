@@ -18,6 +18,8 @@
 
     <SimpleColumn name="Status" />
 
+    <SimpleColumn name="RecurringTask" />
+
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -58,16 +60,11 @@
     <SimpleJoin name="Reminder" joinType="LEFT">
       <SimpleColumn alias="ReminderName" name="Name" />
     </SimpleJoin>
-
-    <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT">
-      <HiddenColumn name="User" />
-      <AggregateColumn name="LastAccess" aggregate="MAX" />
-      <AggregateColumn name="Star" aggregate="MAX" />
-    </ExternalJoin>
-
-    <ExternalJoin source="TaskEvents" name="Task" joinType="LEFT">
-      <AggregateColumn alias="LastPublish" name="PublishTime" aggregate="MAX" />
-    </ExternalJoin>
   </Columns>
+  
+  <Order>
+    <OrderBy column="Status" />
+    <OrderBy column="FinishTime" />
+  </Order>
 </View>
  

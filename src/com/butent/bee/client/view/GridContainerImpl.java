@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
@@ -113,9 +114,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns,
-      String relColumn,
-      int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
-      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
+      String relColumn, int rowCount, BeeRowSet rowSet, Filter immutableFilter, Order order,
+      GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
+      GridFactory.GridOptions gridOptions) {
 
     int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
     setHasPaging(UiOption.hasPaging(uiOptions) && rowCount >= minRows);
@@ -173,7 +174,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridInterceptor, hasSearch(),
-        order);
+        immutableFilter, order);
 
     FooterView footer;
     ScrollPager scroller;
@@ -281,7 +282,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasPaging()) {
       return ViewHelper.getPagers(this);
     } else {
-      return null;
+      return Sets.newHashSet();
     }
   }
 
@@ -295,7 +296,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
     } else {
-      return null;
+      return Sets.newHashSet();
     }
   }
 
@@ -461,7 +462,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           String col = DomUtils.getDataColumn(cell);
           if (BeeUtils.isDigit(col)) {
             ColumnFooter columnFooter = getGridView().getGrid().getFooter(BeeUtils.toInt(col));
-            if (columnFooter != null && !BeeUtils.isEmpty(columnFooter.getValue())) {
+            if (columnFooter != null && !columnFooter.isEmpty()) {
               show = true;
             }
           }

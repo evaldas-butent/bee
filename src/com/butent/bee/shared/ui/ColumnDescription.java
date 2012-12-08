@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -20,7 +21,7 @@ import java.util.List;
  * Contains column properties and methods for managing them.
  */
 
-public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
+public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, HasValueType {
 
   public enum ColType {
     DATA("DataColumn", false),
@@ -29,7 +30,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     ID("IdColumn", true),
     VERSION("VerColumn", true),
     SELECTION("SelectionColumn", true),
-    ACTION("ActionColumn", true);
+    ACTION("ActionColumn", true),
+    PROPERTY("PropColumn", true);
 
     public static ColType getColType(String tagName) {
       if (!BeeUtils.isEmpty(tagName)) {
@@ -64,12 +66,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
    */
 
   private enum Serial {
-    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, RELATION,
+    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
-    SEARCH_BY, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE,
-    UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
+    SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE,
+    DYN_STYLES, CELL_TYPE, UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -88,6 +90,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   private Integer width = null;
 
   private String source = null;
+  private String property = null;
   private Relation relation = null;
 
   private Integer minWidth = null;
@@ -114,19 +117,22 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   private EditorDescription editor = null;
 
   private String itemKey = null;
-  
+
   private String minValue = null;
   private String maxValue = null;
-  
+
   private Boolean required = null;
 
   private ValueType valueType = null;
   private Integer precision = null;
   private Integer scale = null;
-  
+
   private List<String> renderColumns = null;
   private String sortBy = null;
+
   private String searchBy = null;
+  private FilterSupplierType filterSupplierType = null;
+  private String filterOptions = null;
 
   private StyleDeclaration headerStyle = null;
   private StyleDeclaration bodyStyle = null;
@@ -139,15 +145,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   private String elementType = null;
 
   private String options = null;
-  
+
   private boolean relationInitialized = false;
-  
+
   public ColumnDescription(ColType colType, String name) {
     Assert.notNull(colType);
     Assert.notEmpty(name);
     this.colType = colType;
     this.name = name;
-    
+
     setVisible(true);
   }
 
@@ -186,6 +192,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
         case SOURCE:
           setSource(value);
           break;
+        case PROPERTY:
+          setProperty(value);
+          break;
         case RELATION:
           setRelation(Relation.restore(value));
           break;
@@ -200,6 +209,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case SEARCH_BY:
           setSearchBy(value);
+          break;
+        case FILTER_SUPPLIER:
+          setFilterSupplierType(FilterSupplierType.getByTypeCode(value));
+          break;
+        case FILTER_OPTIONS:
+          setFilterOptions(value);
           break;
         case SORT_BY:
           setSortBy(value);
@@ -349,6 +364,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     return elementType;
   }
 
+  public String getFilterOptions() {
+    return filterOptions;
+  }
+
+  public FilterSupplierType getFilterSupplierType() {
+    return filterSupplierType;
+  }
+
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
@@ -374,6 +397,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
         "Read Only", isReadOnly(),
         "Width", getWidth(),
         "Source", getSource(),
+        "Property", getProperty(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
         "Auto Fit", getAutoFit(),
@@ -391,6 +415,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
         "Scale", getScale(),
         "Render Columns", getRenderColumns(),
         "Search By", getSearchBy(),
+        "Filter Supplier", getFilterSupplierType(),
+        "Filter Options", getFilterOptions(),
         "Sort By", getSortBy(),
         "Cell Type", getCellType(),
         "Update Mode", getUpdateMode(),
@@ -402,7 +428,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
       PropertyUtils.appendChildrenToProperties(info, "Relation", getRelation().getInfo());
       PropertyUtils.addProperty(info, "Relation Initialized", isRelationInitialized());
     }
-    
+
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
     }
@@ -417,7 +443,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     }
 
     if (getRendererDescription() != null) {
-      PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
+      PropertyUtils
+          .appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
     }
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
@@ -486,6 +513,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     return precision;
   }
 
+  public String getProperty() {
+    return property;
+  }
+
   public Relation getRelation() {
     return relation;
   }
@@ -497,11 +528,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   public List<String> getRenderColumns() {
     return renderColumns;
   }
-  
+
   public RendererDescription getRendererDescription() {
     return rendererDescription;
   }
-  
+
   public List<RenderableToken> getRenderTokens() {
     return renderTokens;
   }
@@ -530,6 +561,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     return validation;
   }
 
+  @Override
   public ValueType getValueType() {
     return valueType;
   }
@@ -588,6 +620,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
         case SOURCE:
           arr[i++] = getSource();
           break;
+        case PROPERTY:
+          arr[i++] = getProperty();
+          break;
         case RELATION:
           arr[i++] = getRelation();
           break;
@@ -602,6 +637,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case SEARCH_BY:
           arr[i++] = getSearchBy();
+          break;
+        case FILTER_SUPPLIER:
+          arr[i++] =
+              (getFilterSupplierType() == null) ? null : getFilterSupplierType().getTypeCode();
+          break;
+        case FILTER_OPTIONS:
+          arr[i++] = getFilterOptions();
           break;
         case SORT_BY:
           arr[i++] = getSortBy();
@@ -725,13 +767,21 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   public void setEditable(Calculation editable) {
     this.editable = editable;
   }
-  
+
   public void setEditor(EditorDescription editor) {
     this.editor = editor;
   }
 
   public void setElementType(String elementType) {
     this.elementType = elementType;
+  }
+
+  public void setFilterOptions(String filterOptions) {
+    this.filterOptions = filterOptions;
+  }
+
+  public void setFilterSupplierType(FilterSupplierType filterSupplierType) {
+    this.filterSupplierType = filterSupplierType;
   }
 
   public void setFooterStyle(StyleDeclaration footerStyle) {
@@ -783,10 +833,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
     this.precision = precision;
   }
 
+  public void setProperty(String property) {
+    this.property = property;
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
-  
+
   public void setRelation(Relation relation) {
     this.relation = relation;
   }
@@ -818,7 +872,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   public void setScale(Integer scale) {
     this.scale = scale;
   }
-  
+
   public void setSearchBy(String searchBy) {
     this.searchBy = searchBy;
   }
@@ -838,7 +892,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
   public void setSource(String source) {
     this.source = source;
   }
-  
+
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
   }

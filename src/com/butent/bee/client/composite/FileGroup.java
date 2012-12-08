@@ -28,7 +28,6 @@ import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -411,75 +410,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     initColumns(visibleColumns, editableColumns);
   }
 
-  public void addFiles(List<StoredFile> storedFiles) {
-    if (storedFiles != null) {
-      for (StoredFile sf : storedFiles) {
-        addFile(sf);
-      }
-    }
-  }
-
-  @Override
-  public void clear() {
-    getFiles().clear();
-    super.clear();
-  }
-
-  @Override
-  public String getCaption() {
-    return caption;
-  }
-
-  public List<StoredFile> getFiles() {
-    return files;
-  }
-
-  @Override
-  public String getIdPrefix() {
-    return "files";
-  }
-
-  @Override
-  public String getOptions() {
-    return options;
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return getFiles().isEmpty();
-  }
-
-  public void render(String serialized) {
-    if (!isEmpty()) {
-      clear();
-    }
-
-    if (BeeUtils.isEmpty(serialized)) {
-      return;
-    }
-    String[] arr = Codec.beeDeserializeCollection(serialized);
-    if (arr == null) {
-      return;
-    }
-
-    for (String s : arr) {
-      StoredFile sf = StoredFile.restore(s);
-      if (sf != null) {
-        addFile(sf);
-      }
-    }
-  }
-
-  public void setCaption(String caption) {
-    this.caption = caption;
-  }
-
-  @Override
-  public void setOptions(String options) {
-    this.options = options;
-  }
-
-  private void addFile(final StoredFile sf) {
+  public void addFile(final StoredFile sf) {
     if (sf == null || contains(sf)) {
       return;
     }
@@ -531,6 +462,60 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
         getColumnFormatter().addStyleName(col, STYLE_PREFIX + column.getLabel() + STYLE_COLUMN);
       }
     }
+  }
+
+  public void addFiles(List<StoredFile> storedFiles) {
+    if (storedFiles != null) {
+      for (StoredFile sf : storedFiles) {
+        addFile(sf);
+      }
+    }
+  }
+
+  @Override
+  public void clear() {
+    getFiles().clear();
+    super.clear();
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
+  }
+
+  public List<StoredFile> getFiles() {
+    return files;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "files";
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return getFiles().isEmpty();
+  }
+
+  public void render(String serialized) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addFiles(StoredFile.restoreCollection(serialized));
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   private boolean contains(StoredFile sf) {

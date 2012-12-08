@@ -70,6 +70,7 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
   private SelectorColumn() {
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -130,6 +131,7 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
     return horAlign;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Source", getSource(),
@@ -187,6 +189,7 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
     return vertAlign;
   }
 
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];

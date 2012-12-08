@@ -13,6 +13,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
@@ -550,7 +552,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       bar.addItem(action.getWidget().asWidget());
     }
 
-    final Popup popup = new Popup(true, true, STYLE_PREFIX + "actionPopup");
+    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, STYLE_PREFIX + "actionPopup");
 
     bar.addSelectionHandler(new SelectionHandler<Integer>() {
       @Override

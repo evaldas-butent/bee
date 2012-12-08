@@ -41,7 +41,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
   
@@ -72,7 +72,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private String headerMode = null;
   private Boolean hasFooters = null;
-  private String footerEvents = null;
 
   private Boolean cacheData = null;
   private Boolean cacheDescription = null;
@@ -352,10 +351,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           }
           break;
 
-        case FOOTER_EVENTS:
-          setFooterEvents(value);
-          break;
-          
         case NEW_ROW_POPUP:
           setNewRowPopup(BeeUtils.toBooleanOrNull(value));
           break;
@@ -473,7 +468,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Order", getOrder(),
         "Header Mode", getHeaderMode(),
         "Has Footers", hasFooters(),
-        "Footer Events", getFooterEvents(),
         "Cache Data", getCacheData(),
         "Cache Description", getCacheDescription(),
         "Async Threshold", getAsyncThreshold(),
@@ -584,10 +578,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public GridComponentDescription getFooter() {
     return footer;
-  }
-
-  public String getFooterEvents() {
-    return footerEvents;
   }
 
   public GridComponentDescription getHeader() {
@@ -875,9 +865,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case WIDGETS:
           arr[i++] = getWidgets();
           break;
-        case FOOTER_EVENTS:
-          arr[i++] = getFooterEvents();
-          break;
         case NEW_ROW_POPUP:
           arr[i++] = getNewRowPopup();
           break;
@@ -990,10 +977,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
-  }
-
-  public void setFooterEvents(String footerEvents) {
-    this.footerEvents = footerEvents;
   }
 
   public void setHasFooters(Boolean hasFooters) {

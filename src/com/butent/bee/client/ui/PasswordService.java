@@ -96,7 +96,7 @@ public class PasswordService extends CompositeService {
 
     } else {
       ok = false;
-      Global.showError("Unknown service [", name(), "] stage:", stg);
+      Global.showError(Lists.newArrayList("Unknown service [", name(), "] stage:", stg));
     }
     destroy();
     return ok;

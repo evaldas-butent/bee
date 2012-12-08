@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
@@ -17,19 +18,15 @@ import com.butent.bee.shared.ui.HasCaption;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Requires for implementing classes to be able to create a grid container with specified parameters
- * and get it's content.
- */
-
 public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasGridView, Printable,
     HasCaption, HandlesHistory, HasWidgetSupplier {
 
   void bind();
 
   void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
-      int rowCount, BeeRowSet rowSet, Order order, GridInterceptor gridInterceptor,
-      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions);
+      int rowCount, BeeRowSet rowSet, Filter immutableFilter, Order order,
+      GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
+      GridFactory.GridOptions gridOptions);
 
   List<String> getFavorite();
 

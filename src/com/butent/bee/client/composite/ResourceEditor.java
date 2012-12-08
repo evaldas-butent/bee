@@ -102,6 +102,8 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
 
     p.add(textArea);
     p.setWidgetTopBottom(textArea, top, Unit.EM, bottom, Unit.EM);
+    
+    p.getElement().getStyle().clearPosition();
 
     initWidget(p);
     DomUtils.createId(this, getIdPrefix());

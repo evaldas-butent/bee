@@ -58,6 +58,8 @@ import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
@@ -467,7 +469,7 @@ public class CliWorker {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
     } else {
-      Global.inform("wtf", v);
+      showError("wtf", v);
       return false;
     }
     return true;
@@ -795,7 +797,7 @@ public class CliWorker {
       public boolean onConfirm(Popup popup) {
         String sql = Global.getVarValue(Service.VAR_JDBC_QUERY);
         if (BeeUtils.isEmpty(sql)) {
-          Global.showError("Query not specified");
+          showError("Query not specified");
           return false;
         } else {
           BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
@@ -927,7 +929,7 @@ public class CliWorker {
     }
 
     if (!BeeUtils.isInt(p2)) {
-      Global.showError(p1, p2, "size not an int");
+      showError(p1, p2, "size not an int");
       return;
     }
 
@@ -1001,9 +1003,9 @@ public class CliWorker {
     String pck = (params == null) ? null : params.getB();
 
     if (BeeUtils.isEmpty(cls)) {
-      Global.showError("Class name not specified");
+      showError("Class name not specified");
     } else if (cls.length() < 2) {
-      Global.showError("Class name", cls, "too short");
+      showError("Class name", cls, "too short");
     } else {
       BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
           XmlUtils.createString(Service.XML_TAG_DATA,
@@ -1061,7 +1063,7 @@ public class CliWorker {
   private static void getKeys(String[] arr) {
     int parCnt = ArrayUtils.length(arr) - 1;
     if (parCnt <= 0) {
-      Global.showError("getKeys", "table not specified");
+      showError("getKeys", "table not specified");
       return;
     }
 
@@ -1138,7 +1140,7 @@ public class CliWorker {
     if (BeeUtils.same(args, "log")) {
       IdentifiableWidget lp = ClientLogManager.getLogPanel();
       if (lp == null) {
-        Global.showError("log widget not available");
+        showError("log widget not available");
         return;
       } else {
         widget = lp.asWidget();
@@ -1147,14 +1149,14 @@ public class CliWorker {
     } else if (!BeeUtils.isEmpty(args)) {
       element = DomUtils.getElementQuietly(args);
       if (element == null) {
-        Global.showError(args, "element not found");
+        showError(args, "element not found");
         return;
       }
 
     } else {
       IdentifiableWidget iw = BeeKeeper.getScreen().getActiveWidget();
       if (iw == null) {
-        Global.showError("active widget not available");
+        showError("active widget not available");
         return;
       } else {
         widget = iw.asWidget();
@@ -1208,7 +1210,7 @@ public class CliWorker {
       String id = command.substring(p + 1);
       root = Document.get().getElementById(id);
       if (root == null) {
-        Global.showError(command, id, "element id not found");
+        showError(command, id, "element id not found");
         return;
       }
     }
@@ -1238,7 +1240,7 @@ public class CliWorker {
 
     int cnt = (nodes == null) ? 0 : nodes.getLength();
     if (cnt <= 0) {
-      Global.showError(command, selectors, "no elements found");
+      showError(command, selectors, "no elements found");
       return;
     }
 
@@ -1283,7 +1285,7 @@ public class CliWorker {
                           p.setWidgetTopBottom(area, 0, Unit.EM, 0, Unit.EM);
                           p.setWidgetLeftRight(area, 0, Unit.EM, 50, Unit.PCT);
                         } else {
-                          Global.showError("Wrong response received");
+                          showError("Wrong response received");
                         }
                       }
                     });
@@ -1319,7 +1321,7 @@ public class CliWorker {
                                 new InputArea(new Resource((String) resp.getResponse()));
                             Global.inform(res.getValue());
                           } else {
-                            Global.showError("Wrong response received");
+                            showError("Wrong response received");
                           }
                         }
                       });
@@ -1645,7 +1647,7 @@ public class CliWorker {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
       if (list.isEmpty()) {
-        Global.showError("no data infos available");
+        showError("no data infos available");
         return;
       }
 
@@ -1701,7 +1703,7 @@ public class CliWorker {
           t = dtf.parse(inp);
         }
       } catch (IllegalArgumentException ex) {
-        Global.showError(args, dtf.getPattern(), inp, ex.toString());
+        showError(args, dtf.getPattern(), inp, ex.toString());
       }
 
     } else if (!BeeUtils.isEmpty(args)) {
@@ -1867,7 +1869,7 @@ public class CliWorker {
 
     JavaScriptObject obj = Document.get().getElementById(arr[1]);
     if (obj == null) {
-      Global.showError(arr[1], "element id not found");
+      showError(arr[1], "element id not found");
       return;
     }
 
@@ -1875,7 +1877,7 @@ public class CliWorker {
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
-      Global.showError(v, "properties not found");
+      showError(v, "properties not found");
       return;
     }
 
@@ -1885,6 +1887,10 @@ public class CliWorker {
     showTable(v, table);
   }
 
+  private static void showError(String... messages) {
+    Global.showError(null, Lists.newArrayList(messages), null, "Whatever");
+  }
+  
   private static void showExtData(List<ExtendedProperty> data) {
     Global.showGrid(new ExtendedPropertiesData(data, true));
   }
@@ -1963,7 +1969,7 @@ public class CliWorker {
   private static void showFont(String id) {
     Element el = Document.get().getElementById(id);
     if (el == null) {
-      Global.showError(id, "element not found");
+      showError(id, "element not found");
       return;
     }
 
@@ -1983,7 +1989,7 @@ public class CliWorker {
       obj = JsUtils.eval(arr[1]);
     }
     if (obj == null) {
-      Global.showError(arr[1], "not a js object");
+      showError(arr[1], "not a js object");
       return;
     }
 
@@ -1991,7 +1997,7 @@ public class CliWorker {
     JsArrayString fnc = JsUtils.getFunctions(obj, patt);
 
     if (JsUtils.isEmpty(fnc)) {
-      Global.showError(v, "functions not found");
+      showError(v, "functions not found");
       return;
     }
     if (fnc.length() <= 5) {
@@ -2233,7 +2239,7 @@ public class CliWorker {
 
   private static void showMeter(String[] arr) {
     if (!Features.supportsElementMeter()) {
-      Global.showError("meter element not supported");
+      showError("meter element not supported");
       return;
     }
 
@@ -2378,7 +2384,7 @@ public class CliWorker {
 
   private static void showProgress(String[] arr) {
     if (!Features.supportsElementProgress()) {
-      Global.showError("progress element not supported");
+      showError("progress element not supported");
       return;
     }
 
@@ -2479,7 +2485,7 @@ public class CliWorker {
       obj = JsUtils.eval(arr[1]);
     }
     if (obj == null) {
-      Global.showError(arr[1], "not a js object");
+      showError(arr[1], "not a js object");
       return;
     }
 
@@ -2487,7 +2493,7 @@ public class CliWorker {
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
-      Global.showError(v, "properties not found");
+      showError(v, "properties not found");
       return;
     }
 
@@ -2923,13 +2929,13 @@ public class CliWorker {
   private static void showWidgetInfo(String[] arr) {
     String id = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(id)) {
-      Global.showError("widget id not specified");
+      showError("widget id not specified");
       return;
     }
 
     Widget widget = DomUtils.getWidget(id);
     if (widget == null) {
-      Global.showError(id, "widget not found");
+      showError(id, "widget not found");
       return;
     }
 
@@ -2992,7 +2998,7 @@ public class CliWorker {
         public boolean onConfirm(Popup popup) {
           String src = Global.getVarValue(Service.VAR_XML_SOURCE);
           if (BeeUtils.isEmpty(src)) {
-            Global.showError("Source not specified");
+            showError("Source not specified");
             return false;
           } else {
             BeeKeeper.getRpc().makePostRequest(Service.GET_XML_INFO,
@@ -3027,7 +3033,7 @@ public class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
-          Global.showError(Global.MESSAGES.keyNotFound(key));
+          showError(Global.MESSAGES.keyNotFound(key));
         } else {
           Global.inform(key, z);
         }
@@ -3141,7 +3147,7 @@ public class CliWorker {
 
     String st = sb.toString();
     if (!st.contains("{") || !st.contains("}")) {
-      Global.showError("Nah pop no style, a strictly roots", v, st);
+      showError("Nah pop no style, a strictly roots", v, st);
       return;
     }
 
@@ -3324,7 +3330,7 @@ public class CliWorker {
   }
 
   private static void upload() {
-    final Popup popup = new Popup(true, true);
+    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL);
 
     final InputFile widget = new InputFile(true);
     widget.addChangeHandler(new ChangeHandler() {

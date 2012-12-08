@@ -426,8 +426,30 @@ public class Global implements Module {
     getVar(name).setWidth(width);
   }
 
-  public static void showError(String... messages) {
-    MSG_BOXEN.showError(messages);
+  public static void showError(String message) {
+    List<String> messages = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(message)) {
+      messages.add(message);
+    }
+
+    showError(messages);
+  }
+  
+  public static void showError(List<String> messages) {
+    showError(null, messages, null, null);
+  }
+
+  public static void showError(String caption, List<String> messages) {
+    showError(caption, messages, null, null);
+  }
+
+  public static void showError(String caption, List<String> messages, String dialogStyle) {
+    showError(caption, messages, dialogStyle, null);
+  }
+  
+  public static void showError(String caption, List<String> messages, String dialogStyle,
+      String closeHtml) {
+    MSG_BOXEN.showError(caption, messages, dialogStyle, closeHtml);
   }
 
   public static void showGrid(IsTable<?, ?> table) {
@@ -462,7 +484,7 @@ public class Global implements Module {
     }
 
     if (names.isEmpty()) {
-      showError("no variables found", ArrayUtils.joinWords(context));
+      showError(Lists.newArrayList("no variables found", ArrayUtils.joinWords(context)));
     } else {
       inputVars("Variables", names, null);
     }

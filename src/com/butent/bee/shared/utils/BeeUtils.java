@@ -994,6 +994,10 @@ public class BeeUtils {
     return col != null && idx >= 0 && idx < col.size();
   }
 
+  public static boolean isInt(long x) {
+    return x >= Integer.MIN_VALUE && x <= Integer.MAX_VALUE;
+  }
+  
   /**
    * Checks if a String value can be transformed to an Integer value.
    * 

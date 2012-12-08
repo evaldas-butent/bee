@@ -21,6 +21,7 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.RefreshType;
@@ -92,7 +93,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_HEADER_MODE = "headerMode";
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
-  private static final String ATTR_FOOTER_EVENTS = "footerEvents";
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
@@ -132,7 +132,10 @@ public class GridLoaderBean {
   private static final String ATTR_PRECISION = "precision";
 
   private static final String ATTR_SORT_BY = "sortBy";
+
   private static final String ATTR_SEARCH_BY = "searchBy";
+  private static final String ATTR_FILTER_SUPPLIER = "filterSupplier";
+  private static final String ATTR_FILTER_OPTIONS = "filterOptions";
 
   private static final String ATTR_CELL = "cell";
   private static final String ATTR_ELEMENT = "element";
@@ -496,6 +499,7 @@ public class GridLoaderBean {
 
       case CALCULATED:
       case SELECTION:
+      case PROPERTY:
         ok = true;
         break;
 
@@ -554,6 +558,9 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
           dst.setSource(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
+          dst.setProperty(value.trim());
+
         } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
           dst.setRequired(BeeUtils.toBooleanOrNull(value));
 
@@ -573,8 +580,13 @@ public class GridLoaderBean {
           dst.setRenderColumns(NameUtils.toList(value.trim()));
         } else if (BeeUtils.same(key, ATTR_SORT_BY)) {
           dst.setSortBy(value.trim());
+
         } else if (BeeUtils.same(key, ATTR_SEARCH_BY)) {
           dst.setSearchBy(value.trim());
+        } else if (BeeUtils.same(key, ATTR_FILTER_SUPPLIER)) {
+          dst.setFilterSupplierType(FilterSupplierType.getByTypeCode(value));
+        } else if (BeeUtils.same(key, ATTR_FILTER_OPTIONS)) {
+          dst.setFilterOptions(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_CELL)) {
           dst.setCellType(CellType.getByCode(value));
@@ -701,10 +713,6 @@ public class GridLoaderBean {
     Boolean hasFooters = XmlUtils.getAttributeBoolean(src, ATTR_HAS_FOOTERS);
     if (hasFooters != null) {
       dst.setHasFooters(hasFooters);
-    }
-    String footerEvents = src.getAttribute(ATTR_FOOTER_EVENTS);
-    if (!BeeUtils.isEmpty(footerEvents)) {
-      dst.setFooterEvents(footerEvents);
     }
 
     Boolean showColumnWidths = XmlUtils.getAttributeBoolean(src, ATTR_SHOW_COLUMN_WIDTHS);

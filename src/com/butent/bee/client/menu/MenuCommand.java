@@ -1,5 +1,7 @@
 package com.butent.bee.client.menu;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
@@ -48,6 +50,6 @@ public class MenuCommand extends Command {
       }
     }
       
-    Global.showError("Menu service not recognized", svc, args);
+    Global.showError(Lists.newArrayList("Menu service not recognized", svc, args));
   }
 }

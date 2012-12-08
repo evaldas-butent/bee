@@ -5,10 +5,9 @@ import com.google.gwt.core.shared.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 
-import java.util.List;
+import com.butent.bee.client.images.Images;
 
-import elemental.client.Browser;
-import elemental.html.ImageElement;
+import java.util.List;
 
 public class Stars {
   
@@ -55,8 +54,6 @@ public class Stars {
   
   private static final List<ImageResource> list = Lists.newArrayList();
 
-  private static final ImageElement imageElement = Browser.getDocument().createImageElement(); 
-  
   static {
     list.add(resources.starYellow());
     list.add(resources.starOrange());
@@ -85,20 +82,11 @@ public class Stars {
   }
   
   public static String getDefaultHeader() {
-    return asString(resources.starColorless());
+    return Images.asString(resources.starColorless());
   }
 
   public static String getHtml(int index) {
-    return asString(get(index));
-  }
-
-  private static String asString(ImageResource imageResource) {
-    if (imageResource == null) {
-      return null;
-    }
-    
-    imageElement.setSrc(imageResource.getSafeUri().asString());
-    return imageElement.getOuterHTML();
+    return Images.asString(get(index));
   }
   
   private Stars() {

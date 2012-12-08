@@ -270,8 +270,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-    if (isEventRelevant(event)
-        && getViewData().updateCell(event.getRowId(), event.getColumnIndex(), event.getValue())) {
+    if (isEventRelevant(event) && event.applyTo(getViewData())) {
       resetState();
     }
   }

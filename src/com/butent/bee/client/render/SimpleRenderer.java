@@ -1,31 +1,20 @@
 package com.butent.bee.client.render;
 
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.ValueType;
 
 public class SimpleRenderer extends AbstractCellRenderer {
 
-  public SimpleRenderer(int dataIndex, IsColumn dataColumn) {
-    super(Assert.nonNegative(dataIndex), dataColumn);
+  public SimpleRenderer(CellSource cellSource) {
+    super(cellSource);
   }
 
-  public SimpleRenderer(int dataIndex, ValueType dataType) {
-    super(Assert.nonNegative(dataIndex), dataType);
-  }
-
-  public SimpleRenderer(int dataIndex) {
-    this(dataIndex, ValueType.TEXT);
-  }
-  
   @Override
   public String render(IsRow row) {
-    if (row == null) {
+    if (row == null || getCellSource() == null) {
       return null;
     } else {
-      return DataUtils.render(row, getDataIndex(), getDataType());
+      return getCellSource().render(row);
     }
   }
 }

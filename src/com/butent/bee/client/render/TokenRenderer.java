@@ -16,7 +16,7 @@ public class TokenRenderer extends AbstractCellRenderer {
   private final List<ColumnToken> tokens = Lists.newArrayList();
 
   public TokenRenderer(List<ColumnToken> tokens) {
-    super();
+    super(null);
     if (!BeeUtils.isEmpty(tokens)) {
       this.tokens.addAll(tokens);
     }

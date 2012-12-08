@@ -39,6 +39,8 @@ import com.butent.bee.client.data.SelectionOracle.Request;
 import com.butent.bee.client.data.SelectionOracle.Response;
 import com.butent.bee.client.data.SelectionOracle.Suggestion;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -65,9 +67,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
@@ -102,12 +104,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.renderer = renderer;
     }
 
-    public SimpleHandler(int dataIndex) {
-      this(dataIndex, ValueType.TEXT);
-    }
-
-    public SimpleHandler(int dataIndex, ValueType dataType) {
-      this(new SimpleRenderer(dataIndex, dataType));
+    public SimpleHandler(CellSource cellSource) {
+      this(new SimpleRenderer(cellSource));
     }
 
     @Override
@@ -231,7 +229,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         super.onBrowserEvent(event);
       }
     }
-    
+
     protected void onMouseClick() {
       if (isEmbedded() && !isActive()) {
         start(EditStartEvent.CLICK);
@@ -242,7 +240,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
   }
-  
+
   private class InputEvents implements MouseWheelHandler {
 
     private boolean consumed = false;
@@ -364,7 +362,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.consumed = consumed;
     }
   }
-  
+
   /**
    * Handles suggestion display.
    */
@@ -384,7 +382,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       menu.addStyleName(STYLE_MENU);
 
-      this.popup = new Popup(true, false);
+      this.popup = new Popup(OutsideClick.CLOSE, Modality.MODELESS);
       popup.setStyleName(STYLE_POPUP);
       popup.setWidget(menu);
 
@@ -609,7 +607,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
   private static final String STYLE_DRILL_DISABBLED = STYLE_DRILL + "-disabled";
-  
+
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
@@ -620,7 +618,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     @Override
     public void onSuggestionsReady(Request request, Response response) {
       DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
-      
+
       boolean found = !response.isEmpty();
       DataSelector.this.getInput().setStyleName(STYLE_NOT_FOUND, !found);
       if (request.isEmpty()) {
@@ -663,7 +661,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final String editForm;
   private final Boolean editModal;
   private final boolean editEnabled;
-  
+
   private boolean active = false;
 
   private BeeRow relatedRow = null;
@@ -676,7 +674,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private boolean alive = true;
   private boolean waiting = false;
   private boolean adding = false;
-  
+
   private Widget drill = null;
 
   public DataSelector(Relation relation, boolean embedded) {
@@ -707,15 +705,18 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
     int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
+    CellSource cellSource = BeeConst.isUndef(dataIndex) ?
+        null : CellSource.forColumn(dataInfo.getColumns().get(dataIndex), dataIndex); 
+
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
         relation.getRowRender(), relation.getRowRenderTokens(), relation.getItemKey(),
-        choiceColumns, dataInfo.getColumns(), dataIndex);
+        choiceColumns, dataInfo.getColumns(), cellSource);
 
     if (rowRenderer instanceof EnumRenderer && relation.getSearchableColumns().size() == 1) {
       oracle.createTranslator(((EnumRenderer) rowRenderer).getCaptions(),
           ((EnumRenderer) rowRenderer).getValueStartIndex());
     }
-    
+
     oracle.addRowCountChangeHandler(new Procedure<Integer>() {
       @Override
       public void call(Integer parameter) {
@@ -731,14 +732,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (BeeUtils.isPositive(relation.getVisibleLines())) {
       setVisibleLines(relation.getVisibleLines());
     }
-    
+
     this.newRowForm = BeeUtils.notEmpty(relation.getNewRowForm(), dataInfo.getNewRowForm());
     this.newRowColumns = BeeUtils.notEmpty(relation.getNewRowColumns(),
         dataInfo.getNewRowColumns());
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
-    
+
     if (relation.isEditEnabled()) {
       this.editForm = RowEditor.getFormName(relation.getEditForm(), dataInfo);
       this.editModal = relation.isEditModal();
@@ -780,12 +781,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return addSimpleHandler(new SimpleHandler(renderer));
   }
 
-  public Collection<HandlerRegistration> addSimpleHandler(int dataIndex) {
-    return addSimpleHandler(new SimpleHandler(dataIndex));
-  }
-
-  public Collection<HandlerRegistration> addSimpleHandler(int dataIndex, ValueType dataType) {
-    return addSimpleHandler(new SimpleHandler(dataIndex, dataType));
+  public Collection<HandlerRegistration> addSimpleHandler(CellSource cellSource) {
+    return addSimpleHandler(new SimpleHandler(cellSource));
   }
 
   public Collection<HandlerRegistration> addSimpleHandler(SimpleHandler handler) {
@@ -858,6 +855,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public Long getRelatedId() {
+    return (getRelatedRow() == null) ? null : getRelatedRow().getId();
+  }
+
+  @Override
   public BeeRow getRelatedRow() {
     return relatedRow;
   }
@@ -895,7 +897,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean isAdding() {
     return adding;
   }
-  
+
   public boolean isEditEnabled() {
     return editEnabled;
   }
@@ -969,7 +971,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   @Override
   public void setNullable(boolean nullable) {
     getInput().setNullable(nullable);
@@ -1005,17 +1007,17 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setValue(String newValue) {
     setEditorValue(newValue);
   }
-  
+
   @Override
   public void setValue(String value, boolean fireEvents) {
     setEditorValue(value);
   }
-  
+
   @Override
   public void setVisibleLines(int lines) {
     this.visibleLines = lines;
   }
-  
+
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
@@ -1050,16 +1052,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         setWaiting(true);
       }
     }
-    
+
     inputEvents.consume();
     setActive(true);
   }
-  
+
   @Override
   public String validate() {
     return null;
   }
-  
+
   protected void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {
     if (hideSelector) {
       hideSelector();
@@ -1083,11 +1085,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (embed) {
       inputWidget.addStyleName(STYLE_EMBEDDED);
     }
-    
+
     if (embed && isEditEnabled()) {
       final Flow container = new Flow();
       container.addStyleName(STYLE_EDITABLE_CONTAINER);
-      
+
       inputWidget.addStyleName(STYLE_EDITABLE_INPUT);
 
       inputWidget.addFocusHandler(new FocusHandler() {
@@ -1104,7 +1106,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       });
 
       container.add(inputWidget);
-      
+
       InlineLabel label = new InlineLabel(String.valueOf(BeeConst.DRILL_DOWN));
       label.addStyleName(STYLE_DRILL);
       label.addStyleName(STYLE_DRILL_DISABBLED);
@@ -1117,12 +1119,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           }
         }
       });
-      
+
       setDrill(label);
       container.add(label);
-      
+
       initWidget(container);
-      
+
     } else {
       initWidget(inputWidget);
     }
@@ -1148,7 +1150,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     getInput().removeStyleName(STYLE_WAITING);
     getInput().removeStyleName(STYLE_NOT_FOUND);
-    
+
     if (getDrill() != null) {
       getWidget().removeStyleName(STYLE_EDITABLE_ACTIVE);
     }
@@ -1240,7 +1242,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     getOracle().requestSuggestions(request, getCallback());
   }
-  
+
   private void editRow(long rowId) {
     String viewName = getOracle().getViewName();
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -1249,10 +1251,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (BeeUtils.isEmpty(formName)) {
       return;
     }
-    
+
     boolean modal = BeeUtils.isTrue(isEditModal()) || UiHelper.isModal(getWidget());
     RowCallback rowCallback;
-    
+
     if (modal) {
       rowCallback = new RowCallback() {
         @Override
@@ -1328,9 +1330,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     for (Map.Entry<Integer, SelectorColumn> entry : getSelectorColumns().entrySet()) {
       SelectorColumn sc = entry.getValue();
+      int index = dataInfo.getColumnIndex(sc.getSource());
+
+      CellSource cellSource = BeeConst.isUndef(index) ?
+          null : CellSource.forColumn(dataInfo.getColumns().get(index), index); 
+      
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),
           sc.getRender(), sc.getRenderTokens(), sc.getItemKey(), sc.getRenderColumns(),
-          dataInfo.getColumns(), dataInfo.getColumnIndex(sc.getSource()));
+          dataInfo.getColumns(), cellSource);
 
       if (renderer != null) {
         getCellRenderers().put(entry.getKey(), renderer);
@@ -1344,7 +1351,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     for (int i = 0; i < getColumnCount(); i++) {
       if (!getCellRenderers().containsKey(i)) {
         int index = dataInfo.getColumnIndex(getChoiceColumns().get(i));
-        AbstractCellRenderer renderer = new SimpleRenderer(index, dataInfo.getColumns().get(index));
+
+        CellSource cellSource = CellSource.forColumn(dataInfo.getColumns().get(index), index);
+        AbstractCellRenderer renderer = new SimpleRenderer(cellSource);
+
         getCellRenderers().put(i, renderer);
       }
     }

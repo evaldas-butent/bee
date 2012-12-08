@@ -10,6 +10,14 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ValidationHelper {
+  
+  public static final CellValidateEvent.Handler DO_NOT_VALIDATE = new CellValidateEvent.Handler() {
+    @Override
+    public Boolean validateCell(CellValidateEvent event) {
+      event.cancel();
+      return true;
+    }
+  };
 
   public static Boolean validateCell(CellValidation validation, HasCellValidationHandlers source,
       ValidationOrigin origin) {

@@ -22,7 +22,6 @@ import com.butent.bee.client.grid.column.DecimalColumn;
 import com.butent.bee.client.grid.column.DoubleColumn;
 import com.butent.bee.client.grid.column.IntegerColumn;
 import com.butent.bee.client.grid.column.LongColumn;
-import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.TextColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
@@ -41,9 +40,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.cache.CachingPolicy;
@@ -132,41 +131,50 @@ public class GridFactory {
     }
   }
 
-  public static DataColumn<?> createColumn(IsColumn dataColumn, int index) {
-    return createColumn(dataColumn, index, null);
+  public static DataColumn<?> createColumn(CellSource cellSource) {
+    return createColumn(cellSource, null);
   }
 
-  public static DataColumn<?> createColumn(IsColumn dataColumn, int index, CellType cellType) {
+  public static DataColumn<?> createColumn(CellSource cellSource, CellType cellType) {
     if (cellType != null) {
-      return new TextColumn(createCell(cellType), index, dataColumn);
+      return new TextColumn(createCell(cellType), cellSource);
     }
 
-    ValueType type = dataColumn.getType();
+    ValueType type = cellSource.getValueType();
     if (type == null) {
-      return new TextColumn(index, dataColumn);
+      return new TextColumn(cellSource);
     }
 
     switch (type) {
       case BOOLEAN:
-        return new BooleanColumn(index, dataColumn);
+        return new BooleanColumn(cellSource);
       case DATE:
-        return new DateColumn(index, dataColumn);
+        return new DateColumn(cellSource);
       case DATETIME:
-        return new DateTimeColumn(index, dataColumn);
+        return new DateTimeColumn(cellSource);
       case NUMBER:
-        return new DoubleColumn(index, dataColumn);
+        return new DoubleColumn(cellSource);
       case INTEGER:
-        return new IntegerColumn(index, dataColumn);
+        return new IntegerColumn(cellSource);
       case LONG:
-        return new LongColumn(index, dataColumn);
+        return new LongColumn(cellSource);
       case DECIMAL:
-        if (dataColumn.getScale() == 2) {
-          return new CurrencyColumn(index, dataColumn);
+        if (cellSource.getScale() == 2) {
+          return new CurrencyColumn(cellSource);
         } else {
-          return new DecimalColumn(index, dataColumn);
+          return new DecimalColumn(cellSource);
         }
       default:
-        return new TextColumn(index, dataColumn);
+        return new TextColumn(cellSource);
+    }
+  }
+
+  public static DataColumn<?> createColumn(CellSource cellSource, CellType cellType,
+      AbstractCellRenderer renderer) {
+    if (renderer == null) {
+      return createColumn(cellSource, cellType);
+    } else {
+      return createRenderableColumn(renderer, cellSource, cellType);
     }
   }
 
@@ -192,11 +200,11 @@ public class GridFactory {
       }
     });
   }
-
+  
   public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer,
-      IsColumn dataColumn, int index, CellType cellType) {
+      CellSource cellSource, CellType cellType) {
     Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
-    return new RenderableColumn(cell, index, dataColumn, renderer);
+    return new RenderableColumn(cell, cellSource, renderer);
   }
 
   public static void getGrid(String name, Callback<GridDescription> callback) {
@@ -396,19 +404,17 @@ public class GridFactory {
 
     CellGrid grid = new CellGrid();
 
-    RowIdColumn idColumn = new RowIdColumn();
-    String id = "row-id";
-    grid.addColumn(id, -1, null, idColumn, new ColumnHeader(id, "Id", false));
-    grid.setColumnWidth(id, 40);
-
     DataColumn<?> column;
     for (int i = 0; i < c; i++) {
-      column = createColumn(table.getColumn(i), i);
+      CellSource source = CellSource.forColumn(table.getColumn(i), i);
+      column = createColumn(source);
+
       column.setSortable(true);
       column.setSortBy(Lists.newArrayList(table.getColumn(i).getId()));
-
+      
       String label = table.getColumnLabel(i);
-      grid.addColumn(label, i, null, column, new ColumnHeader(label, label, false));
+
+      grid.addColumn(label, source, column, new ColumnHeader(label, label, false));
     }
 
     grid.setReadOnly(true);

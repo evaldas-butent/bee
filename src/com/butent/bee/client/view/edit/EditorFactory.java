@@ -85,7 +85,7 @@ public class EditorFactory {
     }
   }
 
-  public static Editor createEditor(BeeColumn column) {
+  public static Editor createEditor(BeeColumn column, boolean isText) {
     Assert.notNull(column);
 
     ValueType type = column.getType();
@@ -119,7 +119,7 @@ public class EditorFactory {
         break;
 
       case TEXT:
-        if (column.isText()) {
+        if (isText) {
           editor = new InputArea();
         } else {
           editor = new InputText();

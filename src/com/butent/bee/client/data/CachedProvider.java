@@ -99,8 +99,7 @@ public class CachedProvider extends Provider {
       long id = event.getRowId();
       for (BeeRow row : getTable().getRows()) {
         if (row.getId() == id) {
-          row.setVersion(event.getVersion());
-          row.setValue(getTable().getColumnIndex(event.getColumnName()), event.getValue());
+          event.applyTo(row);
           break;
         }
       }

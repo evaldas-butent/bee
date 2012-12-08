@@ -5,6 +5,9 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.IsRow;
 
 /**
  * Handles an event when a cell value is updated in table based user interface components.
@@ -33,47 +36,69 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
   private final long rowId;
   private final long version;
 
-  private final String columnName;
-  private final int columnIndex;
+  private final CellSource source;
+
   private final String value;
 
-  public CellUpdateEvent(String viewName, long rowId, long version,
-      String columnName, int columnIndex, String value) {
+  public CellUpdateEvent(String viewName, long rowId, long version, CellSource source,
+      String value) {
     this.viewName = viewName;
+
     this.rowId = rowId;
     this.version = version;
-    this.columnName = columnName;
-    this.columnIndex = columnIndex;
+
+    this.source = Assert.notNull(source);
+    
     this.value = value;
   }
+  
+  public boolean applyTo(BeeRowSet rowSet) {
+    Assert.notNull(rowSet);
+    
+    IsRow row = rowSet.getRowById(getRowId());
+    if (row == null) {
+      return false;
+    } else {
+      applyTo(row);
+      return true;
+    }
+  }
 
+  public void applyTo(IsRow row) {
+    Assert.notNull(row);
+    row.setVersion(getVersion());
+    
+    source.set(row, value);
+  }
+  
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
 
-  public int getColumnIndex() {
-    return columnIndex;
-  }
-
-  public String getColumnName() {
-    return columnName;
+  public CellSource getCellSource() {
+    return source;
   }
 
   public long getRowId() {
     return rowId;
   }
 
-  public String getValue() {
-    return value;
+  public String getSourceName() {
+    return source.getName();
   }
 
   public long getVersion() {
     return version;
   }
 
+  @Override
   public String getViewName() {
     return viewName;
+  }
+
+  public boolean hasColumn() {
+    return source.hasColumn();
   }
 
   @Override

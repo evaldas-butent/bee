@@ -22,6 +22,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Modality;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -76,7 +78,8 @@ public class MessageHandler extends AbstractFormInterceptor {
         @Override
         public void onClick(ClickEvent event) {
           event.stopPropagation();
-          final Popup popup = new Popup(true, true, "bee-mail-RecipientsPopup");
+          final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL,
+              "bee-mail-RecipientsPopup");
           HtmlTable ft = new HtmlTable();
           ft.setBorderSpacing(5);
           List<Pair<String, String>> types = Lists.newArrayList();
@@ -120,7 +123,8 @@ public class MessageHandler extends AbstractFormInterceptor {
         @Override
         public void onClick(ClickEvent event) {
           event.stopPropagation();
-          final Popup popup = new Popup(true, true, "bee-mail-AttachmentsPopup");
+          final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL,
+              "bee-mail-AttachmentsPopup");
           TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
           for (String[] item : attachments) {

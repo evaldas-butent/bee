@@ -746,7 +746,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     size = (size + TILE_MARGIN * 2 - getSplitterSize()) / 2;
 
     if (size < MIN_SIZE) {
-      Global.showError("Sub-Planck length is not allowed in this universe");
+      Global.showError(Lists.newArrayList("Sub-Planck length is not allowed in this universe"));
       return;
     }
 

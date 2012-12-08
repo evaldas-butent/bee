@@ -21,16 +21,6 @@ import java.util.List;
 
 public abstract class Filter implements BeeSerializable, RowFilter {
 
-  public static Filter and(Filter f1, Filter f2) {
-    if (f1 == null) {
-      return f2;
-    } else if (f2 == null) {
-      return f1;
-    } else {
-      return new CompoundFilter(CompoundType.AND, f1, f2);
-    }
-  }
-
   public static CompoundFilter and() {
     return new CompoundFilter(CompoundType.AND);
   }
@@ -53,6 +43,20 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
   }
 
+  public static Filter and(Filter f1, Filter f2) {
+    if (f1 == null) {
+      return f2;
+    } else if (f2 == null) {
+      return f1;
+    } else {
+      return new CompoundFilter(CompoundType.AND, f1, f2);
+    }
+  }
+
+  public static Filter and(Filter f1, Filter f2, Filter f3) {
+    return and(and(f1, f2), f3);
+  }
+  
   public static Filter anyContains(Collection<String> columns, String value) {
     Assert.notEmpty(columns);
     Assert.notEmpty(value);
@@ -128,14 +132,8 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new ColumnNotEmptyFilter(column);
   }
 
-  public static Filter or(Filter f1, Filter f2) {
-    if (f1 == null) {
-      return f2;
-    } else if (f2 == null) {
-      return f1;
-    } else {
-      return new CompoundFilter(CompoundType.OR, f1, f2);
-    }
+  public static CompoundFilter or() {
+    return new CompoundFilter(CompoundType.OR);
   }
 
   public static Filter or(Collection<Filter> filters) {
@@ -156,8 +154,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
   }
 
-  public static CompoundFilter or() {
-    return new CompoundFilter(CompoundType.OR);
+  public static Filter or(Filter f1, Filter f2) {
+    if (f1 == null) {
+      return f2;
+    } else if (f2 == null) {
+      return f1;
+    } else {
+      return new CompoundFilter(CompoundType.OR, f1, f2);
+    }
   }
 
   public static Filter restore(String s) {
@@ -215,6 +219,22 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   protected Filter() {
     this.safe = false;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof Filter) {
+      return toString().equals(obj.toString()); 
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return toString().hashCode();
   }
 
   public abstract boolean involvesColumn(String colName);

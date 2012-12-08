@@ -162,7 +162,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       result = new InputBoolean(null);
 
     } else {
-      result = EditorFactory.createEditor(getDataColumn());
+      result = EditorFactory.createEditor(getDataColumn(), getDataColumn().isText());
     }
 
     result.setNullable(isNullable());

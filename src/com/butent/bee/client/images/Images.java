@@ -9,6 +9,9 @@ import com.butent.bee.shared.Assert;
 
 import java.util.Map;
 
+import elemental.client.Browser;
+import elemental.html.ImageElement;
+
 /**
  * Handles a list of images used in the system.
  */
@@ -88,6 +91,9 @@ public class Images {
 
     @Source("edit_delete.png")
     ImageResource editDelete();
+
+    @Source("error.png")
+    ImageResource error();
 
     @Source("exit.gif")
     ImageResource exit();
@@ -221,6 +227,17 @@ public class Images {
 
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
+  private static final ImageElement imageElement = Browser.getDocument().createImageElement(); 
+
+  public static String asString(ImageResource imageResource) {
+    if (imageResource == null) {
+      return null;
+    }
+    
+    imageElement.setSrc(imageResource.getSafeUri().asString());
+    return imageElement.getOuterHTML();
+  }
+  
   public static Resources createResources() {
     return GWT.create(Resources.class);
   }
@@ -228,6 +245,10 @@ public class Images {
   public static ImageResource get(String name) {
     Assert.notEmpty(name);
     return map.get(key(name));
+  }
+
+  public static String getHtml(String name) {
+    return asString(get(name));
   }
   
   public static Map<String, ImageResource> getMap() {
@@ -277,6 +298,8 @@ public class Images {
 
     map.put(key("edit_add"), resources.editAdd());
     map.put(key("edit_delete"), resources.editDelete());
+
+    map.put(key("error"), resources.error());
 
     map.put(key("first"), resources.first());
 

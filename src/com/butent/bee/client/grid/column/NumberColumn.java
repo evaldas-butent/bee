@@ -5,7 +5,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.grid.cell.NumberCell;
 import com.butent.bee.client.i18n.HasNumberFormat;
-import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
 /**
@@ -15,15 +15,16 @@ import com.butent.bee.shared.data.IsRow;
 public abstract class NumberColumn<C extends Number> extends DataColumn<C> implements
     HasNumberFormat {
 
-  public NumberColumn(Cell<C> cell, int index, IsColumn dataColumn) {
-    super(cell, index, dataColumn);
+  public NumberColumn(Cell<C> cell, CellSource cellSource) {
+    super(cell, cellSource);
     setHorizontalAlignment(ALIGN_RIGHT);
   }
 
-  public NumberColumn(NumberFormat format, int index, IsColumn dataColumn) {
-    this(new NumberCell<C>(format), index, dataColumn);
+  public NumberColumn(NumberFormat format, CellSource cellSource) {
+    this(new NumberCell<C>(format), cellSource);
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     if (getCell() instanceof HasNumberFormat) {
       return ((HasNumberFormat) getCell()).getNumberFormat();
@@ -36,14 +37,15 @@ public abstract class NumberColumn<C extends Number> extends DataColumn<C> imple
     if (row == null) {
       return null;
     }
-    return getValue(row, getIndex());
+    return getNumber(row);
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     if (getCell() instanceof HasNumberFormat) {
       ((HasNumberFormat) getCell()).setNumberFormat(format);
     }
   }
 
-  protected abstract C getValue(IsRow row, int colIndex);
+  protected abstract C getNumber(IsRow row);
 }

@@ -15,6 +15,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -138,6 +139,12 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
     return deleteRowsMessage(selectedRows);
+  }
+
+  @Override
+  public AbstractFilterSupplier getFilterSupplier(String columnName,
+      ColumnDescription columnDescription) {
+    return null;
   }
 
   @Override

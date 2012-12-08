@@ -34,9 +34,7 @@ import java.util.Set;
 
 public class CacheManager implements HandlesAllDataEvents {
 
-  private static final BeeLogger logger = LogUtils.getLogger(CacheManager.class);
-  
-  private class Entry implements HasExtendedInfo, HasViewName {
+  private class Entry implements HasExtendedInfo, HasViewName, CellUpdateEvent.Handler {
 
     private final DataInfo dataInfo;
     
@@ -56,6 +54,7 @@ public class CacheManager implements HandlesAllDataEvents {
       this.dataRows = new CachedData(maximumSize, replacementPolicy);
     }
 
+    @Override
     public List<ExtendedProperty> getExtendedInfo() {
       List<ExtendedProperty> info = Lists.newArrayList();
 
@@ -80,6 +79,17 @@ public class CacheManager implements HandlesAllDataEvents {
     @Override
     public String getViewName() {
       return dataInfo.getViewName();
+    }
+
+    @Override
+    public void onCellUpdate(CellUpdateEvent event) {
+      BeeRow row = dataRows.get(event.getRowId());
+      if (row != null) {
+        event.applyTo(row);
+        if (event.hasColumn()) {
+          checkColumnUpdate(event.getSourceName());
+        }
+      }
     }
 
     private void addRows(List<BeeRow> rows, Filter filter, Order order, int offset) {
@@ -263,30 +273,6 @@ public class CacheManager implements HandlesAllDataEvents {
       }
     }
 
-    private boolean updateCell(long rowId, long version, String columnId, String value) {
-      BeeRow row = dataRows.get(rowId);
-      if (row == null) {
-        return false;
-      }
-      row.setVersion(version);
-
-      boolean ok = false;
-      for (int i = 0; i < dataInfo.getColumnCount(); i++) {
-        if (BeeUtils.same(dataInfo.getColumnId(i), columnId)) {
-          row.setValue(i, value);
-          ok = true;
-        }
-      }
-
-      if (ok) {
-        checkColumnUpdate(columnId);
-        logger.info("Cache", getViewName(), "updated", rowId, columnId, value);
-      } else {
-        logger.warning("Cache", getViewName(), "column", columnId, "not found");
-      }
-      return ok;
-    }
-
     private boolean updateRow(IsRow newRow) {
       boolean ok = false;
       if (newRow == null) {
@@ -314,6 +300,8 @@ public class CacheManager implements HandlesAllDataEvents {
       return ok;
     }
   }
+  
+  private static final BeeLogger logger = LogUtils.getLogger(CacheManager.class);
 
   private static final int DEFAULT_MAXIMUM_SIZE = 0x3fff;
   private static final ReplacementPolicy DEFAULT_REPLACEMENT_POLICY =
@@ -407,14 +395,15 @@ public class CacheManager implements HandlesAllDataEvents {
     return entry.getRowSet(filter, order, offset, limit);
   }
 
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     String key = event.getViewName();
     if (contains(key)) {
-      get(key).updateCell(event.getRowId(), event.getVersion(), event.getColumnName(),
-          event.getValue());
+      get(key).onCellUpdate(event);
     }
   }
 
+  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     String key = event.getViewName();
     if (!contains(key)) {
@@ -430,14 +419,17 @@ public class CacheManager implements HandlesAllDataEvents {
     logger.info("Cache", key, "deleted", cnt, "rows", "of", event.getRows().size());
   }
 
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
     deleteRow(event.getViewName(), event.getRowId());
   }
 
+  @Override
   public void onRowInsert(RowInsertEvent event) {
     insertRow(event.getViewName(), event.getRow());
   }
 
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
     String key = event.getViewName();
     if (contains(key)) {

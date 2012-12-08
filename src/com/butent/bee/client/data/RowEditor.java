@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.user.client.ui.UIObject;
 
@@ -44,13 +45,13 @@ public class RowEditor {
 
   public static final String DIALOG_STYLE = "bee-EditRow";
   public static final String EDITABLE_RELATION_STYLE = "bee-EditableRelation";
-  
+
   private static final BeeLogger logger = LogUtils.getLogger(RowEditor.class);
 
   private static final String HAS_DELEGATE = "*";
-  
+
   private static final Set<String> hasEditorDelegates = Sets.newHashSet();
-  
+
   public static String getFormName(String formName, DataInfo dataInfo) {
     if (!BeeUtils.isEmpty(formName)) {
       return formName;
@@ -62,7 +63,7 @@ public class RowEditor {
     if (!BeeUtils.isEmpty(dataInfo.getEditForm())) {
       return dataInfo.getEditForm();
     }
-    
+
     if (hasEditorDelegates.contains(dataInfo.getViewName())) {
       return HAS_DELEGATE;
     } else {
@@ -74,13 +75,13 @@ public class RowEditor {
     Assert.notEmpty(viewName);
     return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
   }
-  
+
   public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
       RowCallback rowCallback) {
     if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
       return false;
     }
-    
+
     String viewName = relation.getViewName();
     DataInfo dataInfo = Data.getDataInfo(viewName);
 
@@ -88,18 +89,13 @@ public class RowEditor {
     if (BeeUtils.isEmpty(formName)) {
       return false;
     }
-    
+
     getRow(formName, dataInfo, rowId, modal, null, rowCallback);
     return true;
   }
 
   public static void openRow(String viewName, BeeRow row, boolean modal) {
-    openRow(viewName, row, modal, null, null);
-  }
-
-  public static void openRow(String viewName, BeeRow row, boolean modal, RowCallback rowCallback,
-      PresenterCallback presenterCallback) {
-    openRow(viewName, row, modal, null, rowCallback, presenterCallback);
+    openRow(viewName, row, modal, null, null, modal ? null : PresenterCallback.SHOW_IN_NEW_TAB);
   }
 
   public static void openRow(String viewName, BeeRow row, boolean modal, UIObject target,
@@ -118,36 +114,36 @@ public class RowEditor {
   public static void openRow(String formName, DataInfo dataInfo, long rowId) {
     openRow(formName, dataInfo, rowId, false, null, null);
   }
-  
+
   public static void openRow(String formName, DataInfo dataInfo, long rowId,
       boolean modal, UIObject target, RowCallback rowCallback) {
     Assert.notNull(dataInfo);
     getRow(formName, dataInfo, rowId, modal, target, rowCallback);
   }
-  
+
   public static void openRow(String formName, DataInfo dataInfo, BeeRow row, boolean modal,
       UIObject target, RowCallback rowCallback, PresenterCallback presenterCallback) {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
-    
+
     RowActionEvent event = new RowActionEvent(dataInfo.getViewName(), row, Service.EDIT_ROW);
     BeeKeeper.getBus().fireEvent(event);
     if (event.isConsumed()) {
       return;
     }
-    
+
     if (BeeUtils.isEmpty(formName) || HAS_DELEGATE.equals(formName)) {
       logger.warning(dataInfo.getViewName(), "edit form not specified");
       return;
     }
-    
+
     createForm(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
   }
-  
+
   public static void registerHasDelegate(String viewName) {
     hasEditorDelegates.add(viewName);
   }
-  
+
   private static void createForm(String formName, final DataInfo dataInfo, final BeeRow row,
       final boolean modal, final UIObject target, final RowCallback rowCallback,
       final PresenterCallback presenterCallback) {
@@ -184,10 +180,10 @@ public class RowEditor {
           });
         }
       };
-      
+
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
-    
+
     getRow(formName, dataInfo, rowId, modal, target, rowCallback,
         PresenterCallback.SHOW_IN_NEW_TAB);
   }
@@ -203,7 +199,7 @@ public class RowEditor {
       }
     });
   }
-  
+
   private static void openForm(final FormView formView, final DataInfo dataInfo,
       final IsRow oldRow, final boolean modal, UIObject target, final RowCallback callback,
       PresenterCallback presenterCallback) {
@@ -265,6 +261,13 @@ public class RowEditor {
       }
     });
 
+    final ScheduledCommand focusCommand = new ScheduledCommand() {
+      @Override
+      public void execute() {
+        UiHelper.focus(formView.asWidget());
+      }
+    };
+
     if (modal) {
       dialog.setOnSave(new Scheduler.ScheduledCommand() {
         @Override
@@ -288,7 +291,7 @@ public class RowEditor {
         @Override
         public void onAttachOrDetach(AttachEvent event) {
           if (event.isAttached()) {
-            formView.updateRow(DataUtils.cloneRow(oldRow), true);
+            formView.editRow(oldRow, focusCommand);
           }
         }
       });
@@ -303,10 +306,8 @@ public class RowEditor {
       if (presenterCallback != null) {
         presenterCallback.onCreate(presenter);
       }
-      formView.updateRow(DataUtils.cloneRow(oldRow), true);
+      formView.editRow(oldRow, focusCommand);
     }
-
-    UiHelper.focus(formView.getRootWidget().asWidget());
   }
 
   private static int update(final DataInfo dataInfo, IsRow oldRow, IsRow newRow,

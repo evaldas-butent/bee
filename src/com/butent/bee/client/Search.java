@@ -154,8 +154,7 @@ public class Search {
     public void onCellUpdate(CellUpdateEvent event) {
       ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
       if (widget != null) {
-        widget.getRow().setVersion(event.getVersion());
-        widget.getRow().setValue(event.getColumnIndex(), event.getValue());
+        event.applyTo(widget.getRow());
 
         DataInfo dataInfo = Data.getDataInfo(event.getViewName());
         if (dataInfo != null) {

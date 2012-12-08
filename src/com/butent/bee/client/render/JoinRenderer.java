@@ -45,7 +45,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   private final String separator;
 
   public JoinRenderer(List<? extends IsColumn> dataColumns, String sep, List<String> items) {
-    super();
+    super(null);
     this.dataColumns = dataColumns;
     
     if (BeeUtils.isDigit(sep)) {

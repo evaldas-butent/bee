@@ -39,6 +39,22 @@ public class SqlUtils {
     return CompoundCondition.and(conditions);
   }
 
+  public static IsCondition any(IsExpression expr, Collection<?> values) {
+    if (BeeUtils.isEmpty(values)) {
+      return null;
+    }
+    
+    HasConditions cond = or();
+    for (Object value : values) {
+      cond.add(equal(expr, value));
+    }
+    return cond;
+  }
+
+  public static IsCondition any(String source, String field, Collection<?> values) {
+    return any(field(source, field), values);
+  }
+
   public static <T> IsExpression bitAnd(IsExpression expr, T value) {
     return new FunctionExpression(SqlFunction.BITAND,
         ImmutableMap.of("expression", expr, "value", value));
@@ -269,7 +285,7 @@ public class SqlUtils {
 
     return in(src, fld, query);
   }
-
+  
   public static IsCondition inList(IsExpression expr, Object... values) {
     Assert.minLength(ArrayUtils.length(values), 1);
     HasConditions cond = or();
