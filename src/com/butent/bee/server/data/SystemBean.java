@@ -122,8 +122,6 @@ public class SystemBean {
   public static final String AUDIT_FLD_FIELD = "Field";
   public static final String AUDIT_FLD_VALUE = "Value";
 
-  private final BeeLogger logger = LogUtils.getLogger(getClass());
-
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -134,6 +132,8 @@ public class SystemBean {
   ModuleHolderBean moduleBean;
   @EJB
   ParamHolderBean prm;
+
+  private final BeeLogger logger = LogUtils.getLogger(getClass());
 
   private String dbName;
   private String dbSchema;
@@ -195,7 +195,7 @@ public class SystemBean {
             .addCount("TotalRows")
             .addFrom(tbl);
       } else {
-        ss = getView(tbl).getQuery();
+        ss = getView(tbl).getQuery(null);
       }
       String stateAlias = joinState(ss, tbl, null, state.getName());
 
@@ -341,6 +341,15 @@ public class SystemBean {
       register(view, viewCache);
     }
     return view;
+  }
+
+  public BeeView.ViewFinder getViewFinder() {
+    return new BeeView.ViewFinder() {
+      @Override
+      public BeeView apply(String input) {
+        return viewCache.get(BeeUtils.normalize(input));
+      }
+    };
   }
 
   public Collection<String> getViewNames() {

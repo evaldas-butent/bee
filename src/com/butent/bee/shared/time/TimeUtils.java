@@ -569,6 +569,32 @@ public class TimeUtils {
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
 
+  public static String renderTime(long millis) {
+    if (millis < 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    int hour = (int) (millis / MILLIS_PER_HOUR);
+    int remaining = (int) (millis % MILLIS_PER_HOUR);
+    
+    int minute = remaining / MILLIS_PER_MINUTE;
+    remaining %= MILLIS_PER_MINUTE;
+    
+    int second = remaining / MILLIS_PER_SECOND;
+    remaining %= MILLIS_PER_SECOND;
+    
+    StringBuilder sb = new StringBuilder();
+    sb.append(hour).append(DateTime.TIME_FIELD_SEPARATOR).append(padTwo(minute));
+    
+    if (second > 0 || remaining > 0) {
+      sb.append(DateTime.TIME_FIELD_SEPARATOR).append(padTwo(second));
+    }
+    if (remaining > 0) {
+      sb.append(DateTime.MILLIS_SEPARATOR).append(millisToString(remaining));
+    }
+    return sb.toString();
+  }
+
   public static boolean sameDate(HasDateValue x, HasDateValue y) {
     if (x == null || y == null) {
       return x == y;
@@ -685,7 +711,7 @@ public class TimeUtils {
     }
     return new JustDate(year, 1, 1);
   }
-
+  
   /**
    * Converts {@code x} to a JustDate format.
    * 

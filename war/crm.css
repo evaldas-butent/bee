@@ -1,6 +1,9 @@
+.bee-crm-taskEvent-container {
+  background-color: #f5f5ed;
+  border-left: 1px solid #ccc;
+}
 .bee-crm-taskEvent-row {
   display: -webkit-flex;
-  border-left: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
   padding: 2px 5px 2px;
 }
@@ -29,15 +32,75 @@
   line-height: 27px;
 }
 
+.bee-crm-taskDialog-container {
+  margin: 10px;
+}
 .bee-crm-taskDialog-container td {
-  padding: 6px;
+  padding: 8px;
 }
 
-.bee-crm-taskDialog-commentlabelCell {
+.bee-crm-taskDialog-commentLabelCell {
   vertical-align: top;
 }
 .bee-crm-taskDialog-commentArea {
   width: 300px;
   height: 100px;
+}
+
+.bee-crm-taskDialog-timeInput {
+  width: 60px;
+}
+.bee-crm-taskDialog-selectorInput {
+  width: 200px;
+}
+.bee-crm-taskDialog-dateInput {
+  width: 120px;
+}
+
+.bee-crm-taskEdit-form .bee-disabled, .bee-crm-taskEdit-form .bee-disabled input, .bee-crm-taskEvent-container {
+  background-color: #f3f3eb;
+}
+.bee-crm-taskEdit-form .bee-disabled {
+  border: 1px solid #aaa;
+  padding-left: 2px;
+}
+
+.bee-crm-taskEdit-form .bee-MultiSelector-container {
+  background-image: none;
+  border: 1px solid #aaa;
+}
+.bee-crm-taskEdit-form .bee-MultiSelector-choice {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  box-shadow : none;
+  padding: 2px 15px 2px 3px;
+  margin: 2px 0 2px 3px;
+}
+.bee-crm-taskEdit-form .bee-MultiSelector-label {
+  color: #222;
+  line-height: 13px;
+}
+.bee-crm-taskEdit-form .bee-MultiSelector-close {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+}
+
+.bee-crm-taskDuration-display {
+  border-collapse: collapse;
+}
+.bee-crm-taskDuration-display td {
+  border: 1px solid #aaa;
+  padding: 3px;
+}
+.bee-crm-taskDuration-caption {
+  padding-right: 20px;
+}
+.bee-crm-taskDuration-valueCell, .bee-crm-taskDuration-rowTotalCell, .bee-crm-taskDuration-colTotalCell, .bee-crm-taskDuration-totalCell {
+  text-align: right;
+}
+.bee-crm-taskDuration-rowLabel, .bee-crm-taskDuration-colLabel, .bee-crm-taskDuration-rowTotal, .bee-crm-taskDuration-colTotal, .bee-crm-taskDuration-total {
+  font-weight: bold;
 }
 

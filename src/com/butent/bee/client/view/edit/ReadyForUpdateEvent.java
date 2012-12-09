@@ -3,7 +3,7 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
@@ -35,10 +35,10 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
 
   private final boolean rowMode;
   
-  private final Callback<IsRow> callback;
+  private final RowCallback callback;
 
   public ReadyForUpdateEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
-      boolean rowMode, Callback<IsRow> callback) {
+      boolean rowMode, RowCallback callback) {
     this.rowValue = rowValue;
     this.column = column;
     this.oldValue = oldValue;
@@ -52,7 +52,7 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
     return TYPE;
   }
 
-  public Callback<IsRow> getCallback() {
+  public RowCallback getCallback() {
     return callback;
   }
 

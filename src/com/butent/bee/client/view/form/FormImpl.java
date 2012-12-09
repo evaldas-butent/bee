@@ -17,9 +17,9 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Notification;
@@ -67,6 +67,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -893,7 +894,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       return;
     }
 
-    Callback<IsRow> callback = new Callback<IsRow>() {
+    RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         notifySevere(reason);
@@ -901,7 +902,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
 
       @Override
-      public void onSuccess(IsRow result) {
+      public void onSuccess(BeeRow result) {
         finishNewRow(result);
       }
     };
@@ -1243,14 +1244,14 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   private void fireUpdate(IsRow rowValue, final IsColumn column, String oldValue,
       final String newValue, boolean rowMode) {
     fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, rowMode,
-        new Callback<IsRow>() {
+        new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             notifySevere(reason);
           }
 
           @Override
-          public void onSuccess(IsRow result) {
+          public void onSuccess(BeeRow result) {
           }
         }));
   }

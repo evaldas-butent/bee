@@ -9,12 +9,12 @@ name="Tasks" label="Užduotys" order="30"
 
   <Item name="AllTasks" label="Užduočių sąrašas" service="task_list" parameters="g" separator="true" />
 
-  <Item name="NewTask" label="Nauja užduotis" service="form" parameters="NewTask" separator="true" />
+  <Item name="NewTask" label="Nauja užduotis" service="new" parameters="Tasks" separator="true" />
 
   <Item name="TaskDurations" label="Registruoti laikai" service="grid" parameters="TaskDurations" separator="true" />
 
   <Item name="RecurringTasks" label="Periodinės užduotys" service="grid" parameters="RecurringTasks" separator="true" />
-  <Item name="NewRecurringTask" label="Nauja periodinė užduotis" service="form" parameters="NewRecurringTask" />
+  <Item name="NewRecurringTask" label="Nauja periodinė užduotis" service="new" parameters="RecurringTasks" />
 
   <Item name="TaskFactory" label="Užduočių formavimas" service="task_factory" separator="true" />
 

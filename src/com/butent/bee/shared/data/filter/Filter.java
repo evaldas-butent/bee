@@ -57,6 +57,21 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return and(and(f1, f2), f3);
   }
   
+  public static Filter any(String column, Collection<Long> values) {
+    Assert.notEmpty(column);
+    Assert.notNull(values);
+
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    CompoundFilter filter = or();
+    for (Long value : values) {
+      filter.add(ComparisonFilter.isEqual(column, new LongValue(value)));
+    }
+    return filter;
+  }
+
   public static Filter anyContains(Collection<String> columns, String value) {
     Assert.notEmpty(columns);
     Assert.notEmpty(value);
@@ -93,20 +108,17 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
     return filter;
   }
+  
+  public static Filter in(String column, String inView, String inColumn) {
+    return in(column, inView, inColumn, null);
+  }
 
-  public static Filter in(String column, Collection<Long> values) {
+  public static Filter in(String column, String inView, String inColumn, Filter inFilter) {
     Assert.notEmpty(column);
-    Assert.notNull(values);
+    Assert.notEmpty(inView);
+    Assert.notEmpty(inColumn);
 
-    if (values.isEmpty()) {
-      return null;
-    }
-
-    CompoundFilter filter = or();
-    for (Long value : values) {
-      filter.add(ComparisonFilter.isEqual(column, new LongValue(value)));
-    }
-    return filter;
+    return new ColumnInFilter(column, inView, inColumn, inFilter);
   }
 
   public static Filter isEmpty(String column) {
@@ -209,6 +221,9 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     } else if (NameUtils.getClassName(IsTrueFilter.class).equals(clazz)) {
       flt = new IsTrueFilter();
 
+    } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
+      flt = new ColumnInFilter();
+      
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);
     }

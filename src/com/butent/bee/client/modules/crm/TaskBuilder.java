@@ -130,11 +130,14 @@ class TaskBuilder extends AbstractFormInterceptor {
           createFiles(tasks);
 
           event.getCallback().onSuccess(null);
-
+          
+          String message = BeeUtils.joinWords("Sukurta naujų užduočių:", tasks.size());
           GridView gridView = getGridView();
           if (gridView != null) {
-            gridView.notifyInfo("Sukurta naujų užduočių:", String.valueOf(tasks.size()));
+            gridView.notifyInfo(message);
             gridView.getViewPresenter().handleAction(Action.REFRESH);
+          } else {
+            BeeKeeper.getScreen().notifyInfo(message);
           }
 
         } else {

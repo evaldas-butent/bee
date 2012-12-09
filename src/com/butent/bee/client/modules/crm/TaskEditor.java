@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.crm;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -66,8 +68,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class TaskEditor extends AbstractFormInterceptor {
 
@@ -244,6 +248,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       styleName = STYLE_DIALOG + "-timeInput";
       InputTime input = new InputTime(ValueType.TEXT);
+      input.addStyleName(styleName);
 
       table.setWidget(row, col, input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
@@ -314,6 +319,9 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
   private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
+
+  private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
+  private static final String STYLE_DURATION_CELL = "Cell";
   
   private final long userId;
 
@@ -420,16 +428,22 @@ class TaskEditor extends AbstractFormInterceptor {
 
         String events = data.getProperty(PROP_EVENTS);
         if (!BeeUtils.isEmpty(events)) {
-          showEvents(form, BeeRowSet.restore(events), files);
+          showEventsAndDuration(form, BeeRowSet.restore(events), files);
         }
 
         form.updateRow(data, true);
-        if (focusCommand != null) {
-          focusCommand.execute();
-        }
       }
     });
     return false;
+  }
+
+  private void addDurationCell(HtmlTable display, int row, int col, String value, String style) {
+    Widget widget = new CustomDiv(STYLE_DURATION + style);
+    if (!BeeUtils.isEmpty(value)) {
+      widget.getElement().setInnerText(value);
+    }
+    
+    display.setWidget(row, col, widget, STYLE_DURATION + style + STYLE_DURATION_CELL);
   }
 
   private void closeForm() {
@@ -443,7 +457,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
     return widget;
   }
-
+  
   private ParameterList createRequestParams(IsRow oldRow, TaskEvent event, List<String> colNames,
       List<String> newValues, String comment) {
 
@@ -1039,11 +1053,85 @@ class TaskEditor extends AbstractFormInterceptor {
     return true;
   }
   
+  private void showDurations(FormView form, Table<String, String, Integer> durations) {
+    Widget widget = form.getWidgetByName(VIEW_TASK_DURATIONS);
+    if (!(widget instanceof Flow)) {
+      return;
+    }
+
+    Flow panel = (Flow) widget;
+    panel.clear();
+    
+    if (durations.isEmpty()) {
+      return;
+    }
+    
+    Set<String> rows = durations.rowKeySet();
+    Set<String> columns = durations.columnKeySet();
+    
+    HtmlTable display = new HtmlTable();
+    display.addStyleName(STYLE_DURATION + "display");
+    
+    int r = 0;
+    int c = 0;
+    
+    addDurationCell(display, r, c++, "Sugaištas laikas:", "caption");
+    for (String column : columns) {
+      addDurationCell(display, r, c++, column, "colLabel");
+    }
+    r++;
+    
+    int totMillis = 0;
+    for (String row : rows) {
+      c = 0;
+      addDurationCell(display, r, c++, row, "rowLabel");
+      
+      int rowMillis = 0;
+      for (String column : columns) {
+        int millis = BeeUtils.unbox(durations.get(row, column));
+        
+        if (millis > 0) {
+          addDurationCell(display, r, c, TimeUtils.renderTime(millis), "value");
+
+          rowMillis += millis;
+          totMillis += millis;
+        }
+        c++;
+      }
+      
+      if (columns.size() > 1) {
+        addDurationCell(display, r, c, TimeUtils.renderTime(rowMillis), "rowTotal");
+      }
+      r++;
+    }
+    
+    if (rows.size() > 1) {
+      c = 1;
+
+      for (String column : columns) {
+        Collection<Integer> values = durations.column(column).values();
+        
+        int colMillis = 0;
+        for (Integer value : values) {
+          colMillis += BeeUtils.unbox(value);
+        }
+        addDurationCell(display, r, c++, TimeUtils.renderTime(colMillis), "rowTotal");
+      }
+      
+      if (columns.size() > 1) {
+        addDurationCell(display, r, c, TimeUtils.renderTime(totMillis), "colTotal");
+      }
+    }
+    
+    panel.add(display);
+  }
+
   private void showError(String message) {
     Global.showError("Klaida", Lists.newArrayList(message));
   }
-
-  private void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns, List<StoredFile> files) {
+  
+  private void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns, List<StoredFile> files,
+      Table<String, String, Integer> durations) {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
@@ -1107,6 +1195,12 @@ class TaskEditor extends AbstractFormInterceptor {
       }
       
       container.add(col2);
+      
+      int millis = TimeUtils.parseTime(duration);
+      if (millis > 0 && !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
+        Integer value = durations.get(publisher, durType);
+        durations.put(publisher, durType, millis + BeeUtils.unbox(value));
+      }
     }
 
     panel.add(container);
@@ -1123,7 +1217,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
   
-  private void showEvents(FormView form, BeeRowSet rowSet, List<StoredFile> files) {
+  private void showEventsAndDuration(FormView form, BeeRowSet rowSet, List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;
@@ -1131,10 +1225,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Flow panel = (Flow) widget;
     panel.clear();
+    
+    Table<String, String, Integer> durations = TreeBasedTable.create();
 
     for (BeeRow row : rowSet.getRows()) {
-      showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()));
+      showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations);
     }
+    
+    showDurations(form, durations);
 
     if (panel.getWidgetCount() > 1) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);

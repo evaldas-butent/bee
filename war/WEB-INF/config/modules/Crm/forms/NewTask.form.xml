@@ -21,7 +21,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewTask" caption="Nauja užduotis">
+  name="NewTask" caption="Nauja užduotis" width="740" height="560">
 
   <FlowPanel style="margin: 10px 5px 2px 5px;">
 

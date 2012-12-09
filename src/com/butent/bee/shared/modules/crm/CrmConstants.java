@@ -129,6 +129,7 @@ public class CrmConstants {
   public static final String VIEW_TASK_FILES = "TaskFiles";
   public static final String VIEW_TASK_USERS = "TaskUsers";
   public static final String VIEW_TASK_EVENTS = "TaskEvents";
+  public static final String VIEW_TASK_DURATIONS = "TaskDurations";
 
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
   

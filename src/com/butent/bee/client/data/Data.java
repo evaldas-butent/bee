@@ -107,6 +107,10 @@ public class Data {
     return COLUMN_MAPPER.getDouble(viewName, row, colName);
   }
 
+  public static String getIdColumn(String viewName) {
+    return getDataInfo(viewName).getIdColumn();
+  }
+  
   public static Integer getInteger(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getInteger(viewName, row, colName);
   }

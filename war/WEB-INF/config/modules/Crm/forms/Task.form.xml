@@ -10,8 +10,8 @@
   <!ENTITY top1 "float: left; width: 100px; padding-top: 2px;">
   <!ENTITY inp2 "&inline; width: 140px;">
   <!ENTITY inp2x "&inline; width: 440px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 10px;">
-  <!ENTITY inp4 "&inline;">
+  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 16px;">
+  <!ENTITY inp4 "&inline; width: 140px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -19,48 +19,49 @@
   
   name="Task" viewName="Tasks" caption="Užduotis">
 
-  <FlowPanel class="flexBox-horizontal" style="margin-top: 1ex;">
+  <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form" style="margin-top: 1ex;">
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
         <Label html="Būsena:" style="&lbl1;" />
         <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
-        <Label html="Prioritetas:" style="&lbl3;" />
-        <ListBox source="Priority" itemKey="TaskPriority" style="&inp4;" />
+        <Label html="Prioritetas:" style="&inline; padding-top: 2px; margin-left: 20px;" />
+        <Radio source="Priority" itemKey="TaskPriority" style="&inline; margin-left: 12px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vadovas:" style="&lbl1;" />
         <DataSelector source="Owner" editEnabled="true" style="&inp2;" readOnly="true" />
         <Label html="Įmonė:" style="&lbl3;" />
-        <DataSelector source="Company" editEnabled="true" style="&inp4; width: 140px;" />
+        <DataSelector source="Company" editEnabled="true" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vykdytojas:" style="&lbl1;" />
         <DataSelector source="Executor" editEnabled="true" style="&inp2;" readOnly="true" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
-        <DataSelector source="Contact" style="&inp4; width: 140px;" />
+        <DataSelector source="Contact" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
+      &separator;
       <FlowPanel style="&section;">
         <Label html="Įkelta:" style="&lbl1;" />
         <InputDateTime source="Created" style="&inp2;" readOnly="true" />
         <Label html="Numatoma trukmė:" style="&lbl3;" />
-        <InputTime source="ExpectedDuration" step="30" style="&inp4; width: 50px;" />
+        <InputTime source="ExpectedDuration" step="30" style="&inline; width: 60px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Pradžios data:" style="&lbl1;" />
         <InputDateTime source="StartTime" style="&inp2;" readOnly="true" />
         <Label html="Įvykdymo data:" style="&lbl3;" />
-        <InputDateTime source="Completed" step="30" style="&inp4; width: 100px;" readOnly="true" />
+        <InputDateTime source="Completed" step="30" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Pabaigos data:" style="&lbl1;" />
         <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
         <Label html="Patvirtinimo data:" style="&lbl3;" />
-        <InputDateTime source="Approved" style="&inp4; width: 100px;" readOnly="true" />
+        <InputDateTime source="Approved" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -80,11 +81,7 @@
         <InputArea source="Description" style="width: 440px; height: 60px;" />
       </FlowPanel>
 
-      &separator;
-      <FlowPanel style="&section;">
-        <Label html="Bylos:" style="&top1;" />
-        <FileGroup name="Files" />
-      </FlowPanel>
+      <FileGroup name="Files" />
 
       &separator;
       <FlowPanel style="&section;">
@@ -94,10 +91,6 @@
       </FlowPanel>
 
       &separator;
-      <FlowPanel style="&section;">
-        <Label html="Susijusi su:" style="&header;" />
-      </FlowPanel>
-
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
@@ -125,13 +118,10 @@
       </FlowPanel>
 
       &separator;
-      <FlowPanel style="&section;">
-        <Label html="Sugaištas laikas:" style="&top1;" />
-        <FlowPanel name="TimeSpent" />
-      </FlowPanel>
+      <FlowPanel name="TaskDurations" style="overflow: auto; width: 540px;" />
     </FlowPanel>
 
-    <FlowPanel name="TaskEvents" class="flexible" 
-      style="margin-left: 15px; overflow: auto; height: -webkit-calc(100% - 5px)" />
+    <FlowPanel name="TaskEvents" class="flexible bee-crm-taskEvent-container" 
+      style="margin-left: 15px; overflow: auto; height: -webkit-calc(100% - 5px);" />
   </FlowPanel>
 </f:Form>  

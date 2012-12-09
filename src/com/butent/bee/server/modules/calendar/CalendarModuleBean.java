@@ -535,10 +535,10 @@ public class CalendarModuleBean implements BeeModule {
 
   private Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
     if (!BeeUtils.isEmpty(attendeeTypes) || !BeeUtils.isEmpty(attendees)) {
-      return Filter.or(Filter.in(COL_ATTENDEE_TYPE, attendeeTypes),
+      return Filter.or(Filter.any(COL_ATTENDEE_TYPE, attendeeTypes),
           Filter.idIn(attendees));
     } else if (!BeeUtils.isEmpty(attendeeTypes)) {
-      return Filter.in(COL_ATTENDEE_TYPE, attendeeTypes);
+      return Filter.any(COL_ATTENDEE_TYPE, attendeeTypes);
     } else if (!BeeUtils.isEmpty(attendees)) {
       return Filter.idIn(attendees);
     } else {
@@ -792,11 +792,11 @@ public class CalendarModuleBean implements BeeModule {
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
 
     if (!calAppTypes.isEmpty()) {
-      appFilter.add(Filter.in(COL_APPOINTMENT_TYPE,
+      appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
     }
     if (!calPersons.isEmpty()) {
-      appFilter.add(Filter.in(COL_ORGANIZER,
+      appFilter.add(Filter.any(COL_ORGANIZER,
           DataUtils.getDistinct(calPersons, COL_COMPANY_PERSON)));
     }
 
@@ -816,7 +816,7 @@ public class CalendarModuleBean implements BeeModule {
 
     CompoundFilter attFilter = Filter.or();
     if (!calAttTypes.isEmpty()) {
-      attFilter.add(Filter.in(COL_ATTENDEE_TYPE,
+      attFilter.add(Filter.any(COL_ATTENDEE_TYPE,
           DataUtils.getDistinct(calAttTypes, COL_ATTENDEE_TYPE)));
     }
     if (!calAttendees.isEmpty()) {
@@ -901,7 +901,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(appointments);
     }
 
-    Filter in = Filter.in(COL_APPOINTMENT, DataUtils.getRowIds(appointments));
+    Filter in = Filter.any(COL_APPOINTMENT, DataUtils.getRowIds(appointments));
 
     BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, in);
     BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS, in);

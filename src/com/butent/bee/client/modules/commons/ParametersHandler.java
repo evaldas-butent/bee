@@ -5,11 +5,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.LocalProvider;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -215,7 +215,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
   }
 
   private boolean change(final GridView gridView, final long id, final String name,
-      final String value, final Callback<IsRow> callback) {
+      final String value, final RowCallback callback) {
 
     ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_SET_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
@@ -358,7 +358,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
   }
 
   private void update(final GridView gridView, final long id, final BeeParameter parameter,
-      final Callback<IsRow> callback) {
+      final RowCallback callback) {
 
     ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_CREATE_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, Codec.beeSerialize(parameter));

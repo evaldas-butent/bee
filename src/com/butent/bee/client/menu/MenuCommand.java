@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Command;
@@ -15,6 +16,10 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class MenuCommand extends Command {
+  
+  private static final String SERVICE_FORM = "form";
+  private static final String SERVICE_GRID = "grid";
+  private static final String SERVICE_NEW = "new";
 
   public MenuCommand() {
     super();
@@ -33,13 +38,21 @@ public class MenuCommand extends Command {
     String svc = getService();
     String args = getParameters();
     
-    if (BeeUtils.same(svc, "form") && !BeeUtils.isEmpty(args)) {
-      FormFactory.openForm(args);
-      return;
-    }
-    if (BeeUtils.same(svc, "grid") && !BeeUtils.isEmpty(args)) {
-      GridFactory.openGrid(args);
-      return;
+    if (!BeeUtils.isEmpty(args)) {
+      if (BeeUtils.same(svc, SERVICE_FORM)) {
+        FormFactory.openForm(args);
+        return;
+      }
+
+      if (BeeUtils.same(svc, SERVICE_GRID)) {
+        GridFactory.openGrid(args);
+        return;
+      }
+
+      if (BeeUtils.same(svc, SERVICE_NEW)) {
+        RowFactory.createRow(args);
+        return;
+      }
     }
     
     if (!BeeUtils.isEmpty(svc)) {

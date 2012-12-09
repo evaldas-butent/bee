@@ -69,7 +69,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       return true;
     }
 
-    insert(row, new Callback<IsRow>() {
+    insert(row, new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         if (callback != null) {
@@ -78,7 +78,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       }
 
       @Override
-      public void onSuccess(IsRow result) {
+      public void onSuccess(BeeRow result) {
         formView.updateRow(result, true);
         if (callback != null) {
           callback.onSuccess(result);
@@ -127,16 +127,16 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     IsRow row = formView.getActiveRow();
 
     if (DataUtils.isNewRow(row)) {
-      insert(row, new Callback<IsRow>() {
+      insert(row, new RowCallback() {
         @Override
         public void onFailure(String... reason) {
           formView.notifySevere(reason);
         }
 
         @Override
-        public void onSuccess(IsRow result) {
-          if (callback != null && result instanceof BeeRow) {
-            callback.onSuccess((BeeRow) result);
+        public void onSuccess(BeeRow result) {
+          if (callback != null) {
+            callback.onSuccess(result);
           }
         }
       });
@@ -193,7 +193,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     return actionDelegate;
   }
 
-  private void insert(IsRow row, final Callback<IsRow> callback) {
+  private void insert(IsRow row, final RowCallback callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
@@ -219,6 +219,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     if (formView.getFormInterceptor() != null) {
       ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
       if (!formView.getFormInterceptor().onReadyForInsert(event)) {
+        if (callback != null) {
+          callback.onCancel();
+        }
         return;
       }
     }

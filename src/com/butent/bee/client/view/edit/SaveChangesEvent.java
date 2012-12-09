@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -41,10 +41,10 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   private final List<String> oldValues;
   private final List<String> newValues;
   
-  private final Callback<IsRow> callback;
+  private final RowCallback callback;
   
   public SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
-      List<String> oldValues, List<String> newValues, Callback<IsRow> callback) {
+      List<String> oldValues, List<String> newValues, RowCallback callback) {
     super();
     this.oldRow = oldRow;
     this.newRow = newRow;
@@ -59,7 +59,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
     return TYPE;
   }
 
-  public Callback<IsRow> getCallback() {
+  public RowCallback getCallback() {
     return callback;
   }
   

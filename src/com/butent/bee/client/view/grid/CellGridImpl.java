@@ -128,14 +128,14 @@ import java.util.Set;
 public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler,
     EditEndEvent.Handler, ActionEvent.Handler {
 
-  private class SaveChangesCallback extends Callback<IsRow> {
+  private class SaveChangesCallback extends RowCallback {
     @Override
     public void onFailure(String... reason) {
       getEditForm().notifySevere(reason);
     }
 
     @Override
-    public void onSuccess(IsRow result) {
+    public void onSuccess(BeeRow result) {
       closeEditForm();
     }
   }
@@ -917,7 +917,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return false;
     }
 
-    prepareForInsert(row, form, new Callback<IsRow>() {
+    prepareForInsert(row, form, new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         if (callback != null) {
@@ -926,7 +926,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       @Override
-      public void onSuccess(IsRow result) {
+      public void onSuccess(BeeRow result) {
         form.updateRow(result, true);
 
         IsRow copy = DataUtils.cloneRow(result);
@@ -986,27 +986,27 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (isAdding()) {
       if (DataUtils.isNewRow(newRow)) {
-        prepareForInsert(newRow, form, new Callback<IsRow>() {
+        prepareForInsert(newRow, form, new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
           }
 
           @Override
-          public void onSuccess(IsRow result) {
+          public void onSuccess(BeeRow result) {
             finishNewRow(result);
           }
         });
 
       } else {
-        boolean changed = saveChanges(oldRow, newRow, new Callback<IsRow>() {
+        boolean changed = saveChanges(oldRow, newRow, new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
           }
 
           @Override
-          public void onSuccess(IsRow result) {
+          public void onSuccess(BeeRow result) {
             finishNewRow(null);
           }
         });
@@ -2011,7 +2011,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return RowEditor.openRelatedRow(editableColumn.getRelation(), id, modal, rowCallback);
   }
 
-  private void prepareForInsert(IsRow row, FormView form, Callback<IsRow> callback) {
+  private void prepareForInsert(IsRow row, FormView form, RowCallback callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
@@ -2051,7 +2051,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     fireEvent(event);
   }
 
-  private boolean saveChanges(IsRow oldRow, IsRow newRow, Callback<IsRow> callback) {
+  private boolean saveChanges(IsRow oldRow, IsRow newRow, RowCallback callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> oldValues = Lists.newArrayList();
     List<String> newValues = Lists.newArrayList();
@@ -2249,7 +2249,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
 
-    Callback<IsRow> callback = new Callback<IsRow>() {
+    RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         refreshCellContent(rowValue.getId(), dataColumn.getId());
@@ -2257,7 +2257,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       @Override
-      public void onSuccess(IsRow result) {
+      public void onSuccess(BeeRow result) {
       }
     };
 

@@ -119,6 +119,22 @@ public class RowFactory {
     });
   }
 
+  public static void createRow(String viewName) {
+    Assert.notEmpty(viewName);
+
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (dataInfo == null) {
+      return;
+    }
+    
+    String formName = dataInfo.getNewRowForm();
+    String caption = dataInfo.getNewRowCaption();
+    
+    BeeRow row = createEmptyRow(dataInfo, true);
+    
+    createRow(formName, caption, dataInfo, row, null, null);
+  }
+  
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       UIObject target, FormInterceptor formInterceptor, RowCallback rowCallback) {
     Assert.notEmpty(formName);
@@ -309,6 +325,14 @@ public class RowFactory {
       @Override
       public void onSave() {
         presenter.save(new RowCallback() {
+          @Override
+          public void onCancel() {
+            dialog.hide();
+            if (callback != null) {
+              callback.onCancel();
+            }
+          }
+
           @Override
           public void onSuccess(BeeRow result) {
             dialog.hide();

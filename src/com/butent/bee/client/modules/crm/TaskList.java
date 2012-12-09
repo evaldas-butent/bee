@@ -6,6 +6,7 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -23,7 +24,6 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.CellSource;
@@ -34,7 +34,6 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -150,34 +149,7 @@ class TaskList {
 
     @Override
     public boolean onLoad(GridDescription gridDescription) {
-      Value userValue = new LongValue(userId);
-      Filter filter;
-
-      switch (type) {
-        case ASSIGNED:
-          filter = ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
-          break;
-
-        case DELEGATED:
-          filter = Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
-              ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
-          break;
-
-        case OBSERVED:
-          filter = Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
-              ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
-          break;
-        
-        case GENERAL:
-          filter = null;
-          break;
-
-        default:
-          Assert.untouchable();
-          filter = null;
-      }
-
-      gridDescription.setFilter(filter);
+      gridDescription.setFilter(type.getFilter(new LongValue(userId)));
       return true;
     }
 
@@ -252,10 +224,36 @@ class TaskList {
   }
 
   private enum Type implements HasCaption {
-    ASSIGNED("Gautos užduotys"),
-    DELEGATED("Deleguotos užduotys"),
-    OBSERVED("Stebimos užduotys"),
-    GENERAL("Užduočių sąrašas");
+    ASSIGNED("Gautos užduotys") {
+      @Override
+      Filter getFilter(LongValue userValue) {
+        return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
+      }
+    },
+    
+    DELEGATED("Deleguotos užduotys") {
+      @Override
+      Filter getFilter(LongValue userValue) {
+        return ComparisonFilter.isEqual(COL_OWNER, userValue);
+      }
+    },
+    
+    OBSERVED("Stebimos užduotys") {
+      @Override
+      Filter getFilter(LongValue userValue) {
+        return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
+            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue),
+            Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
+                ComparisonFilter.isEqual(COL_USER, userValue)));
+      }
+    },
+    
+    GENERAL("Užduočių sąrašas") {
+      @Override
+      Filter getFilter(LongValue userValue) {
+        return null;
+      }
+    };
 
     private final String caption;
 
@@ -267,6 +265,8 @@ class TaskList {
     public String getCaption() {
       return caption;
     }
+    
+    abstract Filter getFilter(LongValue userValue);
   }
 
   public static void open(String args) {

@@ -1,5 +1,6 @@
 package com.butent.bee.server.data;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleJoin;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
+import com.butent.bee.shared.data.filter.ColumnInFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnNotEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
@@ -75,6 +77,9 @@ import java.util.Set;
  */
 
 public class BeeView implements BeeObject, HasExtendedInfo {
+  
+  public interface ViewFinder extends Function<String, BeeView> {
+  }
 
   private class ColumnInfo {
     private final String colName;
@@ -486,7 +491,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnInfo(colName).getType();
   }
 
-  public IsCondition getCondition(Filter flt) {
+  public IsCondition getCondition(Filter flt, ViewFinder viewFinder) {
     if (flt != null) {
       String clazz = NameUtils.getClassName(flt.getClass());
 
@@ -503,7 +508,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         return getCondition((ColumnNotEmptyFilter) flt);
 
       } else if (NameUtils.getClassName(CompoundFilter.class).equals(clazz)) {
-        return getCondition((CompoundFilter) flt);
+        return getCondition((CompoundFilter) flt, viewFinder);
 
       } else if (NameUtils.getClassName(IdFilter.class).equals(clazz)) {
         return getCondition((IdFilter) flt);
@@ -517,6 +522,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else if (NameUtils.getClassName(IsTrueFilter.class).equals(clazz)) {
         return SqlUtils.sqlTrue();
 
+      } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
+        return getCondition((ColumnInFilter) flt, viewFinder);
+        
       } else {
         Assert.unsupported("Unsupported class name: " + clazz);
       }
@@ -592,7 +600,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return newRowForm;
   }
 
-  public SqlSelect getQuery(Filter flt, Order ord, List<String> cols) {
+  public SqlSelect getQuery(Filter flt, Order ord, List<String> cols, ViewFinder viewFinder) {
     SqlSelect ss = query.copyOf();
     Collection<String> activeCols = null;
 
@@ -608,7 +616,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
       }
     }
-    setFilter(ss, flt);
+    setFilter(ss, flt, viewFinder);
 
     String src = getSourceAlias();
     String idCol = getSourceIdName();
@@ -658,12 +666,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return ss.addFields(src, idCol, verCol);
   }
 
-  public SqlSelect getQuery(Filter flt) {
-    return getQuery(flt, null, null);
+  public SqlSelect getQuery(Filter flt, ViewFinder viewFinder) {
+    return getQuery(flt, null, null, viewFinder);
   }
 
-  public SqlSelect getQuery() {
-    return getQuery(null, null, null);
+  public SqlSelect getQuery(ViewFinder viewFinder) {
+    return getQuery(null, null, null, viewFinder);
   }
 
   public String getRowCaption() {
@@ -899,6 +907,38 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         getSqlExpression(flt.getColumn()), flt.getOperator(), getSqlExpression(flt.getValue()));
   }
 
+  private IsCondition getCondition(ColumnInFilter flt, ViewFinder viewFinder) {
+    if (viewFinder == null) {
+      logger.warning(flt.getClass().getSimpleName(), "view finder not supplied");
+      return null;
+    }
+    BeeView inView = viewFinder.apply(flt.getInView());
+    if (inView == null) {
+      logger.warning(flt.getClass().getSimpleName(), "view not found:", flt.getInView());
+      return null;
+    }
+    
+    String column = flt.getColumn();
+    
+    String tbl;
+    String fld;
+    
+    if (BeeUtils.same(column, getSourceIdName())) {
+      tbl = getSourceAlias();
+      fld = getSourceIdName();
+    } else {
+      tbl = getColumnTable(column);
+      fld = getColumnField(column);
+    }
+    
+    String inTbl = inView.getColumnTable(flt.getInColumn());
+    String inFld = inView.getColumnField(flt.getInColumn());
+    
+    Filter inFilter = flt.getInFilter();
+    
+    return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter, viewFinder));
+  }
+  
   private IsCondition getCondition(ColumnIsEmptyFilter flt) {
     String colName = flt.getColumn();
     SqlDataType type = getColumnType(colName);
@@ -939,7 +979,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         getSqlExpression(flt.getColumn()), flt.getOperator(), SqlUtils.constant(flt.getValue()));
   }
 
-  private IsCondition getCondition(CompoundFilter flt) {
+  private IsCondition getCondition(CompoundFilter flt, ViewFinder viewFinder) {
     HasConditions condition = null;
 
     if (!flt.isEmpty()) {
@@ -951,10 +991,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           condition = SqlUtils.or();
           break;
         case NOT:
-          return SqlUtils.not(getCondition(flt.getSubFilters().get(0)));
+          return SqlUtils.not(getCondition(flt.getSubFilters().get(0), viewFinder));
       }
       for (Filter subFilter : flt.getSubFilters()) {
-        condition.add(getCondition(subFilter));
+        condition.add(getCondition(subFilter, viewFinder));
       }
     }
     return condition;
@@ -990,12 +1030,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
   }
 
-  private void setFilter(SqlSelect ss, Filter flt) {
+  private void setFilter(SqlSelect ss, Filter flt, ViewFinder viewFinder) {
     CompoundFilter f = Filter.and();
     f.add(filter, flt);
 
     if (!f.isEmpty()) {
-      IsCondition condition = getCondition(f);
+      IsCondition condition = getCondition(f, viewFinder);
 
       if (hasAggregate) {
         for (String col : columns.keySet()) {

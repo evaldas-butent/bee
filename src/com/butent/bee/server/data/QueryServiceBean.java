@@ -286,7 +286,7 @@ public class QueryServiceBean {
       List<String> order, String options) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect viewQuery = view.getQuery(filter, null, columns);
+    SqlSelect viewQuery = view.getQuery(filter, null, columns, sys.getViewFinder());
     
     String queryAlias = "Hist_" + SqlUtils.uniqueName();
     String countAlias = "Count_" + SqlUtils.uniqueName();
@@ -383,7 +383,7 @@ public class QueryServiceBean {
       List<String> columns) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect ss = view.getQuery(filter, order, columns);
+    SqlSelect ss = view.getQuery(filter, order, columns, sys.getViewFinder());
 
     if (limit > 0) {
       ss.setLimit(limit);
@@ -395,7 +395,7 @@ public class QueryServiceBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return sqlCount(sys.getView(viewName).getQuery(filter));
+    return sqlCount(sys.getView(viewName).getQuery(filter, sys.getViewFinder()));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)

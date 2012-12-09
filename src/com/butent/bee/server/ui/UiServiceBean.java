@@ -280,7 +280,9 @@ public class UiServiceBean {
     String tblName = view.getSourceName();
     Filter filter = Filter.restore(where);
 
-    return qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(view.getCondition(filter)));
+    SqlDelete delete = new SqlDelete(tblName)
+      .setWhere(view.getCondition(filter, sys.getViewFinder()));
+    return qs.updateDataWithResponse(delete);
   }
 
   private ResponseObject deleteRows(RequestInfo reqInfo) {
@@ -716,7 +718,8 @@ public class UiServiceBean {
     String tblName = view.getSourceName();
     Filter filter = Filter.restore(where);
 
-    return qs.updateDataWithResponse(new SqlUpdate(tblName).setWhere(view.getCondition(filter))
+    return qs.updateDataWithResponse(new SqlUpdate(tblName)
+        .setWhere(view.getCondition(filter, sys.getViewFinder()))
         .addConstant(column, Value.restore(value)));
   }
 

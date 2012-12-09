@@ -11,7 +11,7 @@
 
     <DataColumn name="Comment" />
 
-    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyName" caption="Klientas" />
 
     <RelColumn name="Task" editEnabled="true" renderColumns="Summary" />
 
