@@ -10,11 +10,14 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+
+import java.util.List;
 
 public abstract class AbstractFormInterceptor implements FormFactory.FormInterceptor {
   
@@ -98,8 +101,16 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+  }
+
+  @Override
   public boolean onReadyForInsert(ReadyForInsertEvent event) {
     return true;
+  }
+
+  @Override
+  public void onSaveChanges(SaveChangesEvent event) {
   }
 
   @Override

@@ -98,22 +98,24 @@ public class CrmConstants {
   public static final String CRM_TASK_PREFIX = "task_";
   public static final String CRM_PROJECT_PREFIX = "project_";
 
-  public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
+  public static final String SVC_GET_TASK_DATA = "get_task_data";
+
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
-  public static final String VAR_TASK_EXCLUDE = Service.RPC_VAR_PREFIX + "task_exclude";
+  public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
+
   public static final String VAR_TASK_STATUS = Service.RPC_VAR_PREFIX + "task_status";
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
+
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
+
+  public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
 
   public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
   public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
   public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
   public static final String VAR_PROJECT_OBSERVERS = Service.RPC_VAR_PREFIX + "project_observers";
-
-  public static final String SVC_ADD_OBSERVERS = "AddObservers";
-  public static final String SVC_REMOVE_OBSERVERS = "RemoveObservers";
 
   public static final String TBL_TASKS = "Tasks";
   public static final String TBL_TASK_USERS = "TaskUsers";
@@ -223,6 +225,8 @@ public class CrmConstants {
   public static final String PROP_STAR = "Star";
   public static final String PROP_LAST_ACCESS = "LastAccess";
   public static final String PROP_LAST_PUBLISH = "LastPublish";
+
+  public static final String PROP_LAST_EVENT_ID = "LastEventId";
   
   public static final String GRID_TASKS = "Tasks";
 

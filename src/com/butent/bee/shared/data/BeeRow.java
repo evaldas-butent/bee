@@ -30,7 +30,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
     row.deserialize(s);
     return row;
   }
-  
+
   private Map<Integer, String> shadow = null;
 
   public BeeRow(long id, long version) {
@@ -38,8 +38,8 @@ public class BeeRow extends StringRow implements BeeSerializable {
     setVersion(version);
   }
 
-  public BeeRow(long id, String[] row) {
-    super(id, new StringArray(row));
+  public BeeRow(long id, long version, List<String> data) {
+    this(id, version, ArrayUtils.toArray(data));
   }
 
   public BeeRow(long id, long version, String[] row) {
@@ -47,10 +47,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
     setVersion(version);
   }
 
-  public BeeRow(long id, long version, List<String> data) {
-    this(id, version, ArrayUtils.toArray(data));
+  public BeeRow(long id, String[] row) {
+    super(id, new StringArray(row));
   }
-  
+
   @Override
   public BeeRow copy() {
     BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));
@@ -108,6 +108,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
   }
 
+  public Map<Integer, String> getShadow() {
+    return shadow;
+  }
+
   public String getShadowString(int col) {
     if (shadow != null) {
       return shadow.get(col);
@@ -117,7 +121,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void preliminaryUpdate(int col, String value) {
     String oldValue = getString(col);
-
+    
     if (!BeeUtils.equalsTrimRight(value, oldValue)) {
       if (shadow == null) {
         shadow = new HashMap<Integer, String>();

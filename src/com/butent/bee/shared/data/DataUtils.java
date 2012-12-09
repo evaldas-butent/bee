@@ -889,6 +889,10 @@ public class DataUtils {
     }
   }
 
+  public static boolean sameIdSet(String s1, String s2) {
+    return sameIdSet(s1, parseIdSet(s2));
+  }
+  
   public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,
       Defaults defaults) {
     int result = 0;

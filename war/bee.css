@@ -977,10 +977,6 @@ body, select {
   overflow: auto;
 }
 
-.bee-Form-disabled {
-  background-color: rgba(128, 192, 192, 0.25);
-}
-
 .bee-Frame {
   width: 100%;
   height: 100%;
@@ -1623,6 +1619,9 @@ body, select {
   background-color: WhiteSmoke;
   padding: 10px 4px 6px 4px;
 }
+.bee-DecisionMessage-cell {
+  padding-bottom: 12px;
+}
 .bee-DecisionMessage {
   max-width: 360px;
   margin-left: 10px;
@@ -1666,6 +1665,9 @@ body, select {
   position: absolute;
   right: 5px;
   top: 7px;
+}
+.bee-MultiSelector-container.bee-disabled .bee-MultiSelector-close {
+  display: none;
 }
 
 .bee-MultiSelector-input {

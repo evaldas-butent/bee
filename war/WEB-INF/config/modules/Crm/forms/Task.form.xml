@@ -25,7 +25,8 @@
         <Label html="Būsena:" style="&lbl1;" />
         <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
         <Label html="Prioritetas:" style="&inline; padding-top: 2px; margin-left: 20px;" />
-        <Radio source="Priority" itemKey="TaskPriority" style="&inline; margin-left: 12px;" />
+        <Radio source="Priority" itemKey="TaskPriority"
+           style="&inline; margin-left: 10px: font-size: 12px;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -47,7 +48,8 @@
         <Label html="Įkelta:" style="&lbl1;" />
         <InputDateTime source="Created" style="&inp2;" readOnly="true" />
         <Label html="Numatoma trukmė:" style="&lbl3;" />
-        <InputTime source="ExpectedDuration" step="30" style="&inline; width: 60px;" />
+        <InputTime source="ExpectedDuration" step="30" style="&inline; width: 60px;" 
+          disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -67,18 +69,18 @@
       <FlowPanel style="&section;">
         <Label html="Priminimas:" style="&lbl1;" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" />
+          style="&inp2;" disablable="true" />
       </FlowPanel>
 
       &separator;
       <FlowPanel style="&section;">
         <Label html="Tema:" class="bee-required" style="&lbl1;" />
-        <InputText source="Summary" style="&inp2x;" />
+        <InputText source="Summary" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Aprašymas:" style="&top1;" />
-        <InputArea source="Description" style="width: 440px; height: 60px;" />
+        <InputArea source="Description" style="width: 440px; height: 60px;" disablable="true" />
       </FlowPanel>
 
       <FileGroup name="Files" />
@@ -87,34 +89,34 @@
       <FlowPanel style="&section;">
         <Label html="Stebėtojai:" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       &separator;
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-          editEnabled="true" style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Įvykiai:" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="StartDateTime Summary" newRowEnabled="false" editEnabled="true"
-          style="&inp2x;" />
+          style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Užduotys:" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
-          newRowEnabled="false" editEnabled="true" style="&inp2x;" />
+          newRowEnabled="false" editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       &separator;

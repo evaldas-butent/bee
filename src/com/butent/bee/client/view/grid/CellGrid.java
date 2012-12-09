@@ -1795,7 +1795,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     for (int i = 0; i < rowValue.getNumberOfCells(); i++) {
       rowValue.setValue(i, newRow.getString(i));
     }
-
+    
+    if (newRow.getProperties() != null) {
+      rowValue.setProperties(newRow.getProperties().copy());
+    }
+    
     refreshRow(row);
     if (getActiveRowIndex() == row && getActiveColumnIndex() >= 0) {
       bringToFront(row, getActiveColumnIndex());

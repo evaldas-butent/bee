@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -141,6 +142,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     this.rowProperty = rowProperty;
     
     this.inputResizer = UiHelper.getTextBoxResizer(MIN_INPUT_WIDTH);
+    
+    SelectorEvent.fire(this, State.INITIALIZED);
   }
 
   @Override
@@ -149,7 +152,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     setOldValue(null);
     
     clearChoices();
-    getOracle().clearExclusions();
+    setExclusions(null);
   }
 
   @Override
@@ -165,6 +168,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   @Override
   public AbstractCellRenderer getRenderer() {
     return renderer;
+  }
+
+  public String getRowProperty() {
+    return rowProperty;
   }
 
   @Override
@@ -189,7 +196,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     final List<Long> choices = DataUtils.parseIdList(value);
     if (choices.isEmpty()) {
       clearChoices();
-      getOracle().clearExclusions();
+      setExclusions(null);
       return;
     }
     
@@ -246,10 +253,17 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       setFocus(true);
       
       setRelatedRow(row);
-      SelectorEvent.fire(this, State.CHANGED);
+      SelectorEvent.fire(this, State.INSERTED);
     }
   }
   
+  @Override
+  public void startEdit(String oldV, char charCode, EditorAction onEntry, Element sourceElement) {
+    SelectorEvent.fireExclusions(this, getOracle().getExclusions());
+    
+    super.startEdit(oldV, charCode, onEntry, sourceElement);
+  }
+
   @Override
   protected void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {
     State st = BeeUtils.same(getOldValue(), getValue()) ? state : State.CHANGED;
@@ -302,7 +316,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     Binder.addClickHandler(container, new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (!isEditing()) {
+        if (!isEditing() && isEnabled()) {
           inputWidget.setFocus(true);
           inputWidget.onMouseClick();
         }
@@ -388,7 +402,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       if (count > 1) {
         Widget child = container.getWidget(count - 2);
         if (child instanceof ChoiceWidget) {
-          hideSelector();
           removeChoice(((ChoiceWidget) child).getRowId());
         }
       }
@@ -396,14 +409,23 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   }
   
   private void removeChoice(long rowId) {
+    if (!isEnabled()) {
+      return;
+    }
+
+    hideSelector();
+    reset();
+    clearInput();
+
     InsertPanel container = getContainer();
     int count = container.getWidgetCount();
+    
+    boolean removed = false;
 
     for (int i = 0; i < count - 1; i++) {
       Widget child = container.getWidget(i);
       if (child instanceof ChoiceWidget && ((ChoiceWidget) child).getRowId() == rowId) {
-        container.remove(i);
-        SelectorEvent.fire(this, State.CHANGED);
+        removed = container.remove(i);
         break;
       }
     }
@@ -412,6 +434,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     
     getElement().scrollIntoView();
     setFocus(true);
+
+    if (removed) {
+      SelectorEvent.fire(this, State.REMOVED);
+    }
   }
   
   private void renderChoices(List<Long> choices) {
@@ -422,9 +448,16 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       container.insert(new ChoiceWidget(rowId, cache.get(rowId)), container.getWidgetCount() - 1);
     }
     
-    getOracle().setExclusions(choices);
+    setExclusions(choices);
   }
 
+  private void setExclusions(Collection<Long> exclusions) {
+    SelectorEvent event = SelectorEvent.fireExclusions(this, exclusions);
+    if (!event.isConsumed()) {
+      getOracle().setExclusions(exclusions);
+    }
+  }
+  
   private void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }
@@ -465,6 +498,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     }
     
     setValue(DataUtils.buildIdList(choices));
-    getOracle().setExclusions(choices);
+    setExclusions(choices);
   }
 }

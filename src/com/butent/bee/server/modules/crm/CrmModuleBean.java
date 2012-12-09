@@ -18,6 +18,7 @@ import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -27,7 +28,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -94,6 +94,9 @@ public class CrmModuleBean implements BeeModule {
     if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_TASK_DATA)) {
+      response = getTaskData(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -124,7 +127,7 @@ public class CrmModuleBean implements BeeModule {
       public void getTaskChildProperties(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
-          
+
           if (!rowSet.isEmpty()) {
             Set<Long> taskIds = Sets.newHashSet();
             if (rowSet.getNumberOfRows() < 100) {
@@ -132,32 +135,32 @@ public class CrmModuleBean implements BeeModule {
                 taskIds.add(row.getId());
               }
             }
-            
+
             SqlSelect tuQuery = new SqlSelect().addFrom(TBL_TASK_USERS)
                 .addFields(TBL_TASK_USERS, COL_TASK, COL_LAST_ACCESS, COL_STAR);
-            
+
             IsCondition uwh = SqlUtils.equal(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
-            
+
             if (taskIds.isEmpty()) {
               tuQuery.setWhere(uwh);
             } else {
-              tuQuery.setWhere(SqlUtils.and(uwh, SqlUtils.any(TBL_TASK_USERS, COL_TASK, taskIds))); 
+              tuQuery.setWhere(SqlUtils.and(uwh, SqlUtils.any(TBL_TASK_USERS, COL_TASK, taskIds)));
             }
-            
+
             SimpleRowSet tuData = qs.getData(tuQuery);
             int taskIndex = tuData.getColumnIndex(COL_TASK);
             int accessIndex = tuData.getColumnIndex(COL_LAST_ACCESS);
             int starIndex = tuData.getColumnIndex(COL_STAR);
-            
+
             for (String[] tuRow : tuData.getRows()) {
               long taskId = BeeUtils.toLong(tuRow[taskIndex]);
               BeeRow row = rowSet.getRowById(taskId);
               if (row == null) {
                 continue;
               }
-              
+
               row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
-              
+
               if (tuRow[accessIndex] != null) {
                 row.setProperty(PROP_LAST_ACCESS, tuRow[accessIndex]);
               }
@@ -165,24 +168,24 @@ public class CrmModuleBean implements BeeModule {
                 row.setProperty(PROP_STAR, tuRow[starIndex]);
               }
             }
-            
+
             SqlSelect teQuery = new SqlSelect().addFrom(TBL_TASK_EVENTS)
                 .addFields(TBL_TASK_EVENTS, COL_TASK)
                 .addMax(TBL_TASK_EVENTS, COL_PUBLISH_TIME)
                 .addGroup(TBL_TASK_EVENTS, COL_TASK);
-            
+
             if (!taskIds.isEmpty()) {
               teQuery.setWhere(SqlUtils.any(TBL_TASK_EVENTS, COL_TASK, taskIds));
             }
-            
+
             SimpleRowSet teData = qs.getData(teQuery);
             taskIndex = teData.getColumnIndex(COL_TASK);
             int publishIndex = teData.getColumnIndex(COL_PUBLISH_TIME);
-            
+
             for (String[] teRow : teData.getRows()) {
               long taskId = BeeUtils.toLong(teRow[taskIndex]);
               BeeRow row = rowSet.getRowById(taskId);
-              
+
               if (teRow[publishIndex] != null) {
                 row.setProperty(PROP_LAST_PUBLISH, teRow[publishIndex]);
               }
@@ -191,6 +194,100 @@ public class CrmModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
+      Long eventId) {
+    long taskId = row.getId();
+
+    if (!BeeUtils.isEmpty(taskUsers)) {
+      taskUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_EXECUTOR, columns)));
+      taskUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns)));
+
+      if (!taskUsers.isEmpty()) {
+        row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(taskUsers));
+      }
+    }
+
+    Map<String, List<Long>> taskRelations = getTaskRelations(taskId);
+    for (Map.Entry<String, List<Long>> entry : taskRelations.entrySet()) {
+      row.setProperty(entry.getKey(), DataUtils.buildIdList(entry.getValue()));
+    }
+
+    List<StoredFile> files = getTaskFiles(taskId);
+    if (!files.isEmpty()) {
+      row.setProperty(PROP_FILES, Codec.beeSerialize(files));
+    }
+
+    BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS,
+        ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
+    if (!DataUtils.isEmpty(events)) {
+      row.setProperty(PROP_EVENTS, events.serialize());
+    }
+
+    if (eventId != null) {
+      row.setProperty(PROP_LAST_EVENT_ID, BeeUtils.toString(eventId));
+    }
+  }
+
+  private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
+      boolean updateUsers, Set<String> updatedRelations, Long eventId) {
+
+    ResponseObject response;
+    BeeRow row = data.getRow(0);
+
+    List<Long> newUsers;
+    if (updateUsers) {
+      newUsers = DataUtils.parseIdList(row.getProperty(PROP_OBSERVERS));
+
+      Long owner = row.getLong(data.getColumnIndex(COL_OWNER));
+      if (owner != null) {
+        newUsers.add(owner);
+      }
+      Long executor = row.getLong(data.getColumnIndex(COL_EXECUTOR));
+      if (executor != null) {
+        newUsers.add(executor);
+      }
+      updateTaskUsers(row.getId(), oldUsers, newUsers);
+    } else {
+      newUsers = Lists.newArrayList(oldUsers);
+    }
+
+    if (!BeeUtils.isEmpty(updatedRelations)) {
+      updateTaskRelations(row.getId(), updatedRelations, row);
+    }
+
+    Map<Integer, String> shadow = row.getShadow();
+    if (shadow != null && !shadow.isEmpty()) {
+      List<BeeColumn> columns = Lists.newArrayList();
+      List<String> oldValues = Lists.newArrayList();
+      List<String> newValues = Lists.newArrayList();
+
+      for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
+        columns.add(data.getColumn(entry.getKey()));
+
+        oldValues.add(entry.getValue());
+        newValues.add(row.getString(entry.getKey()));
+      }
+
+      BeeRow updRow = new BeeRow(row.getId(), row.getVersion(), oldValues);
+      for (int i = 0; i < columns.size(); i++) {
+        updRow.preliminaryUpdate(i, newValues.get(i));
+      }
+
+      BeeRowSet updated = new BeeRowSet(data.getViewName(), columns);
+      updated.addRow(updRow);
+
+      response = deb.commitRow(updated, true);
+      if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
+        addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId);
+      }
+
+    } else {
+      response = getTaskData(row.getId(), eventId);
+    }
+
+    return response;
   }
 
   private ResponseObject createTaskRelations(long taskId, Map<String, String> properties) {
@@ -249,25 +346,27 @@ public class CrmModuleBean implements BeeModule {
       return response;
     }
 
-    BeeRowSet taskData;
-    BeeRow taskRow;
-    long taskId;
-
     String dataParam = reqInfo.getParameter(VAR_TASK_DATA);
     if (BeeUtils.isEmpty(dataParam)) {
-      taskData = null;
-      taskRow = null;
-      taskId = getTaskId(reqInfo);
-    } else {
-      taskData = BeeRowSet.restore(dataParam);
-      taskRow = taskData.getRow(0);
-      taskId = taskRow.getId();
+      String msg = BeeUtils.joinWords("Task data not received:", svc, event);
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
+      return response;
     }
+
+    BeeRowSet taskData = BeeRowSet.restore(dataParam);
+    BeeRow taskRow = taskData.getRow(0);
+
+    long taskId = taskRow.getId();
+    List<Long> taskUsers = getTaskUsers(taskId);
 
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
-    
+
     int exIndex;
+    Long eventId = null;
+
+    Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_TASK_RELATIONS));
 
     switch (event) {
       case CREATE:
@@ -334,58 +433,12 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case VISIT:
-        List<Long> taskUsers = getTaskUsers(taskId);
         if (taskUsers.contains(currentUser)) {
           response = registerTaskVisit(taskId, currentUser, now);
         }
 
         if (response == null || !response.hasErrors()) {
-          if (taskData == null) {
-            BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, ComparisonFilter.compareId(taskId));
-            if (rowSet.getNumberOfRows() == 1) {
-              response = ResponseObject.response(rowSet.getRow(0));
-            } else {
-              response = ResponseObject.error("Task not found: " + taskId);
-            }
-          } else {
-            response = deb.commitRow(taskData, true);
-          }
-        }
-        
-        if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
-          CustomProperties taskProperties = new CustomProperties();
-          Set<Long> exclude = DataUtils.parseIdSet(reqInfo.getParameter(VAR_TASK_EXCLUDE));
-          if (!exclude.isEmpty()) {
-            taskUsers.removeAll(exclude);
-          }
-          if (!taskUsers.isEmpty()) {
-            taskProperties.put(PROP_OBSERVERS, DataUtils.buildIdList(taskUsers));
-          }
-
-          Map<String, List<Long>> taskRelations = getTaskRelations(taskId);
-          for (Map.Entry<String, List<Long>> entry : taskRelations.entrySet()) {
-            taskProperties.put(entry.getKey(), DataUtils.buildIdList(entry.getValue()));
-          }
-
-          List<StoredFile> files = getTaskFiles(taskId);
-          if (!files.isEmpty()) {
-            taskProperties.put(PROP_FILES, Codec.beeSerialize(files));
-          }
-
-          BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS,
-              ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
-          if (!DataUtils.isEmpty(events)) {
-            taskProperties.put(PROP_EVENTS, events.serialize());
-          }
-          
-          ((BeeRow) response.getResponse()).setProperties(taskProperties);
-        }
-        break;
-
-      case COMMENT:
-        response = registerTaskVisit(taskId, currentUser, now);
-        if (!response.hasErrors()) {
-          response = registerTaskEvent(taskId, currentUser, event, reqInfo, null, now);
+          response = commitTaskData(taskData, taskUsers, false, updatedRelations, eventId);
         }
         break;
 
@@ -407,44 +460,39 @@ public class CrmModuleBean implements BeeModule {
         if (!response.hasErrors()) {
           response = registerTaskEvent(taskId, currentUser, event, reqInfo,
               BeeUtils.join(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)), now);
-        }
-
-        if (!response.hasErrors()) {
-          response = deb.commitRow(taskData, true);
-        }
-        break;
-
-      case EXTEND:
-        String oldTerm = taskData.getShadowString(0, COL_FINISH_TIME);
-        String newTerm = taskData.getString(0, COL_FINISH_TIME);
-
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo,
-            BeeUtils.join(" -> ", formatDateTime(oldTerm), formatDateTime(newTerm)), now);
-        if (!response.hasErrors()) {
-          response = deb.commitRow(taskData, true);
-        }
-        break;
-
-      case EDIT:
-        response = registerTaskVisit(taskId, currentUser, now);
-
-        for (BeeColumn col : taskData.getColumns()) {
-          String colName = col.getId();
-          String oldValue = taskData.getShadowString(0, colName);
-          String value = taskData.getString(0, colName);
-
-          String note = colName + ": " + BeeUtils.join(" -> ", oldValue, value);
-
-          if (!response.hasErrors()) {
-            response = registerTaskEvent(taskId, currentUser, event, reqInfo, note, now);
+          if (response.hasResponse(Long.class)) {
+            eventId = (Long) response.getResponse();
           }
         }
 
         if (!response.hasErrors()) {
-          response = deb.commitRow(taskData, true);
+          response = commitTaskData(taskData, taskUsers, false, updatedRelations, eventId);
         }
         break;
 
+      case EXTEND:
+        int finIndex = taskData.getColumnIndex(COL_FINISH_TIME);
+
+        String oldTerm = taskRow.getShadowString(finIndex);
+        String newTerm = taskRow.getString(finIndex);
+
+        response = registerTaskEvent(taskId, currentUser, event, reqInfo,
+            BeeUtils.join(" -> ", formatDateTime(oldTerm), formatDateTime(newTerm)), now);
+        if (response.hasResponse(Long.class)) {
+          eventId = (Long) response.getResponse();
+        }
+
+        if (!response.hasErrors()) {
+          response = registerTaskVisit(taskId, currentUser, now);
+        }
+
+        if (!response.hasErrors()) {
+          response = commitTaskData(taskData, taskUsers, true, updatedRelations, eventId);
+        }
+        break;
+
+      case EDIT:
+      case COMMENT:
       case SUSPEND:
       case CANCEL:
       case COMPLETE:
@@ -452,12 +500,15 @@ public class CrmModuleBean implements BeeModule {
       case RENEW:
       case ACTIVATE:
         response = registerTaskEvent(taskId, currentUser, event, reqInfo, null, now);
+        if (response.hasResponse(Long.class)) {
+          eventId = (Long) response.getResponse();
+        }
         if (!response.hasErrors()) {
           response = registerTaskVisit(taskId, currentUser, now);
         }
 
         if (!response.hasErrors()) {
-          response = deb.commitRow(taskData, true);
+          response = commitTaskData(taskData, taskUsers, true, updatedRelations, eventId);
         }
         break;
     }
@@ -471,6 +522,29 @@ public class CrmModuleBean implements BeeModule {
   private String formatDateTime(String serialized) {
     DateTime dateTime = TimeUtils.toDateTimeOrNull(serialized);
     return (dateTime == null) ? BeeConst.STRING_EMPTY : dateTime.toCompactString();
+  }
+
+  private ResponseObject getTaskData(long taskId, Long eventId) {
+    BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, ComparisonFilter.compareId(taskId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(SVC_GET_TASK_DATA, "task id: " + taskId + " not found");
+    }
+
+    BeeRow data = rowSet.getRow(0);
+    addTaskProperties(data, rowSet.getColumns(), getTaskUsers(taskId), eventId);
+
+    return ResponseObject.response(data);
+  }
+
+  private ResponseObject getTaskData(RequestInfo reqInfo) {
+    long taskId = BeeUtils.toLong(reqInfo.getParameter(VAR_TASK_ID));
+    if (!DataUtils.isId(taskId)) {
+      String msg = BeeUtils.joinWords(SVC_GET_TASK_DATA, "task id not received");
+      logger.warning(msg);
+      return ResponseObject.error(msg);
+    }
+
+    return getTaskData(taskId, null);
   }
 
   private List<StoredFile> getTaskFiles(long taskId) {
@@ -503,10 +577,6 @@ public class CrmModuleBean implements BeeModule {
     }
 
     return result;
-  }
-
-  private long getTaskId(RequestInfo reqInfo) {
-    return BeeUtils.toLong(reqInfo.getParameter(VAR_TASK_ID));
   }
 
   private Map<String, List<Long>> getTaskRelations(long taskId) {
@@ -557,12 +627,16 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private List<Long> getTaskUsers(long taskId) {
+    if (!DataUtils.isId(taskId)) {
+      return Lists.newArrayList();
+    }
+
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_TASK_USERS)
         .addFields(TBL_TASK_USERS, COL_USER)
         .setWhere(SqlUtils.equal(TBL_TASK_USERS, COL_TASK, taskId))
         .addOrder(TBL_TASK_USERS, sys.getIdName(TBL_TASK_USERS));
-    
+
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
@@ -650,6 +724,99 @@ public class CrmModuleBean implements BeeModule {
       return TBL_TASKS;
     } else {
       return null;
+    }
+  }
+
+  private void updateTaskRelation(long taskId, String relation, Collection<Long> oldValues,
+      Collection<Long> newValues) {
+    if (BeeUtils.sameElements(oldValues, newValues)) {
+      return;
+    }
+
+    List<Long> insert = Lists.newArrayList(newValues);
+    insert.removeAll(oldValues);
+
+    List<Long> delete = Lists.newArrayList(oldValues);
+    delete.removeAll(newValues);
+
+    for (Long value : insert) {
+      logger.warning("add task relation", taskId, relation, value);
+
+      qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONS)
+          .addConstant(CommonsConstants.COL_TABLE_1, TBL_TASKS)
+          .addConstant(CommonsConstants.COL_ROW_1, taskId)
+          .addConstant(CommonsConstants.COL_TABLE_2, relation)
+          .addConstant(CommonsConstants.COL_ROW_2, value));
+    }
+
+    for (Long value : delete) {
+      logger.warning("delete task relation", taskId, relation, value);
+
+      IsCondition condition = SqlUtils.or(
+          SqlUtils.and(
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_TABLE_1, TBL_TASKS),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_ROW_1, taskId),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_TABLE_2, relation),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_ROW_2, value)),
+          SqlUtils.and(
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_TABLE_1, relation),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_ROW_1, value),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_TABLE_2, TBL_TASKS),
+              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                  CommonsConstants.COL_ROW_2, taskId)
+              ));
+
+      qs.updateData(new SqlDelete(CommonsConstants.TBL_RELATIONS).setWhere(condition));
+    }
+  }
+
+  private void updateTaskRelations(long taskId, Set<String> updatedRelations, BeeRow row) {
+    Map<String, List<Long>> oldRelations = getTaskRelations(taskId);
+
+    for (String relation : updatedRelations) {
+      List<Long> oldValues = Lists.newArrayList();
+      if (oldRelations.containsKey(relation)) {
+        oldValues.addAll(oldRelations.get(relation));
+      }
+
+      List<Long> newValues = DataUtils.parseIdList(row.getProperty(relation));
+
+      updateTaskRelation(taskId, relation, oldValues, newValues);
+    }
+  }
+
+  private void updateTaskUsers(long taskId, Collection<Long> oldUsers, Collection<Long> newUsers) {
+    logger.warning("update task users", taskId, oldUsers, newUsers);
+    if (BeeUtils.sameElements(oldUsers, newUsers)) {
+      return;
+    }
+
+    List<Long> insert = Lists.newArrayList(newUsers);
+    insert.removeAll(oldUsers);
+
+    List<Long> delete = Lists.newArrayList(oldUsers);
+    delete.removeAll(newUsers);
+
+    logger.warning("ins", insert, "del", delete);
+
+    for (Long user : insert) {
+      logger.debug("add task user", taskId, user);
+      createTaskUser(taskId, user, null);
+    }
+
+    String tblName = TBL_TASK_USERS;
+    for (Long user : delete) {
+      logger.debug("delete task user", taskId, user);
+      IsCondition condition = SqlUtils.and(SqlUtils.equal(tblName, COL_TASK, taskId),
+          SqlUtils.equal(tblName, COL_USER, user));
+      qs.updateData(new SqlDelete(tblName).setWhere(condition));
     }
   }
 }

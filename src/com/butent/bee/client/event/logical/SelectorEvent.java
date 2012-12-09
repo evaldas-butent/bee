@@ -11,6 +11,8 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+
 public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
   public interface Handler extends EventHandler {
@@ -23,12 +25,19 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(state), selector);
   }
 
+  public static SelectorEvent fireExclusions(DataSelector selector, Collection<Long> exclusions) {
+    SelectorEvent event = new SelectorEvent(State.UPDATING);
+    event.setExclusions(exclusions);
+    BeeKeeper.getBus().fireEventFromSource(event, selector);
+    return event;
+  }
+
   public static SelectorEvent fireNewRow(DataSelector selector, IsRow row) {
     SelectorEvent event = new SelectorEvent(State.NEW, row);
     BeeKeeper.getBus().fireEventFromSource(event, selector);
     return event;
   }
-
+  
   public static Type<Handler> getType() {
     return TYPE;
   }
@@ -43,6 +52,9 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
   private final State state;
   private final IsRow newRow;
+  
+  private Collection<Long> exclusions = null;
+
   private boolean consumed = false;
 
   public SelectorEvent(State state) {
@@ -62,6 +74,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  public Collection<Long> getExclusions() {
+    return exclusions;
   }
 
   public IsRow getNewRow() {
@@ -112,6 +128,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     return consumed;
   }
 
+  public boolean isExclusions() {
+    return State.UPDATING.equals(getState());
+  }
+  
   public boolean isNewRow() {
     return State.NEW.equals(getState());
   }
@@ -123,5 +143,9 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   @Override
   protected void dispatch(Handler handler) {
     handler.onDataSelector(this);
+  }
+
+  private void setExclusions(Collection<Long> exclusions) {
+    this.exclusions = exclusions;
   }
 }

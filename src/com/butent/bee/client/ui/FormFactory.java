@@ -21,6 +21,7 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -54,7 +55,7 @@ import java.util.Map;
 public class FormFactory {
 
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
-      HasGridView {
+      HasGridView, SaveChangesEvent.Handler {
 
     void afterAction(Action action, FormPresenter presenter);
 
@@ -77,6 +78,8 @@ public class FormFactory {
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
+    
+    void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
 
     void onSetActiveRow(IsRow row);
 

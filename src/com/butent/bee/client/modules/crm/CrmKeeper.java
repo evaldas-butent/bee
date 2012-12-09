@@ -77,10 +77,14 @@ public class CrmKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
   
-  static ParameterList createTaskRequestParameters(TaskEvent event) {
+  static ParameterList createTaskRequestParameters(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CRM_MODULE);
-    args.addQueryItem(CRM_METHOD, CRM_TASK_PREFIX + event.name());
+    args.addQueryItem(CRM_METHOD, method);
     return args;
+  }
+
+  static ParameterList createTaskRequestParameters(TaskEvent event) {
+    return createTaskRequestParameters(CRM_TASK_PREFIX + event.name());
   }
 
   private CrmKeeper() {

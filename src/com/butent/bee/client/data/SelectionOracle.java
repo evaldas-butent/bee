@@ -255,6 +255,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return dataInfo;
   }
 
+  public Set<Long> getExclusions() {
+    return exclusions;
+  }
+
   public BeeRowSet getViewData() {
     return viewData;
   }
@@ -340,7 +344,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     setLastRequest(request);
     processRequest(request, callback);
   }
-
+  
   public void setAdditionalFilter(Filter additionalFilter) {
     if (Objects.equal(additionalFilter, this.additionalFilter)) {
       return;
@@ -353,7 +357,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
     resetState();
   }
-  
+
   public void setExclusions(Collection<Long> rowIds) {
     if (BeeUtils.isEmpty(rowIds)) {
       clearExclusions();

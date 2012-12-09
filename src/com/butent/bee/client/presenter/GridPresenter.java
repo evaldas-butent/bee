@@ -410,7 +410,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public boolean onSaveChanges(final SaveChangesEvent event) {
+  public void onSaveChanges(final SaveChangesEvent event) {
     Queries.update(getViewName(), event.getRowId(), event.getVersion(), event.getColumns(),
         event.getOldValues(), event.getNewValues(), new RowCallback() {
           @Override
@@ -430,8 +430,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             }
           }
         });
-
-    return true;
   }
 
   @Override

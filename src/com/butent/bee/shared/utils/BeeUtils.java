@@ -1895,10 +1895,20 @@ public class BeeUtils {
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
 
+  public static <T> boolean sameElements(Collection<T> c1, Collection<T> c2) {
+    if (isEmpty(c1)) {
+      return isEmpty(c2);
+    } else if (isEmpty(c2)) {
+      return isEmpty(c1);
+    } else {
+      return c1.containsAll(c2) && c2.containsAll(c1);
+    }
+  }
+
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
-
+  
   public static double scaleNormalizedToRange(double x, double min, double max) {
     double z;
 

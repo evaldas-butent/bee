@@ -62,6 +62,7 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -128,7 +129,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       } else {
         index = BeeConst.UNDEF;
       }
-      
+
       CellSource cellSource;
       if (index >= 0) {
         cellSource = CellSource.forColumn(getDataColumns().get(index), index);
@@ -150,7 +151,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
         if (renderer == null) {
           renderer = RendererFactory.getRenderer(result.getRendererDescription(),
               result.getRender(), result.getRenderTokens(), result.getItemKey(),
-              NameUtils.toList(result.getRenderColumns()), getDataColumns(), cellSource, 
+              NameUtils.toList(result.getRenderColumns()), getDataColumns(), cellSource,
               result.getRelation());
         }
 
@@ -675,7 +676,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     if (rowValue == null || rowValue.getId() != rowId) {
       return;
     }
-    
+
     event.applyTo(rowValue);
     String source = event.getSourceName();
 
@@ -725,29 +726,38 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       return;
     }
 
+    List<String> messages = Lists.newArrayList();
+
     final BeeRowSet rowSet =
         DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow());
-    if (rowSet == null || rowSet.isEmpty()) {
-      closeCallback.onClose();
-      return;
-    }
 
     boolean isNew = DataUtils.isNewRow(getActiveRow());
 
-    List<String> messages = Lists.newArrayList();
+    if (!DataUtils.isEmpty(rowSet)) {
+      String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
+      messages.add(msg + BeeConst.STRING_SPACE
+          + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
+    }
+    
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onClose(messages, getOldRow(), getActiveRow());
+    }
 
-    String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
-    messages.add(msg + BeeConst.STRING_SPACE
-        + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
+    if (messages.isEmpty()) {
+      closeCallback.onClose();
+      return;
+    }
 
     messages.add(isNew ? Global.CONSTANTS.createNewRow() : Global.CONSTANTS.saveChanges());
 
     DecisionCallback callback = new DecisionCallback() {
       @Override
       public void onCancel() {
-        for (BeeColumn column : rowSet.getColumns()) {
-          if (focus(column.getId())) {
-            return;
+        if (!DataUtils.isEmpty(rowSet)) {
+          for (BeeColumn column : rowSet.getColumns()) {
+            if (focus(column.getId())) {
+              return;
+            }
           }
         }
       }
@@ -864,6 +874,13 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     if (DataUtils.sameId(getActiveRow(), newRow)) {
       setActiveRow(newRow);
       refreshData(false, false);
+    }
+  }
+
+  @Override
+  public void onSaveChanges(SaveChangesEvent event) {
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onSaveChanges(event);
     }
   }
 
@@ -1171,7 +1188,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
     }
   }
-  
+
   @Override
   public void updateRow(IsRow rowValue, boolean refreshChildren) {
     setActiveRow(rowValue);

@@ -999,7 +999,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         });
 
       } else {
-        boolean changed = saveChanges(oldRow, newRow, new RowCallback() {
+        boolean changed = saveChanges(form, oldRow, newRow, new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
@@ -1017,7 +1017,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
     } else {
-      boolean changed = saveChanges(oldRow, newRow, getSaveChangesCallback());
+      boolean changed = saveChanges(form, oldRow, newRow, getSaveChangesCallback());
       if (!changed) {
         closeEditForm();
       }
@@ -2051,7 +2051,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     fireEvent(event);
   }
 
-  private boolean saveChanges(IsRow oldRow, IsRow newRow, RowCallback callback) {
+  private boolean saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> oldValues = Lists.newArrayList();
     List<String> newValues = Lists.newArrayList();
@@ -2074,6 +2074,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     SaveChangesEvent event = new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues,
         callback);
+
+    if (form != null) {
+      form.onSaveChanges(event);
+      if (event.isConsumed()) {
+        return false;
+      }
+    }
+    
     if (getGridInterceptor() != null && !getGridInterceptor().onSaveChanges(this, event)) {
       return false;
     }

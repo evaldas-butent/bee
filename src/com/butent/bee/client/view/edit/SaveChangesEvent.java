@@ -15,7 +15,7 @@ import java.util.List;
 public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
 
   public interface Handler extends EventHandler {
-    boolean onSaveChanges(SaveChangesEvent event);
+    void onSaveChanges(SaveChangesEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
@@ -42,6 +42,8 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   private final List<String> newValues;
   
   private final RowCallback callback;
+  
+  private boolean consumed = false;
   
   public SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, RowCallback callback) {
@@ -89,6 +91,14 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
 
   public long getVersion() {
     return newRow.getVersion();
+  }
+
+  public boolean isConsumed() {
+    return consumed;
+  }
+
+  public void setConsumed(boolean consumed) {
+    this.consumed = consumed;
   }
 
   @Override

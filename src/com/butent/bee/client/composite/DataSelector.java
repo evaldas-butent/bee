@@ -753,8 +753,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     init(input, embedded);
-
-    SelectorEvent.fire(this, State.INITIALIZED);
   }
 
   @Override
@@ -1128,6 +1126,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     } else {
       initWidget(inputWidget);
     }
+    
+    SelectorEvent.fire(this, State.INITIALIZED);
   }
 
   protected boolean isActive() {

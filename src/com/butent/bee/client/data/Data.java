@@ -84,7 +84,11 @@ public class Data {
   }
   
   public static DataInfo getDataInfo(String viewName) {
-    return DATA_INFO_PROVIDER.getDataInfo(viewName, true);
+    return getDataInfo(viewName, true);
+  }
+
+  public static DataInfo getDataInfo(String viewName, boolean warn) {
+    return DATA_INFO_PROVIDER.getDataInfo(viewName, warn);
   }
   
   public static DataInfoProvider getDataInfoProvider() {
