@@ -82,7 +82,11 @@ public class FileStorageBean {
     } catch (NoSuchAlgorithmException e) {
       throw new BeeRuntimeException(e);
     }
-    File tmp = File.createTempFile("bee_", null);
+    JustDate dt = new JustDate();
+    File tmp = new File(Config.REPOSITORY_DIR,
+        BeeUtils.join(File.separator, dt.getYear(), dt.getMonth(), dt.getDom()));
+    tmp.mkdirs();
+    tmp = new File(tmp, "bee_" + BeeUtils.randomString(30) + ".tmp");
     tmp.deleteOnExit();
     OutputStream out = new DigestOutputStream(new FileOutputStream(tmp), md);
 
@@ -101,10 +105,7 @@ public class FileStorageBean {
 
     String idName = sys.getIdName(TBL_FILES);
     Long id = null;
-    JustDate dt = new JustDate();
-    File target = new File(Config.REPOSITORY_DIR,
-        BeeUtils.join(File.separator, dt.getYear(), dt.getMonth(), dt.getDom()));
-    target = new File(target, hash);
+    File target = new File(tmp.getParentFile(), hash);
 
     synchronized (lock) {
       Map<String, String> data = qs.getRow(new SqlSelect()
@@ -124,8 +125,6 @@ public class FileStorageBean {
               .setWhere(SqlUtils.equal(TBL_FILES, idName, id)));
         }
       }
-      target.getParentFile().mkdirs();
-
       if (target.exists()) {
         tmp.delete();
 

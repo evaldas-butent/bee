@@ -5,14 +5,14 @@
   idName="PlaceID"
   >
   <Fields>
-    <Relation name="Recipient" relation="Recipients" notNull="true" cascade="DELETE" />
     <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
-    <Long name="MessageUID" notNull="true" />
+    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <Long name="MessageUID" />
   </Fields>
   <Keys>
     <Key unique="true">
       <KeyField>Folder</KeyField>
-      <KeyField>MessageUID</KeyField>
+      <KeyField>Message</KeyField>
     </Key>
   </Keys>
 </Table>

@@ -52,7 +52,7 @@ public class MailAccount {
       transportHost = data.get(COL_TRANSPORT_SERVER);
       transportPort = BeeUtils.toIntOrNull(data.get(COL_TRANSPORT_PORT));
 
-      accountId = BeeUtils.toLongOrNull(data.get(COL_UNIQUE_ID));
+      accountId = BeeUtils.toLongOrNull(data.get(COL_ACCOUNT));
       addressId = BeeUtils.toLongOrNull(data.get(CommonsConstants.COL_ADDRESS));
     }
     if (BeeUtils.isEmpty(error) && !DataUtils.isId(addressId)) {

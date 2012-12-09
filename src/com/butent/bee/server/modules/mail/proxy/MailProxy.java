@@ -111,7 +111,7 @@ public class MailProxy {
   }
 
   void processMessage(String message, String recipient) {
-    mail.storeMail(message, recipient);
+    mail.storeProxyMail(message, recipient);
   }
 
   @PreDestroy

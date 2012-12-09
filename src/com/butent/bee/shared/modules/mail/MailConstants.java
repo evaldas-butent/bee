@@ -67,7 +67,6 @@ public class MailConstants {
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
 
-  public static final String COL_RECIPIENT = "Recipient";
   public static final String COL_FOLDER = "Folder";
   public static final String COL_MESSAGE_UID = "MessageUID";
 
