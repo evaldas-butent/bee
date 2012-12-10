@@ -19,6 +19,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.HasOptions;
@@ -38,10 +39,7 @@ import java.util.List;
 
 public abstract class AbstractFilterSupplier implements HasViewName, HasOptions {
   
-  protected static final String NULL_VALUE_LABEL = "[tuštuma]";
-
-  private static final String STYLE_PREFIX = "bee-FilterSupplier-";
-  private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  protected static final String NULL_VALUE_LABEL = "[]";
 
   private final String viewName;
   private final Filter immutableFilter;
@@ -135,8 +133,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   protected Widget getCommandWidgets() {
     Flow panel = new Flow();
+    panel.addStyleName(getStylePrefix() + "commandPanel");
     
     BeeButton resetWidget = new BeeButton("Išvalyti");
+    resetWidget.addStyleName(getStylePrefix() + "commandReset");
+
     resetWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -146,6 +147,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     panel.add(resetWidget);
 
     BeeButton filterWidget = new BeeButton("Filtruoti");
+    filterWidget.addStyleName(getStylePrefix() + "commandFilter");
+
     filterWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -157,10 +160,14 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     return panel;
   }
   
-  protected String getDialogStyle() {
-    return STYLE_DIALOG;
+  protected Widget getDialogChild(String id) {
+    return DomUtils.getChildQuietly(getDialog(), id);
   }
 
+  protected String getDialogStyle() {
+    return getStylePrefix() + "dialog";
+  }
+  
   protected void getHistogram(final Callback<SimpleRowSet> callback) {
     List<Property> props = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, getViewName());
     if (getImmutableFilter() != null) {
@@ -192,13 +199,17 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
       }
     });
   }
-  
+
   protected List<String> getHistogramColumns() {
     return Lists.newArrayList(getColumnId());
   }
-
+  
   protected List<String> getHistogramOrder() {
     return Lists.newArrayList(getColumnId());
+  }
+
+  protected String getStylePrefix() {
+    return "bee-FilterSupplier-";
   }
   
   protected String messageAllEmpty(String count) {
@@ -210,7 +221,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     return BeeUtils.joinWords(getColumnLabel() + ":", "visos reikšmės lygios", value,
         BeeUtils.bracket(count));
   }
-  
+
   protected void openDialog(Element target, Widget widget, final Callback<Boolean> callback) {
     Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, getDialogStyle());
     
@@ -236,7 +247,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     setFilter(newFilter);
     closeDialog();
   }
-
+  
   private boolean filterChanged() {
     return filterChanged;
   }
@@ -252,7 +263,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   private void setDialog(Popup dialog) {
     this.dialog = dialog;
   }
-
+  
   private void setFilter(Filter filter) {
     this.filter = filter;
   }

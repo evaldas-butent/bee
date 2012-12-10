@@ -304,6 +304,7 @@ public class QueryServiceBean {
         ss.addOrder(queryAlias, colName);
       }
     }
+    
     return getData(ss);
   }
 

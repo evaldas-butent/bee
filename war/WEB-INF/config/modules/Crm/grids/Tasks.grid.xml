@@ -10,7 +10,8 @@
     <CalcColumn name="Mode" type="string" cell="html" horizontalAlignment="center" width="20"
       caption="-" options="greenSmall, yellowSmall" />
 
-    <PropColumn name="Star" type="integer" cell="html" horizontalAlignment="center" width="30" filterSupplier="star">
+    <PropColumn name="Star" type="integer" cell="html" horizontalAlignment="center" width="30"
+       filterSupplier="star">
       <renderer type="star" />
     </PropColumn>
 
@@ -21,18 +22,21 @@
     <DataColumn name="Description" />
 
     <RelColumn name="Company" editEnabled="true" />
-    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+      sortBy="ContactLastName ContactFirstName" />
 
     <DataColumn name="Status" itemKey="TaskStatus" />
 
-    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
-    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" />
+    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
+      sortBy="ExecutorLastName ExecutorFirstName" />
 
     <DataColumn name="StartTime" />
     <DataColumn name="FinishTime" />
 
-    <PropColumn name="LastAccess" type="datetime" format="DATE_TIME_MEDIUM" />
-    <PropColumn name="LastPublish" type="datetime" format="DATE_TIME_MEDIUM" />
+<!--     <PropColumn name="LastAccess" type="datetime" format="DATE_TIME_MEDIUM" /> -->
+<!--     <PropColumn name="LastPublish" type="datetime" format="DATE_TIME_MEDIUM" /> -->
   </columns>
 
   <rowStyle>

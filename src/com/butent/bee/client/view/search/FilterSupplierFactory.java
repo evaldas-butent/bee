@@ -12,8 +12,8 @@ import java.util.List;
 public class FilterSupplierFactory {
   
   public static AbstractFilterSupplier getSupplier(String viewName, Filter immutableFilter,
-      BeeColumn column, FilterSupplierType type, String options, List<String> searchColumns,
-      List<String> renderColumns, String itemKey, Relation relation) {
+      BeeColumn column, FilterSupplierType type, List<String> renderColumns,
+      List<String> orderColumns, String itemKey, Relation relation, String options) {
     
     Assert.notEmpty(viewName);
     Assert.notNull(column);
@@ -35,7 +35,8 @@ public class FilterSupplierFactory {
           break;
         
         case LIST:
-          supplier = new ListFilterSupplier(viewName, immutableFilter, column, options);
+          supplier = new ListFilterSupplier(viewName, immutableFilter, column,
+              renderColumns, orderColumns, relation, options);
           break;
         
         case RANGE:
@@ -56,8 +57,13 @@ public class FilterSupplierFactory {
       }
     }
     
-    if (supplier == null && !BeeUtils.isEmpty(itemKey)) {
-      supplier = new EnumFilterSupplier(viewName, immutableFilter, column, options, itemKey);
+    if (supplier == null) {
+      if (!BeeUtils.isEmpty(itemKey)) {
+        supplier = new EnumFilterSupplier(viewName, immutableFilter, column, options, itemKey);
+      } else if (relation != null) {
+        supplier = new ListFilterSupplier(viewName, immutableFilter, column,
+            renderColumns, orderColumns, relation, options);
+      }
     }
     
     if (supplier == null) {
@@ -66,7 +72,8 @@ public class FilterSupplierFactory {
           break;
 
         case DATE:
-          supplier = new ListFilterSupplier(viewName, immutableFilter, column, options);
+          supplier = new ListFilterSupplier(viewName, immutableFilter, column,
+              renderColumns, orderColumns, relation, options);
           break;
         
         case DATETIME:
@@ -85,7 +92,8 @@ public class FilterSupplierFactory {
           break;
 
         case TIMEOFDAY:
-          supplier = new ListFilterSupplier(viewName, immutableFilter, column, options);
+          supplier = new ListFilterSupplier(viewName, immutableFilter, column,
+              renderColumns, orderColumns, relation, options);
           break;
       }
     }

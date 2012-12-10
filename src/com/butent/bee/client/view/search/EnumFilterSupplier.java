@@ -181,9 +181,15 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       listBox.setItemSelected(i, false);
     }
   }
+  
+  @Override
+  protected String getStylePrefix() {
+    return super.getStylePrefix() + "Enum-";
+  }
 
   private Widget createWidget() {
     Vertical panel = new Vertical();
+    panel.addStyleName(getStylePrefix() + "panel");
 
     listBox.clear();
     for (DataItem dataItem : data) {

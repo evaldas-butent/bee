@@ -1923,6 +1923,46 @@ body, select {
   min-width: 100px;
 }
 
+.bee-FavoritesDisplay tr:hover {
+  background-color: #f2f2f2;
+  cursor: pointer;
+}
+
+.bee-FilterSupplier-List-dialog {
+  background-color: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 3px;
+}
+.bee-FilterSupplier-List-panel {
+  overflow: auto;
+  max-height: 400px;
+}
+.bee-FilterSupplier-List-display {
+  border-collapse: collapse;
+  cursor: pointer;
+}
+.bee-FilterSupplier-List-display tr:hover {
+  background-color: #eee;
+}
+.bee-FilterSupplier-List-selected {
+  background-image: -webkit-linear-gradient(top, #4D90FE, #357AE8);
+  color: white;
+}
+.bee-FilterSupplier-List-display td {
+  padding: 1px 2px;
+}
+.bee-FilterSupplier-List-display tr td:last-child {
+  text-align: right;
+  padding-left: 10px;
+}
+.bee-FilterSupplier-List-commandPanel {
+  margin-top: 5px;
+}
+.bee-FilterSupplier-List-commandFilter {
+  float: right; 
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

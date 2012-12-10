@@ -784,8 +784,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             && !BeeUtils.isEmpty(column.getSearchBy())) {
           filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), immutableFilter,
               dataCols.get(dataIndex), columnDescr.getFilterSupplierType(),
-              columnDescr.getFilterOptions(), column.getSearchBy(), renderColumns,
-              columnDescr.getItemKey(), columnDescr.getRelation());
+              renderColumns, column.getSortBy(), columnDescr.getItemKey(),
+              columnDescr.getRelation(), columnDescr.getFilterOptions());
         }
 
         if (filterSupplier != null) {

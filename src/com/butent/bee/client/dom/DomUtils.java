@@ -911,12 +911,13 @@ public class DomUtils {
     return null;
   }
 
-  public static Element getParentRow(Element child, boolean incl) {
-    return getParentElement(child, TAG_TR, incl);
-  }
-
-  public static Element getParentRow(UIObject obj, boolean incl) {
-    return getParentElement(obj, TAG_TR, incl);
+  public static TableRowElement getParentRow(Element child, boolean incl) {
+    Element parent = getParentElement(child, TAG_TR, incl);
+    if (isTableRowElement(parent)) {
+      return TableRowElement.as(parent);
+    } else {
+      return null;
+    }
   }
 
   public static Widget getPhysicalChild(Widget root, String id) {
