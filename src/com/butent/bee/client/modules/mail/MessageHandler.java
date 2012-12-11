@@ -39,6 +39,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
@@ -237,13 +238,13 @@ public class MessageHandler extends AbstractFormInterceptor {
         recipients.clear();
         String txt = null;
 
-        for (Map<String, String> address : packet.get(TBL_RECIPIENTS)) {
+        for (SimpleRow address : packet.get(TBL_RECIPIENTS)) {
           String[] info = new String[Ints.max(ADDR_ID, ADDR_EMAIL, ADDR_LABEL)];
-          info[ADDR_ID] = address.get(COL_ADDRESS);
-          info[ADDR_EMAIL] = address.get(CommonsConstants.COL_EMAIL_ADDRESS);
-          info[ADDR_LABEL] = address.get(CommonsConstants.COL_EMAIL_LABEL);
+          info[ADDR_ID] = address.getValue(COL_ADDRESS);
+          info[ADDR_EMAIL] = address.getValue(CommonsConstants.COL_EMAIL_ADDRESS);
+          info[ADDR_LABEL] = address.getValue(CommonsConstants.COL_EMAIL_LABEL);
 
-          recipients.put(address.get(COL_ADDRESS_TYPE), info);
+          recipients.put(address.getValue(COL_ADDRESS_TYPE), info);
           txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(info[ADDR_LABEL], info[ADDR_EMAIL]));
         }
         recipientsWidget.setText(BeeUtils.joinWords("Skirta:", txt));
@@ -253,12 +254,12 @@ public class MessageHandler extends AbstractFormInterceptor {
         long size = 0;
         txt = null;
 
-        for (Map<String, String> attachment : packet.get(TBL_ATTACHMENTS)) {
+        for (SimpleRow attachment : packet.get(TBL_ATTACHMENTS)) {
           String[] info = new String[Ints.max(ATTA_ID, ATTA_NAME, ATTA_SIZE)];
-          info[ATTA_ID] = attachment.get(COL_FILE);
-          info[ATTA_NAME] = BeeUtils.notEmpty(attachment.get(COL_ATTACHMENT_NAME),
-              attachment.get(CommonsConstants.COL_FILE_SIZE));
-          info[ATTA_SIZE] = attachment.get(CommonsConstants.COL_FILE_SIZE);
+          info[ATTA_ID] = attachment.getValue(COL_FILE);
+          info[ATTA_NAME] = BeeUtils.notEmpty(attachment.getValue(COL_ATTACHMENT_NAME),
+              attachment.getValue(CommonsConstants.COL_FILE_NAME));
+          info[ATTA_SIZE] = attachment.getValue(CommonsConstants.COL_FILE_SIZE);
 
           attachments.add(info);
           cnt++;
@@ -276,12 +277,12 @@ public class MessageHandler extends AbstractFormInterceptor {
         Element sep = Document.get().createHRElement();
         sep.setClassName("bee-mail-PartSeparator");
 
-        for (Map<String, String> part : packet.get(TBL_PARTS)) {
-          txt = part.get(COL_HTML_CONTENT);
+        for (SimpleRow part : packet.get(TBL_PARTS)) {
+          txt = part.getValue(COL_HTML_CONTENT);
 
-          if (txt == null && part.get(COL_CONTENT) != null) {
+          if (txt == null && part.getValue(COL_CONTENT) != null) {
             Element pre = Document.get().createPreElement();
-            pre.setInnerHTML(part.get(COL_CONTENT));
+            pre.setInnerHTML(part.getValue(COL_CONTENT));
             txt = pre.getString();
           }
           content = BeeUtils.join(sep.getString(), content, txt);

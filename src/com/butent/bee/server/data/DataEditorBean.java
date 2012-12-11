@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
@@ -260,11 +261,11 @@ public class DataEditorBean {
 
     for (RowInfo row : rows) {
       ids.add(row.getId());
-      IsCondition whId = SqlUtils.equal(tblName, view.getSourceIdName(), row.getId());
+      IsCondition whId = SqlUtils.equals(tblName, view.getSourceIdName(), row.getId());
       long version = row.getVersion();
 
       if (version > 0) {
-        wh.add(SqlUtils.and(whId, SqlUtils.equal(tblName, view.getSourceVersionName(), version)));
+        wh.add(SqlUtils.and(whId, SqlUtils.equals(tblName, view.getSourceVersionName(), version)));
       } else {
         wh.add(whId);
       }
@@ -710,7 +711,7 @@ public class DataEditorBean {
           c++;
         }
       } else if (!BeeUtils.isEmpty(baseUpdate)) { // UPDATE
-        IsCondition wh = SqlUtils.equal(tblName, idName, id);
+        IsCondition wh = SqlUtils.equals(tblName, idName, id);
 
         SqlUpdate su = new SqlUpdate(tblName).addConstant(verName, version);
 
@@ -718,7 +719,7 @@ public class DataEditorBean {
           su.addConstant(col.fieldName, col.newValue);
         }
         ResponseObject resp = qs.updateDataWithResponse(
-            su.setWhere(SqlUtils.and(wh, SqlUtils.equal(tblName, verName, tblInfo.version))));
+            su.setWhere(SqlUtils.and(wh, SqlUtils.equals(tblName, verName, tblInfo.version))));
         int res = resp.getResponse(-1, logger);
 
         if (res == 0 && refreshUpdates(updates, view)) { // Optimistic lock exception
@@ -834,22 +835,21 @@ public class DataEditorBean {
       }
     }
     Assert.state(DataUtils.isId(id));
-    Map<String, String> res =
-        qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id), null)));
+    SimpleRow res = qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id), null)));
 
-    if (BeeUtils.isEmpty(res)) {
+    if (res == null) {
       return false;
     }
     for (TableInfo tblInfo : updates.values()) {
       String idColumn = tblInfo.tableAlias + "_" + sys.getIdName(tblInfo.tableName);
       String verColumn = tblInfo.tableAlias + "_" + sys.getVersionName(tblInfo.tableName);
 
-      tblInfo.id = BeeUtils.toLong(res.get(idColumn));
-      tblInfo.version = BeeUtils.toLong(res.get(verColumn));
+      tblInfo.id = res.getLong(idColumn);
+      tblInfo.version = res.getLong(verColumn);
 
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
-          String value = res.get(fldInfo.fieldAlias);
+          String value = res.getValue(fldInfo.fieldAlias);
 
           if (!Objects.equal(value, fldInfo.oldValue)) {
             return false;

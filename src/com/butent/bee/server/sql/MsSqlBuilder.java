@@ -278,17 +278,17 @@ class MsSqlBuilder extends SqlBuilder {
         return "SELECT schema_name() AS " + sqlQuote("dbSchema");
 
       case DB_TABLES:
-        IsCondition wh = SqlUtils.and(SqlUtils.equal("o", "type", "U"),
-            SqlUtils.equal("o", "is_ms_shipped", 0),
+        IsCondition wh = SqlUtils.and(SqlUtils.equals("o", "type", "U"),
+            SqlUtils.equals("o", "is_ms_shipped", 0),
             SqlUtils.less("p", "index_id", 2));
 
         Object prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("s", "name", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("o", "name", prm));
         }
         return new SqlSelect()
             .addField("o", "name", SqlConstants.TBL_NAME)
@@ -301,16 +301,16 @@ class MsSqlBuilder extends SqlBuilder {
             .getSqlString(this);
 
       case DB_INDEXES:
-        wh = SqlUtils.and(SqlUtils.notNull("i", "name"), SqlUtils.equal("o", "type", "U"),
-            SqlUtils.equal("o", "is_ms_shipped", 0));
+        wh = SqlUtils.and(SqlUtils.notNull("i", "name"), SqlUtils.equals("o", "type", "U"),
+            SqlUtils.equals("o", "is_ms_shipped", 0));
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("s", "name", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("o", "name", prm));
         }
         return new SqlSelect()
             .addField("o", "name", SqlConstants.TBL_NAME)
@@ -326,11 +326,11 @@ class MsSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("s", "name", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("o", "name", prm));
         }
         return new SqlSelect()
             .addField("o", "name", SqlConstants.TBL_NAME)

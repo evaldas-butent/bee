@@ -16,10 +16,10 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -43,19 +43,6 @@ public class FolderHandlerBean {
     syncFolder(folder, null);
   }
 
-  public MailFolder createFolder(Long accountId, Long parentId, String name, Long uidValidity) {
-    Assert.state(DataUtils.isId(accountId));
-    Assert.notEmpty(name);
-
-    long id = qs.insertData(new SqlInsert(TBL_FOLDERS)
-        .addConstant(COL_ACCOUNT, accountId)
-        .addConstant(COL_FOLDER_PARENT, parentId)
-        .addConstant(COL_FOLDER_NAME, name)
-        .addConstant(COL_FOLDER_UID, uidValidity));
-
-    return new MailFolder(id, name, uidValidity);
-  }
-
   public void disconnectFolder(MailFolder folder) {
     syncFolder(folder, MailFolder.DISCONNECTED_MODE);
   }
@@ -74,10 +61,10 @@ public class FolderHandlerBean {
     if (folder.isConnected()) {
       if (dropped) {
         qs.updateData(new SqlDelete(TBL_FOLDERS)
-            .setWhere(SqlUtils.equal(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), folder.getId())));
+            .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
       } else {
         qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(SqlUtils.equal(TBL_PLACES, COL_FOLDER, folder.getId())));
+            .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
 
         disconnectFolder(folder);
       }
@@ -87,22 +74,51 @@ public class FolderHandlerBean {
     return dropped;
   }
 
-  public Long getInboxFolder(Long accountId) {
+  public MailFolder getDraftsFolder(Long accountId) {
+    return getFolder(getInboxFolder(accountId), DEFAULT_DRAFTS_FOLDER);
+  }
+
+  public MailFolder getFolder(MailFolder parent, String name) {
+    Assert.notNull(parent);
+
+    for (MailFolder subFolder : parent.getSubFolders()) {
+      if (BeeUtils.same(subFolder.getName(), name)) {
+        return subFolder;
+      }
+    }
+    return createFolder(parent.getAccountId(), parent, name, null);
+  }
+
+  public MailFolder getInboxFolder(Long accountId) {
     Assert.state(DataUtils.isId(accountId));
 
-    Long folderId = qs.getLong(new SqlSelect()
-        .addFields(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS))
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
+        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
         .addFrom(TBL_FOLDERS)
-        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_FOLDERS, COL_FOLDER_PARENT),
-            SqlUtils.equal(TBL_FOLDERS, COL_ACCOUNT, accountId),
-            SqlUtils.equal(TBL_FOLDERS, COL_FOLDER_NAME, DEFAULT_INBOX_FOLDER))));
+        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId)));
 
-    if (!DataUtils.isId(folderId)) {
-      folderId = qs.insertData(new SqlInsert(TBL_FOLDERS)
-          .addConstant(COL_ACCOUNT, accountId)
-          .addConstant(COL_FOLDER_NAME, DEFAULT_INBOX_FOLDER));
+    Multimap<Long, SimpleRow> folders = HashMultimap.create();
+    MailFolder inbox = null;
+
+    for (SimpleRow row : data) {
+      Long parent = row.getLong(COL_FOLDER_PARENT);
+
+      if (parent == null) {
+        Assert.isNull(inbox, "Account allows only single INBOX folder");
+
+        inbox = new MailFolder(accountId, null, row.getLong(COL_FOLDER),
+            row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
+      } else {
+        folders.put(parent, row);
+      }
     }
-    return folderId;
+    if (inbox == null) {
+      inbox = createFolder(accountId, null, DEFAULT_INBOX_FOLDER, null);
+    } else {
+      createTree(inbox, folders);
+    }
+    return inbox;
   }
 
   public long getLastStoredUID(MailFolder folder) {
@@ -111,29 +127,17 @@ public class FolderHandlerBean {
     Long uid = qs.getLong(new SqlSelect()
         .addMax(TBL_PLACES, COL_MESSAGE_UID)
         .addFrom(TBL_PLACES)
-        .setWhere(SqlUtils.equal(TBL_PLACES, COL_FOLDER, folder.getId())));
+        .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
 
     return BeeUtils.unbox(uid);
   }
 
-  public MailFolder getRootFolder(Long accountId) {
-    Assert.state(DataUtils.isId(accountId));
+  public MailFolder getSentFolder(Long accountId) {
+    return getFolder(getInboxFolder(accountId), DEFAULT_SENT_FOLDER);
+  }
 
-    SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
-        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
-        .addFrom(TBL_FOLDERS)
-        .setWhere(SqlUtils.equal(TBL_FOLDERS, COL_ACCOUNT, accountId)));
-
-    Multimap<Long, Map<String, String>> folders = HashMultimap.create();
-
-    for (int i = 0; i < data.getNumberOfRows(); i++) {
-      folders.put(data.getLong(i, COL_FOLDER_PARENT), data.getRow(i));
-    }
-    MailFolder rootFolder = new MailFolder(null, null, null);
-    createTree(rootFolder, folders);
-
-    return rootFolder;
+  public MailFolder getTrashFolder(Long accountId) {
+    return getFolder(getInboxFolder(accountId), DEFAULT_TRASH_FOLDER);
   }
 
   public void syncFolder(MailFolder folder, Long uidValidity) {
@@ -143,23 +147,36 @@ public class FolderHandlerBean {
       if (Objects.equal(uidValidity, MailFolder.DISCONNECTED_MODE)) {
         qs.updateData(new SqlUpdate(TBL_PLACES)
             .addConstant(COL_MESSAGE_UID, null)
-            .setWhere(SqlUtils.equal(TBL_PLACES, COL_FOLDER, folder.getId())));
+            .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
       } else {
         qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(SqlUtils.equal(TBL_PLACES, COL_FOLDER, folder.getId())));
+            .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
       }
       qs.updateData(new SqlUpdate(TBL_FOLDERS)
           .addConstant(COL_FOLDER_UID, uidValidity)
-          .setWhere(SqlUtils.equal(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), folder.getId())));
+          .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
 
       folder.setUidValidity(uidValidity);
     }
   }
 
-  private void createTree(MailFolder parent, Multimap<Long, Map<String, String>> folders) {
-    for (Map<String, String> row : folders.get(parent.getId())) {
-      MailFolder folder = new MailFolder(BeeUtils.toLongOrNull(row.get(COL_FOLDER)),
-          row.get(COL_FOLDER_NAME), BeeUtils.toLongOrNull(row.get(COL_FOLDER_UID)));
+  private MailFolder createFolder(Long accountId, MailFolder parent, String name, Long folderUID) {
+    Assert.state(DataUtils.isId(accountId));
+    Assert.notEmpty(name);
+
+    long id = qs.insertData(new SqlInsert(TBL_FOLDERS)
+        .addConstant(COL_ACCOUNT, accountId)
+        .addConstant(COL_FOLDER_PARENT, parent == null ? null : parent.getId())
+        .addConstant(COL_FOLDER_NAME, name)
+        .addConstant(COL_FOLDER_UID, folderUID));
+
+    return new MailFolder(accountId, parent, id, name, folderUID);
+  }
+
+  private void createTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
+    for (SimpleRow row : folders.get(parent.getId())) {
+      MailFolder folder = new MailFolder(parent.getAccountId(), parent, row.getLong(COL_FOLDER),
+          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
 
       createTree(folder, folders);
       parent.addSubFolder(folder);

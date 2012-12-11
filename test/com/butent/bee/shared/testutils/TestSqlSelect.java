@@ -394,7 +394,7 @@ public class TestSqlSelect {
     SqlSelect select3 = new SqlSelect();
     select3.addFrom("Table2");
     select3.addFields("Table2", "field21");
-    select3.setWhere(SqlUtils.equal(SqlUtils.name("field31"), "val1"));
+    select3.setWhere(SqlUtils.equals(SqlUtils.name("field31"), "val1"));
   }
 
   @Test

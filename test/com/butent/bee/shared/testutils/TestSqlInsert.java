@@ -117,7 +117,7 @@ public class TestSqlInsert {
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
-    IsCondition clause = SqlUtils.equal("Table1", "password", "12345");
+    IsCondition clause = SqlUtils.equals("Table1", "password", "12345");
     select.setWhere(clause);
 
     insert.addFields("field1", "field2", "field3");

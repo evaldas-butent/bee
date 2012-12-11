@@ -3,33 +3,51 @@ package com.butent.bee.server.modules.mail;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
 
-class MailFolder {
+public class MailFolder {
 
   public static final long DISCONNECTED_MODE = -1;
 
-  private final Long id;
+  private final long accountId;
+  private final MailFolder parent;
+  private final long id;
   private final String name;
   private Long uidValidity;
 
   private final Map<String, MailFolder> childs = Maps.newHashMap();
 
-  public MailFolder(Long id, String name, Long uidValidity) {
+  MailFolder(long accountId, MailFolder parent, long id, String name, Long uidValidity) {
+    Assert.state(DataUtils.isId(accountId));
+    Assert.state(DataUtils.isId(id));
+    Assert.notEmpty(name);
+
+    this.accountId = accountId;
+    this.parent = parent;
     this.id = id;
     this.name = BeeUtils.normalize(name);
     this.uidValidity = uidValidity;
   }
 
-  public Long getId() {
+  public long getAccountId() {
+    return accountId;
+  }
+
+  public long getId() {
     return id;
   }
 
   public String getName() {
     return name;
+  }
+
+  public MailFolder getParent() {
+    return parent;
   }
 
   public Collection<MailFolder> getSubFolders() {

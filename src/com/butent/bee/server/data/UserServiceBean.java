@@ -18,6 +18,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
@@ -240,18 +241,18 @@ public class UserServiceBean {
         .addFields(TBL_OBJECTS, FLD_OBJECT_NAME)
         .addFields(TBL_RIGHTS, FLD_ROLE, FLD_STATE)
         .addFrom(TBL_OBJECTS)
-        .addFromInner(TBL_RIGHTS,
-            SqlUtils.join(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), TBL_RIGHTS, FLD_OBJECT));
+        .addFromInner(TBL_RIGHTS, sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, FLD_OBJECT));
 
     for (RightsObjectType tp : RightsObjectType.values()) {
       if (BeeUtils.isEmpty(tp.getRegisteredStates())) {
         continue;
       }
       HasConditions cl = SqlUtils.or();
-      IsCondition wh = SqlUtils.and(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal()), cl);
+      IsCondition wh =
+          SqlUtils.and(SqlUtils.equals(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal()), cl);
 
       for (RightsState state : tp.getRegisteredStates()) {
-        cl.add(SqlUtils.equal(TBL_RIGHTS, FLD_STATE, state.ordinal()));
+        cl.add(SqlUtils.equals(TBL_RIGHTS, FLD_STATE, state.ordinal()));
       }
       SimpleRowSet res = qs.getData(ss.setWhere(wh));
 
@@ -316,16 +317,17 @@ public class UserServiceBean {
             SqlUtils.join(TBL_COMPANY_PERSONS, FLD_PERSON,
                 TBL_PERSONS, sys.getIdName(TBL_PERSONS)));
 
-    for (Map<String, String> row : qs.getData(ss)) {
-      long userId = BeeUtils.toLong(row.get(userIdName));
-      String login = key(row.get(FLD_LOGIN));
+    for (SimpleRow row : qs.getData(ss)) {
+      long userId = row.getLong(userIdName);
+      String login = key(row.getValue(FLD_LOGIN));
 
       userCache.put(userId, login);
 
-      UserInfo user = new UserInfo(new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
-          row.get(UserData.FLD_LAST_NAME)))
+      UserInfo user = new UserInfo(new UserData(userId, login,
+          row.getValue(UserData.FLD_FIRST_NAME),
+          row.getValue(UserData.FLD_LAST_NAME)))
           .setRoles(userRoles.get(userId))
-          .setProperties(row.get(FLD_PROPERTIES));
+          .setProperties(row.getValue(FLD_PROPERTIES));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -373,7 +375,7 @@ public class UserServiceBean {
 
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(FLD_HOST, BeeUtils.joinWords(host, agent))
-          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
+          .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
@@ -400,7 +402,7 @@ public class UserServiceBean {
 
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(FLD_HOST, null)
-          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
+          .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
 
       if (info.isOnline()) {
         info.setOnline(false);

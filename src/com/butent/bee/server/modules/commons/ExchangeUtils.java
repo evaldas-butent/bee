@@ -77,12 +77,12 @@ public class ExchangeUtils {
     }
     // TODO: ORACLE workaround needed
     query.addFromLeft(TBL_CURRENCY_RATES, ratesAlias,
-        SqlUtils.and(SqlUtils.equal(ratesAlias, FLD_CURRENCY, currency),
-            SqlUtils.equal(ratesAlias, FLD_DATE, new SqlSelect()
+        SqlUtils.equals(ratesAlias, FLD_CURRENCY, currency, FLD_DATE,
+            new SqlSelect()
                 .addMax(TBL_CURRENCY_RATES, FLD_DATE)
                 .addFrom(TBL_CURRENCY_RATES)
                 .setWhere(SqlUtils.and(dateClause,
-                    SqlUtils.equal(TBL_CURRENCY_RATES, FLD_CURRENCY, currency))))));
+                    SqlUtils.equals(TBL_CURRENCY_RATES, FLD_CURRENCY, currency)))));
   }
 
   private ExchangeUtils() {

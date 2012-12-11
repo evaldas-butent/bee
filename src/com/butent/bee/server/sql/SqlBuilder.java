@@ -612,11 +612,11 @@ public abstract class SqlBuilder {
 
         Object prm = params.get("dbName");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("t", "catalog_name", prm);
+          wh = SqlUtils.equals("t", "catalog_name", prm);
         }
         prm = params.get("schema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "schema_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "schema_name", prm));
         }
         return new SqlSelect()
             .addFields("t", "schema_name")
@@ -629,15 +629,15 @@ public abstract class SqlBuilder {
 
         prm = params.get("dbName");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("t", "table_catalog", prm);
+          wh = SqlUtils.equals("t", "table_catalog", prm);
         }
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_schema", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "table_schema", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "table_name", prm));
         }
         return new SqlSelect()
             .addField("t", "table_name", SqlConstants.TBL_NAME)
@@ -651,15 +651,15 @@ public abstract class SqlBuilder {
 
         prm = params.get("dbName");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("c", "table_catalog", prm);
+          wh = SqlUtils.equals("c", "table_catalog", prm);
         }
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_schema", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("c", "table_schema", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("c", "table_name", prm));
         }
         return new SqlSelect()
             .addField("c", "table_name", SqlConstants.TBL_NAME)
@@ -679,15 +679,15 @@ public abstract class SqlBuilder {
 
         prm = params.get("dbName");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("k", "constraint_catalog", prm);
+          wh = SqlUtils.equals("k", "constraint_catalog", prm);
         }
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("k", "constraint_schema", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("k", "constraint_schema", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("k", "table_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("k", "table_name", prm));
         }
         prm = params.get("keyTypes");
         if (!isEmpty(prm)) {
@@ -709,7 +709,7 @@ public abstract class SqlBuilder {
                 tp = null;
             }
             if (!BeeUtils.isEmpty(tp)) {
-              typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "constraint_type", tp));
+              typeWh = SqlUtils.or(typeWh, SqlUtils.equals("k", "constraint_type", tp));
             }
           }
           if (!isEmpty(typeWh)) {
@@ -730,22 +730,22 @@ public abstract class SqlBuilder {
         prm = params.get("dbName");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
-              SqlUtils.equal("c", "constraint_catalog", prm),
-              SqlUtils.equal("t", "table_catalog", prm));
+              SqlUtils.equals("c", "constraint_catalog", prm),
+              SqlUtils.equals("t", "table_catalog", prm));
         }
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
-              SqlUtils.equal("c", "constraint_schema", prm),
-              SqlUtils.equal("t", "table_schema", prm));
+              SqlUtils.equals("c", "constraint_schema", prm),
+              SqlUtils.equals("t", "table_schema", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "table_name", prm));
         }
         prm = params.get("refTable");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("r", "table_name", prm));
         }
         return new SqlSelect()
             .addField("t", "table_name", SqlConstants.TBL_NAME)
@@ -769,18 +769,18 @@ public abstract class SqlBuilder {
         prm = params.get("dbName");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
-              SqlUtils.equal("t", "trigger_catalog", prm),
-              SqlUtils.equal("t", "event_object_catalog", prm));
+              SqlUtils.equals("t", "trigger_catalog", prm),
+              SqlUtils.equals("t", "event_object_catalog", prm));
         }
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
-              SqlUtils.equal("t", "trigger_schema", prm),
-              SqlUtils.equal("t", "event_object_schema", prm));
+              SqlUtils.equals("t", "trigger_schema", prm),
+              SqlUtils.equals("t", "event_object_schema", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "event_object_table", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "event_object_table", prm));
         }
         return new SqlSelect()
             .addField("t", "event_object_table", SqlConstants.TBL_NAME)

@@ -37,6 +37,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
@@ -421,6 +422,10 @@ public class SystemBean {
     return getTable(tblName).hasField(fldName);
   }
 
+  public IsCondition idEquals(String tblName, long id) {
+    return SqlUtils.equals(tblName, getIdName(tblName), id);
+  }
+
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -486,8 +491,8 @@ public class SystemBean {
     return table.joinState(query, tblAlias, state);
   }
 
-  public IsCondition joinTables(String dst, String src, String fld) {
-    return SqlUtils.join(dst, getIdName(dst), src, fld);
+  public IsCondition joinTables(String tblName, String dstTable, String dstField) {
+    return SqlUtils.join(tblName, getIdName(tblName), dstTable, dstField);
   }
 
   public String joinTranslationField(HasFrom<?> query, String tblName, String tblAlias,
@@ -584,8 +589,8 @@ public class SystemBean {
   private void createForeignKeys(Collection<BeeForeignKey> fKeys) {
     HashMultimap<String, String> flds = HashMultimap.create();
 
-    for (Map<String, String> row : qs.dbFields(getDbName(), getDbSchema(), null)) {
-      flds.put(row.get(SqlConstants.TBL_NAME), row.get(SqlConstants.FLD_NAME));
+    for (SimpleRow row : qs.dbFields(getDbName(), getDbSchema(), null)) {
+      flds.put(row.getValue(SqlConstants.TBL_NAME), row.getValue(SqlConstants.FLD_NAME));
     }
     for (BeeForeignKey fKey : fKeys) {
       String tblName = fKey.getTable();
@@ -809,24 +814,24 @@ public class SystemBean {
           logger.debug("Checking fields...");
           int c = 0;
 
-          for (Map<String, String> newFieldInfo : newFields) {
-            Map<String, String> oldFieldInfo = null;
-            String fldName = newFieldInfo.get(SqlConstants.FLD_NAME);
+          for (SimpleRow newFieldInfo : newFields) {
+            SimpleRow oldFieldInfo = null;
+            String fldName = newFieldInfo.getValue(SqlConstants.FLD_NAME);
 
-            for (Map<String, String> oldInfo : oldFields) {
-              if (BeeUtils.same(oldInfo.get(SqlConstants.FLD_NAME), fldName)) {
+            for (SimpleRow oldInfo : oldFields) {
+              if (BeeUtils.same(oldInfo.getValue(SqlConstants.FLD_NAME), fldName)) {
                 c++;
                 oldFieldInfo = oldInfo;
                 break;
               }
             }
             if (oldFieldInfo != null) {
-              for (String info : oldFieldInfo.keySet()) {
+              for (String info : oldFieldInfo.getColumnNames()) {
                 if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
-                    && !Objects.equal(oldFieldInfo.get(info), newFieldInfo.get(info))) {
+                    && !Objects.equal(oldFieldInfo.getValue(info), newFieldInfo.getValue(info))) {
 
                   String msg = BeeUtils.joinWords("FIELD", fldName + ":",
-                      info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
+                      info, oldFieldInfo.getValue(info), "!=", newFieldInfo.getValue(info));
                   logger.warning(msg);
 
                   if (diff != null) {
@@ -1253,10 +1258,10 @@ public class SystemBean {
       String tblBackup = rebuilds.get(tblMain);
 
       if (!BeeUtils.isEmpty(tblBackup)) {
-        for (Map<String, String> fKeys : qs
+        for (SimpleRow fKeys : qs
             .dbForeignKeys(getDbName(), getDbSchema(), null, tblMain)) {
-          String fk = fKeys.get(SqlConstants.KEY_NAME);
-          String tbl = fKeys.get(SqlConstants.TBL_NAME);
+          String fk = fKeys.getValue(SqlConstants.KEY_NAME);
+          String tbl = fKeys.getValue(SqlConstants.TBL_NAME);
           makeStructureChanges(SqlUtils.dropForeignKey(tbl, fk));
         }
         makeStructureChanges(SqlUtils.dropTable(tblMain));

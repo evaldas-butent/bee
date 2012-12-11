@@ -38,7 +38,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromFull(select1, "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 FULL JOIN (SELECT Table2.field21 FROM Table2) Lentele2 ON Table2.Field21 = 'val21'",
@@ -62,7 +62,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromFull("Table2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 FULL JOIN Table2 ON Table2.Field21 = 'val21'",
@@ -79,7 +79,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromFull("Table2", "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 FULL JOIN Table2 Lentele2 ON Table2.Field21 = 'val21'",
@@ -89,7 +89,7 @@ public class TestHasFrom {
     select1.addFields("Table1", "field1");
     select1.addFrom("Table1");
     select1.addFromFull("Table2", "",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 FULL JOIN Table2 ON Table2.Field21 = 'val21'",
@@ -128,7 +128,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromInner(select1, "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 INNER JOIN (SELECT Table2.field21 FROM Table2) Lentele2 ON Table2.Field21 = 'val21'",
@@ -222,7 +222,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromLeft(select1, "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 LEFT JOIN (SELECT Table2.field21 FROM Table2) Lentele2 ON Table2.Field21 = 'val21'",
@@ -259,7 +259,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromLeft("Table2", "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 LEFT JOIN Table2 Lentele2 ON Table2.Field21 = 'val21'",
@@ -270,7 +270,7 @@ public class TestHasFrom {
     select1.addFields("Table1", "field1");
     select1.addFrom("Table1");
     select1.addFromLeft("Table2", "",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 LEFT JOIN Table2 ON Table2.Field21 = 'val21'",
@@ -319,7 +319,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromRight(select1, "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 RIGHT JOIN (SELECT Table2.field21 FROM Table2) Lentele2 ON Table2.Field21 = 'val21'",
@@ -357,7 +357,7 @@ public class TestHasFrom {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
     select.addFromRight("Table2", "Lentele2",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 RIGHT JOIN Table2 Lentele2 ON Table2.Field21 = 'val21'",
@@ -368,7 +368,7 @@ public class TestHasFrom {
     select1.addFields("Table1", "field1");
     select1.addFrom("Table1");
     select1.addFromRight("Table2", "",
-        SqlUtils.equal("Table2", "Field21", "val21"));
+        SqlUtils.equals("Table2", "Field21", "val21"));
 
     assertEquals(
         "SELECT Table1.field1 FROM Table1 RIGHT JOIN Table2 ON Table2.Field21 = 'val21'",

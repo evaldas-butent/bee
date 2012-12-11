@@ -3,12 +3,11 @@ package com.butent.bee.server.modules.mail;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
-
-import java.util.Map;
 
 public class MailAccount {
 
@@ -27,7 +26,7 @@ public class MailAccount {
   private final Long accountId;
   private final Long addressId;
 
-  MailAccount(Map<String, String> data) {
+  MailAccount(SimpleRow data) {
     if (data == null) {
       error = "Unknown account";
       storeProtocol = null;
@@ -42,18 +41,18 @@ public class MailAccount {
       accountId = null;
       addressId = null;
     } else {
-      storeProtocol = NameUtils.getEnumByName(Protocol.class, data.get(COL_STORE_STYPE));
-      storeHost = data.get(COL_STORE_SERVER);
-      storePort = BeeUtils.toIntOrNull(data.get(COL_STORE_SPORT));
-      storeLogin = BeeUtils.notEmpty(data.get(COL_STORE_LOGIN),
-          data.get(CommonsConstants.COL_EMAIL));
-      storePassword = data.get(COL_STORE_PASSWORD);
+      storeProtocol = NameUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
+      storeHost = data.getValue(COL_STORE_SERVER);
+      storePort = data.getInt(COL_STORE_SPORT);
+      storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
+          data.getValue(CommonsConstants.COL_EMAIL));
+      storePassword = data.getValue(COL_STORE_PASSWORD);
 
-      transportHost = data.get(COL_TRANSPORT_SERVER);
-      transportPort = BeeUtils.toIntOrNull(data.get(COL_TRANSPORT_PORT));
+      transportHost = data.getValue(COL_TRANSPORT_SERVER);
+      transportPort = data.getInt(COL_TRANSPORT_PORT);
 
-      accountId = BeeUtils.toLongOrNull(data.get(COL_ACCOUNT));
-      addressId = BeeUtils.toLongOrNull(data.get(CommonsConstants.COL_ADDRESS));
+      accountId = data.getLong(COL_ACCOUNT);
+      addressId = data.getLong(CommonsConstants.COL_ADDRESS);
     }
     if (BeeUtils.isEmpty(error) && !DataUtils.isId(addressId)) {
       error = "Unknown account address";

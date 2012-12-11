@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -32,7 +33,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -92,7 +92,7 @@ public class TransportModuleBean implements BeeModule {
         response = getCargoProfit(new SqlSelect()
             .addField(cargo, sys.getIdName(cargo), "Cargo")
             .addFrom(cargo)
-            .setWhere(SqlUtils.equal(cargo, "Order", orderId)));
+            .setWhere(SqlUtils.equals(cargo, "Order", orderId)));
 
       } else {
         response = ResponseObject.error("Profit of WHAT?");
@@ -308,11 +308,13 @@ public class TransportModuleBean implements BeeModule {
         .addSum(crsTotals, "ServicesCost")
         .addFrom(crsTotals);
 
-    Map<String, String> res = qs.getRow(ss);
+    SimpleRow res = qs.getRow(ss);
 
     qs.sqlDropTemp(crsTotals);
 
-    return ResponseObject.response(new String[] {res.toString()});
+    return ResponseObject.response(new String[] {"CargoIncome:", res.getValue("CargoIncome"),
+        "TripCost:", res.getValue("TripCost"), "ServicesIncome:", res.getValue("ServicesIncome"),
+        "ServicesCost:", res.getValue("ServicesCost")});
   }
 
   /**
@@ -363,10 +365,10 @@ public class TransportModuleBean implements BeeModule {
             .setDistinctMode(true)
             .addFields("subId", routeId)
             .addFrom(flt, "subId"), "sub", SqlUtils.joinUsing(routes, "sub", routeId))
-        .addFromInner(trips, SqlUtils.join(routes, "Trip", trips, sys.getIdName(trips)))
+        .addFromInner(trips, sys.joinTables(trips, routes, "Trip"))
         .addFromInner(fuel, SqlUtils.joinUsing(trips, fuel, "Vehicle"))
         .addFromLeft(temps,
-            SqlUtils.and(SqlUtils.join(fuel, sys.getIdName(fuel), temps, "Consumption"),
+            SqlUtils.and(sys.joinTables(fuel, temps, "Consumption"),
                 SqlUtils.joinUsing(temps, routes, "Season"),
                 SqlUtils.or(SqlUtils.isNull(temps, "TempFrom"),
                     SqlUtils.lessEqual(SqlUtils.field(temps, "TempFrom"),
@@ -396,7 +398,7 @@ public class TransportModuleBean implements BeeModule {
           .addFields(trips,
               tripId, "SpeedometerBefore", "SpeedometerAfter", "FuelBefore", "FuelAfter")
           .addFrom(trips)
-          .setWhere(SqlUtils.and(SqlUtils.equal(trips, "Vehicle", vehicle),
+          .setWhere(SqlUtils.and(SqlUtils.equals(trips, "Vehicle", vehicle),
               SqlUtils.less(trips, "Date", date))));
 
       int cnt = rs.getNumberOfRows();
@@ -410,7 +412,7 @@ public class TransportModuleBean implements BeeModule {
           Double km = qs.getDouble(new SqlSelect()
               .addSum(routes, "Kilometers")
               .addFrom(routes)
-              .setWhere(SqlUtils.equal(routes, "Trip", rs.getLong(cnt, tripId))));
+              .setWhere(SqlUtils.equals(routes, "Trip", rs.getLong(cnt, tripId))));
 
           speedometer = BeeUtils.unbox(rs.getDouble(cnt, "SpeedometerBefore"))
               + BeeUtils.unbox(km);
@@ -426,19 +428,19 @@ public class TransportModuleBean implements BeeModule {
           Double fill = qs.getDouble(new SqlSelect()
               .addSum(fuels, "Quantity")
               .addFrom(fuels)
-              .setWhere(SqlUtils.equal(fuels, "Trip", rs.getLong(cnt, tripId))));
+              .setWhere(SqlUtils.equals(fuels, "Trip", rs.getLong(cnt, tripId))));
 
-          Map<String, String> row = qs.getRow(getFuelConsumptionsQuery(new SqlSelect()
+          SimpleRow row = qs.getRow(getFuelConsumptionsQuery(new SqlSelect()
               .addFields(routes, sys.getIdName(routes))
               .addFrom(routes)
-              .setWhere(SqlUtils.equal(routes, "Trip", rs.getLong(cnt, tripId))), false));
+              .setWhere(SqlUtils.equals(routes, "Trip", rs.getLong(cnt, tripId))), false));
 
-          Double consume = BeeUtils.isEmpty(row) ? null : BeeUtils.toDouble(row.get("Quantity"));
+          Double consume = row == null ? null : row.getDouble("Quantity");
 
           Double addit = qs.getDouble(new SqlSelect()
               .addSum(consumptions, "Quantity")
               .addFrom(consumptions)
-              .setWhere(SqlUtils.equal(consumptions, "Trip", rs.getLong(cnt, tripId))));
+              .setWhere(SqlUtils.equals(consumptions, "Trip", rs.getLong(cnt, tripId))));
 
           fuel = BeeUtils.unbox(rs.getDouble(cnt, "FuelBefore")) + BeeUtils.unbox(fill)
               - BeeUtils.unbox(consume) - BeeUtils.unbox(addit);
@@ -717,7 +719,7 @@ public class TransportModuleBean implements BeeModule {
         .addSum(crs, "FuelCost")
         .addFrom(crs);
 
-    Map<String, String> res = qs.getRow(ss);
+    SimpleRow res = qs.getRow(ss);
 
     qs.sqlDropTemp(crs);
 
@@ -727,10 +729,11 @@ public class TransportModuleBean implements BeeModule {
         .addSum(crs, "TripIncome")
         .addFrom(crs);
 
-    res.put("TripIncome", qs.getValue(ss));
+    String tripIncome = qs.getValue(ss);
 
     qs.sqlDropTemp(crs);
 
-    return ResponseObject.response(new String[] {res.toString()});
+    return ResponseObject.response(new String[] {"TripCost:", res.getValue("TripCost"),
+        "FuelCost:", res.getValue("FuelCost"), "TripIncome:", tripIncome});
   }
 }

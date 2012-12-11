@@ -83,7 +83,7 @@ class PostgreSqlBuilder extends SqlBuilder {
       String var = "OLD." + sqlQuote(fldName);
 
       body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN",
-          new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+          new SqlDelete(relTable).setWhere(SqlUtils.equals(relTable, relField, 69))
               .getQuery().replace("69", var),
           ";END IF;"));
     }
@@ -195,11 +195,11 @@ class PostgreSqlBuilder extends SqlBuilder {
 
         Object prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("s", "nspname", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "relname", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "relname", prm));
         }
         return new SqlSelect()
             .addField("t", "relname", SqlConstants.TBL_NAME)
@@ -214,11 +214,11 @@ class PostgreSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("s", "nspname", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "relname", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "relname", prm));
         }
         return new SqlSelect()
             .addField("t", "relname", SqlConstants.TBL_NAME)

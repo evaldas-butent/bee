@@ -950,7 +950,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         break;
 
       default:
-        cond = SqlUtils.or(cond, SqlUtils.equal(getSqlExpression(colName), type.getEmptyValue()));
+        cond = SqlUtils.or(cond, SqlUtils.equals(getSqlExpression(colName), type.getEmptyValue()));
         break;
     }
     return cond;

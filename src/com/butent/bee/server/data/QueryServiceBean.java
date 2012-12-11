@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -287,24 +288,24 @@ public class QueryServiceBean {
 
     BeeView view = sys.getView(viewName);
     SqlSelect viewQuery = view.getQuery(filter, null, columns, sys.getViewFinder());
-    
+
     String queryAlias = "Hist_" + SqlUtils.uniqueName();
     String countAlias = "Count_" + SqlUtils.uniqueName();
-    
+
     SqlSelect ss = new SqlSelect();
     for (String colName : columns) {
       ss.addFields(queryAlias, colName);
       ss.addGroup(queryAlias, colName);
     }
-    
+
     ss.addCount(countAlias).addFrom(viewQuery, queryAlias);
-    
+
     if (!BeeUtils.isEmpty(order)) {
       for (String colName : order) {
         ss.addOrder(queryAlias, colName);
       }
     }
-    
+
     return getData(ss);
   }
 
@@ -324,8 +325,11 @@ public class QueryServiceBean {
     return getSingleColumn(query).getLongColumn(0);
   }
 
-  public Map<String, String> getRow(IsQuery query) {
-    return getSingleRow(query).getRow(0);
+  public SimpleRow getRow(IsQuery query) {
+    SimpleRowSet res = getData(query);
+    Assert.notNull(res);
+    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain zero or one row");
+    return res.getRow(0);
   }
 
   public List<SearchResult> getSearchResults(String viewName, Filter filter) {
@@ -342,10 +346,6 @@ public class QueryServiceBean {
 
   public String getValue(IsQuery query) {
     return getSingleValue(query).getValue(0, 0);
-  }
-
-  public String[] getValues(IsQuery query) {
-    return getSingleRow(query).getValues(0);
   }
 
   public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
@@ -379,7 +379,7 @@ public class QueryServiceBean {
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
     return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
   }
-  
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
 
@@ -481,7 +481,7 @@ public class QueryServiceBean {
     return getValue(new SqlSelect()
         .addFields(source, field)
         .addFrom(source)
-        .setWhere(SqlUtils.equal(source, sys.getIdName(source), id)));
+        .setWhere(sys.idEquals(source, id)));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -532,13 +532,6 @@ public class QueryServiceBean {
     SimpleRowSet res = getData(query);
     Assert.notNull(res);
     Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
-    return res;
-  }
-
-  private SimpleRowSet getSingleRow(IsQuery query) {
-    SimpleRowSet res = getData(query);
-    Assert.notNull(res);
-    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain zero or one row");
     return res;
   }
 

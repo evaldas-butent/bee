@@ -454,7 +454,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
         su = new SqlUpdate(tblName)
             .addConstant(extVersionName, System.currentTimeMillis())
-            .setWhere(SqlUtils.equal(tblName, extIdName, rootId));
+            .setWhere(SqlUtils.equals(tblName, extIdName, rootId));
       }
       su.addConstant(field.getName(), newValue);
       return su;
@@ -628,7 +628,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       SqlUpdate su = new SqlUpdate(tblName)
           .addConstant(stateVersionName, System.currentTimeMillis())
-          .setWhere(SqlUtils.equal(tblName, stateIdName, id));
+          .setWhere(SqlUtils.equals(tblName, stateIdName, id));
 
       for (String bitFld : bitMasks.keySet()) {
         su.addConstant(bitFld, bitMasks.get(bitFld));
@@ -791,7 +791,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           if (from.getSqlString(builder)
               .endsWith(SqlUtils.and(
                   SqlUtils.join(alias, getIdName(), tmpAlias, translationIdName),
-                  SqlUtils.equal(tmpAlias, translationLocaleName, locale))
+                  SqlUtils.equals(tmpAlias, translationLocaleName, locale))
                   .getSqlString(builder))) {
 
             tranAlias = tmpAlias;
@@ -808,7 +808,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
         query.addFromLeft(tranTable, tranAlias,
             SqlUtils.and(
                 SqlUtils.join(alias, getIdName(), tranAlias, translationIdName),
-                SqlUtils.equal(tranAlias, translationLocaleName, locale)));
+                SqlUtils.equals(tranAlias, translationLocaleName, locale)));
       }
       return tranAlias;
     }
@@ -825,9 +825,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
         su = new SqlUpdate(tblName)
             .addConstant(translationVersionName, System.currentTimeMillis())
-            .setWhere(SqlUtils.and(
-                SqlUtils.equal(tblName, translationIdName, rootId),
-                SqlUtils.equal(tblName, translationLocaleName, locale)));
+            .setWhere(SqlUtils.equals(tblName, translationIdName, rootId,
+                translationLocaleName, locale));
       }
       su.addConstant(getTranslationField(field, locale), newValue);
       return su;

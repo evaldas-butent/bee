@@ -209,11 +209,11 @@ public class CommonsModuleBean implements BeeModule {
 
       String tbl = TBL_ITEM_CATEGORIES;
       HasConditions catClause = SqlUtils.or();
-      IsCondition cond = SqlUtils.and(SqlUtils.equal(tbl, COL_ITEM, itemId),
+      IsCondition cond = SqlUtils.and(SqlUtils.equals(tbl, COL_ITEM, itemId),
           catClause);
 
       for (String catId : ID_SPLITTER.split(categories)) {
-        catClause.add(SqlUtils.equal(tbl, COL_CATEGORY, BeeUtils.toLong(catId)));
+        catClause.add(SqlUtils.equals(tbl, COL_CATEGORY, BeeUtils.toLong(catId)));
       }
       response = qs.updateDataWithResponse(new SqlDelete(tbl).setWhere(cond));
 

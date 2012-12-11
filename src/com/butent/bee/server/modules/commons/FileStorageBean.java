@@ -13,6 +13,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -31,7 +32,6 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -62,11 +62,11 @@ public class FileStorageBean {
         .addFrom(TBL_FILES)
         .addOrder(TBL_FILES, versionName));
 
-    for (Map<String, String> row : data) {
-      StoredFile sf = new StoredFile(BeeUtils.toLong(row.get(idName)),
-          row.get(COL_FILE_NAME), BeeUtils.toLong(row.get(COL_FILE_SIZE)), row.get(COL_FILE_TYPE));
+    for (SimpleRow row : data) {
+      StoredFile sf = new StoredFile(row.getLong(idName),
+          row.getValue(COL_FILE_NAME), row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
 
-      sf.setFileDate(DateTime.restore(row.get(versionName)));
+      sf.setFileDate(DateTime.restore(row.getValue(versionName)));
 
       sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
       files.add(sf);
@@ -108,21 +108,21 @@ public class FileStorageBean {
     File target = new File(tmp.getParentFile(), hash);
 
     synchronized (lock) {
-      Map<String, String> data = qs.getRow(new SqlSelect()
+      SimpleRow data = qs.getRow(new SqlSelect()
           .addFields(TBL_FILES, COL_FILE_REPO, idName)
           .addFrom(TBL_FILES)
-          .setWhere(SqlUtils.equal(TBL_FILES, COL_FILE_HASH, hash)));
+          .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, hash)));
 
       if (data != null) {
-        id = BeeUtils.toLong(data.get(idName));
-        File oldTarget = new File(data.get(COL_FILE_REPO));
+        id = data.getLong(idName);
+        File oldTarget = new File(data.getValue(COL_FILE_REPO));
 
         if (oldTarget.exists()) {
           target = oldTarget;
         } else {
           qs.updateData(new SqlUpdate(TBL_FILES)
               .addConstant(COL_FILE_REPO, target.getPath())
-              .setWhere(SqlUtils.equal(TBL_FILES, idName, id)));
+              .setWhere(SqlUtils.equals(TBL_FILES, idName, id)));
         }
       }
       if (target.exists()) {

@@ -15,6 +15,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
@@ -69,8 +70,8 @@ public class ParamHolderBean {
       BeeParameter orig = getModuleParameter(param.getModule(), param.getName());
 
       SqlUpdate su = new SqlUpdate(TBL_PARAMS)
-          .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, param.getModule()),
-              SqlUtils.equal(TBL_PARAMS, FLD_NAME, param.getName())));
+          .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, param.getModule(),
+              FLD_NAME, param.getName()));
 
       if (!Objects.equal(param.getType(), orig.getType())) {
         orig.setType(param.getType());
@@ -199,14 +200,14 @@ public class ParamHolderBean {
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PARAMS, FLD_NAME, FLD_TYPE, FLD_DESCRIPTION, FLD_USER_MODE, FLD_VALUE)
         .addFrom(TBL_PARAMS)
-        .setWhere(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module)));
+        .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
 
     boolean hasUserParameters = false;
 
-    for (Map<String, String> row : data) {
-      BeeParameter parameter = new BeeParameter(module, row.get(FLD_NAME),
-          NameUtils.getEnumByName(ParameterType.class, row.get(FLD_TYPE)),
-          row.get(FLD_DESCRIPTION), BeeUtils.toBoolean(row.get(FLD_USER_MODE)), row.get(FLD_VALUE));
+    for (SimpleRow row : data) {
+      BeeParameter parameter = new BeeParameter(module, row.getValue(FLD_NAME),
+          NameUtils.getEnumByName(ParameterType.class, row.getValue(FLD_TYPE)),
+          row.getValue(FLD_DESCRIPTION), row.getBoolean(FLD_USER_MODE), row.getValue(FLD_VALUE));
       putModuleParameter(parameter);
 
       if (!hasUserParameters) {
@@ -218,14 +219,13 @@ public class ParamHolderBean {
           .addFields(TBL_PARAMS, FLD_NAME)
           .addFields(TBL_USER_PARAMS, UserServiceBean.FLD_USER, FLD_VALUE)
           .addFrom(TBL_PARAMS)
-          .addFromInner(TBL_USER_PARAMS,
-              SqlUtils.join(TBL_PARAMS, sys.getIdName(TBL_PARAMS), TBL_USER_PARAMS, FLD_PARAM))
-          .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module),
+          .addFromInner(TBL_USER_PARAMS, sys.joinTables(TBL_PARAMS, TBL_USER_PARAMS, FLD_PARAM))
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module),
               SqlUtils.notNull(TBL_PARAMS, FLD_USER_MODE))));
 
-      for (Map<String, String> row : data) {
-        getModuleParameter(module, row.get(FLD_NAME))
-            .setUserValue(BeeUtils.toLong(row.get(UserServiceBean.FLD_USER)), row.get(FLD_VALUE));
+      for (SimpleRow row : data) {
+        getModuleParameter(module, row.getValue(FLD_NAME))
+            .setUserValue(row.getLong(UserServiceBean.FLD_USER), row.getValue(FLD_VALUE));
       }
     }
   }
@@ -236,10 +236,10 @@ public class ParamHolderBean {
     HasConditions wh = SqlUtils.or();
 
     for (String name : names) {
-      wh.add(SqlUtils.equal(TBL_PARAMS, FLD_NAME, name));
+      wh.add(SqlUtils.equals(TBL_PARAMS, FLD_NAME, name));
     }
     if (BeeUtils.isPositive(qs.updateData(new SqlDelete(TBL_PARAMS)
-        .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module), wh))))) {
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module), wh))))) {
       refreshParameters(module);
     }
   }
@@ -248,8 +248,7 @@ public class ParamHolderBean {
   public void setParameter(String module, String name, String value) {
     BeeParameter parameter = getModuleParameter(module, name);
 
-    IsCondition wh = SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module),
-        SqlUtils.equal(TBL_PARAMS, FLD_NAME, name));
+    IsCondition wh = SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module, FLD_NAME, name);
 
     if (parameter.supportsUsers()) {
       Long userId = usr.getCurrentUserId();
@@ -263,8 +262,7 @@ public class ParamHolderBean {
       if (prmId == null) {
         prmId = storeParameter(parameter);
       }
-      wh = SqlUtils.and(SqlUtils.equal(TBL_USER_PARAMS, FLD_PARAM, prmId),
-          SqlUtils.equal(TBL_USER_PARAMS, UserServiceBean.FLD_USER, userId));
+      wh = SqlUtils.equals(TBL_USER_PARAMS, FLD_PARAM, prmId, UserServiceBean.FLD_USER, userId);
 
       if (value == null) {
         qs.updateData(new SqlDelete(TBL_USER_PARAMS)

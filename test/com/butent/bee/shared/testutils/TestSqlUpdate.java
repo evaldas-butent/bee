@@ -47,7 +47,7 @@ public class TestSqlUpdate {
     assertEquals("UPDATE Source1 SET field1=Sourceexpr.fieldexpr", update.getSqlString(builder));
 
     SqlUpdate update2 = new SqlUpdate("Source1");
-    IsCondition where = SqlUtils.equal("Source1", "name", "John");
+    IsCondition where = SqlUtils.equals("Source1", "name", "John");
     update2.addConstant("name", "Petras");
     update2.setWhere(where);
 

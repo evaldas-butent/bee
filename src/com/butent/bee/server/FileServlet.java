@@ -7,9 +7,9 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -86,17 +86,15 @@ public class FileServlet extends HttpServlet {
     String mimeType = null;
 
     if (DataUtils.isId(fileId)) {
-
-      Map<String, String> row = qs.getRow(new SqlSelect()
+      SimpleRow row = qs.getRow(new SqlSelect()
           .addFields(TBL_FILES, COL_FILE_REPO, COL_FILE_NAME, COL_FILE_TYPE)
           .addFrom(TBL_FILES)
-          .setWhere(SqlUtils.equal(TBL_FILES, sys.getIdName(TBL_FILES), fileId)));
+          .setWhere(sys.idEquals(TBL_FILES, fileId)));
 
       if (row != null) {
-        path = row.get(COL_FILE_REPO);
-
-        fileName = BeeUtils.notEmpty(fileName, row.get(COL_FILE_NAME));
-        mimeType = row.get(COL_FILE_TYPE);
+        path = row.getValue(COL_FILE_REPO);
+        fileName = BeeUtils.notEmpty(fileName, row.getValue(COL_FILE_NAME));
+        mimeType = row.getValue(COL_FILE_TYPE);
       }
     } else if (!BeeUtils.isEmpty(fileName)) {
       path = Config.getPath(fileName, false);

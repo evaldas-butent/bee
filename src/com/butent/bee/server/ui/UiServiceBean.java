@@ -326,7 +326,7 @@ public class UiServiceBean {
     Long sender = qs.getLong(new SqlSelect()
         .addFields(TBL_ACCOUNTS, COL_ADDRESS)
         .addFrom(TBL_ACCOUNTS)
-        .setWhere(SqlUtils.and(SqlUtils.equal(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
             SqlUtils.notNull(TBL_ACCOUNTS, COL_ACCOUNT_DEFAULT))));
 
     if (!DataUtils.isId(sender)) {

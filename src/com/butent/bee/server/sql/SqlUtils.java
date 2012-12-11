@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
@@ -43,10 +44,10 @@ public class SqlUtils {
     if (BeeUtils.isEmpty(values)) {
       return null;
     }
-    
+
     HasConditions cond = or();
     for (Object value : values) {
-      cond.add(equal(expr, value));
+      cond.add(equals(expr, value));
     }
     return cond;
   }
@@ -232,7 +233,7 @@ public class SqlUtils {
     return endsWith(field(source, field), value);
   }
 
-  public static IsCondition equal(IsExpression expr, Object value) {
+  public static IsCondition equals(IsExpression expr, Object value) {
     IsSql v;
 
     if (value instanceof IsSql) {
@@ -243,8 +244,35 @@ public class SqlUtils {
     return compare(expr, Operator.EQ, v);
   }
 
-  public static IsCondition equal(String source, String field, Object value) {
-    return equal(field(source, field), value);
+  public static IsCondition equals(String source, String field, Object value, Object... other) {
+    IsCondition cond = equals(field(source, field), value);
+
+    if (other != null) {
+      int len = ArrayUtils.length(other);
+      Assert.isEven(len);
+      HasConditions andCondition = and(cond);
+
+      for (int i = 0; i < Math.floor(len / 2); i++) {
+        Assert.state(other[i] instanceof String);
+        andCondition.add(equals(source, (String) other[i * 2], other[i * 2 + 1]));
+      }
+      cond = andCondition;
+    }
+    return cond;
+  }
+
+  public static IsCondition equalsAny(String source, String field1, Object value1,
+      String field2, Object value2, Pair<?, ?>... other) {
+
+    HasConditions orCondition = or(equals(source, field1, value1), equals(source, field2, value2));
+
+    if (other != null) {
+      for (Pair<?, ?> pair : other) {
+        Assert.state(pair.getA() instanceof String);
+        orCondition.add(equals(source, (String) pair.getA(), pair.getB()));
+      }
+    }
+    return orCondition;
   }
 
   public static IsExpression expression(Object... members) {
@@ -285,13 +313,13 @@ public class SqlUtils {
 
     return in(src, fld, query);
   }
-  
+
   public static IsCondition inList(IsExpression expr, Object... values) {
     Assert.minLength(ArrayUtils.length(values), 1);
     HasConditions cond = or();
 
     for (Object value : values) {
-      cond.add(equal(expr, value));
+      cond.add(equals(expr, value));
     }
     return cond;
   }
@@ -577,7 +605,7 @@ public class SqlUtils {
   }
 
   public static IsCondition sqlFalse() {
-    return equal(constant(1), 0);
+    return equals(constant(1), 0);
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
@@ -586,7 +614,7 @@ public class SqlUtils {
   }
 
   public static IsCondition sqlTrue() {
-    return equal(constant(1), 1);
+    return equals(constant(1), 1);
   }
 
   public static IsCondition startsWith(IsExpression expr, String value) {

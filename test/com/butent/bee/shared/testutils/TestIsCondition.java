@@ -39,7 +39,7 @@ public class TestIsCondition {
 
     assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1", select
         .getQuery());
-    IsCondition clause01 = SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"), "Something val"));
+    IsCondition clause01 = SqlUtils.and(SqlUtils.equals(SqlUtils.name("field1"), "Something val"));
 
     select.setWhere(clause01);
     assertEquals(
@@ -51,7 +51,7 @@ public class TestIsCondition {
     select1.addFrom("Table1");
 
     IsCondition clause1 =
-        SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"), "Something val"), SqlUtils.equal(
+        SqlUtils.and(SqlUtils.equals(SqlUtils.name("field1"), "Something val"), SqlUtils.equals(
             SqlUtils.name("field2"), "sv2"));
     select1.setWhere(clause1);
     assertEquals(
@@ -322,7 +322,7 @@ public class TestIsCondition {
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
 
-    IsCondition clause = SqlUtils.equal("Table1", "field1", "val");
+    IsCondition clause = SqlUtils.equals("Table1", "field1", "val");
     select.setWhere(clause);
 
     assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 'val'",
@@ -331,7 +331,7 @@ public class TestIsCondition {
     select3.addFields("Table1", "field1", "field2");
     select3.addFrom("Table1");
 
-    IsCondition clause3 = SqlUtils.equal("Table1", "field1", 25);
+    IsCondition clause3 = SqlUtils.equals("Table1", "field1", 25);
     select3.setWhere(clause3);
 
     assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 25",
@@ -341,7 +341,7 @@ public class TestIsCondition {
     select4.addFields("Table1", "field1", "field2");
     select4.addFrom("Table1");
 
-    IsCondition clause4 = SqlUtils.equal("Table1", "field1", true);
+    IsCondition clause4 = SqlUtils.equals("Table1", "field1", true);
     select4.setWhere(clause4);
 
     assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 1", select4
@@ -350,7 +350,7 @@ public class TestIsCondition {
     select5.addFields("Table1", "field1", "field2");
     select5.addFrom("Table1");
 
-    IsCondition clause5 = SqlUtils.equal("Table1", "field1", null);
+    IsCondition clause5 = SqlUtils.equals("Table1", "field1", null);
     select5.setWhere(clause5);
 
     assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = null",
@@ -359,7 +359,7 @@ public class TestIsCondition {
     select6.addFields("Table1", "field1", "field2");
     select6.addFrom("Table1");
 
-    IsCondition clause6 = SqlUtils.equal("Table1", "field1", "");
+    IsCondition clause6 = SqlUtils.equals("Table1", "field1", "");
     select6.setWhere(clause6);
 
     assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = ''",
@@ -473,7 +473,7 @@ public class TestIsCondition {
     SqlSelect inselect = new SqlSelect();
     inselect.addFields("Tablen", "fieldn1");
     inselect.addFrom("Tablen");
-    inselect.setWhere(SqlUtils.equal(SqlUtils.expression("Fieldn"), "5"));
+    inselect.setWhere(SqlUtils.equals(SqlUtils.expression("Fieldn"), "5"));
 
     IsCondition clause = SqlUtils.in("Table1", "\t \t field2  ", inselect);
     select.setWhere(clause);
@@ -552,7 +552,7 @@ public class TestIsCondition {
 
     IsCondition clause1 =
         SqlUtils.in("Table1", "field1", "Table2", "field21",
-            SqlUtils.and(SqlUtils.equal("Table1", "field2", "val1"), SqlUtils.equal("Table2",
+            SqlUtils.and(SqlUtils.equals("Table1", "field2", "val1"), SqlUtils.equals("Table2",
                 "field21", "val2")));
     select1.setWhere(clause1);
 
@@ -1516,7 +1516,7 @@ public class TestIsCondition {
 
     assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1", select
         .getQuery());
-    IsCondition clause01 = SqlUtils.or(SqlUtils.equal(SqlUtils.name("field1"), "Something val"));
+    IsCondition clause01 = SqlUtils.or(SqlUtils.equals(SqlUtils.name("field1"), "Something val"));
 
     select.setWhere(clause01);
     assertEquals(
@@ -1527,7 +1527,7 @@ public class TestIsCondition {
     select1.addFrom("Table1");
 
     IsCondition clause1 =
-        SqlUtils.or(SqlUtils.equal(SqlUtils.name("field1"), "Something val"), SqlUtils.equal(
+        SqlUtils.or(SqlUtils.equals(SqlUtils.name("field1"), "Something val"), SqlUtils.equals(
             SqlUtils.name("field2"), "sv2"));
     select1.setWhere(clause1);
     assertEquals(

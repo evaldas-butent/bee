@@ -43,7 +43,7 @@ class OracleSqlBuilder extends SqlBuilder {
       String var = ":OLD." + sqlQuote(fldName);
 
       body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN",
-          new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+          new SqlDelete(relTable).setWhere(SqlUtils.equals(relTable, relField, 69))
               .getQuery().replace("69", var),
           ";END IF;"));
     }
@@ -138,11 +138,11 @@ class OracleSqlBuilder extends SqlBuilder {
 
         Object prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("t", "OWNER", prm);
+          wh = SqlUtils.equals("t", "OWNER", prm);
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
             .addField("t", "TABLE_NAME", SqlConstants.TBL_NAME)
@@ -156,11 +156,11 @@ class OracleSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("c", "OWNER", prm);
+          wh = SqlUtils.equals("c", "OWNER", prm);
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("c", "TABLE_NAME", prm));
         }
         return new SqlSelect()
             .addField("c", "TABLE_NAME", SqlConstants.TBL_NAME)
@@ -180,11 +180,11 @@ class OracleSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("k", "OWNER", prm);
+          wh = SqlUtils.equals("k", "OWNER", prm);
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("k", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("k", "TABLE_NAME", prm));
         }
         prm = params.get("keyTypes");
         if (!isEmpty(prm)) {
@@ -206,7 +206,7 @@ class OracleSqlBuilder extends SqlBuilder {
                 tp = null;
             }
             if (!BeeUtils.isEmpty(tp)) {
-              typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "CONSTRAINT_TYPE", tp));
+              typeWh = SqlUtils.or(typeWh, SqlUtils.equals("k", "CONSTRAINT_TYPE", tp));
             }
           }
           if (!isEmpty(typeWh)) {
@@ -222,21 +222,21 @@ class OracleSqlBuilder extends SqlBuilder {
             .getSqlString(this);
 
       case DB_FOREIGNKEYS:
-        wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
+        wh = SqlUtils.equals("c", "CONSTRAINT_TYPE", "R");
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
-              SqlUtils.equal("c", "OWNER", prm),
-              SqlUtils.equal("r", "OWNER", prm));
+              SqlUtils.equals("c", "OWNER", prm),
+              SqlUtils.equals("r", "OWNER", prm));
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("c", "TABLE_NAME", prm));
         }
         prm = params.get("refTable");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
             .addField("c", "TABLE_NAME", SqlConstants.TBL_NAME)
@@ -253,11 +253,11 @@ class OracleSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("i", "OWNER", prm);
+          wh = SqlUtils.equals("i", "OWNER", prm);
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("i", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("i", "TABLE_NAME", prm));
         }
         return new SqlSelect()
             .addField("i", "TABLE_NAME", SqlConstants.TBL_NAME)
@@ -271,11 +271,11 @@ class OracleSqlBuilder extends SqlBuilder {
 
         prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.equal("t", "OWNER", prm);
+          wh = SqlUtils.equals("t", "OWNER", prm);
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
+          wh = SqlUtils.and(wh, SqlUtils.equals("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
             .addField("t", "TABLE_NAME", SqlConstants.TBL_NAME)

@@ -51,7 +51,7 @@ public class IdGeneratorBean {
   public void destroy() {
     for (Entry<String, long[]> entry : idCache.entrySet()) {
       String source = entry.getKey();
-      IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
+      IsCondition wh = SqlUtils.equals(ID_TABLE, ID_KEY, source);
 
       long lastId = BeeUtils.unbox(
           qs.getLong(new SqlSelect().addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh)));
@@ -83,7 +83,7 @@ public class IdGeneratorBean {
   }
 
   private long[] prepareId(String source) {
-    IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
+    IsCondition wh = SqlUtils.equals(ID_TABLE, ID_KEY, source);
 
     SqlUpdate su = new SqlUpdate(ID_TABLE)
         .addConstant(sys.getVersionName(ID_TABLE), System.currentTimeMillis())

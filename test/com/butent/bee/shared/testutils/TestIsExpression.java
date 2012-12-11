@@ -928,7 +928,7 @@ public class TestIsExpression {
     select.addFields("Table1", "field1");
     select.addFrom("Table1");
 
-    IsCondition cond1 = SqlUtils.equal(SqlUtils.name("value1"),
+    IsCondition cond1 = SqlUtils.equals(SqlUtils.name("value1"),
         "pirmadienis");
 
     IsExpression expr = SqlUtils.sqlIf(cond1,

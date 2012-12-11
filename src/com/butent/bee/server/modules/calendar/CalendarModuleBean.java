@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -133,7 +134,7 @@ public class CalendarModuleBean implements BeeModule {
 
       if (BeeUtils.same(idName, TBL_APPOINTMENTS)) {
         timers = notificationTimers.removeAll(id);
-        wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, id);
+        wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, id);
 
       } else if (BeeUtils.same(idName, TBL_APPOINTMENT_REMINDERS)) {
         Long appointmentId = null;
@@ -154,7 +155,7 @@ public class CalendarModuleBean implements BeeModule {
           timers = Lists.newArrayList(timer);
           notificationTimers.remove(appointmentId, timer);
         }
-        wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
+        wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
       }
     }
     if (!BeeUtils.isEmpty(timers)) {
@@ -182,19 +183,19 @@ public class CalendarModuleBean implements BeeModule {
             SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
                 AppointmentStatus.CANCELED.ordinal()))));
 
-    for (Map<String, String> row : data) {
-      Long start = BeeUtils.toLongOrNull(row.get(COL_SCHEDULED));
+    for (SimpleRow row : data) {
+      Long start = row.getLong(COL_SCHEDULED);
 
       if (start == null) {
-        long offset = BeeUtils.toInt(row.get(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
-            + BeeUtils.toInt(row.get(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
+        long offset = BeeUtils.unbox(row.getInt(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
+            + BeeUtils.unbox(row.getInt(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
 
         if (offset == 0) {
-          offset = BeeUtils.toInt(row.get("defHours")) * TimeUtils.MILLIS_PER_HOUR
-              + BeeUtils.toInt(row.get("defMinutes")) * TimeUtils.MILLIS_PER_MINUTE;
+          offset = BeeUtils.unbox(row.getInt("defHours")) * TimeUtils.MILLIS_PER_HOUR
+              + BeeUtils.unbox(row.getInt("defMinutes")) * TimeUtils.MILLIS_PER_MINUTE;
         }
         if (offset != 0) {
-          start = BeeUtils.toLong(row.get(COL_START_DATE_TIME)) - offset;
+          start = BeeUtils.unbox(row.getLong(COL_START_DATE_TIME)) - offset;
         }
       }
       if (start != null) {
@@ -211,11 +212,11 @@ public class CalendarModuleBean implements BeeModule {
           }
         }
         if (time.getTime() > System.currentTimeMillis()) {
-          notificationTimers.put(BeeUtils.toLong(row.get(COL_APPOINTMENT)),
+          notificationTimers.put(row.getLong(COL_APPOINTMENT),
               timerService.createSingleActionTimer(time.getJava(),
-                  new TimerConfig(BeeUtils.toLong(row.get(reminderIdName)), false)));
+                  new TimerConfig(row.getLong(reminderIdName), false)));
 
-          logger.debug("Created timer:", time, row.get(reminderIdName));
+          logger.debug("Created timer:", time, row.getValue(reminderIdName));
         }
       }
     }
@@ -423,8 +424,7 @@ public class CalendarModuleBean implements BeeModule {
         .addConstant(COL_UPPER_HOUR, upperHour)
         .addConstant(COL_ATTENDEE_TYPES, atpList)
         .addConstant(COL_ATTENDEES, attList)
-        .setWhere(SqlUtils.equal(TBL_REPORT_OPTIONS, sys.getIdName(TBL_REPORT_OPTIONS),
-            row.getId()));
+        .setWhere(sys.idEquals(TBL_REPORT_OPTIONS, row.getId()));
 
     ResponseObject response = qs.updateDataWithResponse(update);
     if (response.hasErrors()) {
@@ -554,12 +554,11 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_ATTENDEES,
-            SqlUtils.join(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
-                TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS)));
+            sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT));
 
     int statusCanceled = AppointmentStatus.CANCELED.ordinal();
     IsCondition statusCondition = canceled
-        ? SqlUtils.equal(TBL_APPOINTMENTS, COL_STATUS, statusCanceled)
+        ? SqlUtils.equals(TBL_APPOINTMENTS, COL_STATUS, statusCanceled)
         : SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS, statusCanceled);
 
     HasConditions where = SqlUtils.and(statusCondition);
@@ -569,17 +568,16 @@ public class CalendarModuleBean implements BeeModule {
 
       if (!BeeUtils.isEmpty(attendeeTypes)) {
         ss.addFromInner(TBL_ATTENDEES,
-            SqlUtils.join(TBL_ATTENDEES, sys.getIdName(TBL_ATTENDEES),
-                TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE));
+            sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE));
 
         for (Long atpId : attendeeTypes) {
-          attCondition.add(SqlUtils.equal(TBL_ATTENDEES, COL_ATTENDEE_TYPE, atpId));
+          attCondition.add(SqlUtils.equals(TBL_ATTENDEES, COL_ATTENDEE_TYPE, atpId));
         }
       }
 
       if (!BeeUtils.isEmpty(attendees)) {
         for (Long attId : attendees) {
-          attCondition.add(SqlUtils.equal(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE, attId));
+          attCondition.add(SqlUtils.equals(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE, attId));
         }
       }
 
@@ -828,7 +826,7 @@ public class CalendarModuleBean implements BeeModule {
       Long cp = qs.getLong(new SqlSelect()
           .addFields(tblUsers, UserServiceBean.FLD_COMPANY_PERSON)
           .addFrom(tblUsers)
-          .setWhere(SqlUtils.equal(tblUsers, sys.getIdName(tblUsers), userId)));
+          .setWhere(sys.idEquals(tblUsers, userId)));
 
       if (cp != null) {
         Filter cpFilter = ComparisonFilter.isEqual(COL_COMPANY_PERSON, new LongValue(cp));
@@ -1111,13 +1109,12 @@ public class CalendarModuleBean implements BeeModule {
     long reminderId = (Long) timer.getInfo();
     logger.debug("Fired timer:", reminderId);
 
-    IsCondition wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS,
-        sys.getIdName(TBL_APPOINTMENT_REMINDERS), reminderId);
+    IsCondition wh = sys.idEquals(TBL_APPOINTMENT_REMINDERS, reminderId);
 
     String personContacts = SqlUtils.uniqueName();
     String personEmail = SqlUtils.uniqueName();
 
-    Map<String, String> data = qs.getRow(new SqlSelect()
+    SimpleRow data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
@@ -1144,11 +1141,11 @@ public class CalendarModuleBean implements BeeModule {
             SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
                 AppointmentStatus.CANCELED.ordinal()))));
 
-    if (!BeeUtils.isEmpty(data)) {
-      notificationTimers.remove(BeeUtils.toLongOrNull(data.get(COL_APPOINTMENT)), timer);
+    if (data != null) {
+      notificationTimers.remove(data.getLong(COL_APPOINTMENT), timer);
       String error = null;
-      String subject = data.get(COL_TEMPLATE_CAPTION);
-      String template = BeeUtils.notEmpty(data.get(COL_MESSAGE), data.get(COL_TEMPLATE));
+      String subject = data.getValue(COL_TEMPLATE_CAPTION);
+      String template = BeeUtils.notEmpty(data.getValue(COL_MESSAGE), data.getValue(COL_TEMPLATE));
 
       if (BeeUtils.isEmpty(subject)) {
         error = "No reminder caption specified";
@@ -1158,12 +1155,12 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (BeeUtils.isEmpty(error)) {
         ReminderMethod method = NameUtils.getEnumByIndex(ReminderMethod.class,
-            BeeUtils.toIntOrNull(data.get(COL_REMINDER_METHOD)));
+            data.getInt(COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
           Long sender = prm.getLong(MailConstants.MAIL_MODULE, "DefaultAccount");
-          Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.get(personEmail),
-              data.get(CommonsConstants.COL_EMAIL)));
+          Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
+              data.getValue(CommonsConstants.COL_EMAIL)));
 
           if (!DataUtils.isId(sender)) {
             error = "No default sender specified (parameter DefaultAccount)";
@@ -1172,8 +1169,8 @@ public class CalendarModuleBean implements BeeModule {
           } else {
             try {
               mail.sendMail(mail.getAccount(sender), Sets.newHashSet(email), null, null, subject,
-                  template.replace("{time}",
-                      TimeUtils.toDateTimeOrNull(data.get(COL_START_DATE_TIME)).toString()), null);
+                  template.replace("{time}", data.getDateTime(COL_START_DATE_TIME).toString()),
+                  null);
             } catch (MessagingException e) {
               error = e.toString();
             }
@@ -1205,7 +1202,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     SqlUpdate update = new SqlUpdate(TBL_USER_CALENDARS).addConstant(COL_ACTIVE_VIEW, activeView)
-        .setWhere(SqlUtils.equal(TBL_USER_CALENDARS, sys.getIdName(TBL_USER_CALENDARS), rowId));
+        .setWhere(sys.idEquals(TBL_USER_CALENDARS, rowId));
 
     return qs.updateDataWithResponse(update);
   }
@@ -1390,8 +1387,7 @@ public class CalendarModuleBean implements BeeModule {
           .addConstant(columnId, value));
     }
     for (Long value : delete) {
-      IsCondition condition = SqlUtils.and(SqlUtils.equal(tblName, parentRelation, parentId),
-          SqlUtils.equal(tblName, columnId, value));
+      IsCondition condition = SqlUtils.equals(tblName, parentRelation, parentId, columnId, value);
       qs.updateData(new SqlDelete(tblName).setWhere(condition));
     }
   }

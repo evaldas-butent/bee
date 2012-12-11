@@ -47,7 +47,7 @@ public class TestSqlDelete {
 
     SqlDelete delete = new SqlDelete("Target_table");
 
-    delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
+    delete.setWhere(SqlUtils.equals(SqlUtils.name("username"), "root"));
 
     assertEquals(
         "DELETE FROM Target_table WHERE username = 'root'",
@@ -61,7 +61,7 @@ public class TestSqlDelete {
 
     SqlDelete delete = new SqlDelete("Target_table");
 
-    delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
+    delete.setWhere(SqlUtils.equals(SqlUtils.name("username"), "root"));
 
     assertEquals(
         "DELETE FROM Target_table WHERE username = 'root'",

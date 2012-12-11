@@ -11,12 +11,11 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -31,6 +30,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -40,6 +40,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -139,7 +140,7 @@ public class CrmModuleBean implements BeeModule {
             SqlSelect tuQuery = new SqlSelect().addFrom(TBL_TASK_USERS)
                 .addFields(TBL_TASK_USERS, COL_TASK, COL_LAST_ACCESS, COL_STAR);
 
-            IsCondition uwh = SqlUtils.equal(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
+            IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
 
             if (taskIds.isEmpty()) {
               tuQuery.setWhere(uwh);
@@ -152,8 +153,8 @@ public class CrmModuleBean implements BeeModule {
             int accessIndex = tuData.getColumnIndex(COL_LAST_ACCESS);
             int starIndex = tuData.getColumnIndex(COL_STAR);
 
-            for (String[] tuRow : tuData.getRows()) {
-              long taskId = BeeUtils.toLong(tuRow[taskIndex]);
+            for (SimpleRow tuRow : tuData) {
+              long taskId = tuRow.getLong(taskIndex);
               BeeRow row = rowSet.getRowById(taskId);
               if (row == null) {
                 continue;
@@ -161,11 +162,11 @@ public class CrmModuleBean implements BeeModule {
 
               row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
 
-              if (tuRow[accessIndex] != null) {
-                row.setProperty(PROP_LAST_ACCESS, tuRow[accessIndex]);
+              if (tuRow.getValue(accessIndex) != null) {
+                row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
               }
-              if (tuRow[starIndex] != null) {
-                row.setProperty(PROP_STAR, tuRow[starIndex]);
+              if (tuRow.getValue(starIndex) != null) {
+                row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
               }
             }
 
@@ -182,12 +183,12 @@ public class CrmModuleBean implements BeeModule {
             taskIndex = teData.getColumnIndex(COL_TASK);
             int publishIndex = teData.getColumnIndex(COL_PUBLISH_TIME);
 
-            for (String[] teRow : teData.getRows()) {
-              long taskId = BeeUtils.toLong(teRow[taskIndex]);
+            for (SimpleRow teRow : teData) {
+              long taskId = teRow.getLong(taskIndex);
               BeeRow row = rowSet.getRowById(taskId);
 
-              if (teRow[publishIndex] != null) {
-                row.setProperty(PROP_LAST_PUBLISH, teRow[publishIndex]);
+              if (teRow.getValue(publishIndex) != null) {
+                row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
               }
             }
           }
@@ -448,12 +449,12 @@ public class CrmModuleBean implements BeeModule {
         long oldUser = BeeUtils.toLong(taskRow.getShadowString(exIndex));
         long newUser = BeeUtils.toLong(taskRow.getString(exIndex));
 
-        IsCondition wh = SqlUtils.equal(TBL_TASK_USERS, COL_TASK, taskId);
+        IsCondition wh = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId);
 
         response = registerTaskVisit(taskId, currentUser, now);
 
         if (!response.hasErrors() && !qs.sqlExists(TBL_TASK_USERS, SqlUtils.and(wh,
-            SqlUtils.equal(TBL_TASK_USERS, COL_USER, newUser)))) {
+            SqlUtils.equals(TBL_TASK_USERS, COL_USER, newUser)))) {
           response = createTaskUser(taskId, newUser, null);
         }
 
@@ -582,28 +583,22 @@ public class CrmModuleBean implements BeeModule {
   private Map<String, List<Long>> getTaskRelations(long taskId) {
     Map<String, List<Long>> result = Maps.newHashMap();
 
-    SqlSelect query = new SqlSelect().addFrom(CommonsConstants.TBL_RELATIONS)
-        .addFields(CommonsConstants.TBL_RELATIONS,
-            CommonsConstants.COL_TABLE_1, CommonsConstants.COL_ROW_1,
-            CommonsConstants.COL_TABLE_2, CommonsConstants.COL_ROW_2)
-        .setWhere(SqlUtils.or(
-            SqlUtils.and(
-                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                    CommonsConstants.COL_TABLE_1, TBL_TASKS),
-                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                    CommonsConstants.COL_ROW_1, taskId)),
-            SqlUtils.and(
-                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                    CommonsConstants.COL_TABLE_2, TBL_TASKS),
-                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                    CommonsConstants.COL_ROW_2, taskId)
-                )));
+    SqlSelect query =
+        new SqlSelect().addFrom(CommonsConstants.TBL_RELATIONS)
+            .addFields(CommonsConstants.TBL_RELATIONS,
+                CommonsConstants.COL_TABLE_1, CommonsConstants.COL_ROW_1,
+                CommonsConstants.COL_TABLE_2, CommonsConstants.COL_ROW_2)
+            .setWhere(SqlUtils.or(
+                SqlUtils.equals(CommonsConstants.TBL_RELATIONS, CommonsConstants.COL_TABLE_1,
+                    TBL_TASKS, CommonsConstants.COL_ROW_1, taskId),
+                SqlUtils.equals(CommonsConstants.TBL_RELATIONS, CommonsConstants.COL_TABLE_2,
+                    TBL_TASKS, CommonsConstants.COL_ROW_2, taskId)));
 
-    for (Map<String, String> row : qs.getData(query)) {
-      String t1 = row.get(CommonsConstants.COL_TABLE_1);
-      long r1 = BeeUtils.toLong(row.get(CommonsConstants.COL_ROW_1));
-      String t2 = row.get(CommonsConstants.COL_TABLE_2);
-      long r2 = BeeUtils.toLong(row.get(CommonsConstants.COL_ROW_2));
+    for (SimpleRow row : qs.getData(query)) {
+      String t1 = row.getValue(CommonsConstants.COL_TABLE_1);
+      long r1 = row.getLong(CommonsConstants.COL_ROW_1);
+      String t2 = row.getValue(CommonsConstants.COL_TABLE_2);
+      long r2 = row.getLong(CommonsConstants.COL_ROW_2);
 
       String key;
       long id;
@@ -634,7 +629,7 @@ public class CrmModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_TASK_USERS)
         .addFields(TBL_TASK_USERS, COL_USER)
-        .setWhere(SqlUtils.equal(TBL_TASK_USERS, COL_TASK, taskId))
+        .setWhere(SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId))
         .addOrder(TBL_TASK_USERS, sys.getIdName(TBL_TASK_USERS));
 
     return Lists.newArrayList(qs.getLongColumn(query));
@@ -704,9 +699,7 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private ResponseObject registerTaskVisit(long taskId, long userId, long millis) {
-    HasConditions where = SqlUtils.and(
-        SqlUtils.equal(TBL_TASK_USERS, COL_TASK, taskId),
-        SqlUtils.equal(TBL_TASK_USERS, COL_USER, userId));
+    IsCondition where = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId, COL_USER, userId);
 
     return qs.updateDataWithResponse(new SqlUpdate(TBL_TASK_USERS)
         .addConstant(COL_LAST_ACCESS, millis)
@@ -753,25 +746,12 @@ public class CrmModuleBean implements BeeModule {
       logger.warning("delete task relation", taskId, relation, value);
 
       IsCondition condition = SqlUtils.or(
-          SqlUtils.and(
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_TABLE_1, TBL_TASKS),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_ROW_1, taskId),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_TABLE_2, relation),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_ROW_2, value)),
-          SqlUtils.and(
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_TABLE_1, relation),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_ROW_1, value),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_TABLE_2, TBL_TASKS),
-              SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
-                  CommonsConstants.COL_ROW_2, taskId)
-              ));
+          SqlUtils.equals(CommonsConstants.TBL_RELATIONS, CommonsConstants.COL_TABLE_1, TBL_TASKS,
+              CommonsConstants.COL_ROW_1, taskId, CommonsConstants.COL_TABLE_2, relation,
+              CommonsConstants.COL_ROW_2, value),
+          SqlUtils.equals(CommonsConstants.TBL_RELATIONS, CommonsConstants.COL_TABLE_1, relation,
+              CommonsConstants.COL_ROW_1, value, CommonsConstants.COL_TABLE_2, TBL_TASKS,
+              CommonsConstants.COL_ROW_2, taskId));
 
       qs.updateData(new SqlDelete(CommonsConstants.TBL_RELATIONS).setWhere(condition));
     }
@@ -814,8 +794,7 @@ public class CrmModuleBean implements BeeModule {
     String tblName = TBL_TASK_USERS;
     for (Long user : delete) {
       logger.debug("delete task user", taskId, user);
-      IsCondition condition = SqlUtils.and(SqlUtils.equal(tblName, COL_TASK, taskId),
-          SqlUtils.equal(tblName, COL_USER, user));
+      IsCondition condition = SqlUtils.equals(tblName, COL_TASK, taskId, COL_USER, user);
       qs.updateData(new SqlDelete(tblName).setWhere(condition));
     }
   }
