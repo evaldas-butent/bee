@@ -169,6 +169,21 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   public AbstractCellRenderer getRenderer() {
     return renderer;
   }
+  
+  public String getRowLabel(long rowId) {
+    if (cache.containsKey(rowId)) {
+      return cache.get(rowId);
+
+    } else {
+      BeeRowSet data = getOracle().getViewData();
+      if (DataUtils.isEmpty(data)) {
+        return null;
+      }
+      
+      BeeRow row = data.getRowById(rowId);
+      return (row == null) ? null : getRenderer().render(row);
+    }
+  }
 
   public String getRowProperty() {
     return rowProperty;

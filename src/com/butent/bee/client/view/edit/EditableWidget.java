@@ -14,8 +14,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
-import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
@@ -35,6 +35,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -352,7 +353,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     boolean ok = false;
     if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasRelatedRow
         && getRelation() != null && hasColumn()) {
-      ok = RelationUtils.updateRow(viewName, getColumnId(), row, getRelation().getViewName(),
+      ok = RelationUtils.updateRow(Data.getDataInfo(viewName), getColumnId(), row,
+          Data.getDataInfo(getRelation().getViewName()),
           ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn) > 0;
     }
     return ok;

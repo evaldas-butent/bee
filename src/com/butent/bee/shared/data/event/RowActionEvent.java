@@ -6,13 +6,14 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RowActionEvent extends Event<RowActionEvent.Handler> implements DataEvent, HasService,
-    HasOptions {
+    HasOptions, Consumable {
 
   public interface Handler {
     void onRowAction(RowActionEvent event);
@@ -59,6 +60,7 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     this.options = options;
   }
   
+  @Override
   public void consume() {
     setConsumed(true);
   }
@@ -103,10 +105,12 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return BeeUtils.same(view, getViewName());
   }
 
+  @Override
   public boolean isConsumed() {
     return consumed;
   }
 
+  @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
   }

@@ -37,7 +37,9 @@
         <Label html="Vykdytojas:" style="&lbl1;" />
         <DataSelector source="Executor" editEnabled="true" style="&inp2;" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
-        <DataSelector source="Contact" style="&inp4; width: 140px;" />
+        <DataSelector source="Contact" style="&inp4; width: 140px;"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

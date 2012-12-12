@@ -4,6 +4,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
@@ -41,7 +42,10 @@ public class CommonsKeeper {
     Global.registerCaptions(RightsObjectType.class);
     Global.registerCaptions(RightsState.class);
     Global.registerCaptions(ParameterType.class);
-    Global.registerCaptions(ReminderMethod.class);
+    
+    String key = Global.registerCaptions(ReminderMethod.class);
+    Data.registerCaptionKey(CommonsConstants.VIEW_REMINDER_TYPES,
+        CommonsConstants.COL_REMINDER_METHOD, key);
   }
   
   static ParameterList createArgs(String name) {

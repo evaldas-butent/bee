@@ -32,11 +32,10 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
     EditStartEvent.Handler {
-
-  int DELETE_CANCEL = -1;
-  int DELETE_DEFAULT = 0;
-  int DELETE_SILENT = 1;
-  int DELETE_CONFIRM = 2;
+  
+  public enum DeleteMode {
+    CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
+  }
 
   void afterAction(Action action, GridPresenter presenter);
 
@@ -63,15 +62,19 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions);
 
-  int beforeDeleteRow(GridPresenter presenter, IsRow row);
+  DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row);
 
-  int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
+  DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+      Collection<RowInfo> selectedRows);
 
   void beforeRefresh(GridPresenter presenter);
 
   String getColumnCaption(String columnName);
 
-  String getDeleteRowMessage();
+  DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+      Collection<RowInfo> selectedRows, DeleteMode defMode);
+  
+  List<String> getDeleteRowMessage(IsRow row);
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
   
@@ -96,11 +99,11 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   boolean onLoadExtWidget(Element root);
 
-  boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
+  void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
 
-  boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
+  void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
 
-  boolean onSaveChanges(GridView gridView, SaveChangesEvent event);
+  void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
   void onShow(GridPresenter presenter);
 

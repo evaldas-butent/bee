@@ -16,8 +16,8 @@
 
   <columns>
     <DataColumn name="Description" caption="Krovinys" />
-    <CalcColumn name="Loading" type="string" cell="html" caption="Pakrovimas" />
-    <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrovimas" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="Notes" caption="Pastabos">

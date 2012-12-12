@@ -98,6 +98,10 @@ public class UserInfo implements Module, HasInfo {
     return sessionId;
   }
 
+  public UserData getUserData() {
+    return userData;
+  }
+
   public Long getUserId() {
     if (!isLoggedIn()) {
       return null;

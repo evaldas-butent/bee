@@ -322,6 +322,7 @@ public class StyleUtils {
   public static final String NAME_ERROR = "bee-error";
   public static final String NAME_REQUIRED = "bee-required";
   public static final String NAME_HAS_DEFAULTS = "bee-hasDefaults";
+  public static final String NAME_RESIZABLE = "bee-resizable";
 
   public static final String FONT_SIZE_XX_SMALL = "xx-small";
   public static final String FONT_SIZE_X_SMALL = "x-small";

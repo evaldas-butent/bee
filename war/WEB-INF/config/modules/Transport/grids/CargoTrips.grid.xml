@@ -37,7 +37,7 @@
     <DataColumn name="DateFrom" caption="Išvyko" />
     <DataColumn name="DateTo" caption="Sugrįžo" />
     <DataColumn name="TripPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cell="html" caption="Pakrauta" />
-    <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrauta" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" />
   </columns>
 </Grid>

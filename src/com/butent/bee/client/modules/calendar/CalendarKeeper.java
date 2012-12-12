@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -101,8 +102,9 @@ public class CalendarKeeper {
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS,
-          VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES, VIEW_CAL_APPOINTMENT_TYPES);
+          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES, VIEW_THEMES,
+          VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES,
+          VIEW_CAL_APPOINTMENT_TYPES);
 
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
 
@@ -161,7 +163,7 @@ public class CalendarKeeper {
   }
 
   public static String getReminderTypeName(long id) {
-    return CACHE.getString(VIEW_REMINDER_TYPES, id, COL_NAME);
+    return CACHE.getString(CommonsConstants.VIEW_REMINDER_TYPES, id, COL_NAME);
   }
 
   public static boolean isDataLoaded() {
@@ -169,12 +171,27 @@ public class CalendarKeeper {
   }
 
   public static void register() {
-    Global.registerCaptions(AppointmentStatus.class);
-    Global.registerCaptions(ResponseStatus.class);
-    Global.registerCaptions(Transparency.class);
-    Global.registerCaptions("Calendar_Visibility", Visibility.class);
+    String key = Global.registerCaptions(AppointmentStatus.class);
+    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_STATUS, key);
 
-    Global.registerCaptions(TimeBlockClick.class);
+    Global.registerCaptions(ResponseStatus.class);
+
+    key = Global.registerCaptions(Transparency.class);
+    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_TRANSPARENCY, key);
+    Data.registerCaptionKey(VIEW_ATTENDEES, COL_TRANSPARENCY, key);
+    Data.registerCaptionKey(VIEW_ATTENDEE_TYPES, COL_TRANSPARENCY, key);
+    Data.registerCaptionKey(VIEW_CALENDARS, COL_TRANSPARENCY, key);
+
+    Data.registerCaptionKey(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
+    Data.registerCaptionKey(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
+    
+    key = Global.registerCaptions("Calendar_Visibility", Visibility.class);
+    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
+    Data.registerCaptionKey(VIEW_CALENDARS, COL_VISIBILITY, key);
+
+    key = Global.registerCaptions(TimeBlockClick.class);
+    Data.registerCaptionKey(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
+    Data.registerCaptionKey(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
 
     BeeKeeper.getMenu().registerMenuCallback("calendar_parameters", new MenuManager.MenuCallback() {
       @Override
@@ -356,7 +373,7 @@ public class CalendarKeeper {
   }
 
   static BeeRowSet getReminderTypes() {
-    return CACHE.getRowSet(VIEW_REMINDER_TYPES);
+    return CACHE.getRowSet(CommonsConstants.VIEW_REMINDER_TYPES);
   }
 
   static BeeRowSet getThemeColors() {

@@ -373,15 +373,20 @@ public class Global implements Module {
     return MSG_BOXEN.nativeConfirm(lines);
   }
 
-  public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
+  public static <E extends Enum<?> & HasCaption> String registerCaptions(Class<E> clazz) {
     Assert.notNull(clazz);
-    registerCaptions(NameUtils.getClassName(clazz), clazz);
+    return registerCaptions(NameUtils.getClassName(clazz), clazz);
   }
 
-  public static <E extends Enum<?> & HasCaption> void registerCaptions(String key, Class<E> clazz) {
+  public static <E extends Enum<?> & HasCaption> String registerCaptions(String key,
+      Class<E> clazz) {
     Assert.notEmpty(key);
     Assert.notNull(clazz);
-    CAPTIONS.put(BeeUtils.normalize(key), clazz);
+    
+    String normalized = BeeUtils.normalize(key);
+    CAPTIONS.put(normalized, clazz);
+    
+    return normalized;
   }
   
   public static void sayHuh(String... messages) {

@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -33,11 +34,16 @@ import java.util.Map;
 
 public class AbstractGridInterceptor implements GridInterceptor {
   
-  public static final String DELETE_ROW_MESSAGE = "Išmesti eilutę ?";
+  public static final List<String> DELETE_ROW_MESSAGE = Lists.newArrayList("Išmesti eilutę ?");
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    return Pair.of("Išmesti aktyvią eilutę",
-        BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes"));
+    String m1 = "Išmesti aktyvią eilutę";
+    
+    String m2 = (selectedRows == 1) 
+        ? "Išmesti pažymėtą eilutę"
+        : BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes");
+
+    return Pair.of(m1, m2);
   }
 
   private GridPresenter gridPresenter = null;
@@ -102,14 +108,14 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
-    return DELETE_DEFAULT;
+  public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
+    return DeleteMode.DEFAULT;
   }
 
   @Override
-  public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+  public DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows) {
-    return DELETE_DEFAULT;
+    return DeleteMode.DEFAULT;
   }
 
   @Override
@@ -132,7 +138,13 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getDeleteRowMessage() {
+  public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+      Collection<RowInfo> selectedRows, DeleteMode defMode) {
+    return defMode;
+  }
+
+  @Override
+  public List<String> getDeleteRowMessage(IsRow row) {
     return DELETE_ROW_MESSAGE;
   }
 
@@ -207,18 +219,15 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
-    return true;
+  public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
   }
   
   @Override
-  public boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
-    return true;
+  public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
   }
   
   @Override
-  public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
-    return true;
+  public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
   }
 
   @Override

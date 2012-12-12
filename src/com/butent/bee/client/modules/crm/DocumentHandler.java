@@ -67,17 +67,18 @@ public class DocumentHandler {
     }
 
     @Override
-    public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+    public void onReadyForInsert(final ReadyForInsertEvent event) {
       Assert.notNull(event);
+      event.consume();
       
       if (getCollector() == null) {
         event.getCallback().onFailure("File collector not found");
-        return false;
+        return;
       }
 
       if (getCollector().getFiles().isEmpty()) {
         event.getCallback().onFailure("Pasirinkite bylas");
-        return false;
+        return;
       }
       
       List<String> required = Lists.newArrayList(COL_DOCUMENT_DATE, COL_TYPE, COL_GROUP,
@@ -92,7 +93,7 @@ public class DocumentHandler {
       
       if (!empty.isEmpty()) {
         event.getCallback().onFailure(empty.toString(), "value required");
-        return false;
+        return;
       }
 
       Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(), new RowCallback() {
@@ -107,7 +108,6 @@ public class DocumentHandler {
           sendFiles(result.getId());
         }
       });
-      return false;
     }
 
     @Override

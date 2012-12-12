@@ -569,6 +569,16 @@ public class TimeUtils {
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
 
+  public static String renderCompact(HasDateValue dt) {
+    if (dt == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (dt instanceof DateTime) {
+      return ((DateTime) dt).toCompactString();
+    } else {
+      return dt.toString();
+    }
+  }
+  
   public static String renderTime(long millis) {
     if (millis < 0) {
       return BeeConst.STRING_EMPTY;
@@ -770,6 +780,14 @@ public class TimeUtils {
     return null;
   }
 
+  public static DateTime toDateTimeOrNull(HasDateValue dt) {
+    if (dt == null) {
+      return null;
+    } else {
+      return dt.getDateTime();
+    }
+  }
+  
   public static DateTime toDateTimeOrNull(Long time) {
     if (time == null) {
       return null;

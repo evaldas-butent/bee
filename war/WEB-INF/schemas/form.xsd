@@ -20,6 +20,7 @@
     <xs:attribute name="name" type="type:nameType" use="required" />
     <xs:attribute name="viewName" type="type:nameType" />
     <xs:attribute name="caption" type="xs:string" />
+    <xs:attribute name="showRowId" type="xs:boolean" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />

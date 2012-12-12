@@ -25,7 +25,7 @@ public class CrmConstants {
     SUSPEND("Sustabdyta", "Sustabdyti"),
     RENEW("Atnaujinta", "Grąžinti vykdymui"),
     FORWARD("Persiųsta", "Persiųsti"),
-    CANCEL("Atšaukta", "Nutraukti"),
+    CANCEL("Nutraukta", "Nutraukti"),
     COMPLETE("Įvykdyta", "Užbaigti"),
     APPROVE("Patvirtinta", "Patvirtinti"),
     EDIT("Koreguota", null);
@@ -69,7 +69,7 @@ public class CrmConstants {
     SCHEDULED("Suplanuota"),
     SUSPENDED("Sustabdyta"),
     COMPLETED("Įvykdyta"),
-    CANCELED("Atšaukta");
+    CANCELED("Nutraukta");
     
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {
@@ -103,14 +103,15 @@ public class CrmConstants {
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
 
-  public static final String VAR_TASK_STATUS = Service.RPC_VAR_PREFIX + "task_status";
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
+  public static final String VAR_TASK_NOTES = Service.RPC_VAR_PREFIX + "task_notes";
 
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
+  public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
 
   public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
   public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
@@ -134,6 +135,8 @@ public class CrmConstants {
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
 
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
+
+  public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
   
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
@@ -235,6 +238,8 @@ public class CrmConstants {
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
+  public static final String LABEL_OBSERVERS = "Stebėtojai";
+  
   private CrmConstants() {
   }
 }

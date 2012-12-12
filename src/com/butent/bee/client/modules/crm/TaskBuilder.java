@@ -68,7 +68,9 @@ class TaskBuilder extends AbstractFormInterceptor {
   }
 
   @Override
-  public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
+    event.consume();
+    
     IsRow activeRow = getFormView().getActiveRow();
 
     DateTime start = getStart();
@@ -77,21 +79,21 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (end == null) {
       event.getCallback().onFailure("Įveskite pabaigos laiką arba",
           "pradžios laiką ir numatomą trukmę");
-      return false;
+      return;
     }
     if (start != null && TimeUtils.isLeq(end, start)) {
       event.getCallback().onFailure("Pabaigos laikas turi būti didesnis už pradžios laiką");
-      return false;
+      return;
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
       event.getCallback().onFailure("Įveskite temą");
-      return false;
+      return;
     }
 
     if (BeeUtils.isEmpty(activeRow.getProperty(PROP_EXECUTORS))) {
       event.getCallback().onFailure("Pasirinkite vykdytoją");
-      return false;
+      return;
     }
 
     BeeRow newRow = DataUtils.cloneRow(activeRow);
@@ -102,7 +104,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
 
     BeeRowSet rowSet = Queries.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
-        newRow, Sets.newHashSet(COL_EXECUTOR), true);
+        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS, COL_START_TIME), true);
 
     ParameterList args = CrmKeeper.createTaskRequestParameters(TaskEvent.CREATE);
     args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
@@ -145,7 +147,6 @@ class TaskBuilder extends AbstractFormInterceptor {
         }
       }
     });
-    return false;
   }
 
   private void clearValue(String widgetName) {

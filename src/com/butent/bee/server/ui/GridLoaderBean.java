@@ -137,7 +137,9 @@ public class GridLoaderBean {
   private static final String ATTR_FILTER_SUPPLIER = "filterSupplier";
   private static final String ATTR_FILTER_OPTIONS = "filterOptions";
 
-  private static final String ATTR_CELL = "cell";
+  private static final String ATTR_CELL_TYPE = "cellType";
+  private static final String ATTR_CELL_RESIZABLE = "cellResizable";
+
   private static final String ATTR_ELEMENT = "element";
 
   private static final String ATTR_ID = "id";
@@ -588,8 +590,11 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_FILTER_OPTIONS)) {
           dst.setFilterOptions(value.trim());
 
-        } else if (BeeUtils.same(key, ATTR_CELL)) {
+        } else if (BeeUtils.same(key, ATTR_CELL_TYPE)) {
           dst.setCellType(CellType.getByCode(value));
+        } else if (BeeUtils.same(key, ATTR_CELL_RESIZABLE)) {
+          dst.setCellResizable(BeeUtils.toBooleanOrNull(value));
+
         } else if (BeeUtils.same(key, ATTR_ELEMENT)) {
           dst.setElementType(value.trim());
 

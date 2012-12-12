@@ -164,6 +164,11 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public int getHeight() {
+    return getScreenPanel().getOffsetHeight();
+  }
+
+  @Override
   public String getName() {
     return NameUtils.getClassName(getClass());
   }
@@ -185,6 +190,11 @@ public class ScreenImpl implements Screen {
   @Override
   public Split getScreenPanel() {
     return screenPanel;
+  }
+
+  @Override
+  public int getWidth() {
+    return getScreenPanel().getOffsetWidth();
   }
 
   @Override

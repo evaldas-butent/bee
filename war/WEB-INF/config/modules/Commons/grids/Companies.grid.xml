@@ -24,8 +24,8 @@
 
     <DataColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />
-    <CalcColumn type="string" name="Flag" source="CountryCode" cell="html" width="30" caption="-"
-      sortable="false" hasFooter="false" horizontalAlignment="center">
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" sortable="false" hasFooter="false" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
   </columns>

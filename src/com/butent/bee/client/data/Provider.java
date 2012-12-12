@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -209,7 +210,11 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected void rejectFilter(Filter filter) {
     if (filter != null && notificationListener != null) {
-      notificationListener.notifyWarning("no rows found", filter.toString());
+      if (Global.isDebug()) {
+        notificationListener.notifyWarning("no rows found", filter.toString());
+      } else {
+        notificationListener.notifyWarning("Nieko nerasta");
+      }
     }
   }
 

@@ -134,6 +134,10 @@ public class BeeUtils {
     return bracket(toString(x));
   }
 
+  public static String bracket(long x) {
+    return bracket(toString(x));
+  }
+  
   /**
    * Surrounds the String value {@code s} in brackets.
    * 
@@ -1805,6 +1809,10 @@ public class BeeUtils {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
   }
 
+  public static int resize(int x, int frMin, int frMax, int toMin, int toMax) {
+    return round(rescale(x, frMin, frMax, toMin, toMax));
+  }
+  
   public static String right(String s, int n) {
     if (s == null) {
       return null;
@@ -1833,6 +1841,10 @@ public class BeeUtils {
     return (x < min || x >= max) ? min : x + 1;
   }
 
+  public static int round(double x) {
+    return toInt(Math.round(x));
+  }
+  
   /**
    * Rounds {@code x} with a specified scale {@code dec}.
    * 
@@ -2137,6 +2149,16 @@ public class BeeUtils {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
 
+  public static int toInt(long x) {
+    if (x <= Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    } else if (x >= Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    } else {
+      return (int) x;
+    }
+  }
+  
   public static int toInt(Double d) {
     if (!isDouble(d)) {
       return 0;

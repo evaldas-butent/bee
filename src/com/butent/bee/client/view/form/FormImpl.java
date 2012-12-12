@@ -257,6 +257,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   private boolean readOnly = false;
 
   private String caption = null;
+  private boolean showRowId = false;
 
   private FormInterceptor formInterceptor = null;
 
@@ -390,7 +391,9 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     }
 
     setReadOnly(formDescription.isReadOnly());
+
     setCaption(formDescription.getCaption());
+    setShowRowId(formDescription.showRowId());
 
     setDimensions(formDescription.getDimensions());
 
@@ -925,9 +928,13 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     };
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
-    if (getFormInterceptor() != null && !getFormInterceptor().onReadyForInsert(event)) {
-      return;
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onReadyForInsert(event);
+      if (event.isConsumed()) {
+        return;
+      }
     }
+    
     fireEvent(event);
   }
 
@@ -1583,6 +1590,13 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     if (getFormInterceptor() != null) {
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
+    
+    if (showRowId() && getViewPresenter() != null) {
+      long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
+      String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
+      
+      getViewPresenter().getHeader().setMessage(message);
+    }
   }
 
   private void setActiveEditableIndex(int activeEditableIndex) {
@@ -1657,6 +1671,10 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     this.rowValidation = rowValidation;
   }
 
+  private void setShowRowId(boolean showRowId) {
+    this.showRowId = showRowId;
+  }
+
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }
@@ -1664,5 +1682,9 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   private void showNote(LogLevel level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget().asWidget()) + 1);
     getNotification().show(level, messages);
+  }
+
+  private boolean showRowId() {
+    return showRowId;
   }
 }

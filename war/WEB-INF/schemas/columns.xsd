@@ -48,7 +48,8 @@
     <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" />
-    <xs:attribute name="cell" type="ui:cellType" />
+    <xs:attribute name="cellType" type="ui:cellType" />
+    <xs:attribute name="cellResizable" type="xs:boolean" />
     <xs:attribute name="renderColumns" type="type:nameList" />
     <xs:attribute name="sortBy" type="type:nameList" />
     <xs:attribute name="searchBy" type="type:nameList" />

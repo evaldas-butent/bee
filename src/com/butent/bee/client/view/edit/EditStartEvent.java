@@ -6,13 +6,14 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.IsRow;
 
 /**
  * Manages edit start event, gets column id, type, row value and other necessary parameters.
  */
 
-public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
+public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements Consumable {
 
   /**
    * Requires implementing methods to have a method to handle edit start.
@@ -72,8 +73,9 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     this.readOnly = readOnly;
   }
 
+  @Override
   public void consume() {
-    consumed = true;
+    setConsumed(true);
   }
   
   @Override
@@ -97,6 +99,7 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     return sourceElement;
   }
 
+  @Override
   public boolean isConsumed() {
     return consumed;
   }
@@ -107,6 +110,11 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
   
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  @Override
+  public void setConsumed(boolean consumed) {
+    this.consumed = consumed;
   }
 
   @Override

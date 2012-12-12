@@ -95,7 +95,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if ((count == 0
             ? gcb.beforeDeleteRow(GridPresenter.this, activeRow)
             : gcb.beforeDeleteRows(GridPresenter.this, activeRow, rows))
-          == GridInterceptor.DELETE_CANCEL) {
+          == GridInterceptor.DeleteMode.CANCEL) {
           return;
         }
       }
@@ -191,19 +191,20 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void deleteRow(IsRow row, boolean confirm) {
     Assert.notNull(row);
 
-    String message = (getGridInterceptor() != null)
-        ? getGridInterceptor().getDeleteRowMessage()
+    List<String> messages = (getGridInterceptor() != null)
+        ? getGridInterceptor().getDeleteRowMessage(row)
         : AbstractGridInterceptor.DELETE_ROW_MESSAGE;
 
-    int mode =
-        BeeUtils.isEmpty(message) ? GridInterceptor.DELETE_SILENT : GridInterceptor.DELETE_DEFAULT;
+        GridInterceptor.DeleteMode mode = BeeUtils.isEmpty(messages) 
+        ? GridInterceptor.DeleteMode.SILENT : GridInterceptor.DeleteMode.DEFAULT;
 
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
 
-    if (mode == GridInterceptor.DELETE_SILENT || mode == GridInterceptor.DELETE_DEFAULT && !confirm) {
+    if (mode == GridInterceptor.DeleteMode.SILENT 
+        || mode == GridInterceptor.DeleteMode.DEFAULT && !confirm) {
       deleteCallback.onConfirm();
     } else {
-      Global.getMsgBoxen().confirm(null, message, deleteCallback, StyleUtils.NAME_SCARY, null);
+      Global.getMsgBoxen().confirm(null, messages, deleteCallback, StyleUtils.NAME_SCARY, null);
     }
   }
 
@@ -293,13 +294,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       case DELETE:
         if (getMainView().isEnabled()) {
           IsRow row = getActiveRow();
+
           if (row != null && getGridView().isRowEditable(row, true)) {
             Collection<RowInfo> selectedRows = getGridView().getSelectedRows();
-            boolean isActiveRowSelected = getGridView().isRowSelected(row.getId());
 
-            if (selectedRows.isEmpty() || isActiveRowSelected && selectedRows.size() == 1) {
+            GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows); 
+            
+            if (GridInterceptor.DeleteMode.SINGLE.equals(mode)) {
               deleteRow(row, true);
-            } else {
+            } else if (GridInterceptor.DeleteMode.SINGLE.equals(mode)) {
               deleteRows(row, selectedRows);
             }
           }
@@ -331,7 +334,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
       @Override
       public void onFailure(String... reason) {
@@ -350,8 +353,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     });
-
-    return true;
   }
 
   @Override
@@ -614,6 +615,18 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {
+    GridInterceptor.DeleteMode mode = 
+        selected.isEmpty() || selected.size() == 1 && getGridView().isRowSelected(row.getId())
+        ? GridInterceptor.DeleteMode.SINGLE : GridInterceptor.DeleteMode.MULTI;
+    
+    if (getGridInterceptor() == null) {
+      return mode;
+    } else {
+      return getGridInterceptor().getDeleteMode(this, row, selected, mode);
+    }
+  }
+
   private GridInterceptor getGridInterceptor() {
     return getGridView().getGridInterceptor();
   }
@@ -637,7 +650,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void showInfo(String... messages) {
     getGridView().notifyInfo(messages);
   }
-
+  
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {

@@ -38,8 +38,12 @@ public interface Screen extends Module, NotificationListener {
   IdentifiableWidget getActiveWidget();
   
   HasWidgets getCommandPanel();
-  
+
+  int getHeight();
+
   Split getScreenPanel();
+
+  int getWidth();
   
   Workspace getWorkspace();
 

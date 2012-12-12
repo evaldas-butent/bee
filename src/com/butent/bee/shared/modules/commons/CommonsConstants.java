@@ -99,12 +99,16 @@ public class CommonsConstants {
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_PERSONS = "Persons";
 
+  public static final String TBL_REMINDER_TYPES = "ReminderTypes";
+  
   public static final String TBL_RELATIONS = "Relations";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
 
+  public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
+  
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
   public static final String COL_FILE_REPO = "Repository";
@@ -137,6 +141,10 @@ public class CommonsConstants {
   public static final String COL_TABLE_2 = "Table2";
   public static final String COL_ROW_2 = "Row2";
 
+  public static final String COL_REMINDER_METHOD = "Method";
+  public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
+  public static final String COL_REMINDER_TEMPLATE = "Template";
+  
   public static final String FORM_NEW_COMPANY = "Company";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";

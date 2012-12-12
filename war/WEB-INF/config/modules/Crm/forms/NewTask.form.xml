@@ -55,7 +55,9 @@
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
         style="&inp2;" />
       <Label html="Kontaktinis asmuo:" style="&lbl3;" />
-      <DataSelector source="Contact" style="&inp4; width: 200px;" />
+      <DataSelector source="Contact" style="&inp4; width: 200px;"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" />
     </FlowPanel>
 
     &separator;
@@ -110,14 +112,15 @@
     <FlowPanel style="&section;">
       <Label html="Įvykiai:" style="&top1;" />
       <MultiSelector viewName="Appointments" property="Appointments"
-        renderColumns="StartDateTime Summary" newRowEnabled="false"
-        editEnabled="true" editPopup="true" style="&inp2x;" />
+        renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+        newRowEnabled="false" editEnabled="true" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Užduotys:" style="&top1;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
-        renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
+        renderColumns="Summary ExecutorFirstName ExecutorLastName"
+        choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
         newRowEnabled="false" editEnabled="true" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 

@@ -219,7 +219,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
       @Override
       public void onFailure(String... reason) {
@@ -238,8 +238,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     });
-
-    return true;
   }
 
   @Override

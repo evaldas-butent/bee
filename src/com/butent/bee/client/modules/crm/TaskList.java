@@ -1,6 +1,13 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safecss.shared.SafeStyles;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
@@ -18,6 +25,7 @@ import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -27,6 +35,7 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -36,6 +45,9 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
@@ -47,6 +59,14 @@ import java.util.List;
 
 class TaskList {
 
+  public interface SlackTemplate extends SafeHtmlTemplates {
+    @Template("<div class=\"bee-crm-SlackLate-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackLate-label\">{1}</div>")
+    SafeHtml late(SafeStyles barStyles, String label);
+
+    @Template("<div class=\"bee-crm-SlackScheduled-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackScheduled-label\">{1}</div>")
+    SafeHtml scheduled(SafeStyles barStyles, String label);
+  }
+  
   private static class GridHandler extends AbstractGridInterceptor {
 
     private final Type type;
@@ -58,17 +78,20 @@ class TaskList {
     }
 
     @Override
-    public boolean afterCreateColumn(String columnId, final List<? extends IsColumn> dataColumns,
-        final AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+    public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+        AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
         EditableColumn editableColumn) {
 
       if (BeeUtils.same(columnId, "Mode") && column instanceof HasCellRenderer) {
         ((HasCellRenderer) column).setRenderer(new ModeRenderer(column.getOptions()));
 
+      } else if (BeeUtils.same(columnId, "Slack") && column instanceof HasCellRenderer) {
+        ((HasCellRenderer) column).setRenderer(new SlackRenderer(dataColumns, column.getOptions()));
+
       } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
         editableColumn.addCellValidationHandler(ValidationHelper.DO_NOT_VALIDATE);
       }
-      
+
       return true;
     }
 
@@ -86,26 +109,6 @@ class TaskList {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
-      Provider provider = presenter.getDataProvider();
-      Long owner = row.getLong(provider.getColumnIndex(COL_OWNER));
-
-      if (owner == null || owner == userId) {
-        return GridInterceptor.DELETE_DEFAULT;
-      } else {
-        presenter.getGridView().notifyWarning("Verboten");
-        return GridInterceptor.DELETE_CANCEL;
-      }
-    }
-
-    @Override
-    public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
-        Collection<RowInfo> selectedRows) {
-      presenter.deleteRow(activeRow, false);
-      return GridInterceptor.DELETE_CANCEL;
-    }
-
-    @Override
     public String getCaption() {
       return type.getCaption();
     }
@@ -120,6 +123,26 @@ class TaskList {
     }
 
     @Override
+    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+        Collection<RowInfo> selectedRows, DeleteMode defMode) {
+      Provider provider = presenter.getDataProvider();
+      Long owner = activeRow.getLong(provider.getColumnIndex(COL_OWNER));
+
+      if (owner == userId) {
+        return GridInterceptor.DeleteMode.SINGLE;
+      } else {
+        presenter.getGridView().notifyWarning("Užduotį išmesti gali tik vadovas");
+        return GridInterceptor.DeleteMode.CANCEL;
+      }
+    }
+
+    @Override
+    public List<String> getDeleteRowMessage(IsRow row) {
+      String message = BeeUtils.joinWords("Išmesti užduotį", row.getId(), "?");
+      return Lists.newArrayList(message);
+    }
+
+    @Override
     public String getSupplierKey() {
       return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS, type));
     }
@@ -131,11 +154,11 @@ class TaskList {
         if (row == null) {
           return;
         }
-        
+
         if (row.getProperty(PROP_USER) == null) {
           return;
         }
-        
+
         final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
 
         EditorAssistant.editStarCell(event, source, new Procedure<Integer>() {
@@ -190,7 +213,7 @@ class TaskList {
       if (row.getProperty(PROP_USER) == null) {
         return BeeConst.STRING_EMPTY;
       }
-      
+
       Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
       if (access == null) {
         return modeNew;
@@ -203,7 +226,7 @@ class TaskList {
       return BeeConst.STRING_EMPTY;
     }
 
-    public void setOptions(String options) {
+    private void setOptions(String options) {
       if (!BeeUtils.isEmpty(options)) {
         int idx = 0;
 
@@ -223,6 +246,140 @@ class TaskList {
     }
   }
 
+  private static class SlackRenderer extends AbstractCellRenderer {
+
+    private static final SlackTemplate TEMPLATE = GWT.create(SlackTemplate.class);
+    
+    private static final Splitter OPTION_SPLITTER =
+        Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
+            .omitEmptyStrings().trimResults();
+    
+    private final int statusIndex;
+    private final int startIndex;
+    private final int finishIndex;
+    
+    private int minBarWidth = 10;
+    private int maxBarWidth = 100;
+
+    private int maxWidthDays = 30;
+
+    private SlackRenderer(List<? extends IsColumn> columns, String options) {
+      super(null);
+      
+      this.statusIndex = DataUtils.getColumnIndex(COL_STATUS, columns);
+      this.startIndex = DataUtils.getColumnIndex(COL_START_TIME, columns);
+      this.finishIndex = DataUtils.getColumnIndex(COL_FINISH_TIME, columns);
+      
+      setOptions(options);
+    }
+
+    @Override
+    public String render(IsRow row) {
+      if (row == null) {
+        return null;
+      }
+      
+      TaskStatus status = NameUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
+      
+      DateTime start = row.getDateTime(startIndex);
+      DateTime finish = row.getDateTime(finishIndex);
+      
+      long minutes = getMinutes(status, start, finish);
+      if (minutes == 0) {
+        return BeeConst.STRING_EMPTY;
+      }
+      
+      SafeStyles barStyles = getBarStyles(Math.abs(minutes));
+      String label = getLabel(Math.abs(minutes));
+      
+      if (minutes < 0) {
+        return TEMPLATE.late(barStyles, label).asString();
+      } else if (minutes > 0) {
+        return TEMPLATE.scheduled(barStyles, label).asString();
+      } else {
+        return BeeConst.STRING_EMPTY;
+      }
+    }
+    
+    private SafeStyles getBarStyles(long minutes) {
+      double width = BeeUtils.rescale(Math.abs(minutes),
+          0, getMaxWidthDays() * TimeUtils.MINUTES_PER_DAY,
+          getMinBarWidth(), getMaxBarWidth());
+
+      return StyleUtils.buildWidth(width, Unit.PCT);
+    }
+    
+    private String getLabel(long minutes) {
+      if (Math.abs(minutes) < TimeUtils.MINUTES_PER_DAY) {
+        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR)
+            + DateTime.TIME_FIELD_SEPARATOR 
+            + TimeUtils.padTwo((int) (minutes % TimeUtils.MINUTES_PER_HOUR));        
+      } else {
+        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_DAY);
+      }
+    }
+
+    private int getMaxBarWidth() {
+      return maxBarWidth;
+    }
+    
+    private int getMaxWidthDays() {
+      return maxWidthDays;
+    }
+
+    private int getMinBarWidth() {
+      return minBarWidth;
+    }
+
+    private long getMinutes(TaskStatus status, DateTime start, DateTime finish) {
+      if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED) {
+        return 0;
+      }
+      
+      DateTime now = TimeUtils.nowMinutes();
+      
+      if (finish != null && TimeUtils.isLess(finish, now)) {
+        return (finish.getTime() - now.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
+      } else if (CrmUtils.isScheduled(start)) {
+        return TimeUtils.dayDiff(now, start) * TimeUtils.MINUTES_PER_DAY;
+      } else {
+        return 0;
+      }
+    }
+
+    private void setMaxBarWidth(int maxBarWidth) {
+      this.maxBarWidth = maxBarWidth;
+    }
+
+    private void setMaxWidthDays(int maxWidthDays) {
+      this.maxWidthDays = maxWidthDays;
+    }
+
+    private void setMinBarWidth(int minBarWidth) {
+      this.minBarWidth = minBarWidth;
+    }
+
+    private void setOptions(String options) {
+      if (BeeUtils.isEmpty(options)) {
+        return;
+      }
+      List<String> args = Lists.newArrayList(OPTION_SPLITTER.split(options));
+      if (args.isEmpty()) {
+        return;
+      }
+      
+      if (args.size() >= 1) {
+        setMinBarWidth(BeeUtils.clamp(BeeUtils.toInt(args.get(0)), 0, 50));
+      }
+      if (args.size() >= 2) {
+        setMaxBarWidth(BeeUtils.clamp(BeeUtils.toInt(args.get(1)), getMinBarWidth() + 10, 100));
+      }
+      if (args.size() >= 3) {
+        setMaxWidthDays(Math.max(BeeUtils.toInt(args.get(2)), 1));
+      }
+    }
+  }
+
   private enum Type implements HasCaption {
     ASSIGNED("Gautos užduotys") {
       @Override
@@ -230,14 +387,14 @@ class TaskList {
         return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
       }
     },
-    
+
     DELEGATED("Deleguotos užduotys") {
       @Override
       Filter getFilter(LongValue userValue) {
         return ComparisonFilter.isEqual(COL_OWNER, userValue);
       }
     },
-    
+
     OBSERVED("Stebimos užduotys") {
       @Override
       Filter getFilter(LongValue userValue) {
@@ -247,7 +404,7 @@ class TaskList {
                 ComparisonFilter.isEqual(COL_USER, userValue)));
       }
     },
-    
+
     GENERAL("Užduočių sąrašas") {
       @Override
       Filter getFilter(LongValue userValue) {
@@ -265,7 +422,7 @@ class TaskList {
     public String getCaption() {
       return caption;
     }
-    
+
     abstract Filter getFilter(LongValue userValue);
   }
 

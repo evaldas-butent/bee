@@ -64,6 +64,7 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
@@ -241,9 +242,19 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private class InputEvents implements MouseWheelHandler {
+  private class InputEvents implements MouseWheelHandler, Consumable {
 
     private boolean consumed = false;
+
+    @Override
+    public void consume() {
+      setConsumed(true);
+    }
+
+    @Override
+    public boolean isConsumed() {
+      return consumed;
+    }
 
     @Override
     public void onMouseWheel(MouseWheelEvent event) {
@@ -259,12 +270,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
 
-    private void consume() {
-      setConsumed(true);
-    }
-
-    private boolean isConsumed() {
-      return consumed;
+    @Override
+    public void setConsumed(boolean consumed) {
+      this.consumed = consumed;
     }
 
     private void onKeyDown(Event event) {
@@ -356,10 +364,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         consume();
         askOracle();
       }
-    }
-
-    private void setConsumed(boolean consumed) {
-      this.consumed = consumed;
     }
   }
 

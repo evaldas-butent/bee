@@ -19,12 +19,12 @@
 
     <SimpleColumn name="Contact" />
     <SimpleJoin name="Contact" joinType="LEFT">
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn alias="ContactCompanyName" name="Name" />
-      </SimpleJoin>
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="ContactFirstName" name="FirstName" />
         <SimpleColumn alias="ContactLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="ContactCompanyName" name="Name" />
       </SimpleJoin>
     </SimpleJoin>
 

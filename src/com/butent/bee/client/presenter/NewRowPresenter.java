@@ -218,7 +218,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
     if (formView.getFormInterceptor() != null) {
       ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
-      if (!formView.getFormInterceptor().onReadyForInsert(event)) {
+      formView.getFormInterceptor().onReadyForInsert(event);
+
+      if (event.isConsumed()) {
         if (callback != null) {
           callback.onCancel();
         }

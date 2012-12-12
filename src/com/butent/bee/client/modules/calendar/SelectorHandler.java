@@ -9,7 +9,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
@@ -21,6 +20,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -94,8 +94,9 @@ class SelectorHandler implements SelectorEvent.Handler {
       @Override
       public void onSuccess(int value) {
         if (value < rowSet.getNumberOfRows()) {
-          RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-              TransportConstants.VIEW_VEHICLES, rowSet.getRow(value), true);
+          RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
+              dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
+              rowSet.getRow(value), true);
           dataView.refresh(false);
         } else {
           createVehicle(owner, dataView);
@@ -105,19 +106,20 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private void createVehicle(IsRow owner, final DataView dataView) {
-    DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
-    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+    final DataInfo vehiclesInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
+    BeeRow row = RowFactory.createEmptyRow(vehiclesInfo, true);
+
     if (owner != null) {
-      RelationUtils.updateRow(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER, row,
-          CommonsConstants.VIEW_COMPANIES, owner, true);
+      RelationUtils.updateRow(vehiclesInfo, TransportConstants.COL_OWNER, row,
+          Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), owner, true);
     }
 
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
-        dataInfo, row, new RowCallback() {
+        vehiclesInfo, row, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-                TransportConstants.VIEW_VEHICLES, result, true);
+            RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
+                dataView.getActiveRow(), vehiclesInfo, result, true);
             dataView.refresh(false);
           }
         });
@@ -183,8 +185,9 @@ class SelectorHandler implements SelectorEvent.Handler {
             if (rowCount <= 0) {
               createVehicle(event.getRelatedRow(), dataView);
             } else if (rowCount == 1) {
-              RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-                  TransportConstants.VIEW_VEHICLES, result.getRow(0), true);
+              RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
+                  dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
+                  result.getRow(0), true);
               dataView.refresh(false);
             } else {
               chooseVehicle(dataView, result, companyName, event.getRelatedRow());
@@ -274,8 +277,8 @@ class SelectorHandler implements SelectorEvent.Handler {
         getCompanyRow(owner, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_COMPANY, row,
-                CommonsConstants.VIEW_COMPANIES, result, true);
+            RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_COMPANY, row,
+                Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), result, true);
             dataView.refresh(false);
           }
         });

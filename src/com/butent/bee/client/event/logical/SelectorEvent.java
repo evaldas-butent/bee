@@ -7,13 +7,14 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class SelectorEvent extends Event<SelectorEvent.Handler> {
+public class SelectorEvent extends Event<SelectorEvent.Handler> implements Consumable {
 
   public interface Handler extends EventHandler {
     void onDataSelector(SelectorEvent event);
@@ -67,8 +68,9 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     this.newRow = newRow;
   }
 
+  @Override
   public void consume() {
-    consumed = true;
+    setConsumed(true);
   }
 
   @Override
@@ -124,6 +126,7 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     return State.CLOSED.equals(getState());
   }
 
+  @Override
   public boolean isConsumed() {
     return consumed;
   }
@@ -138,6 +141,11 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
   public boolean isOpened() {
     return State.OPEN.equals(getState());
+  }
+
+  @Override
+  public void setConsumed(boolean consumed) {
+    this.consumed = consumed;
   }
 
   @Override

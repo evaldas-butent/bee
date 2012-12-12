@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.ModalForm;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
@@ -21,12 +20,14 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
@@ -221,19 +222,21 @@ public class RowEditor {
       @Override
       public void onSave() {
         if (validate(formView)) {
-          int upd = update(dataInfo, oldRow, formView.getActiveRow(), formView, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              closeForm();
-              if (callback != null) {
-                callback.onSuccess(result);
-              }
-            }
-          });
+          update(dataInfo, oldRow, formView.getActiveRow(), formView,
+              new RowCallback() {
+                @Override
+                public void onCancel() {
+                  onClose();
+                }
 
-          if (upd == 0) {
-            onClose();
-          }
+                @Override
+                public void onSuccess(BeeRow result) {
+                  closeForm();
+                  if (callback != null) {
+                    callback.onSuccess(result);
+                  }
+                }
+              });
         }
       }
 
@@ -310,24 +313,33 @@ public class RowEditor {
     }
   }
 
-  private static int update(final DataInfo dataInfo, IsRow oldRow, IsRow newRow,
-      final NotificationListener notificationListener, final RowCallback callback) {
+  private static void update(final DataInfo dataInfo, IsRow oldRow, IsRow newRow,
+      final FormView formView, final RowCallback callback) {
 
-    return Queries.update(dataInfo.getViewName(), dataInfo.getColumns(), oldRow, newRow,
-        new RowCallback() {
-          @Override
-          public void onFailure(String... reason) {
-            notificationListener.notifySevere(reason);
-          }
+    SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
+        callback);
 
-          @Override
-          public void onSuccess(BeeRow result) {
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
-            if (callback != null) {
-              callback.onSuccess(result);
-            }
-          }
-        });
+    formView.onSaveChanges(event);
+    if (event.isConsumed() || event.isEmpty()) {
+      callback.onCancel();
+      return;
+    }
+
+    BeeRowSet updated = DataUtils.getUpdated(dataInfo.getViewName(), oldRow.getId(),
+        oldRow.getVersion(), event.getColumns(), event.getOldValues(), event.getNewValues());
+
+    Queries.updateRow(updated, new RowCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        formView.notifySevere(reason);
+      }
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
+        callback.onSuccess(result);
+      }
+    });
   }
 
   private static boolean validate(FormView formView) {

@@ -10,7 +10,7 @@
     <DateTime name="PublishTime" notNull="true" />
     <Text name="Comment" label="Komentaras" />
     <Integer name="Event" notNull="true" />
-    <String name="EventNote" precision="100" />
+    <Text name="EventNote" />
     <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" />
   </Fields>
   <Keys>

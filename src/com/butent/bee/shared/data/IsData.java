@@ -23,6 +23,8 @@ public interface IsData {
 
   String getColumnLabel(int colIndex);
 
+  String getColumnLabel(String columnId);
+
   String getColumnPattern(int colIndex);
 
   CustomProperties getColumnProperties(int colIndex);

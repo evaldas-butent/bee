@@ -17,7 +17,8 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="Task" viewName="Tasks" caption="Užduotis">
+  name="Task" viewName="Tasks" caption="Užduotis" showRowId="true"
+  >
 
   <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form" style="margin-top: 1ex;">
     <FlowPanel style="margin-left: 5px;">
@@ -33,14 +34,16 @@
         <Label html="Vadovas:" style="&lbl1;" />
         <DataSelector source="Owner" editEnabled="true" style="&inp2;" readOnly="true" />
         <Label html="Įmonė:" style="&lbl3;" />
-        <DataSelector source="Company" editEnabled="true" style="&inp4;" readOnly="true" />
+        <DataSelector source="Company" editEnabled="true" style="&inp4;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vykdytojas:" style="&lbl1;" />
         <DataSelector source="Executor" editEnabled="true" style="&inp2;" readOnly="true" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
-        <DataSelector source="Contact" style="&inp4;" readOnly="true" />
+        <DataSelector source="Contact" style="&inp4;" disablable="true"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" />
       </FlowPanel>
 
       &separator;
@@ -75,12 +78,12 @@
       &separator;
       <FlowPanel style="&section;">
         <Label html="Tema:" class="bee-required" style="&lbl1;" />
-        <InputText source="Summary" style="&inp2x;" disablable="true" />
+        <InputText source="Summary" style="&inp2x;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Aprašymas:" style="&top1;" />
-        <InputArea source="Description" style="width: 440px; height: 60px;" disablable="true" />
+        <InputArea source="Description" style="width: 440px; height: 60px;" readOnly="true" />
       </FlowPanel>
 
       <FileGroup name="Files" />
@@ -108,14 +111,16 @@
       <FlowPanel style="&section;">
         <Label html="Įvykiai:" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
-          renderColumns="StartDateTime Summary" newRowEnabled="false" editEnabled="true"
+          renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+          newRowEnabled="false" editEnabled="true"
           style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Užduotys:" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
-          renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
+          renderColumns="Summary ExecutorFirstName ExecutorLastName"
+          choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
           newRowEnabled="false" editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
@@ -126,4 +131,4 @@
     <FlowPanel name="TaskEvents" class="flexible bee-crm-taskEvent-container" 
       style="margin-left: 15px; overflow: auto; height: -webkit-calc(100% - 5px);" />
   </FlowPanel>
-</f:Form>  
+</f:Form>

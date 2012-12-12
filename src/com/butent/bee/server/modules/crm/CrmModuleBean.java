@@ -38,11 +38,10 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -232,24 +231,17 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
-      boolean updateUsers, Set<String> updatedRelations, Long eventId) {
+      boolean checkUsers, Set<String> updatedRelations, Long eventId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
-
+    
     List<Long> newUsers;
-    if (updateUsers) {
-      newUsers = DataUtils.parseIdList(row.getProperty(PROP_OBSERVERS));
-
-      Long owner = row.getLong(data.getColumnIndex(COL_OWNER));
-      if (owner != null) {
-        newUsers.add(owner);
+    if (checkUsers) {
+      newUsers = CrmUtils.getTaskUsers(row, data.getColumns());
+      if (!BeeUtils.sameElements(oldUsers, newUsers)) {
+        updateTaskUsers(row.getId(), oldUsers, newUsers);
       }
-      Long executor = row.getLong(data.getColumnIndex(COL_EXECUTOR));
-      if (executor != null) {
-        newUsers.add(executor);
-      }
-      updateTaskUsers(row.getId(), oldUsers, newUsers);
     } else {
       newUsers = Lists.newArrayList(oldUsers);
     }
@@ -270,7 +262,7 @@ public class CrmModuleBean implements BeeModule {
         oldValues.add(entry.getValue());
         newValues.add(row.getString(entry.getKey()));
       }
-
+      
       BeeRow updRow = new BeeRow(row.getId(), row.getVersion(), oldValues);
       for (int i = 0; i < columns.size(); i++) {
         updRow.preliminaryUpdate(i, newValues.get(i));
@@ -298,8 +290,8 @@ public class CrmModuleBean implements BeeModule {
     }
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String tableName = translateTaskPropertyNameToTableName(entry.getKey());
-      if (BeeUtils.isEmpty(tableName)) {
+      String relation = CrmUtils.translateTaskPropertyToRelation(entry.getKey());
+      if (BeeUtils.isEmpty(relation)) {
         continue;
       }
 
@@ -312,7 +304,7 @@ public class CrmModuleBean implements BeeModule {
         ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(CommonsConstants.TBL_RELATIONS)
             .addConstant(CommonsConstants.COL_TABLE_1, TBL_TASKS)
             .addConstant(CommonsConstants.COL_ROW_1, taskId)
-            .addConstant(CommonsConstants.COL_TABLE_2, tableName)
+            .addConstant(CommonsConstants.COL_TABLE_2, relation)
             .addConstant(CommonsConstants.COL_ROW_2, relId));
         if (ro.hasErrors()) {
           return ro;
@@ -359,18 +351,26 @@ public class CrmModuleBean implements BeeModule {
     BeeRow taskRow = taskData.getRow(0);
 
     long taskId = taskRow.getId();
-    List<Long> taskUsers = getTaskUsers(taskId);
 
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
 
-    int exIndex;
     Long eventId = null;
+    String eventNote;
+    
+    String notes = reqInfo.getParameter(VAR_TASK_NOTES);
+    if (BeeUtils.isEmpty(notes)) {
+      eventNote = null;
+    } else {
+      eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
+    }
 
+    Set<Long> oldUsers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_TASK_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_TASK_RELATIONS));
 
     switch (event) {
       case CREATE:
+        
         Map<String, String> properties = taskRow.getProperties();
 
         List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
@@ -378,12 +378,22 @@ public class CrmModuleBean implements BeeModule {
 
         List<Long> tasks = Lists.newArrayList();
 
-        exIndex = taskData.getColumnIndex(COL_EXECUTOR);
-
         for (long executor : executors) {
+          DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
+          
+          BeeRow newRow = DataUtils.cloneRow(taskRow);
+          newRow.setValue(taskData.getColumnIndex(COL_EXECUTOR), executor);
+
+          TaskStatus status;
+          if (CrmUtils.isScheduled(start)) {
+            status = TaskStatus.SCHEDULED;
+          } else {
+            status = (executor == currentUser) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
+          }
+          newRow.setValue(taskData.getColumnIndex(COL_STATUS), status.ordinal());
+
           taskData.clearRows();
-          taskData.addRow(DataUtils.cloneRow(taskRow));
-          taskData.getRow(0).setValue(exIndex, executor);
+          taskData.addRow(newRow);
 
           response = deb.commitRow(taskData, false);
           if (response.hasErrors()) {
@@ -434,64 +444,18 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case VISIT:
-        if (taskUsers.contains(currentUser)) {
+        
+        if (oldUsers.contains(currentUser)) {
           response = registerTaskVisit(taskId, currentUser, now);
         }
 
         if (response == null || !response.hasErrors()) {
-          response = commitTaskData(taskData, taskUsers, false, updatedRelations, eventId);
+          response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
         }
         break;
 
       case FORWARD:
-        exIndex = taskData.getColumnIndex(COL_EXECUTOR);
-
-        long oldUser = BeeUtils.toLong(taskRow.getShadowString(exIndex));
-        long newUser = BeeUtils.toLong(taskRow.getString(exIndex));
-
-        IsCondition wh = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId);
-
-        response = registerTaskVisit(taskId, currentUser, now);
-
-        if (!response.hasErrors() && !qs.sqlExists(TBL_TASK_USERS, SqlUtils.and(wh,
-            SqlUtils.equals(TBL_TASK_USERS, COL_USER, newUser)))) {
-          response = createTaskUser(taskId, newUser, null);
-        }
-
-        if (!response.hasErrors()) {
-          response = registerTaskEvent(taskId, currentUser, event, reqInfo,
-              BeeUtils.join(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)), now);
-          if (response.hasResponse(Long.class)) {
-            eventId = (Long) response.getResponse();
-          }
-        }
-
-        if (!response.hasErrors()) {
-          response = commitTaskData(taskData, taskUsers, false, updatedRelations, eventId);
-        }
-        break;
-
       case EXTEND:
-        int finIndex = taskData.getColumnIndex(COL_FINISH_TIME);
-
-        String oldTerm = taskRow.getShadowString(finIndex);
-        String newTerm = taskRow.getString(finIndex);
-
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo,
-            BeeUtils.join(" -> ", formatDateTime(oldTerm), formatDateTime(newTerm)), now);
-        if (response.hasResponse(Long.class)) {
-          eventId = (Long) response.getResponse();
-        }
-
-        if (!response.hasErrors()) {
-          response = registerTaskVisit(taskId, currentUser, now);
-        }
-
-        if (!response.hasErrors()) {
-          response = commitTaskData(taskData, taskUsers, true, updatedRelations, eventId);
-        }
-        break;
-
       case EDIT:
       case COMMENT:
       case SUSPEND:
@@ -500,7 +464,8 @@ public class CrmModuleBean implements BeeModule {
       case APPROVE:
       case RENEW:
       case ACTIVATE:
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo, null, now);
+
+        response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, now);
         if (response.hasResponse(Long.class)) {
           eventId = (Long) response.getResponse();
         }
@@ -509,7 +474,7 @@ public class CrmModuleBean implements BeeModule {
         }
 
         if (!response.hasErrors()) {
-          response = commitTaskData(taskData, taskUsers, true, updatedRelations, eventId);
+          response = commitTaskData(taskData, oldUsers, true, updatedRelations, eventId);
         }
         break;
     }
@@ -518,11 +483,6 @@ public class CrmModuleBean implements BeeModule {
       ctx.setRollbackOnly();
     }
     return response;
-  }
-
-  private String formatDateTime(String serialized) {
-    DateTime dateTime = TimeUtils.toDateTimeOrNull(serialized);
-    return (dateTime == null) ? BeeConst.STRING_EMPTY : dateTime.toCompactString();
   }
 
   private ResponseObject getTaskData(long taskId, Long eventId) {
@@ -604,10 +564,10 @@ public class CrmModuleBean implements BeeModule {
       long id;
 
       if (BeeUtils.same(t1, TBL_TASKS) && r1 == taskId) {
-        key = t2;
+        key = CrmUtils.translateRelationToTaskProperty(t2);
         id = r2;
       } else {
-        key = t1;
+        key = CrmUtils.translateRelationToTaskProperty(t1);
         id = r1;
       }
 
@@ -706,21 +666,7 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(where));
   }
 
-  private String translateTaskPropertyNameToTableName(String propertyName) {
-    if (BeeUtils.same(propertyName, PROP_COMPANIES)) {
-      return CommonsConstants.TBL_COMPANIES;
-    } else if (BeeUtils.same(propertyName, PROP_PERSONS)) {
-      return CommonsConstants.TBL_PERSONS;
-    } else if (BeeUtils.same(propertyName, PROP_APPOINTMENTS)) {
-      return CalendarConstants.TBL_APPOINTMENTS;
-    } else if (BeeUtils.same(propertyName, PROP_TASKS)) {
-      return TBL_TASKS;
-    } else {
-      return null;
-    }
-  }
-
-  private void updateTaskRelation(long taskId, String relation, Collection<Long> oldValues,
+  private void updateTaskRelation(long taskId, String property, Collection<Long> oldValues,
       Collection<Long> newValues) {
     if (BeeUtils.sameElements(oldValues, newValues)) {
       return;
@@ -732,8 +678,10 @@ public class CrmModuleBean implements BeeModule {
     List<Long> delete = Lists.newArrayList(oldValues);
     delete.removeAll(newValues);
 
+    String relation = CrmUtils.translateTaskPropertyToRelation(property);
+    
     for (Long value : insert) {
-      logger.warning("add task relation", taskId, relation, value);
+      logger.debug("add task relation", taskId, relation, value);
 
       qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONS)
           .addConstant(CommonsConstants.COL_TABLE_1, TBL_TASKS)
@@ -743,7 +691,7 @@ public class CrmModuleBean implements BeeModule {
     }
 
     for (Long value : delete) {
-      logger.warning("delete task relation", taskId, relation, value);
+      logger.debug("delete task relation", taskId, relation, value);
 
       IsCondition condition = SqlUtils.or(
           SqlUtils.equals(CommonsConstants.TBL_RELATIONS, CommonsConstants.COL_TABLE_1, TBL_TASKS,
@@ -771,29 +719,20 @@ public class CrmModuleBean implements BeeModule {
       updateTaskRelation(taskId, relation, oldValues, newValues);
     }
   }
-
+  
   private void updateTaskUsers(long taskId, Collection<Long> oldUsers, Collection<Long> newUsers) {
-    logger.warning("update task users", taskId, oldUsers, newUsers);
-    if (BeeUtils.sameElements(oldUsers, newUsers)) {
-      return;
-    }
-
     List<Long> insert = Lists.newArrayList(newUsers);
     insert.removeAll(oldUsers);
 
     List<Long> delete = Lists.newArrayList(oldUsers);
     delete.removeAll(newUsers);
 
-    logger.warning("ins", insert, "del", delete);
-
     for (Long user : insert) {
-      logger.debug("add task user", taskId, user);
       createTaskUser(taskId, user, null);
     }
 
     String tblName = TBL_TASK_USERS;
     for (Long user : delete) {
-      logger.debug("delete task user", taskId, user);
       IsCondition condition = SqlUtils.equals(tblName, COL_TASK, taskId, COL_USER, user);
       qs.updateData(new SqlDelete(tblName).setWhere(condition));
     }

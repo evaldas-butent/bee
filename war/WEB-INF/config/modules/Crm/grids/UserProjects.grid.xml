@@ -33,7 +33,7 @@
   <footer borderWidth="0" />
 
   <columns>
-    <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+    <CalcColumn name="Mode" type="string" caption="-" cellType="html"
       horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />
     <IdColumn name="Id" caption="ID" />
     <RelColumn name="ProjectType" />

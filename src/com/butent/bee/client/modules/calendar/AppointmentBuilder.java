@@ -38,7 +38,6 @@ import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
@@ -72,6 +71,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -306,8 +306,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
 
     if (typeRow != null) {
-      RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_APPOINTMENT_TYPE, row,
-          VIEW_APPOINTMENT_TYPES, typeRow, true);
+      RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_APPOINTMENT_TYPE, row,
+          Data.getDataInfo(VIEW_APPOINTMENT_TYPES), typeRow, true);
     }
     if (start != null) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);

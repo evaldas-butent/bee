@@ -12,8 +12,8 @@
     <DataColumn name="ExpectedDuration" />
     <DataColumn name="Description" />
     <RelColumn name="Company" />
-    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-      choiceColumns="CompanyName FirstName LastName" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"
+      choiceColumns="FirstName LastName CompanyName" />
     <RelColumn name="Reminder" newRowEnabled="false" />
   </columns>
 </Grid>

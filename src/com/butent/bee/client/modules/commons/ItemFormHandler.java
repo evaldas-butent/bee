@@ -38,7 +38,7 @@ class ItemFormHandler extends AbstractFormInterceptor {
   }
 
   @Override
-  public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
     Assert.notNull(event);
 
     String price = null;
@@ -57,7 +57,7 @@ class ItemFormHandler extends AbstractFormInterceptor {
 
     if (!BeeUtils.isEmpty(price) && BeeUtils.isEmpty(currency)) {
       event.getCallback().onFailure("Currency required");
-      return false;
+      event.consume();
     }
 
     BeeRowSet rs = new BeeRowSet("Items", event.getColumns());
@@ -88,7 +88,8 @@ class ItemFormHandler extends AbstractFormInterceptor {
         }
       }
     });
-    return false;
+    
+    event.consume();
   }
 
   @Override

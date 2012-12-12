@@ -8,6 +8,7 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.ModalForm;
@@ -27,6 +28,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
@@ -171,7 +173,8 @@ public class RowFactory {
     }
 
     return DataUtils.setDefaults(row, colNames, dataInfo.getColumns(), Global.getDefaults())
-        + RelationUtils.setDefaults(dataInfo, row, colNames, dataInfo.getColumns());
+        + RelationUtils.setDefaults(dataInfo, row, colNames, dataInfo.getColumns(),
+            BeeKeeper.getUser().getUserData());
   }
 
   private static FormDescription createFormDescription(String formName, DataInfo dataInfo,

@@ -105,8 +105,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public boolean onReadyForInsert(ReadyForInsertEvent event) {
-    return true;
+  public void onReadyForInsert(ReadyForInsertEvent event) {
   }
 
   @Override

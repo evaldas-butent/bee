@@ -68,9 +68,16 @@ public class CrmKeeper {
     
     DocumentHandler.register();
     
-    Global.registerCaptions(CrmConstants.TaskPriority.class);
-    Global.registerCaptions(CrmConstants.TaskEvent.class);
-    Global.registerCaptions(CrmConstants.TaskStatus.class);
+    String key = Global.registerCaptions(CrmConstants.TaskPriority.class);
+    Data.registerCaptionKey(VIEW_TASKS, COL_PRIORITY, key);
+    Data.registerCaptionKey(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
+    Data.registerCaptionKey(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
+    
+    key = Global.registerCaptions(CrmConstants.TaskEvent.class);
+    Data.registerCaptionKey(VIEW_TASK_EVENTS, COL_EVENT, key);
+    
+    key = Global.registerCaptions(CrmConstants.TaskStatus.class);
+    Data.registerCaptionKey(VIEW_TASKS, COL_STATUS, key);
 
     Global.registerCaptions(CrmConstants.ProjectEvent.class);
     

@@ -72,7 +72,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   }
   
   @Override
-  public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
+  public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
     String oldCateg = event.getOldRow().getProperty(CommonsConstants.PROP_CATEGORIES);
     String newCateg = event.getNewRow().getProperty(CommonsConstants.PROP_CATEGORIES);
     
@@ -114,8 +114,6 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
         });
       }
     }
-    
-    return super.onSaveChanges(gridView, event);
   }
 
   @Override

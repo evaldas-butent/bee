@@ -6,19 +6,46 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
+public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> implements Consumable {
 
   public interface Handler extends EventHandler {
     void onSaveChanges(SaveChangesEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
+
+  public static SaveChangesEvent create(IsRow oldRow, IsRow newRow, List<BeeColumn> dataColumns,
+      RowCallback callback) {
+    List<BeeColumn> columns = Lists.newArrayList();
+    List<String> oldValues = Lists.newArrayList();
+    List<String> newValues = Lists.newArrayList();
+
+    for (int i = 0; i < dataColumns.size(); i++) {
+      BeeColumn dataColumn = dataColumns.get(i);
+      if (!dataColumn.isWritable()) {
+        continue;
+      }
+
+      String oldValue = oldRow.getString(i);
+      String newValue = newRow.getString(i);
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+        columns.add(dataColumn);
+        oldValues.add(oldValue);
+        newValues.add(newValue);
+      }
+    }
+
+    return new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues, callback);
+  }
 
   public static Type<Handler> getType() {
     return TYPE;
@@ -57,6 +84,11 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   }
 
   @Override
+  public void consume() {
+    setConsumed(true);
+  }
+  
+  @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
@@ -93,10 +125,16 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
     return newRow.getVersion();
   }
 
+  @Override
   public boolean isConsumed() {
     return consumed;
   }
 
+  public boolean isEmpty() {
+    return columns.isEmpty();
+  }
+  
+  @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
   }

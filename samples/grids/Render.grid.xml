@@ -38,7 +38,7 @@
       <renderer type="join" separator=", " />
     </DataColumn>
 
-    <DataColumn name="Nnn" source="Numeric" cell="html" width="100" >
+    <DataColumn name="Nnn" source="Numeric" cellType="html" width="100" >
       <render>
         <ui:function>
           if (row.Numeric &gt; 0 &amp;&amp; row.Numeric &lt; 100) {
@@ -64,7 +64,7 @@
 
     <DataColumn name="Sss" source="String" />
 
-    <DataColumn name="Map" source="String" cell="html">
+    <DataColumn name="Map" source="String" cellType="html">
       <renderer type="map" separator=";" />
       <editor type="picker" height="116">
         <ui:item>123 www ; 123</ui:item>

@@ -10,11 +10,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -91,6 +91,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -129,6 +130,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     EditEndEvent.Handler, ActionEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
+    @Override
+    public void onCancel() {
+      closeEditForm();
+    }
+
     @Override
     public void onFailure(String... reason) {
       getEditForm().notifySevere(reason);
@@ -999,7 +1005,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         });
 
       } else {
-        boolean changed = saveChanges(form, oldRow, newRow, new RowCallback() {
+        saveChanges(form, oldRow, newRow, new RowCallback() {
+          @Override
+          public void onCancel() {
+            finishNewRow(null);
+          }
+
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
@@ -1010,17 +1021,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             finishNewRow(null);
           }
         });
-
-        if (!changed) {
-          finishNewRow(null);
-        }
       }
 
     } else {
-      boolean changed = saveChanges(form, oldRow, newRow, getSaveChangesCallback());
-      if (!changed) {
-        closeEditForm();
-      }
+      saveChanges(form, oldRow, newRow, getSaveChangesCallback());
     }
   }
 
@@ -1412,7 +1416,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (!getNewRowDefaults().isEmpty()) {
       DataUtils.setDefaults(newRow, getNewRowDefaults(), getDataColumns(), Global.getDefaults());
-      RelationUtils.setDefaults(getViewName(), newRow, getNewRowDefaults(), getDataColumns());
+      RelationUtils.setDefaults(getDataInfo(), newRow, getNewRowDefaults(), getDataColumns(),
+          BeeKeeper.getUser().getUserData());
     }
 
     for (EditableColumn editableColumn : getEditableColumns().values()) {
@@ -1429,7 +1434,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         newRow.setValue(index, carry);
 
         if (editableColumn.hasRelation() && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
-          RelationUtils.setRelatedValues(getViewName(), editableColumn.getColumnId(),
+          RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
               newRow, oldRow);
         }
       }
@@ -1994,8 +1999,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         @Override
         public void onSuccess(BeeRow result) {
-          int updated = RelationUtils.updateRow(getViewName(), editableColumn.getColumnId(), row,
-              editableColumn.getRelation().getViewName(), result, false);
+          int updated = RelationUtils.updateRow(getDataInfo(), editableColumn.getColumnId(), row,
+              Data.getDataInfo(editableColumn.getRelation().getViewName()), result, false);
           if (updated > 0) {
             getGrid().refreshCellContent(row.getId(), editableColumn.getColumnId());
           }
@@ -2041,56 +2046,46 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
 
-    if (form.getFormInterceptor() != null && !form.getFormInterceptor().onReadyForInsert(event)) {
-      return;
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().onReadyForInsert(event);
+      if (event.isConsumed()) {
+        return;
+      }
     }
-    if (getGridInterceptor() != null && !getGridInterceptor().onReadyForInsert(this, event)) {
-      return;
+
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onReadyForInsert(this, event);
+      if (event.isConsumed()) {
+        return;
+      }
     }
 
     fireEvent(event);
   }
 
-  private boolean saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
-    List<BeeColumn> columns = Lists.newArrayList();
-    List<String> oldValues = Lists.newArrayList();
-    List<String> newValues = Lists.newArrayList();
-
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      BeeColumn dataColumn = getDataColumns().get(i);
-      if (!dataColumn.isWritable()) {
-        continue;
-      }
-
-      String oldValue = oldRow.getString(i);
-      String newValue = newRow.getString(i);
-
-      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-        columns.add(dataColumn);
-        oldValues.add(oldValue);
-        newValues.add(newValue);
-      }
-    }
-
-    SaveChangesEvent event = new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues,
-        callback);
+  private void saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
+    SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), callback);
 
     if (form != null) {
       form.onSaveChanges(event);
       if (event.isConsumed()) {
-        return false;
+        callback.onCancel();
+        return;
       }
     }
     
-    if (getGridInterceptor() != null && !getGridInterceptor().onSaveChanges(this, event)) {
-      return false;
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onSaveChanges(this, event);
+      if (event.isConsumed()) {
+        callback.onCancel();
+        return;
+      }
     }
 
-    if (columns.isEmpty()) {
-      return false;
+    if (event.isEmpty()) {
+      callback.onCancel();
     } else {
       fireEvent(event);
-      return true;
     }
   }
 
@@ -2272,9 +2267,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     ReadyForUpdateEvent event =
         new ReadyForUpdateEvent(rowValue, dataColumn, oldValue, newValue, rowMode, callback);
 
-    if (getGridInterceptor() != null && !getGridInterceptor().onReadyForUpdate(this, event)) {
-      return;
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onReadyForUpdate(this, event);
+      if (event.isConsumed()) {
+        return;
+      }
     }
+    
     fireEvent(event);
   }
 
@@ -2289,7 +2288,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       message = getEditMessage().evaluate();
     }
     if (getEditShowId() && row != null) {
-      message = BeeUtils.joinWords(message, BeeUtils.bracket(BeeUtils.toString(row.getId())));
+      message = BeeUtils.joinWords(message, BeeUtils.bracket(row.getId()));
     }
 
     presenter.setMessage(message);

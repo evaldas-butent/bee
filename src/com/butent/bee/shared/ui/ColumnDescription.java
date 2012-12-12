@@ -71,7 +71,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE,
-    DYN_STYLES, CELL_TYPE, UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
+    DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -141,6 +141,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
   private CellType cellType = null;
+  private Boolean cellResizable = null;
+
   private RefreshType updateMode = null;
   private String elementType = null;
 
@@ -288,6 +290,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case CELL_TYPE:
           setCellType(CellType.getByCode(value));
           break;
+        case CELL_RESIZABLE:
+          setCellResizable(BeeUtils.toBooleanOrNull(value));
+          break;
         case UPDATE_MODE:
           setUpdateMode(RefreshType.getByCode(value));
           break;
@@ -338,6 +343,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Calculation getCarry() {
     return carry;
+  }
+
+  public Boolean getCellResizable() {
+    return cellResizable;
   }
 
   public CellType getCellType() {
@@ -419,6 +428,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Filter Options", getFilterOptions(),
         "Sort By", getSortBy(),
         "Cell Type", getCellType(),
+        "Cell Resizable", getCellResizable(),
         "Update Mode", getUpdateMode(),
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
@@ -708,6 +718,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case CELL_TYPE:
           arr[i++] = (getCellType() == null) ? null : getCellType().getCode();
           break;
+        case CELL_RESIZABLE:
+          arr[i++] = getCellResizable();
+          break;
         case UPDATE_MODE:
           arr[i++] = (getUpdateMode() == null) ? null : getUpdateMode().getCode();
           break;
@@ -754,6 +767,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setCarry(Calculation carry) {
     this.carry = carry;
+  }
+
+  public void setCellResizable(Boolean cellResizable) {
+    this.cellResizable = cellResizable;
   }
 
   public void setCellType(CellType cellType) {

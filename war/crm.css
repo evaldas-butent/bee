@@ -16,7 +16,7 @@
   font-weight: bolder;
 }
 
-.bee-crm-taskEvent-Comment {
+.bee-crm-taskEvent-EventNote, .bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
 }
 
@@ -104,3 +104,31 @@
   font-weight: bold;
 }
 
+.bee-crm-SlackLate-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-image: -webkit-linear-gradient(top, #DD4B39, #D14836);
+}
+.bee-crm-SlackLate-label {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  color: red;
+  background-color: white;
+}
+.bee-crm-SlackScheduled-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-image: -webkit-linear-gradient(top, #4D90FE, #4787ED);  
+}
+.bee-crm-SlackScheduled-label {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  color: blue;
+  background-color: white;
+}

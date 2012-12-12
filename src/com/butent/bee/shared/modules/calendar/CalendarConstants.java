@@ -161,7 +161,6 @@ public class CalendarConstants {
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String TBL_ATTENDEES = "Attendees";
-  public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_REPORT_OPTIONS = "ReportOptions";
 
@@ -187,8 +186,6 @@ public class CalendarConstants {
   public static final String VIEW_APPOINTMENT_STYLES = "AppointmentStyles";
   public static final String VIEW_THEMES = "Themes";
   public static final String VIEW_THEME_COLORS = "ThemeColors";
-
-  public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
   public static final String VIEW_CAL_APPOINTMENT_TYPES = "CalAppointmentTypes";
   public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
@@ -254,10 +251,7 @@ public class CalendarConstants {
   public static final String COL_MINUTES = "Minutes";
   public static final String COL_SCHEDULED = "Scheduled";
 
-  public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_MESSAGE = "Message";
-  public static final String COL_TEMPLATE_CAPTION = "Caption";
-  public static final String COL_TEMPLATE = "Template";
   public static final String COL_SENT = "Sent";
   public static final String COL_ERROR = "Error";
   public static final String COL_RECIPIENT = "Recipient";

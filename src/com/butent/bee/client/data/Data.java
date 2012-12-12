@@ -1,10 +1,14 @@
 package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -15,6 +19,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +29,8 @@ public class Data {
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 
   private static final ColumnMapper COLUMN_MAPPER = new ColumnMapper(DATA_INFO_PROVIDER);
+  
+  private static final Table<String, String, String> CAPTION_KEYS = HashBasedTable.create(); 
   
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
   
@@ -44,10 +51,14 @@ public class Data {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
 
+  public static String getCaptionKey(String viewName, String columnid) {
+    return CAPTION_KEYS.get(viewName, columnid);
+  }
+  
   public static BeeColumn getColumn(String viewName, String colName) {
     return getDataInfo(viewName).getColumn(colName);
   }
-  
+
   public static int getColumnIndex(String viewName, String colName) {
     return COLUMN_MAPPER.getIndex(viewName, colName);
   }
@@ -63,7 +74,7 @@ public class Data {
   public static List<BeeColumn> getColumns(String viewName) {
     return getDataInfo(viewName).getColumns();
   }
-
+  
   public static List<BeeColumn> getColumns(String viewName, List<String> colNames) {
     List<BeeColumn> result = Lists.newArrayList();
     DataInfo dataInfo = getDataInfo(viewName);
@@ -82,11 +93,11 @@ public class Data {
   public static ValueType getColumnType(String viewName, String colName) {
     return getDataInfo(viewName).getColumnType(colName);
   }
-  
+
   public static DataInfo getDataInfo(String viewName) {
     return getDataInfo(viewName, true);
   }
-
+  
   public static DataInfo getDataInfo(String viewName, boolean warn) {
     return DATA_INFO_PROVIDER.getDataInfo(viewName, warn);
   }
@@ -94,7 +105,7 @@ public class Data {
   public static DataInfoProvider getDataInfoProvider() {
     return DATA_INFO_PROVIDER;
   }
-  
+
   public static JustDate getDate(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDate(viewName, row, colName);
   }
@@ -102,27 +113,36 @@ public class Data {
   public static DateTime getDateTime(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDateTime(viewName, row, colName);
   }
-
+  
   public static BigDecimal getDecimal(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDecimal(viewName, row, colName);
   }
-  
+
   public static Double getDouble(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDouble(viewName, row, colName);
   }
-
+  
   public static String getIdColumn(String viewName) {
     return getDataInfo(viewName).getIdColumn();
   }
-  
+
   public static Integer getInteger(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getInteger(viewName, row, colName);
+  }
+  
+  public static String getLocalizedCaption(String viewName) {
+    String caption = getViewCaption(viewName);
+    return BeeUtils.notEmpty(LocaleUtils.maybeLocalize(caption), viewName);
   }
 
   public static Long getLong(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getLong(viewName, row, colName);
   }
 
+  public static String getRegisteredCaption(String viewName, String columnid, int index) {
+    return Global.getCaption(getCaptionKey(viewName, columnid), index);
+  }
+  
   public static String getString(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getString(viewName, row, colName);
   }
@@ -132,6 +152,10 @@ public class Data {
     return (dataInfo == null) ? null : dataInfo.getCaption(); 
   }
   
+  public static boolean hasCaptionKey(String viewName, String columnid) {
+    return CAPTION_KEYS.contains(viewName, columnid);
+  }
+  
   public static void init(Callback<Integer> callback) {
     DATA_INFO_PROVIDER.load(callback);
 
@@ -139,9 +163,13 @@ public class Data {
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);
   }
-
+  
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
+  }
+  
+  public static void registerCaptionKey(String viewName, String columnid, String captionKey) {
+    CAPTION_KEYS.put(viewName, columnid, captionKey);
   }
   
   public static void setValue(String viewName, IsRow row, String colName, BigDecimal value) {
@@ -151,7 +179,7 @@ public class Data {
   public static void setValue(String viewName, IsRow row, String colName, Boolean value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }
-  
+
   public static void setValue(String viewName, IsRow row, String colName, DateTime value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }
@@ -163,7 +191,7 @@ public class Data {
   public static void setValue(String viewName, IsRow row, String colName, Integer value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }
-  
+
   public static void setValue(String viewName, IsRow row, String colName, JustDate value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }
@@ -171,7 +199,7 @@ public class Data {
   public static void setValue(String viewName, IsRow row, String colName, Long value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }
-  
+
   public static void setValue(String viewName, IsRow row, String colName, String value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
   }

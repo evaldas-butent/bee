@@ -175,7 +175,7 @@ body, select {
   display: inline-block;
   margin-left: 5%;
   height: 25px;
-  color: #6D6D6D;
+  color: #4d4d4d;
   font: 13px/25px Arial;
   background-color: #f2f2f2;
   padding: 0 10px;
@@ -276,7 +276,7 @@ body, select {
 .bee-MenuRoot-flow .bee-MenuItem-label {
   display: inline-block;
   margin: 2px;
-  color: #6D6D6D;
+  color: #4d4d4d;
   font: 13px/21px Arial;
 }
 
@@ -601,7 +601,7 @@ body, select {
 .bee-CellGridBody {
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #6D6D6D;
+  color: #4d4d4d;
 }
 
 .bee-CellGridFooter {
@@ -633,7 +633,6 @@ body, select {
   background-color: #e0ffe0 !important;
   outline: goldenrod solid 2px !important;
   outline-offset: -1px;
-  resize: both;
 }
 
 .bee-CellGridResizedCell {
@@ -1214,7 +1213,7 @@ body, select {
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
-  color: #6d6d6d;
+  color: #4d4d4d;
   font: 13px/25px Arial;
   background-color: white;
   border: 1px solid #e4e4e4;
@@ -1239,7 +1238,7 @@ body, select {
 
 .bee-StackHeader {
   cursor: pointer;
-  color: #6d6d6d;
+  color: #4d4d4d;
   background-color: white;
   font: 13px Arial;
 }
@@ -1288,7 +1287,7 @@ body, select {
 
 .bee-ChoiceGroup-item {
   height: 25px;
-  color: #6D6D6D;
+  color: #4d4d4d;
   font: 13px/25px Arial;
   background-color: #f2f2f2;
   padding: 0 10px;
@@ -1511,7 +1510,7 @@ body, select {
 .bee-Workspace-tab {
   display: inline-block;
   height: 25px;
-  color: #6D6D6D;
+  color: #4d4d4d;
   font: 13px/25px Arial;
   background-color: white;
   border: 1px solid #E4E4E4;
@@ -1961,6 +1960,10 @@ body, select {
 }
 .bee-FilterSupplier-List-commandFilter {
   float: right; 
+}
+
+.bee-resizable {
+  resize: both;
 }
 
 .bee-MainSearchOptionsContainer {

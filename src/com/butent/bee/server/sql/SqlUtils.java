@@ -253,7 +253,7 @@ public class SqlUtils {
       HasConditions andCondition = and(cond);
 
       for (int i = 0; i < Math.floor(len / 2); i++) {
-        Assert.state(other[i] instanceof String);
+        Assert.state(other[i * 2] instanceof String);
         andCondition.add(equals(source, (String) other[i * 2], other[i * 2 + 1]));
       }
       cond = andCondition;

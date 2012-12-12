@@ -4,6 +4,7 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
@@ -11,7 +12,8 @@ import com.butent.bee.shared.data.IsRow;
  * Remembers old and new values of the field being updated to make further validations with them.
  */
 
-public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
+public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> implements
+    Consumable {
 
   /**
    * Requires to have a method to handle read for update event.
@@ -34,8 +36,10 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
   private final String newValue;
 
   private final boolean rowMode;
-  
+
   private final RowCallback callback;
+
+  private boolean consumed = false;
 
   public ReadyForUpdateEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
       boolean rowMode, RowCallback callback) {
@@ -45,6 +49,11 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
     this.newValue = newValue;
     this.rowMode = rowMode;
     this.callback = callback;
+  }
+
+  @Override
+  public void consume() {
+    setConsumed(true);
   }
 
   @Override
@@ -72,8 +81,18 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
     return rowValue;
   }
 
+  @Override
+  public boolean isConsumed() {
+    return consumed;
+  }
+
   public boolean isRowMode() {
     return rowMode;
+  }
+
+  @Override
+  public void setConsumed(boolean consumed) {
+    this.consumed = consumed;
   }
 
   @Override

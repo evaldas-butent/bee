@@ -138,7 +138,7 @@
       </editor>
     </DataColumn>
 
-    <DataColumn name="Mmm" source="Memo" width="200" cell="html">
+    <DataColumn name="Mmm" source="Memo" width="200" cellType="html">
       <editor type="rich" />
     </DataColumn>
 

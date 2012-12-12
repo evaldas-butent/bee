@@ -4,13 +4,13 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="Tasks" viewName="Tasks" caption="Užduotys"
-  editShowId="true" cacheData="false" favorite="Summary"
+  cacheData="false" favorite="Summary"
   >
   <columns>
-    <CalcColumn name="Mode" type="string" cell="html" horizontalAlignment="center" width="20"
+    <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
       caption="-" options="greenSmall, yellowSmall" />
 
-    <PropColumn name="Star" type="integer" cell="html" horizontalAlignment="center" width="30"
+    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
        filterSupplier="star">
       <renderer type="star" />
     </PropColumn>
@@ -19,13 +19,13 @@
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
-    <DataColumn name="Description" />
 
     <RelColumn name="Company" editEnabled="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       sortBy="ContactLastName ContactFirstName" />
 
     <DataColumn name="Status" itemKey="TaskStatus" />
+    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
@@ -35,12 +35,50 @@
     <DataColumn name="StartTime" />
     <DataColumn name="FinishTime" />
 
-<!--     <PropColumn name="LastAccess" type="datetime" format="DATE_TIME_MEDIUM" /> -->
-<!--     <PropColumn name="LastPublish" type="datetime" format="DATE_TIME_MEDIUM" /> -->
+    <PropColumn name="LastAccess" type="datetime" format="DATE_TIME_MEDIUM" />
+    <PropColumn name="LastPublish" type="datetime" format="DATE_TIME_MEDIUM" />
   </columns>
 
-  <rowStyle>
-    <ui:inline>color: red;</ui:inline>
-    <ui:expression>row.Status &lt;= 1 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
-  </rowStyle>
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #e00;</ui:inline> -->
+<!--     <ui:expression>row.Status &lt;= 1 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression> -->
+<!--   </rowStyle> -->
+
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #00e;</ui:inline> -->
+<!--     <ui:function> -->
+<!--       if (row.Status &gt; 2 || !row.StartTime) { -->
+<!--         return false; -->
+<!--       } -->
+      
+<!--       var dt = new Date(); -->
+<!--       dt.setHours(0); -->
+<!--       dt.setMinutes(0); -->
+<!--       dt.setSeconds(0); -->
+<!--       dt.setMilliseconds(0); -->
+      
+<!--       dt.setDate(dt.getDate() + 1); -->
+<!--       return row.StartTime &gt;= dt;  -->
+<!--     </ui:function> -->
+<!--   </rowStyle> -->
+
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #cc0;</ui:inline> -->
+<!--     <ui:expression>row.Status == 0 || row.Status == 2</ui:expression> -->
+<!--   </rowStyle> -->
+
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #080;</ui:inline> -->
+<!--     <ui:expression>row.Status == 1</ui:expression> -->
+<!--   </rowStyle> -->
+
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #880;</ui:inline> -->
+<!--     <ui:expression>row.Status == 3</ui:expression> -->
+<!--   </rowStyle> -->
+
+<!--   <rowStyle> -->
+<!--     <ui:inline>color: #777;</ui:inline> -->
+<!--     <ui:expression>row.Status &gt; 3</ui:expression> -->
+<!--   </rowStyle> -->
 </Grid>

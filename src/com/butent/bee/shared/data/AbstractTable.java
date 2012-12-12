@@ -267,6 +267,11 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
+  public String getColumnLabel(String columnId) {
+    return getColumnLabel(getColumnIndex(columnId));
+  }
+
+  @Override
   public String getColumnPattern(int colIndex) {
     return getColumn(colIndex).getPattern();
   }

@@ -1,13 +1,8 @@
-package com.butent.bee.client.data;
+package com.butent.bee.shared.data;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.shared.Assert;
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.Defaults;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -15,36 +10,47 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class RelationUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
-  
-  public static int setDefaults(String viewName, IsRow row, Collection<String> colNames,
-      List<BeeColumn> columns) {
-    int result = 0;
-    if (BeeUtils.isEmpty(viewName) || BeeUtils.isEmpty(colNames)) {
+
+  public static List<String> getRenderColumns(DataInfo dataInfo, String colName) {
+    List<String> result = Lists.newArrayList();
+    if (dataInfo == null || BeeUtils.isEmpty(colName)) {
       return result;
     }
 
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-    if (dataInfo == null) {
-      return result;
+    Collection<ViewColumn> descendants = dataInfo.getDescendants(colName, false);
+
+    if (!descendants.isEmpty()) {
+      List<Integer> columnIndexes = Lists.newArrayList();
+      for (ViewColumn vc : descendants) {
+        if (BeeUtils.isEmpty(vc.getRelation())) {
+          int index = dataInfo.getColumnIndex(vc.getName());
+          if (!BeeConst.isUndef(index)) {
+            columnIndexes.add(index);
+          }
+        }
+      }
+
+      if (columnIndexes.size() > 1) {
+        Collections.sort(columnIndexes);
+      }
+      for (int index : columnIndexes) {
+        result.add(dataInfo.getColumnId(index));
+      }
     }
-    
-    return setDefaults(dataInfo, row, colNames, columns);
+    return result;
   }
 
   public static int setDefaults(DataInfo dataInfo, IsRow row, Collection<String> colNames,
-      List<BeeColumn> columns) {
+      List<BeeColumn> columns, UserData userData) {
     int result = 0;
     if (dataInfo == null || row == null || BeeUtils.isEmpty(colNames)
-        || BeeUtils.isEmpty(columns)) {
-      return result;
-    }
-
-    if (!BeeKeeper.getUser().isLoggedIn()) {
+        || BeeUtils.isEmpty(columns) || userData == null) {
       return result;
     }
 
@@ -69,27 +75,22 @@ public class RelationUtils {
         }
 
         if (BeeUtils.same(vc.getField(), UserData.FLD_FIRST_NAME)) {
-          row.setValue(index, BeeKeeper.getUser().getFirstName());
+          row.setValue(index, userData.getFirstName());
           result++;
         } else if (BeeUtils.same(vc.getField(), UserData.FLD_LAST_NAME)) {
-          row.setValue(index, BeeKeeper.getUser().getLastName());
+          row.setValue(index, userData.getLastName());
           result++;
         }
       }
     }
     return result;
   }
-  
-  public static int setRelatedValues(String viewName, String colName, IsRow targetRow,
+
+  public static int setRelatedValues(DataInfo dataInfo, String colName, IsRow targetRow,
       IsRow sourceRow) {
     int result = 0;
-    if (BeeUtils.isEmpty(viewName) || BeeUtils.isEmpty(colName) || targetRow == null
+    if (dataInfo == null || BeeUtils.isEmpty(colName) || targetRow == null
         || sourceRow == null) {
-      return result;
-    }
-
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-    if (dataInfo == null) {
       return result;
     }
 
@@ -108,30 +109,20 @@ public class RelationUtils {
     return result;
   }
 
-  public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
-      String sourceView, IsRow sourceRow, boolean updateRelationColumn) {
-    Assert.notEmpty(targetView);
-    Assert.notEmpty(targetColumn);
-    Assert.notNull(targetRow);
-    Assert.notEmpty(sourceView);
+  public static int updateRow(DataInfo targetInfo, String targetColumn, IsRow targetRow,
+      DataInfo sourceInfo, IsRow sourceRow, boolean updateRelationColumn) {
+    int result = BeeConst.UNDEF;
+    if (targetInfo == null || sourceInfo == null || BeeUtils.isEmpty(targetColumn)
+        || targetRow == null) {
+      return result;
+    }
 
     boolean clear = (sourceRow == null);
-
-    int result = BeeConst.UNDEF;
-
-    DataInfo targetInfo = Data.getDataInfo(targetView);
-    if (targetInfo == null) {
-      return result;
-    }
-    DataInfo sourceInfo = Data.getDataInfo(sourceView);
-    if (sourceInfo == null) {
-      return result;
-    }
 
     if (updateRelationColumn) {
       int index = targetInfo.getColumnIndex(targetColumn);
       if (BeeConst.isUndef(index)) {
-        logger.warning(targetView, targetColumn, "column not found");
+        logger.warning(targetInfo.getViewName(), targetColumn, "column not found");
       } else {
         if (clear) {
           targetRow.clearCell(index);
@@ -144,7 +135,7 @@ public class RelationUtils {
 
     Collection<ViewColumn> targetColumns = targetInfo.getDescendants(targetColumn, false);
     if (targetColumns.isEmpty()) {
-      logger.warning(targetView, targetColumn, "no descendants found");
+      logger.warning(targetInfo.getViewName(), targetColumn, "no descendants found");
       return result;
     }
 
@@ -152,7 +143,7 @@ public class RelationUtils {
     for (ViewColumn tc : targetColumns) {
       int targetIndex = targetInfo.getColumnIndex(tc.getName());
       if (BeeConst.isUndef(targetIndex)) {
-        logger.warning(targetView, tc.getName(), "column not found");
+        logger.warning(targetInfo.getViewName(), tc.getName(), "column not found");
         continue;
       }
 
@@ -165,7 +156,7 @@ public class RelationUtils {
       } else {
         int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
             tc.getLevel() - 1);
-        if (!BeeConst.isUndef(sourceIndex) && 
+        if (!BeeConst.isUndef(sourceIndex) &&
             !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
                 sourceRow.getString(sourceIndex))) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));

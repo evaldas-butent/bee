@@ -7,7 +7,7 @@
     <DataColumn name="Name" minWidth="100" />
     <DataColumn name="Code" />
     <DataColumn name="EUMember" caption="ES" />
-    <CalcColumn type="string" name="Flag" source="Code" cell="html" width="30" caption="-"
+    <CalcColumn type="string" name="Flag" source="Code" cellType="html" width="30" caption="-"
       sortable="false" hasFooter="false" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>

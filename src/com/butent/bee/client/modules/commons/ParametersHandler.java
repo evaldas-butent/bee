@@ -100,13 +100,13 @@ public class ParametersHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
+  public GridInterceptor.DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
     delete(row.getId());
-    return GridInterceptor.DELETE_CANCEL;
+    return GridInterceptor.DeleteMode.CANCEL;
   }
 
   @Override
-  public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+  public GridInterceptor.DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows) {
 
     int c = selectedRows.size();
@@ -118,7 +118,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
     }
     delete(ids);
 
-    return GridInterceptor.DELETE_CANCEL;
+    return GridInterceptor.DeleteMode.CANCEL;
   }
 
   @Override
@@ -132,7 +132,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+  public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
 
     Map<String, String> data = Maps.newHashMap();
 
@@ -154,27 +154,33 @@ public class ParametersHandler extends AbstractGridInterceptor {
           data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)),
           event.getCallback());
     }
-    return false;
+    
+    event.consume();
   }
 
   @Override
-  public boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
-    return onSaveChanges(gridView, SaveChangesEvent.of(event));
+  public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+    SaveChangesEvent saveChangesEvent = SaveChangesEvent.of(event);
+    onSaveChanges(gridView, saveChangesEvent);
+    
+    event.setConsumed(saveChangesEvent.isConsumed());
   }
 
   @Override
-  public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
-    if (event.getColumns().isEmpty()) {
-      return false;
+  public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
+    if (event.isEmpty()) {
+      return;
     }
 
     String prmName = gridView.getActiveRow().getString(id(NAME));
 
     if (event.getColumns().size() == 1 
         && BeeUtils.same(event.getColumns().get(0).getId(), USER_VALUE)) {
-      return change(gridView, event.getRowId(), prmName, event.getNewValues().get(0),
-          event.getCallback());
+      change(gridView, event.getRowId(), prmName, event.getNewValues().get(0), event.getCallback());
+      event.consume();
+      return;
     }
+
     BeeParameter prm = params.get(prmName);
 
     Map<String, String> data = Maps.newHashMap();
@@ -196,7 +202,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
     }
 
     update(gridView, event.getRowId(), prm, event.getCallback());
-    return false;
+    event.consume();
   }
 
   @Override
@@ -214,7 +220,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
     return true;
   }
 
-  private boolean change(final GridView gridView, final long id, final String name,
+  private void change(final GridView gridView, final long id, final String name,
       final String value, final RowCallback callback) {
 
     ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_SET_PARAMETER);
@@ -263,7 +269,6 @@ public class ParametersHandler extends AbstractGridInterceptor {
         }
       }
     });
-    return false;
   }
 
   private void delete(Long... ids) {

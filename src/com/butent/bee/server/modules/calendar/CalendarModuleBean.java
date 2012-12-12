@@ -171,13 +171,14 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
             COL_HOURS, COL_MINUTES, COL_SCHEDULED)
-        .addField(TBL_REMINDER_TYPES, COL_HOURS, "defHours")
-        .addField(TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
+        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_HOURS, "defHours")
+        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(TBL_REMINDER_TYPES,
-            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
+        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
+            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+                COL_REMINDER_TYPE))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
             SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
@@ -304,7 +305,7 @@ public class CalendarModuleBean implements BeeModule {
       @Subscribe
       public void updateTimers(ViewModifyEvent event) {
         if (event.isAfter()) {
-          if (BeeUtils.same(event.getViewName(), TBL_REMINDER_TYPES)) {
+          if (BeeUtils.same(event.getViewName(), CommonsConstants.TBL_REMINDER_TYPES)) {
             if (event instanceof ViewDeleteEvent
                 || event instanceof ViewUpdateEvent
                 && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
@@ -1118,13 +1119,15 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
-        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE_CAPTION, COL_TEMPLATE)
+        .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_METHOD,
+            CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION, CommonsConstants.COL_REMINDER_TEMPLATE)
         .addField(personContacts, CommonsConstants.COL_EMAIL, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(TBL_REMINDER_TYPES,
-            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
+        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
+            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+                COL_REMINDER_TYPE))
         .addFromLeft(CommonsConstants.VIEW_COMPANIES,
             sys.joinTables(CommonsConstants.VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
         .addFromLeft(CommonsConstants.TBL_CONTACTS, sys.joinTables(CommonsConstants.TBL_CONTACTS,
@@ -1144,8 +1147,9 @@ public class CalendarModuleBean implements BeeModule {
     if (data != null) {
       notificationTimers.remove(data.getLong(COL_APPOINTMENT), timer);
       String error = null;
-      String subject = data.getValue(COL_TEMPLATE_CAPTION);
-      String template = BeeUtils.notEmpty(data.getValue(COL_MESSAGE), data.getValue(COL_TEMPLATE));
+      String subject = data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION);
+      String template = BeeUtils.notEmpty(data.getValue(COL_MESSAGE),
+          data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE));
 
       if (BeeUtils.isEmpty(subject)) {
         error = "No reminder caption specified";
@@ -1155,7 +1159,7 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (BeeUtils.isEmpty(error)) {
         ReminderMethod method = NameUtils.getEnumByIndex(ReminderMethod.class,
-            data.getInt(COL_REMINDER_METHOD));
+            data.getInt(CommonsConstants.COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
           Long sender = prm.getLong(MailConstants.MAIL_MODULE, "DefaultAccount");

@@ -12,6 +12,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
@@ -26,8 +27,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -665,39 +664,14 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   private List<String> deriveRenderColumns(DataInfo targetInfo, String original, String resolved) {
-    List<String> result = Lists.newArrayList();
-
     if (targetInfo.containsColumn(original)) {
       ViewColumn vc = targetInfo.getViewColumn(original);
       if (vc != null && vc.getLevel() > 0) {
-        result.add(original);
-        return result;
+        return Lists.newArrayList(original);
       }
     }
-
-    if (!BeeUtils.isEmpty(resolved)) {
-      Collection<ViewColumn> descendants = targetInfo.getDescendants(resolved, false);
-
-      if (!descendants.isEmpty()) {
-        List<Integer> columnIndexes = Lists.newArrayList();
-        for (ViewColumn vc : descendants) {
-          if (BeeUtils.isEmpty(vc.getRelation())) {
-            int index = targetInfo.getColumnIndex(vc.getName());
-            if (!BeeConst.isUndef(index)) {
-              columnIndexes.add(index);
-            }
-          }
-        }
-
-        if (columnIndexes.size() > 1) {
-          Collections.sort(columnIndexes);
-        }
-        for (int index : columnIndexes) {
-          result.add(targetInfo.getColumnId(index));
-        }
-      }
-    }
-    return result;
+    
+    return RelationUtils.getRenderColumns(targetInfo, resolved);
   }
 
   private String getAttribute(String name) {

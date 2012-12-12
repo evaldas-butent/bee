@@ -31,6 +31,8 @@ public class FormDescription implements HasViewName {
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
 
+  private static final String ATTR_SHOW_ROW_ID = "showRowId";
+  
   public static String getName(Element element) {
     Assert.notNull(element);
     return element.getAttribute(UiConstants.ATTR_NAME);
@@ -123,6 +125,10 @@ public class FormDescription implements HasViewName {
     return readOnly;
   }
 
+  public boolean showRowId() {
+    return BeeUtils.isTrue(XmlUtils.getAttributeBoolean(getFormElement(), ATTR_SHOW_ROW_ID));
+  }
+  
   Element getFormElement() {
     return formElement;
   }
