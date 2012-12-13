@@ -1,10 +1,13 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
+
+import java.util.List;
 
 public class RangeFilterSupplier extends AbstractFilterSupplier {
 
@@ -12,6 +15,11 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     super(viewName, column, options);
   }
 
+  @Override
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList();
+  }
+  
   @Override
   public String getDisplayHtml() {
     return null;

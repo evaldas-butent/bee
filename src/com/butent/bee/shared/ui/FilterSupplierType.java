@@ -10,7 +10,8 @@ public enum FilterSupplierType {
   ENUM("enum"),
   WORD("word"),
   FLAG("flag"),
-  STAR("star");
+  STAR("star"),
+  ID("id");
 
   public static FilterSupplierType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

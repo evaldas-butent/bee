@@ -1189,9 +1189,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   private void addClassToCell(MenuItem item, String className) {
-    Element element = DomUtils.getParentCell(item, true);
-    if (DomUtils.isTableCellElement(element)) {
-      element.addClassName(className);
+    TableCellElement cell = DomUtils.getParentCell(item, true);
+    if (cell != null) {
+      cell.addClassName(className);
     }
   }
 

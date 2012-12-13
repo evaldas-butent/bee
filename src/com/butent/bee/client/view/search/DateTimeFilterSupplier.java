@@ -1,0 +1,270 @@
+package com.butent.bee.client.view.search;
+
+import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.InputDate;
+import com.butent.bee.client.composite.InputTime;
+import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
+
+public class DateTimeFilterSupplier extends AbstractFilterSupplier {
+  
+  private static final String STYLE_PREFIX = DEFAULT_STYLE_PREFIX + "dateTime-"; 
+  
+  private static final String STYLE_LABEL = STYLE_PREFIX + "label"; 
+  private static final String STYLE_DATE = STYLE_PREFIX + "date"; 
+  private static final String STYLE_TIME = STYLE_PREFIX + "time"; 
+
+  private static final String STYLE_SUFFIX_CELL = "Cell"; 
+  
+  private static final int START_ROW = 0;
+  private static final int END_ROW = 1;
+
+  private static final int LABEL_COL = 0;
+  private static final int DATE_COL = 1;
+  private static final int TIME_COL = 2;
+  
+  private DateTime startValue = null;
+  private DateTime endValue = null;
+
+  public DateTimeFilterSupplier(String viewName, BeeColumn column, String options) {
+    super(viewName, column, options);
+  }
+
+  @Override
+  public String getDisplayHtml() {
+    if (getStartValue() == null && getEndValue() == null) {
+      return null;
+
+    } else if (getStartValue() == null) {
+      return "iki " + getEndValue().toCompactString();
+    
+    } else if (getEndValue() == null) {
+      return "nuo " + getStartValue().toCompactString();
+    
+    } else {
+      return BeeUtils.join(" - ",
+          getStartValue().toCompactString(), getEndValue().toCompactString());
+    }
+  }
+
+  @Override
+  public void onRequest(Element target,  NotificationListener notificationListener,
+      Callback<Boolean> callback) {
+          openDialog(target, createWidget(), callback);
+  }
+
+  @Override
+  public boolean reset() {
+    setStartValue(null);
+    setEndValue(null);
+    return super.reset();
+  }
+
+  @Override
+  protected void doClear() {
+    super.doClear();
+
+    HtmlTable display = getDisplayAsTable();
+    if (display == null) {
+      return;
+    }
+    
+    getInputDate(display, START_ROW).clearValue();
+    getInputTime(display, START_ROW).clearValue();
+
+    getInputDate(display, END_ROW).clearValue();
+    getInputTime(display, END_ROW).clearValue();
+    
+    setStartValue(null);
+    setEndValue(null);
+  }
+
+  @Override
+  protected void doCommit() {
+    DateTime start = getStart();
+    DateTime end = getEnd(start);
+
+    if (start != null && end != null && TimeUtils.isMeq(start, end)) {
+      List<String> messages = Lists.newArrayList("Neteisingas intervalas",
+          start.toString(), end.toString());
+      Global.showError(messages);
+      return;
+    }
+    
+    setStartValue(start);
+    setEndValue(end);
+    
+    if (start == null && end == null) {
+      update(null);
+      return;
+    }
+
+    CompoundFilter filter = Filter.and();
+    if (start != null) {
+      filter.add(ComparisonFilter.isMoreEqual(getColumnId(), new DateTimeValue(start)));
+    }
+    if (end != null) {
+      filter.add(ComparisonFilter.isLess(getColumnId(), new DateTimeValue(end)));
+    }
+    
+    update(filter);
+  }
+
+  @Override
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList(SupplierAction.CLEAR, SupplierAction.COMMIT);
+  }
+  
+  private Widget createWidget() {
+    HtmlTable display = createDisplay(false);
+    
+    Html labelFrom = new Html("Nuo");
+    labelFrom.addStyleName(STYLE_LABEL);
+    display.setWidget(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL + STYLE_SUFFIX_CELL);
+
+    InputDate dateFrom = new InputDate(ValueType.DATE);
+    dateFrom.addStyleName(STYLE_DATE);
+    display.setWidget(START_ROW, DATE_COL, dateFrom, STYLE_DATE + STYLE_SUFFIX_CELL);
+    
+    InputTime timeFrom = new InputTime(ValueType.TEXT);
+    timeFrom.addStyleName(STYLE_TIME);
+    display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
+
+    Html labelTo = new Html("Iki");
+    labelTo.addStyleName(STYLE_LABEL);
+    display.setWidget(END_ROW, LABEL_COL, labelTo, STYLE_LABEL + STYLE_SUFFIX_CELL);
+
+    InputDate dateTo = new InputDate(ValueType.DATE);
+    dateTo.addStyleName(STYLE_DATE);
+    display.setWidget(END_ROW, DATE_COL, dateTo, STYLE_DATE + STYLE_SUFFIX_CELL);
+    
+    InputTime timeTo = new InputTime(ValueType.TEXT);
+    timeTo.addStyleName(STYLE_TIME);
+    display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
+    
+    if (getStartValue() != null) {
+      getInputDate(display, START_ROW).setDate(getStartValue());
+      getInputTime(display, START_ROW).setDateTime(getStartValue());
+    }
+
+    if (getEndValue() != null) {
+      getInputDate(display, END_ROW).setDate(getEndValue());
+      getInputTime(display, END_ROW).setDateTime(getEndValue());
+    }
+    
+    Widget wrapper = wrapDisplay(display, false);
+    wrapper.addStyleName(STYLE_PREFIX + "container");
+    
+    return wrapper;
+  }
+
+  private DateTime getEnd(DateTime start) {
+    HtmlTable display = getDisplayAsTable();
+    if (display == null) {
+      return null;
+    }
+    
+    HasDateValue datePart = null;
+
+    Widget dateWidget = display.getWidget(END_ROW, DATE_COL);
+    if (dateWidget instanceof InputDate) {
+      datePart = ((InputDate) dateWidget).getDate();
+    }
+
+    DateTime timePart = null;
+
+    Widget timeWidget = display.getWidget(END_ROW, TIME_COL);
+    if (timeWidget instanceof InputTime) {
+      timePart = ((InputTime) timeWidget).getDateTime();
+    }
+    
+    if (datePart == null && timePart != null && start != null
+        && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
+      return TimeUtils.combine(start, timePart);
+
+    } else if (datePart == null) {
+      return null;
+    
+    } else {
+      return TimeUtils.combine(datePart, timePart);
+    }
+  }
+  
+  private DateTime getEndValue() {
+    return endValue;
+  }
+
+  private InputDate getInputDate(HtmlTable display, int row) {
+    Widget widget = display.getWidget(row, DATE_COL);
+    if (widget instanceof InputDate) {
+      return (InputDate) widget;
+    } else {
+      return null;
+    }
+  }
+
+  private InputTime getInputTime(HtmlTable display, int row) {
+    Widget widget = display.getWidget(row, TIME_COL);
+    if (widget instanceof InputTime) {
+      return (InputTime) widget;
+    } else {
+      return null;
+    }
+  }
+
+  private DateTime getStart() {
+    HtmlTable display = getDisplayAsTable();
+    if (display == null) {
+      return null;
+    }
+    
+    HasDateValue datePart = null;
+
+    Widget dateWidget = display.getWidget(START_ROW, DATE_COL);
+    if (dateWidget instanceof InputDate) {
+      datePart = ((InputDate) dateWidget).getDate();
+    }
+    if (datePart == null) {
+      return null;
+    }
+
+    DateTime timePart = null;
+
+    Widget timeWidget = display.getWidget(START_ROW, TIME_COL);
+    if (timeWidget instanceof InputTime) {
+      timePart = ((InputTime) timeWidget).getDateTime();
+    }
+
+    return TimeUtils.combine(datePart, timePart);
+  }
+
+  private DateTime getStartValue() {
+    return startValue;
+  }
+  
+  private void setEndValue(DateTime endValue) {
+    this.endValue = endValue;
+  }
+
+  private void setStartValue(DateTime startValue) {
+    this.startValue = startValue;
+  }
+}

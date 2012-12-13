@@ -2,6 +2,7 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
@@ -66,7 +67,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
 
     public void setColSpan(int row, int column, int colSpan) {
-      DomUtils.setColSpan(ensureElement(row, column), colSpan);
+      DomUtils.setColSpan(TableCellElement.as(ensureElement(row, column)), colSpan);
     }
 
     public void setHeight(int row, int column, double height, Unit unit) {

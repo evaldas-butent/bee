@@ -295,6 +295,11 @@ class TaskList {
     }
 
     @Override
+    protected List<SupplierAction> getActions() {
+      return Lists.newArrayList();
+    }
+    
+    @Override
     protected String getStylePrefix() {
       return "bee-crm-FilterSupplier-Slack-";
     }

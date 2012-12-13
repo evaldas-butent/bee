@@ -15,7 +15,6 @@ public class FilterSupplierFactory {
       String itemKey, Relation relation, String options) {
     
     Assert.notEmpty(viewName);
-    Assert.notNull(column);
     
     AbstractFilterSupplier supplier = null;
     
@@ -31,6 +30,10 @@ public class FilterSupplierFactory {
 
         case FLAG:
           supplier = new FlagFilterSupplier(viewName, column, options);
+          break;
+          
+        case ID:
+          supplier = new IdFilterSupplier(viewName, column, options);
           break;
         
         case LIST:
@@ -65,25 +68,24 @@ public class FilterSupplierFactory {
       }
     }
     
-    if (supplier == null) {
+    if (supplier == null && column != null) {
       switch (column.getType()) {
         case BOOLEAN:
           break;
 
         case DATE:
-          supplier = new ListFilterSupplier(viewName, column, renderColumns, orderColumns,
-              relation, options);
+          supplier = new ValueFilterSupplier(viewName, column, options);
           break;
         
         case DATETIME:
-          supplier = new RangeFilterSupplier(viewName, column, options);
+          supplier = new DateTimeFilterSupplier(viewName, column, options);
           break;
 
         case DECIMAL:
         case INTEGER:
         case LONG:
         case NUMBER:
-          supplier = new ComparisonFilterSupplier(viewName, column, options);
+          supplier = new ValueFilterSupplier(viewName, column, options);
           break;
 
         case TEXT:
@@ -91,8 +93,7 @@ public class FilterSupplierFactory {
           break;
 
         case TIMEOFDAY:
-          supplier = new ListFilterSupplier(viewName, column, renderColumns, orderColumns,
-              relation, options);
+          supplier = new ValueFilterSupplier(viewName, column, options);
           break;
       }
     }

@@ -819,12 +819,22 @@ public class DomUtils {
         + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_RIGHT);
   }
 
-  public static Element getParentCell(Element child, boolean incl) {
-    return getParentElement(child, TABLE_CELL_TAGS, incl);
+  public static TableCellElement getParentCell(Element child, boolean incl) {
+    Element parent = getParentElement(child, TABLE_CELL_TAGS, incl);
+    if (isTableCellElement(parent)) {
+      return TableCellElement.as(parent);
+    } else {
+      return null;
+    }
   }
 
-  public static Element getParentCell(UIObject obj, boolean incl) {
-    return getParentElement(obj, TABLE_CELL_TAGS, incl);
+  public static TableCellElement getParentCell(UIObject obj, boolean incl) {
+    Element parent = getParentElement(obj, TABLE_CELL_TAGS, incl);
+    if (isTableCellElement(parent)) {
+      return TableCellElement.as(parent);
+    } else {
+      return null;
+    }
   }
 
   public static int getParentClientHeight(Widget widget) {
@@ -1570,8 +1580,8 @@ public class DomUtils {
     input.setDefaultChecked(value);
   }
 
-  public static void setColSpan(Element elem, int span) {
-    Assert.isTrue(isTableCellElement(elem), "not a table cell element");
+  public static void setColSpan(TableCellElement elem, int span) {
+    Assert.notNull(elem, "not a table cell element");
     Assert.isPositive(span);
 
     TableCellElement.as(elem).setColSpan(span);

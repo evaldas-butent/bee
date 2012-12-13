@@ -2,18 +2,11 @@ package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.NotificationListener;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -24,6 +17,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -38,10 +32,6 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private SimpleRowSet data = null;
 
-  private final List<Integer> selected = Lists.newArrayList();
-
-  private String displayId = null;
-
   public ListFilterSupplier(String viewName, BeeColumn column, List<String> renderColumns,
       List<String> orderColumns, Relation relation, String options) {
     super(viewName, column, options);
@@ -54,11 +44,16 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       this.countIndex = 1;
 
     } else {
-      this.renderColumns.addAll(renderColumns);
+      if (BeeUtils.isEmpty(options)) {
+        this.renderColumns.addAll(renderColumns);
+      } else {
+        this.renderColumns.addAll(NameUtils.toList(options));
+      }
+      
       this.orderColumns.addAll(orderColumns);
 
-      this.relIndex = renderColumns.size();
-      this.countIndex = renderColumns.size() + 1;
+      this.relIndex = this.renderColumns.size();
+      this.countIndex = this.relIndex + 1;
     }
 
     this.renderCount = this.renderColumns.size();
@@ -68,7 +63,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   public String getDisplayHtml() {
     List<String> values = Lists.newArrayList();
 
-    for (int row : selected) {
+    for (int row : getSelectedItems()) {
       values.add(getCaption(row));
     }
     return BeeUtils.join(BeeConst.STRING_COMMA, values);
@@ -97,7 +92,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
           callback.onSuccess(reset());
 
         } else {
-          selected.clear();
+          clearSelection();
           openDialog(target, createWidget(), callback);
         }
       }
@@ -105,14 +100,14 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public boolean reset() {
-    selected.clear();
-    return super.reset();
+  protected void doClear() {
+    clearDisplay();
+    super.doClear();
   }
 
   @Override
-  protected void doFilterCommand() {
-    if (selected.isEmpty()) {
+  protected void doCommit() {
+    if (isSelectionEmpty()) {
       update(null);
       return;
     }
@@ -120,7 +115,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     CompoundFilter compoundFilter = Filter.or();
 
     int colIndex = (relIndex > 0) ? relIndex : 0;
-    for (int row : selected) {
+    for (int row : getSelectedItems()) {
       String value = data.getValue(row, colIndex);
       Filter rowFilter;
 
@@ -149,19 +144,10 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected void doResetCommand() {
-    HtmlTable display = getDisplay();
-    if (display == null) {
-      return;
-    }
-
-    for (int row : selected) {
-      display.getRowFormatter().removeStyleName(row, getStyleSelected());
-    }
-    selected.clear();
-    setCounter(0);
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList(SupplierAction.CLEAR, SupplierAction.COMMIT);
   }
-
+  
   @Override
   protected List<String> getHistogramColumns() {
     List<String> columns = Lists.newArrayList(renderColumns);
@@ -176,14 +162,8 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     return orderColumns;
   }
 
-  @Override
-  protected String getStylePrefix() {
-    return super.getStylePrefix() + "List-";
-  }
-
   private Widget createWidget() {
-    final HtmlTable display = new HtmlTable();
-    display.addStyleName(getStylePrefix() + "display");
+    HtmlTable display = createDisplay(true);
 
     int row = 0;
     for (String[] dataItem : getData().getRows()) {
@@ -198,36 +178,12 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
           display.setText(row, col++, dataItem[i]);
         }
       }
-
-      display.setText(row, col, dataItem[countIndex]);
+      
+      addBinSize(display, row, col, dataItem[countIndex]);
       row++;
     }
 
-    Binder.addClickHandler(display, new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableRowElement rowElement = DomUtils.getParentRow(target, true);
-
-        if (rowElement != null && display.getElement().isOrHasChild(rowElement)) {
-          onMouseClick(rowElement, EventUtils.hasModifierKey(event.getNativeEvent()));
-        }
-      }
-    });
-
-    Flow container = new Flow();
-    container.addStyleName(getStylePrefix() + "container");
-
-    Flow panel = new Flow();
-    panel.addStyleName(getStylePrefix() + "panel");
-    panel.add(display);
-
-    container.add(panel);
-    container.add(getCommandWidgets(true));
-
-    setDisplayId(display.getId());
-
-    return container;
+    return wrapDisplay(display, true);
   }
 
   private String getCaption(int row) {
@@ -259,47 +215,11 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     return data;
   }
 
-  private HtmlTable getDisplay() {
-    Widget widget = getDialogChild(getDisplayId());
-    if (widget instanceof HtmlTable) {
-      return (HtmlTable) widget;
-    } else {
-      return null;
-    }
-  }
-
-  private String getDisplayId() {
-    return displayId;
-  }
-
-  private String getStyleSelected() {
-    return getStylePrefix() + "selected";
-  }
-
   private boolean isNull(int row) {
     return data.getValue(row, Math.max(relIndex, 0)) == null;
   }
 
-  private void onMouseClick(TableRowElement rowElement, boolean hasModifiers) {
-    int row = rowElement.getRowIndex();
-    boolean wasSelected = selected.contains(row);
-
-    if (wasSelected) {
-      rowElement.removeClassName(getStyleSelected());
-      selected.remove((Integer) row);
-    } else {
-      rowElement.addClassName(getStyleSelected());
-      selected.add(row);
-    }
-    
-    setCounter(selected.size());
-  }
-
   private void setData(SimpleRowSet data) {
     this.data = data;
-  }
-
-  private void setDisplayId(String displayId) {
-    this.displayId = displayId;
   }
 }

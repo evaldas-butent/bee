@@ -10,19 +10,19 @@
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
       caption="-" options="greenSmall, yellowSmall" />
 
-    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
-       filterSupplier="star">
+    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20">
       <renderer type="star" />
     </PropColumn>
 
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="ID" filterSupplier="id" hasFooter="true" />
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
 
     <RelColumn name="Company" editEnabled="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-      sortBy="ContactLastName ContactFirstName" />
+      sortBy="ContactLastName ContactFirstName"
+      filterOptions="ContactFirstName ContactLastName ContactCompanyName" />
 
     <DataColumn name="Status" itemKey="TaskStatus" />
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />

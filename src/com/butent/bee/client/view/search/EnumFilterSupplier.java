@@ -7,8 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.NotificationListener;
-import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -27,8 +26,6 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     private final int index;
     private final String count;
 
-    private boolean selected = false;
-
     private DataItem(int index, String count) {
       this.index = index;
       this.count = count;
@@ -41,22 +38,12 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     private int getIndex() {
       return index;
     }
-
-    private boolean isSelected() {
-      return selected;
-    }
-
-    private void setSelected(boolean selected) {
-      this.selected = selected;
-    }
   }
 
   private final List<String> captions;
   private final int nullIndex;
 
   private final List<DataItem> data = Lists.newArrayList();
-
-  private final BeeListBox listBox = new BeeListBox(true);
 
   public EnumFilterSupplier(String viewName, BeeColumn column, String options, String key) {
     super(viewName, column, options);
@@ -68,11 +55,8 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   @Override
   public String getDisplayHtml() {
     List<String> values = Lists.newArrayList();
-
-    for (DataItem dataItem : data) {
-      if (dataItem.isSelected()) {
-        values.add(getCaption(dataItem));
-      }
+    for (int row : getSelectedItems()) {
+      values.add(getCaption(data.get(row)));
     }
     return BeeUtils.join(BeeConst.STRING_COMMA, values);
   }
@@ -141,12 +125,17 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected void doFilterCommand() {
+  protected void doClear() {
+    clearDisplay();
+    super.doClear();
+  }
+
+  @Override
+  protected void doCommit() {
     CompoundFilter compoundFilter = Filter.or();
 
-    for (int i = 0; i < listBox.getItemCount(); i++) {
-      boolean selected = listBox.isItemSelected(i);
-      data.get(i).setSelected(selected);
+    for (int i = 0; i < data.size(); i++) {
+      boolean selected = isSelected(i);
 
       if (selected) {
         int value = data.get(i).getIndex();
@@ -171,42 +160,22 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected void doResetCommand() {
-    for (DataItem dataItem : data) {
-      dataItem.setSelected(false);
-    }
-
-    for (int i = 0; i < listBox.getItemCount(); i++) {
-      listBox.setItemSelected(i, false);
-    }
-  }
-  
-  @Override
-  protected String getStylePrefix() {
-    return super.getStylePrefix() + "Enum-";
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList(SupplierAction.CLEAR, SupplierAction.COMMIT);
   }
 
   private Widget createWidget() {
-    Vertical panel = new Vertical();
-    panel.addStyleName(getStylePrefix() + "panel");
-
-    listBox.clear();
+    HtmlTable display = createDisplay(true);
+    
+    int row = 0;
     for (DataItem dataItem : data) {
-      String item = BeeUtils.joinWords(getCaption(dataItem), dataItem.getCount());
-      listBox.addItem(item);
+      int col = 0;
+      display.setText(row, col++, getCaption(dataItem));
+      addBinSize(display, row, col, dataItem.getCount());
+      row++;
     }
 
-    for (int i = 0; i < data.size(); i++) {
-      if (data.get(i).isSelected()) {
-        listBox.setItemSelected(i, true);
-      }
-    }
-
-    listBox.setAllVisible();
-    panel.add(listBox);
-
-    panel.add(getCommandWidgets(false));
-    return panel;
+    return wrapDisplay(display, false);
   }
 
   private String getCaption(DataItem dataItem) {

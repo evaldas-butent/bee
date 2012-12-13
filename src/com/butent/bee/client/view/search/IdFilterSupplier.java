@@ -7,38 +7,36 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.ColumnValueFilter;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ValueFilterSupplier extends AbstractFilterSupplier {
+public class IdFilterSupplier extends AbstractFilterSupplier {
   
   private static final int MIN_EDITOR_WIDTH = 60;
-  private static final int MAX_EDITOR_WIDTH = 200;
+  private static final int MAX_EDITOR_WIDTH = 100;
   
   private final Editor editor;
   private int lastWidth = BeeConst.UNDEF;
 
-  public ValueFilterSupplier(String viewName, final BeeColumn column, String options) {
+  public IdFilterSupplier(String viewName, final BeeColumn column, String options) {
     super(viewName, column, options);
     
-    this.editor = EditorFactory.createEditor(column, false);
+    this.editor = new InputLong();
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          ValueFilterSupplier.this.onSave();
+          IdFilterSupplier.this.onSave();
         }
       }
     });
@@ -84,29 +82,11 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       return;
     }
     
-    Filter filter;
-
-    Operator operator = Operator.detectOperator(value);
-
-    if (operator != null) {
-      if (value.equals(operator.toTextString())) {
-        if (operator == Operator.EQ || operator == Operator.LT || operator == Operator.LE) {
-          filter = Filter.isEmpty(getColumnId());
-        } else {
-          filter = Filter.notEmpty(getColumnId());
-        }
-
-      } else {
-        filter = ColumnValueFilter.compareWithValue(getColumn(), operator,
-            BeeUtils.removePrefix(value, operator.toTextString()).trim());
-      }
-
-    } else {
-      operator = ValueType.isString(getColumnType()) ? Operator.CONTAINS : Operator.EQ;
-      filter = ColumnValueFilter.compareWithValue(getColumn(), operator, value);
+    if (!BeeUtils.isLong(value)) {
+      Global.showError("Neteisinga ID reikšmė");
+      return;
     }
-    
-    update(filter);
+    update(ComparisonFilter.compareId(BeeUtils.toLong(value)));
   }
 
   private void setLastWidth(int lastWidth) {

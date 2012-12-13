@@ -1931,41 +1931,48 @@ body, select {
   cursor: pointer;
 }
 
-.bee-FilterSupplier-List-dialog {
+.bee-FilterSupplier-dialog {
   background-color: white;
   border: 2px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 3px;
 }
-.bee-FilterSupplier-List-panel {
+.bee-FilterSupplier-panel {
   overflow: auto;
   max-height: 400px;
 }
-.bee-FilterSupplier-List-display {
+.bee-FilterSupplier-display {
   border-collapse: collapse;
   cursor: pointer;
 }
-.bee-FilterSupplier-List-display tr:hover {
+.bee-FilterSupplier-display tr:hover {
   background-color: #eee;
 }
-.bee-FilterSupplier-List-selected {
+.bee-FilterSupplier-selected {
   background-image: -webkit-linear-gradient(top, #4D90FE, #357AE8);
   color: white;
 }
-.bee-FilterSupplier-List-display td {
+.bee-FilterSupplier-display td {
   padding: 1px 2px;
 }
-.bee-FilterSupplier-List-display tr td:last-child {
+.bee-FilterSupplier-binSizeCell {
   text-align: right;
   padding-left: 10px;
 }
-.bee-FilterSupplier-List-commandPanel {
+.bee-FilterSupplier-commandPanel {
   margin-top: 5px;
   display: -webkit-flex;
   -webkit-align-items: center;
 }
-.bee-FilterSupplier-List-counter {
-/*   -webkit-flex: 1; */
+.bee-FilterSupplier-counter {
+  margin-left: 5px;
+}
+
+.bee-FilterSupplier-dateTime-date {
+  width: 80px;
+}
+.bee-FilterSupplier-dateTime-time {
+  width: 40px;
 }
 
 .bee-resizable {

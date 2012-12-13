@@ -794,10 +794,12 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
         }
 
-        if (filterSupplier == null && !BeeConst.isUndef(dataIndex)
-            && !BeeUtils.isEmpty(column.getSearchBy())) {
+        if (filterSupplier == null 
+            && (columnDescr.getFilterSupplierType() != null
+            || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
+
           filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
-              dataCols.get(dataIndex), columnDescr.getFilterSupplierType(),
+              (dataIndex >= 0) ? dataCols.get(dataIndex) : null, columnDescr.getFilterSupplierType(),
               renderColumns, column.getSortBy(), columnDescr.getItemKey(),
               columnDescr.getRelation(), columnDescr.getFilterOptions());
         }
