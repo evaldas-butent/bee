@@ -32,9 +32,10 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
-import com.butent.bee.client.view.search.FilterChangeHandler;
+import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -313,16 +314,23 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (hasData()) {
       Collection<SearchView> searchers = getSearchers();
+
       if (!searchers.isEmpty()) {
-        FilterChangeHandler handler = new FilterChangeHandler() {
+        FilterHandler handler = new FilterHandler() {
           @Override
-          public void onFilterChange() {
-            FormPresenter.this.updateFilter();
+          public Filter getEffectiveFilter(Collection<String> exclusions) {
+            return getDataProvider().getQueryFilter(ViewHelper.getFilter(FormPresenter.this,
+                getDataProvider(), exclusions));
+          }
+
+          @Override
+          public void onFilterChange(Procedure<Boolean> callback) {
+            FormPresenter.this.updateFilter(callback);
           }
         };
 
         for (SearchView search : searchers) {
-          search.setFilterChangeHandler(handler);
+          search.setFilterHandler(handler);
         }
       }
 
@@ -388,13 +396,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     getNotificationListener().notifySevere(ArrayUtils.toArray(messages));
   }
 
-  private void updateFilter() {
+  private void updateFilter(Procedure<Boolean> callback) {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       logger.info("filter not changed", filter);
     } else {
       lastFilter = filter;
-      getDataProvider().onFilterChange(filter, true);
+      getDataProvider().onFilterChange(filter, true, callback);
     }
   }
 }

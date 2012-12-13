@@ -11,10 +11,10 @@ import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
@@ -28,13 +28,13 @@ import java.util.List;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator, HandlesHistory {
+    HasEditFormHandlers, ParentRowCreator, HandlesHistory, SearchView {
 
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch,
-      Filter immutableFilter, Order order);
+      Order order);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 

@@ -58,9 +58,8 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
 
   private final BeeListBox listBox = new BeeListBox(true);
 
-  public EnumFilterSupplier(String viewName, Filter immutableFilter, BeeColumn column,
-      String options, String key) {
-    super(viewName, immutableFilter, column, options);
+  public EnumFilterSupplier(String viewName, BeeColumn column, String options, String key) {
+    super(viewName, column, options);
 
     this.captions = Global.getCaptions(key);
     this.nullIndex = (captions == null) ? BeeConst.UNDEF : captions.size();
@@ -206,7 +205,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     listBox.setAllVisible();
     panel.add(listBox);
 
-    panel.add(getCommandWidgets());
+    panel.add(getCommandWidgets(false));
     return panel;
   }
 

@@ -45,7 +45,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
@@ -114,7 +113,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns,
-      String relColumn, int rowCount, BeeRowSet rowSet, Filter immutableFilter, Order order,
+      String relColumn, int rowCount, BeeRowSet rowSet, Order order,
       GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
@@ -174,7 +173,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridInterceptor, hasSearch(),
-        immutableFilter, order);
+        order);
 
     FooterView footer;
     ScrollPager scroller;
@@ -248,6 +247,20 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   public List<String> getFavorite() {
     return favorite;
+  }
+
+  @Override
+  public FooterView getFooter() {
+    if (BeeUtils.isEmpty(getFooterId())) {
+      return null;
+    }
+    for (Widget widget : getChildren()) {
+      if (widget instanceof FooterView
+          && BeeUtils.same(widget.getElement().getId(), getFooterId())) {
+        return (FooterView) widget;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -669,19 +682,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private List<ExtWidget> getExtWidgets() {
     return extWidgets;
-  }
-
-  private FooterView getFooter() {
-    if (BeeUtils.isEmpty(getFooterId())) {
-      return null;
-    }
-    for (Widget widget : getChildren()) {
-      if (widget instanceof FooterView
-          && BeeUtils.same(widget.getElement().getId(), getFooterId())) {
-        return (FooterView) widget;
-      }
-    }
-    return null;
   }
 
   private String getFooterId() {

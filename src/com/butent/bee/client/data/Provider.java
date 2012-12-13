@@ -10,6 +10,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -144,7 +145,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     onRequest(false);
   }
 
-  public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow);
+  public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow,
+      Procedure<Boolean> callback);
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {

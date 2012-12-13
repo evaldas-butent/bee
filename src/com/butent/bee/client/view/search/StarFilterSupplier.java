@@ -5,13 +5,11 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.Filter;
 
 public class StarFilterSupplier extends AbstractFilterSupplier {
 
-  public StarFilterSupplier(String viewName, Filter immutableFilter, BeeColumn column,
-      String options) {
-    super(viewName, immutableFilter, column, options);
+  public StarFilterSupplier(String viewName, BeeColumn column, String options) {
+    super(viewName, column, options);
   }
 
   @Override

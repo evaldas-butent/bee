@@ -16,10 +16,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class ViewHelper {
+  
+  private static final Set<String> NO_EXCLUSIONS = Sets.newHashSet();
 
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
+    return getFilter(container, dataProvider, NO_EXCLUSIONS);
+  }
+  
+  public static Filter getFilter(HasSearch container, Provider dataProvider,
+      Collection<String> excludeSearchers) {
     Assert.notNull(container);
     Assert.notNull(dataProvider);
 
@@ -31,7 +39,7 @@ public class ViewHelper {
     List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
     for (SearchView search : searchers) {
       Filter flt = search.getFilter(dataProvider.getColumns(), dataProvider.getIdColumnName(),
-          dataProvider.getVersionColumnName());
+          dataProvider.getVersionColumnName(), excludeSearchers);
       if (flt != null && !filters.contains(flt)) {
         filters.add(flt);
       }

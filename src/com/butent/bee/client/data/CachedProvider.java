@@ -8,6 +8,7 @@ import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -108,13 +109,24 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void onFilterChange(Filter newFilter, boolean updateActiveRow) {
+  public void onFilterChange(Filter newFilter, boolean updateActiveRow,
+      Procedure<Boolean> callback) {
+
     if (applyFilter(newFilter)) {
       getDisplay().setRowCount(getRowCount(), true);
       acceptFilter(newFilter);
       updateDisplay(updateActiveRow);
+
+      if (callback != null) {
+        callback.call(true);
+      }
+      
     } else {
       rejectFilter(newFilter);
+
+      if (callback != null) {
+        callback.call(false);
+      }
     }
   }
 

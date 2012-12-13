@@ -42,9 +42,9 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private String displayId = null;
 
-  public ListFilterSupplier(String viewName, Filter immutableFilter, BeeColumn column,
-      List<String> renderColumns, List<String> orderColumns, Relation relation, String options) {
-    super(viewName, immutableFilter, column, options);
+  public ListFilterSupplier(String viewName, BeeColumn column, List<String> renderColumns,
+      List<String> orderColumns, Relation relation, String options) {
+    super(viewName, column, options);
 
     if (relation == null) {
       this.renderColumns.add(column.getId());
@@ -159,6 +159,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       display.getRowFormatter().removeStyleName(row, getStyleSelected());
     }
     selected.clear();
+    setCounter(0);
   }
 
   @Override
@@ -222,7 +223,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     panel.add(display);
 
     container.add(panel);
-    container.add(getCommandWidgets());
+    container.add(getCommandWidgets(true));
 
     setDisplayId(display.getId());
 
@@ -290,6 +291,8 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       rowElement.addClassName(getStyleSelected());
       selected.add(row);
     }
+    
+    setCounter(selected.size());
   }
 
   private void setData(SimpleRowSet data) {

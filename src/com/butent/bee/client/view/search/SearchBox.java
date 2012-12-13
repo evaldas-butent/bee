@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ import java.util.List;
 public class SearchBox extends InputText implements SearchView {
 
   private Presenter presenter = null;
-  private FilterChangeHandler filterChangeHandler = null;
+  private FilterHandler filterHandler = null;
 
   public SearchBox() {
     this("paieška...");
@@ -33,10 +34,15 @@ public class SearchBox extends InputText implements SearchView {
     if (!BeeUtils.isEmpty(placeholder)) {
       DomUtils.setPlaceholder(this, placeholder);
     }
-    
+
     sinkEvents(Event.ONKEYDOWN);
   }
-  
+
+  @Override
+  public void clearFilter() {
+    clearValue();
+  }
+
   @Override
   public String getDefaultStyleName() {
     return "bee-SearchBox";
@@ -44,15 +50,21 @@ public class SearchBox extends InputText implements SearchView {
 
   @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
-      String versionColumnName) {
-    return DataUtils.parseCondition(getValue(), columns, idColumnName, versionColumnName);
+      String versionColumnName, Collection<String> excludeSearchers) {
+    if (BeeUtils.isEmpty(getValue())) {
+      return null;
+    } else if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
+      return null;
+    } else {
+      return DataUtils.parseCondition(getValue(), columns, idColumnName, versionColumnName);
+    }
   }
 
   @Override
   public String getIdPrefix() {
     return "search";
   }
-  
+
   @Override
   public Presenter getViewPresenter() {
     return presenter;
@@ -65,17 +77,17 @@ public class SearchBox extends InputText implements SearchView {
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (getFilterChangeHandler() != null && EventUtils.isKeyDown(event.getType()) 
+    if (getFilterHandler() != null && EventUtils.isKeyDown(event.getType())
         && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      getFilterChangeHandler().onFilterChange();
+      getFilterHandler().onFilterChange(null);
     }
 
     super.onBrowserEvent(event);
   }
 
   @Override
-  public void setFilterChangeHandler(FilterChangeHandler filterChangeHandler) {
-    this.filterChangeHandler = filterChangeHandler;
+  public void setFilterHandler(FilterHandler filterHandler) {
+    this.filterHandler = filterHandler;
   }
 
   @Override
@@ -83,7 +95,7 @@ public class SearchBox extends InputText implements SearchView {
     this.presenter = presenter;
   }
 
-  private FilterChangeHandler getFilterChangeHandler() {
-    return filterChangeHandler;
+  private FilterHandler getFilterHandler() {
+    return filterHandler;
   }
 }

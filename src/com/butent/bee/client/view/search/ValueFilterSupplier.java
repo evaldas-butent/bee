@@ -26,9 +26,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   private final Editor editor;
   private int lastWidth = BeeConst.UNDEF;
 
-  public ValueFilterSupplier(String viewName, Filter immutableFilter, final BeeColumn column,
-      String options) {
-    super(viewName, immutableFilter, column, options);
+  public ValueFilterSupplier(String viewName, final BeeColumn column, String options) {
+    super(viewName, column, options);
     
     this.editor = EditorFactory.createEditor(column, false);
 

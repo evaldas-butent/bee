@@ -76,9 +76,8 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
-import com.butent.bee.client.view.search.FilterChangeHandler;
+import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
-import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -126,7 +125,7 @@ import java.util.Set;
  * Creates cell grid elements, connecting view and presenter elements of them.
  */
 
-public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler,
+public class CellGridImpl extends Absolute implements GridView, EditStartEvent.Handler,
     EditEndEvent.Handler, ActionEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
@@ -455,9 +454,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   @Override
+  public void clearFilter() {
+    List<ColumnFooter> footers = getGrid().getFooters();
+    for (ColumnFooter footer : footers) {
+      if (!footer.isEmpty()) {
+        footer.reset();
+      }
+    }
+  }
+
+  @Override
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch,
-      Filter immutableFilter, Order order) {
+      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
 
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
@@ -788,7 +796,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         if (filterSupplier == null && !BeeConst.isUndef(dataIndex)
             && !BeeUtils.isEmpty(column.getSearchBy())) {
-          filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), immutableFilter,
+          filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
               dataCols.get(dataIndex), columnDescr.getFilterSupplierType(),
               renderColumns, column.getSortBy(), columnDescr.getItemKey(),
               columnDescr.getRelation(), columnDescr.getFilterOptions());
@@ -1036,7 +1044,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return getGrid().getActiveRow();
     }
   }
-
+  
   @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
@@ -1044,7 +1052,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
-      String versionColumnName) {
+      String versionColumnName, Collection<String> excludeSearchers) {
+
+    if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
+      return null;
+    }
+    
     List<ColumnFooter> footers = getGrid().getFooters();
     if (footers.isEmpty()) {
       return null;
@@ -1052,6 +1065,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     Filter filter = null;
     for (ColumnFooter footer : footers) {
+      if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(footer.getId())) {
+        continue;
+      }
+
       Filter columnFilter = footer.getFilter();
       if (columnFilter != null) {
         if (filter == null) {
@@ -1384,10 +1401,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   @Override
-  public void setFilterChangeHandler(FilterChangeHandler filterChangeHandler) {
+  public void setFilterHandler(FilterHandler filterHandler) {
     List<ColumnFooter> footers = getGrid().getFooters();
     for (ColumnFooter footer : footers) {
-      footer.setFilterChangeHandler(filterChangeHandler);
+      footer.setFilterHandler(filterHandler);
     }
   }
 

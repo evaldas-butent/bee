@@ -98,6 +98,9 @@ public class Images {
     @Source("exit.gif")
     ImageResource exit();
 
+    @Source("filter_delete.png")
+    ImageResource filterDelete();
+    
     @Source("first.png")
     ImageResource first();
 
@@ -296,10 +299,12 @@ public class Images {
 
     map.put(key("edit"), resources.edit());
 
-    map.put(key("edit_add"), resources.editAdd());
-    map.put(key("edit_delete"), resources.editDelete());
+    map.put(key("editAdd"), resources.editAdd());
+    map.put(key("editDelete"), resources.editDelete());
 
     map.put(key("error"), resources.error());
+
+    map.put(key("filterDelete"), resources.filterDelete());
 
     map.put(key("first"), resources.first());
 

@@ -8,4 +8,6 @@ public interface FooterView extends View, SelectionCountChangeEvent.Handler, Pri
   void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch);
   
   int getHeight();
+  
+  void showFilterDelete(boolean show);
 }

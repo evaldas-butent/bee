@@ -22,7 +22,8 @@ public enum Action implements BeeSerializable, HasCaption {
   EDIT("koreguoti"),
   PRINT("spausdinti"),
   REFRESH("atnaujinti"),
-  SAVE("išsaugoti");
+  SAVE("išsaugoti"),
+  REMOVE_FILTER("išvalyti filtrą");
   
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
@@ -54,14 +55,17 @@ public enum Action implements BeeSerializable, HasCaption {
     this.caption = caption;
   }
 
+  @Override
   public void deserialize(String s) {
     Assert.untouchable();
   }
 
+  @Override
   public String getCaption() {
     return caption;
   }
 
+  @Override
   public String serialize() {
     return this.name();
   }

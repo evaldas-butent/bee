@@ -132,3 +132,26 @@
   color: blue;
   background-color: white;
 }
+
+.bee-crm-FilterSupplier-Slack-dialog {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 2px;
+}
+.bee-crm-FilterSupplier-Slack-late, .bee-crm-FilterSupplier-Slack-scheduled {
+  display: block;
+  color: white;
+  font-weight: bolder;
+  width: 130px;
+  height: 25px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+.bee-crm-FilterSupplier-Slack-late {
+  background-image: -webkit-linear-gradient(top, #DD4B39, #D14836);
+}
+.bee-crm-FilterSupplier-Slack-scheduled {
+  background-image: -webkit-linear-gradient(top, #4D90FE, #4787ED);  
+}
+

@@ -4,24 +4,31 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
@@ -32,6 +39,8 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.CellSource;
@@ -41,6 +50,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -66,8 +76,11 @@ class TaskList {
     @Template("<div class=\"bee-crm-SlackScheduled-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackScheduled-label\">{1}</div>")
     SafeHtml scheduled(SafeStyles barStyles, String label);
   }
-  
+
   private static class GridHandler extends AbstractGridInterceptor {
+
+    private static final String NAME_MODE = "Mode";
+    private static final String NAME_SLACK = "Slack";
 
     private final Type type;
     private final Long userId;
@@ -82,10 +95,10 @@ class TaskList {
         AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
         EditableColumn editableColumn) {
 
-      if (BeeUtils.same(columnId, "Mode") && column instanceof HasCellRenderer) {
+      if (BeeUtils.same(columnId, NAME_MODE) && column instanceof HasCellRenderer) {
         ((HasCellRenderer) column).setRenderer(new ModeRenderer(column.getOptions()));
 
-      } else if (BeeUtils.same(columnId, "Slack") && column instanceof HasCellRenderer) {
+      } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
         ((HasCellRenderer) column).setRenderer(new SlackRenderer(dataColumns, column.getOptions()));
 
       } else if (BeeUtils.inListSame(columnId, COL_FINISH_TIME, COL_EXECUTOR)) {
@@ -140,6 +153,16 @@ class TaskList {
     public List<String> getDeleteRowMessage(IsRow row) {
       String message = BeeUtils.joinWords("Išmesti užduotį", row.getId(), "?");
       return Lists.newArrayList(message);
+    }
+
+    @Override
+    public AbstractFilterSupplier getFilterSupplier(String columnName,
+        ColumnDescription columnDescription) {
+      if (BeeUtils.same(columnName, NAME_SLACK)) {
+        return new SlackFilterSupplier(columnDescription.getFilterOptions());
+      } else {
+        return super.getFilterSupplier(columnName, columnDescription);
+      }
     }
 
     @Override
@@ -246,18 +269,126 @@ class TaskList {
     }
   }
 
+  private static class SlackFilterSupplier extends AbstractFilterSupplier {
+
+    private String caption = null;
+
+    private SlackFilterSupplier(String options) {
+      super(VIEW_TASKS, null, options);
+    }
+
+    @Override
+    public String getDisplayHtml() {
+      return getCaption();
+    }
+
+    @Override
+    public void onRequest(Element target, NotificationListener notificationListener,
+        Callback<Boolean> callback) {
+      openDialog(target, createWidget(), callback);
+    }
+
+    @Override
+    public boolean reset() {
+      setCaption(null);
+      return super.reset();
+    }
+
+    @Override
+    protected String getStylePrefix() {
+      return "bee-crm-FilterSupplier-Slack-";
+    }
+
+    private Widget createWidget() {
+      Flow container = new Flow();
+      container.addStyleName(getStylePrefix() + "container");
+
+      BeeButton late = new BeeButton("Tik vėluojančios");
+      late.addStyleName(getStylePrefix() + "late");
+
+      late.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          setCaption("Vėluojančios");
+          update(getLateFilter());
+        }
+      });
+
+      container.add(late);
+
+      BeeButton scheduled = new BeeButton("Tik planuojamos");
+      scheduled.addStyleName(getStylePrefix() + "scheduled");
+
+      scheduled.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          setCaption("Planuojamos");
+          update(getScheduledFilter());
+        }
+      });
+
+      container.add(scheduled);
+
+      BeeButton all = new BeeButton("Visos");
+      all.addStyleName(getStylePrefix() + "all");
+
+      all.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          setCaption(null);
+          update(null);
+        }
+      });
+
+      container.add(all);
+
+      BeeButton cancel = new BeeButton("Atsisakyti");
+      cancel.addStyleName(getStylePrefix() + "cancel");
+
+      cancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          closeDialog();
+        }
+      });
+
+      container.add(cancel);
+
+      return container;
+    }
+
+    private String getCaption() {
+      return caption;
+    }
+
+    private Filter getLateFilter() {
+      return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
+          ComparisonFilter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
+    }
+
+    private Filter getScheduledFilter() {
+      return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
+          ComparisonFilter.isMoreEqual(COL_START_TIME,
+              new DateTimeValue(TimeUtils.today(1).getDateTime())));
+    }
+
+    private void setCaption(String caption) {
+      this.caption = caption;
+    }
+  }
+
   private static class SlackRenderer extends AbstractCellRenderer {
 
     private static final SlackTemplate TEMPLATE = GWT.create(SlackTemplate.class);
-    
+
     private static final Splitter OPTION_SPLITTER =
         Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
             .omitEmptyStrings().trimResults();
-    
+
     private final int statusIndex;
     private final int startIndex;
     private final int finishIndex;
-    
+
     private int minBarWidth = 10;
     private int maxBarWidth = 100;
 
@@ -265,11 +396,11 @@ class TaskList {
 
     private SlackRenderer(List<? extends IsColumn> columns, String options) {
       super(null);
-      
+
       this.statusIndex = DataUtils.getColumnIndex(COL_STATUS, columns);
       this.startIndex = DataUtils.getColumnIndex(COL_START_TIME, columns);
       this.finishIndex = DataUtils.getColumnIndex(COL_FINISH_TIME, columns);
-      
+
       setOptions(options);
     }
 
@@ -278,20 +409,20 @@ class TaskList {
       if (row == null) {
         return null;
       }
-      
+
       TaskStatus status = NameUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
-      
+
       DateTime start = row.getDateTime(startIndex);
       DateTime finish = row.getDateTime(finishIndex);
-      
+
       long minutes = getMinutes(status, start, finish);
       if (minutes == 0) {
         return BeeConst.STRING_EMPTY;
       }
-      
+
       SafeStyles barStyles = getBarStyles(Math.abs(minutes));
       String label = getLabel(Math.abs(minutes));
-      
+
       if (minutes < 0) {
         return TEMPLATE.late(barStyles, label).asString();
       } else if (minutes > 0) {
@@ -300,7 +431,7 @@ class TaskList {
         return BeeConst.STRING_EMPTY;
       }
     }
-    
+
     private SafeStyles getBarStyles(long minutes) {
       double width = BeeUtils.rescale(Math.abs(minutes),
           0, getMaxWidthDays() * TimeUtils.MINUTES_PER_DAY,
@@ -308,12 +439,12 @@ class TaskList {
 
       return StyleUtils.buildWidth(width, Unit.PCT);
     }
-    
+
     private String getLabel(long minutes) {
       if (Math.abs(minutes) < TimeUtils.MINUTES_PER_DAY) {
         return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR)
-            + DateTime.TIME_FIELD_SEPARATOR 
-            + TimeUtils.padTwo((int) (minutes % TimeUtils.MINUTES_PER_HOUR));        
+            + DateTime.TIME_FIELD_SEPARATOR
+            + TimeUtils.padTwo((int) (minutes % TimeUtils.MINUTES_PER_HOUR));
       } else {
         return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_DAY);
       }
@@ -322,7 +453,7 @@ class TaskList {
     private int getMaxBarWidth() {
       return maxBarWidth;
     }
-    
+
     private int getMaxWidthDays() {
       return maxWidthDays;
     }
@@ -335,9 +466,9 @@ class TaskList {
       if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED) {
         return 0;
       }
-      
+
       DateTime now = TimeUtils.nowMinutes();
-      
+
       if (finish != null && TimeUtils.isLess(finish, now)) {
         return (finish.getTime() - now.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
       } else if (CrmUtils.isScheduled(start)) {
@@ -367,7 +498,7 @@ class TaskList {
       if (args.isEmpty()) {
         return;
       }
-      
+
       if (args.size() >= 1) {
         setMinBarWidth(BeeUtils.clamp(BeeUtils.toInt(args.get(0)), 0, 50));
       }

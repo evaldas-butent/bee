@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcParameter;
@@ -22,6 +23,8 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -39,11 +42,9 @@ import java.util.List;
 
 public abstract class AbstractFilterSupplier implements HasViewName, HasOptions {
   
-  protected static final String NULL_VALUE_LABEL = "[]";
+  protected static final String NULL_VALUE_LABEL = "[tuščia]";
 
   private final String viewName;
-  private final Filter immutableFilter;
-
   private final BeeColumn column;
 
   private String options;
@@ -52,11 +53,14 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   private boolean filterChanged = false;
   
   private Popup dialog = null;
+  
+  private Filter effectiveFilter = null;
+  
+  private String counterId = null;
+  private int counterValue = 0;
 
-  public AbstractFilterSupplier(String viewName, Filter immutableFilter, BeeColumn column,
-      String options) {
+  public AbstractFilterSupplier(String viewName, BeeColumn column, String options) {
     this.viewName = viewName;
-    this.immutableFilter = immutableFilter;
     this.column = column;
     this.options = options;
   }
@@ -64,7 +68,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   public abstract String getDisplayHtml();
 
   public String getDisplayTitle() {
-    return (getFilter() == null) ? null : getFilter().toString();
+    if (Global.isDebug()) {
+      return (getFilter() == null) ? null : getFilter().toString();
+    } else {
+      return getDisplayHtml();
+    }
   }
 
   public Filter getFilter() {
@@ -97,6 +105,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     }
   }
 
+  public void setEffectiveFilter(Filter effectiveFilter) {
+    this.effectiveFilter = effectiveFilter;
+  }
+  
   @Override
   public void setOptions(String options) {
     this.options = options;
@@ -109,29 +121,33 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     }
   }
   
+  protected void decrementCounter() {
+    setCounter(getCounterValue() - 1);
+  }
+
   protected void doFilterCommand() {
   }
   
   protected void doResetCommand() {
   }
-
+  
   protected BeeColumn getColumn() {
     return column;
   }
   
   protected String getColumnId() {
-    return getColumn().getId();
+    return (getColumn() == null) ? null : getColumn().getId();
   }
-  
+
   protected String getColumnLabel() {
-    return getColumn().getLabel();
+    return (getColumn() == null) ? null : getColumn().getLabel();
   }
   
   protected ValueType getColumnType() {
-    return getColumn().getType();
+    return (getColumn() == null) ? null : getColumn().getType();
   }
 
-  protected Widget getCommandWidgets() {
+  protected Widget getCommandWidgets(boolean addCounter) {
     Flow panel = new Flow();
     panel.addStyleName(getStylePrefix() + "commandPanel");
     
@@ -145,6 +161,14 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
       }
     });
     panel.add(resetWidget);
+    
+    if (addCounter) {
+      Html counter = new Html(); 
+      counter.addStyleName(getStylePrefix() + "counter");
+     
+      panel.add(counter);
+      setCounterId(counter.getId());
+    }
 
     BeeButton filterWidget = new BeeButton("Filtruoti");
     filterWidget.addStyleName(getStylePrefix() + "commandFilter");
@@ -168,12 +192,15 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     return getStylePrefix() + "dialog";
   }
   
+  protected Filter getEffectiveFilter() {
+    return effectiveFilter;
+  }
+
   protected void getHistogram(final Callback<SimpleRowSet> callback) {
     List<Property> props = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, getViewName());
-    if (getImmutableFilter() != null) {
-      PropertyUtils.addProperties(props, Service.VAR_VIEW_WHERE, getImmutableFilter().serialize());
-    }
-    
+    if (getEffectiveFilter() != null) {
+      PropertyUtils.addProperties(props, Service.VAR_VIEW_WHERE, getEffectiveFilter().serialize());
+    }    
     String columns = NameUtils.join(getHistogramColumns());
     PropertyUtils.addProperties(props, Service.VAR_VIEW_COLUMNS, columns);
     
@@ -199,17 +226,21 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
       }
     });
   }
-
+  
   protected List<String> getHistogramColumns() {
     return Lists.newArrayList(getColumnId());
   }
-  
+
   protected List<String> getHistogramOrder() {
     return Lists.newArrayList(getColumnId());
   }
 
   protected String getStylePrefix() {
     return "bee-FilterSupplier-";
+  }
+
+  protected void incrementCounter() {
+    setCounter(getCounterValue() + 1);
   }
   
   protected String messageAllEmpty(String count) {
@@ -240,24 +271,50 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
     popup.showOnTop(target, 5);
   }
+  
+  protected void setCounter(int count) {
+    if (count != getCounterValue()) {
+      setCounterValue(count);
 
+      if (!BeeUtils.isEmpty(getCounterId()) && getDialog() != null) {
+        Widget counter = DomUtils.getChildQuietly(getDialog(), getCounterId());
+        if (counter != null) {
+          String text = (count > 0) ? BeeUtils.toString(count) : BeeConst.STRING_EMPTY;
+          counter.getElement().setInnerText(text);
+        }
+      }
+    }
+  }
+  
   protected void update(Filter newFilter) {
     setFilterChanged(!Objects.equal(getFilter(), newFilter));
 
     setFilter(newFilter);
     closeDialog();
   }
-  
+
   private boolean filterChanged() {
     return filterChanged;
+  }
+
+  private String getCounterId() {
+    return counterId;
+  }
+
+  private int getCounterValue() {
+    return counterValue;
   }
 
   private Popup getDialog() {
     return dialog;
   }
+  
+  private void setCounterId(String counterId) {
+    this.counterId = counterId;
+  }
 
-  private Filter getImmutableFilter() {
-    return immutableFilter;
+  private void setCounterValue(int counterValue) {
+    this.counterValue = counterValue;
   }
 
   private void setDialog(Popup dialog) {
@@ -267,7 +324,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   private void setFilter(Filter filter) {
     this.filter = filter;
   }
-  
+
   private void setFilterChanged(boolean filterChanged) {
     this.filterChanged = filterChanged;
   }

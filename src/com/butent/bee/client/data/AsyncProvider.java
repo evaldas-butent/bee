@@ -15,6 +15,7 @@ import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,7 +41,7 @@ public class AsyncProvider extends Provider {
 
   private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
   
-  private class Callback extends Queries.RowSetCallback {
+  private class QueryCallback extends Queries.RowSetCallback {
 
     private final Range<Integer> queryRange;
 
@@ -50,7 +51,7 @@ public class AsyncProvider extends Provider {
     private Integer rpcId = null;
     private long startTime;
 
-    private Callback(Range<Integer> queryRange, Range<Integer> displayRange,
+    private QueryCallback(Range<Integer> queryRange, Range<Integer> displayRange,
         boolean updateActiveRow) {
       this.queryRange = queryRange;
       this.displayRange = displayRange;
@@ -136,7 +137,7 @@ public class AsyncProvider extends Provider {
 
     private CachingPolicy caching;
 
-    private Callback callback;
+    private QueryCallback callback;
 
     private boolean active = false;
     private long lastTime = 0;
@@ -171,7 +172,7 @@ public class AsyncProvider extends Provider {
     }
 
     private void scheduleQuery(Filter flt, Order ord, int offset, int limit, CachingPolicy cp,
-        Callback cb) {
+        QueryCallback cb) {
       cancel();
 
       this.queryFilter = flt;
@@ -220,7 +221,7 @@ public class AsyncProvider extends Provider {
   private final CachingPolicy cachingPolicy;
   private final boolean enablePrefetch;
 
-  private final Map<Integer, Callback> pendingRequests = Maps.newLinkedHashMap();
+  private final Map<Integer, QueryCallback> pendingRequests = Maps.newLinkedHashMap();
   private final RequestScheduler requestScheduler = new RequestScheduler();
 
   private int lastOffset = 0;
@@ -301,7 +302,8 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  public void onFilterChange(final Filter newFilter, final boolean updateActiveRow) {
+  public void onFilterChange(final Filter newFilter, final boolean updateActiveRow,
+      final Procedure<Boolean> callback) {
     resetRequests();
     Filter flt = getQueryFilter(newFilter);
 
@@ -311,8 +313,15 @@ public class AsyncProvider extends Provider {
         if (newFilter == null || BeeUtils.isPositive(result)) {
           acceptFilter(newFilter);
           onRowCount(result, updateActiveRow);
+          if (callback != null) {
+            callback.call(true);
+          }
+
         } else {
           rejectFilter(newFilter);
+          if (callback != null) {
+            callback.call(false);
+          }
         }
       }
     });
@@ -392,7 +401,7 @@ public class AsyncProvider extends Provider {
       requestScheduler.cancel();
       Integer requestId = null;
 
-      for (Map.Entry<Integer, Callback> entry : pendingRequests.entrySet()) {
+      for (Map.Entry<Integer, QueryCallback> entry : pendingRequests.entrySet()) {
         if (entry.getValue().getQueryRange().encloses(displayRange)) {
           entry.getValue().setDisplayRange(displayRange);
           entry.getValue().setUpdateActiveRow(updateActiveRow);
@@ -449,7 +458,7 @@ public class AsyncProvider extends Provider {
     }
 
     Range<Integer> queryRange = createRange(queryOffset, queryLimit);
-    Callback callback = new Callback(queryRange, displayRange, updateActiveRow);
+    QueryCallback callback = new QueryCallback(queryRange, displayRange, updateActiveRow);
 
     requestScheduler.scheduleQuery(flt, ord, queryOffset, queryLimit, caching, callback);
   }
