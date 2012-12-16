@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="CompanyGroups"
-  viewName="CompanyGroups"
-  caption="Klientų grupės"
-  minColumnWidth="100"
+  name="CompanyGroups" viewName="CompanyGroups" caption="Klientų grupės"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" minWidth="100" maxWidth="200" />
+    <DataColumn name="Description" flexGrow="3" />
   </columns>
 </Grid>

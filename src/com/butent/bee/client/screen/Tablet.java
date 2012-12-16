@@ -7,7 +7,7 @@ import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.FontSize;
@@ -57,7 +57,7 @@ public class Tablet extends Mobile {
   }
 
   @Override
-  protected int addLogToggle(BeeLayoutPanel panel) {
+  protected int addLogToggle(LayoutPanel panel) {
     final Toggle toggle = new Toggle("Hide Log", "Show Log", "toggleLog");
     StyleUtils.setFontSize(toggle, FontSize.SMALL);
     StyleUtils.setHorizontalPadding(toggle, 2);

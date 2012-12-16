@@ -2,7 +2,6 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.base.Supplier;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasNativeEvent;
@@ -53,6 +52,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -147,7 +147,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
 
   public void inputString(String caption, String prompt, final StringCallback callback,
-      String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
+      String defaultValue, int maxLength, double width, CssUnit widthUnit, final int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(callback);
 

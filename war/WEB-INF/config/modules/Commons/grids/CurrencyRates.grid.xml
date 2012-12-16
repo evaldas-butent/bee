@@ -2,13 +2,13 @@
 <Grid xmlns="http://www.butent.com/grid"
       xmlns:ui="http://www.butent.com/ui"
   
-  name="CurrencyRates" viewName="CurrencyRates" caption="Kursai"
+  name="CurrencyRates" viewName="CurrencyRates" caption="Kursai" minColumnWidth="100"
   >
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="Quantity" source="Quantity" caption="Kiekis">
+    <DataColumn name="Date" source="Date" />
+    <DataColumn name="Quantity" source="Quantity">
       <carry><ui:expression>row.Quantity</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="Rate" source="Rate" caption="Kursas" />
+    <DataColumn name="Rate" source="Rate" />
   </columns>
 </Grid>

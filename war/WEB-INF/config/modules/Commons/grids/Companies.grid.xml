@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Companies" viewName="Companies" caption="Klientai" favorite="Name"
+  name="Companies" viewName="Companies" caption="Klientai" favorite="Name" flexGrow="1"
   >
   <columns>
     <DataColumn name="Name" />

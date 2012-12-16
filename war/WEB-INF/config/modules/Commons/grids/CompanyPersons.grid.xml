@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CompanyPersons"
-  viewName="CompanyPersons"
-  minColumnWidth="100"
+  name="CompanyPersons" viewName="CompanyPersons"
+  flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
-    <RelColumn name="Person" minWidth="200" editEnabled="true" />
-    <DataColumn name="Position" />
+    <RelColumn name="Person" editEnabled="true" />
+    <DataColumn name="Position" flexBasis="50" />
     <DataColumn name="Phone" />
 
     <RelColumn name="EmailId">

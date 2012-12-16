@@ -12,7 +12,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -35,15 +34,14 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -51,8 +49,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers<Popup>,
-    IdentifiableWidget {
+public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popup> {
 
   public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
@@ -131,14 +128,14 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
         int winHeight = Window.getClientHeight();
 
         style.setDisplay(Display.NONE);
-        style.setWidth(0, Unit.PX);
-        style.setHeight(0, Unit.PX);
+        StyleUtils.setWidth(style, 0);
+        StyleUtils.setHeight(style, 0);
 
         int width = Document.get().getScrollWidth();
         int height = Document.get().getScrollHeight();
 
-        style.setWidth(Math.max(width, winWidth), Unit.PX);
-        style.setHeight(Math.max(height, winHeight), Unit.PX);
+        StyleUtils.setWidth(style, Math.max(width, winWidth));
+        StyleUtils.setHeight(style, Math.max(height, winHeight));
 
         style.setDisplay(Display.BLOCK);
       }
@@ -408,8 +405,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
 
     Style style = getElement().getStyle();
-    style.setLeft(0, Unit.PX);
-    style.setTop(0, Unit.PX);
+    StyleUtils.setLeft(style, 0);
+    StyleUtils.setTop(style, 0);
 
     int left = (Window.getClientWidth() - getOffsetWidth()) >> 1;
     int top = (Window.getClientHeight() - getOffsetHeight()) >> 1;
@@ -434,11 +431,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public AnimationType getAnimationType() {
     return animationType;
-  }
-
-  @Override
-  public String getId() {
-    return DomUtils.getId(this);
   }
 
   @Override
@@ -529,8 +521,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       elem.addClassName(popupStyleName + "-glass");
 
       elem.getStyle().setPosition(Position.ABSOLUTE);
-      elem.getStyle().setLeft(0, Unit.PX);
-      elem.getStyle().setTop(0, Unit.PX);
+      StyleUtils.setLeft(elem, 0);
+      StyleUtils.setTop(elem, 0);
 
       setGlass(elem);
     }
@@ -553,11 +545,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.hideOnSave = hideOnSave;
   }
 
-  @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
-  }
-
   public void setOnEscape(Scheduler.ScheduledCommand onEscape) {
     this.onEscape = onEscape;
   }
@@ -571,8 +558,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     setTopPosition(top);
 
     Style style = getElement().getStyle();
-    style.setLeft(left - Document.get().getBodyOffsetLeft(), Unit.PX);
-    style.setTop(top - Document.get().getBodyOffsetTop(), Unit.PX);
+    StyleUtils.setLeft(style, left - Document.get().getBodyOffsetLeft());
+    StyleUtils.setTop(style, top - Document.get().getBodyOffsetTop());
   }
 
   public void setPopupPositionAndShow(PositionCallback callback) {

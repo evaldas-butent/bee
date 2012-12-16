@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
@@ -258,29 +259,7 @@ public class UiHelper {
       return precision;
     }
   }
-
-  public static Widget initialize(Widget widget, WidgetInitializer initializer, String name) {
-    if (widget == null) {
-      return null;
-    }
-    if (initializer == null) {
-      return widget;
-    }
-    return initializer.initialize(widget, name);
-  }
   
-  public static boolean isModal(Widget widget) {
-    return DomUtils.getParentPopup(widget) != null;
-  }
-
-  public static boolean isSave(NativeEvent event) {
-    if (event == null) {
-      return false;
-    }
-    return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
-        && EventUtils.hasModifierKey(event);
-  }
-
   public static Procedure<InputText> getTextBoxResizer(final int reserve) {
     return new Procedure<InputText>() {
       @Override
@@ -304,12 +283,49 @@ public class UiHelper {
       }
     };
   }
-
-  public static boolean moveFocus(Widget parent, UIObject currentObject, boolean forward) {
-    if (currentObject == null) {
+  
+  public static boolean hasImmediateChild(HasWidgets parent, String id) {
+    if (parent == null || BeeUtils.isEmpty(id)) {
       return false;
+    }
+    
+    for (Widget child : parent) {
+      if (DomUtils.idEquals(child, id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static Widget initialize(Widget widget, WidgetInitializer initializer, String name) {
+    if (widget == null) {
+      return null;
+    }
+    if (initializer == null) {
+      return widget;
+    }
+    return initializer.initialize(widget, name);
+  }
+
+  public static boolean isModal(Widget widget) {
+    return DomUtils.getParentPopup(widget) != null;
+  }
+
+  public static boolean isSave(NativeEvent event) {
+    if (event == null) {
+      return false;
+    }
+    return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
+        && EventUtils.hasModifierKey(event);
+  }
+  
+  public static boolean maybeResize(Widget root, String id) {
+    Widget child = DomUtils.getChildQuietly(root, id);
+    if (child instanceof RequiresResize && child.isVisible()) {
+      ((RequiresResize) child).onResize();
+      return true;
     } else {
-      return moveFocus(parent, currentObject.getElement(), forward);
+      return false;
     }
   }
 
@@ -346,6 +362,14 @@ public class UiHelper {
       return true;
     } else {
       return false;
+    }
+  }
+
+  public static boolean moveFocus(Widget parent, UIObject currentObject, boolean forward) {
+    if (currentObject == null) {
+      return false;
+    } else {
+      return moveFocus(parent, currentObject.getElement(), forward);
     }
   }
 
@@ -519,7 +543,7 @@ public class UiHelper {
     }
     return w;
   }
-
+  
   public static void updateForm(String widgetId, String columnId, String value) {
     Assert.notEmpty(widgetId);
     Assert.notEmpty(columnId);
@@ -538,7 +562,7 @@ public class UiHelper {
 
     form.updateCell(columnId, value);
   }
-
+  
   private UiHelper() {
   }
 }

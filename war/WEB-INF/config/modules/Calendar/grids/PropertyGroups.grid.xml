@@ -3,12 +3,13 @@
 
   name="PropertyGroups" viewName="PropertyGroups" caption="Parametrų grupės"
   newRowColumns="Name Description" newRowCaption="Nauja parametrų grupė"
-  minColumnWidth="100"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" maxWidth="200" />
+    <DataColumn name="Description" caption="Aprašymas" flexShrink="5" />
 
-    <RelColumn name="DefaultPropertyName" caption="Pagrindinis parametras" newRowEnabled="false" />
+    <RelColumn name="DefaultPropertyName" caption="Pagrindinis parametras" newRowEnabled="false"
+      flexGrow="0" />
   </columns>
 </Grid>

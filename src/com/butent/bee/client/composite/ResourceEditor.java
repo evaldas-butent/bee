@@ -1,14 +1,13 @@
 package com.butent.bee.client.composite;
 
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.LayoutPanel;
+import com.butent.bee.client.layout.Layout.Alignment;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
@@ -17,6 +16,7 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -70,7 +70,7 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
   private final String caption;
 
   public ResourceEditor(Resource resource) {
-    BeeLayoutPanel p = new BeeLayoutPanel();
+    LayoutPanel p = new LayoutPanel();
     double top = 0;
     double bottom = 0;
 
@@ -82,26 +82,26 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
 
     BeeLabel label = new BeeLabel(uri);
     p.add(label);
-    p.setWidgetVerticalPosition(label, Layout.Alignment.BEGIN);
-    p.setWidgetLeftRight(label, 10, Unit.PX, 10, Unit.PX);
+    p.setWidgetVerticalPosition(label, Alignment.BEGIN);
+    p.setWidgetLeftRight(label, 10, CssUnit.PX, 10, CssUnit.PX);
     top = 2;
 
     if (resource.isReadOnly()) {
       BeeLabel rd = new BeeLabel("read only");
       p.add(rd);
-      p.setWidgetVerticalPosition(rd, Layout.Alignment.END);
-      p.setWidgetHorizontalPosition(rd, Layout.Alignment.END);
+      p.setWidgetVerticalPosition(rd, Alignment.END);
+      p.setWidgetHorizontalPosition(rd, Alignment.END);
       bottom = 1.5;
     } else if (!BeeUtils.isEmpty(resource.getUri())) {
       BeeButton button = new BeeButton("Save", new SaveCommand());
       p.add(button);
-      p.setWidgetVerticalPosition(button, Layout.Alignment.END);
-      p.setWidgetLeftWidth(button, 42, Unit.PCT, 16, Unit.PCT);
+      p.setWidgetVerticalPosition(button, Alignment.END);
+      p.setWidgetLeftWidth(button, 42, CssUnit.PCT, 16, CssUnit.PCT);
       bottom = 2;
     }
 
     p.add(textArea);
-    p.setWidgetTopBottom(textArea, top, Unit.EM, bottom, Unit.EM);
+    p.setWidgetTopBottom(textArea, top, CssUnit.EM, bottom, CssUnit.EM);
     
     p.getElement().getStyle().clearPosition();
 

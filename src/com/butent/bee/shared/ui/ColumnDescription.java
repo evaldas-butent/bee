@@ -71,7 +71,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE,
-    DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE, AUTO_FIT, OPTIONS, ELEMENT_TYPE
+    DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE, AUTO_FIT, FLEXIBILITY, OPTIONS,
+    ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -96,6 +97,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Integer minWidth = null;
   private Integer maxWidth = null;
   private String autoFit = null;
+  private Flexibility flexibility = null;
 
   private Boolean sortable = null;
   private Boolean visible = null;
@@ -311,6 +313,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case FLEXIBILITY:
+          setFlexibility(Flexibility.restore(value));
+          break;
         case OPTIONS:
           setOptions(value);
           break;
@@ -381,6 +386,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return filterSupplierType;
   }
 
+  public Flexibility getFlexibility() {
+    return flexibility;
+  }
+
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
@@ -433,6 +442,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
         "Options", getOptions());
+    
+    if (getFlexibility() != null) {
+      info.addAll(getFlexibility().getInfo());
+    }
 
     if (getRelation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Relation", getRelation().getInfo());
@@ -739,6 +752,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case FLEXIBILITY:
+          arr[i++] = getFlexibility();
+          break;
         case OPTIONS:
           arr[i++] = getOptions();
           break;
@@ -799,6 +815,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setFilterSupplierType(FilterSupplierType filterSupplierType) {
     this.filterSupplierType = filterSupplierType;
+  }
+
+  public void setFlexibility(Flexibility flexibility) {
+    this.flexibility = flexibility;
   }
 
   public void setFooterStyle(StyleDeclaration footerStyle) {
@@ -913,7 +933,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
   }
-
+  
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }

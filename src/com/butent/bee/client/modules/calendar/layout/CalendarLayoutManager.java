@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
 import com.google.common.collect.Table;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.modules.calendar.Appointment;
@@ -20,6 +19,7 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class CalendarLayoutManager {
       Html separator = new Html();
 
       separator.setStyleName(CalendarStyleManager.COLUMN_SEPARATOR);
-      StyleUtils.setLeft(separator, width * i, Unit.PCT);
+      StyleUtils.setLeft(separator, width * i, CssUnit.PCT);
 
       container.add(separator);
     }

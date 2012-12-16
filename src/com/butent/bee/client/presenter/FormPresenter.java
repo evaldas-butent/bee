@@ -1,6 +1,7 @@
 package com.butent.bee.client.presenter;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -318,7 +319,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       if (!searchers.isEmpty()) {
         FilterHandler handler = new FilterHandler() {
           @Override
-          public Filter getEffectiveFilter(Collection<String> exclusions) {
+          public Filter getEffectiveFilter(ImmutableSet<String> exclusions) {
             return getDataProvider().getQueryFilter(ViewHelper.getFilter(FormPresenter.this,
                 getDataProvider(), exclusions));
           }

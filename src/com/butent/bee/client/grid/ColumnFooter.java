@@ -1,6 +1,6 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -18,8 +18,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Set;
-
 public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasFilterHandler {
 
   private static final int CLOSE_WIDTH = 16;
@@ -32,7 +30,7 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
   private State state = State.CLOSED;
   
   private final String id;
-  private final Set<String> exclusion = Sets.newHashSet();
+  private final ImmutableSet<String> exclusion;
 
   public ColumnFooter(AbstractFilterSupplier filterSupplier,
       NotificationListener notificationListener) {
@@ -42,7 +40,7 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
     this.notificationListener = notificationListener;
     
     this.id = DomUtils.createUniqueId("cf");
-    this.exclusion.add(this.id);
+    this.exclusion = ImmutableSet.of(this.id);
   }
 
   public Filter getFilter() {

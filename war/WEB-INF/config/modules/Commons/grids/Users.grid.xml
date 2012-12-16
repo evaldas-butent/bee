@@ -3,12 +3,13 @@
   
   name="Users" viewName="Users" caption="Vartotojai"
   editForm="User" newRowForm="User" newRowPopup="true"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="ID" flexGrow="0" />
     <DataColumn name="Login" caption="Prisijungimo vardas" />
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
-    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyName" caption="Įmonė" />
     <DataColumn name="Position" />
   </columns>
 </Grid>

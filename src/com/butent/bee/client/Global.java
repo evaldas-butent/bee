@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.UIObject;
@@ -39,6 +38,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -317,13 +317,13 @@ public class Global implements Module {
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, Unit widthUnit) {
+      String defaultValue, int maxLength, double width, CssUnit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         BeeConst.UNDEF, DialogConstants.OK, DialogConstants.CANCEL, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, Unit widthUnit, int timeout,
+      String defaultValue, int maxLength, double width, CssUnit widthUnit, int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     INP_BOXEN.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         timeout, confirmHtml, cancelHtml, initializer);
@@ -459,7 +459,7 @@ public class Global implements Module {
 
   public static void showGrid(IsTable<?, ?> table) {
     Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(table);
+    CellGrid grid = GridFactory.simpleGrid(table, BeeKeeper.getScreen().getActivePanelWidth());
     if (grid != null) {
       BeeKeeper.getScreen().updateActivePanel(grid);
     }

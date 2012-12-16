@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -53,9 +53,9 @@ public class ComputedStyles implements HasLength, HasInfo {
     if (BeeUtils.isEmpty(value)) {
       return DEFAULT_PIXEL_VALUE;
 
-    } else if (BeeUtils.containsSame(value, Unit.PX.getType())) {
-      Pair<Double, Unit> cssLength = StyleUtils.parseCssLength(value);
-      if (cssLength.getA() != null && Unit.PX.equals(cssLength.getB())) {
+    } else if (BeeUtils.containsSame(value, CssUnit.PX.getCaption())) {
+      Pair<Double, CssUnit> cssLength = StyleUtils.parseCssLength(value);
+      if (cssLength.getA() != null && CssUnit.PX.equals(cssLength.getB())) {
         return BeeUtils.toInt(cssLength.getA());
       } else {
         return DEFAULT_PIXEL_VALUE;

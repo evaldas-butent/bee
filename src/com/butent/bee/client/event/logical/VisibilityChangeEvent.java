@@ -1,5 +1,6 @@
 package com.butent.bee.client.event.logical;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
@@ -9,6 +10,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Map;
+
 public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> {
 
   public interface Handler extends EventHandler {
@@ -17,6 +20,8 @@ public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> 
 
   private static final Type<Handler> TYPE = new Type<Handler>();
   
+  private static final Map<String, HandlerRegistration> registry = Maps.newHashMap();
+
   public static void hideAndFire(Widget widget) {
     Assert.notNull(widget);
     if (widget.isVisible()) {
@@ -31,6 +36,10 @@ public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> 
   public static HandlerRegistration register(Handler handler) {
     return BeeKeeper.getBus().addHandler(TYPE, handler, false);
   }
+  
+  public static void register(String key, Handler handler) {
+    registry.put(key, register(handler));
+  }
 
   public static void showAndFire(Widget widget) {
     Assert.notNull(widget);
@@ -40,6 +49,13 @@ public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> 
       if (!BeeUtils.isEmpty(wId)) {
         BeeKeeper.getBus().fireEvent(new VisibilityChangeEvent(wId, true));
       }
+    }
+  }
+
+  public static void unregister(String key) {
+    HandlerRegistration handlerRegistration = registry.remove(key);
+    if (handlerRegistration != null) {
+      handlerRegistration.removeHandler();
     }
   }
   

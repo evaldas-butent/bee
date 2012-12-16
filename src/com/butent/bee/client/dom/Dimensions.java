@@ -3,7 +3,6 @@ package com.butent.bee.client.dom;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.style.StyleUtils;
@@ -12,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -24,25 +24,25 @@ import java.util.List;
 
 public class Dimensions implements HasInfo, HasDimensions {
 
-  private static final Unit DEFAULT_UNIT = Unit.PX;
+  private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
-  public static Unit normalizeUnit(Unit unit) {
+  public static CssUnit normalizeUnit(CssUnit unit) {
     return (unit == null) ? DEFAULT_UNIT : unit;
   }
 
-  private Unit widthUnit = null;
+  private CssUnit widthUnit = null;
   private Double widthValue = null;
-  private Unit heightUnit = null;
+  private CssUnit heightUnit = null;
   private Double heightValue = null;
 
-  private Unit minHeightUnit = null;
+  private CssUnit minHeightUnit = null;
   private Double minHeightValue = null;
-  private Unit minWidthUnit = null;
+  private CssUnit minWidthUnit = null;
   private Double minWidthValue = null;
 
-  private Unit maxHeightUnit = null;
+  private CssUnit maxHeightUnit = null;
   private Double maxHeightValue = null;
-  private Unit maxWidthUnit = null;
+  private CssUnit maxWidthUnit = null;
   private Double maxWidthValue = null;
 
   public Dimensions() {
@@ -59,16 +59,16 @@ public class Dimensions implements HasInfo, HasDimensions {
         maxWidth, DEFAULT_UNIT, maxHeight, DEFAULT_UNIT);
   }
 
-  public Dimensions(Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit) {
+  public Dimensions(Double widthValue, CssUnit widthUnit, Double heightValue, CssUnit heightUnit) {
     this.widthValue = widthValue;
     this.widthUnit = widthUnit;
     this.heightValue = heightValue;
     this.heightUnit = heightUnit;
   }
 
-  public Dimensions(Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit,
-      Double minWidthValue, Unit minWidthUnit, Double minHeightValue, Unit minHeightUnit,
-      Double maxWidthValue, Unit maxWidthUnit, Double maxHeightValue, Unit maxHeightUnit) {
+  public Dimensions(Double widthValue, CssUnit widthUnit, Double heightValue, CssUnit heightUnit,
+      Double minWidthValue, CssUnit minWidthUnit, Double minHeightValue, CssUnit minHeightUnit,
+      Double maxWidthValue, CssUnit maxWidthUnit, Double maxHeightValue, CssUnit maxHeightUnit) {
     this.widthValue = widthValue;
     this.widthUnit = widthUnit;
     this.heightValue = heightValue;
@@ -151,14 +151,17 @@ public class Dimensions implements HasInfo, HasDimensions {
     }
   }
 
-  public Unit getHeightUnit() {
+  @Override
+  public CssUnit getHeightUnit() {
     return heightUnit;
   }
 
+  @Override
   public Double getHeightValue() {
     return heightValue;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
 
@@ -193,7 +196,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     return info;
   }
 
-  public Unit getMaxHeightUnit() {
+  public CssUnit getMaxHeightUnit() {
     return maxHeightUnit;
   }
 
@@ -201,7 +204,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     return maxHeightValue;
   }
 
-  public Unit getMaxWidthUnit() {
+  public CssUnit getMaxWidthUnit() {
     return maxWidthUnit;
   }
 
@@ -209,7 +212,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     return maxWidthValue;
   }
 
-  public Unit getMinHeightUnit() {
+  public CssUnit getMinHeightUnit() {
     return minHeightUnit;
   }
 
@@ -217,7 +220,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     return minHeightValue;
   }
 
-  public Unit getMinWidthUnit() {
+  public CssUnit getMinWidthUnit() {
     return minWidthUnit;
   }
 
@@ -225,10 +228,12 @@ public class Dimensions implements HasInfo, HasDimensions {
     return minWidthValue;
   }
 
-  public Unit getWidthUnit() {
+  @Override
+  public CssUnit getWidthUnit() {
     return widthUnit;
   }
   
+  @Override
   public Double getWidthValue() {
     return widthValue;
   }
@@ -282,15 +287,17 @@ public class Dimensions implements HasInfo, HasDimensions {
     removeFrom(obj.getElement());
   }
 
-  public void setHeightUnit(Unit heightUnit) {
+  @Override
+  public void setHeightUnit(CssUnit heightUnit) {
     this.heightUnit = heightUnit;
   }
 
+  @Override
   public void setHeightValue(Double heightValue) {
     this.heightValue = heightValue;
   }
 
-  public void setMaxHeightUnit(Unit maxHeightUnit) {
+  public void setMaxHeightUnit(CssUnit maxHeightUnit) {
     this.maxHeightUnit = maxHeightUnit;
   }
 
@@ -298,7 +305,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.maxHeightValue = maxHeightValue;
   }
 
-  public void setMaxWidthUnit(Unit maxWidthUnit) {
+  public void setMaxWidthUnit(CssUnit maxWidthUnit) {
     this.maxWidthUnit = maxWidthUnit;
   }
 
@@ -306,7 +313,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.maxWidthValue = maxWidthValue;
   }
 
-  public void setMinHeightUnit(Unit minHeightUnit) {
+  public void setMinHeightUnit(CssUnit minHeightUnit) {
     this.minHeightUnit = minHeightUnit;
   }
 
@@ -314,7 +321,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.minHeightValue = minHeightValue;
   }
 
-  public void setMinWidthUnit(Unit minWidthUnit) {
+  public void setMinWidthUnit(CssUnit minWidthUnit) {
     this.minWidthUnit = minWidthUnit;
   }
 
@@ -322,10 +329,12 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.minWidthValue = minWidthValue;
   }
 
-  public void setWidthUnit(Unit widthUnit) {
+  @Override
+  public void setWidthUnit(CssUnit widthUnit) {
     this.widthUnit = widthUnit;
   }
 
+  @Override
   public void setWidthValue(Double widthValue) {
     this.widthValue = widthValue;
   }
@@ -346,7 +355,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     if (!BeeUtils.isEmpty(length)) {
       return;
     }
-    Pair<Double, Unit> pair = StyleUtils.parseCssLength(length);
+    Pair<Double, CssUnit> pair = StyleUtils.parseCssLength(length);
     if (pair == null) {
       return;
     }
@@ -372,7 +381,7 @@ public class Dimensions implements HasInfo, HasDimensions {
       Assert.untouchable();
     }
 
-    Unit unit = pair.getB();
+    CssUnit unit = pair.getB();
     if (unit == null) {
       return;
     }
@@ -392,24 +401,24 @@ public class Dimensions implements HasInfo, HasDimensions {
     }
   }
 
-  private void setStyleProperty(Style style, String name, Double value, Unit unit) {
+  private void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
     if (value == null) {
       return;
     }
     if (unit == null) {
-      style.setProperty(name, value, DEFAULT_UNIT);
+      StyleUtils.setProperty(style, name, value, DEFAULT_UNIT);
     } else {
-      style.setProperty(name, value, unit);
+      StyleUtils.setProperty(style, name, value, unit);
     }
   }
 
-  private String toCssLength(Double value, Unit unit) {
+  private String toCssLength(Double value, CssUnit unit) {
     if (value == null) {
       return BeeConst.STRING_EMPTY;
     }
     if (unit == null) {
       return BeeUtils.toString(value);
     }
-    return BeeUtils.toString(value) + unit.getType();
+    return BeeUtils.toString(value) + unit.getCaption();
   }
 }

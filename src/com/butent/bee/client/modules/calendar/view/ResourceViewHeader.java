@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.calendar.view;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -13,6 +12,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.CssUnit;
 
 import java.util.List;
 
@@ -53,8 +53,8 @@ public class ResourceViewHeader extends Horizontal {
       BeeLabel label = new BeeLabel(caption);
       label.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CELL);
 
-      StyleUtils.setLeft(label, width * i, Unit.PCT);
-      StyleUtils.setWidth(label, width, Unit.PCT);
+      StyleUtils.setLeft(label, width * i, CssUnit.PCT);
+      StyleUtils.setWidth(label, width, CssUnit.PCT);
 
       panel.add(label);
     }

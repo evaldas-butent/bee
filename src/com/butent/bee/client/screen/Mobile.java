@@ -3,7 +3,6 @@ package com.butent.bee.client.screen;
 import com.google.common.base.Objects;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -16,7 +15,7 @@ import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -30,6 +29,7 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -120,7 +120,7 @@ public class Mobile extends ScreenImpl {
     showWidget(widget, false);
   }
 
-  protected int addLogToggle(BeeLayoutPanel panel) {
+  protected int addLogToggle(LayoutPanel panel) {
     final BeeCheckBox toggle = new BeeCheckBox("Log");
 
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -198,13 +198,13 @@ public class Mobile extends ScreenImpl {
 
   @Override
   protected IdentifiableWidget initSouth() {
-    BeeLayoutPanel p = new BeeLayoutPanel();
+    LayoutPanel p = new LayoutPanel();
 
     int width = DomUtils.getClientWidth();
     int pct = BeeUtils.toInt(BeeUtils.rescale(width, 320, 800, 28, 50));
 
     final CliWidget cli = new CliWidget();
-    p.addLeftWidthTop(cli, 3, Unit.PX, pct, Unit.PCT, 3, Unit.PX);
+    p.addLeftWidthTop(cli, 3, CssUnit.PX, pct, CssUnit.PCT, 3, CssUnit.PX);
 
     BeeImage play = new BeeImage(Global.getImages().play(), new Command() {
       @Override
@@ -212,7 +212,7 @@ public class Mobile extends ScreenImpl {
         CliWorker.execute(cli.getValue());
       }
     });
-    p.addLeftTop(play, pct + 4, Unit.PCT, 2, Unit.PX);
+    p.addLeftTop(play, pct + 4, CssUnit.PCT, 2, CssUnit.PX);
 
     Horizontal hor = new Horizontal();
 
@@ -232,7 +232,7 @@ public class Mobile extends ScreenImpl {
     setSignature(user);
 
     int right = addLogToggle(p);
-    p.addLeftRightTop(hor, pct + 12, Unit.PCT, right, Unit.PX, 1, Unit.PX);
+    p.addLeftRightTop(hor, pct + 12, CssUnit.PCT, right, CssUnit.PX, 1, CssUnit.PX);
 
     return p;
   }

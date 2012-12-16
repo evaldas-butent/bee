@@ -4,6 +4,6 @@
   name="DocumentTypes" viewName="DocumentTypes" caption="Dokumentų tipai">
   
   <columns>
-    <DataColumn name="Name" source="Name" caption="Tipas" />
+    <DataColumn name="Name" source="Name" caption="Tipas" minWidth="200" />
   </columns>
 </Grid>

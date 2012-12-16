@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
@@ -34,11 +33,13 @@ import com.butent.bee.client.modules.calendar.layout.AppointmentStackingManager;
 import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.MonthLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -446,14 +447,14 @@ public class MonthView extends CalendarView {
         Widget bar = ((AppointmentWidget) widget).getCompactBar();
 
         double x = startMinutes * 100d / TimeUtils.MINUTES_PER_DAY;
-        bar.getElement().getStyle().setLeft(BeeUtils.round(x, PERCENT_SCALE), Unit.PCT);
+        StyleUtils.setLeft(bar, BeeUtils.round(x, PERCENT_SCALE), CssUnit.PCT);
         
         if (TimeUtils.sameDate(start, end)) {
           x = (TimeUtils.MINUTES_PER_DAY - endMinutes) * 100d / TimeUtils.MINUTES_PER_DAY;
         } else {
           x = 0;
         }
-        bar.getElement().getStyle().setRight(BeeUtils.round(x, PERCENT_SCALE), Unit.PCT);
+        StyleUtils.setRight(bar, BeeUtils.round(x, PERCENT_SCALE), CssUnit.PCT);
       }
     }
 
@@ -464,10 +465,10 @@ public class MonthView extends CalendarView {
         + cellPosition * (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP);
     double top = 100d * y / grid.getOffsetHeight();
 
-    widget.getElement().getStyle().setLeft(BeeUtils.round(left, PERCENT_SCALE), Unit.PCT);
-    widget.getElement().getStyle().setWidth(BeeUtils.round(width, PERCENT_SCALE), Unit.PCT);
+    StyleUtils.setLeft(widget, BeeUtils.round(left, PERCENT_SCALE), CssUnit.PCT);
+    StyleUtils.setWidth(widget, BeeUtils.round(width, PERCENT_SCALE), CssUnit.PCT);
 
-    widget.getElement().getStyle().setTop(BeeUtils.round(top, PERCENT_SCALE), Unit.PCT);
+    StyleUtils.setTop(widget, BeeUtils.round(top, PERCENT_SCALE), CssUnit.PCT);
   }
   
   private void showAppointments(long calendarId, List<Appointment> appointments) {

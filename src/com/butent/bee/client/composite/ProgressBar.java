@@ -2,7 +2,6 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -11,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -162,7 +162,7 @@ public class ProgressBar extends Widget implements IdentifiableWidget, RequiresR
     this.curProgress = Math.max(minProgress, Math.min(maxProgress, curProgress));
 
     int percent = (int) (100 * getPercent());
-    barElement.getStyle().setWidth(percent, Unit.PCT);
+    StyleUtils.setWidth(barElement, percent, CssUnit.PCT);
     textElement.setInnerHTML(generateText());
 
     String textClassName = textElement.getClassName();

@@ -3,6 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="RoleRights" viewName="Rights" caption="Teisės"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
     <DataColumn name="ObjectType" caption="Tipas" readOnly="true" itemKey="RightsObjectType" />

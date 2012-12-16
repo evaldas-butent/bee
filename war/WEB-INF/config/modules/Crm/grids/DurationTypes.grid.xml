@@ -4,6 +4,6 @@
   name="DurationTypes" viewName="DurationTypes" caption="Darbų tipai">
   
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" flexGrow="1" flexShrink="1" />
   </columns>
 </Grid>

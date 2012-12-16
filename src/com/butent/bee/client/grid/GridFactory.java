@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.cell.HtmlCell;
 import com.butent.bee.client.grid.column.BooleanColumn;
 import com.butent.bee.client.grid.column.CurrencyColumn;
@@ -52,6 +53,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.CellType;
+import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -390,7 +392,7 @@ public class GridFactory {
     Global.showGrid(new PropertiesData(info, "Grid Name", "Column Count"));
   }
 
-  public static CellGrid simpleGrid(IsTable<?, ?> table) {
+  public static CellGrid simpleGrid(IsTable<?, ?> table, int containerWidth) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -419,10 +421,18 @@ public class GridFactory {
 
     grid.setReadOnly(true);
 
-    grid.setHeaderCellHeight(23);
-    grid.setBodyCellHeight(20);
-    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
+    grid.setMinCellWidth(40);
+    grid.setMaxCellWidth(400);
+    
     grid.estimateHeaderWidths(true);
+    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
+    
+    grid.setDefaultFlexibility(new Flexibility(1, -1, true));
+    int distrWidth = containerWidth;
+    if (r > 10) {
+      distrWidth -= DomUtils.getScrollBarWidth();
+    }
+    grid.doFlexLayout(distrWidth);
 
     grid.setRowCount(r, false);
     grid.setRowData(table.getRows().getList(), true);

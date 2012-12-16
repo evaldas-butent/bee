@@ -66,11 +66,13 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
 
   protected RendererDescription() {
   }
-
+  
+  @Override
   public void deserialize(String s) {
     deserializeMembers(Codec.beeDeserializeCollection(s));
   }
   
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Type", getType(),
@@ -96,6 +98,7 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     return items;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -112,6 +115,7 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     return valueStartIndex;
   }
 
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
@@ -164,6 +168,7 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     this.items = items;
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }

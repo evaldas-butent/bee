@@ -280,7 +280,7 @@ public class Images {
     map.put(key("attachment"), resources.attachment());
 
     map.put(key("bookmark"), resources.bookmark());
-    map.put(key("bookmark_add"), resources.bookmarkAdd());
+    map.put(key("bookmarkAdd"), resources.bookmarkAdd());
 
     map.put(key("calendar"), resources.calendar());
 

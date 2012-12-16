@@ -3,12 +3,12 @@
   xmlns:ui="http://www.butent.com/ui"
  
   name="Themes" viewName="Themes" caption="Temos" newRowCaption="Nauja tema"
-  editForm="Theme" minColumnWidth="100"
+  editForm="Theme" flexGrow="1" flexShrink="1"
   >
   <body height="40" />
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Description" caption="Aprašymas" flexShrink="3" />
 
     <RelColumn name="DefaultColorName" caption="Pagrindinė spalva:">
       <dynStyle>

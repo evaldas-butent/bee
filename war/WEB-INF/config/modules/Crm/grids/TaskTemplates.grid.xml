@@ -4,12 +4,13 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="TaskTemplates" viewName="TaskTemplates" caption="Užduočių šablonai"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
     <DataColumn name="Name" />
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
-    <DataColumn name="ExpectedDuration" />
+    <DataColumn name="ExpectedDuration" caption="Trukmė" flexBasis="5" flexBasisUnit="em" />
     <DataColumn name="Description" />
     <RelColumn name="Company" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"

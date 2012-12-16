@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.TextTransform;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.user.client.ui.UIObject;
@@ -19,6 +18,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.RangeMap;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -39,7 +39,7 @@ public class Font implements HasInfo {
     private FontWeight weight = null;
     private FontSize absoluteSize = null;
     private double sizeValue = UNKNOWN;
-    private Unit sizeUnit = null;
+    private CssUnit sizeCssUnit = null;
     private String family = null;
 
     private String lineHeight = null;
@@ -55,7 +55,7 @@ public class Font implements HasInfo {
 
       result.setAbsoluteSize(absoluteSize);
       result.setSizeValue(sizeValue);
-      result.setSizeUnit(sizeUnit);
+      result.setSizeCssUnit(sizeCssUnit);
 
       result.setFamily(family);
 
@@ -81,9 +81,9 @@ public class Font implements HasInfo {
       return this;
     }
 
-    public Builder size(double value, Unit unit) {
+    public Builder size(double value, CssUnit unit) {
       this.sizeValue = value;
-      this.sizeUnit = unit;
+      this.sizeCssUnit = unit;
       return this;
     }
 
@@ -125,8 +125,8 @@ public class Font implements HasInfo {
 
   private static final double UNKNOWN = -1.0;
 
-  private static final RangeMap<Double, Unit> DEFAULT_UNITS =
-      RangeMap.create(Ranges.lessThan(4.0), Unit.EM, Ranges.atLeast(4.0), Unit.PX);
+  private static final RangeMap<Double, CssUnit> DEFAULT_UNITS =
+      RangeMap.create(Ranges.lessThan(4.0), CssUnit.EM, Ranges.atLeast(4.0), CssUnit.PX);
   
   public static Font getComputed(Element el) {
     Map<String, String> styles = ComputedStyles.getNormalized(el);
@@ -204,7 +204,7 @@ public class Font implements HasInfo {
       }
       if (font.getSizeValue() > 0) {
         result.setSizeValue(font.getSizeValue());
-        result.setSizeUnit(font.getSizeUnit());
+        result.setSizeCssUnit(font.getSizeCssUnit());
       }
       if (!BeeUtils.isEmpty(font.getFamily())) {
         result.setFamily(font.getFamily());
@@ -307,7 +307,7 @@ public class Font implements HasInfo {
   private FontWeight weight;
   private FontSize absoluteSize;
   private double sizeValue;
-  private Unit sizeUnit;
+  private CssUnit sizeCssUnit;
   private String family;
 
   private String lineHeight;
@@ -336,12 +336,12 @@ public class Font implements HasInfo {
       st.setFontWeight(getWeight());
     }
 
-    if (getSizeValue() > 0 && getSizeUnit() != null) {
-      st.setFontSize(getSizeValue(), getSizeUnit());
+    if (getSizeValue() > 0 && getSizeCssUnit() != null) {
+      StyleUtils.setFontSize(st, getSizeValue(), getSizeCssUnit());
     } else if (getAbsoluteSize() != null) {
       StyleUtils.setFontSize(st, getAbsoluteSize());
     } else if (getSizeValue() > 0) {
-      st.setFontSize(getSizeValue(), DEFAULT_UNITS.get(getSizeValue()));
+      StyleUtils.setFontSize(st, getSizeValue(), DEFAULT_UNITS.get(getSizeValue()));
     }
 
     if (!BeeUtils.isEmpty(getFamily())) {
@@ -381,8 +381,8 @@ public class Font implements HasInfo {
       builder.append(StyleUtils.buildFontWeight(getWeight()));
     }
 
-    if (getSizeValue() > 0 && getSizeUnit() != null) {
-      builder.append(StyleUtils.buildFontSize(getSizeValue(), getSizeUnit()));
+    if (getSizeValue() > 0 && getSizeCssUnit() != null) {
+      builder.append(StyleUtils.buildFontSize(getSizeValue(), getSizeCssUnit()));
     } else if (getAbsoluteSize() != null) {
       builder.append(StyleUtils.buildFontSize(getAbsoluteSize()));
     } else if (getSizeValue() > 0) {
@@ -415,7 +415,7 @@ public class Font implements HasInfo {
 
     result.setAbsoluteSize(getAbsoluteSize());
     result.setSizeValue(getSizeValue());
-    result.setSizeUnit(getSizeUnit());
+    result.setSizeCssUnit(getSizeCssUnit());
 
     result.setFamily(getFamily());
 
@@ -453,8 +453,8 @@ public class Font implements HasInfo {
     if (getSizeValue() > 0) {
       info.add(new Property("Font Size Value", BeeUtils.toString(getSizeValue())));
     }
-    if (getSizeUnit() != null) {
-      info.add(new Property("Font Size Unit", getSizeUnit().getType()));
+    if (getSizeCssUnit() != null) {
+      info.add(new Property("Font Size CssUnit", getSizeCssUnit().getCaption()));
     }
 
     if (!BeeUtils.isEmpty(getFamily())) {
@@ -483,8 +483,8 @@ public class Font implements HasInfo {
     return lineHeight;
   }
 
-  public Unit getSizeUnit() {
-    return sizeUnit;
+  public CssUnit getSizeCssUnit() {
+    return sizeCssUnit;
   }
 
   public double getSizeValue() {
@@ -572,8 +572,8 @@ public class Font implements HasInfo {
     this.lineHeight = lineHeight;
   }
 
-  public void setSizeUnit(Unit sizeUnit) {
-    this.sizeUnit = sizeUnit;
+  public void setSizeCssUnit(CssUnit sizeCssUnit) {
+    this.sizeCssUnit = sizeCssUnit;
   }
 
   public void setSizeValue(double sizeValue) {
@@ -611,10 +611,10 @@ public class Font implements HasInfo {
     }
 
     if (BeeUtils.isDigit(input.trim().charAt(0))) {
-      Pair<Double, Unit> cssLength = StyleUtils.parseCssLength(input);
+      Pair<Double, CssUnit> cssLength = StyleUtils.parseCssLength(input);
       if (cssLength != null && cssLength.getA() != null) {
         setSizeValue(cssLength.getA());
-        setSizeUnit(cssLength.getB());
+        setSizeCssUnit(cssLength.getB());
       } else if (BeeUtils.isDouble(input)) {
         setSizeValue(BeeUtils.toDouble(input));
       }

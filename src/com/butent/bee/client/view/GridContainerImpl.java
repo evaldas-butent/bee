@@ -91,6 +91,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean lastEnabled = false;
 
   private List<String> favorite = Lists.newArrayList();
+  
+  private boolean resizeSuspended = false;
 
   public GridContainerImpl() {
     super(-1);
@@ -529,9 +531,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void onResize() {
-    if (isAttached() && providesResize()) {
+    if (isAttached() && !isResizeSuspended()) {
       super.onResize();
-      getGridView().getGrid().updatePageSize();
     }
   }
 
@@ -745,6 +746,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return hasSearch;
   }
 
+  private boolean isResizeSuspended() {
+    return resizeSuspended;
+  }
+
   private void setExtCreation(WidgetCreationCallback extCreation) {
     this.extCreation = extCreation;
   }
@@ -777,6 +782,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     this.lastRow = lastRow;
   }
 
+  private void setResizeSuspended(boolean resizeSuspended) {
+    this.resizeSuspended = resizeSuspended;
+  }
+
   private void setRowMessage(Evaluator rowMessage) {
     this.rowMessage = rowMessage;
   }
@@ -786,9 +795,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   private void showChildren(boolean show) {
-    if (!show) {
-      setProvidesResize(false);
-    }
+    setResizeSuspended(true);
 
     if (hasHeader()) {
       HeaderView header = getHeader();
@@ -814,10 +821,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         setWidgetSize(extWidget.getWidget().asWidget(), show ? extWidget.getSize() : 0);
       }
     }
-
-    if (show) {
-      setProvidesResize(true);
-    }
+    
+    setResizeSuspended(false);
   }
 
   private boolean wasLastEnabled() {

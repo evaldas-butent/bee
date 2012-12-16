@@ -2,7 +2,6 @@ package com.butent.bee.client.layout;
 
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragEnterEvent;
@@ -28,8 +27,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.ui.CssUnit;
 
 /**
  * Implements a class for panels that can contain multiple child widgets and manages their creation
@@ -104,131 +105,131 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     return addBitlessDomHandler(handler, DropEvent.getType());
   }
   
-  public void addLeftBottom(Widget child, double left, Unit leftUnit, double bottom,
-      Unit bottomUnit) {
+  public void addLeftBottom(Widget child, double left, CssUnit leftCssUnit, double bottom,
+      CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildBottom(child, bottom, bottomUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildBottom(child, bottom, bottomCssUnit);
     add(child);
   }
 
   public void addLeftBottom(Widget child, int left, int bottom) {
-    addLeftBottom(child, left, Unit.PX, bottom, Unit.PX);
+    addLeftBottom(child, left, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addLeftRightTop(Widget child, double left, Unit leftUnit,
-      double right, Unit rightUnit, double top, Unit topUnit) {
+  public void addLeftRightTop(Widget child, double left, CssUnit leftCssUnit,
+      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildRight(child, right, rightUnit);
-    setChildTop(child, top, topUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildRight(child, right, rightCssUnit);
+    setChildTop(child, top, topCssUnit);
     add(child);
   }
 
   public void addLeftRightTop(Widget child, int left, int right, int top) {
-    addLeftRightTop(child, left, Unit.PX, right, Unit.PX, top, Unit.PX);
+    addLeftRightTop(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX);
   }
 
-  public void addLeftRightTopBottom(Widget child, double left, Unit leftUnit,
-      double right, Unit rightUnit, double top, Unit topUnit, double bottom, Unit bottomUnit) {
+  public void addLeftRightTopBottom(Widget child, double left, CssUnit leftCssUnit,
+      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit, double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildRight(child, right, rightUnit);
-    setChildTop(child, top, topUnit);
-    setChildBottom(child, bottom, bottomUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildRight(child, right, rightCssUnit);
+    setChildTop(child, top, topCssUnit);
+    setChildBottom(child, bottom, bottomCssUnit);
     add(child);
   }
 
   public void addLeftRightTopBottom(Widget child, int left, int right, int top, int bottom) {
-    addLeftRightTopBottom(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, bottom, Unit.PX);
+    addLeftRightTopBottom(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addLeftRightTopHeight(Widget child, double left, Unit leftUnit,
-      double right, Unit rightUnit, double top, Unit topUnit, double height, Unit heightUnit) {
+  public void addLeftRightTopHeight(Widget child, double left, CssUnit leftCssUnit,
+      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit, double height, CssUnit heightCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildRight(child, right, rightUnit);
-    setChildTop(child, top, topUnit);
-    setChildHeight(child, height, heightUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildRight(child, right, rightCssUnit);
+    setChildTop(child, top, topCssUnit);
+    setChildHeight(child, height, heightCssUnit);
     add(child);
   }
 
   public void addLeftRightTopHeight(Widget child, int left, int right, int top, int height) {
-    addLeftRightTopHeight(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, height, Unit.PX);
+    addLeftRightTopHeight(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX, height, CssUnit.PX);
   }
 
-  public void addLeftTop(Widget child, double left, Unit leftUnit, double top, Unit topUnit) {
+  public void addLeftTop(Widget child, double left, CssUnit leftCssUnit, double top, CssUnit topCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildTop(child, top, topUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildTop(child, top, topCssUnit);
     add(child);
   }
 
   public void addLeftTop(Widget child, int left, int top) {
-    addLeftTop(child, left, Unit.PX, top, Unit.PX);
+    addLeftTop(child, left, CssUnit.PX, top, CssUnit.PX);
   }
 
-  public void addLeftWidthTopBottom(Widget child, double left, Unit leftUnit,
-      double width, Unit widthUnit, double top, Unit topUnit, double bottom, Unit bottomUnit) {
+  public void addLeftWidthTopBottom(Widget child, double left, CssUnit leftCssUnit,
+      double width, CssUnit widthCssUnit, double top, CssUnit topCssUnit, double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildLeft(child, left, leftUnit);
-    setChildWidth(child, width, widthUnit);
-    setChildTop(child, top, topUnit);
-    setChildBottom(child, bottom, bottomUnit);
+    setChildLeft(child, left, leftCssUnit);
+    setChildWidth(child, width, widthCssUnit);
+    setChildTop(child, top, topCssUnit);
+    setChildBottom(child, bottom, bottomCssUnit);
     add(child);
   }
 
   public void addLeftWidthTopBottom(Widget child, int left, int width, int top, int bottom) {
-    addLeftWidthTopBottom(child, left, Unit.PX, width, Unit.PX, top, Unit.PX, bottom, Unit.PX);
+    addLeftWidthTopBottom(child, left, CssUnit.PX, width, CssUnit.PX, top, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addRightBottom(Widget child, double right, Unit rightUnit, double bottom,
-      Unit bottomUnit) {
+  public void addRightBottom(Widget child, double right, CssUnit rightCssUnit, double bottom,
+      CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildRight(child, right, rightUnit);
-    setChildBottom(child, bottom, bottomUnit);
+    setChildRight(child, right, rightCssUnit);
+    setChildBottom(child, bottom, bottomCssUnit);
     add(child);
   }
 
   public void addRightBottom(Widget child, int right, int bottom) {
-    addRightBottom(child, right, Unit.PX, bottom, Unit.PX);
+    addRightBottom(child, right, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addRightTop(Widget child, double right, Unit rightUnit, double top, Unit topUnit) {
+  public void addRightTop(Widget child, double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
-    setChildRight(child, right, rightUnit);
-    setChildTop(child, top, topUnit);
+    setChildRight(child, right, rightCssUnit);
+    setChildTop(child, top, topCssUnit);
     add(child);
   }
 
   public void addRightTop(Widget child, int right, int top) {
-    addRightTop(child, right, Unit.PX, top, Unit.PX);
+    addRightTop(child, right, CssUnit.PX, top, CssUnit.PX);
   }
 
-  public void addTopBottomFillHorizontal(Widget child, double top, Unit topUnit,
-      double bottom, Unit bottomUnit) {
-    addLeftRightTopBottom(child, 0, Unit.PX, 0, Unit.PX, top, topUnit, bottom, bottomUnit);
+  public void addTopBottomFillHorizontal(Widget child, double top, CssUnit topCssUnit,
+      double bottom, CssUnit bottomCssUnit) {
+    addLeftRightTopBottom(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit, bottom, bottomCssUnit);
   }
 
   public void addTopBottomFillHorizontal(Widget child, int top, int bottom) {
-    addTopBottomFillHorizontal(child, top, Unit.PX, bottom, Unit.PX);
+    addTopBottomFillHorizontal(child, top, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addTopHeightFillHorizontal(Widget child, double top, Unit topUnit,
-      double height, Unit heightUnit) {
-    addLeftRightTopHeight(child, 0, Unit.PX, 0, Unit.PX, top, topUnit, height, heightUnit);
+  public void addTopHeightFillHorizontal(Widget child, double top, CssUnit topCssUnit,
+      double height, CssUnit heightCssUnit) {
+    addLeftRightTopHeight(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit, height, heightCssUnit);
   }
 
   public void addTopHeightFillHorizontal(Widget child, int top, int height) {
-    addTopHeightFillHorizontal(child, top, Unit.PX, height, Unit.PX);
+    addTopHeightFillHorizontal(child, top, CssUnit.PX, height, CssUnit.PX);
   }
 
   @Override
@@ -270,31 +271,31 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     }
   }
 
-  private void setChildBottom(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setBottom(value, unit);
+  private void setChildBottom(Widget child, double value, CssUnit unit) {
+    StyleUtils.setBottom(child, value, unit);
   }
 
-  private void setChildHeight(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setHeight(value, unit);
+  private void setChildHeight(Widget child, double value, CssUnit unit) {
+    StyleUtils.setHeight(child, value, unit);
   }
 
-  private void setChildLeft(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setLeft(value, unit);
+  private void setChildLeft(Widget child, double value, CssUnit unit) {
+    StyleUtils.setLeft(child, value, unit);
   }
 
   private void setChildPosition(Widget child) {
     child.getElement().getStyle().setPosition(Position.ABSOLUTE);
   }
 
-  private void setChildRight(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setRight(value, unit);
+  private void setChildRight(Widget child, double value, CssUnit unit) {
+    StyleUtils.setRight(child, value, unit);
   }
 
-  private void setChildTop(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setTop(value, unit);
+  private void setChildTop(Widget child, double value, CssUnit unit) {
+    StyleUtils.setTop(child, value, unit);
   }
 
-  private void setChildWidth(Widget child, double value, Unit unit) {
-    child.getElement().getStyle().setWidth(value, unit);
+  private void setChildWidth(Widget child, double value, CssUnit unit) {
+    StyleUtils.setWidth(child, value, unit);
   }
 }

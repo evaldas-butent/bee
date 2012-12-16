@@ -3,7 +3,6 @@ package com.butent.bee.client.layout;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragEnterEvent;
@@ -35,6 +34,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -47,7 +47,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     IdentifiableWidget, HasExtendedInfo, HasAllDragAndDropHandlers {
 
   protected static class LayoutData {
-    
+
     private Direction direction;
     private int size;
 
@@ -75,7 +75,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   }
 
   protected abstract class Splitter extends CustomDiv implements HasInfo {
-    
+
     private final int size;
     private final boolean reverse;
 
@@ -98,7 +98,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
       sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE);
     }
-    
+
     @Override
     public List<Property> getInfo() {
       return PropertyUtils.createProperties(
@@ -217,9 +217,9 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       if (index <= 0) {
         return false;
       }
-      
+
       setTarget(Split.this.getWidget(index - 1));
-      
+
       int targetSize = getSize(getTarget());
       int centerSize = getSize(Split.this.getCenter().asWidget());
       setMaxSize(targetSize + centerSize - size * 2);
@@ -233,7 +233,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     private HorizontalSplitter(int size, boolean reverse) {
       super(size, reverse);
 
-      getElement().getStyle().setWidth(size, Unit.PX);
+      StyleUtils.setWidth(getElement(), size);
       addStyleName("bee-HSplitter");
     }
 
@@ -258,7 +258,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     private VerticalSplitter(int size, boolean reverse) {
       super(size, reverse);
 
-      getElement().getStyle().setHeight(size, Unit.PX);
+      StyleUtils.setHeight(getElement(), size);
       addStyleName("bee-VSplitter");
     }
 
@@ -278,7 +278,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     }
   }
 
-  protected static final Unit UNIT = Unit.PX;
+  protected static final CssUnit UNIT = CssUnit.PX;
 
   private static final int DEFAULT_SPLITTER_SIZE = 8;
 
@@ -298,8 +298,6 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   private final int splitterSize;
 
   private IdentifiableWidget center = null;
-
-  private boolean providesResize = true;
 
   public Split() {
     this(DEFAULT_SPLITTER_SIZE);
@@ -531,10 +529,6 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     resizeChildren();
   }
 
-  public boolean providesResize() {
-    return providesResize;
-  }
-
   @Override
   public boolean remove(Widget w) {
     Assert.notNull(w);
@@ -601,10 +595,6 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     DomUtils.setId(this, id);
   }
 
-  public void setProvidesResize(boolean providesResize) {
-    this.providesResize = providesResize;
-  }
-
   public void setWidgetMinSize(Widget child, int minSize) {
     Splitter splitter = getAssociatedSplitter(child);
     if (splitter != null) {
@@ -630,10 +620,10 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     }
     add(widget);
   }
-  
+
   protected void convertToCenter(IdentifiableWidget child) {
     removeAssociatedSplitter(child.asWidget());
-    
+
     WidgetCollection widgets = getChildren();
 
     int index = widgets.indexOf(child.asWidget());
@@ -648,15 +638,15 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     if (direction != null) {
       child.asWidget().removeStyleName(STYLE_NAME + direction.getStyleSuffix());
     }
-    
+
     data.setDirection(Direction.CENTER);
     data.setSize(0);
 
     child.asWidget().addStyleName(STYLE_NAME + Direction.CENTER.getStyleSuffix());
-    
+
     StyleUtils.clearWidth(child.asWidget());
     StyleUtils.clearHeight(child.asWidget());
-    
+
     setCenter(child);
   }
 
@@ -761,11 +751,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
     insert(splitter, direction, size, before, BeeConst.UNDEF);
   }
-  
+
   protected boolean isSplitter(Widget w) {
     return w instanceof Splitter;
   }
-  
+
   protected void layoutChildren() {
     int left = 0;
     int right = 0;
@@ -782,41 +772,41 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
       switch (direction) {
         case NORTH:
-          style.setLeft(left, UNIT);
-          style.setRight(right, UNIT);
+          StyleUtils.setLeft(style, left, UNIT);
+          StyleUtils.setRight(style, right, UNIT);
 
-          style.setTop(top, UNIT);
-          style.setHeight(size, UNIT);
+          StyleUtils.setTop(style, top, UNIT);
+          StyleUtils.setHeight(style, size, UNIT);
 
           top += size;
           break;
 
         case SOUTH:
-          style.setLeft(left, UNIT);
-          style.setRight(right, UNIT);
+          StyleUtils.setLeft(style, left, UNIT);
+          StyleUtils.setRight(style, right, UNIT);
 
-          style.setBottom(bottom, UNIT);
-          style.setHeight(size, UNIT);
+          StyleUtils.setBottom(style, bottom, UNIT);
+          StyleUtils.setHeight(style, size, UNIT);
 
           bottom += size;
           break;
 
         case WEST:
-          style.setLeft(left, UNIT);
-          style.setWidth(size, UNIT);
+          StyleUtils.setLeft(style, left, UNIT);
+          StyleUtils.setWidth(style, size, UNIT);
 
-          style.setTop(top, UNIT);
-          style.setBottom(bottom, UNIT);
+          StyleUtils.setTop(style, top, UNIT);
+          StyleUtils.setBottom(style, bottom, UNIT);
 
           left += size;
           break;
 
         case EAST:
-          style.setRight(right, UNIT);
-          style.setWidth(size, UNIT);
+          StyleUtils.setRight(style, right, UNIT);
+          StyleUtils.setWidth(style, size, UNIT);
 
-          style.setTop(top, UNIT);
-          style.setBottom(bottom, UNIT);
+          StyleUtils.setTop(style, top, UNIT);
+          StyleUtils.setBottom(style, bottom, UNIT);
 
           right += size;
           break;
@@ -829,11 +819,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     if (getCenter() != null) {
       Style style = getCenter().asWidget().getElement().getStyle();
 
-      style.setLeft(left, UNIT);
-      style.setRight(right, UNIT);
+      StyleUtils.setLeft(style, left, UNIT);
+      StyleUtils.setRight(style, right, UNIT);
 
-      style.setTop(top, UNIT);
-      style.setBottom(bottom, UNIT);
+      StyleUtils.setTop(style, top, UNIT);
+      StyleUtils.setBottom(style, bottom, UNIT);
     }
   }
 
@@ -879,13 +869,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       return remove(splitter);
     }
   }
-  
+
   private void resizeChildren() {
-    if (providesResize()) {
-      for (Widget child : getChildren()) {
-        if (child instanceof RequiresResize) {
-          ((RequiresResize) child).onResize();
-        }
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize && (child == getCenter() || getWidgetSize(child) > 0)) {
+        ((RequiresResize) child).onResize();
       }
     }
   }

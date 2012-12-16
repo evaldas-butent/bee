@@ -6,12 +6,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -44,7 +45,7 @@ public class Rulers {
     Style style = lineRuler.getStyle();
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-100);
-    style.setTop(-100, Unit.PX);
+    StyleUtils.setTop(style, -100);
 
     Document.get().getBody().appendChild(lineRuler);
 
@@ -55,7 +56,7 @@ public class Rulers {
     style = areaRuler.getStyle();
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-200);
-    style.setTop(-200, Unit.PX);
+    StyleUtils.setTop(style, -200);
 
     Document.get().getBody().appendChild(areaRuler);
 
@@ -66,10 +67,10 @@ public class Rulers {
     style = fixedUnitRuler.getStyle();
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-300);
-    style.setTop(-300, Unit.PX);
+    StyleUtils.setTop(style, -300);
 
-    style.setWidth(unitRulerScale, Unit.CM);
-    style.setHeight(unitRulerScale, Unit.CM);
+    StyleUtils.setWidth(style, unitRulerScale, CssUnit.CM);
+    StyleUtils.setHeight(style, unitRulerScale, CssUnit.CM);
 
     Document.get().getBody().appendChild(fixedUnitRuler);
 
@@ -80,10 +81,10 @@ public class Rulers {
     style = relativeUnitRuler.getStyle();
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-400);
-    style.setTop(-400, Unit.PX);
+    StyleUtils.setTop(style, -400);
 
-    style.setWidth(unitRulerScale, Unit.EM);
-    style.setHeight(unitRulerScale, Unit.EX);
+    StyleUtils.setWidth(style, unitRulerScale, CssUnit.EM);
+    StyleUtils.setHeight(style, unitRulerScale, CssUnit.EX);
 
     Document.get().getBody().appendChild(relativeUnitRuler);
   }
@@ -100,19 +101,19 @@ public class Rulers {
     return getWidth(areaRuler, font, content, asHtml);
   }
 
-  public static int getIntPixels(double value, Unit unit) {
+  public static int getIntPixels(double value, CssUnit unit) {
     return BeeUtils.toInt(getPixels(value, unit));
   }
 
-  public static int getIntPixels(double value, Unit unit, double containerSize) {
+  public static int getIntPixels(double value, CssUnit unit, double containerSize) {
     return BeeUtils.toInt(getPixels(value, unit, containerSize));
   }
 
-  public static int getIntPixels(double value, Unit unit, Font font) {
+  public static int getIntPixels(double value, CssUnit unit, Font font) {
     return BeeUtils.toInt(getPixels(value, unit, font));
   }
 
-  public static int getIntPixels(double value, Unit unit, Font font, double containerSize) {
+  public static int getIntPixels(double value, CssUnit unit, Font font, double containerSize) {
     return BeeUtils.toInt(getPixels(value, unit, font, containerSize));
   }
 
@@ -128,19 +129,19 @@ public class Rulers {
     return getWidth(lineRuler, font, content, asHtml);
   }
 
-  public static double getPixels(double value, Unit unit) {
+  public static double getPixels(double value, CssUnit unit) {
     return getPixels(value, unit, null);
   }
 
-  public static double getPixels(double value, Unit unit, double containerSize) {
+  public static double getPixels(double value, CssUnit unit, double containerSize) {
     return getPixels(value, unit, null, containerSize);
   }
 
-  public static double getPixels(double value, Unit unit, Font font) {
+  public static double getPixels(double value, CssUnit unit, Font font) {
     return getPixels(value, unit, font, 0);
   }
 
-  public static double getPixels(double value, Unit unit, Font font, double containerSize) {
+  public static double getPixels(double value, CssUnit unit, Font font, double containerSize) {
     Assert.notNull(unit);
 
     if (isUnitSizeFixed(unit)) {
@@ -155,7 +156,30 @@ public class Rulers {
     }
   }
 
-  private static double getContainerDependentUnitSizeInPixels(Unit unit, double containerSize) {
+  public static double getUnitSize(Element element, CssUnit unit, Orientation orientation) {
+    Assert.notNull(unit);
+
+    if (isUnitSizeFixed(unit)) {
+      return getFixedUnitSizeInPixels(unit);
+
+    } else if (isUnitFontDependent(unit)) {
+      Font font = (element == null) ? null : Font.getComputed(element);
+      return getFontDependentUnitSizeInPixels(unit, font);
+
+    } else if (isUnitContainerDependent(unit)) {
+      Assert.notNull(element);
+      Assert.notNull(orientation);
+      
+      double size = orientation.isVertical() ? element.getClientHeight() : element.getClientWidth();
+      return getContainerDependentUnitSizeInPixels(unit, size) / 100;
+
+    } else {
+      Assert.untouchable();
+      return 0;
+    }
+  }
+  
+  private static double getContainerDependentUnitSizeInPixels(CssUnit unit, double containerSize) {
     switch (unit) {
       case PCT:
         return containerSize / 100.0;
@@ -180,7 +204,7 @@ public class Rulers {
     return new Dimensions(width, height);
   }
 
-  private static double getFixedUnitSizeInPixels(Unit unit) {
+  private static double getFixedUnitSizeInPixels(CssUnit unit) {
     switch (unit) {
       case PX:
         return 1;
@@ -200,7 +224,7 @@ public class Rulers {
     }
   }
 
-  private static double getFontDependentUnitSizeInPixels(Unit unit, Font font) {
+  private static double getFontDependentUnitSizeInPixels(CssUnit unit, Font font) {
     double size;
     prepareRuler(relativeUnitRuler, font);
 
@@ -244,23 +268,23 @@ public class Rulers {
     return width;
   }
 
-  private static boolean inList(Unit unit, Unit... units) {
+  private static boolean inList(CssUnit unit, CssUnit... units) {
     if (unit == null || units == null) {
       return false;
     }
     return ArrayUtils.contains(units, unit);
   }
 
-  private static boolean isUnitContainerDependent(Unit unit) {
-    return inList(unit, Unit.PCT);
+  private static boolean isUnitContainerDependent(CssUnit unit) {
+    return inList(unit, CssUnit.PCT);
   }
 
-  private static boolean isUnitFontDependent(Unit unit) {
-    return inList(unit, Unit.EM, Unit.EX);
+  private static boolean isUnitFontDependent(CssUnit unit) {
+    return inList(unit, CssUnit.EM, CssUnit.EX);
   }
 
-  private static boolean isUnitSizeFixed(Unit unit) {
-    return inList(unit, Unit.PX, Unit.CM, Unit.MM, Unit.IN, Unit.PC, Unit.PT);
+  private static boolean isUnitSizeFixed(CssUnit unit) {
+    return inList(unit, CssUnit.PX, CssUnit.CM, CssUnit.MM, CssUnit.IN, CssUnit.PC, CssUnit.PT);
   }
 
   private static void prepareRuler(Element ruler, Font font) {

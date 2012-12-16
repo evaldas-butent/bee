@@ -2,10 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Configuration" viewName="Configuration" caption="Nustatymai"
-  minNumberOfRows="1" maxNumberOfRows="1"
+  minNumberOfRows="1" maxNumberOfRows="1" flexGrow="1" flexShrink="1"
   >
   <columns>
-    <RelColumn name="Company" caption="Įmonė" minWidth="100" />
+    <RelColumn name="Company" caption="Įmonė" />
     <RelColumn name="AppointmentType" caption="=appointmentType" />
     <RelColumn name="TimeZone" caption="Laiko juosta" />
   </columns>

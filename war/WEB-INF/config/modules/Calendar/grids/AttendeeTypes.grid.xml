@@ -5,9 +5,9 @@
   caption="Resursų tipai" newRowCaption="Naujas resursų tipas"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
-    <DataColumn name="Description" caption="Aprašymas" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" flexGrow="1" />
+    <DataColumn name="Description" caption="Aprašymas" flexGrow="3" flexShrink="3" />
 
-    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
+    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" flexShrink="1" />
   </columns>
 </Grid>

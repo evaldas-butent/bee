@@ -22,6 +22,7 @@ import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.FilterSupplierType;
+import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.RefreshType;
@@ -523,6 +524,8 @@ public class GridLoaderBean {
     Map<String, String> attributes = XmlUtils.getAttributes(src);
 
     if (!attributes.isEmpty()) {
+      boolean hasFlexibility = false;
+
       for (Map.Entry<String, String> attribute : attributes.entrySet()) {
         String key = attribute.getKey();
         String value = attribute.getValue();
@@ -606,7 +609,14 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
+          
+        } else if (Flexibility.isAttributeRelevant(key)) {
+          hasFlexibility = true;
         }
+      }
+      
+      if (hasFlexibility) {
+        dst.setFlexibility(Flexibility.createIfDefined(attributes));
       }
     }
 
@@ -706,9 +716,28 @@ public class GridLoaderBean {
     if (maxColumnWidth != null) {
       dst.setMaxColumnWidth(maxColumnWidth);
     }
+
     String autoFit = src.getAttribute(ATTR_AUTO_FIT);
     if (!BeeUtils.isEmpty(autoFit)) {
       dst.setAutoFit(autoFit);
+    }
+
+    String flexGrow = src.getAttribute(Flexibility.ATTR_GROW);
+    String flexShrink = src.getAttribute(Flexibility.ATTR_SHRINK);
+    String flexBasis = src.getAttribute(Flexibility.ATTR_BASIS);
+
+    if (!BeeUtils.allEmpty(flexGrow, flexShrink, flexBasis)) {
+      Map<String, String> flexAttributes = Maps.newHashMap();
+      flexAttributes.put(Flexibility.ATTR_GROW, flexGrow);
+      flexAttributes.put(Flexibility.ATTR_SHRINK, flexShrink);
+      flexAttributes.put(Flexibility.ATTR_BASIS, flexBasis);
+
+      String flexBasisUnit = src.getAttribute(Flexibility.ATTR_BASIS_UNIT);
+      if (!BeeUtils.isEmpty(flexBasisUnit)) {
+        flexAttributes.put(Flexibility.ATTR_BASIS_UNIT, flexBasisUnit);
+      }
+      
+      dst.setFlexibility(Flexibility.createIfDefined(flexAttributes));
     }
 
     String headerMode = src.getAttribute(ATTR_HEADER_MODE);

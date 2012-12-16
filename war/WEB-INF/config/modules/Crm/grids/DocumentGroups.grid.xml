@@ -4,6 +4,6 @@
   name="DocumentGroups" viewName="DocumentGroups" caption="Dokumentų grupės">
   
   <columns>
-    <DataColumn name="Name" source="Name" caption="Grupė" />
+    <DataColumn name="Name" source="Name" caption="Grupė" minWidth="200" />
   </columns>
 </Grid>

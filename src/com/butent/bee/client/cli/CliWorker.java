@@ -14,7 +14,6 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -24,7 +23,6 @@ import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.layout.client.Layout;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
@@ -79,9 +77,10 @@ import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
 import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Layout;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
@@ -138,6 +137,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -1260,11 +1260,11 @@ public class CliWorker {
         Assert.notNull(response);
 
         if (response.hasResponse(Resource.class)) {
-          final BeeLayoutPanel p = new BeeLayoutPanel();
+          final LayoutPanel p = new LayoutPanel();
 
           final InputArea area = new InputArea(new Resource((String) response.getResponse()));
           p.add(area);
-          p.setWidgetTopBottom(area, 0, Unit.EM, 2, Unit.EM);
+          p.setWidgetTopBottom(area, 0, CssUnit.EM, 2, CssUnit.EM);
 
           BeeButton button = new BeeButton("Save schema", new ClickHandler() {
             @Override
@@ -1281,9 +1281,9 @@ public class CliWorker {
                           InputArea res =
                               new InputArea(new Resource((String) resp.getResponse()));
                           p.add(res);
-                          p.setWidgetLeftRight(res, 50, Unit.PCT, 0, Unit.EM);
-                          p.setWidgetTopBottom(area, 0, Unit.EM, 0, Unit.EM);
-                          p.setWidgetLeftRight(area, 0, Unit.EM, 50, Unit.PCT);
+                          p.setWidgetLeftRight(res, 50, CssUnit.PCT, 0, CssUnit.EM);
+                          p.setWidgetTopBottom(area, 0, CssUnit.EM, 0, CssUnit.EM);
+                          p.setWidgetLeftRight(area, 0, CssUnit.EM, 50, CssUnit.PCT);
                         } else {
                           showError("Wrong response received");
                         }
@@ -1296,7 +1296,7 @@ public class CliWorker {
           });
           p.add(button);
           p.setWidgetVerticalPosition(button, Layout.Alignment.END);
-          p.setWidgetLeftWidth(button, 42, Unit.PCT, 16, Unit.PCT);
+          p.setWidgetLeftWidth(button, 42, CssUnit.PCT, 16, CssUnit.PCT);
 
           Storage stor = Storage.getSessionStorageIfSupported();
 
@@ -2083,7 +2083,7 @@ public class CliWorker {
     String defaultValue = null;
     int maxLength = BeeConst.UNDEF;
     double width = BeeConst.DOUBLE_UNDEF;
-    Unit widthUnit = null;
+    CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
     String confirmHtml = DialogConstants.OK;
     String cancelHtml = DialogConstants.CANCEL;
@@ -2126,7 +2126,7 @@ public class CliWorker {
           width = BeeUtils.toDouble(v);
           break;
         case 'u':
-          widthUnit = StyleUtils.parseUnit(v);
+          widthUnit = CssUnit.parse(v);
           break;
         case 't':
           timeout = BeeUtils.toInt(v);
@@ -2847,7 +2847,7 @@ public class CliWorker {
     int len = ArrayUtils.length(arr);
 
     Double value = null;
-    Unit unit = null;
+    CssUnit unit = null;
     Font font = null;
     Integer containerSize = null;
 
@@ -2866,12 +2866,12 @@ public class CliWorker {
         if (BeeUtils.isDouble(arr[i])) {
           value = BeeUtils.toDouble(arr[i]);
         } else {
-          unit = StyleUtils.parseUnit(arr[i]);
+          unit = CssUnit.parse(arr[i]);
         }
       }
     }
 
-    List<Unit> units = Lists.newArrayList();
+    List<CssUnit> units = Lists.newArrayList();
     if (value == null) {
       value = 1.0;
     }
@@ -2879,7 +2879,7 @@ public class CliWorker {
     if (unit != null) {
       units.add(unit);
     } else {
-      for (Unit u : Unit.values()) {
+      for (CssUnit u : CssUnit.values()) {
         units.add(u);
       }
     }
@@ -2892,9 +2892,9 @@ public class CliWorker {
       info.add(new Property("Container Size", containerSize.toString()));
     }
 
-    for (Unit u : units) {
+    for (CssUnit u : units) {
       int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
-      info.add(new Property(u.getType(), BeeUtils.toString(px)));
+      info.add(new Property(u.getCaption(), BeeUtils.toString(px)));
     }
 
     showTable("Pixels", new PropertiesData(info));

@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -21,6 +20,7 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedList;
@@ -87,7 +87,7 @@ public class Notification extends Composite implements NativePreviewHandler {
     @Override
     protected void onComplete() {
       if (endSize > 0) {
-        getElement().getStyle().setHeight(endSize, Unit.PX);
+        StyleUtils.setHeight(getElement(), endSize, CssUnit.PX);
       }
       setState(endState);
     }
@@ -96,7 +96,7 @@ public class Notification extends Composite implements NativePreviewHandler {
     protected void onUpdate(double progress) {
       double delta = (endSize - startSize) * progress;
       double newSize = startSize + delta;
-      getElement().getStyle().setHeight(newSize, Unit.PX);
+      StyleUtils.setHeight(getElement(), newSize, CssUnit.PX);
     }
 
     private void animate(int start, int end, int duration, State st) {
@@ -361,13 +361,13 @@ public class Notification extends Composite implements NativePreviewHandler {
 
     if (parent != null) {
       if (parent.getScrollTop() > 0) {
-        style.setTop(parent.getScrollTop(), Unit.PX);
+        StyleUtils.setTop(style, parent.getScrollTop());
       } else if (!BeeUtils.isEmpty(style.getTop())) {
         style.clearTop();
       }
 
       if (parent.getScrollLeft() > 0) {
-        style.setRight(-parent.getScrollLeft(), Unit.PX);
+        StyleUtils.setRight(style, -parent.getScrollLeft());
       } else if (!BeeUtils.isEmpty(style.getRight())) {
         style.clearRight();
       }

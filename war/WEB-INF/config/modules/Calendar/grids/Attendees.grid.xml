@@ -2,15 +2,15 @@
 <Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="Attendees" viewName="Attendees" caption="Resursai" newRowCaption="Naujas resursas"
-  editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal"
+  editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal" flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Ordinal" caption="Eil. Nr." />
+    <DataColumn name="Ordinal" caption="Eil. Nr." flexGrow="0" />
 
-    <DataColumn name="TypeName" caption="Tipas" minWidth="100" />
+    <DataColumn name="TypeName" caption="Tipas" />
 
     <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Description" caption="Aprašymas" flexShrink="3" />
     <DataColumn name="Location" caption="Vieta" />
 
     <DataColumn name="CompanyPerson" caption="Atsakingas darbuotojas">
@@ -21,7 +21,7 @@
 
     <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
     
-    <DataColumn name="ColorName" caption="Spalva">
+    <DataColumn name="ColorName" caption="Spalva" flexGrow="0" >
       <dynStyle>
         <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
       </dynStyle>

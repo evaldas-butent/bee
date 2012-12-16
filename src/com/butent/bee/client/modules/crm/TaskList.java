@@ -5,7 +5,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safecss.shared.SafeStyles;
@@ -59,6 +58,7 @@ import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -442,7 +442,7 @@ class TaskList {
           0, getMaxWidthDays() * TimeUtils.MINUTES_PER_DAY,
           getMinBarWidth(), getMaxBarWidth());
 
-      return StyleUtils.buildWidth(width, Unit.PCT);
+      return StyleUtils.buildWidth(width, CssUnit.PCT);
     }
 
     private String getLabel(long minutes) {

@@ -1962,10 +1962,7 @@ body, select {
 .bee-FilterSupplier-commandPanel {
   margin-top: 5px;
   display: -webkit-flex;
-  -webkit-align-items: center;
-}
-.bee-FilterSupplier-counter {
-  margin-left: 5px;
+  -webkit-justify-content: space-between;
 }
 
 .bee-FilterSupplier-dateTime-date {

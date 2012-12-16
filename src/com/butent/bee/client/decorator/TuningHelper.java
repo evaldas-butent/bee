@@ -3,7 +3,6 @@ package com.butent.bee.client.decorator;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Style.Unit;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -14,6 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -129,9 +129,9 @@ public class TuningHelper {
     }
     
     Double value = null;
-    Unit unit = null;
+    CssUnit unit = null;
     if (!BeeUtils.isEmpty(oldSize)) {
-      Pair<Double, Unit> cssLength = StyleUtils.parseCssLength(oldSize);
+      Pair<Double, CssUnit> cssLength = StyleUtils.parseCssLength(oldSize);
       value = cssLength.getA();
       unit = cssLength.getB();
     }
@@ -140,11 +140,11 @@ public class TuningHelper {
       value = 13.0;
     }
     if (unit == null) {
-      unit = Unit.PX;
+      unit = CssUnit.PX;
     }
     
     value = Math.max(value + increment, 1.0);
-    element.getStyle().setFontSize(value, unit);
+    StyleUtils.setFontSize(element, value, unit);
   }
   
   private static void updateElement(Element element, String name, String value) {

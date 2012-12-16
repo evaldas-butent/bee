@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -16,18 +17,17 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class ViewHelper {
   
-  private static final Set<String> NO_EXCLUSIONS = Sets.newHashSet();
+  private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
 
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
     return getFilter(container, dataProvider, NO_EXCLUSIONS);
   }
   
   public static Filter getFilter(HasSearch container, Provider dataProvider,
-      Collection<String> excludeSearchers) {
+      ImmutableSet<String> excludeSearchers) {
     Assert.notNull(container);
     Assert.notNull(dataProvider);
 

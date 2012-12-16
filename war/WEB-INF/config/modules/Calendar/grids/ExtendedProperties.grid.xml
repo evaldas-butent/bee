@@ -3,14 +3,15 @@
 
   name="ExtendedProperties" viewName="ExtendedProperties"
   caption="Parametrai" newRowCaption="Naujas parametras"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
     <RelColumn name="GroupName" caption="Grupė" minWidth="100" />
     <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
 
-    <DataColumn name="Hours" caption="Valandos" />
-    <DataColumn name="Minutes" caption="Minutės" />
+    <DataColumn name="Hours" caption="Valandos" flexGrow="0" />
+    <DataColumn name="Minutes" caption="Minutės" flexGrow="0" />
 
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Description" caption="Aprašymas" flexGrow="2" flexShrink="2" />
   </columns>
 </Grid>

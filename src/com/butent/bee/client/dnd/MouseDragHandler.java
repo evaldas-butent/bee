@@ -48,7 +48,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dnd.util.DOMUtil;
 import com.butent.bee.client.dnd.util.Location;
 import com.butent.bee.client.dnd.util.WidgetLocation;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.ui.CssUnit;
 
 import java.util.HashMap;
 
@@ -467,7 +469,7 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
     style.setProperty("filter", "alpha(opacity=0)");
     style.setOpacity(0);
     style.setZIndex(1000);
-    style.setMargin(0, Style.Unit.PX);
+    StyleUtils.setProperty(style, StyleUtils.STYLE_MARGIN, 0, CssUnit.PX);
     style.setBorderStyle(BorderStyle.NONE);
     style.setBackgroundColor("blue");
   }

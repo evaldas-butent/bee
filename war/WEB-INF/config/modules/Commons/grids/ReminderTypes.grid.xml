@@ -3,6 +3,7 @@
 
   name="ReminderTypes" viewName="ReminderTypes"
   caption="Priminimų tipai" newRowCaption="Naujas priminimų tipas"
+  flexGrow="1" flexShrink="1"
   >
   <body height="60" />
   

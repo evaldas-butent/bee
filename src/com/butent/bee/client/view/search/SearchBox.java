@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 
@@ -12,7 +13,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -50,7 +50,7 @@ public class SearchBox extends InputText implements SearchView {
 
   @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
-      String versionColumnName, Collection<String> excludeSearchers) {
+      String versionColumnName, ImmutableSet<String> excludeSearchers) {
     if (BeeUtils.isEmpty(getValue())) {
       return null;
     } else if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {

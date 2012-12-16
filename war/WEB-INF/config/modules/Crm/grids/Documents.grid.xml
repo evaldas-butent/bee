@@ -4,7 +4,9 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="Documents" viewName="Documents" caption="Dokumentai" 
-  newRowForm="NewDocument" editForm="Document" parent="Tree">
+  newRowForm="NewDocument" editForm="Document" parent="Tree"
+  flexGrow="1" flexShrink="1"
+  >
   
   <west size="200" splitterSize="2">
     <w:DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"

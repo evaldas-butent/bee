@@ -1442,6 +1442,10 @@ public class BeeUtils {
     return (x > 0) ? x : def;
   }
 
+  public static int positive(int x, int y, int def) {
+    return (x > 0) ? x : positive(y, def);
+  }
+  
   /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
@@ -2031,6 +2035,20 @@ public class BeeUtils {
     } else {
       return false;
     }
+  }
+  
+  public static int sum(Collection<Integer> col) {
+    int result = 0;
+    if (col == null) {
+      return result;
+    }
+    
+    for (Integer item : col) {
+      if (item != null) {
+        result += item;
+      }
+    }
+    return result;
   }
 
   /**

@@ -41,7 +41,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
   
@@ -114,6 +114,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer minColumnWidth = null;
   private Integer maxColumnWidth = null;
   private String autoFit = null;
+  private Flexibility flexibility = null;
 
   private final List<ColumnDescription> columns = Lists.newArrayList();
 
@@ -363,6 +364,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case FLEXIBILITY:
+          setFlexibility(Flexibility.restore(value));
+          break;
         case FAVORITE:
           setFavorite(value);
           break;
@@ -497,6 +501,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Max Number Of Rows", getMaxNumberOfRows(),
         "Render Mode", getRenderMode(),
         "Row Change Sensitivity Millis", getRowChangeSensitivityMillis());
+    
+    if (getFlexibility() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Flexibility", getFlexibility().getInfo());
+    }
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
       int cnt = getStyleSheets().size();
@@ -574,6 +582,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Filter getFilter() {
     return filter;
+  }
+
+  public Flexibility getFlexibility() {
+    return flexibility;
   }
 
   public GridComponentDescription getFooter() {
@@ -877,6 +889,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case FLEXIBILITY:
+          arr[i++] = getFlexibility();
+          break;
         case FAVORITE:
           arr[i++] = getFavorite();
           break;
@@ -975,6 +990,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.filter = filter;
   }
 
+  public void setFlexibility(Flexibility flexibility) {
+    this.flexibility = flexibility;
+  }
+
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
   }
@@ -990,7 +1009,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setHeaderMode(String headerMode) {
     this.headerMode = headerMode;
   }
-
+  
   public void setInitialRowSetSize(Integer initialRowSetSize) {
     this.initialRowSetSize = initialRowSetSize;
   }
@@ -1022,7 +1041,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
-  
+
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
@@ -1074,7 +1093,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-
+  
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }

@@ -3,13 +3,13 @@ package com.butent.bee.client.dom;
 import com.google.common.base.Splitter;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -32,7 +32,7 @@ public class Edges {
   private static final char CSS_VALUE_SEPARATOR = BeeConst.CHAR_SPACE;
   private static final String CSS_SHAPE_SEPARATOR = BeeConst.DEFAULT_LIST_SEPARATOR;
 
-  private static final Unit DEFAULT_UNIT = Unit.PX;
+  private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
   private static final Splitter CSS_SPLITTER =
       Splitter.on(CSS_VALUE_SEPARATOR).omitEmptyStrings().trimResults();
@@ -99,16 +99,16 @@ public class Edges {
     return edges;
   }
 
-  private Unit bottomUnit = null;
+  private CssUnit bottomUnit = null;
   private Double bottomValue = null;
 
-  private Unit leftUnit = null;
+  private CssUnit leftUnit = null;
   private Double leftValue = null;
 
-  private Unit rightUnit = null;
+  private CssUnit rightUnit = null;
   private Double rightValue = null;
 
-  private Unit topUnit = null;
+  private CssUnit topUnit = null;
   private Double topValue = null;
 
   public Edges() {
@@ -131,24 +131,24 @@ public class Edges {
         leftValue, DEFAULT_UNIT);
   }
 
-  public Edges(Double value, Unit unit) {
+  public Edges(Double value, CssUnit unit) {
     this(value, unit, value, unit);
   }
 
-  public Edges(Double verticalValue, Unit verticalUnit,
-      Double horizontalValue, Unit horizontalUnit) {
+  public Edges(Double verticalValue, CssUnit verticalUnit,
+      Double horizontalValue, CssUnit horizontalUnit) {
     this(verticalValue, verticalUnit, horizontalValue, horizontalUnit,
         verticalValue, verticalUnit, horizontalValue, horizontalUnit);
   }
 
-  public Edges(Double topValue, Unit topUnit, Double horizontalValue, Unit horizontalUnit,
-      Double bottomValue, Unit bottomUnit) {
+  public Edges(Double topValue, CssUnit topUnit, Double horizontalValue, CssUnit horizontalUnit,
+      Double bottomValue, CssUnit bottomUnit) {
     this(topValue, topUnit, horizontalValue, horizontalUnit, bottomValue, bottomUnit,
         horizontalValue, horizontalUnit);
   }
 
-  public Edges(Double topValue, Unit topUnit, Double rightValue, Unit rightUnit,
-      Double bottomValue, Unit bottomUnit, Double leftValue, Unit leftUnit) {
+  public Edges(Double topValue, CssUnit topUnit, Double rightValue, CssUnit rightUnit,
+      Double bottomValue, CssUnit bottomUnit, Double leftValue, CssUnit leftUnit) {
     this.topValue = topValue;
     this.topUnit = topUnit;
     this.rightValue = rightValue;
@@ -201,16 +201,16 @@ public class Edges {
     Assert.notNull(st);
     
     if (getLeftValue() != null) {
-      st.setLeft(getLeftValue(), normalizeUnit(getLeftUnit()));
+      StyleUtils.setLeft(st, getLeftValue(), normalizeUnit(getLeftUnit()));
     }
     if (getRightValue() != null) {
-      st.setRight(getRightValue(), normalizeUnit(getRightUnit()));
+      StyleUtils.setRight(st, getRightValue(), normalizeUnit(getRightUnit()));
     }
     if (getTopValue() != null) {
-      st.setTop(getTopValue(), normalizeUnit(getTopUnit()));
+      StyleUtils.setTop(st, getTopValue(), normalizeUnit(getTopUnit()));
     }
     if (getBottomValue() != null) {
-      st.setBottom(getBottomValue(), normalizeUnit(getBottomUnit()));
+      StyleUtils.setBottom(st, getBottomValue(), normalizeUnit(getBottomUnit()));
     }
   }
 
@@ -251,7 +251,7 @@ public class Edges {
     setTop(null, null);
   }
 
-  public Unit getBottomUnit() {
+  public CssUnit getBottomUnit() {
     return bottomUnit;
   }
 
@@ -267,7 +267,7 @@ public class Edges {
     Assert.notNull(edge);
 
     Double value;
-    Unit unit;
+    CssUnit unit;
 
     switch (edge) {
       case LEFT:
@@ -298,7 +298,7 @@ public class Edges {
       if (unit == null) {
         unit = DEFAULT_UNIT;
       }
-      return BeeUtils.toString(value) + unit.getType();
+      return BeeUtils.toString(value) + unit.getCaption();
     }
   }
 
@@ -350,7 +350,7 @@ public class Edges {
     return BeeUtils.toInt(getTopValue());
   }
 
-  public Unit getLeftUnit() {
+  public CssUnit getLeftUnit() {
     return leftUnit;
   }
 
@@ -358,7 +358,7 @@ public class Edges {
     return leftValue;
   }
 
-  public Unit getRightUnit() {
+  public CssUnit getRightUnit() {
     return rightUnit;
   }
 
@@ -366,7 +366,7 @@ public class Edges {
     return rightValue;
   }
 
-  public Unit getTopUnit() {
+  public CssUnit getTopUnit() {
     return topUnit;
   }
 
@@ -383,7 +383,7 @@ public class Edges {
     setBottom(value, DEFAULT_UNIT);
   }
 
-  public void setBottom(Double value, Unit unit) {
+  public void setBottom(Double value, CssUnit unit) {
     setBottomValue(value);
     setBottomUnit(unit);
   }
@@ -397,7 +397,7 @@ public class Edges {
     setBottom((double) value);
   }
 
-  public void setBottomUnit(Unit bottomUnit) {
+  public void setBottomUnit(CssUnit bottomUnit) {
     this.bottomUnit = bottomUnit;
   }
 
@@ -409,7 +409,7 @@ public class Edges {
     setEdge(edge, value, DEFAULT_UNIT);
   }
 
-  public void setEdge(Edge edge, Double value, Unit unit) {
+  public void setEdge(Edge edge, Double value, CssUnit unit) {
     Assert.notNull(edge);
 
     switch (edge) {
@@ -432,7 +432,7 @@ public class Edges {
     setLeft(value, DEFAULT_UNIT);
   }
 
-  public void setLeft(Double value, Unit unit) {
+  public void setLeft(Double value, CssUnit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
   }
@@ -446,7 +446,7 @@ public class Edges {
     setLeft((double) value);
   }
 
-  public void setLeftUnit(Unit leftUnit) {
+  public void setLeftUnit(CssUnit leftUnit) {
     this.leftUnit = leftUnit;
   }
 
@@ -458,7 +458,7 @@ public class Edges {
     setRight(value, DEFAULT_UNIT);
   }
 
-  public void setRight(Double value, Unit unit) {
+  public void setRight(Double value, CssUnit unit) {
     setRightValue(value);
     setRightUnit(unit);
   }
@@ -472,7 +472,7 @@ public class Edges {
     setRight((double) value);
   }
 
-  public void setRightUnit(Unit rightUnit) {
+  public void setRightUnit(CssUnit rightUnit) {
     this.rightUnit = rightUnit;
   }
 
@@ -484,7 +484,7 @@ public class Edges {
     setTop(value, DEFAULT_UNIT);
   }
 
-  public void setTop(Double value, Unit unit) {
+  public void setTop(Double value, CssUnit unit) {
     setTopValue(value);
     setTopUnit(unit);
   }
@@ -498,7 +498,7 @@ public class Edges {
     setTop((double) value);
   }
 
-  public void setTopUnit(Unit topUnit) {
+  public void setTopUnit(CssUnit topUnit) {
     this.topUnit = topUnit;
   }
 
@@ -506,7 +506,7 @@ public class Edges {
     this.topValue = topValue;
   }
 
-  private Unit normalizeUnit(Unit unit) {
+  private CssUnit normalizeUnit(CssUnit unit) {
     return (unit == null) ? DEFAULT_UNIT : unit;
   }
   
@@ -525,14 +525,14 @@ public class Edges {
 
     int cnt = 0;
     Double v;
-    Unit u;
+    CssUnit u;
     
     for (String cssLength : CSS_SPLITTER.split(s)) {
       if (BeeUtils.isDigit(cssLength)) {
         v = BeeUtils.toDouble(cssLength);
         u = DEFAULT_UNIT;
       } else {
-        Pair<Double, Unit> pair = StyleUtils.parseCssLength(cssLength);
+        Pair<Double, CssUnit> pair = StyleUtils.parseCssLength(cssLength);
         v = pair.getA();
         u = pair.getB();
       }

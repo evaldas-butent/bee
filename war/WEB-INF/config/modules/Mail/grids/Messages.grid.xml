@@ -8,6 +8,6 @@
   <body height="40" borderWidth="0 0 1 0" />
 
   <columns>
-    <CalcColumn name="Envelope" type="string" cellType="html" width="275" />
+    <CalcColumn name="Envelope" type="string" cellType="html" width="275" flexGrow="1" />
   </columns>
 </Grid>

@@ -1,7 +1,6 @@
 package com.butent.bee.client.richtext;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -32,6 +31,7 @@ import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.ui.CssUnit;
 
 /**
  * Handles a rich text editor toolbar with all the buttons for formatting the text.
@@ -255,7 +255,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     } else {
       this.accept = new EditorFactory.Accept(editor);
       firstRow.add(new BeeImage(Global.getImages().save(), this.accept));
-      firstRow.add(createSpacer(1.0, Unit.EM));
+      firstRow.add(createSpacer(1.0, CssUnit.EM));
     }
 
     firstRow.add(undo = createButton(Global.getImages().undo(), "Undo"));
@@ -289,7 +289,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     firstRow.add(removeLink = createButton(images.removeLink(), "Remove Link"));
     
     if (!embedded) {
-      firstRow.add(createSpacer(1.0, Unit.EM));
+      firstRow.add(createSpacer(1.0, CssUnit.EM));
       firstRow.add(new BeeImage(Global.getImages().close(), new EditorFactory.Cancel(editor)));
     }
 
@@ -392,10 +392,10 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   }
 
   private Widget createSpacer() {
-    return createSpacer(5.0, Unit.PX);
+    return createSpacer(5.0, CssUnit.PX);
   }
 
-  private Widget createSpacer(Double width, Unit unit) {
+  private Widget createSpacer(Double width, CssUnit unit) {
     Html spacer = new Html();
     spacer.setWidth(StyleUtils.toCssLength(width, unit));
     return spacer;

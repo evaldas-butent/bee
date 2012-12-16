@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.google.gwt.dom.client.Style.Unit;
-
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
@@ -10,6 +8,7 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentGrid extends Absolute {
@@ -58,10 +57,10 @@ public class AppointmentGrid extends Absolute {
       now.addStyleName(CalendarStyleManager.NOW_MARKER);
       
       int width = 100 / columnCount;
-      StyleUtils.setLeft(now, todayStartColumn * width, Unit.PCT);
+      StyleUtils.setLeft(now, todayStartColumn * width, CssUnit.PCT);
       
       int endColumn = BeeUtils.clamp(todayEndColumn, todayStartColumn, columnCount - 1);
-      StyleUtils.setWidth(now, (endColumn - todayStartColumn + 1) * width, Unit.PCT);
+      StyleUtils.setWidth(now, (endColumn - todayStartColumn + 1) * width, CssUnit.PCT);
       
       add(now);
       setNowIndex(getWidgetCount() - 1);

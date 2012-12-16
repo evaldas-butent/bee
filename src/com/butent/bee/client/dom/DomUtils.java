@@ -20,7 +20,6 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
@@ -1770,10 +1769,12 @@ public class DomUtils {
     Element elem = DOM.createDiv();
 
     elem.getStyle().setPosition(Position.ABSOLUTE);
-    elem.getStyle().setLeft(-1000, Unit.PX);
-    elem.getStyle().setTop(-1000, Unit.PX);
-    elem.getStyle().setWidth(100, Unit.PX);
-    elem.getStyle().setHeight(100, Unit.PX);
+    
+    StyleUtils.setLeft(elem, -1000);
+    StyleUtils.setTop(elem, -1000);
+    StyleUtils.setWidth(elem, 100);
+    StyleUtils.setHeight(elem, 100);
+
     elem.getStyle().setOverflow(Overflow.SCROLL);
 
     Element body = Document.get().getBody();

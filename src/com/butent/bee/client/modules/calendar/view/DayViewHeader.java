@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.calendar.view;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -13,6 +12,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class DayViewHeader extends Horizontal {
@@ -48,8 +48,8 @@ public class DayViewHeader extends Horizontal {
       BeeLabel dayLabel = new BeeLabel(CalendarFormat.format(tmp));
       dayLabel.addStyleName(CalendarStyleManager.DAY_CELL);
 
-      StyleUtils.setLeft(dayLabel, dayWidth * i, Unit.PCT);
-      StyleUtils.setWidth(dayLabel, dayWidth, Unit.PCT);
+      StyleUtils.setLeft(dayLabel, dayWidth * i, CssUnit.PCT);
+      StyleUtils.setWidth(dayLabel, dayWidth, CssUnit.PCT);
 
       if (TimeUtils.isToday(tmp)) {
         dayLabel.addStyleName(CalendarStyleManager.DAY_CELL_TODAY);

@@ -2,7 +2,6 @@ package com.butent.bee.client.utils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.xml.client.Attr;
 import com.google.gwt.xml.client.CDATASection;
 import com.google.gwt.xml.client.Comment;
@@ -28,6 +27,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
@@ -133,14 +133,14 @@ public class XmlUtils {
     return StyleUtils.parseScrollBars(element.getAttribute(name), def);
   }
 
-  public static Unit getAttributeUnit(Element element, String name) {
+  public static CssUnit getAttributeUnit(Element element, String name) {
     return getAttributeUnit(element, name, null);
   }
 
-  public static Unit getAttributeUnit(Element element, String name, Unit defUnit) {
+  public static CssUnit getAttributeUnit(Element element, String name, CssUnit defUnit) {
     Assert.notNull(element);
     Assert.notEmpty(name);
-    return StyleUtils.parseUnit(element.getAttribute(name), defUnit);
+    return CssUnit.parse(element.getAttribute(name), defUnit);
   }
 
   public static List<Property> getAttrInfo(Attr attr) {

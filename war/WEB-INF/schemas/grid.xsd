@@ -42,6 +42,7 @@
     <xs:attribute name="minColumnWidth" type="columnWidth" />
     <xs:attribute name="maxColumnWidth" type="columnWidth" />
     <xs:attribute name="autoFit" type="type:intOrBoolean" />
+    <xs:attributeGroup ref="flex" />
     <xs:attribute name="showColumnWidths" type="xs:boolean" />
     <xs:attribute name="headerMode" type="headerMode" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />

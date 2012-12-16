@@ -3,7 +3,6 @@ package com.butent.bee.client.layout;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -49,10 +48,10 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       
       Style style = child.getElement().getStyle();
       style.setPosition(Position.ABSOLUTE);
-      style.setLeft(0, Unit.PX);
-      style.setRight(0, Unit.PX);
+      StyleUtils.setLeft(style, 0);
+      StyleUtils.setRight(style, 0);
 
-      style.setHeight(size, Unit.PX);
+      StyleUtils.setHeight(style, size);
 
       initWidget(child);
     }
@@ -365,8 +364,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     
     Style style = child.getElement().getStyle();
     style.setPosition(Position.ABSOLUTE);
-    style.setLeft(0, Unit.PX);
-    style.setRight(0, Unit.PX);
+    StyleUtils.setLeft(style, 0);
+    StyleUtils.setRight(style, 0);
 
     header.addClickHandler(new ClickHandler() {
       @Override
@@ -401,7 +400,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         Header header = getHeader(i);
         Style style = header.getElement().getStyle();
 
-        style.setTop(top, Unit.PX);
+        StyleUtils.setTop(style, top);
         style.clearBottom();
 
         top += header.getSize();
@@ -412,7 +411,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         Style style = header.getElement().getStyle();
 
         style.clearTop();
-        style.setBottom(bottom, Unit.PX);
+        StyleUtils.setBottom(style, bottom);
 
         bottom += header.getSize();
       }
@@ -420,8 +419,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       Widget widget = getVisibleWidget();
       Style style = widget.getElement().getStyle();
 
-      style.setTop(top, Unit.PX);
-      style.setBottom(bottom, Unit.PX);
+      StyleUtils.setTop(style, top);
+      StyleUtils.setBottom(style, bottom);
       
       if (animate) {
         StyleUtils.setTransformScale(style, Revelation.FROM, Revelation.FROM);
@@ -436,7 +435,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         Header header = getHeader(i);
         Style style = header.getElement().getStyle();
 
-        style.setTop(top, Unit.PX);
+        StyleUtils.setTop(style, top);
         style.clearBottom();
 
         top += header.getSize();

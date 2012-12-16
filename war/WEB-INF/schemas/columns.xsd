@@ -42,6 +42,7 @@
     <xs:attribute name="minWidth" type="columnWidth" />
     <xs:attribute name="maxWidth" type="columnWidth" />
     <xs:attribute name="autoFit" type="type:intOrBoolean" />
+    <xs:attributeGroup ref="flex" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" />
     <xs:attribute name="format" type="xs:normalizedString" />
@@ -145,5 +146,25 @@
       <xs:maxInclusive value="999" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="flexBasis">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:nonNegativeInteger" />
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="auto" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:attributeGroup name="flex">
+    <xs:attribute name="flexGrow" type="xs:nonNegativeInteger" />
+    <xs:attribute name="flexShrink" type="xs:nonNegativeInteger" />
+    <xs:attribute name="flexBasis" type="flexBasis" />
+    <xs:attribute name="flexBasisUnit" type="ui:cssUnit" />
+  </xs:attributeGroup>
 
 </xs:schema>

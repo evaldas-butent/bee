@@ -6,9 +6,9 @@
   >
   <Fields>
     <Relation name="Currency" relation="Currencies" notNull="true" cascade="DELETE" />
-    <DateTime name="Date" notNull="true" />
-    <Integer name="Quantity" notNull="true" />
-    <Numeric name="Rate" precision="10" scale="4" notNull="true" />
+    <DateTime name="Date" notNull="true" label="Data" />
+    <Integer name="Quantity" notNull="true" label="Kiekis" />
+    <Numeric name="Rate" precision="10" scale="4" notNull="true" label="Kursas" />
   </Fields>
   <Keys>
     <Key unique="true">

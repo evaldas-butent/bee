@@ -15,8 +15,8 @@
 
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas">
+    <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
+    <CalcColumn name="Vehicle" type="string" caption="Transportas" flexGrow="1" flexShrink="1">
       <render>
         <ui:function>
           var vehicle = row.VehicleNumber;

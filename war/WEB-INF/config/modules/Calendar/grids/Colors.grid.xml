@@ -3,9 +3,10 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="Colors" viewName="Colors" caption="Spalvos" newRowCaption="Nauja spalva"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" width="120" />
 
     <DataColumn name="Background" caption="Fono spalva" minWidth="100" />
     <DataColumn name="Foreground" caption="Teksto spalva" />

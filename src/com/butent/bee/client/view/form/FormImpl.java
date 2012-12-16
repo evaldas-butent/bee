@@ -7,7 +7,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
@@ -84,6 +83,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -506,7 +506,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public Unit getHeightUnit() {
+  public CssUnit getHeightUnit() {
     return (getDimensions() == null) ? null : getDimensions().getHeightUnit();
   }
 
@@ -614,7 +614,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public Unit getWidthUnit() {
+  public CssUnit getWidthUnit() {
     return (getDimensions() == null) ? null : getDimensions().getWidthUnit();
   }
 
@@ -1009,7 +1009,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public void setHeightUnit(Unit heightUnit) {
+  public void setHeightUnit(CssUnit heightUnit) {
     if (getDimensions() != null) {
       getDimensions().setHeightUnit(heightUnit);
     }
@@ -1084,7 +1084,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public void setWidthUnit(Unit widthUnit) {
+  public void setWidthUnit(CssUnit widthUnit) {
     if (getDimensions() != null) {
       getDimensions().setWidthUnit(widthUnit);
     }

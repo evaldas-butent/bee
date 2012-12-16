@@ -1,6 +1,5 @@
 package com.butent.bee.client.layout;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -12,6 +11,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.ui.CssUnit;
 
 public abstract class CellVector extends ComplexPanel implements IdentifiableWidget, HasIndexedWidgets,
     HasAlignment, InsertPanel, IsHtmlTable {
@@ -75,7 +75,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     StyleUtils.setBorderSpacing(table, spacing);
   }
 
-  public void setCellHeight(Widget w, double height, Unit unit) {
+  public void setCellHeight(Widget w, double height, CssUnit unit) {
     Element td = getWidgetTd(w);
     if (td != null) {
       StyleUtils.setHeight(td, height, unit);
@@ -103,7 +103,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     }
   }
 
-  public void setCellWidth(Widget w, double width, Unit unit) {
+  public void setCellWidth(Widget w, double width, CssUnit unit) {
     Element td = getWidgetTd(w);
     if (td != null) {
       StyleUtils.setWidth(td, width, unit);

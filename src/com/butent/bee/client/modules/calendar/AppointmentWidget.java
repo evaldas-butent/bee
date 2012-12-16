@@ -1,13 +1,13 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentWidget extends Flow {
@@ -162,12 +162,12 @@ public class AppointmentWidget extends Flow {
 
   public void setHeight(double height) {
     this.height = height;
-    StyleUtils.setHeight(this, height, Unit.PX);
+    StyleUtils.setHeight(this, height, CssUnit.PX);
   }
 
   public void setLeft(double left) {
     this.left = left;
-    StyleUtils.setLeft(this, left, Unit.PCT);
+    StyleUtils.setLeft(this, left, CssUnit.PCT);
   }
 
   public void setTitleText(String text) {
@@ -182,12 +182,12 @@ public class AppointmentWidget extends Flow {
 
   public void setTop(double top) {
     this.top = top;
-    StyleUtils.setTop(this, top, Unit.PX);
+    StyleUtils.setTop(this, top, CssUnit.PX);
   }
 
   public void setWidth(double width) {
     this.width = width;
-    StyleUtils.setWidth(this, width, Unit.PCT);
+    StyleUtils.setWidth(this, width, CssUnit.PCT);
   }
 
   private void setBackground(String background) {

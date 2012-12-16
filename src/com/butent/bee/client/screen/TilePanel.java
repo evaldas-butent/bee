@@ -304,11 +304,11 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
       Style style = widget.getElement().getStyle();
 
-      style.setLeft(p.getLeft() + margin, UNIT);
-      style.setRight(p.getRight() + margin, UNIT);
+      StyleUtils.setLeft(style, p.getLeft() + margin, UNIT);
+      StyleUtils.setRight(style, p.getRight() + margin, UNIT);
 
-      style.setTop(p.getTop() + margin, UNIT);
-      style.setBottom(p.getBottom() + margin, UNIT);
+      StyleUtils.setTop(style, p.getTop() + margin, UNIT);
+      StyleUtils.setBottom(style, p.getBottom() + margin, UNIT);
 
       increment(direction, size);
     }

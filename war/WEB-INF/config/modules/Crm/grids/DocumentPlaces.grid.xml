@@ -4,6 +4,6 @@
   name="DocumentPlaces" viewName="DocumentPlaces" caption="Dokumentų vietos">
   
   <columns>
-    <DataColumn name="Name" source="Name" caption="Vieta" />
+    <DataColumn name="Name" source="Name" caption="Vieta" minWidth="200" />
   </columns>
 </Grid>

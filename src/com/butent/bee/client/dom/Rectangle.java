@@ -2,13 +2,13 @@ package com.butent.bee.client.dom;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Rectangle implements HasDimensions {
 
-  private static final Unit DEFAULT_UNIT = Unit.PX;
+  private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
   public static Rectangle createFromAbsoluteCoordinates(Element element) {
     Assert.notNull(element);
@@ -31,16 +31,16 @@ public class Rectangle implements HasDimensions {
         element.getOffsetWidth(), element.getOffsetHeight());
   }
 
-  private Unit leftUnit = null;
+  private CssUnit leftUnit = null;
   private Double leftValue = null;
 
-  private Unit topUnit = null;
+  private CssUnit topUnit = null;
   private Double topValue = null;
 
-  private Unit widthUnit = null;
+  private CssUnit widthUnit = null;
   private Double widthValue = null;
 
-  private Unit heightUnit = null;
+  private CssUnit heightUnit = null;
   private Double heightValue = null;
 
   public Rectangle() {
@@ -52,8 +52,8 @@ public class Rectangle implements HasDimensions {
     setFromStyle(style);
   }
 
-  public Rectangle(Double leftValue, Unit leftUnit, Double topValue, Unit topUnit,
-      Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit) {
+  public Rectangle(Double leftValue, CssUnit leftUnit, Double topValue, CssUnit topUnit,
+      Double widthValue, CssUnit widthUnit, Double heightValue, CssUnit heightUnit) {
     this.leftValue = leftValue;
     this.leftUnit = leftUnit;
     this.topValue = topValue;
@@ -127,10 +127,12 @@ public class Rectangle implements HasDimensions {
     }
   }
 
-  public Unit getHeightUnit() {
+  @Override
+  public CssUnit getHeightUnit() {
     return heightUnit;
   }
 
+  @Override
   public Double getHeightValue() {
     return heightValue;
   }
@@ -151,7 +153,7 @@ public class Rectangle implements HasDimensions {
     return BeeUtils.toInt(getWidthValue());
   }
 
-  public Unit getLeftUnit() {
+  public CssUnit getLeftUnit() {
     return leftUnit;
   }
 
@@ -159,7 +161,7 @@ public class Rectangle implements HasDimensions {
     return leftValue;
   }
 
-  public Unit getTopUnit() {
+  public CssUnit getTopUnit() {
     return topUnit;
   }
 
@@ -167,10 +169,12 @@ public class Rectangle implements HasDimensions {
     return topValue;
   }
 
-  public Unit getWidthUnit() {
+  @Override
+  public CssUnit getWidthUnit() {
     return widthUnit;
   }
 
+  @Override
   public Double getWidthValue() {
     return widthValue;
   }
@@ -185,25 +189,27 @@ public class Rectangle implements HasDimensions {
         && getTopValue() != null && BeeUtils.isNonNegative(getHeightValue());
   }
 
-  public void setHeight(Double value, Unit unit) {
+  public void setHeight(Double value, CssUnit unit) {
     setHeightValue(value);
     setHeightUnit(unit);
   }
 
-  public void setHeightUnit(Unit heightUnit) {
+  @Override
+  public void setHeightUnit(CssUnit heightUnit) {
     this.heightUnit = heightUnit;
   }
 
+  @Override
   public void setHeightValue(Double heightValue) {
     this.heightValue = heightValue;
   }
 
-  public void setLeft(Double value, Unit unit) {
+  public void setLeft(Double value, CssUnit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
   }
 
-  public void setLeftUnit(Unit leftUnit) {
+  public void setLeftUnit(CssUnit leftUnit) {
     this.leftUnit = leftUnit;
   }
 
@@ -211,12 +217,12 @@ public class Rectangle implements HasDimensions {
     this.leftValue = leftValue;
   }
 
-  public void setTop(Double value, Unit unit) {
+  public void setTop(Double value, CssUnit unit) {
     setTopValue(value);
     setTopUnit(unit);
   }
 
-  public void setTopUnit(Unit topUnit) {
+  public void setTopUnit(CssUnit topUnit) {
     this.topUnit = topUnit;
   }
 
@@ -224,15 +230,17 @@ public class Rectangle implements HasDimensions {
     this.topValue = topValue;
   }
 
-  public void setWidth(Double value, Unit unit) {
+  public void setWidth(Double value, CssUnit unit) {
     setWidthValue(value);
     setWidthUnit(unit);
   }
 
-  public void setWidthUnit(Unit widthUnit) {
+  @Override
+  public void setWidthUnit(CssUnit widthUnit) {
     this.widthUnit = widthUnit;
   }
 
+  @Override
   public void setWidthValue(Double widthValue) {
     this.widthValue = widthValue;
   }
@@ -267,7 +275,7 @@ public class Rectangle implements HasDimensions {
     if (!BeeUtils.isEmpty(length)) {
       return;
     }
-    Pair<Double, Unit> pair = StyleUtils.parseCssLength(length);
+    Pair<Double, CssUnit> pair = StyleUtils.parseCssLength(length);
     if (pair == null) {
       return;
     }
@@ -289,7 +297,7 @@ public class Rectangle implements HasDimensions {
       Assert.untouchable();
     }
 
-    Unit unit = pair.getB();
+    CssUnit unit = pair.getB();
     if (unit == null) {
       return;
     }
@@ -305,14 +313,14 @@ public class Rectangle implements HasDimensions {
     }
   }
 
-  private void setStyleProperty(Style style, String name, Double value, Unit unit) {
+  private void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
     if (value == null) {
       return;
     }
     if (unit == null) {
-      style.setProperty(name, value, DEFAULT_UNIT);
+      StyleUtils.setProperty(style, name, value, DEFAULT_UNIT);
     } else {
-      style.setProperty(name, value, unit);
+      StyleUtils.setProperty(style, name, value, unit);
     }
   }
 }

@@ -39,7 +39,8 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   private ConditionalStyleDeclaration() {
   }
-
+  
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
@@ -52,6 +53,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
     return condition;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
 
@@ -74,6 +76,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
     return style;
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getStyle(), getCondition()});
   }

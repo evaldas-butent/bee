@@ -4,6 +4,6 @@
   name="Roles" viewName="Roles" caption="Rolės"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
+    <DataColumn name="Name" source="Name" minWidth="100" />
   </columns>
 </Grid>

@@ -25,10 +25,10 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" flexGrow="2" />
     <RelColumn name="UnitName" />
-    <DataColumn name="Article" />
-    <DataColumn name="Barcode" />
+    <DataColumn name="Article" flexGrow="1" />
+    <DataColumn name="Barcode" flexGrow="1" />
     <DataColumn name="Price" />
     <RelColumn name="CurrencyName" />
   </columns>

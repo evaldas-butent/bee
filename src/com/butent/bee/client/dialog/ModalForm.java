@@ -3,14 +3,15 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Dimensions;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.shared.ui.CssUnit;
 
 public class ModalForm extends Popup {
   
@@ -99,36 +100,36 @@ public class ModalForm extends Popup {
   
   private void setDimensions(HasDimensions dimensions) {
     double v;
-    Unit u;
+    CssUnit u;
 
     if (dimensions.getWidthValue() != null) {
       v = dimensions.getWidthValue();
       u = Dimensions.normalizeUnit(dimensions.getWidthUnit());
-      if (Unit.PCT.equals(u)) {
+      if (CssUnit.PCT.equals(u)) {
         v = Window.getClientWidth() * v / 100;
-        u = Unit.PX;
+        u = CssUnit.PX;
       }
     } else {
       v = Window.getClientWidth() / 2;
-      u = Unit.PX;
+      u = CssUnit.PX;
     }
     if (v > 0) {
-      getElement().getStyle().setWidth(v, u);
+      StyleUtils.setWidth(getElement(), v, u);
     }
 
     if (dimensions.getHeightValue() != null) {
       v = dimensions.getHeightValue();
       u = Dimensions.normalizeUnit(dimensions.getHeightUnit());
-      if (Unit.PCT.equals(u)) {
+      if (CssUnit.PCT.equals(u)) {
         v = Window.getClientHeight() * v / 100;
-        u = Unit.PX;
+        u = CssUnit.PX;
       }
     } else {
       v = Window.getClientHeight() / 2;
-      u = Unit.PX;
+      u = CssUnit.PX;
     }
     if (v > 0) {
-      getElement().getStyle().setHeight(v, u);
+      StyleUtils.setHeight(getElement(), v, u);
     }
   }
 }

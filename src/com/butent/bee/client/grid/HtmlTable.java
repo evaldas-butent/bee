@@ -1,7 +1,6 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -19,6 +18,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.CssUnit;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -70,7 +70,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       DomUtils.setColSpan(TableCellElement.as(ensureElement(row, column)), colSpan);
     }
 
-    public void setHeight(int row, int column, double height, Unit unit) {
+    public void setHeight(int row, int column, double height, CssUnit unit) {
       StyleUtils.setHeight(ensureElement(row, column), height, unit);
     }
 
@@ -98,7 +98,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       UIObject.setVisible(getElement(row, column), visible);
     }
 
-    public void setWidth(int row, int column, double width, Unit unit) {
+    public void setWidth(int row, int column, double width, CssUnit unit) {
       StyleUtils.setWidth(ensureElement(row, column), width, unit);
     }
 
@@ -148,7 +148,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       ensureColumn(column).setClassName(styleName);
     }
 
-    public void setWidth(int column, double width, Unit unit) {
+    public void setWidth(int column, double width, CssUnit unit) {
       StyleUtils.setWidth(ensureColumn(column), width, unit);
     }
 

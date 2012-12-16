@@ -2,18 +2,20 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TaskDurations" viewName="TaskDurations" caption="Registruoti laikai" readOnly="true">
+  name="TaskDurations" viewName="TaskDurations" caption="Registruoti laikai" readOnly="true"
+  flexShrink="1"
+  >
 
   <columns>
-    <DataColumn name="DurationDate" />
+    <DataColumn name="DurationDate" flexShrink="0" />
     <DataColumn name="DurationType" />
     <DataColumn name="Duration" />
 
-    <DataColumn name="Comment" />
+    <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
     <DataColumn name="CompanyName" caption="Klientas" />
 
-    <RelColumn name="Task" editEnabled="true" renderColumns="Summary" />
+    <RelColumn name="Task" editEnabled="true" renderColumns="Summary" flexGrow="1" />
 
     <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />
   </columns>

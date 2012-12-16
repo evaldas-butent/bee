@@ -2,7 +2,6 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
@@ -47,7 +46,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
@@ -127,6 +126,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
@@ -810,7 +810,7 @@ public enum FormWidget {
         break;
 
       case LAYOUT_PANEL:
-        widget = new BeeLayoutPanel();
+        widget = new LayoutPanel();
         break;
 
       case LINK:
@@ -1626,12 +1626,12 @@ public enum FormWidget {
           Edges edges = getEdges(child);
           Dimensions dimensions = XmlUtils.getDimensions(child);
 
-          if (parent instanceof BeeLayoutPanel) {
-            ((BeeLayoutPanel) parent).setHorizontalLayout(w.asWidget(),
+          if (parent instanceof LayoutPanel) {
+            ((LayoutPanel) parent).setHorizontalLayout(w.asWidget(),
                 edges.getLeftValue(), edges.getLeftUnit(),
                 edges.getRightValue(), edges.getRightUnit(),
                 dimensions.getWidthValue(), dimensions.getWidthUnit());
-            ((BeeLayoutPanel) parent).setVerticalLayout(w.asWidget(),
+            ((LayoutPanel) parent).setVerticalLayout(w.asWidget(),
                 edges.getTopValue(), edges.getTopUnit(),
                 edges.getBottomValue(), edges.getBottomUnit(),
                 dimensions.getHeightValue(), dimensions.getHeightUnit());
@@ -1658,7 +1658,7 @@ public enum FormWidget {
           Double width = XmlUtils.getAttributeDouble(child, HasDimensions.ATTR_WIDTH);
           if (BeeUtils.isPositive(width)) {
             table.getColumnFormatter().setWidth(c, width,
-                XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX));
+                XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, CssUnit.PX));
           }
           StyleUtils.updateAppearance(table.getColumnFormatter().getElement(c),
               child.getAttribute(UiConstants.ATTR_CLASS),
