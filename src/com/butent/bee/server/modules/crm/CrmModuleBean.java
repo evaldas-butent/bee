@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.crm;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -97,6 +98,9 @@ public class CrmModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_TASK_DATA)) {
       response = getTaskData(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
+      response = getChangedTasks();
+      
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -104,7 +108,7 @@ public class CrmModuleBean implements BeeModule {
     }
     return response;
   }
-
+  
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return null;
@@ -483,6 +487,54 @@ public class CrmModuleBean implements BeeModule {
       ctx.setRollbackOnly();
     }
     return response;
+  }
+
+  private ResponseObject getChangedTasks() {
+    IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
+
+    SqlSelect tNewQuery = new SqlSelect().setDistinctMode(true)
+        .addFrom(TBL_TASK_USERS)
+        .addFields(TBL_TASK_USERS, COL_TASK)
+        .setWhere(SqlUtils.and(uwh, SqlUtils.isNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
+    
+    Long[] newTasks = qs.getLongColumn(tNewQuery);
+    logger.debug("new tasks", newTasks);
+    
+    String idName = sys.getIdName(TBL_TASKS); 
+    
+    SqlSelect inner = new SqlSelect()
+        .addFrom(TBL_TASKS)
+        .addFromInner(TBL_TASK_USERS, sys.joinTables(TBL_TASKS, TBL_TASK_USERS, COL_TASK))
+        .addFromInner(TBL_TASK_EVENTS, sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+        .addFields(TBL_TASKS, idName)
+        .addMax(TBL_TASK_USERS, COL_LAST_ACCESS)
+        .addMax(TBL_TASK_EVENTS, COL_PUBLISH_TIME)
+        .addGroup(TBL_TASKS, idName)
+        .setWhere(SqlUtils.and(uwh, SqlUtils.notNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
+
+    String alias = "tupd_" + SqlUtils.uniqueName();
+    
+    SqlSelect tUpdQuery = new SqlSelect().setDistinctMode(true)
+        .addFrom(inner, alias)
+        .addFields(alias, idName)
+        .setWhere(SqlUtils.more(alias, COL_PUBLISH_TIME, SqlUtils.field(alias, COL_LAST_ACCESS)));
+    
+    Long[] updTasks = qs.getLongColumn(tUpdQuery);
+    logger.debug("upd tasks", updTasks);
+    
+    List<Long> result = Lists.newArrayList();
+    
+    long cntNew = (newTasks == null) ? 0 : newTasks.length;
+    result.add(cntNew);
+    if (cntNew > 0) {
+      result.addAll(Lists.newArrayList((newTasks)));
+    }
+
+    if (updTasks != null && updTasks.length > 0) {
+      result.addAll(Lists.newArrayList((updTasks)));
+    }
+    
+    return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
   }
 
   private ResponseObject getTaskData(long taskId, Long eventId) {

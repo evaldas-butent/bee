@@ -4,12 +4,12 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="Tasks" viewName="Tasks" caption="Užduotys"
-  cacheData="false" favorite="Summary"
+  cacheData="false" asyncThreshold="-1" favorite="Summary"
   flexShrink="1"
   >
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" options="greenSmall, yellowSmall" />
+      caption="-" />
 
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20">
       <renderer type="star" />

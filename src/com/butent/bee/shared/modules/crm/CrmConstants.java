@@ -99,6 +99,7 @@ public class CrmConstants {
   public static final String CRM_PROJECT_PREFIX = "project_";
 
   public static final String SVC_GET_TASK_DATA = "get_task_data";
+  public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";

@@ -203,7 +203,7 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (newMinutes != oldMinutes) {
       BeforeSelectionEvent<InputTime> event = BeforeSelectionEvent.fire(this, this);
-      if (event.isCanceled()) {
+      if (event != null && event.isCanceled()) {
         return false;
       }
       
@@ -214,7 +214,7 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
 
   protected void pickTime() {
     BeforeSelectionEvent<InputTime> before = BeforeSelectionEvent.fire(this, this);
-    if (before.isCanceled()) {
+    if (before != null && before.isCanceled()) {
       return;
     }
 

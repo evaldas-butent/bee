@@ -7,6 +7,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -17,6 +18,8 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -24,6 +27,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
@@ -40,8 +44,10 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -96,7 +102,7 @@ class TaskList {
         EditableColumn editableColumn) {
 
       if (BeeUtils.same(columnId, NAME_MODE) && column instanceof HasCellRenderer) {
-        ((HasCellRenderer) column).setRenderer(new ModeRenderer(column.getOptions()));
+        ((HasCellRenderer) column).setRenderer(new ModeRenderer());
 
       } else if (BeeUtils.same(columnId, NAME_SLACK) && column instanceof HasCellRenderer) {
         ((HasCellRenderer) column).setRenderer(new SlackRenderer(dataColumns, column.getOptions()));
@@ -160,6 +166,10 @@ class TaskList {
         ColumnDescription columnDescription) {
       if (BeeUtils.same(columnName, NAME_SLACK)) {
         return new SlackFilterSupplier(columnDescription.getFilterOptions());
+
+      } else if (BeeUtils.same(columnName, NAME_MODE)) {
+        return new ModeFilterSupplier(columnDescription.getFilterOptions());
+
       } else {
         return super.getFilterSupplier(columnName, columnDescription);
       }
@@ -218,13 +228,207 @@ class TaskList {
     }
   }
 
-  private static class ModeRenderer extends AbstractCellRenderer {
-    private String modeNew = null;
-    private String modeUpd = null;
+  private static class ModeFilterSupplier extends AbstractFilterSupplier {
 
-    private ModeRenderer(String options) {
+    private static final Splitter TASK_SPLITTER =
+        Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
+
+    private String caption = null;
+
+    private final List<Long> newTasks = Lists.newArrayList();
+    private final List<Long> updTasks = Lists.newArrayList();
+
+    private ModeFilterSupplier(String options) {
+      super(VIEW_TASKS, null, options);
+    }
+
+    @Override
+    public String getDisplayHtml() {
+      return getCaption();
+    }
+
+    @Override
+    public void onRequest(final Element target, NotificationListener notificationListener,
+        final Callback<Boolean> callback) {
+
+      ParameterList params = CrmKeeper.createTaskRequestParameters(SVC_GET_CHANGED_TASKS);
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasErrors()) {
+            if (callback != null) {
+              callback.onFailure(response.getErrors());
+            }
+
+          } else {
+            List<Long> tasks = Lists.newArrayList();
+            for (String item : TASK_SPLITTER.split((String) response.getResponse())) {
+              tasks.add(BeeUtils.toLong(item));
+            }
+
+            if (tasks.size() <= 1) {
+              BeeKeeper.getScreen().notifyInfo("Naujų arba pasikeitusių užduočių nerasta");
+              return;
+            }
+
+            newTasks.clear();
+            updTasks.clear();
+
+            int cntNew = BeeUtils.toInt(tasks.get(0));
+            if (cntNew > 0) {
+              newTasks.addAll(tasks.subList(1, cntNew + 1));
+            }
+
+            if (cntNew < tasks.size() - 1) {
+              updTasks.addAll(tasks.subList(cntNew + 1, tasks.size()));
+            }
+
+            openDialog(target, createWidget(), callback);
+          }
+        }
+      });
+    }
+
+    @Override
+    public boolean reset() {
+      setCaption(null);
+      return super.reset();
+    }
+
+    @Override
+    protected List<SupplierAction> getActions() {
+      return Lists.newArrayList();
+    }
+
+    @Override
+    protected String getStylePrefix() {
+      return "bee-crm-FilterSupplier-Mode-";
+    }
+
+    private Widget createWidget() {
+      HtmlTable container = new HtmlTable();
+      container.addStyleName(getStylePrefix() + "container");
+
+      int row = 0;
+
+      if (!newTasks.isEmpty()) {
+        BeeButton bNew = new BeeButton("Tik naujos");
+        bNew.addStyleName(getStylePrefix() + "new");
+
+        bNew.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            setCaption("n");
+            update(getNewFilter());
+          }
+        });
+
+        container.setWidget(row, 0, bNew);
+
+        Widget imgNew = createImage(TaskList.modeNew);
+        container.setWidget(row, 1, imgNew);
+
+        container.setText(row, 2, BeeUtils.toString(newTasks.size()));
+
+        row++;
+      }
+
+      if (!updTasks.isEmpty()) {
+        BeeButton bUpd = new BeeButton("Tik pasikeitusios");
+        bUpd.addStyleName(getStylePrefix() + "upd");
+
+        bUpd.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            setCaption("p");
+            update(getUpdFilter());
+          }
+        });
+
+        container.setWidget(row, 0, bUpd);
+
+        Widget imgUpd = createImage(TaskList.modeUpd);
+        container.setWidget(row, 1, imgUpd);
+
+        container.setText(row, 2, BeeUtils.toString(updTasks.size()));
+
+        row++;
+      }
+
+      if (!newTasks.isEmpty() && !updTasks.isEmpty()) {
+        BeeButton both = new BeeButton("Naujos ir pasikeitusios");
+        both.addStyleName(getStylePrefix() + "both");
+
+        both.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            setCaption("np");
+            update(Filter.or(getNewFilter(), getUpdFilter()));
+          }
+        });
+
+        container.setWidget(row, 0, both);
+
+        Flow imgBoth = new Flow();
+        imgBoth.add(createImage(TaskList.modeNew));
+        imgBoth.add(createImage(TaskList.modeUpd));
+
+        container.setWidget(row, 1, imgBoth);
+
+        container.setText(row, 2, BeeUtils.toString(newTasks.size() + updTasks.size()));
+        
+        row++;
+      }
+
+      BeeButton all = new BeeButton("Visos");
+      all.addStyleName(getStylePrefix() + "all");
+
+      all.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          setCaption(null);
+          update(null);
+        }
+      });
+
+      container.setWidget(row, 0, all);
+
+      BeeButton cancel = new BeeButton("Atsisakyti");
+      cancel.addStyleName(getStylePrefix() + "cancel");
+
+      cancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          closeDialog();
+        }
+      });
+
+      container.setWidget(row, 1, cancel);
+
+      return container;
+    }
+
+    private String getCaption() {
+      return caption;
+    }
+
+    private Filter getNewFilter() {
+      return Filter.idIn(newTasks);
+    }
+
+    private Filter getUpdFilter() {
+      return Filter.idIn(updTasks);
+    }
+
+    private void setCaption(String caption) {
+      this.caption = caption;
+    }
+  }
+
+  private static class ModeRenderer extends AbstractCellRenderer {
+
+    private ModeRenderer() {
       super(null);
-      setOptions(options);
     }
 
     @Override
@@ -239,33 +443,14 @@ class TaskList {
 
       Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
       if (access == null) {
-        return modeNew;
+        return Images.asString(TaskList.modeNew);
       }
 
       Long publish = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_PUBLISH));
       if (publish != null && access < publish) {
-        return modeUpd;
+        return Images.asString(TaskList.modeUpd);
       }
       return BeeConst.STRING_EMPTY;
-    }
-
-    private void setOptions(String options) {
-      if (!BeeUtils.isEmpty(options)) {
-        int idx = 0;
-
-        for (String mode : NameUtils.NAME_SPLITTER.split(options)) {
-          String html = BeeUtils.notEmpty(Images.getHtml(mode), mode);
-
-          switch (idx++) {
-            case 0:
-              modeNew = html;
-              break;
-            case 1:
-              modeUpd = html;
-              break;
-          }
-        }
-      }
     }
   }
 
@@ -298,7 +483,7 @@ class TaskList {
     protected List<SupplierAction> getActions() {
       return Lists.newArrayList();
     }
-    
+
     @Override
     protected String getStylePrefix() {
       return "bee-crm-FilterSupplier-Slack-";
@@ -562,6 +747,9 @@ class TaskList {
     abstract Filter getFilter(LongValue userValue);
   }
 
+  private static final ImageResource modeNew = Global.getImages().greenSmall();
+  private static final ImageResource modeUpd = Global.getImages().yellowSmall();
+
   public static void open(String args) {
     Type type = null;
 
@@ -577,6 +765,10 @@ class TaskList {
     } else {
       GridFactory.openGrid(GRID_TASKS, new GridHandler(type));
     }
+  }
+
+  private static Widget createImage(ImageResource imageResource) {
+    return new BeeImage(imageResource);
   }
 
   private TaskList() {
