@@ -47,6 +47,8 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   
   private boolean upperCase = false;
 
+  private String options = null;
+
   public InputText() {
     super(Document.get().createTextInputElement());
     init();
@@ -56,7 +58,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     super(element);
     init();
   }
-
+  
   public InputText(HasStringValue source) {
     this();
     initSource(source);
@@ -80,21 +82,21 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public HandlerRegistration addInputHandler(InputHandler handler) {
     return Binder.addInputHandler(this, handler);
   }
-  
+
   @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
   }
-  
+
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }
-
+  
   @Override
   public EditorAction getDefaultFocusAction() {
     return EditorAction.SELECT;
   }
-
+  
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -124,6 +126,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return oldValue;
   }
 
+  @Override
+  public String getOptions() {
+    return options;
+  }
+
   public HasStringValue getSource() {
     return source;
   }
@@ -141,12 +148,12 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_TEXT;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
-
+  
   public boolean isAllSelected() {
     String text = getText();
     if (BeeUtils.isEmpty(text)) {
@@ -170,11 +177,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public boolean isOrHasPartner(Node node) {
     return getElement().equals(node);
   }
-  
+
   public boolean isUpperCase() {
     return upperCase;
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isKeyPress(event.getType())) {
@@ -223,6 +230,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setSource(HasStringValue source) {

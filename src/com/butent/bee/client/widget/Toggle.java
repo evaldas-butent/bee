@@ -36,6 +36,8 @@ public class Toggle extends CustomButton implements Editor {
 
   private boolean editing = false;
 
+  private String options = null;
+
   public Toggle() {
     super();
     init(null);
@@ -48,7 +50,7 @@ public class Toggle extends CustomButton implements Editor {
       initSource(source);
     }
   }
-
+  
   public Toggle(Image upImage) {
     super(upImage);
     init(null);
@@ -78,22 +80,22 @@ public class Toggle extends CustomButton implements Editor {
   public void clearValue() {
     setValue(null);
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "toggle";
   }
-
+  
   @Override
   public String getNormalizedValue() {
     Boolean v = isDown();
@@ -101,6 +103,11 @@ public class Toggle extends CustomButton implements Editor {
       v = null;
     }
     return BooleanValue.pack(v);
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public HasBooleanValue getSource() {
@@ -116,12 +123,12 @@ public class Toggle extends CustomButton implements Editor {
   public FormWidget getWidgetType() {
     return FormWidget.TOGGLE;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
-
+  
   public void invert() {
     setDown(!isDown());
   }
@@ -145,7 +152,7 @@ public class Toggle extends CustomButton implements Editor {
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     if (!isEnabled()) {
@@ -183,7 +190,7 @@ public class Toggle extends CustomButton implements Editor {
 
     super.onBrowserEvent(event);
   }
-
+  
   @Override
   public void setDown(boolean down) {
     super.setDown(down);
@@ -202,6 +209,11 @@ public class Toggle extends CustomButton implements Editor {
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setSource(HasBooleanValue source) {

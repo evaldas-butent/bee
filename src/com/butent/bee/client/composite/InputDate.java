@@ -4,8 +4,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -33,7 +31,6 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasTextBox;
-import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -52,48 +49,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox,
     HasIntStep, HasMaxLength {
   
-  private class TimePickerHandler implements KeyDownHandler, ClickHandler {
-    private TimePickerHandler() {
-      super();
-    }
-
-    @Override
-    public void onClick(ClickEvent event) {
-      select((BeeListBox) event.getSource());
-    }
-
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-        event.preventDefault();
-        select((BeeListBox) event.getSource());
-
-      } else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-        event.preventDefault();
-        event.stopPropagation();
-        hidePopup();
-        getBox().setFocus(true);
-      }
-    }
-    
-    private void select(BeeListBox listBox) {
-      int index = listBox.getSelectedIndex();
-      if (index >= 0) {
-        int millis = TimeUtils.parseTime(listBox.getItemText(index)); 
-        
-        DateTime dateTime = getDate().getDateTime();
-        dateTime.setHour(millis / TimeUtils.MILLIS_PER_HOUR);
-        dateTime.setMinute(millis % TimeUtils.MILLIS_PER_HOUR / TimeUtils.MILLIS_PER_MINUTE);
-        setValue(dateTime);
-
-        hidePopup();
-        getBox().setFocus(true);
-      }
-    }
-  }
-  
   private static final String STYLE_POPUP = "bee-DateBox-Popup"; 
-  private static final String STYLE_TIME_PICKER = "bee-TimePicker"; 
 
   private final InputText box;
   private final Popup popup;
@@ -106,8 +62,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
  
   private boolean editing = false;
 
-  private TimePickerHandler timePickerHandler = null;
-  
+  private String options = null;
+
   public InputDate(ValueType type) {
     this(type, null);
   }
@@ -148,7 +104,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
@@ -163,7 +119,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
-  
+
   @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
@@ -178,7 +134,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     ValueType type = ValueType.isDateOrDateTime(getDataType()) ? getDataType() : ValueType.DATETIME;
     return AbstractDate.parse(getDateTimeFormat(), v, type);
   }
-
+  
   @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
@@ -215,6 +171,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     } else {
       return getValue();
     }
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   @Override
@@ -279,8 +240,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       event.preventDefault();
       if (popupShowing) {
         hidePopup();
-      } else if (EventUtils.hasModifierKey(event) && isDateTime() && getDate() != null) {
-        pickTime();
       } else {
         showPicker();
       }
@@ -361,6 +320,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   @Override
   public void setNullable(boolean nullable) {
     getBox().setNullable(nullable);
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override
@@ -709,43 +673,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return true;
   }
   
-  protected void pickTime() {
-    DateTime dateTime = getDate().getDateTime();
-
-    int step = getStepValue();
-    if (step <= 0 || step > 60) {
-      step = 30;
-    }
-
-    int hour = dateTime.getHour();
-    int minute = dateTime.getMinute();
-
-    int start = minute % step;
-    char sep = DateTime.TIME_FIELD_SEPARATOR;
-
-    BeeListBox widget = new BeeListBox();
-    widget.addStyleName(STYLE_TIME_PICKER);
-
-    for (int i = start; i < TimeUtils.MINUTES_PER_DAY; i += step) {
-      String item = TimeUtils.padTwo(i / 60) + sep + TimeUtils.padTwo(i % 60);
-      widget.addItem(item);
-    }
-    widget.setVisibleItemCount(10);
-
-    widget.addClickHandler(ensureTimePickerHandler());
-    widget.addKeyDownHandler(ensureTimePickerHandler());
-
-    getPopup().setWidget(widget);
-    getPopup().showRelativeTo(getBox().getElement());
-
-    widget.setFocus(true);
-
-    int index = widget.getItems().indexOf(TimeUtils.padTwo(hour) + sep + TimeUtils.padTwo(minute));
-    if (index > 0) {
-      widget.setSelectedIndex(index);
-    }
-  }
-
   protected void setValue(HasDateValue value) {
     String text;
     if (value == null) {
@@ -760,13 +687,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   protected void showPicker() {
     showDatePicker();
-  }
-
-  private TimePickerHandler ensureTimePickerHandler() {
-    if (timePickerHandler == null) {
-      timePickerHandler = new TimePickerHandler();
-    }
-    return timePickerHandler;
   }
 
   private DatePicker getDatePicker() {

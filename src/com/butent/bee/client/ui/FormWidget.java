@@ -23,7 +23,6 @@ import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.InputDate;
-import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
@@ -74,6 +73,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeFrame;
@@ -101,6 +101,7 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputSlider;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Link;
@@ -338,6 +339,7 @@ public enum FormWidget {
   private static final String ATTR_MIN_SIZE = "minSize";
   private static final String ATTR_MAX_SIZE = "maxSize";
 
+  private static final String ATTR_VALUE = "value";
   private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
 
   private static final String ATTR_MIN = "min";
@@ -786,13 +788,11 @@ public enum FormWidget {
         break;
 
       case INPUT_TIME:
+        widget = new InputTime();
         format = attributes.get(UiConstants.ATTR_FORMAT);
-        column = getColumn(columns, attributes);
-        ValueType type = (column != null && ValueType.TEXT.equals(column.getType()))
-            ? ValueType.TEXT : ValueType.DATETIME;
-        
-        widget = new InputTime(type,
-            Format.getDateTimeFormat(format, Format.getDefaultTimeFormat()));
+        if (!BeeUtils.isEmpty(format)) {
+          ((InputTime) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+        }
         break;
 
       case INTEGER_LABEL:
@@ -1898,6 +1898,10 @@ public enum FormWidget {
           ((HasIntStep) widget).setStepValue(BeeUtils.toInt(value));
         }
 
+      } else if (BeeUtils.same(name, ATTR_VALUE)) {
+        if (widget instanceof Editor) {
+          ((Editor) widget).setValue(value);
+        }
       } else if (BeeUtils.same(name, HasValueStartIndex.ATTR_VALUE_START_INDEX)
           && BeeUtils.isDigit(value)) {
         if (widget instanceof HasValueStartIndex) {

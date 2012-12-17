@@ -52,7 +52,7 @@ public class DayViewHeader extends Horizontal {
       StyleUtils.setWidth(dayLabel, dayWidth, CssUnit.PCT);
 
       if (TimeUtils.isToday(tmp)) {
-        dayLabel.addStyleName(CalendarStyleManager.DAY_CELL_TODAY);
+        dayLabel.addStyleName(CalendarStyleManager.TODAY);
       }
       if (TimeUtils.isWeekend(tmp)) {
         dayLabel.addStyleName(CalendarStyleManager.DAY_CELL_WEEKEND);

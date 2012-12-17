@@ -81,6 +81,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   private int valueStartIndex = 0;
 
+  private String options = null;
+
   public RadioGroup(boolean vertical) {
     this(NameUtils.createUniqueName("optiongroup"), vertical);
   }
@@ -89,7 +91,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this(vertical);
     addButtons(opt, value);
   }
-
+  
   public RadioGroup(String name, boolean vertical) {
     super();
     Assert.notEmpty(name);
@@ -217,7 +219,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getDefaultStyleName() {
     return "bee-RadioGroup";
@@ -227,7 +229,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public String getIdPrefix() {
     return "rg";
   }
-
+  
   public String getName() {
     return name;
   }
@@ -235,6 +237,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   @Override
   public String getNormalizedValue() {
     return getValue();
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public int getSelectedIndex() {
@@ -298,11 +305,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   public boolean isVertical() {
     return vertical;
   }
-
+  
   @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     Object source = event.getSource();
@@ -341,6 +348,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void setNullable(boolean nullable) {
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setSelectedIndex(int newIndex) {

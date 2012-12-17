@@ -25,7 +25,6 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.InputDate;
-import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -51,6 +50,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -257,7 +257,7 @@ class TaskEditor extends AbstractFormInterceptor {
       col++;
 
       styleName = STYLE_DIALOG + "-timeInput";
-      InputTime input = new InputTime(ValueType.TEXT);
+      InputTime input = new InputTime();
       input.addStyleName(styleName);
 
       table.setWidget(row, col, input);

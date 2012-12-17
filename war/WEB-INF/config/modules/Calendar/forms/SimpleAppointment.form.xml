@@ -11,7 +11,7 @@
     <InputText source="Summary" caption="Santrauka:" style="width: 236px;"
       d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
 
-    <InputText source="Location" caption="Kur:" style="width: 320px;"
+    <InputText source="Location" caption="Vieta:" style="width: 320px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
 
     <Label html="Resursai:" style="&absolute; left: 0; top: 40px;" />
@@ -37,7 +37,8 @@
 
     <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:" style="width: 80px;"
       d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
-    <InputTime name="EndTime" step="30" style="&absolute; left: 280px; top: 192px; width: 40px;" />
+    <InputTime name="EndTime" step="30" style="&absolute; left: 280px; top: 192px; width: 40px;"
+      options="60" />
 
     <FlowPanel name="Colors" style="&absolute; left: 360px; top: 194px; width: 380px;" />
 

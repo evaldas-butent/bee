@@ -681,6 +681,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private Widget drill = null;
 
+  private String options = null;
+
   public DataSelector(Relation relation, boolean embedded) {
     super();
 
@@ -763,7 +765,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getInput().addDomHandler(handler, BlurEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -850,6 +852,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public String getNormalizedValue() {
     return getEditorValue();
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public SelectionOracle getOracle() {
@@ -977,6 +984,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public void setNullable(boolean nullable) {
     getInput().setNullable(nullable);
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

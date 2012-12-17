@@ -6,7 +6,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.CssUnit;
 
 public class MultiDayPanel extends Composite {
 
@@ -18,7 +21,7 @@ public class MultiDayPanel extends Composite {
     panel.addStyleName(CalendarStyleManager.MULTI_DAY_PANEL);
     initWidget(panel);
     
-    Html leftFiller = new Html();
+    CustomDiv leftFiller = new CustomDiv();
     panel.add(leftFiller);
     panel.addStyleToCell(leftFiller, CalendarStyleManager.TIMELINE_EMPTY_CELL);
     
@@ -26,7 +29,7 @@ public class MultiDayPanel extends Composite {
     panel.add(grid);
     panel.addStyleToCell(grid, CalendarStyleManager.MULTI_DAY_GRID_CELL);
 
-    Html rightFiller = new Html();
+    CustomDiv rightFiller = new CustomDiv();
     panel.add(rightFiller);
     panel.addStyleToCell(rightFiller, CalendarStyleManager.SCROLLBAR_EMPTY_CELL);
     panel.setCellWidth(rightFiller, DomUtils.getScrollBarWidth());
@@ -36,8 +39,25 @@ public class MultiDayPanel extends Composite {
     return grid;
   }
 
-  public void setColumnCount(int columnCount) {
+  public void setColumns(int columnCount, int todayStartColumn, int todayEndColumn) {
     grid.clear();
+    
+    int todayWidth = CalendarLayoutManager.getTodayWidth(columnCount, todayStartColumn,
+        todayEndColumn);
+    int todayLeft = (todayWidth > 0) 
+        ? CalendarLayoutManager.getTodayLeft(columnCount, todayStartColumn) : BeeConst.UNDEF;
+
+    if (todayWidth > 0) {
+      CustomDiv today = new CustomDiv();
+      today.addStyleName(CalendarStyleManager.TODAY_MARKER);
+      today.addStyleName(CalendarStyleManager.TODAY);
+      
+      StyleUtils.setLeft(today, todayLeft, CssUnit.PCT);
+      StyleUtils.setWidth(today, todayWidth, CssUnit.PCT);
+      
+      grid.add(today);
+    }
+    
     CalendarLayoutManager.addColumnSeparators(grid, columnCount);
   }
 }

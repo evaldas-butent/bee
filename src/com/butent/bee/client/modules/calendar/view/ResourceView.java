@@ -65,12 +65,12 @@ public class ResourceView extends CalendarView {
 
     viewHeader.setAttendees(calendarId, attendees);
     viewHeader.setDate(date);
-
-    viewMulti.setColumnCount(cc);
     
     if (TimeUtils.isToday(date)) {
+      viewMulti.setColumns(cc, 0, cc - 1);
       viewBody.build(cc, getSettings(), 0, cc - 1);
     } else {
+      viewMulti.setColumns(cc, BeeConst.UNDEF, BeeConst.UNDEF);
       viewBody.build(cc, getSettings());
     }
 
@@ -181,7 +181,7 @@ public class ResourceView extends CalendarView {
 
     for (AppointmentAdapter adapter : adapters) {
       AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
-          columnIndex);
+          columnIndex, adapter.getHeight());
 
       widget.setLeft(adapter.getLeft());
       widget.setWidth(adapter.getWidth());

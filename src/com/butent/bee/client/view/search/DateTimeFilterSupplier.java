@@ -7,10 +7,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.InputDate;
-import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -144,7 +144,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     dateFrom.addStyleName(STYLE_DATE);
     display.setWidget(START_ROW, DATE_COL, dateFrom, STYLE_DATE + STYLE_SUFFIX_CELL);
     
-    InputTime timeFrom = new InputTime(ValueType.TEXT);
+    InputTime timeFrom = new InputTime();
     timeFrom.addStyleName(STYLE_TIME);
     display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
 
@@ -156,18 +156,18 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     dateTo.addStyleName(STYLE_DATE);
     display.setWidget(END_ROW, DATE_COL, dateTo, STYLE_DATE + STYLE_SUFFIX_CELL);
     
-    InputTime timeTo = new InputTime(ValueType.TEXT);
+    InputTime timeTo = new InputTime();
     timeTo.addStyleName(STYLE_TIME);
     display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
     
     if (getStartValue() != null) {
       getInputDate(display, START_ROW).setDate(getStartValue());
-      getInputTime(display, START_ROW).setDateTime(getStartValue());
+      getInputTime(display, START_ROW).setTime(getStartValue());
     }
 
     if (getEndValue() != null) {
       getInputDate(display, END_ROW).setDate(getEndValue());
-      getInputTime(display, END_ROW).setDateTime(getEndValue());
+      getInputTime(display, END_ROW).setTime(getEndValue());
     }
     
     Widget wrapper = wrapDisplay(display, false);
@@ -189,22 +189,21 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       datePart = ((InputDate) dateWidget).getDate();
     }
 
-    DateTime timePart = null;
+    int timeMillis = 0;
 
     Widget timeWidget = display.getWidget(END_ROW, TIME_COL);
-    if (timeWidget instanceof InputTime) {
-      timePart = ((InputTime) timeWidget).getDateTime();
+    if (timeWidget instanceof InputTime && !((InputTime) timeWidget).isEmpty()) {
+      timeMillis = ((InputTime) timeWidget).getMillis();
     }
     
-    if (datePart == null && timePart != null && start != null
-        && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
-      return TimeUtils.combine(start, timePart);
+    if (datePart == null && timeMillis > 0 && start != null) {
+      return TimeUtils.combine(start, timeMillis);
 
     } else if (datePart == null) {
       return null;
     
     } else {
-      return TimeUtils.combine(datePart, timePart);
+      return TimeUtils.combine(datePart, timeMillis);
     }
   }
   
@@ -246,14 +245,14 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
 
-    DateTime timePart = null;
+    int timeMillis = 0;
 
     Widget timeWidget = display.getWidget(START_ROW, TIME_COL);
-    if (timeWidget instanceof InputTime) {
-      timePart = ((InputTime) timeWidget).getDateTime();
+    if (timeWidget instanceof InputTime && !((InputTime) timeWidget).isEmpty()) {
+      timeMillis = ((InputTime) timeWidget).getMillis();
     }
-
-    return TimeUtils.combine(datePart, timePart);
+    
+    return TimeUtils.combine(datePart, timeMillis);
   }
 
   private DateTime getStartValue() {

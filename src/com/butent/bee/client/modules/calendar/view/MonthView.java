@@ -328,7 +328,8 @@ public class MonthView extends CalendarView {
     String bg = (separate && attColors != null) 
         ?  attColors.get(appointment.getSeparatedAttendee()) : null;
     
-    AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+    AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF,
+        BeeConst.UNDEF);
     if (multi) {
       widget.render(calendarId, bg);
     } else {
@@ -485,7 +486,8 @@ public class MonthView extends CalendarView {
 
     for (Appointment appointment : appointments) {
       boolean multi = appointment.isMultiDay();
-      AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+      AppointmentWidget widget = new AppointmentWidget(appointment, multi,
+          BeeConst.UNDEF, BeeConst.UNDEF);
       widget.render(calendarId, null);
       
       panel.add(widget);

@@ -270,6 +270,7 @@ public class CalendarKeeper {
               }
 
               builder.setRequiredFields(formDescription.getOptions());
+              builder.initPeriod(start);
 
               boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);

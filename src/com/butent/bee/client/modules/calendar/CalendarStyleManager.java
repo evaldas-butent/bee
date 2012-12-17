@@ -16,7 +16,6 @@ public class CalendarStyleManager {
   public static final String DAY_CELL_CONTAINER = "day-cell-container";
 
   public static final String DAY_CELL = "day-cell";
-  public static final String DAY_CELL_TODAY = "day-cell-today";
   public static final String DAY_CELL_WEEKEND = "day-cell-weekend";
 
   public static final String MULTI_DAY_PANEL = "multiDayPanel";
@@ -52,6 +51,8 @@ public class CalendarStyleManager {
   public static final String FOOTER = "footer";
 
   public static final String APPOINTMENT = "appointment";
+  public static final String APPOINTMENT_SMALL = "appointment-small";
+  public static final String APPOINTMENT_BIG = "appointment-big";
   public static final String APPOINTMENT_MULTIDAY = "appointment-multiday";
 
   public static final String MONTH_GRID = "grid";
@@ -67,7 +68,6 @@ public class CalendarStyleManager {
   public static final String MORE_PANEL = "morePanel";
   public static final String MORE_CAPTION = "moreCaption";
 
-  public static final String TODAY = "today";
   public static final String DISABLED = "disabled";
 
   public static final String FIRST_COLUMN = "firstColumn";
@@ -77,6 +77,9 @@ public class CalendarStyleManager {
   public static final String NOW_MARKER = "nowMarker";
 
   public static final String ADD_RESOURCES = "bee-cal-AddResources";
+
+  public static final String TODAY = "bee-cal-today";
+  public static final String TODAY_MARKER = "bee-cal-todayMarker";
   
   static void applyStyle(Widget widget, String styles) {
     if (!BeeUtils.isEmpty(styles)) {

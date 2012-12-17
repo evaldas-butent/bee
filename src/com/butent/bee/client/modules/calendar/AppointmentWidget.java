@@ -29,13 +29,23 @@ public class AppointmentWidget extends Flow {
   private int dropColumnIndex = BeeConst.UNDEF;
   private int dropMinutes = BeeConst.UNDEF;
 
-  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex) {
+  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex, double height) {
     this.appointment = appointment;
     this.multi = multi;
     this.columnIndex = columnIndex;
-
-    addStyleName(multi ? CalendarStyleManager.APPOINTMENT_MULTIDAY
-        : CalendarStyleManager.APPOINTMENT);
+    
+    String styleName;
+    if (multi) {
+      styleName = CalendarStyleManager.APPOINTMENT_MULTIDAY;
+    } else if (height > 0 && height < 40) {
+      styleName = CalendarStyleManager.APPOINTMENT_SMALL;
+    } else if (height > 100) {
+      styleName = CalendarStyleManager.APPOINTMENT_BIG;
+    } else {
+      styleName = CalendarStyleManager.APPOINTMENT;
+    }
+    
+    addStyleName(styleName);
 
     headerPanel.addStyleName(CalendarStyleManager.HEADER);
     bodyPanel.addStyleName(CalendarStyleManager.BODY);

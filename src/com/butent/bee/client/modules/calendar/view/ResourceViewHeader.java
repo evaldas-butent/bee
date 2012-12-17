@@ -12,6 +12,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.CssUnit;
 
 import java.util.List;
@@ -62,5 +63,7 @@ public class ResourceViewHeader extends Horizontal {
 
   public void setDate(JustDate date) {
     getWidget(DATE_CELL_INDEX).getElement().setInnerHTML(DATE_FORMAT.format(date));
+    
+    setStyleName(CalendarStyleManager.TODAY, TimeUtils.isToday(date));
   }
 }

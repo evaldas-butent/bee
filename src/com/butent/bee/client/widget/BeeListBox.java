@@ -3,6 +3,8 @@ package com.butent.bee.client.widget;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.OptionElement;
+import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -55,6 +57,8 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private boolean changePending = false;
 
+  private String options = null;
+
   public BeeListBox() {
     super();
     init();
@@ -64,7 +68,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     super(isMultipleSelect);
     init();
   }
-
+  
   public BeeListBox(Element element) {
     super(element);
     init();
@@ -132,16 +136,16 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     super.clear();
     updateSize();
   }
-  
+
   @Override
   public void clearValue() {
     deselect();
   }
-  
+
   public void deselect() {
     setSelectedIndex(-1);
   }
-
+  
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
@@ -156,7 +160,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public String getIdPrefix() {
     return "list";
   }
-
+  
   @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
@@ -182,6 +186,19 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     } else {
       return BeeUtils.trimRight(v);
     }
+  }
+  
+  public OptionElement getOptionElement(int index) {
+    if (isIndex(index)) {
+      return getSelectElement().getOptions().getItem(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public HasStringValue getSource() {
@@ -209,22 +226,22 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public FormWidget getWidgetType() {
     return FormWidget.LIST_BOX;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }
-
+  
   @Override
   public boolean isEditing() {
     return editing;
   }
-  
+
   @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-
+  
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
@@ -234,12 +251,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isNullable() {
     return nullable;
   }
-  
+
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-
+  
   public boolean isValueNumeric() {
     return valueNumeric;
   }
@@ -309,6 +326,11 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setSource(HasStringValue source) {
@@ -398,6 +420,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return index;
   }
 
+  private SelectElement getSelectElement() {
+    return getElement().cast();
+  }
+  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-ListBox");

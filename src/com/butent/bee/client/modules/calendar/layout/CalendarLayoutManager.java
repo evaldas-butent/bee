@@ -11,7 +11,7 @@ import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -54,7 +54,7 @@ public class CalendarLayoutManager {
 
     int width = 100 / columnCount;
     for (int i = 0; i < columnCount; i++) {
-      Html separator = new Html();
+      CustomDiv separator = new CustomDiv();
 
       separator.setStyleName(CalendarStyleManager.COLUMN_SEPARATOR);
       StyleUtils.setLeft(separator, width * i, CssUnit.PCT);
@@ -200,6 +200,25 @@ public class CalendarLayoutManager {
   public static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date,
       int columnIndex, int columnCount) {
     return doMultiLayout(adapters, date, 1, columnIndex, columnCount);
+  }
+
+  public static int getTodayLeft(int columnCount, int todayStartColumn) {
+    if (BeeUtils.betweenExclusive(todayStartColumn, 0, columnCount)) {
+      int width = 100 / columnCount;
+      return todayStartColumn * width;
+    } else {
+      return BeeConst.UNDEF;
+    }
+  }
+  
+  public static int getTodayWidth(int columnCount, int todayStartColumn, int todayEndColumn) {
+    if (BeeUtils.betweenExclusive(todayStartColumn, 0, columnCount)) {
+      int endColumn = BeeUtils.clamp(todayEndColumn, todayStartColumn, columnCount - 1);
+      int width = 100 / columnCount;
+      return (endColumn - todayStartColumn + 1) * width;
+    } else {
+      return BeeConst.UNDEF;
+    }
   }
 
   private static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date, int days,

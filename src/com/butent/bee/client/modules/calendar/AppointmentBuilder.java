@@ -34,7 +34,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.InputDate;
-import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -61,6 +60,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -90,15 +90,13 @@ import java.util.Set;
 
 class AppointmentBuilder extends AbstractFormInterceptor {
 
-  private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
-  
   private class DateOrTimeWidgetHandler implements BlurHandler {
     @Override
     public void onBlur(BlurEvent event) {
       checkOverlap(true);
     }
   }
-
+  
   private class ModalCallback extends InputCallback {
     @Override
     public String getErrorMessage() {
@@ -171,7 +169,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       
       DateTime oldEnd = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_END_DATE_TIME);
       DateTime newEnd = getEnd(newStart);
-      if (!Objects.equal(oldEnd, newEnd)) {
+      if (!Objects.equal(oldEnd, newEnd) && !isNew) {
         changes.add("Pabaiga");
       }
       
@@ -264,6 +262,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       }
     }
   }
+
+  private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
 
   private static final KeyDownHandler LIST_BOX_CLEANER = new KeyDownHandler() {
     @Override
@@ -457,10 +457,19 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
+
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
       setEndTimeWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
+      if (widget instanceof InputTime) {
+        ((InputTime) widget).addBeforeSelectionHandler(new BeforeSelectionHandler<InputTime>() {
+          @Override
+          public void onBeforeSelection(BeforeSelectionEvent<InputTime> event) {
+            beforeEndTimeSelection(event.getItem());
+          }
+        });
       }
 
     } else if (BeeUtils.same(name, NAME_HOURS)) {
@@ -497,7 +506,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       setBuildInfoWidgetId(widget.getId());
     }
   }
-
+  
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     if (row == null) {
@@ -511,14 +520,14 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       getInputDate(getStartDateWidgetId()).setDate(start);
     }
     if (!BeeUtils.isEmpty(getStartTimeWidgetId())) {
-      getInputTime(getStartTimeWidgetId()).setDateTime(start);
+      getInputTime(getStartTimeWidgetId()).setTime(start);
     }
 
     if (!BeeUtils.isEmpty(getEndDateWidgetId())) {
       getInputDate(getEndDateWidgetId()).setDate(end);
     }
     if (!BeeUtils.isEmpty(getEndTimeWidgetId())) {
-      getInputTime(getEndTimeWidgetId()).setDateTime(end);
+      getInputTime(getEndTimeWidgetId()).setTime(end);
     }
   }
 
@@ -567,6 +576,27 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     return modalCallback;
   }
 
+  void initPeriod(DateTime start) {
+    if (start == null) {
+      return;
+    }
+    
+    InputTime inputTime = getInputTime(getEndTimeWidgetId());
+    if (inputTime == null) {
+      return;
+    }
+    
+    String options = inputTime.getOptions();
+    if (!BeeUtils.isPositiveInt(options)) {
+      return;
+    }
+    
+    int minutes = TimeUtils.minutesSinceDayStarted(start) + BeeUtils.toInt(options);
+    if (minutes < TimeUtils.MINUTES_PER_DAY) {
+      inputTime.setMinutes(minutes);
+    }
+  }
+  
   boolean isRequired(String name) {
     return requiredFields.contains(name);
   }
@@ -610,15 +640,15 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
     setSelectedIndex(getListBox(getReminderWidgetId()), reminderIndex);
   }
-  
+
   void setRequiredFields(String fieldNames) {
     BeeUtils.overwrite(requiredFields, NameUtils.toSet(fieldNames));
   }
-
+  
   void setUcAttendees(List<Long> attendees) {
     BeeUtils.overwrite(ucAttendees, attendees);
   }
-  
+
   private void addColorHandlers() {
     colorWidget.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
       public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
@@ -638,7 +668,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       }
     });
   }
-
+  
   private void addResources() {
     BeeRowSet attendees = CalendarKeeper.getAttendees();
     if (attendees == null || attendees.isEmpty()) {
@@ -723,6 +753,30 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
     Global.inputWidget("Pasirinkite resursus", widget, callback, false,
         RowFactory.DIALOG_STYLE, false);
+  }
+
+  private void beforeEndTimeSelection(InputTime widget) {
+    if (widget == null) {
+      return;
+    }
+    
+    DateTime start = getStart();
+    if (start == null) {
+      return;
+    }
+    
+    HasDateValue endDate = BeeUtils.isEmpty(getEndDateWidgetId()) 
+        ? null : getInputDate(getEndDateWidgetId()).getDate();
+    
+    int min = 0;
+    if (endDate == null || TimeUtils.sameDate(start, endDate)) {
+      min = TimeUtils.minutesSinceDayStarted(start) + widget.getNormalizedStep();
+      if (min >= TimeUtils.MINUTES_PER_DAY) {
+        min = 0;
+      }
+    }
+    
+    widget.setMinMinutes(min);
   }
 
   private void buildIncrementally() {
@@ -824,15 +878,15 @@ class AppointmentBuilder extends AbstractFormInterceptor {
   private DateTime getEnd(DateTime start) {
     HasDateValue datePart = BeeUtils.isEmpty(getEndDateWidgetId()) 
         ? null : getInputDate(getEndDateWidgetId()).getDate();
-    DateTime timePart = BeeUtils.isEmpty(getEndTimeWidgetId()) 
-        ? null : getInputTime(getEndTimeWidgetId()).getDateTime();
+    int timeMillis = BeeUtils.isEmpty(getEndTimeWidgetId()) 
+        ? 0 : getInputTime(getEndTimeWidgetId()).getMillis();
 
-    if (datePart == null && timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
+    if (datePart == null && timeMillis > 0) {
       datePart = start;
     }
 
     if (datePart != null) {
-      return TimeUtils.combine(datePart, timePart);
+      return TimeUtils.combine(datePart, timeMillis);
     } else {
       int duration = getDuration();
       if (start != null && duration > 0) {
@@ -923,10 +977,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     if (datePart == null) {
       return null;
     }
-    DateTime timePart = BeeUtils.isEmpty(getStartTimeWidgetId())
-        ? null : getInputTime(getStartTimeWidgetId()).getDateTime();
+    int timeMillis = BeeUtils.isEmpty(getStartTimeWidgetId())
+        ? 0 : getInputTime(getStartTimeWidgetId()).getMillis();
 
-    return TimeUtils.combine(datePart, timePart);
+    return TimeUtils.combine(datePart, timeMillis);
   }
 
   private String getStartDateWidgetId() {
@@ -1492,7 +1546,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
     for (Appointment appointment : overlappingAppointments) {
       boolean multi = appointment.isMultiDay();
-      AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+      AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF,
+          BeeConst.UNDEF);
       widget.render(BeeConst.UNDEF, null);
 
       panel.add(widget);

@@ -578,6 +578,12 @@ public class TimeUtils {
       return dt.toString();
     }
   }
+
+  public static String renderMinutes(int minutes, boolean leadingZero) {
+    int hours = minutes / MINUTES_PER_HOUR;
+    return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + DateTime.TIME_FIELD_SEPARATOR
+        + padTwo(minutes % MINUTES_PER_HOUR);
+  }
   
   public static String renderTime(long millis) {
     if (millis < 0) {

@@ -108,6 +108,8 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
   private boolean selectionPending = false;
 
+  private String options = null;
+
   public StringPicker() {
     super(new DefaultCell());
 
@@ -140,7 +142,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   @Override
   public void addItem(String item) {
     Assert.notEmpty(item);
@@ -156,7 +158,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
       refresh();
     }
   }
-
+  
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
@@ -178,22 +180,22 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
       setValue(null);
     }
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "string-picker";
   }
-
+  
   @Override
   public int getItemCount() {
     return data.size();
@@ -215,6 +217,11 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   }
 
   @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
   public String getValue() {
     return value;
   }
@@ -223,12 +230,12 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public FormWidget getWidgetType() {
     return FormWidget.STRING_PICKER;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_ENTER);
   }
-
+  
   @Override
   public boolean isEditing() {
     return editing;
@@ -238,27 +245,27 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-  
+
   @Override
   public boolean isEnabled() {
     return enabled;
   }
-
+  
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-  
+
   @Override
   public boolean isNullable() {
     return nullable;
   }
-
+  
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   @Override
   public void onBlur(BlurEvent event) {
     if (isSelectionPending()) {
@@ -269,7 +276,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
       }
     }
   }
-
+  
   @Override
   public void onBrowserEvent2(Event event) {
     if (!isEnabled()) {
@@ -334,6 +341,11 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

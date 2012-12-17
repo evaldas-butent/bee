@@ -44,11 +44,18 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
 
   private boolean editorInitialized = false;
 
+  private String options = null;
+
   public InputArea() {
     super();
     init();
   }
 
+  public InputArea(Element element) {
+    super(element);
+    init();
+  }
+  
   public InputArea(Resource resource) {
     this();
     this.resource = resource;
@@ -57,11 +64,6 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     if (resource.isReadOnly()) {
       setReadOnly(true);
     }
-  }
-
-  public InputArea(Element element) {
-    super(element);
-    init();
   }
 
   @Override
@@ -78,7 +80,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
@@ -87,7 +89,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public String getDigest() {
     return digest;
   }
-
+  
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -106,6 +108,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     } else {
       return BeeUtils.trimRight(v);
     }
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public Resource getResource() {
@@ -191,6 +198,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setResource(Resource resource) {

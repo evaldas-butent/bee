@@ -57,6 +57,8 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   private boolean editing = false;
 
   private HandlerRegistration previewRegistration = null;
+  
+  private String options = null;
 
   public RichTextEditor(boolean embedded) {
     super();
@@ -120,7 +122,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
@@ -130,13 +132,18 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public String getIdPrefix() {
     return "rt-editor";
   }
-
+  
   @Override
   public String getNormalizedValue() {
     if (getValue() == null) {
       return null;
     }
     return BeeUtils.trimRight(getValue());
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   @Override
@@ -222,6 +229,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

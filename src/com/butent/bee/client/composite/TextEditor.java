@@ -40,6 +40,8 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   private final String acceptId;
   private final String noesId;
 
+  private String options = null;
+
   public TextEditor() {
     super();
     this.area = new InputArea();
@@ -65,7 +67,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getArea().addDomHandler(handler, BlurEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return getArea().addEditStopHandler(handler);
@@ -75,7 +77,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return getArea().addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
@@ -90,12 +92,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
   }
-  
+
   @Override
   public int getCharacterWidth() {
     return getArea().getCharacterWidth();
   }
-
+  
   @Override
   public EditorAction getDefaultFocusAction() {
     return getArea().getDefaultFocusAction();
@@ -105,12 +107,17 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public String getIdPrefix() {
     return "text-editor";
   }
-  
+
   @Override
   public String getNormalizedValue() {
     return getArea().getNormalizedValue();
   }
-
+  
+  @Override
+  public String getOptions() {
+    return options;
+  }
+  
   @Override
   public int getTabIndex() {
     return getArea().getTabIndex();
@@ -120,12 +127,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public TextBoxBase getTextBox() {
     return getArea();
   }
-  
+
   @Override
   public String getValue() {
     return getArea().getValue();
   }
-
+  
   @Override
   public int getVisibleLines() {
     return getArea().getVisibleLines();
@@ -135,12 +142,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_AREA;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return getArea().handlesKey(keyCode);
   }
-
+  
   @Override
   public boolean isEditing() {
     return getArea().isEditing();
@@ -207,6 +214,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   @Override
   public void setNullable(boolean nullable) {
     getArea().setNullable(nullable);
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

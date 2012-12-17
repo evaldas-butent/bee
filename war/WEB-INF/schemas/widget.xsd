@@ -127,6 +127,7 @@
         <xs:attribute name="maxValue" type="xs:normalizedString" />
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="updateMode" type="ui:refreshType" />
+        <xs:attribute name="value" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

@@ -31,7 +31,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class InputBoolean extends Composite implements Editor {
 
   private final BooleanWidget checkBox;
+
   private boolean nullable = true;
+
+  private String options = null;
 
   public InputBoolean(String label) {
     this(label, false);
@@ -57,7 +60,7 @@ public class InputBoolean extends Composite implements Editor {
       }
     });
   }
-
+  
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
@@ -72,7 +75,7 @@ public class InputBoolean extends Composite implements Editor {
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
@@ -82,7 +85,7 @@ public class InputBoolean extends Composite implements Editor {
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
-
+  
   @Override
   public void clearValue() {
     setValue(null);
@@ -92,7 +95,7 @@ public class InputBoolean extends Composite implements Editor {
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getId() {
     return getCheckBox().getId();
@@ -102,7 +105,7 @@ public class InputBoolean extends Composite implements Editor {
   public String getIdPrefix() {
     return getCheckBox().getIdPrefix();
   }
-
+  
   @Override
   public String getNormalizedValue() {
     Boolean v = getCheckBox().getValue();
@@ -110,6 +113,11 @@ public class InputBoolean extends Composite implements Editor {
       v = null;
     }
     return BooleanValue.pack(v);
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   @Override
@@ -126,12 +134,12 @@ public class InputBoolean extends Composite implements Editor {
   public FormWidget getWidgetType() {
     return FormWidget.CHECK_BOX;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
-
+  
   @Override
   public boolean isEditing() {
     return false;
@@ -151,12 +159,12 @@ public class InputBoolean extends Composite implements Editor {
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   @Override
   public void setAccessKey(char key) {
     getCheckBox().setAccessKey(key);
   }
-
+  
   @Override
   public void setEditing(boolean editing) {
   }
@@ -179,6 +187,11 @@ public class InputBoolean extends Composite implements Editor {
   @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

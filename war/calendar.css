@@ -11,7 +11,6 @@
 }
 
 .bee-cal .calendar-header {
-  background: #fff;
   width: 100%;
   table-layout: fixed;
   color: #444;
@@ -42,14 +41,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bee-cal .calendar-header .day-cell-today {
+.bee-cal .calendar-header .bee-cal-today {
   font-weight: bold;
-  background-color: #f1f1f1;
 }
 
 .bee-cal .multiDayPanel {
   width: 100%;
-  background: #fff;
   table-layout: fixed;
   border-top: 1px solid #ddd;
   border-collapse: collapse;
@@ -83,7 +80,6 @@
   display: block;
   position: relative;
   border-top: 1px solid #ddd;
-  background: #fff;
 }
 .bee-cal .hour-layout {
   position: absolute;
@@ -116,23 +112,23 @@
   top: 0;
   height: 1200px;
 }
+
 .bee-cal .major-time-interval {
   border-top: 1px solid #ddd;
 }
 .bee-cal .minor-time-interval {
   border-top: 1px dotted #ddd;
 }
-.bee-cal .working-hours {
-  background-color: #fff;
-}
-.bee-cal .non-working {
+.bee-cal .major-time-interval, .bee-cal .minor-time-interval {
+  position: absolute;
+  left: 0;
+  right: 0;
 }
 
 .bee-cal .column-separator {
-  height: 100%;
   position: absolute;
   top: 0px;
-  left: 0%;
+  height: 100%;
   border-left: 1px solid #ddd;
   border-right: 0px solid #ddd;
   width: 3px;
@@ -147,14 +143,10 @@
 } 
 
 .bee-cal .leftEmptyCell {
-  background: #fff;
   width: 50px;
 }
-.bee-cal .rightEmptyCell {
-  background: #fff;
-}
 
-.bee-cal .appointment {
+.bee-cal .appointment, .bee-cal .appointment-small, .bee-cal .appointment-big {
   position: absolute;
   overflow: hidden;
   border: 1px solid #444;
@@ -171,23 +163,70 @@
 }
 
 .bee-cal .appointment .header {
-  min-height: 6px;
+  height: 15px;
   padding-left: 1%;
-  white-space: nowrap;
   border-bottom: 2px ridge #ccc;
   cursor: move;
 }
 .bee-cal .appointment .body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 17px;
+  bottom: 0;
   padding-left: 2%;
   white-space: pre-line;
   cursor: pointer;
 }
 .bee-cal .appointment .footer {
   position: absolute;
-  bottom: 0;
-  height: 10px;
   left: 0;
   right: 0;
+  bottom: 0;
+  height: 10%;
+  cursor: row-resize;
+}
+
+.bee-cal .appointment-big {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+}
+
+.bee-cal .appointment-big .header {
+  min-height: 15px;
+  padding-left: 1%;
+  border-bottom: 2px ridge #ccc;
+  cursor: move;
+  white-space: pre-wrap;
+}
+.bee-cal .appointment-big .body {
+  padding-left: 2%;
+  white-space: pre-line;
+  cursor: pointer;
+  -webkit-flex: 1;
+}
+.bee-cal .appointment-big .footer {
+  height: 10px;
+  cursor: row-resize;
+}
+
+.bee-cal .appointment-small {
+  font-size: 11px;
+}
+
+.bee-cal .appointment-small .header {
+  height: 30%;
+  padding-left: 1%;
+  cursor: move;
+  line-height: 11px;
+}
+.bee-cal .appointment-small .body {
+  height: 50%;
+  padding-left: 1%;
+  cursor: pointer;
+}
+.bee-cal .appointment-small .footer {
+  height: 20%;
   cursor: row-resize;
 }
 
@@ -214,7 +253,6 @@
 
 .bee-cal-MonthView .grid {
   table-layout: fixed;
-  background: #fff;
   width: 100%;
   height: 100%;
   border-collapse: collapse;
@@ -226,7 +264,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: transparent;
 }
 
 .bee-cal-MonthView .weekDayLabel {
@@ -245,9 +282,6 @@
 }
 .bee-cal-MonthView .lastColumn {
   border-right: 1px solid #ddd;
-}
-.bee-cal-MonthView .dayCell.today {
-  background-color: #f1f1f1;
 }
 
 .bee-cal-MonthView .dayCellLabel {
@@ -637,4 +671,13 @@
   position: absolute;
   left: 0px;
   top: -60px;
+}
+
+.bee-cal-todayMarker {
+  position: absolute;
+  top: 0px;
+  height: 100%;
+}
+.bee-cal-today {
+  background-color: #f1f1f1;
 }
