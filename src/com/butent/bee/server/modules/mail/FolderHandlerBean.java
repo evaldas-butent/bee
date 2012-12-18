@@ -17,6 +17,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Iterator;
@@ -28,11 +29,6 @@ import javax.ejb.Stateless;
 @Stateless
 @LocalBean
 public class FolderHandlerBean {
-
-  public static final String DEFAULT_INBOX_FOLDER = "INBOX";
-  public static final String DEFAULT_SENT_FOLDER = "Sent Messages";
-  public static final String DEFAULT_DRAFTS_FOLDER = "Drafts";
-  public static final String DEFAULT_TRASH_FOLDER = "Deleted Messages";
 
   @EJB
   QueryServiceBean qs;
@@ -74,8 +70,24 @@ public class FolderHandlerBean {
     return dropped;
   }
 
-  public MailFolder getDraftsFolder(Long accountId) {
-    return getFolder(getInboxFolder(accountId), DEFAULT_DRAFTS_FOLDER);
+  public MailFolder findFolder(MailFolder folder, Long folderId) {
+    Assert.notNull(folder);
+
+    if (Objects.equal(folder.getId(), folderId)) {
+      return folder;
+    }
+    for (MailFolder sub : folder.getSubFolders()) {
+      MailFolder subFolder = findFolder(sub, folderId);
+
+      if (subFolder != null) {
+        return subFolder;
+      }
+    }
+    return null;
+  }
+
+  public MailFolder getDraftsFolder(MailAccount account) {
+    return getSysFolder(account.getAccountId(), account.getDraftsFolderId(), SystemFolder.Drafts);
   }
 
   public MailFolder getFolder(MailFolder parent, String name) {
@@ -114,7 +126,7 @@ public class FolderHandlerBean {
       }
     }
     if (inbox == null) {
-      inbox = createFolder(accountId, null, DEFAULT_INBOX_FOLDER, null);
+      inbox = createFolder(accountId, null, SystemFolder.Inbox.getFullName(), null);
     } else {
       createTree(inbox, folders);
     }
@@ -132,12 +144,12 @@ public class FolderHandlerBean {
     return BeeUtils.unbox(uid);
   }
 
-  public MailFolder getSentFolder(Long accountId) {
-    return getFolder(getInboxFolder(accountId), DEFAULT_SENT_FOLDER);
+  public MailFolder getSentFolder(MailAccount account) {
+    return getSysFolder(account.getAccountId(), account.getSentFolderId(), SystemFolder.Sent);
   }
 
-  public MailFolder getTrashFolder(Long accountId) {
-    return getFolder(getInboxFolder(accountId), DEFAULT_TRASH_FOLDER);
+  public MailFolder getTrashFolder(MailAccount account) {
+    return getSysFolder(account.getAccountId(), account.getTrashFolderId(), SystemFolder.Trash);
   }
 
   public void syncFolder(MailFolder folder, Long uidValidity) {
@@ -170,7 +182,12 @@ public class FolderHandlerBean {
         .addConstant(COL_FOLDER_NAME, name)
         .addConstant(COL_FOLDER_UID, folderUID));
 
-    return new MailFolder(accountId, parent, id, name, folderUID);
+    MailFolder folder = new MailFolder(accountId, parent, id, name, folderUID);
+
+    if (parent != null) {
+      parent.addSubFolder(folder);
+    }
+    return folder;
   }
 
   private void createTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
@@ -181,5 +198,22 @@ public class FolderHandlerBean {
       createTree(folder, folders);
       parent.addSubFolder(folder);
     }
+  }
+
+  private MailFolder getSysFolder(Long accountId, Long folderId, SystemFolder sysFolder) {
+    MailFolder inbox = getInboxFolder(accountId);
+    MailFolder folder = null;
+
+    if (DataUtils.isId(folderId)) {
+      folder = findFolder(inbox, folderId);
+    }
+    if (folder == null) {
+      folder = getFolder(inbox, sysFolder.getFullName());
+
+      qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
+          .addConstant(sysFolder.name() + "Folder", folder.getId())
+          .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId)));
+    }
+    return folder;
   }
 }

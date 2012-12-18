@@ -74,8 +74,6 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
 
 /**
  * Manages <code>rpc_data</code> type service requests from client side, including such services as
@@ -281,7 +279,7 @@ public class UiServiceBean {
     Filter filter = Filter.restore(where);
 
     SqlDelete delete = new SqlDelete(tblName)
-      .setWhere(view.getCondition(filter, sys.getViewFinder()));
+        .setWhere(view.getCondition(filter, sys.getViewFinder()));
     return qs.updateDataWithResponse(delete);
   }
 
@@ -332,14 +330,7 @@ public class UiServiceBean {
     if (!DataUtils.isId(sender)) {
       return ResponseObject.error("No default mail account for user:", usr.getCurrentUser());
     }
-    try {
-      mail.sendMail(mail.getAccount(sender),
-          Sets.newHashSet(mail.storeAddress(new InternetAddress(to))),
-          null, null, subject, body, null);
-    } catch (MessagingException e) {
-      return ResponseObject.error(e);
-    }
-    return ResponseObject.info("Mail sent");
+    return mail.sendMail(sender, to, subject, body);
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {
@@ -468,14 +459,14 @@ public class UiServiceBean {
     String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
 
     String options = reqInfo.getParameter(Service.VAR_OPTIONS);
-    
+
     Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
 
     SimpleRowSet res = qs.getHistogram(viewName, filter, NameUtils.toList(columns),
         NameUtils.toList(order), options);
     return ResponseObject.response(res);
   }
-  
+
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();

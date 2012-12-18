@@ -30,7 +30,7 @@ public class MailFolder {
     this.accountId = accountId;
     this.parent = parent;
     this.id = id;
-    this.name = BeeUtils.normalize(name);
+    this.name = name;
     this.uidValidity = uidValidity;
   }
 

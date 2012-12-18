@@ -52,7 +52,6 @@ public class ModuleManager {
 
     TransportHandler.register();
     CommonsKeeper.register();
-    MailKeeper.register();
 
     CrmKeeper.register();
     CalendarKeeper.register();

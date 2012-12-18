@@ -33,13 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 public class AbstractGridInterceptor implements GridInterceptor {
-  
+
   public static final List<String> DELETE_ROW_MESSAGE = Lists.newArrayList("Išmesti eilutę ?");
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
     String m1 = "Išmesti aktyvią eilutę";
-    
-    String m2 = (selectedRows == 1) 
+
+    String m2 = (selectedRows == 1)
         ? "Išmesti pažymėtą eilutę"
         : BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes");
 
@@ -131,7 +131,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   public String getCaption() {
     return null;
   }
-  
+
   @Override
   public String getColumnCaption(String columnName) {
     return null;
@@ -170,7 +170,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public BeeRowSet getInitialRowSet() {
+  public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
     return null;
   }
 
@@ -221,11 +221,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
   }
-  
+
   @Override
   public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
   }
-  
+
   @Override
   public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
   }

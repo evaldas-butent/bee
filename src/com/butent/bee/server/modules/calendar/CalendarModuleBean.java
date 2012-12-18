@@ -69,6 +69,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -89,7 +90,6 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-import javax.mail.MessagingException;
 
 @Singleton
 @Lock(LockType.READ)
@@ -1171,12 +1171,11 @@ public class CalendarModuleBean implements BeeModule {
           } else if (!DataUtils.isId(email)) {
             error = "No recipient email address specified";
           } else {
-            try {
-              mail.sendMail(mail.getAccount(sender), Sets.newHashSet(email), null, null, subject,
-                  template.replace("{time}", data.getDateTime(COL_START_DATE_TIME).toString()),
-                  null);
-            } catch (MessagingException e) {
-              error = e.toString();
+            ResponseObject response = mail.sendMail(sender, email, subject,
+                template.replace("{time}", data.getDateTime(COL_START_DATE_TIME).toString()));
+
+            if (response.hasErrors()) {
+              error = ArrayUtils.toString(response.getErrors());
             }
           }
         } else {

@@ -148,7 +148,8 @@ public class CrmModuleBean implements BeeModule {
             if (taskIds.isEmpty()) {
               tuQuery.setWhere(uwh);
             } else {
-              tuQuery.setWhere(SqlUtils.and(uwh, SqlUtils.any(TBL_TASK_USERS, COL_TASK, taskIds)));
+              tuQuery.setWhere(SqlUtils.and(uwh,
+                  SqlUtils.inList(TBL_TASK_USERS, COL_TASK, taskIds)));
             }
 
             SimpleRowSet tuData = qs.getData(tuQuery);
@@ -179,7 +180,7 @@ public class CrmModuleBean implements BeeModule {
                 .addGroup(TBL_TASK_EVENTS, COL_TASK);
 
             if (!taskIds.isEmpty()) {
-              teQuery.setWhere(SqlUtils.any(TBL_TASK_EVENTS, COL_TASK, taskIds));
+              teQuery.setWhere(SqlUtils.inList(TBL_TASK_EVENTS, COL_TASK, taskIds));
             }
 
             SimpleRowSet teData = qs.getData(teQuery);

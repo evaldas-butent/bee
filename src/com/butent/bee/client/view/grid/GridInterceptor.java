@@ -10,8 +10,8 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
@@ -32,7 +32,7 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
     EditStartEvent.Handler {
-  
+
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
@@ -73,18 +73,18 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
-  
+
   List<String> getDeleteRowMessage(IsRow row);
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
-  
+
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
   GridPresenter getGridPresenter();
 
   Map<String, Filter> getInitialFilters();
 
-  BeeRowSet getInitialRowSet();
+  BeeRowSet getInitialRowSet(GridDescription gridDescription);
 
   GridInterceptor getInstance();
 

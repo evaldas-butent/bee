@@ -32,7 +32,7 @@ class CompoundCondition implements HasConditions {
   }
 
   @Override
-  public void add(IsCondition... conditions) {
+  public HasConditions add(IsCondition... conditions) {
     if (conditions != null) {
       for (IsCondition cond : conditions) {
         if (cond != null) {
@@ -40,6 +40,7 @@ class CompoundCondition implements HasConditions {
         }
       }
     }
+    return this;
   }
 
   @Override

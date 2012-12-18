@@ -14,13 +14,17 @@
       <SimpleColumn name="Label" />
     </SimpleJoin>
 
-    <SimpleColumn name="Login" />
-    <SimpleColumn name="Password" />
     <SimpleColumn name="StoreType" />
     <SimpleColumn name="StoreServer" />
     <SimpleColumn name="StorePort" />
+    <SimpleColumn name="StoreLogin" />
+    <SimpleColumn name="StorePassword" />
+
     <SimpleColumn name="TransportServer" />
     <SimpleColumn name="TransportPort" />
   </Columns>
+  <Order>
+    <OrderBy column="Description" />
+  </Order>
 </View>
  

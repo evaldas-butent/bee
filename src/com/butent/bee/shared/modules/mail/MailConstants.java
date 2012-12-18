@@ -2,6 +2,20 @@ package com.butent.bee.shared.modules.mail;
 
 public class MailConstants {
 
+  public enum SystemFolder {
+    Inbox("INBOX"), Sent("Sent Messages"), Drafts("Drafts"), Trash("Deleted Messages");
+
+    private final String name;
+
+    SystemFolder(String name) {
+      this.name = name;
+    }
+
+    public String getFullName() {
+      return name;
+    }
+  }
+
   public enum AddressType {
     TO, CC, BCC
   }
@@ -49,16 +63,14 @@ public class MailConstants {
   public static final String COL_CONTENT = "Content";
   public static final String COL_HTML_CONTENT = "HtmlContent";
   public static final String COL_CONTENT_TYPE = "ContentType";
-  public static final String COL_STATUS = "Status";
-  public static final String COL_UNREAD = "Unread";
 
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_STORE_STYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";
-  public static final String COL_STORE_LOGIN = "Login";
-  public static final String COL_STORE_PASSWORD = "Password";
+  public static final String COL_STORE_LOGIN = "StoreLogin";
+  public static final String COL_STORE_PASSWORD = "StorePassword";
   public static final String COL_TRANSPORT_SERVER = "TransportServer";
   public static final String COL_TRANSPORT_PORT = "TransportPort";
 

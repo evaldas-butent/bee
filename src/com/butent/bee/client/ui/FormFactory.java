@@ -29,6 +29,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -78,7 +79,7 @@ public class FormFactory {
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
-    
+
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
 
     void onSetActiveRow(IsRow row);
@@ -90,6 +91,8 @@ public class FormFactory {
     boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
+
+    void onStateChange(State state);
 
     void setFormView(FormView form);
   }

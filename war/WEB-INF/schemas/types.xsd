@@ -34,9 +34,7 @@
   <xs:simpleType name="joinType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="LEFT" />
-      <xs:enumeration value="RIGHT" />
       <xs:enumeration value="INNER" />
-      <xs:enumeration value="FULL" />
     </xs:restriction>
   </xs:simpleType>
 

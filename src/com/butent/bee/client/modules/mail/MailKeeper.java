@@ -1,19 +1,17 @@
 package com.butent.bee.client.modules.mail;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.COL_USER;
-import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_METHOD;
-import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_MODULE;
-import static com.butent.bee.shared.modules.mail.MailConstants.SVC_RESTART_PROXY;
-import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ACCOUNTS;
+import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
-import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.DataUtils;
@@ -23,8 +21,12 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 
 import java.util.Map;
+import java.util.Set;
 
 public class MailKeeper {
+
+  private static MailController controller = null;
+  private static final Set<MailPanel> mailPanels = Sets.newHashSet();
 
   public static void register() {
     BeeKeeper.getMenu().registerMenuCallback("mail_parameters", new MenuManager.MenuCallback() {
@@ -41,7 +43,12 @@ public class MailKeeper {
           }
         });
 
-    FormFactory.registerFormInterceptor("Mail", new MailHandler());
+    BeeKeeper.getMenu().registerMenuCallback("open_mail", new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        mailPanels.add(new MailPanel());
+      }
+    });
 
     GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AbstractGridInterceptor() {
       @Override
@@ -59,10 +66,41 @@ public class MailKeeper {
     });
   }
 
+  static void activateController(MailPanel mailPanel) {
+    if (controller == null) {
+      controller = new MailController();
+      BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null, "Paštas");
+    }
+    controller.setActivePanel(mailPanel);
+    BeeKeeper.getScreen().activateDomainEntry(Domain.MAIL, null);
+  }
+
   static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(MAIL_MODULE);
     args.addQueryItem(MAIL_METHOD, name);
     return args;
+  }
+
+  static void removeMailPanel(MailPanel mailPanel) {
+    mailPanels.remove(mailPanel);
+
+    if (mailPanels.size() > 0) {
+      if (mailPanel == controller.getActivePanel()) {
+        controller.setActivePanel(mailPanels.iterator().next());
+      }
+    } else {
+      controller.setActivePanel(null);
+      BeeKeeper.getScreen().removeDomainEntry(Domain.MAIL, null);
+      controller = null;
+    }
+  }
+
+  static void removeMailPanels() {
+    for (MailPanel mailPanel : mailPanels) {
+      BeeKeeper.getScreen().closeWidget(mailPanel.getFormView().getViewPresenter().getMainView());
+    }
+    mailPanels.clear();
+    controller = null;
   }
 
   private MailKeeper() {

@@ -8,7 +8,8 @@ public enum Domain {
   FAVORITE(0, Global.getImages().bookmark(), null, false, false),
   CALENDAR(1, Global.getImages().calendar(), null, true, true),
   REPORT(2, Global.getImages().report(), "Ataskaitos", false, false),
-  ADMIN(3, Global.getImages().configure(), "Admin", false, true);
+  MAIL(3, Global.getImages().plane(), null, true, true),
+  ADMIN(4, Global.getImages().configure(), "Admin", false, true);
 
   private final int ordinal;
   private final ImageResource imageResource;

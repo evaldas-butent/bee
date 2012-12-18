@@ -36,6 +36,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -122,7 +123,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public BeeRowSet getInitialRowSet() {
+  public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
     return new BeeRowSet(columns);
   }
 
@@ -154,7 +155,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
           data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)),
           event.getCallback());
     }
-    
+
     event.consume();
   }
 
@@ -162,7 +163,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
   public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
     SaveChangesEvent saveChangesEvent = SaveChangesEvent.of(event);
     onSaveChanges(gridView, saveChangesEvent);
-    
+
     event.setConsumed(saveChangesEvent.isConsumed());
   }
 
@@ -174,7 +175,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
 
     String prmName = gridView.getActiveRow().getString(id(NAME));
 
-    if (event.getColumns().size() == 1 
+    if (event.getColumns().size() == 1
         && BeeUtils.same(event.getColumns().get(0).getId(), USER_VALUE)) {
       change(gridView, event.getRowId(), prmName, event.getNewValues().get(0), event.getCallback());
       event.consume();
@@ -251,7 +252,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
             prm.setValue(value);
             gridView.getGrid().getRowById(id).setValue(id(VALUE), value);
           }
-          
+
           int colIndex = id(USER_VALUE);
           gridView.getGrid().onCellUpdate(new CellUpdateEvent(null, id, 0,
               CellSource.forColumn(columns.get(colIndex), colIndex), value));

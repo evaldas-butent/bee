@@ -52,15 +52,12 @@ public class NewMessageHandler extends AbstractFormInterceptor {
 
   private final Map<String, Long> attachments = Maps.newLinkedHashMap();
 
-  private final MailHandler mailHandler;
-
   public NewMessageHandler(Long sender, Long draftId, Set<Long> to, Set<Long> cc, Set<Long> bcc,
-      String subject, String content, Map<Long, NewFileInfo> attach, MailHandler mailHandler) {
+      String subject, String content, Map<Long, NewFileInfo> attach) {
 
     Assert.notNull(sender);
     this.sender = sender;
     this.draftId = draftId;
-    this.mailHandler = mailHandler;
 
     this.defaultSubject = subject;
     this.defaultContent = content;
@@ -159,7 +156,7 @@ public class NewMessageHandler extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new NewMessageHandler(sender, null, null, null, null, null, null, null, null);
+    return new NewMessageHandler(sender, null, null, null, null, null, null, null);
   }
 
   public boolean hasChanges() {
@@ -214,10 +211,6 @@ public class NewMessageHandler extends AbstractFormInterceptor {
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(notificator);
-
-        if (mailHandler != null) {
-          mailHandler.refresh();
-        }
       }
     });
   }

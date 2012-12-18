@@ -6,5 +6,5 @@ package com.butent.bee.server.sql;
 
 public interface HasConditions extends IsCondition {
 
-  void add(IsCondition... conditions);
+  HasConditions add(IsCondition... conditions);
 }

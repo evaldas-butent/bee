@@ -9,17 +9,22 @@
     <String name="Description" precision="100" notNull="true" unique="true" />
     <Boolean name="Main" />
     <Relation name="Address" relation="Emails" notNull="true" unique="true" />
-    <String name="Login" precision="50" />
-    <String name="Password" precision="50"  />
-    <String name="StoreType" precision="5" notNull="true" defValue="POP3" />
+
+    <String name="StoreType" precision="5" notNull="true" defValue="IMAP" />
     <String name="StoreServer" precision="50" />
     <Integer name="StorePort" />
+    <String name="StoreLogin" precision="50" />
+    <String name="StorePassword" precision="50"  />
     <String name="TransportServer" precision="50" />
     <Integer name="TransportPort" />
+
+    <Relation name="SentFolder" relation="Folders" cascade="SET_NULL" />
+    <Relation name="DraftsFolder" relation="Folders" cascade="SET_NULL" />
+    <Relation name="TrashFolder" relation="Folders" cascade="SET_NULL" />
   </Fields>
   <Keys>
     <Key>
-      <KeyField>Login</KeyField>
+      <KeyField>StoreLogin</KeyField>
     </Key>
   </Keys>
 </Table>

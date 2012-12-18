@@ -13,6 +13,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
@@ -20,7 +21,7 @@ import com.butent.bee.shared.ui.Action;
 import java.util.List;
 
 public abstract class AbstractFormInterceptor implements FormFactory.FormInterceptor {
-  
+
   private FormView formView;
 
   @Override
@@ -53,11 +54,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public boolean beforeCreateWidget(String name, Element description) {
     return true;
   }
-  
+
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
   }
-  
+
   @Override
   public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;
@@ -67,7 +68,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public FormView getFormView() {
     return formView;
   }
-  
+
   @Override
   public GridView getGridView() {
     if (getFormView() != null && getFormView().getViewPresenter() instanceof HasGridView) {
@@ -123,7 +124,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   @Override
   public void onStart(FormView form) {
   }
-  
+
   @Override
   public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
     return true;
@@ -131,6 +132,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  }
+
+  @Override
+  public void onStateChange(State state) {
   }
 
   @Override

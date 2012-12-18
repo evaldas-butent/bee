@@ -1,13 +1,23 @@
 package com.butent.bee.server.modules.mail;
 
+import com.google.common.base.Objects;
+
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
-import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.Properties;
+
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
@@ -26,6 +36,10 @@ public class MailAccount {
   private final Long accountId;
   private final Long addressId;
 
+  private final Long draftsFolderId;
+  private final Long sentFolderId;
+  private final Long trashFolderId;
+
   MailAccount(SimpleRow data) {
     if (data == null) {
       error = "Unknown account";
@@ -40,6 +54,10 @@ public class MailAccount {
 
       accountId = null;
       addressId = null;
+
+      draftsFolderId = null;
+      sentFolderId = null;
+      trashFolderId = null;
     } else {
       storeProtocol = NameUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
       storeHost = data.getValue(COL_STORE_SERVER);
@@ -53,9 +71,10 @@ public class MailAccount {
 
       accountId = data.getLong(COL_ACCOUNT);
       addressId = data.getLong(CommonsConstants.COL_ADDRESS);
-    }
-    if (BeeUtils.isEmpty(error) && !DataUtils.isId(addressId)) {
-      error = "Unknown account address";
+
+      draftsFolderId = data.getLong("DraftsFolder");
+      sentFolderId = data.getLong("SentFolder");
+      trashFolderId = data.getLong("TrashFolder");
     }
   }
 
@@ -65,6 +84,14 @@ public class MailAccount {
 
   public Long getAddressId() {
     return addressId;
+  }
+
+  public Long getDraftsFolderId() {
+    return draftsFolderId;
+  }
+
+  public Long getSentFolderId() {
+    return sentFolderId;
   }
 
   public String getStoreErrorMessage() {
@@ -130,11 +157,86 @@ public class MailAccount {
     return transportProtocol;
   }
 
+  public Long getTrashFolderId() {
+    return trashFolderId;
+  }
+
   public boolean isValidStoreAccount() {
     return BeeUtils.isEmpty(getStoreErrorMessage());
   }
 
   public boolean isValidTransportAccount() {
     return BeeUtils.isEmpty(getTransportErrorMessage());
+  }
+
+  boolean addMessageToRemoteFolder(MimeMessage message, MailFolder localFolder)
+      throws MessagingException {
+    Assert.state(Objects.equal(localFolder.getAccountId(), getAccountId()),
+        BeeUtils.joinWords("Folder", localFolder.getName(), "Doesn't belong to this account"));
+
+    if (getStoreProtocol() == Protocol.POP3) {
+      return false;
+    }
+    Store store = null;
+    Folder folder = null;
+
+    try {
+      store = connectToStore(false);
+      folder = getRemoteFolder(store, localFolder);
+
+      if (folder == null) {
+        throw new MessagingException("Cannot connect to remote folder: " + localFolder.getName());
+      }
+      folder.appendMessages(new MimeMessage[] {message});
+
+    } finally {
+      if (folder != null && folder.isOpen()) {
+        try {
+          folder.close(false);
+        } catch (MessagingException e) {
+        }
+      }
+      disconnectFromStore(store);
+    }
+    return true;
+  }
+
+  Store connectToStore(boolean debug) throws MessagingException {
+    if (!isValidStoreAccount()) {
+      throw new MessagingException(getStoreErrorMessage());
+    }
+    Session session = Session.getInstance(new Properties(), null);
+    session.setDebug(debug);
+
+    Store store = session.getStore(getStoreProtocol().name().toLowerCase());
+    store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
+    return store;
+  }
+
+  void disconnectFromStore(Store store) {
+    if (store != null) {
+      try {
+        store.close();
+      } catch (MessagingException e) {
+      }
+    }
+  }
+
+  Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
+    Assert.noNulls(remoteStore, localFolder);
+    Folder remoteParent;
+
+    if (localFolder.getParent() != null) {
+      remoteParent = getRemoteFolder(remoteStore, localFolder.getParent());
+    } else {
+      remoteParent = remoteStore.getDefaultFolder();
+    }
+    Assert.notNull(remoteParent);
+    Folder remote = remoteParent.getFolder(localFolder.getName());
+
+    if (!remote.exists() && !remote.create(Folder.HOLDS_FOLDERS & Folder.HOLDS_MESSAGES)) {
+      remote = null;
+    }
+    return remote;
   }
 }

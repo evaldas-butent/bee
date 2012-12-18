@@ -27,6 +27,7 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -60,7 +61,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   private boolean hasData = false;
   private int initialRowCount = BeeConst.UNDEF;
-  
+
   private boolean started = false;
 
   public FormContainerImpl() {
@@ -158,7 +159,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public String getCaption() {
     return hasHeader() ? getHeader().getCaption() : null;
   }
-  
+
   public int getCommandHeight() {
     return commandHeight;
   }
@@ -238,7 +239,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory.getSupplierKey(getContent().getFormName(), getContent().getFormInterceptor());
+    return FormFactory
+        .getSupplierKey(getContent().getFormName(), getContent().getFormInterceptor());
   }
 
   @Override
@@ -323,7 +325,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (getId().equals(source.getId())) {
       int width = source.getClientWidth();
       int height = source.getClientHeight();
-      
+
       Element content = getContent().asWidget().getElement();
       int delta = content.getScrollHeight() - content.getClientHeight();
       if (delta > 0) {
@@ -335,14 +337,23 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
       ok = getHeader().onPrint(source, target);
-    
+
     } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
       ok = getFooter().onPrint(source, target);
-    
+
     } else {
       ok = true;
     }
     return ok;
+  }
+
+  @Override
+  public void onStateChange(State state) {
+    FormInterceptor interceptor = getContent().getFormInterceptor();
+
+    if (interceptor != null) {
+      interceptor.onStateChange(state);
+    }
   }
 
   public void setCommandHeight(int commandHeight) {
@@ -384,7 +395,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   @Override
   protected void onLoad() {
     super.onLoad();
-    
+
     if (!started) {
       start(getInitialRowCount());
       started = true;
@@ -454,7 +465,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private void setHeaderId(String headerId) {
     this.headerId = headerId;
   }
-  
+
   private void setInitialRowCount(int initialRowCount) {
     this.initialRowCount = initialRowCount;
   }
