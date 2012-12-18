@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.calendar.layout;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 import com.google.common.collect.Table;
 import com.google.gwt.user.client.ui.HasWidgets;
 
@@ -231,7 +230,7 @@ public class CalendarLayoutManager {
 
     List<Range<DateTime>> dateRanges = Lists.newArrayList();
     for (int i = 0; i < days; i++) {
-      dateRanges.add(Ranges.closedOpen(TimeUtils.startOfDay(date, i),
+      dateRanges.add(Range.closedOpen(TimeUtils.startOfDay(date, i),
           TimeUtils.startOfDay(date, i + 1)));
     }
 

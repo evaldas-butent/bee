@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
@@ -843,25 +842,25 @@ public class CalendarModuleBean implements BeeModule {
 
   private Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
     if (lower != null && upper != null) {
-      return Ranges.closedOpen(lower.getDateTime(), upper.getDateTime());
+      return Range.closedOpen(lower.getDateTime(), upper.getDateTime());
     } else if (lower != null) {
-      return Ranges.atLeast(lower.getDateTime());
+      return Range.atLeast(lower.getDateTime());
     } else if (upper != null) {
-      return Ranges.lessThan(upper.getDateTime());
+      return Range.lessThan(upper.getDateTime());
     } else {
-      return Ranges.all();
+      return Range.all();
     }
   }
 
   private Range<Integer> getHourRange(Integer lower, Integer upper) {
     if (BeeUtils.isPositive(lower) && BeeUtils.isPositive(upper)) {
-      return Ranges.closedOpen(lower, upper);
+      return Range.closedOpen(lower, upper);
     } else if (BeeUtils.isPositive(lower)) {
-      return Ranges.atLeast(lower);
+      return Range.atLeast(lower);
     } else if (BeeUtils.isPositive(upper)) {
-      return Ranges.lessThan(upper);
+      return Range.lessThan(upper);
     } else {
-      return Ranges.all();
+      return Range.all();
     }
   }
 

@@ -1,7 +1,6 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 public class RangeOptions {
 
@@ -129,22 +128,22 @@ public class RangeOptions {
       if (!lowerRequired) {
         if (upper == null) {
           if (!upperRequired) {
-            range = Ranges.all();
+            range = Range.all();
           }
         } else {
-          range = upperOpen ? Ranges.lessThan(upper) : Ranges.atMost(upper);
+          range = upperOpen ? Range.lessThan(upper) : Range.atMost(upper);
         }
       }
 
     } else if (upper == null) {
       if (!upperRequired) {
-        range = lowerOpen ? Ranges.greaterThan(lower) : Ranges.atLeast(lower);
+        range = lowerOpen ? Range.greaterThan(lower) : Range.atLeast(lower);
       }
 
     } else if (lowerOpen) {
-      range = upperOpen ? Ranges.open(lower, upper) : Ranges.openClosed(lower, upper);
+      range = upperOpen ? Range.open(lower, upper) : Range.openClosed(lower, upper);
     } else {
-      range = upperOpen ? Ranges.closedOpen(lower, upper) : Ranges.closed(lower, upper);
+      range = upperOpen ? Range.closedOpen(lower, upper) : Range.closed(lower, upper);
     }
 
     return range;

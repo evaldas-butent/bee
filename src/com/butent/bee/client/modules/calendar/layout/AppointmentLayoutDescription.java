@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -36,7 +35,7 @@ public class AppointmentLayoutDescription {
   }
 
   public boolean overlaps(int from, int to) {
-    return BeeUtils.intersects(getRange(), Ranges.closed(from, to));
+    return BeeUtils.intersects(getRange(), Range.closed(from, to));
   }
 
   public boolean spansMoreThanADay() {
@@ -55,6 +54,6 @@ public class AppointmentLayoutDescription {
   }
   
   private Range<Integer> getRange() {
-    return Ranges.closed(getWeekStartDay(), getWeekEndDay());
+    return Range.closed(getWeekStartDay(), getWeekEndDay());
   }
 }

@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
@@ -23,7 +22,7 @@ public class MonthLayoutDescription {
   public MonthLayoutDescription(JustDate firstDate, int weekCount,
       List<Appointment> appointments, int maxLayer) {
     this.firstDate = firstDate;
-    this.layoutRange = Ranges.closedOpen(firstDate.getDateTime(),
+    this.layoutRange = Range.closedOpen(firstDate.getDateTime(),
         TimeUtils.nextDay(firstDate, weekCount * 7).getDateTime());
 
     this.weeks = new WeekLayoutDescription[weekCount];

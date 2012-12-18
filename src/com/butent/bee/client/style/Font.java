@@ -1,7 +1,7 @@
 package com.butent.bee.client.style;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ranges;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
@@ -126,7 +126,7 @@ public class Font implements HasInfo {
   private static final double UNKNOWN = -1.0;
 
   private static final RangeMap<Double, CssUnit> DEFAULT_UNITS =
-      RangeMap.create(Ranges.lessThan(4.0), CssUnit.EM, Ranges.atLeast(4.0), CssUnit.PX);
+      RangeMap.create(Range.lessThan(4.0), CssUnit.EM, Range.atLeast(4.0), CssUnit.PX);
   
   public static Font getComputed(Element el) {
     Map<String, String> styles = ComputedStyles.getNormalized(el);

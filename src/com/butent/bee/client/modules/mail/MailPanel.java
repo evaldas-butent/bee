@@ -36,6 +36,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
@@ -391,6 +392,11 @@ public class MailPanel extends AbstractFormInterceptor {
     } else {
       messageHandler.afterCreateWidget(name, widget, callback);
     }
+  }
+
+  @Override
+  public Domain getDomain() {
+    return Domain.MAIL;
   }
 
   @Override

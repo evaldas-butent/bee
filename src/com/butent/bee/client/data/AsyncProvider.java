@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
@@ -478,9 +477,9 @@ public class AsyncProvider extends Provider {
 
   private Range<Integer> createRange(int offset, int limit) {
     if (limit > 0) {
-      return Ranges.closedOpen(offset, offset + limit);
+      return Range.closedOpen(offset, offset + limit);
     } else {
-      return Ranges.atLeast(offset);
+      return Range.atLeast(offset);
     }
   }
 

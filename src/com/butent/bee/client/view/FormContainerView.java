@@ -2,6 +2,7 @@ package com.butent.bee.client.view;
 
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasWidgetSupplier;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 
 public interface FormContainerView extends View, Printable, HasCaption, HasWidgetSupplier,
-    HandlesStateChange {
+    HandlesStateChange, HasDomain {
 
   void bind();
 

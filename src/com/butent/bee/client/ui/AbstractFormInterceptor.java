@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
@@ -61,6 +62,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
 
   @Override
   public IdentifiableWidget createCustomWidget(String name, Element description) {
+    return null;
+  }
+
+  @Override
+  public Domain getDomain() {
     return null;
   }
 

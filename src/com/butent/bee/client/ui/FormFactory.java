@@ -17,6 +17,8 @@ import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -29,7 +31,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -56,7 +57,7 @@ import java.util.Map;
 public class FormFactory {
 
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
-      HasGridView, SaveChangesEvent.Handler {
+      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain {
 
     void afterAction(Action action, FormPresenter presenter);
 
@@ -91,8 +92,6 @@ public class FormFactory {
     boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
-
-    void onStateChange(State state);
 
     void setFormView(FormView form);
   }

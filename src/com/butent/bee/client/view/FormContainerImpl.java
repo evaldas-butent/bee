@@ -11,6 +11,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
@@ -182,6 +183,12 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       return null;
     }
     return (FormView) getCenter();
+  }
+
+  @Override
+  public Domain getDomain() {
+    FormInterceptor interceptor = getContent().getFormInterceptor();
+    return (interceptor == null) ? null : interceptor.getDomain();
   }
 
   public FooterView getFooter() {

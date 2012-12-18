@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -222,7 +221,7 @@ public class CalendarUtils {
   }
 
   public static Range<DateTime> getRange(Appointment appointment) {
-    return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
+    return Range.closedOpen(appointment.getStart(), appointment.getEnd());
   }
 
   public static int getStartHour(Collection<AppointmentWidget> widgets) {
