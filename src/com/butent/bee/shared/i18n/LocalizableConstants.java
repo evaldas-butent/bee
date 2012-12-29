@@ -23,5 +23,6 @@ public interface LocalizableConstants extends Constants {
   String repeatNewPassword();
   String saveChanges();
   String selectAppointment();
+  String sorry();
   String yes();
 }

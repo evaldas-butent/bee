@@ -4,9 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
@@ -14,25 +17,30 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -50,6 +58,8 @@ public class TransportModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  UserServiceBean usr;
 
   @Override
   public Collection<String> dependsOn() {
@@ -58,36 +68,33 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(TransportConstants.VIEW_VEHICLES,
-        Filter.anyContains(Sets.newHashSet(TransportConstants.COL_NUMBER,
-            TransportConstants.COL_PARENT_MODEL_NAME, TransportConstants.COL_MODEL_NAME,
-            TransportConstants.COL_OWNER_NAME), query));
+    return qs.getSearchResults(VIEW_VEHICLES, Filter.anyContains(Sets.newHashSet(COL_NUMBER,
+        COL_PARENT_MODEL_NAME, COL_MODEL_NAME, COL_OWNER_NAME), query));
   }
 
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(TransportConstants.TRANSPORT_METHOD);
+    String svc = reqInfo.getParameter(TRANSPORT_METHOD);
 
-    if (BeeUtils.same(svc, TransportConstants.SVC_GET_BEFORE)) {
+    if (BeeUtils.same(svc, SVC_GET_BEFORE)) {
       long vehicle = BeeUtils.toLong(reqInfo.getParameter("Vehicle"));
       long date = BeeUtils.toLong(reqInfo.getParameter("Date"));
 
       response = getTripBeforeData(vehicle, date);
 
-    } else if (BeeUtils.same(svc, TransportConstants.SVC_GET_PROFIT)) {
-      if (reqInfo.hasParameter(TransportConstants.VAR_TRIP_ID)) {
-        response =
-            getTripProfit(BeeUtils.toLong(reqInfo.getParameter(TransportConstants.VAR_TRIP_ID)));
+    } else if (BeeUtils.same(svc, SVC_GET_PROFIT)) {
+      if (reqInfo.hasParameter(VAR_TRIP_ID)) {
+        response = getTripProfit(BeeUtils.toLong(reqInfo.getParameter(VAR_TRIP_ID)));
 
-      } else if (reqInfo.hasParameter(TransportConstants.VAR_CARGO_ID)) {
-        Long cargoId = BeeUtils.toLong(reqInfo.getParameter(TransportConstants.VAR_CARGO_ID));
+      } else if (reqInfo.hasParameter(VAR_CARGO_ID)) {
+        Long cargoId = BeeUtils.toLong(reqInfo.getParameter(VAR_CARGO_ID));
 
         response = getCargoProfit(new SqlSelect().addConstant(cargoId, "Cargo"));
 
-      } else if (reqInfo.hasParameter(TransportConstants.VAR_ORDER_ID)) {
-        Long orderId = BeeUtils.toLong(reqInfo.getParameter(TransportConstants.VAR_ORDER_ID));
-        String cargo = TransportConstants.VIEW_CARGO;
+      } else if (reqInfo.hasParameter(VAR_ORDER_ID)) {
+        Long orderId = BeeUtils.toLong(reqInfo.getParameter(VAR_ORDER_ID));
+        String cargo = VIEW_CARGO;
 
         response = getCargoProfit(new SqlSelect()
             .addField(cargo, sys.getIdName(cargo), "Cargo")
@@ -98,6 +105,9 @@ public class TransportModuleBean implements BeeModule {
         response = ResponseObject.error("Profit of WHAT?");
       }
 
+    } else if (BeeUtils.same(svc, SVC_GET_FX_DATA)) {
+      response = getFxData();
+      
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -113,7 +123,7 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public String getName() {
-    return TransportConstants.TRANSPORT_MODULE;
+    return TRANSPORT_MODULE;
   }
 
   @Override
@@ -126,16 +136,15 @@ public class TransportModuleBean implements BeeModule {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
       public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_ROUTES)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES)) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
             int colIndex = rowset.getColumnIndex("Consumption");
             SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(event.getQuery()
                 .resetFields().resetOrder()
-                .addFields(TransportConstants.VIEW_TRIP_ROUTES,
-                    sys.getIdName(TransportConstants.VIEW_TRIP_ROUTES)), true));
-            int idIndex = rs.getColumnIndex(sys.getIdName(TransportConstants.VIEW_TRIP_ROUTES));
+                .addFields(VIEW_TRIP_ROUTES, sys.getIdName(VIEW_TRIP_ROUTES)), true));
+            int idIndex = rs.getColumnIndex(sys.getIdName(VIEW_TRIP_ROUTES));
             int qtyIndex = rs.getColumnIndex("Quantity");
 
             for (int i = 0; i < rs.getNumberOfRows(); i++) {
@@ -149,15 +158,14 @@ public class TransportModuleBean implements BeeModule {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_CARGO)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_CARGO)) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
             int colIndex = rowset.getColumnIndex("Income");
             SimpleRowSet rs = qs.getData(getCargoIncomeQuery(event.getQuery()
                 .resetFields().resetOrder()
-                .addField(TransportConstants.VIEW_CARGO,
-                    sys.getIdName(TransportConstants.VIEW_CARGO), "Cargo")));
+                .addField(VIEW_CARGO, sys.getIdName(VIEW_CARGO), "Cargo")));
             int idIndex = rs.getColumnIndex("Cargo");
             int cargoIndex = rs.getColumnIndex("CargoIncome");
             int servicesIndex = rs.getColumnIndex("ServicesIncome");
@@ -175,14 +183,14 @@ public class TransportModuleBean implements BeeModule {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
       public void fillTripCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_CARGO)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_CARGO)) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
             int colIndex = rowset.getColumnIndex("Income");
             int cargoIndex = rowset.getColumnIndex("Cargo");
             String crs = getTripIncome(event.getQuery().resetFields().resetOrder()
-                .addFields(TransportConstants.VIEW_CARGO_TRIPS, "Trip"));
+                .addFields(VIEW_CARGO_TRIPS, "Trip"));
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
             qs.sqlDropTemp(crs);
@@ -199,6 +207,34 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
+  private List<String> getBackgroundColors(Long theme) {
+    List<String> result = Lists.newArrayList();
+
+    BeeRowSet rowSet;
+    if (theme != null) {
+      rowSet = qs.getViewData(CommonsConstants.VIEW_THEME_COLORS,
+          ComparisonFilter.isEqual(CommonsConstants.COL_THEME, new LongValue(theme)));
+    } else {
+      rowSet = null;
+    }
+
+    if (DataUtils.isEmpty(rowSet)) {
+      rowSet = qs.getViewData(CommonsConstants.VIEW_COLORS);
+      if (DataUtils.isEmpty(rowSet)) {
+        return result;
+      }
+    }
+    
+    int index = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
+    for (BeeRow row : rowSet.getRows()) {
+      String bc = row.getString(index);
+      if (!BeeUtils.isEmpty(bc)) {
+        result.add(bc.trim());
+      }
+    }
+    return result;
+  }
+
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
    * 
@@ -206,9 +242,9 @@ public class TransportModuleBean implements BeeModule {
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
    */
   private SqlSelect getCargoIncomeQuery(SqlSelect flt) {
-    String orders = sys.getViewSource(TransportConstants.VIEW_ORDERS);
-    String cargo = sys.getViewSource(TransportConstants.VIEW_CARGO);
-    String services = sys.getViewSource(TransportConstants.VIEW_CARGO_SERVICES);
+    String orders = sys.getViewSource(VIEW_ORDERS);
+    String cargo = sys.getViewSource(VIEW_CARGO);
+    String services = sys.getViewSource(VIEW_CARGO_SERVICES);
     String cargoId = "Cargo";
 
     SqlSelect ss = new SqlSelect()
@@ -232,8 +268,8 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private ResponseObject getCargoProfit(SqlSelect flt) {
-    String services = TransportConstants.VIEW_CARGO_SERVICES;
-    String cargoTrips = TransportConstants.VIEW_CARGO_TRIPS;
+    String services = VIEW_CARGO_SERVICES;
+    String cargoTrips = VIEW_CARGO_TRIPS;
     String cargoId = "Cargo";
     String tripId = "Trip";
 
@@ -325,10 +361,10 @@ public class TransportModuleBean implements BeeModule {
    * @return query with two columns: (TripRoutes ID or "Trip") and "Quantity"
    */
   private SqlSelect getFuelConsumptionsQuery(SqlSelect flt, boolean routeMode) {
-    String trips = TransportConstants.VIEW_TRIPS;
-    String routes = TransportConstants.VIEW_TRIP_ROUTES;
-    String fuel = TransportConstants.VIEW_FUEL_CONSUMPTIONS;
-    String temps = TransportConstants.VIEW_FUEL_TEMPERATURES;
+    String trips = VIEW_TRIPS;
+    String routes = VIEW_TRIP_ROUTES;
+    String fuel = VIEW_FUEL_CONSUMPTIONS;
+    String temps = VIEW_FUEL_TEMPERATURES;
     String routeId = sys.getIdName(routes);
 
     IsExpression xpr = SqlUtils.round(
@@ -384,14 +420,101 @@ public class TransportModuleBean implements BeeModule {
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
 
+  private ResponseObject getFxData() {
+    BeeRowSet settings = getSettings();
+    if (settings == null) {
+      return ResponseObject.error("user settings not available");
+    }
+
+    Long theme = settings.getLong(0, settings.getColumnIndex(COL_FX_THEME));
+    List<String> colors = getBackgroundColors(theme);
+    
+    settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+    
+    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
+    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
+
+    String loadAlias = "load_" + SqlUtils.uniqueName();
+    String unlAlias = "unl_" + SqlUtils.uniqueName();
+    
+    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
+    
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_ORDER_CARGO)
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(CommonsConstants.TBL_COMPANIES, 
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+        .addFromLeft(TBL_CARGO_PLACES, loadAlias,
+            SqlUtils.join(loadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, unlAlias,
+            SqlUtils.join(unlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_CARGO_TRIPS, 
+            SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID));
+    
+    query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
+    query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
+
+    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_DESCRIPTION,
+        COL_LOADING_PLACE, COL_UNLOADING_PLACE);
+    
+    query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
+    query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
+    query.addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME));
+    query.addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL));
+    
+    query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
+    query.addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY));
+    query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
+    query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
+    
+    Set<Integer> statuses = Sets.newHashSet(OrderStatus.CREATED.ordinal(),
+        OrderStatus.ACTIVATED.ordinal(), OrderStatus.CONFIRMED.ordinal());
+    IsCondition where = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
+        SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
+    
+    query.setWhere(where);
+    
+    query.addOrder(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME);
+    query.addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
+    query.addOrder(loadAlias, COL_PLACE_DATE);
+    query.addOrder(unlAlias, COL_PLACE_DATE);
+    
+    SimpleRowSet data = qs.getData(query);
+    if (data == null) {
+      return ResponseObject.error(SVC_GET_FX_DATA, "data not available");
+    }
+
+    settings.setTableProperty(PROP_DATA, data.serialize());
+    return ResponseObject.response(settings);
+  }
+  
+  private BeeRowSet getSettings() {
+    long userId = usr.getCurrentUserId();
+    Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
+    if (!DataUtils.isEmpty(rowSet)) {
+      return rowSet;
+    }
+
+    SqlInsert sqlInsert = new SqlInsert(TBL_TRANSPORT_SETTINGS).addConstant(COL_USER, userId);
+
+    ResponseObject response = qs.insertDataWithResponse(sqlInsert);
+    if (response.hasErrors()) {
+      return null;
+    }
+
+    return qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
+  }
+
   private ResponseObject getTripBeforeData(long vehicle, long date) {
     String[] resp = new String[2];
 
     if (date != 0) {
-      String trips = TransportConstants.VIEW_TRIPS;
-      String routes = TransportConstants.VIEW_TRIP_ROUTES;
-      String fuels = TransportConstants.VIEW_TRIP_FUEL_COSTS;
-      String consumptions = TransportConstants.VIEW_TRIP_FUEL_CONSUMPTIONS;
+      String trips = VIEW_TRIPS;
+      String routes = VIEW_TRIP_ROUTES;
+      String fuels = VIEW_TRIP_FUEL_COSTS;
+      String consumptions = VIEW_TRIP_FUEL_CONSUMPTIONS;
       String tripId = sys.getIdName(trips);
 
       SimpleRowSet rs = qs.getData(new SqlSelect()
@@ -417,8 +540,7 @@ public class TransportModuleBean implements BeeModule {
           speedometer = BeeUtils.unbox(rs.getDouble(cnt, "SpeedometerBefore"))
               + BeeUtils.unbox(km);
 
-          Integer scale = BeeUtils.toIntOrNull(qs.sqlValue(TransportConstants.VIEW_VEHICLES,
-              "Speedometer", vehicle));
+          Integer scale = BeeUtils.toIntOrNull(qs.sqlValue(VIEW_VEHICLES, "Speedometer", vehicle));
 
           if (BeeUtils.isPositive(scale) && scale < speedometer) {
             speedometer -= scale;
@@ -462,11 +584,11 @@ public class TransportModuleBean implements BeeModule {
    *         "FuelCost" - total trip fuel cost considering remainder corrections
    */
   private String getTripCost(SqlSelect flt) {
-    String trips = TransportConstants.VIEW_TRIPS;
-    String costs = TransportConstants.VIEW_TRIP_COSTS;
-    String fuels = TransportConstants.VIEW_TRIP_FUEL_COSTS;
-    String routes = TransportConstants.VIEW_TRIP_ROUTES;
-    String consumptions = TransportConstants.VIEW_TRIP_FUEL_CONSUMPTIONS;
+    String trips = VIEW_TRIPS;
+    String costs = VIEW_TRIP_COSTS;
+    String fuels = VIEW_TRIP_FUEL_COSTS;
+    String routes = VIEW_TRIP_ROUTES;
+    String consumptions = VIEW_TRIP_FUEL_CONSUMPTIONS;
     String tripId = "Trip";
     String tripNativeId = sys.getIdName(trips);
 
@@ -660,7 +782,7 @@ public class TransportModuleBean implements BeeModule {
    *         "TripIncome" - total trip income <br>
    */
   private String getTripIncome(SqlSelect flt) {
-    String cargoTrips = sys.getViewSource(TransportConstants.VIEW_CARGO_TRIPS);
+    String cargoTrips = sys.getViewSource(VIEW_CARGO_TRIPS);
     String tripId = "Trip";
     String cargoId = "Cargo";
 

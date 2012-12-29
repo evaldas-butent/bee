@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TransportSettings"
+  source="TransportSettings"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+
+    <SimpleColumn name="FxPixelsPerCustomer" />
+    <SimpleColumn name="FxPixelsPerOrder" />
+    <SimpleColumn name="FxPixelsPerRow" />
+    
+    <SimpleColumn name="FxTheme" />
+    <SimpleJoin name="FxTheme" joinType="LEFT">
+      <SimpleColumn alias="FxThemeName" name="Name" />
+    </SimpleJoin>
+    
+  </Columns>
+</View>

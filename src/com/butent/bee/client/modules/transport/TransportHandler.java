@@ -10,7 +10,9 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -25,6 +27,8 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -496,6 +500,43 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(TransportConstants.FORM_CARGO, new CargoFormHandler());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
+
+    final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
+      @Override
+      public void onSuccess(IdentifiableWidget result) {
+        BeeKeeper.getScreen().showWidget(result, true);
+      }
+    };
+
+    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.supplierKey,
+        new MenuManager.MenuCallback() {
+          @Override
+          public void onSelection(String parameters) {
+            FreightExchange.open(showInNewTab);
+          }
+        });
+
+    WidgetFactory.registerSupplier(FreightExchange.supplierKey, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        FreightExchange.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.supplierKey,
+        new MenuManager.MenuCallback() {
+          @Override
+          public void onSelection(String parameters) {
+            ShippingSchedule.open(showInNewTab);
+          }
+        });
+
+    WidgetFactory.registerSupplier(ShippingSchedule.supplierKey, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        ShippingSchedule.open(callback);
+      }
+    });
   }
 
   static ParameterList createArgs(String name) {

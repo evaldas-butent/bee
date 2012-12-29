@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TransportSettings"
+  idName="TransportSettingID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" unique="true" />
+
+    <Integer name="FxPixelsPerCustomer" />
+    <Integer name="FxPixelsPerOrder" />
+    <Integer name="FxPixelsPerRow" />
+
+    <Relation name="FxTheme" relation="Themes" />
+  </Fields>
+</Table>

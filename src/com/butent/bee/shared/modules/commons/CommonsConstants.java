@@ -109,8 +109,11 @@ public class CommonsConstants {
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
+  public static final String VIEW_COLORS = "Colors";
   public static final String VIEW_THEMES = "Themes";
   public static final String VIEW_THEME_COLORS = "ThemeColors";
+
+  public static final String VIEW_COUNTRIES = "Countries";
   
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";

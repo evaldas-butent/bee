@@ -105,8 +105,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     return addBitlessDomHandler(handler, DropEvent.getType());
   }
   
-  public void addLeftBottom(Widget child, double left, CssUnit leftCssUnit, double bottom,
-      CssUnit bottomCssUnit) {
+  public void addLeftBottom(Widget child, double left, CssUnit leftCssUnit,
+      double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildLeft(child, left, leftCssUnit);
@@ -133,7 +133,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public void addLeftRightTopBottom(Widget child, double left, CssUnit leftCssUnit,
-      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit, double bottom, CssUnit bottomCssUnit) {
+      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit,
+      double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildLeft(child, left, leftCssUnit);
@@ -144,11 +145,13 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public void addLeftRightTopBottom(Widget child, int left, int right, int top, int bottom) {
-    addLeftRightTopBottom(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX, bottom, CssUnit.PX);
+    addLeftRightTopBottom(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX,
+        bottom, CssUnit.PX);
   }
 
   public void addLeftRightTopHeight(Widget child, double left, CssUnit leftCssUnit,
-      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit, double height, CssUnit heightCssUnit) {
+      double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit,
+      double height, CssUnit heightCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildLeft(child, left, leftCssUnit);
@@ -159,10 +162,12 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public void addLeftRightTopHeight(Widget child, int left, int right, int top, int height) {
-    addLeftRightTopHeight(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX, height, CssUnit.PX);
+    addLeftRightTopHeight(child, left, CssUnit.PX, right, CssUnit.PX, top, CssUnit.PX,
+        height, CssUnit.PX);
   }
 
-  public void addLeftTop(Widget child, double left, CssUnit leftCssUnit, double top, CssUnit topCssUnit) {
+  public void addLeftTop(Widget child, double left, CssUnit leftCssUnit,
+      double top, CssUnit topCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildLeft(child, left, leftCssUnit);
@@ -175,7 +180,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public void addLeftWidthTopBottom(Widget child, double left, CssUnit leftCssUnit,
-      double width, CssUnit widthCssUnit, double top, CssUnit topCssUnit, double bottom, CssUnit bottomCssUnit) {
+      double width, CssUnit widthCssUnit, double top, CssUnit topCssUnit,
+      double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildLeft(child, left, leftCssUnit);
@@ -186,11 +192,12 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
   }
 
   public void addLeftWidthTopBottom(Widget child, int left, int width, int top, int bottom) {
-    addLeftWidthTopBottom(child, left, CssUnit.PX, width, CssUnit.PX, top, CssUnit.PX, bottom, CssUnit.PX);
+    addLeftWidthTopBottom(child, left, CssUnit.PX, width, CssUnit.PX, top, CssUnit.PX,
+        bottom, CssUnit.PX);
   }
 
-  public void addRightBottom(Widget child, double right, CssUnit rightCssUnit, double bottom,
-      CssUnit bottomCssUnit) {
+  public void addRightBottom(Widget child, double right, CssUnit rightCssUnit,
+      double bottom, CssUnit bottomCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildRight(child, right, rightCssUnit);
@@ -202,7 +209,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     addRightBottom(child, right, CssUnit.PX, bottom, CssUnit.PX);
   }
 
-  public void addRightTop(Widget child, double right, CssUnit rightCssUnit, double top, CssUnit topCssUnit) {
+  public void addRightTop(Widget child, double right, CssUnit rightCssUnit,
+      double top, CssUnit topCssUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildRight(child, right, rightCssUnit);
@@ -216,7 +224,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
 
   public void addTopBottomFillHorizontal(Widget child, double top, CssUnit topCssUnit,
       double bottom, CssUnit bottomCssUnit) {
-    addLeftRightTopBottom(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit, bottom, bottomCssUnit);
+    addLeftRightTopBottom(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit,
+        bottom, bottomCssUnit);
   }
 
   public void addTopBottomFillHorizontal(Widget child, int top, int bottom) {
@@ -225,7 +234,8 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
 
   public void addTopHeightFillHorizontal(Widget child, double top, CssUnit topCssUnit,
       double height, CssUnit heightCssUnit) {
-    addLeftRightTopHeight(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit, height, heightCssUnit);
+    addLeftRightTopHeight(child, 0, CssUnit.PX, 0, CssUnit.PX, top, topCssUnit,
+        height, heightCssUnit);
   }
 
   public void addTopHeightFillHorizontal(Widget child, int top, int height) {

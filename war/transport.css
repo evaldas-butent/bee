@@ -1,0 +1,13 @@
+.bee-tr-fx-Container .bee-WindowHeader, .bee-tr-ss-Container .bee-WindowHeader {
+  top: 0;
+  height: 32px;
+  left: 0;
+  right: 0;
+}
+
+.bee-tr-fx-Canvas {
+  top: 33px;
+  bootom: 0;
+  left: 0;
+  right: 0;
+}

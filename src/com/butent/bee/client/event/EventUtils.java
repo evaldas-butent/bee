@@ -88,6 +88,7 @@ import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
@@ -105,6 +106,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,7 +114,7 @@ import java.util.Set;
 public class EventUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(EventUtils.class);
-  
+
   public static final String EVENT_TYPE_BLUR = "blur";
 
   public static final String EVENT_TYPE_CAN_PLAY_THROUGH = "canplaythrough";
@@ -543,6 +545,15 @@ public class EventUtils {
     return false;
   }
 
+  public static void clearRegistry(Collection<? extends HandlerRegistration> registry) {
+    if (BeeUtils.isEmpty(registry)) {
+      for (HandlerRegistration hr : registry) {
+        hr.removeHandler();
+      }
+      registry.clear();
+    }
+  }
+
   public static NativeEvent createKeyDown(int keyCode) {
     return Document.get().createKeyDownEvent(false, false, false, false, keyCode);
   }
@@ -644,7 +655,7 @@ public class EventUtils {
       return null;
     }
   }
-  
+
   public static String getTargetId(EventTarget et) {
     Assert.notNull(et);
     if (Element.is(et)) {
@@ -726,7 +737,7 @@ public class EventUtils {
   public static boolean isClick(String type) {
     return isEventType(type, EVENT_TYPE_CLICK);
   }
-  
+
   public static boolean isCurrentTarget(Event event, Element element) {
     if (event == null || element == null || event.getCurrentEventTarget() == null) {
       return false;
