@@ -6,8 +6,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
@@ -18,9 +16,9 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
@@ -37,7 +35,7 @@ import java.util.List;
  * Contains menu object and core menu handling methods like {@code addItem} or {@code doCommand}.
  */
 
-public class MenuBar extends Widget implements IdentifiableWidget, CloseHandler<Popup> {
+public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Handler {
 
   /**
    * Specifies implementing classes to have an image resource.
@@ -382,11 +380,11 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseHandler<
   }
 
   @Override
-  public void onClose(CloseEvent<Popup> event) {
+  public void onClose(CloseEvent event) {
     childMenu = null;
     popup = null;
 
-    if (event.isAutoClosed() && parentMenu == null) {
+    if (event.isUserCaused() && parentMenu == null) {
       selectItem(null);
     }
   }

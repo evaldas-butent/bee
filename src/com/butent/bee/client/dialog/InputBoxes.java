@@ -8,8 +8,6 @@ import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
@@ -28,6 +26,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
@@ -104,7 +103,7 @@ public class InputBoxes {
           }
 
           if (widget instanceof InputText || widget instanceof ListBox) {
-            if (UiHelper.moveFocus(dialog, EventUtils.getEventTargetElement(event), true)) {
+            if (UiHelper.moveFocus(dialog, true)) {
               event.preventDefault();
             }
           } else if (widget instanceof BeeRadioButton) {
@@ -118,8 +117,7 @@ public class InputBoxes {
         case KeyCodes.KEY_DOWN:
         case KeyCodes.KEY_UP:
           if (!(getWidget(event) instanceof ListBox)) {
-            if (UiHelper.moveFocus(dialog, EventUtils.getEventTargetElement(event),
-                event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
+            if (UiHelper.moveFocus(dialog, event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
               event.preventDefault();
             }
           }
@@ -229,8 +227,8 @@ public class InputBoxes {
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
 
-    dialog.addCloseHandler(new CloseHandler<Popup>() {
-      public void onClose(CloseEvent<Popup> event) {
+    dialog.addCloseHandler(new CloseEvent.Handler() {
+      public void onClose(CloseEvent event) {
         if (timer != null) {
           timer.cancel();
         }

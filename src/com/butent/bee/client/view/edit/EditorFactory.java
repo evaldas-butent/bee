@@ -3,7 +3,6 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
@@ -12,12 +11,16 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputSlider;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
@@ -101,8 +104,11 @@ public class EditorFactory {
         break;
 
       case DATE:
-      case DATETIME:
-        editor = new InputDate(type);
+        editor = new InputDate();
+        break;
+
+      case DATE_TIME:
+        editor = new InputDateTime();
         break;
 
       case INTEGER:
@@ -126,8 +132,8 @@ public class EditorFactory {
         }
         break;
 
-      case TIMEOFDAY:
-        editor = new InputText();
+      case TIME_OF_DAY:
+        editor = new InputTimeOfDay();
         break;
     }
 
@@ -161,11 +167,11 @@ public class EditorFactory {
         break;
 
       case DATE:
-        editor = new InputDate(ValueType.DATE);
+        editor = new InputDate();
         break;
 
-      case DATETIME:
-        editor = new InputDate(ValueType.DATETIME);
+      case DATE_TIME:
+        editor = new InputDateTime();
         break;
 
       case INTEGER:
@@ -213,6 +219,14 @@ public class EditorFactory {
 
       case TEXT:
         editor = new TextEditor();
+        break;
+        
+      case TIME:
+        editor = new InputTime();
+        break;
+      
+      case TIME_OF_DAY:
+        editor = new InputTimeOfDay();
         break;
 
       case TOGGLE:

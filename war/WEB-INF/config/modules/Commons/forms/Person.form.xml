@@ -13,7 +13,7 @@
         <Label html="Pavardė" />
         <InputText style="width: 200px" source="LastName" />
         <Label html="Gimimo data" style="width: 100px" horizontalAlignment="right" />
-        <InputDate source="DateOfBirth" style="width: 80px" />
+        <InputDate source="DateOfBirth" style="width: 80px" minValue="1900" maxValue="2000" />
       </row>
       <row>
         <cell colSpan="6">

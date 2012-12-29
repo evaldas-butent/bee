@@ -46,6 +46,7 @@ public class Property implements Comparable<Property>, BeeSerializable {
    * @return 0 if values are equal, -1 if {@code oth} name value is greater, 1 if the current
    *         Property name value is greater than {@code oth} name value.
    */
+  @Override
   public int compareTo(Property oth) {
     if (oth == null) {
       return BeeConst.COMPARE_MORE;
@@ -53,6 +54,7 @@ public class Property implements Comparable<Property>, BeeSerializable {
     return BeeUtils.compare(getName(), oth.getName());
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, HEADER_COUNT);
@@ -92,6 +94,7 @@ public class Property implements Comparable<Property>, BeeSerializable {
     return Objects.hashCode(getName(), getValue());
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getName(), getValue()});
   }

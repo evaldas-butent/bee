@@ -7,7 +7,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumMap;
@@ -38,19 +38,19 @@ public class CalendarSettings {
   
   private boolean separateAttendees;
   
-  private final EnumMap<View, Boolean> views;
+  private final EnumMap<ViewType, Boolean> views;
   
-  private View activeView;
+  private ViewType activeView;
 
   private CalendarSettings() {
-    this.views = Maps.newEnumMap(View.class);
+    this.views = Maps.newEnumMap(ViewType.class);
     
-    for (View view : View.values()) {
+    for (ViewType view : ViewType.values()) {
       this.views.put(view, true);
     }
   }
 
-  public View getActiveView() {
+  public ViewType getActiveView() {
     return activeView;
   }
   
@@ -91,7 +91,7 @@ public class CalendarSettings {
   }
   
   public boolean isAnyVisible() {
-    for (View view : View.values()) {
+    for (ViewType view : ViewType.values()) {
       if (isVisible(view)) {
         return true;
       }
@@ -107,7 +107,7 @@ public class CalendarSettings {
     return TimeBlockClick.SINGLE.equals(getTimeBlockClickNumber());
   }
 
-  public boolean isVisible(View view) {
+  public boolean isVisible(ViewType view) {
     return BeeUtils.isTrue(views.get(view));
   }
 
@@ -128,7 +128,7 @@ public class CalendarSettings {
     
     setSeparateAttendees(getBool(row, columns, CalendarConstants.COL_SEPARATE_ATTENDEES));
     
-    for (View view : View.values()) {
+    for (ViewType view : ViewType.values()) {
       views.put(view, getBool(row, columns, view.getColumnId()));
     }
     
@@ -138,14 +138,14 @@ public class CalendarSettings {
     } else {
       av = BeeConst.UNDEF;
     }
-    setActiveView(BeeUtils.getConstant(View.class, av));
+    setActiveView(BeeUtils.getConstant(ViewType.class, av));
   }
 
   public boolean separateAttendees() {
     return separateAttendees;
   }
 
-  public void setActiveView(View activeView) {
+  public void setActiveView(ViewType activeView) {
     this.activeView = activeView;
   }
 

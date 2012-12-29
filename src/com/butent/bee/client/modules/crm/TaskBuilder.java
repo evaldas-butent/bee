@@ -11,7 +11,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -23,6 +22,7 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -198,20 +198,20 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
 
     if (start != null) {
-      int millis = TimeUtils.parseTime(duration);
-      if (millis > 0) {
+      Long millis = TimeUtils.parseTime(duration);
+      if (BeeUtils.isPositive(millis)) {
         return TimeUtils.combine(start, millis);
       }
     }
     return null;
   }
 
-  private int getMillis(String widgetName) {
+  private Long getMillis(String widgetName) {
     Widget widget = getFormView().getWidgetByName(widgetName);
     if (widget instanceof InputTime) {
-      return TimeUtils.parseTime(((InputTime) widget).getValue());
+      return ((InputTime) widget).getMillis();
     } else {
-      return 0;
+      return null;
     }
   }
 

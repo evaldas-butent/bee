@@ -13,13 +13,13 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.RichTextArea;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
@@ -34,12 +34,14 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Enables usage of formatted text editor user interface component.
  */
 
-public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
-    NativePreviewHandler {
+public class RichTextEditor extends Flow implements Editor, AdjustmentListener, PreviewHandler {
 
   private static final String STYLE_CONTAINER = "bee-RichTextEditor";
   private static final String STYLE_CONTAINER_EMBEDDED = "bee-RichTextEditor-embedded";
@@ -56,10 +58,10 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
 
   private boolean editing = false;
 
-  private HandlerRegistration previewRegistration = null;
-  
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public RichTextEditor(boolean embedded) {
     super();
 
@@ -88,7 +90,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -132,7 +134,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public String getIdPrefix() {
     return "rt-editor";
   }
-  
+
   @Override
   public String getNormalizedValue() {
     if (getValue() == null) {
@@ -145,7 +147,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   public String getOptions() {
     return options;
   }
-
+  
   @Override
   public int getTabIndex() {
     return getArea().getTabIndex();
@@ -167,6 +169,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
@@ -174,6 +181,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   @Override
   public boolean isEnabled() {
     return getArea().isEnabled();
+  }
+
+  @Override
+  public boolean isModal() {
+    return false;
   }
 
   @Override
@@ -187,14 +199,18 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   @Override
-  public void onPreviewNativeEvent(NativePreviewEvent event) {
+  public void normalizeDisplay(String normalizedValue) {
+  }
+
+  @Override
+  public void onEventPreview(NativePreviewEvent event) {
     if (isEditing() && !toolbar.isWaiting()
         && EventUtils.isMouseDown(event.getNativeEvent().getType())
         && !EventUtils.equalsOrIsChild(getElement(), event.getNativeEvent().getEventTarget())) {
       fireEvent(new EditStopEvent(State.CANCELED));
     }
   }
-
+  
   @Override
   public void setAccessKey(char key) {
     getArea().setAccessKey(key);
@@ -206,9 +222,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
 
     if (!isEmbedded()) {
       if (editing) {
-        if (getPreviewRegistration() == null) {
-          setPreviewRegistration(Event.addNativePreviewHandler(this));
-        }
+        Previewer.ensureRegistered(this);
       } else {
         closePreview();
         setFocus(false);
@@ -224,6 +238,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   @Override
   public void setFocus(boolean focused) {
     getArea().setFocus(focused);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -269,10 +288,15 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   @Override
   protected void onUnload() {
     closePreview();
@@ -280,18 +304,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   private void closePreview() {
-    if (getPreviewRegistration() != null) {
-      getPreviewRegistration().removeHandler();
-      setPreviewRegistration(null);
-    }
+    Previewer.ensureUnregistered(this);
   }
 
   private RichTextArea getArea() {
     return area;
-  }
-
-  private HandlerRegistration getPreviewRegistration() {
-    return previewRegistration;
   }
 
   private RichTextToolbar getToolbar() {
@@ -300,9 +317,5 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
 
   private boolean isEmbedded() {
     return embedded;
-  }
-
-  private void setPreviewRegistration(HandlerRegistration previewRegistration) {
-    this.previewRegistration = previewRegistration;
   }
 }

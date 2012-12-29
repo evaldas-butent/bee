@@ -21,7 +21,7 @@ public abstract class Defaults {
           break;
 
         case CURRENT_TIME:
-          value = System.currentTimeMillis();
+          value = TimeUtils.nowMinutes().getTime();
           break;
 
         case CURRENT_USER:

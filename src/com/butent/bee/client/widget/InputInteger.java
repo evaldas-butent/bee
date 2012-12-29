@@ -50,7 +50,7 @@ public class InputInteger extends InputNumber {
   }
 
   @Override
-  public String getDefaultStyleName() {
+  protected String getDefaultStyleName() {
     return "bee-InputInteger";
   }
 
@@ -69,18 +69,18 @@ public class InputInteger extends InputNumber {
   }
   
   @Override
-  public void setMaxValue(Number maxValue) {
+  public void setMaxValue(String maxValue) {
     super.setMaxValue(maxValue);
-    if (maxValue != null) {
-      DomUtils.setMax(this, maxValue.intValue());
+    if (BeeUtils.isInt(maxValue)) {
+      DomUtils.setMax(this, BeeUtils.toInt(maxValue));
     }
   }
 
   @Override
-  public void setMinValue(Number minValue) {
+  public void setMinValue(String minValue) {
     super.setMinValue(minValue);
-    if (minValue != null) {
-      DomUtils.setMin(this, minValue.intValue());
+    if (BeeUtils.isInt(minValue)) {
+      DomUtils.setMin(this, BeeUtils.toInt(minValue));
     }
   }
 
@@ -109,8 +109,8 @@ public class InputInteger extends InputNumber {
       DomUtils.setInputType(this, type);
     }
     if (min < max) {
-      setMinValue(min);
-      setMaxValue(max);
+      setMinValue(BeeUtils.toString(min));
+      setMaxValue(BeeUtils.toString(max));
     }
     if (step != 0) {
       setStepValue(step);

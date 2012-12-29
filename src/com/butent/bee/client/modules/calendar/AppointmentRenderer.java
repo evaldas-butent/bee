@@ -198,7 +198,7 @@ class AppointmentRenderer {
 
       if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
         value = UiHelper.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
-      } else if (value != null && ValueType.DATETIME.equals(columns.get(i).getType())) {
+      } else if (value != null && ValueType.DATE_TIME.equals(columns.get(i).getType())) {
         value = renderDateTime(row.getDateTime(i));
       }
 

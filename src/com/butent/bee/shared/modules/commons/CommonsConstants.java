@@ -108,6 +108,9 @@ public class CommonsConstants {
   public static final String VIEW_USERS = "Users";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
+
+  public static final String VIEW_THEMES = "Themes";
+  public static final String VIEW_THEME_COLORS = "ThemeColors";
   
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
@@ -144,6 +147,13 @@ public class CommonsConstants {
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
+
+  public static final String COL_COLOR = "Color";
+  public static final String COL_DEFAULT_COLOR = "DefaultColor";
+  public static final String COL_BACKGROUND = "Background";
+  public static final String COL_FOREGROUND = "Foreground";
+
+  public static final String COL_THEME = "Theme";
   
   public static final String FORM_NEW_COMPANY = "Company";
 

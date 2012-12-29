@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -168,7 +169,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     enabledIndex = rowSet.getColumnIndex(COL_ENABLED);
 
     attBgIndex = rowSet.getColumnIndex(COL_ATTENDEE_BACKGROUND);
-    bgIndex = rowSet.getColumnIndex(COL_BACKGROUND);
+    bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
 
     initialized = true;
   }
@@ -183,7 +184,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private final BeeImage disclosureOpen = new BeeImage(Global.getImages().disclosureOpen());
   private final BeeImage disclosureClosed = new BeeImage(Global.getImages().disclosureClosed());
 
-  private final DatePicker datePicker = new DatePicker(TimeUtils.today());
+  private final DatePicker datePicker = new DatePicker(TimeUtils.today(), MIN_DATE, MAX_DATE);
 
   private final HtmlTable table = new HtmlTable();
   private final List<Long> ucaIds = Lists.newArrayList();
@@ -658,7 +659,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    updateCell(rowId, COL_BACKGROUND, new TextValue(value));
+    updateCell(rowId, CommonsConstants.COL_BACKGROUND, new TextValue(value));
     row.setValue(bgIndex, value);
 
     Widget widget = table.getWidget(index, UcaColumn.COLOR.ordinal());

@@ -661,6 +661,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     return null;
   }
 
+  protected Widget getAssociatedWidget(Splitter splitter) {
+    int index = getWidgetIndex(splitter);
+    return (index > 0) ? getWidget(index - 1) : null;
+  }
+  
   protected List<Property> getChildInfo(Widget w) {
     List<Property> info = Lists.newArrayList();
 

@@ -24,6 +24,9 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Implements a user interface component for visibly switching values on and off.
  */
@@ -38,6 +41,8 @@ public class Toggle extends CustomButton implements Editor {
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public Toggle() {
     super();
     init(null);
@@ -60,7 +65,7 @@ public class Toggle extends CustomButton implements Editor {
     super(upImage, downImage);
     init(null);
   }
-
+  
   public Toggle(String upText, String downText, String styleName) {
     super(upText, downText);
     init(styleName);
@@ -90,12 +95,12 @@ public class Toggle extends CustomButton implements Editor {
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "toggle";
   }
-  
+
   @Override
   public String getNormalizedValue() {
     Boolean v = isDown();
@@ -104,12 +109,12 @@ public class Toggle extends CustomButton implements Editor {
     }
     return BooleanValue.pack(v);
   }
-
+  
   @Override
   public String getOptions() {
     return options;
   }
-
+  
   public HasBooleanValue getSource() {
     return source;
   }
@@ -128,11 +133,16 @@ public class Toggle extends CustomButton implements Editor {
   public boolean handlesKey(int keyCode) {
     return false;
   }
-  
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   public void invert() {
     setDown(!isDown());
   }
-
+  
   @Override
   public boolean isDown() {
     return super.isDown();
@@ -151,6 +161,10 @@ public class Toggle extends CustomButton implements Editor {
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
+  }
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
 
   @Override
@@ -195,10 +209,15 @@ public class Toggle extends CustomButton implements Editor {
   public void setDown(boolean down) {
     super.setDown(down);
   }
-
+  
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -243,10 +262,15 @@ public class Toggle extends CustomButton implements Editor {
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   @Override
   protected void onClick() {
     updateSource();

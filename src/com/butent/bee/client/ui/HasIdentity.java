@@ -1,9 +1,9 @@
 package com.butent.bee.client.ui;
 
-public interface HasIdentity {
+import com.butent.bee.shared.IsUnique;
 
-  String getId();
-  
+public interface HasIdentity extends IsUnique {
+
   String getIdPrefix();
 
   void setId(String id);

@@ -7,8 +7,6 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,11 +18,11 @@ import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.BeeButton;
@@ -423,14 +421,14 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   }
 
   protected void openDialog(Element target, Widget widget, final Callback<Boolean> callback) {
-    Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, getDialogStyle());
+    Popup popup = new Popup(OutsideClick.CLOSE, getDialogStyle());
 
     popup.setWidget(widget);
     popup.setHideOnEscape(true);
 
-    popup.addCloseHandler(new CloseHandler<Popup>() {
+    popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
-      public void onClose(CloseEvent<Popup> event) {
+      public void onClose(CloseEvent event) {
         callback.onSuccess(filterChanged());
       }
     });

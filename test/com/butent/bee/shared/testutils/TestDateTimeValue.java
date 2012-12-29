@@ -102,7 +102,7 @@ public class TestDateTimeValue {
   @Test
   public final void testGetType() {
     DateTimeValue laikas1 = new DateTimeValue(2011, 2, 22, 8, 13, 8);
-    assertEquals(ValueType.DATETIME, laikas1.getType());
+    assertEquals(ValueType.DATE_TIME, laikas1.getType());
   }
 
   @Test

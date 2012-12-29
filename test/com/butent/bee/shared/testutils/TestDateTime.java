@@ -3,6 +3,7 @@ package com.butent.bee.shared.testutils;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -425,32 +426,32 @@ public class TestDateTime {
   @Test
   public final void testParse() {
     String s1 = "2011-02-22";
-    DateTime d1 = DateTime.parse(s1);
+    DateTime d1 = TimeUtils.parseDateTime(s1);
     varDate = new DateTime(2011, 02, 22);
 
     assertEquals(d1.getTime(), varDate.getTime());
 
     s1 = "21:02:52";
-    d1 = DateTime.parse(s1);
+    d1 = TimeUtils.parseDateTime(s1);
     varDate = new DateTime(2021, 2, 52, 0, 0, 0, 0);
     assertEquals(d1.getTime(), varDate.getTime());
 
     s1 = "2011-02-22 10:15:10,5";
-    d1 = DateTime.parse(s1);
+    d1 = TimeUtils.parseDateTime(s1);
     varDate = new DateTime(2011, 2, 22, 10, 15, 10, 5);
     assertEquals(d1.getTime(), varDate.getTime());
 
     s1 = "11/02/22 10:15:10,5";
-    d1 = DateTime.parse(s1);
+    d1 = TimeUtils.parseDateTime(s1);
     varDate = new DateTime(2011, 2, 22, 10, 15, 10, 5);
     assertEquals(d1.getTime(), varDate.getTime());
 
     s1 = "11-2";
-    d1 = DateTime.parse(s1);
+    d1 = TimeUtils.parseDateTime(s1);
     varDate = new DateTime(2011, 2, 0);
     assertEquals(varDate.toString(), d1.toString());
 
-    DateTime dn = DateTime.parse("2011-");
+    DateTime dn = TimeUtils.parseDateTime("2011-");
     assertEquals("2011.01.01 00:00:00", dn.toString());
   }
 

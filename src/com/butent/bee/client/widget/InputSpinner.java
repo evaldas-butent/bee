@@ -19,14 +19,6 @@ public class InputSpinner extends InputInteger {
     DomUtils.setInputType(this, inputType);
   }
 
-  public InputSpinner(int value, int min, int max, int step) {
-    super(value, inputType, min, max, step);
-  }
-
-  public InputSpinner(int value, int min, int max) {
-    super(value, inputType, min, max);
-  }
-
   public InputSpinner(HasStringValue source, int min, int max) {
     super(source, inputType, min, max);
   }
@@ -35,23 +27,31 @@ public class InputSpinner extends InputInteger {
     super(source, inputType, min, max, step);
   }
 
+  public InputSpinner(int value, int min, int max) {
+    super(value, inputType, min, max);
+  }
+
+  public InputSpinner(int value, int min, int max, int step) {
+    super(value, inputType, min, max, step);
+  }
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
   
   @Override
-  public String getDefaultStyleName() {
-    return "bee-InputSpinner";
-  }
-
-  @Override
   public String getIdPrefix() {
-    return "inp-spin";
+    return "spin";
   }
 
   @Override
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_SPINNER;
+  }
+
+  @Override
+  protected String getDefaultStyleName() {
+    return "bee-InputSpinner";
   }
 }

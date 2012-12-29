@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -54,7 +55,7 @@ public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareVersion(Operator op, String value) {
     Assert.notNull(op);
-    DateTime time = DateTime.parse(value);
+    DateTime time = TimeUtils.parseDateTime(value);
 
     if (time == null) {
       logger.warning("Not a DATETIME value:", value);

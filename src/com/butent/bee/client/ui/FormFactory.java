@@ -302,7 +302,7 @@ public class FormFactory {
       case DATE:
         widgetType = FormWidget.INPUT_DATE;
         break;
-      case DATETIME:
+      case DATE_TIME:
         widgetType = FormWidget.INPUT_DATE_TIME;
         break;
       case DECIMAL:
@@ -320,8 +320,8 @@ public class FormFactory {
       case TEXT:
         widgetType = column.isText() ? FormWidget.INPUT_AREA : FormWidget.INPUT_TEXT;
         break;
-      case TIMEOFDAY:
-        widgetType = FormWidget.INPUT_TEXT;
+      case TIME_OF_DAY:
+        widgetType = FormWidget.INPUT_TIME_OF_DAY;
         break;
       default:
         Assert.untouchable();

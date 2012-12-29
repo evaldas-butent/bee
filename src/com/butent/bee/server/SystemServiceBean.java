@@ -241,7 +241,7 @@ public class SystemServiceBean {
         buff.addColumn(new BeeColumn(ValueType.TEXT, "Name"));
         buff.addColumn(new BeeColumn(ValueType.TEXT, "Path"));
         buff.addColumn(new BeeColumn(ValueType.NUMBER, "Size"));
-        buff.addColumn(new BeeColumn(ValueType.DATETIME, "Modified"));
+        buff.addColumn(new BeeColumn(ValueType.DATE_TIME, "Modified"));
 
         long totSize = 0;
         long lastMod = 0;

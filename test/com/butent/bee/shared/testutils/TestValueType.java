@@ -42,19 +42,19 @@ public class TestValueType {
         .createValue(new DateTime(2011, 02, 22, 10, 13, 8)));
     assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATETIME")
         .createValue(new DateTime(2011, 02, 22, 10, 13, 8)));
-    assertEquals(new TimeOfDayValue(10, 13, 8, 227), ValueType.valueOf("TIMEOFDAY").createValue(
+    assertEquals(new TimeOfDayValue(10, 13, 8, 227), ValueType.valueOf("TIME_OF_DAY").createValue(
         "1298362388227"));
   }
 
   @Test
   public final void testGetByTypeCode() {
     assertEquals(ValueType.BOOLEAN, ValueType.getByTypeCode("boolean"));
-    assertEquals(ValueType.DATETIME, ValueType.getByTypeCode("Datetime"));
+    assertEquals(ValueType.DATE_TIME, ValueType.getByTypeCode("Datetime"));
     assertEquals(ValueType.DATE, ValueType.getByTypeCode(" date "));
     assertEquals(ValueType.NUMBER, ValueType.getByTypeCode("double"));
     assertEquals(null, ValueType.getByTypeCode("TEXT"));
     assertEquals(ValueType.TEXT, ValueType.getByTypeCode("STRING"));
-    assertEquals(ValueType.TIMEOFDAY, ValueType.getByTypeCode("timeofday"));
+    assertEquals(ValueType.TIME_OF_DAY, ValueType.getByTypeCode("timeofday"));
     assertEquals(null, ValueType.getByTypeCode(null));
   }
 

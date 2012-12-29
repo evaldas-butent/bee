@@ -1,14 +1,16 @@
 package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
@@ -16,18 +18,21 @@ import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 /**
  * Implements a user interface component for inserting number type values.
  */
 
-public class InputNumber extends InputText implements HasNumberBounds, HasIntStep,
+public class InputNumber extends InputText implements HasBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
-  private Number minValue = null;
-  private Number maxValue = null;
+  private String minValue = null;
+  private String maxValue = null;
+
   private int stepValue = BeeConst.UNDEF;
 
   private NumberFormat format = null;
@@ -44,30 +49,18 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
     super(source);
   }
 
-  public boolean checkBounds() {
-    Number v = getNumber();
-    if (v == null) {
-      return isNullable();
-    }
-    if (getMinValue() != null && v.doubleValue() < getMinValue().doubleValue()) {
-      return false;
-    }
-    if (getMaxValue() != null && v.doubleValue() > getMaxValue().doubleValue()) {
-      return false;
-    }
-    return true;
-  }
-
   @Override
   public String getIdPrefix() {
     return "number";
   }
-  
-  public Number getMaxValue() {
+
+  @Override
+  public String getMaxValue() {
     return maxValue;
   }
 
-  public Number getMinValue() {
+  @Override
+  public String getMinValue() {
     return minValue;
   }
 
@@ -88,22 +81,26 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
     return normalize(v);
   }
 
-  public Number getNumber() {
+  public Double getNumber() {
     return BeeUtils.toDoubleOrNull(getNormalizedValue());
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return format;
   }
 
+  @Override
   public int getPrecision() {
     return precision;
   }
 
+  @Override
   public int getScale() {
     return scale;
   }
 
+  @Override
   public int getStepValue() {
     return stepValue;
   }
@@ -113,37 +110,43 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
     return FormWidget.INPUT_DECIMAL;
   }
 
-  public void setMaxValue(Number maxValue) {
+  @Override
+  public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
 
-  public void setMinValue(Number minValue) {
+  @Override
+  public void setMinValue(String minValue) {
     this.minValue = minValue;
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     this.format = format;
   }
 
+  @Override
   public void setPrecision(int precision) {
     this.precision = precision;
   }
 
+  @Override
   public void setScale(int scale) {
     this.scale = scale;
   }
 
+  @Override
   public void setStepValue(int stepValue) {
     this.stepValue = stepValue;
   }
 
-  public void setValue(Number value) {
+  public void setValue(Double value) {
     if (value == null) {
       setValue(BeeConst.STRING_EMPTY);
     } else if (getNumberFormat() != null) {
       setValue(getNumberFormat().format(value));
     } else {
-      setValue(BeeUtils.toString(value.doubleValue()));
+      setValue(BeeUtils.toString(value));
     }
   }
 
@@ -161,43 +164,62 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
   }
 
   @Override
-  public String validate() {
-    String msg = super.validate();
-    if (!BeeUtils.isEmpty(msg)) {
-      return msg;
+  public List<String> validate(boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
     }
 
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
-      if (isNullable()) {
-        return null;
-      } else {
-        return "Įveskite reikšmę";
+      if (checkForNull && !isNullable()) {
+        messages.add("Laukas negali būti tuščias");
       }
+      return messages;
     }
 
     if (getNumberFormat() != null) {
       Double d = Format.parseQuietly(getNumberFormat(), v);
       if (d == null) {
-        return "Number format exception " + getNumberFormat().getPattern();
+        messages.add("Neteisingas skaičiaus formatas:");
+        messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getNumberFormat().getPattern())));
+        return messages;
       }
+
       v = normalize(BeeUtils.toString(d));
     }
+
     if (!checkType(v)) {
-      return "Neteisingas skaičius";
+      messages.add(BeeUtils.joinWords("Neteisingas skaičius:", v));
+      return messages;
     }
 
-    if (!checkBounds()) {
-      StringBuilder sb = new StringBuilder();
-      if (getMinValue() != null) {
-        sb.append(" min reikšmė: ").append(BeeUtils.toString(getMinValue().doubleValue()));
-      }
-      if (getMaxValue() != null) {
-        sb.append(" max reikšmė: ").append(BeeUtils.toString(getMaxValue().doubleValue()));
-      }
-      return sb.toString().trim();
+    if (!checkBounds(getNumber())) {
+      messages.addAll(ValidationHelper.getBounds(this));
     }
-    return null;
+    return messages;
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(normalizedValue, checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
+    }
+
+    if (BeeUtils.isEmpty(normalizedValue)) {
+      if (checkForNull && !isNullable()) {
+        messages.add("Laukas negali būti tuščias");
+      }
+      return messages;
+    }
+
+    if (!checkBounds(BeeUtils.toDoubleOrNull(normalizedValue))) {
+      messages.addAll(ValidationHelper.getBounds(this));
+    }
+    return messages;
   }
 
   protected boolean checkType(String v) {
@@ -216,5 +238,22 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
 
   protected String normalize(String v) {
     return BeeUtils.toString(BeeUtils.toDouble(v));
+  }
+
+  private boolean checkBounds(Double v) {
+    if (v == null) {
+      return isNullable();
+    }
+
+    Double min = BeeUtils.toDoubleOrNull(getMinValue());
+    if (min != null && v < min) {
+      return false;
+    }
+
+    Double max = BeeUtils.toDoubleOrNull(getMaxValue());
+    if (max != null && v > max) {
+      return false;
+    }
+    return true;
   }
 }

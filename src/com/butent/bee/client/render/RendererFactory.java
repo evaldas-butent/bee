@@ -180,7 +180,7 @@ public class RendererFactory {
           type = DataUtils.ID_TYPE;
         } else if (BeeUtils.same(source, DataUtils.VERSION_TAG)) {
           index = DataUtils.VERSION_INDEX;
-          type = ValueType.DATETIME;
+          type = ValueType.DATE_TIME;
         }
         
       } else {

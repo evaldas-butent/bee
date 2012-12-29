@@ -2,12 +2,12 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
@@ -15,7 +15,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
@@ -113,15 +112,6 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     @Override
-    public void onBrowserEvent(Event ev) {
-      if (!isActive() && EventUtils.isMouseDown(ev.getType())) {
-        ev.stopPropagation();
-        activate(true);
-      }
-      super.onBrowserEvent(ev);
-    }
-
-    @Override
     public boolean onHistory(final Place place, boolean forward) {
       if (contentSuppliers.isEmpty()) {
         return false;
@@ -183,9 +173,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     @Override
     protected void init() {
       super.init();
-
       addStyleName("bee-Tile");
-      sinkEvents(Event.ONMOUSEDOWN);
     }
 
     @Override
@@ -270,10 +258,6 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
     private int getContentIndex() {
       return contentIndex;
-    }
-
-    private boolean isActive() {
-      return getId().equals(getPanel().getActiveTileId());
     }
 
     private void setActiveStyle(boolean add) {
@@ -782,6 +766,28 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
   String getActiveTileId() {
     return activeTileId;
+  }
+  
+  Tile getEventTile(Node target) {
+    if (target == null) {
+      return null;
+    }
+
+    for (Widget child : getChildren()) {
+      if (child.getElement().isOrHasChild(target)) {
+        if (child instanceof Tile) {
+          return (Tile) child;
+
+        } else if (child instanceof Splitter) {
+          Widget widget = getAssociatedWidget((Splitter) child);
+          if (widget instanceof Tile) {
+            return (Tile) widget;
+          }
+        }
+        break;
+      }
+    }
+    return null;
   }
 
   Tile getNearestTile(int index) {

@@ -18,4 +18,7 @@ name="Transport" label="Transportas" order="60"
   <Item name="VehicleTypes" label="Transporto tipai" service="grid" parameters="VehicleTypes" separator="true" />
   <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
   <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
+  
+  <Item name="FreightExchange" label="Užsakymų birža" service="freight_exchange" separator="true" />
+  <Item name="ShippingSchedule" label="Reisų kalendorius" service="shipping_schedule" />
 </Entry>

@@ -14,4 +14,7 @@ name="References" label="Žinynai" order="10"
 
   <Item name="Cities" label="Miestai" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="Šalys" service="grid" parameters="Countries" />
+  
+  <Item name="Colors" label="Spalvos" service="grid" parameters="Colors" separator="true" />
+  <Item name="Themes" label="Spalvų temos" service="grid" parameters="Themes" />
 </Entry>

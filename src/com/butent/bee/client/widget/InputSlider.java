@@ -19,14 +19,6 @@ public class InputSlider extends InputInteger {
     DomUtils.setInputType(this, inputType);
   }
 
-  public InputSlider(int value, int min, int max, int step) {
-    super(value, inputType, min, max, step);
-  }
-
-  public InputSlider(int value, int min, int max) {
-    super(value, inputType, min, max);
-  }
-
   public InputSlider(HasStringValue source, int min, int max) {
     super(source, inputType, min, max);
   }
@@ -35,23 +27,31 @@ public class InputSlider extends InputInteger {
     super(source, inputType, min, max, step);
   }
 
+  public InputSlider(int value, int min, int max) {
+    super(value, inputType, min, max);
+  }
+
+  public InputSlider(int value, int min, int max, int step) {
+    super(value, inputType, min, max, step);
+  }
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
   
   @Override
-  public String getDefaultStyleName() {
-    return "bee-InputSlider";
+  public String getIdPrefix() {
+    return "slid";
   }
 
   @Override
-  public String getIdPrefix() {
-    return "inp-slider";
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_SLIDER;
   }
   
   @Override
-  public FormWidget getWidgetType() {
-    return FormWidget.INPUT_SLIDER;
+  protected String getDefaultStyleName() {
+    return "bee-InputSlider";
   }
 }

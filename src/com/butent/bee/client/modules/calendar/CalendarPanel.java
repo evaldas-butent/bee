@@ -16,6 +16,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -25,7 +27,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
@@ -66,7 +67,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -112,7 +112,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final Html dateBox;
 
   private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, Orientation.HORIZONTAL);
-  private final List<CalendarConstants.View> views = Lists.newArrayList();
+  private final List<ViewType> views = Lists.newArrayList();
 
   private final Timer timer;
 
@@ -460,16 +460,15 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     List<Long> attIds = Lists.newArrayList();
     if (!DataUtils.isEmpty(ucAttendees)) {
       for (BeeRow row : ucAttendees.getRows()) {
-        if (BeeUtils.isTrue(DataUtils.getBoolean(ucAttendees, row,
-            CalendarConstants.COL_ENABLED))) {
-          attIds.add(DataUtils.getLong(ucAttendees, row, CalendarConstants.COL_ATTENDEE));
+        if (BeeUtils.isTrue(DataUtils.getBoolean(ucAttendees, row, COL_ENABLED))) {
+          attIds.add(DataUtils.getLong(ucAttendees, row, COL_ATTENDEE));
         }
       }
     }
     calendar.setAttendees(attIds, refresh);
   }
 
-  private void activateView(CalendarConstants.View view, boolean refresh, boolean force) {
+  private void activateView(ViewType view, boolean refresh, boolean force) {
     if (view == null) {
       return;
     }
@@ -555,9 +554,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private void loadAppointments() {
-    ParameterList params =
-        CalendarKeeper.createRequestParameters(CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS);
-    params.addQueryItem(CalendarConstants.PARAM_CALENDAR_ID, getCalendarId());
+    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_APPOINTMENTS);
+    params.addQueryItem(PARAM_CALENDAR_ID, getCalendarId());
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
@@ -600,8 +598,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private void pickDate() {
-    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODELESS);
-    DatePicker datePicker = new DatePicker(calendar.getDate());
+    final Popup popup = new Popup(OutsideClick.CLOSE);
+    DatePicker datePicker = new DatePicker(calendar.getDate(), MIN_DATE, MAX_DATE);
 
     datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
       @Override
@@ -672,18 +670,16 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         appointment.getAttendees().add(newAttendee);
       }
 
-      String viewName = CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
+      String viewName = VIEW_APPOINTMENT_ATTENDEES;
       long appId = appointment.getId();
 
       Queries.delete(viewName, Filter.and(
-          ComparisonFilter.isEqual(CalendarConstants.COL_APPOINTMENT, new LongValue(appId)),
-          ComparisonFilter.isEqual(CalendarConstants.COL_ATTENDEE, new LongValue(oldAttendee))),
-          null);
+          ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
+          ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
 
       if (add) {
-        List<BeeColumn> columns = Lists.newArrayList(
-            Data.getColumn(viewName, CalendarConstants.COL_APPOINTMENT),
-            Data.getColumn(viewName, CalendarConstants.COL_ATTENDEE));
+        List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),
+            Data.getColumn(viewName, COL_ATTENDEE));
         List<String> values = Lists.newArrayList(Long.toString(appId), Long.toString(newAttendee));
 
         Queries.insert(viewName, columns, values, null);
@@ -695,18 +691,15 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       return changed;
     }
 
-    String viewName = CalendarConstants.VIEW_APPOINTMENTS;
+    String viewName = VIEW_APPOINTMENTS;
     final BeeRow row = appointment.getRow();
 
-    List<BeeColumn> columns = Lists.newArrayList(
-        Data.getColumn(viewName, CalendarConstants.COL_START_DATE_TIME),
-        Data.getColumn(viewName, CalendarConstants.COL_END_DATE_TIME));
+    List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_START_DATE_TIME),
+        Data.getColumn(viewName, COL_END_DATE_TIME));
 
-    List<String> oldValues = Lists.newArrayList(
-        Data.getString(viewName, row, CalendarConstants.COL_START_DATE_TIME),
-        Data.getString(viewName, row, CalendarConstants.COL_END_DATE_TIME));
-    List<String> newValues = Lists.newArrayList(
-        BeeUtils.toString(newStart.getTime()),
+    List<String> oldValues = Lists.newArrayList(Data.getString(viewName, row, COL_START_DATE_TIME),
+        Data.getString(viewName, row, COL_END_DATE_TIME));
+    List<String> newValues = Lists.newArrayList(BeeUtils.toString(newStart.getTime()),
         BeeUtils.toString(newEnd.getTime()));
 
     Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
@@ -732,9 +725,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     boolean anyVisible = settings.isAnyVisible();
     String caption;
 
-    for (CalendarConstants.View view : CalendarConstants.View.values()) {
+    for (ViewType view : ViewType.values()) {
       if (!anyVisible || settings.isVisible(view)) {
-        if (CalendarConstants.View.DAYS.equals(view)) {
+        if (ViewType.DAYS.equals(view)) {
           caption = view.getCaption(settings.getDefaultDisplayedDays());
         } else {
           caption = view.getCaption();

@@ -28,6 +28,9 @@ import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Implements a text box that allows a single line of text to be entered.
  */
@@ -49,6 +52,8 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public InputText() {
     super(Document.get().createTextInputElement());
     init();
@@ -72,7 +77,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       return getCharMatcher().matches(charCode);
     }
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -91,22 +96,22 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return EditorAction.SELECT;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "txt";
   }
-
+  
   @Override
   public int getMaxLength() {
     return getInputElement().getMaxLength();
@@ -153,7 +158,12 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public boolean handlesKey(int keyCode) {
     return false;
   }
-  
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   public boolean isAllSelected() {
     String text = getText();
     if (BeeUtils.isEmpty(text)) {
@@ -162,17 +172,21 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       return BeeUtils.equalsTrim(text, getSelectedText());
     }
   }
-
+  
   @Override
   public boolean isEditing() {
     return editing;
+  }
+
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(getValue());
   }
 
   @Override
   public boolean isNullable() {
     return nullable;
   }
-
+  
   @Override
   public boolean isOrHasPartner(Node node) {
     return getElement().equals(node);
@@ -180,6 +194,10 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
 
   public boolean isUpperCase() {
     return upperCase;
+  }
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
   
   @Override
@@ -207,7 +225,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       setOldValue(getValue());
     }
   }
-
+  
   public void setCharMatcher(CharMatcher charMatcher) {
     this.charMatcher = charMatcher;
   }
@@ -215,6 +233,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -264,10 +287,15 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.inRange(BeeConst.CHAR_SPACE, Character.MAX_VALUE);
   }
@@ -296,7 +324,8 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
 
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName(getDefaultStyleName());
+    setStyleName("bee-TextBox");
+    addStyleName(getDefaultStyleName());
 
     setCharMatcher(getDefaultCharMatcher());
     sinkEvents(Event.ONKEYPRESS | Event.ONCHANGE);

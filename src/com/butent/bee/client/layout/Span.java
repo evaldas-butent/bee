@@ -25,10 +25,6 @@ public class Span extends ComplexPanel implements InsertPanel, IdentifiableWidge
     super.add(w, getElement());
   }
 
-  public String getDefaultStyleName() {
-    return "bee-Span";
-  }
-
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -47,5 +43,9 @@ public class Span extends ComplexPanel implements InsertPanel, IdentifiableWidge
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  protected String getDefaultStyleName() {
+    return "bee-Span";
   }
 }

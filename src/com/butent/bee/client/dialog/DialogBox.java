@@ -52,7 +52,7 @@ public class DialogBox extends Popup implements Printable {
   }
 
   protected DialogBox(String caption, String styleName) {
-    super(OutsideClick.IGNORE, Modality.MODELESS, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
+    super(OutsideClick.IGNORE, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
 
     this.header = new Html(LocaleUtils.maybeLocalize(caption));
     header.addStyleName(STYLE_CAPTION);
@@ -70,6 +70,7 @@ public class DialogBox extends Popup implements Printable {
     container.add(widget);
   }
   
+  @Override
   public Widget getContent() {
     if (layout.getWidgetCount() > 1) {
       return layout.getWidget(1);

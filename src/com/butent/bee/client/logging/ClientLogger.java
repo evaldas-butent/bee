@@ -20,6 +20,7 @@ public class ClientLogger implements BeeLogger {
     logger.addHandler(handler);
   }
   
+  @Override
   public void addSeparator() {
     logger.log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
   }

@@ -2,19 +2,22 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
@@ -41,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
-    HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler {
+    HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
     CREATE(new BeeImage(Global.getImages().add()), null, null, "Naujas skirtukas"),
@@ -90,6 +93,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       return widget;
     }
   }
+
   private class TabWidget extends Span implements HasCaption {
 
     private TabWidget(String caption) {
@@ -146,6 +150,11 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   @Override
+  public boolean isModal() {
+    return false;
+  }
+
+  @Override
   public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
     fireEvent(event);
   }
@@ -155,6 +164,34 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (event.getSource() instanceof Tile) {
       updateCaption((Tile) event.getSource(), event.getCaption());
     }
+  }
+  
+  @Override
+  public void onEventPreview(NativePreviewEvent event) {
+    EventTarget target = event.getNativeEvent().getEventTarget();
+    if (target == null) {
+      return;
+    }
+    
+    Node node = Node.as(target);
+    
+    TilePanel activePanel = getActivePanel();
+    if (activePanel == null || activePanel.getWidgetCount() <= 1
+        || !activePanel.getElement().isOrHasChild(node)) {
+      return;
+    }
+    
+    Tile activeTile = activePanel.getActiveTile();
+    if (activeTile == null || activeTile.getElement().isOrHasChild(node)) {
+      return;
+    }
+    
+    Tile eventTile = activePanel.getEventTile(node);
+    if (eventTile == null || eventTile.getId().equals(activeTile.getId())) {
+      return;
+    }
+    
+    eventTile.activate(true);
   }
 
   public boolean randomClose(boolean debug) {
@@ -207,7 +244,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
     return ok;
   }
-  
+
   public void randomSplit() {
     TilePanel panel = getActivePanel();
     int tileIndex = BeeUtils.randomInt(0, panel.getTileCount());
@@ -283,6 +320,15 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   void activateWidget(IdentifiableWidget widget) {
+    if (widget == null) {
+      return;
+    }
+
+    IdentifiableWidget activeContent = getActiveContent();
+    if (activeContent != null && widget.getId().equals(activeContent.getId())) {
+      return;
+    }
+    
     Tile tile = TilePanel.getTile(widget.asWidget());
 
     int index = getPageIndex(tile);
@@ -368,6 +414,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       boolean wasActive = tile.getId().equals(panel.getActiveTileId());
       int tileIndex = panel.getWidgetIndex(tile);
 
+      if (!tile.isBlank()) {
+        tile.blank();
+      }
+      
       panel.remove(tile);
       resizePage(pageIndex);
 
@@ -552,7 +602,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       bar.addItem(action.getWidget().asWidget());
     }
 
-    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, STYLE_PREFIX + "actionPopup");
+    final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_PREFIX + "actionPopup");
 
     bar.addSelectionHandler(new SelectionHandler<Integer>() {
       @Override

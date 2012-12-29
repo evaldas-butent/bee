@@ -17,8 +17,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -39,11 +37,11 @@ import com.butent.bee.client.data.SelectionOracle.Request;
 import com.butent.bee.client.data.SelectionOracle.Response;
 import com.butent.bee.client.data.SelectionOracle.Suggestion;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
@@ -84,6 +82,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -122,7 +121,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           setText(getRelatedRow() == null ? null : renderer.render(getRelatedRow()));
         }
         updateDisplay(getText());
-        UiHelper.moveFocus(getParent(), getElement(), true);
+        UiHelper.moveFocus(getParent(), true);
       }
     }
 
@@ -381,19 +380,19 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     private Boolean pendingSelection = null;
 
-    private Selector(ITEM_TYPE itemType, UIObject partner) {
+    private Selector(ITEM_TYPE itemType, Element partner) {
       this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
 
       menu.addStyleName(STYLE_MENU);
 
-      this.popup = new Popup(OutsideClick.CLOSE, Modality.MODELESS);
-      popup.setStyleName(STYLE_POPUP);
+      this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
       popup.setWidget(menu);
+      
+      popup.setKeyboardPartner(partner);
 
-      popup.addAutoHidePartner(partner.getElement());
-      popup.addCloseHandler(new CloseHandler<Popup>() {
-        public void onClose(CloseEvent<Popup> event) {
-          if (event.isAutoClosed()) {
+      popup.addCloseHandler(new CloseEvent.Handler() {
+        public void onClose(CloseEvent event) {
+          if (event.isUserCaused()) {
             getMenu().clearItems();
             exit(false, State.CANCELED);
           }
@@ -682,7 +681,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private Widget drill = null;
 
   private String options = null;
-
+  
+  private boolean handlesTabulation = false;
+  
   public DataSelector(Relation relation, boolean embedded) {
     super();
 
@@ -696,7 +697,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     ITEM_TYPE itemType = relation.getItemType();
 
     this.input = new InputWidget();
-    this.selector = new Selector(itemType, this.input);
+    this.selector = new Selector(itemType, this.input.getElement());
 
     this.choiceColumns.addAll(relation.getChoiceColumns());
     for (SelectorColumn selectorColumn : relation.getSelectorColumns()) {
@@ -765,7 +766,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getInput().addDomHandler(handler, BlurEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -775,7 +776,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return getInput().addDomHandler(handler, FocusEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getInput().addDomHandler(handler, KeyDownEvent.getType());
@@ -903,6 +904,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return isActive();
   }
 
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   public boolean isAdding() {
     return adding;
   }
@@ -941,6 +947,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public void normalizeDisplay(String normalizedValue) {
+  }
+
+  @Override
   public void setAccessKey(char key) {
     getInput().setAccessKey(key);
   }
@@ -974,6 +984,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public void setFocus(boolean focused) {
     getInput().setFocus(focused);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -1072,8 +1087,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
   }
 
   protected void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {

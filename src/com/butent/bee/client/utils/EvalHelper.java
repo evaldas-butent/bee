@@ -56,7 +56,7 @@ public class EvalHelper {
         }
         break;
 
-      case DATETIME:
+      case DATE_TIME:
         DateTime dt = TimeUtils.toDateTimeOrNull(value);
         if (dt == null) {
           JsUtils.setPropertyToNull(jso, name);
@@ -77,7 +77,7 @@ public class EvalHelper {
         break;
 
       case TEXT:
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         JsUtils.setProperty(jso, name, value);
         break;
     }

@@ -105,13 +105,13 @@
       <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
         style="width: 80px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 128px;" />
-      <InputTime name="StartTime" step="30"
+      <InputTimeOfDay name="StartTime" step="30"
         style="&absolute; left: 280px; top: 128px; width: 40px;" />
 
-      <InputSpinner name="Hours" caption="Trukmė:" min="0" max="99"
+      <InputSpinner name="Hours" caption="Trukmė:" minValue="0" maxValue="99"
         style="width: 40px;" d:size="60" d:unit="px"
         d:rootStyle="&absolute; left: 360px; top: 128px;" />
-      <InputSpinner name="Minutes" min="0" max="60" step="5"
+      <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
         style="&absolute; left: 480px; top: 128px; width: 40px;" />
 
       <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
@@ -121,7 +121,7 @@
       <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:"
         style="width: 80px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 160px;" />
-      <InputTime name="EndTime" step="30"
+      <InputTimeOfDay name="EndTime" step="30"
         style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
       <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 192px;" />

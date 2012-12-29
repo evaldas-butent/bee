@@ -304,7 +304,7 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
           JustDate date = getDate(row);
           return (date == null) ? null : date.toString();
 
-        case DATETIME:
+        case DATE_TIME:
           DateTime dateTime = getDateTime(row);
           return (dateTime == null) ? null : dateTime.toCompactString();
 
@@ -327,7 +327,7 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
         case TEXT:
           return getString(row);
 
-        case TIMEOFDAY:
+        case TIME_OF_DAY:
           return getString(row);
       }
 

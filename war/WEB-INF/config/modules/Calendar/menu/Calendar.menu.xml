@@ -15,8 +15,6 @@ name="Calendar" label="Kalendorius" order="70"
   <Item name="AppointmentProperties" label="=appointmentProperties" service="grid" parameters="ExtendedProperties" separator="true" />
   <Item name="PropertyGroups" label="=appointmentPropertyGroups" service="grid" parameters="PropertyGroups" />
     
-  <Item name="Colors" label="Spalvos" service="grid" parameters="Colors" separator="true" />
-  <Item name="Themes" label="Temos" service="grid" parameters="Themes" />
   <Item name="AppointmentStyles" label="=appointmentStyles" service="grid" parameters="AppointmentStyles" />
 
   <Item name="TimeZones" label="Laiko juostos" service="grid" parameters="TimeZones" separator="true" />

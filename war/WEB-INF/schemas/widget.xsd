@@ -611,17 +611,15 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="editableInteger">
+  <xs:complexType name="quantizedInput">
     <xs:complexContent>
       <xs:extension base="inputWidget">
-        <xs:attribute name="min" type="xs:int" />
-        <xs:attribute name="max" type="xs:int" />
         <xs:attribute name="step" type="xs:positiveInteger" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="InputInteger" type="editableInteger" substitutionGroup="widget" />
+  <xs:element name="InputInteger" type="quantizedInput" substitutionGroup="widget" />
 
   <xs:element name="InputLong" type="inputWidget" substitutionGroup="widget" />
   <xs:element name="InputDouble" type="inputWidget" substitutionGroup="widget" />
@@ -638,27 +636,20 @@
 
   <xs:element name="InputCurrency" type="inputWidget" substitutionGroup="widget" />
 
-  <xs:element name="InputSpinner" type="editableInteger" substitutionGroup="widget" />
-  <xs:element name="InputSlider" type="editableInteger" substitutionGroup="widget" />
+  <xs:element name="InputSpinner" type="quantizedInput" substitutionGroup="widget" />
+  <xs:element name="InputSlider" type="quantizedInput" substitutionGroup="widget" />
 
-  <xs:complexType name="editableDate">
-    <xs:complexContent>
-      <xs:extension base="inputWidget">
-        <xs:attribute name="step" type="xs:positiveInteger" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+  <xs:element name="InputDate" type="quantizedInput" substitutionGroup="widget" />
+  <xs:element name="InputDateTime" type="quantizedInput" substitutionGroup="widget" />
 
-  <xs:element name="InputDate" type="editableDate" substitutionGroup="widget" />
-  <xs:element name="InputDateTime" type="editableDate" substitutionGroup="widget" />
-  <xs:element name="InputTime" type="editableDate" substitutionGroup="widget" />
+  <xs:element name="InputTime" type="quantizedInput" substitutionGroup="widget" />
+  <xs:element name="InputTimeOfDay" type="quantizedInput" substitutionGroup="widget" />
 
   <xs:complexType name="spinnerBase">
     <xs:complexContent>
-      <xs:extension base="inputWidget">
+      <xs:extension base="quantizedInput">
         <xs:attribute name="min" type="xs:long" use="required" />
         <xs:attribute name="max" type="xs:long" use="required" />
-        <xs:attribute name="step" type="xs:positiveInteger" />
         <xs:attribute name="minStep" type="xs:positiveInteger" />
         <xs:attribute name="maxStep" type="xs:positiveInteger" />
         <xs:attribute name="constrained" type="xs:boolean" />

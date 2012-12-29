@@ -9,9 +9,7 @@ import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -21,11 +19,14 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
@@ -92,7 +93,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class FormImpl extends Absolute implements FormView, NativePreviewHandler {
+public class FormImpl extends Absolute implements FormView, PreviewHandler, TabulationHandler {
 
   private class CreationCallback extends WidgetCreationCallback {
 
@@ -193,6 +194,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       this.widgetId = widgetId;
     }
 
+    @Override
     public int compareTo(TabEntry o) {
       Assert.notNull(o);
 
@@ -269,7 +271,6 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   private final List<TabEntry> tabOrder = Lists.newArrayList();
 
-  private HandlerRegistration previewReg = null;
   private String previewId = null;
 
   private int activeEditableIndex = BeeConst.UNDEF;
@@ -624,6 +625,11 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
+  public boolean handlesTabulation() {
+    return true;
+  }
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
@@ -631,6 +637,11 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public boolean isModal() {
+    return false;
   }
 
   @Override
@@ -837,11 +848,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public void onMultiDelete(MultiDeleteEvent event) {
-  }
-
-  @Override
-  public void onPreviewNativeEvent(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event) {
     String type = event.getNativeEvent().getType();
 
     if (EventUtils.isClick(type)) {
@@ -863,6 +870,10 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
         }
       }
     }
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
   }
 
   @Override
@@ -1006,6 +1017,10 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     }
 
     getRootWidget().asWidget().setStyleName(STYLE_FORM_DISABLED, !enabled);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
   }
 
   @Override
@@ -1227,17 +1242,16 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   @Override
   protected void onLoad() {
     super.onLoad();
-    closePreview();
-    setPreviewReg(Event.addNativePreviewHandler(this));
+    Previewer.ensureRegistered(this);
   }
 
   @Override
   protected void onUnload() {
-    closePreview();
+    Previewer.ensureUnregistered(this);
     super.onUnload();
   }
 
-  private boolean checkForUpdate(boolean reset) {
+  private boolean checkForUpdate(boolean normalize) {
     if (BeeConst.isUndef(getActiveEditableIndex())) {
       return true;
     }
@@ -1246,14 +1260,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     if (editableWidget == null) {
       return true;
     } else {
-      return editableWidget.checkForUpdate(reset);
-    }
-  }
-
-  private void closePreview() {
-    if (getPreviewReg() != null) {
-      getPreviewReg().removeHandler();
-      setPreviewReg(null);
+      return editableWidget.checkForUpdate(normalize);
     }
   }
 
@@ -1376,10 +1383,6 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   private String getPreviewId() {
     return previewId;
-  }
-
-  private HandlerRegistration getPreviewReg() {
-    return previewReg;
   }
 
   private IsRow getRowBuffer() {
@@ -1641,10 +1644,6 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   private void setPreviewId(String previewId) {
     this.previewId = previewId;
-  }
-
-  private void setPreviewReg(HandlerRegistration previewReg) {
-    this.previewReg = previewReg;
   }
 
   private void setReadOnly(boolean readOnly) {

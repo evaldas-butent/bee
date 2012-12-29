@@ -55,11 +55,10 @@ class Model {
 
   Model(JustDate date) {
     currentMonth = new YearMonth(date);
-    currentMonth.setDateTimeFormat(yearMonthFormat);
   }
 
-  String formatCurrentMonth() {
-    return currentMonth.format();
+  String format(YearMonth ym) {
+    return yearMonthFormat.format(ym.getDate());
   }
 
   YearMonth getCurrentMonth() {

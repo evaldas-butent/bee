@@ -57,6 +57,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
         updateStyle();
       }
 
+      @Override
       public boolean isEnabled() {
         return enabled;
       }
@@ -68,9 +69,9 @@ class MonthView extends Component implements HasKeyDownHandlers {
         updateStyle();
       }
 
+      @Override
       public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        onEnabled();
       }
 
       private String getDateStyle() {
@@ -81,17 +82,6 @@ class MonthView extends Component implements HasKeyDownHandlers {
         return !getModel().isInCurrentMonth(value);
       }
 
-      private void onActivate(boolean activate) {
-        if (activate) {
-          setHighlightedDate(value);
-        }
-        updateStyle();
-      }
-
-      private void onEnabled() {
-        updateStyle();
-      }
-
       private void setDateStyle(String dateStyle) {
         this.dateStyle = dateStyle;
       }
@@ -100,8 +90,8 @@ class MonthView extends Component implements HasKeyDownHandlers {
         DOM.setInnerText(getElement(), value);
       }
 
-      private void update(JustDate date) {
-        setEnabled(true);
+      private void update(JustDate date, boolean enable) {
+        setEnabled(enable);
 
         value.setDate(date);
         setText(Model.formatDayOfMonth(value));
@@ -127,7 +117,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
         styles.add(dateStyle);
 
         if (getActiveCellIndex() == index) {
-          styles.add(css().dayIsHighlighted());
+          styles.add(css().dayIsActive());
         }
         if (!isEnabled()) {
           styles.add(css().dayIsDisabled());
@@ -217,11 +207,6 @@ class MonthView extends Component implements HasKeyDownHandlers {
       super.onBrowserEvent(event);
     }
 
-    @Override
-    protected void onUnload() {
-      setActiveCellIndex(BeeConst.UNDEF);
-    }
-
     private void activateCell(Cell cell, boolean activate) {
       int oldIndex = getActiveCellIndex();
       if (activate && cell.index == oldIndex) {
@@ -231,9 +216,9 @@ class MonthView extends Component implements HasKeyDownHandlers {
       setActiveCellIndex(activate ? cell.index : BeeConst.UNDEF);
       
       if (activate && oldIndex >= 0) {
-        getCell(oldIndex).onActivate(false);
+        getCell(oldIndex).updateStyle();
       }
-      cell.onActivate(activate);
+      cell.updateStyle();
     }
 
     private int getActiveCellIndex() {
@@ -277,6 +262,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
     this.grid = new DayGrid();
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return Binder.addKeyDownHandler(grid, handler);
   }
@@ -292,7 +278,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
     int days = firstDisplayed.getDays();
     for (int i = 0; i < grid.getNumCells(); i++) {
       lastDisplayed.setDays(days + i);
-      grid.getCell(i).update(lastDisplayed);
+      grid.getCell(i).update(lastDisplayed, getDatePicker().isDateEnabled(lastDisplayed));
     }
   }
 
@@ -315,24 +301,18 @@ class MonthView extends Component implements HasKeyDownHandlers {
     return lastDisplayed;
   }
 
-  boolean isDateEnabled(JustDate date) {
-    Assert.state(getDatePicker().isDateVisible(date));
-    return getCell(date).isEnabled();
-  }
-
   void removeStyleFromDate(String styleName, JustDate date) {
     if (getDatePicker().isDateVisible(date)) {
       getCell(date).removeStyleName(styleName);
     }
   }
 
-  void setEnabledOnDate(boolean enabled, JustDate date) {
-    Assert.state(getDatePicker().isDateVisible(date));
-    getCell(date).setEnabled(enabled);
-  }
-  
   void setFocus(boolean focus) {
     DomUtils.setFocus(grid, focus);
+  }
+  
+  private JustDate clamp(JustDate date) {
+    return TimeUtils.clamp(date, getDatePicker().getMinDate(), getDatePicker().getMaxDate());
   }
  
   private CssClasses css() {
@@ -401,7 +381,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
         if (isIndex(z)) {
           newIndex = (z == oldIndex) ? 0 : z;
         } else {
-          newDate = today;
+          newDate = clamp(today);
         }
         break;
         
@@ -413,13 +393,13 @@ class MonthView extends Component implements HasKeyDownHandlers {
         break;
         
       case KeyCodes.KEY_PAGEUP:
-        newDate = hasModifiers ? TimeUtils.endOfMonth(getModel().getCurrentMonth(), -12)
-            : TimeUtils.endOfPreviousMonth(getModel().getCurrentMonth());
+        newDate = clamp(hasModifiers ? TimeUtils.endOfMonth(getModel().getCurrentMonth(), -12)
+            : TimeUtils.endOfPreviousMonth(getModel().getCurrentMonth()));
         break;
         
       case KeyCodes.KEY_PAGEDOWN:
-        newDate = hasModifiers ? TimeUtils.startOfMonth(getModel().getCurrentMonth(), 12)
-            : TimeUtils.startOfNextMonth(getModel().getCurrentMonth());
+        newDate = clamp(hasModifiers ? TimeUtils.startOfMonth(getModel().getCurrentMonth(), 12)
+            : TimeUtils.startOfNextMonth(getModel().getCurrentMonth()));
         break;
     }
     if (ok) {
@@ -435,14 +415,16 @@ class MonthView extends Component implements HasKeyDownHandlers {
       if (isIndex(newIndex)) {
         cell = grid.getCell(newIndex);
       } else {
-        newDate = TimeUtils.nextDay(firstDisplayed, newIndex);
+        newDate = clamp(TimeUtils.nextDay(firstDisplayed, newIndex));
       }
       ok = true;
     }
 
     if (newDate != null) {
-      getDatePicker().setCurrentMonth(YearMonth.get(newDate));
-      cell = grid.getCell(TimeUtils.dayDiff(firstDisplayed, newDate));
+      if (getDatePicker().isDateEnabled(newDate)) {
+        getDatePicker().setCurrentMonth(YearMonth.get(newDate));
+        cell = grid.getCell(TimeUtils.dayDiff(firstDisplayed, newDate));
+      }
       ok = true;
     }
 
@@ -451,9 +433,5 @@ class MonthView extends Component implements HasKeyDownHandlers {
     }
     
     return ok;
-  }
-
-  private void setHighlightedDate(JustDate date) {
-    getDatePicker().setHighlightedDate(date);
   }
 }

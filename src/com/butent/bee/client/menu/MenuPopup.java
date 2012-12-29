@@ -10,7 +10,7 @@ public class MenuPopup extends Popup {
   private MenuItem parentItem = null;
 
   public MenuPopup(MenuBar bar, MenuItem item) {
-    super(OutsideClick.CLOSE, Modality.MODELESS);
+    super(OutsideClick.CLOSE);
     setStyleName(STYLENAME_DEFAULT);
     addStyleDependentName(item.getSubMenu().getItemType().name().toLowerCase());
 

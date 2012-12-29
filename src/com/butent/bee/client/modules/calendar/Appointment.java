@@ -2,28 +2,13 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_BACKGROUND;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COLOR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY_NAME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DESCRIPTION;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_END_DATE_TIME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_FOREGROUND;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_START_DATE_TIME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_STYLE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_SUMMARY;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_MODEL;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_NUMBER;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE_PARENT_MODEL;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_PROPS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_REMINDERS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -78,11 +63,11 @@ public class Appointment implements Comparable<Appointment> {
   }
 
   public String getBackground() {
-    return Data.getString(VIEW_APPOINTMENTS, row, COL_BACKGROUND);
+    return Data.getString(VIEW_APPOINTMENTS, row, CommonsConstants.COL_BACKGROUND);
   }
 
   public Long getColor() {
-    return Data.getLong(VIEW_APPOINTMENTS, row, COL_COLOR);
+    return Data.getLong(VIEW_APPOINTMENTS, row, CommonsConstants.COL_COLOR);
   }
   
   public String getCompanyName() {
@@ -98,7 +83,7 @@ public class Appointment implements Comparable<Appointment> {
   }
   
   public String getForeground() {
-    return Data.getString(VIEW_APPOINTMENTS, row, COL_FOREGROUND);
+    return Data.getString(VIEW_APPOINTMENTS, row, CommonsConstants.COL_FOREGROUND);
   }
 
   public long getId() {

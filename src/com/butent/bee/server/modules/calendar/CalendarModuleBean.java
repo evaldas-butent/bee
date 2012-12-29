@@ -58,7 +58,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -1063,7 +1063,7 @@ public class CalendarModuleBean implements BeeModule {
           settings.getTimeBlockClickNumber().ordinal());
     }
 
-    for (View view : View.values()) {
+    for (ViewType view : ViewType.values()) {
       if (settings.isVisible(view)) {
         sqlInsert.addConstant(view.getColumnId(), true);
       }
@@ -1199,7 +1199,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     Integer activeView = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_ACTIVE_VIEW));
-    if (!BeeUtils.isOrdinal(View.class, activeView)) {
+    if (!BeeUtils.isOrdinal(ViewType.class, activeView)) {
       return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_ACTIVE_VIEW, "parameter not found");
     }
 

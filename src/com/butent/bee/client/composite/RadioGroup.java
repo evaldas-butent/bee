@@ -15,7 +15,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
@@ -35,6 +34,7 @@ import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -83,6 +83,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public RadioGroup(boolean vertical) {
     this(NameUtils.createUniqueName("optiongroup"), vertical);
   }
@@ -106,7 +108,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
     addButtons(opt, z);
   }
-
+  
   public RadioGroup(String name, boolean vertical, int value, List<String> opt) {
     this(name, vertical);
     addButtons(opt, value);
@@ -221,15 +223,10 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-RadioGroup";
-  }
-
-  @Override
   public String getIdPrefix() {
     return "rg";
   }
-  
+
   public String getName() {
     return name;
   }
@@ -243,7 +240,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public String getOptions() {
     return options;
   }
-
+  
   public int getSelectedIndex() {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget widget = getWidget(i);
@@ -281,6 +278,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
+  @Override
   public boolean isEditing() {
     return false;
   }
@@ -309,7 +311,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public boolean isVertical() {
     return vertical;
   }
-  
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
+  }
+
   @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     Object source = event.getSource();
@@ -321,18 +327,15 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       if (getVariable() != null) {
         getVariable().setValue(getVariable().getItems().get(index));
       }
-      if (BeeKeeper.getStorage().hasItem(getName())) {
-        BeeKeeper.getStorage().setItem(getName(), BeeUtils.toString(index));
-      }
 
       ValueChangeEvent.fire(this, BeeUtils.toString(index));
     }
   }
-
+  
   @Override
   public void setAccessKey(char key) {
   }
-
+  
   @Override
   public void setEditing(boolean editing) {
   }
@@ -344,6 +347,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void setFocus(boolean focused) {
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -411,8 +419,18 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
+  @Override
+  protected String getDefaultStyleName() {
+    return "bee-RadioGroup";
   }
 
   private void addButtons(List<String> opt) {

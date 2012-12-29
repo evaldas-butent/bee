@@ -1,16 +1,13 @@
 package com.butent.bee.shared.time;
 
-import com.google.common.primitives.Ints;
-
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
-    BeeSerializable, HasYearMonth {
+import java.util.List;
+
+public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYearMonth {
 
   public static final char SEPARATOR = '-';
 
@@ -18,7 +15,7 @@ public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
     if (original == null) {
       return null;
     } else {
-      return new YearMonth(original.getYear(), original.getMonth(), original.getDateTimeFormat());
+      return new YearMonth(original.getYear(), original.getMonth());
     }
   }
 
@@ -35,36 +32,30 @@ public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
       return null;
     }
 
-    int[] arr = TimeUtils.parseFields(s);
-    if (Ints.max(arr) <= 0) {
+    List<Integer> fields = TimeUtils.parseFields(s);
+    if (!BeeUtils.isPositive(BeeUtils.max(fields))) {
       return null;
     } else {
-      return new YearMonth(TimeUtils.normalizeYear(arr[0]), arr[1]);
+      return new YearMonth(TimeUtils.normalizeYear(TimeUtils.getField(fields, 0)),
+          TimeUtils.getField(fields, 1));
     }
   }
 
   private int year;
-
   private int month;
 
-  private DateTimeFormat format;
-  
   public YearMonth(HasYearMonth ref) {
     this(ref.getYear(), ref.getMonth());
   }
 
   public YearMonth(int year, int month) {
-    this(year, month, null);
-  }
-
-  public YearMonth(int year, int month, DateTimeFormat format) {
     super();
     checkMonth(month);
     this.year = year;
     this.month = month;
-    this.format = format;
   }
   
+  @Override
   public int compareTo(YearMonth other) {
     int result = BeeUtils.compare(getYear(), other.getYear());
     if (result == BeeConst.COMPARE_EQUAL) {
@@ -73,6 +64,7 @@ public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
     return result;
   }
 
+  @Override
   public void deserialize(String s) {
     YearMonth ym = parse(s);
     Assert.notNull(ym);
@@ -92,30 +84,21 @@ public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
     }
   }
 
-  public String format() {
-    if (getDateTimeFormat() != null) {
-      return getDateTimeFormat().format(getDate());
-    } else {
-      return toString();
-    }
-  }
-
+  @Override
   public JustDate getDate() {
     return new JustDate(getYear(), getMonth(), 1);
-  }
-
-  public DateTimeFormat getDateTimeFormat() {
-    return format;
   }
 
   public JustDate getLast() {
     return new JustDate(getYear(), getMonth(), Grego.monthLength(getYear(), getMonth()));
   }
 
+  @Override
   public int getMonth() {
     return month;
   }
 
+  @Override
   public int getYear() {
     return year;
   }
@@ -161,19 +144,18 @@ public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
     return nextYear(-increment);
   }
 
+  @Override
   public String serialize() {
     return toString();
   }
 
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
-  }
-
+  @Override
   public void setMonth(int month) {
     checkMonth(month);
     this.month = month;
   }
 
+  @Override
   public void setYear(int year) {
     this.year = year;
   }

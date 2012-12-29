@@ -104,6 +104,7 @@ public class BeeConst {
   public static final char CHAR_NBSP = '\u00a0';
   public static final char CHAR_COLON = ':';
   public static final char CHAR_SEMICOLON = ';';
+  public static final char CHAR_ALL = '*';
 
   public static final char CHECK_MARK = '\u2713';
   public static final char HEAVY_CHECK_MARK = '\u2714';

@@ -23,7 +23,7 @@ public class ModalForm extends Popup {
   private boolean pendingUnload = false;
 
   public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload, boolean glass) {
-    super(OutsideClick.IGNORE, Modality.MODAL, STYLE_NAME);
+    super(OutsideClick.IGNORE, STYLE_NAME);
     this.requiresUnload = requiresUnload;
     
     if (glass) {

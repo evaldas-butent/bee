@@ -5,7 +5,6 @@ import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -127,18 +126,6 @@ public class TestTimeUtils {
     assertEquals("500", TimeUtils.millisToString(500));
     assertEquals("010", TimeUtils.millisToString(10));
     assertEquals("5000", TimeUtils.millisToString(5000));
-  }
-
-  @Test
-  public final void testParseFields() {
-    assertArrayEquals(null, TimeUtils.parseFields(""));
-    assertArrayEquals(null, TimeUtils.parseFields(null));
-
-    int[] mas = {1, 2, 3, 4, 5, 0, 0};
-    assertArrayEquals(mas, TimeUtils.parseFields("ab1cd2g3fd4ggh5"));
-
-    int[] mas2 = {1, 2, 3, 4, 5, 8, 9};
-    assertArrayEquals(mas2, TimeUtils.parseFields("a1a2a3a4a5a8a9a5a6a4a8"));
   }
 
   @Test

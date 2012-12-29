@@ -8,10 +8,13 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 
+import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.ui.EditorAction;
+
+import java.util.List;
 
 /**
  * Contains requirements for user interface components which are able to edit data values.
@@ -19,7 +22,7 @@ import com.butent.bee.shared.ui.EditorAction;
 
 public interface Editor extends IdentifiableWidget, HasValue<String>, Focusable,
     HasAllFocusHandlers, HasKeyDownHandlers, HasEditState, HasEditStopHandlers,
-    HasEnabled, HasOptions {
+    HasEnabled, HasOptions, TabulationHandler {
 
   void clearValue();
 
@@ -34,10 +37,14 @@ public interface Editor extends IdentifiableWidget, HasValue<String>, Focusable,
   boolean isNullable();
 
   boolean isOrHasPartner(Node node);
+  
+  void normalizeDisplay(String normalizedValue);
 
   void setNullable(boolean nullable);
 
   void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement);
 
-  String validate();
+  List<String> validate(boolean checkForNull);
+
+  List<String> validate(String normalizedValue, boolean checkForNull);
 }

@@ -1,91 +1,89 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.common.base.CharMatcher;
+import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.logical.shared.HasBeforeSelectionHandlers;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasIntStep;
+import com.butent.bee.shared.HasBounds;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class InputTime extends InputText implements HasDateTimeFormat, HasIntStep,
-    HasBeforeSelectionHandlers<InputTime> {
+import java.util.List;
 
-  private static final String STYLE_POPUP = "bee-TimeBox-Popup";
+public class InputTime extends InputText implements HasBounds, HasIntStep {
+
+  private static final String STYLE_POPUP = "bee-TimeBox-popup";
   private static final String STYLE_TIME_PICKER = "bee-TimePicker";
+
+  private static final int DEFAULT_PICKER_SIZE = 10;
 
   private static final int DEFAULT_STEP = 30;
 
-  private DateTimeFormat format = null;
+  private String minValue = null;
+  private String maxValue = null;
 
   private int stepValue = BeeConst.UNDEF;
 
-  private int minMinutes = 0;
-  private int maxMinutes = TimeUtils.MINUTES_PER_DAY;
+  private State pickerState = State.CLOSED;
 
   public InputTime() {
     super();
-    addStyleName("bee-TimeBox");
-
-    sinkEvents(Event.ONCLICK + Event.ONKEYPRESS);
-  }
-
-  @Override
-  public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<InputTime> handler) {
-    return addHandler(handler, BeforeSelectionEvent.getType());
-  }
-
-  @Override
-  public DateTimeFormat getDateTimeFormat() {
-    return format;
-  }
-
-  @Override
-  public EditorAction getDefaultFocusAction() {
-    return null;
+    
+    setMaxLength(getDefaultMaxLength());
+    sinkEvents(Event.ONCLICK | Event.ONKEYPRESS | Event.ONFOCUS | Event.ONBLUR);
   }
 
   @Override
   public String getIdPrefix() {
-    return "time-box";
+    return "time";
   }
 
-  public int getMaxMinutes() {
-    return maxMinutes;
+  @Override
+  public String getMaxValue() {
+    return maxValue;
   }
 
-  public int getMillis() {
+  public Long getMillis() {
     return TimeUtils.parseTime(getValue());
   }
 
-  public int getMinMinutes() {
-    return minMinutes;
+  public Integer getMinutes() {
+    return toMinutes(getMillis());
   }
 
-  public int getMinutes() {
-    return getMillis() / TimeUtils.MILLIS_PER_MINUTE;
+  @Override
+  public String getMinValue() {
+    return minValue;
   }
 
   public int getNormalizedStep() {
     return BeeUtils.positive(getStepValue(), DEFAULT_STEP);
+  }
+
+  @Override
+  public String getNormalizedValue() {
+    Long millis = getMillis();
+    return (millis == null) ? null : TimeUtils.renderTime(millis, true);
   }
 
   @Override
@@ -98,8 +96,15 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
     return FormWidget.INPUT_TIME;
   }
 
-  public boolean isEmpty() {
-    return BeeUtils.isEmpty(getValue());
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
+    Long millis = TimeUtils.parseTime(normalizedValue);
+
+    if (millis == null) {
+      clearValue();
+    } else {
+      setValue(TimeUtils.renderTime(millis, true));
+    }
   }
 
   @Override
@@ -107,10 +112,14 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
     String type = event.getType();
 
     if (EventUtils.isClick(type)) {
-      event.preventDefault();
-      event.stopPropagation();
-      pickTime();
-      return;
+      if (isPickerClosing()) {
+        setPickerState(State.CLOSED);
+      } else if (isPickerClosed()) {
+        event.preventDefault();
+        event.stopPropagation();
+        pickTime();
+        return;
+      }
 
     } else if (EventUtils.isKeyPress(type)) {
       if (handleChar(event.getCharCode())) {
@@ -118,30 +127,53 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
         event.stopPropagation();
         return;
       }
+
+    } else if (EventUtils.isFocus(type)) {
+      if (isPickerClosing()) {
+        return;
+      }
+
+    } else if (EventUtils.isBlur(type)) {
+      if (isPickerOpen()) {
+        return;
+      }
     }
 
     super.onBrowserEvent(event);
   }
 
+  public void setMaxMinutes(Integer minutes) {
+    if (BeeUtils.isPositive(minutes)) {
+      setMaxValue(renderMinutes(minutes));
+    } else {
+      setMaxValue(null);
+    }
+  }
+
   @Override
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
+  public void setMaxValue(String maxValue) {
+    this.maxValue = maxValue;
   }
 
-  public void setMaxMinutes(int maxMinutes) {
-    this.maxMinutes = maxMinutes;
-  }
-
-  public void setMinMinutes(int minMinutes) {
-    this.minMinutes = minMinutes;
+  public void setMinMinutes(Integer minutes) {
+    if (BeeUtils.isPositive(minutes)) {
+      setMinValue(renderMinutes(minutes));
+    } else {
+      setMinValue(null);
+    }
   }
 
   public void setMinutes(int minutes) {
     if (minutes < 0) {
       clearValue();
     } else {
-      setValue(TimeUtils.renderMinutes(minutes, true));
+      setValue(renderMinutes(minutes));
     }
+  }
+
+  @Override
+  public void setMinValue(String minValue) {
+    this.minValue = minValue;
   }
 
   @Override
@@ -156,18 +188,90 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
       setMinutes(TimeUtils.minutesSinceDayStarted(dateTime));
     }
   }
+
+  @Override
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+    setValue(oldValue);
+    if (!handleChar(charCode)) {
+      super.startEdit(oldValue, charCode, onEntry, sourceElement);
+    }
+  }
+
+  @Override
+  public List<String> validate(boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
+    }
+
+    if (isEmpty()) {
+      if (checkForNull && !isNullable()) {
+        messages.add("Įveskite laiką");
+      }
+      return messages;
+    }
+
+    String v = BeeUtils.trim(getValue());
+    if (getCharMatcher() != null && !getCharMatcher().matchesAllOf(v)) {
+      messages.add(BeeUtils.joinWords("Neteisingas laikas:", v));
+      return messages;
+    }
+    
+    messages.addAll(validateBounds(getMillis()));
+    return messages;
+  }
   
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(normalizedValue, checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
+    }
+
+    if (BeeUtils.isEmpty(normalizedValue)) {
+      if (checkForNull && !isNullable()) {
+        messages.add("Įveskite laiką");
+      }
+      return messages;
+    }
+
+    messages.addAll(validateBounds(TimeUtils.parseTime(normalizedValue)));
+    return messages;
+  }
+
+  @Override
+  protected CharMatcher getDefaultCharMatcher() {
+    return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
+        .or(CharMatcher.is(DateTime.TIME_FIELD_SEPARATOR))
+        .or(CharMatcher.is(DateTime.MILLIS_SEPARATOR));
+  }
+  
+  protected int getDefaultMaxLength() {
+    return 8;
+  }
+  
+  protected long getDefaultMaxMillis() {
+    return TimeUtils.MILLIS_PER_HOUR * 999;
+  }
+
+  @Override
+  protected String getDefaultStyleName() {
+    return "bee-InputTime";
+  }
+
   protected boolean handleChar(int charCode) {
-    if (charCode == '*') {
+    if (charCode == BeeConst.CHAR_ALL) {
       pickTime();
       return true;
     }
 
-    if (Character.isDigit(BeeUtils.toChar(charCode)) || charCode == DateTime.TIME_FIELD_SEPARATOR) {
+    if (getCharMatcher() != null && getCharMatcher().matches(BeeUtils.toChar(charCode))) {
       return false;
     }
 
-    int oldMinutes = getMinutes();
+    int oldMinutes = BeeUtils.unbox(getMinutes());
     int newMinutes = oldMinutes;
 
     int incr;
@@ -202,36 +306,31 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
     }
 
     if (newMinutes != oldMinutes) {
-      BeforeSelectionEvent<InputTime> event = BeforeSelectionEvent.fire(this, this);
-      if (event != null && event.isCanceled()) {
-        return false;
-      }
-      
       setMinutes(clamp(newMinutes));
     }
     return true;
   }
-
+  
   protected void pickTime() {
-    BeforeSelectionEvent<InputTime> before = BeforeSelectionEvent.fire(this, this);
-    if (before != null && before.isCanceled()) {
-      return;
-    }
+    Integer minutes = getMinutes();
+
+    Integer min = getMinMinutes();
+    Integer max = getMaxMinutes();
 
     int step = getNormalizedStep();
 
-    int start;
-    if (getMinMinutes() > 0) {
-      start = getMinMinutes();
+    int start = 0;
+    if (BeeUtils.isPositive(min)) {
+      start = min;
     } else if (step <= TimeUtils.MINUTES_PER_HOUR) {
-      start = getMinutes() % step;
-    } else {
-      start = 0;
+      if (BeeUtils.isPositive(minutes)) {
+        start = minutes % step;
+      }
     }
 
     int end;
-    if (getMaxMinutes() > 0 && getMaxMinutes() > start) {
-      end = getMaxMinutes();
+    if (BeeUtils.isPositive(max) && max > start) {
+      end = max;
     } else {
       end = TimeUtils.MINUTES_PER_DAY;
     }
@@ -243,49 +342,63 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
     widget.addStyleName(STYLE_TIME_PICKER);
 
     for (int i = start; i < end; i += step) {
-      String item = TimeUtils.renderMinutes(i, true);
+      String item = renderMinutes(i);
       widget.addItem(item);
     }
-    widget.setVisibleItemCount(10);
 
-    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL, STYLE_POPUP);
+    int itemCount = widget.getItemCount();
+    int visibleCount = (itemCount <= DEFAULT_PICKER_SIZE * 3 / 2) ? itemCount : DEFAULT_PICKER_SIZE;
+
+    widget.setVisibleItemCount(visibleCount);
+
+    final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
 
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (widget.getSelectedIndex() >= 0) {
-          String text = widget.getItemText(widget.getSelectedIndex());
-          popup.hide();
-          setValue(text);
-        }
+        onPick(popup, widget);
       }
     });
 
     widget.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && widget.getSelectedIndex() >= 0) {
-          String text = widget.getItemText(widget.getSelectedIndex());
-          popup.hide();
-          setValue(text);
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          onPick(popup, widget);
         }
       }
     });
 
-    popup.setWidget(widget);
     popup.setHideOnEscape(true);
-    
-    popup.setOnEscape(new ScheduledCommand() {
+
+    popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
-      public void execute() {
-        InputTime.this.setFocus(true);
+      public void onClose(CloseEvent event) {
+        if (event.isMouse()) {
+          if (event.isTarget(getElement())) {
+            setPickerState(State.CLOSING);
+          } else {
+            setPickerState(State.CLOSED);
+            DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputTime.this);
+          }
+        
+        } else if (event.isKeyboard()) {
+          setPickerState(State.CLOSING);
+          setFocus(true);
+
+        } else {
+          setPickerState(State.CLOSED);
+        }
       }
     });
 
+    setPickerState(State.OPEN);
+    
+    popup.setWidget(widget);
     popup.showRelativeTo(getElement());
 
-    if (!BeeUtils.isEmpty(getValue())) {
-      final int index = widget.getItems().indexOf(getValue().trim());
+    if (minutes != null) {
+      int index = widget.getItems().indexOf(renderMinutes(minutes));
       if (index > 0) {
         widget.setSelectedIndex(index);
       }
@@ -294,13 +407,109 @@ public class InputTime extends InputText implements HasDateTimeFormat, HasIntSte
     widget.setFocus(true);
   }
 
+  private boolean checkBounds(Long millis) {
+    if (millis == null) {
+      return isNullable();
+    }
+
+    Long min = getMinMillis();
+    if (min != null && millis < min) {
+      return false;
+    }
+
+    long max = getUpperBoundMillis();
+    if (millis > max) {
+      return false;
+    }
+
+    return true;
+  }
+
   private int clamp(int minutes) {
-    if (getMinMinutes() >= 0 && minutes < getMinMinutes()) {
-      return getMinMinutes();
+    int min = BeeUtils.nvl(getMinMinutes(), 0);
+    if (minutes < min) {
+      return min;
     }
-    if (getMaxMinutes() > 0 && getMaxMinutes() > getMinMinutes() && minutes >= getMaxMinutes()) {
-      return getMaxMinutes();
+
+    Integer max = getMaxMinutes();
+    if (max == null) {
+      if (minutes >= TimeUtils.MINUTES_PER_DAY) {
+        return TimeUtils.MINUTES_PER_DAY - getNormalizedStep();
+      }
+    } else if (minutes > max) {
+      return max;
     }
+
     return minutes;
+  }
+
+  private Long getMaxMillis() {
+    return TimeUtils.parseTime(getMaxValue());
+  }
+
+  private Integer getMaxMinutes() {
+    return toMinutes(getMaxMillis());
+  }
+
+  private Long getMinMillis() {
+    return TimeUtils.parseTime(getMinValue());
+  }
+
+  private Integer getMinMinutes() {
+    return toMinutes(getMinMillis());
+  }
+
+  private State getPickerState() {
+    return pickerState;
+  }
+
+  private long getUpperBoundMillis() {
+    Long millis = getMaxMillis();
+    return BeeUtils.isPositive(millis) ? millis : getDefaultMaxMillis();
+  }
+
+  private boolean isPickerClosed() {
+    return State.CLOSED.equals(getPickerState());
+  }
+
+  private boolean isPickerClosing() {
+    return State.CLOSING.equals(getPickerState());
+  }
+
+  private boolean isPickerOpen() {
+    return State.OPEN.equals(getPickerState());
+  }
+  
+  private void onPick(Popup popup, BeeListBox widget) {
+    if (widget.getSelectedIndex() >= 0) {
+      String text = widget.getItemText(widget.getSelectedIndex());
+      popup.hide();
+      setValue(text);
+      
+      fireEvent(new EditStopEvent(State.CHANGED));
+    }
+  }
+
+  private String renderMinutes(int minutes) {
+    return TimeUtils.renderMinutes(minutes, true);
+  }
+  
+  private void setPickerState(State pickerState) {
+    this.pickerState = pickerState;
+  }
+
+  private Integer toMinutes(Long millis) {
+    return (millis == null) ? null : (int) (millis / TimeUtils.MILLIS_PER_MINUTE);
+  }
+  
+  private List<String> validateBounds(Long millis) {
+    List<String> result = Lists.newArrayList();
+
+    if (millis != null && !checkBounds(millis)) {
+      result.add(TimeUtils.renderTime(millis, true));
+      result.addAll(ValidationHelper.getBounds(getMinValue(),
+          TimeUtils.renderTime(getUpperBoundMillis(), false)));
+    }
+    return result;
   }
 }

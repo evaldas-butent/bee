@@ -880,7 +880,7 @@ public class DataUtils {
       return null;
     } else if (type == null || ValueType.isString(type)) {
       return row.getString(index);
-    } else if (ValueType.DATETIME.equals(type)) {
+    } else if (ValueType.DATE_TIME.equals(type)) {
       return row.getDateTime(index).toCompactString();
     } else {
       return row.getValue(index, type).toString();
@@ -1029,7 +1029,7 @@ public class DataUtils {
     }
     if (BeeUtils.hasLength(versionColumnName, len + 1) &&
         BeeUtils.startsWith(expr, versionColumnName)) {
-      column = new BeeColumn(ValueType.DATETIME, versionColumnName);
+      column = new BeeColumn(ValueType.DATE_TIME, versionColumnName);
     }
     return column;
   }

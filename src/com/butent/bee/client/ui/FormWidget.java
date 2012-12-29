@@ -22,7 +22,6 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
@@ -94,6 +93,8 @@ import com.butent.bee.client.widget.InlineHtml;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
@@ -102,6 +103,7 @@ import com.butent.bee.client.widget.InputSlider;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Link;
@@ -114,7 +116,7 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Holder;
@@ -201,6 +203,7 @@ public enum FormWidget {
   INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TIME("InputTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_TIME_OF_DAY("InputTimeOfDay", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INTEGER_LABEL("IntegerLabel", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
@@ -721,15 +724,19 @@ public enum FormWidget {
         break;
 
       case INPUT_DATE:
+        widget = new InputDate();
         format = attributes.get(UiConstants.ATTR_FORMAT);
-        widget = new InputDate(ValueType.DATE, Format.getDateTimeFormat(format,
-            Format.getDefaultDateFormat()));
+        if (!BeeUtils.isEmpty(format)) {
+          ((InputDate) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+        }
         break;
 
       case INPUT_DATE_TIME:
+        widget = new InputDateTime();
         format = attributes.get(UiConstants.ATTR_FORMAT);
-        widget = new InputDate(ValueType.DATETIME, Format.getDateTimeFormat(format,
-            Format.getDefaultDateTimeFormat()));
+        if (!BeeUtils.isEmpty(format)) {
+          ((InputDateTime) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
+        }
         break;
 
       case INPUT_DECIMAL:
@@ -789,10 +796,10 @@ public enum FormWidget {
 
       case INPUT_TIME:
         widget = new InputTime();
-        format = attributes.get(UiConstants.ATTR_FORMAT);
-        if (!BeeUtils.isEmpty(format)) {
-          ((InputTime) widget).setDateTimeFormat(Format.getDateTimeFormat(format));
-        }
+        break;
+        
+      case INPUT_TIME_OF_DAY:
+        widget = new InputTimeOfDay();
         break;
 
       case INTEGER_LABEL:
@@ -1122,10 +1129,6 @@ public enum FormWidget {
       setAttributes(widget, attributes);
       widgetDescription.setAttributes(attributes);
 
-      if (widget instanceof HasNumberBounds) {
-        UiHelper.setNumberBounds((HasNumberBounds) widget, widgetDescription.getMinValue(),
-            widgetDescription.getMaxValue());
-      }
       if (disablable && BeeConst.isFalse(attributes.get(ATTR_DISABLABLE))) {
         disablable = false;
       }
@@ -1133,7 +1136,17 @@ public enum FormWidget {
       if (widget instanceof HasMaxLength && !attributes.containsKey(ATTR_MAX_LENGTH)) {
         int maxLength = UiHelper.getMaxLength(getColumn(columns, attributes));
         if (maxLength > 0) {
-          ((HasMaxLength) widget).setMaxLength(maxLength);
+          int defMaxLength = ((HasMaxLength) widget).getMaxLength();
+          if (defMaxLength <= 0 || maxLength < defMaxLength) {
+            ((HasMaxLength) widget).setMaxLength(maxLength);
+          }
+        }
+      }
+      
+      if (widget instanceof HasBounds) {
+        column = getColumn(columns, attributes);
+        if (column != null) {
+          UiHelper.setDefaultBounds((HasBounds) widget, column);
         }
       }
     }
@@ -1884,13 +1897,13 @@ public enum FormWidget {
           ((IsHtmlTable) widget).setDefaultCellStyles(value);
         }
 
-      } else if (BeeUtils.same(name, ATTR_MIN)) {
-        if (widget instanceof InputInteger && BeeUtils.isInt(value)) {
-          ((InputInteger) widget).setMinValue(BeeUtils.toInt(value));
+      } else if (BeeUtils.same(name, ATTR_MIN) || BeeUtils.same(name, HasBounds.ATTR_MIN_VALUE)) {
+        if (widget instanceof HasBounds) {
+          ((HasBounds) widget).setMinValue(value);
         }
-      } else if (BeeUtils.same(name, ATTR_MAX)) {
-        if (widget instanceof InputInteger && BeeUtils.isInt(value)) {
-          ((InputInteger) widget).setMaxValue(BeeUtils.toInt(value));
+      } else if (BeeUtils.same(name, ATTR_MAX) || BeeUtils.same(name, HasBounds.ATTR_MAX_VALUE)) {
+        if (widget instanceof HasBounds) {
+          ((HasBounds) widget).setMaxValue(value);
         }
 
       } else if (BeeUtils.same(name, ATTR_STEP)) {

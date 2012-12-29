@@ -1,7 +1,5 @@
 package com.butent.bee.shared.time;
 
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,7 +22,7 @@ public abstract class AbstractDate implements HasDateValue {
     switch (type) {
       case DATE:
         return new JustDate(date);
-      case DATETIME:
+      case DATE_TIME:
         return new DateTime(date);
       default:
         Assert.untouchable();
@@ -40,44 +38,15 @@ public abstract class AbstractDate implements HasDateValue {
 
     switch (type) {
       case DATE:
-        return JustDate.parse(s);
-      case DATETIME:
-        return DateTime.parse(s);
+        return TimeUtils.parseDate(s);
+      case DATE_TIME:
+        return TimeUtils.parseDateTime(s);
       default:
         Assert.untouchable();
         return null;
     }
   }
 
-  public static AbstractDate parse(DateTimeFormat format, String s, ValueType type) {
-    if (format == null) {
-      return parse(s, type);
-    }
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-    assertType(type);
-    
-    AbstractDate result;
-
-    switch (type) {
-      case DATE:
-        result = Format.parseDateQuietly(format, s);
-        break;
-      case DATETIME:
-        result = Format.parseDateTimeQuietly(format, s);
-        break;
-      default:
-        Assert.untouchable();
-        result = null;
-    }
-    
-    if (result == null) {
-      result = parse(s, type);
-    }
-    return result;
-  }
-  
   public static AbstractDate restore(String s, ValueType type) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -87,7 +56,7 @@ public abstract class AbstractDate implements HasDateValue {
     switch (type) {
       case DATE:
         return TimeUtils.toDateOrNull(s);
-      case DATETIME:
+      case DATE_TIME:
         return TimeUtils.toDateTimeOrNull(s);
       default:
         Assert.untouchable();
@@ -97,11 +66,10 @@ public abstract class AbstractDate implements HasDateValue {
   
   private static void assertType(ValueType type) {
     Assert.notNull(type);
-    Assert.isTrue(type.equals(ValueType.DATE) || type.equals(ValueType.DATETIME));
+    Assert.isTrue(type.equals(ValueType.DATE) || type.equals(ValueType.DATE_TIME));
   }
-
-  public abstract void deserialize(String s);
   
+  @Override
   public HasDateValue fromDate(JustDate justDate) {
     if (justDate == null) {
       return null;
@@ -112,7 +80,7 @@ public abstract class AbstractDate implements HasDateValue {
     switch (type) {
       case DATE:
         return new JustDate(justDate.getDays());
-      case DATETIME:
+      case DATE_TIME:
         return new DateTime(justDate);
       default:
         Assert.untouchable();
@@ -120,6 +88,7 @@ public abstract class AbstractDate implements HasDateValue {
     }
   }
 
+  @Override
   public HasDateValue fromDateTime(DateTime dateTime) {
     if (dateTime == null) {
       return null;
@@ -130,7 +99,7 @@ public abstract class AbstractDate implements HasDateValue {
     switch (type) {
       case DATE:
         return new JustDate(dateTime);
-      case DATETIME:
+      case DATE_TIME:
         return new DateTime(dateTime.getTime());
       default:
         Assert.untouchable();
@@ -138,37 +107,35 @@ public abstract class AbstractDate implements HasDateValue {
     }
   }
 
+  @Override
   public HasDateValue fromJava(Date date) {
     return fromJava(date, getType());
   }
 
-  public abstract JustDate getDate();
-
-  public abstract DateTime getDateTime();
-
+  @Override
   public int getHour() {
     return 0;
   }
 
-  public abstract Date getJava();
-
+  @Override
   public int getMillis() {
     return 0;
   }
 
+  @Override
   public int getMinute() {
     return 0;
   }
 
+  @Override
   public int getSecond() {
     return 0;
   }
 
+  @Override
   public int getTimezoneOffset() {
     return 0;
   }
 
   public abstract ValueType getType();
-
-  public abstract String serialize();
 }

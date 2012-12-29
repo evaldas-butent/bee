@@ -77,7 +77,7 @@ public class FilterSupplierFactory {
           supplier = new ValueFilterSupplier(viewName, column, options);
           break;
         
-        case DATETIME:
+        case DATE_TIME:
           supplier = new DateTimeFilterSupplier(viewName, column, options);
           break;
 
@@ -92,7 +92,7 @@ public class FilterSupplierFactory {
           supplier = new ValueFilterSupplier(viewName, column, options);
           break;
 
-        case TIMEOFDAY:
+        case TIME_OF_DAY:
           supplier = new ValueFilterSupplier(viewName, column, options);
           break;
       }

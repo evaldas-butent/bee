@@ -119,13 +119,13 @@ public abstract class AbstractRow implements IsRow {
         return new BooleanValue(getBoolean(index));
       case DATE:
         return new DateValue(getDate(index));
-      case DATETIME:
+      case DATE_TIME:
         return new DateTimeValue(getDateTime(index));
       case NUMBER:
         return new NumberValue(getDouble(index));
       case TEXT:
         return new TextValue(getString(index));
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         return new TimeOfDayValue(getString(index));
       case INTEGER:
         return new IntegerValue(getInteger(index));

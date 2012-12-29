@@ -2,6 +2,7 @@ package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,7 +30,7 @@ public class TestJustDate {
     JustDate jd = new JustDate(2011, 4, 8);
     JustDate jd1 = new JustDate(1298362388227L);
     JustDate jd2 = new JustDate(2021, 4, 8);
-    JustDate jd3 = JustDate.parse("2011,04,08");
+    JustDate jd3 = TimeUtils.parseDate("2011,04,08");
 
     assertEquals(true, jd.compareTo(jd1) > 0);
     assertEquals(0, jd.compareTo(jd3));
@@ -270,7 +271,7 @@ public class TestJustDate {
   @Test
   public final void testParse() {
     String str = "46";
-    JustDate jd = JustDate.parse(str);
+    JustDate jd = TimeUtils.parseDate(str);
 
     assertEquals(2046, jd.getYear());
     assertEquals(1, jd.getMonth());
@@ -278,7 +279,7 @@ public class TestJustDate {
 
     str = "2011-04-06";
 
-    jd = JustDate.parse(str);
+    jd = TimeUtils.parseDate(str);
 
     assertEquals(2011, jd.getYear());
     assertEquals(4, jd.getMonth());
@@ -286,7 +287,7 @@ public class TestJustDate {
 
     str = "2011;-04;-06";
 
-    jd = JustDate.parse(str);
+    jd = TimeUtils.parseDate(str);
 
     assertEquals(2011, jd.getYear());
     assertEquals(4, jd.getMonth());
@@ -294,7 +295,7 @@ public class TestJustDate {
 
     str = "2011/04/06";
 
-    jd = JustDate.parse(str);
+    jd = TimeUtils.parseDate(str);
 
     assertEquals(2011, jd.getYear());
     assertEquals(4, jd.getMonth());
@@ -302,7 +303,7 @@ public class TestJustDate {
 
     str = "2011/04/06 12:36:59,78";
 
-    jd = JustDate.parse(str);
+    jd = TimeUtils.parseDate(str);
 
     assertEquals(2011, jd.getYear());
     assertEquals(4, jd.getMonth());
@@ -310,14 +311,14 @@ public class TestJustDate {
 
     str = "2011-02";
 
-    jd = JustDate.parse(str);
+    jd = TimeUtils.parseDate(str);
 
     assertEquals(2011, jd.getYear());
     assertEquals(2, jd.getMonth());
     assertEquals(1, jd.getDom());
 
     String str1 = "2010-";
-    JustDate jd1 = JustDate.parse(str1);
+    JustDate jd1 = TimeUtils.parseDate(str1);
     assertEquals("2010.01.01", jd1.toString());
   }
 

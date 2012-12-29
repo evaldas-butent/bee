@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -95,7 +97,7 @@ public class CalendarConstants {
     }
   }
 
-  public enum View implements HasCaption {
+  public enum ViewType implements HasCaption {
     DAY("DayView", "Diena"),
     DAYS("DaysView", "Dienos"),
     WORK_WEEK("WorkWeekView", "Darbo savaitė"),
@@ -106,7 +108,7 @@ public class CalendarConstants {
     private final String columnId;
     private final String caption;
 
-    private View(String columnId, String caption) {
+    private ViewType(String columnId, String caption) {
       this.columnId = columnId;
       this.caption = caption;
     }
@@ -184,8 +186,6 @@ public class CalendarConstants {
   public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String VIEW_APPOINTMENT_STYLES = "AppointmentStyles";
-  public static final String VIEW_THEMES = "Themes";
-  public static final String VIEW_THEME_COLORS = "ThemeColors";
 
   public static final String VIEW_CAL_APPOINTMENT_TYPES = "CalAppointmentTypes";
   public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
@@ -239,7 +239,6 @@ public class CalendarConstants {
   public static final String COL_ATTENDEE_FOREGROUND = "AttendeeForeground";
 
   public static final String COL_TIME_ZONE = "TimeZone";
-  public static final String COL_THEME = "Theme";
 
   public static final String COL_PROPERTY = "Property";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
@@ -270,11 +269,6 @@ public class CalendarConstants {
   public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
   public static final String COL_VEHICLE_PARENT_MODEL = "VehicleParentModel";
   public static final String COL_VEHICLE_MODEL = "VehicleModel";
-
-  public static final String COL_COLOR = "Color";
-  public static final String COL_DEFAULT_COLOR = "DefaultColor";
-  public static final String COL_BACKGROUND = "Background";
-  public static final String COL_FOREGROUND = "Foreground";
 
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
@@ -340,6 +334,9 @@ public class CalendarConstants {
   public static final String PRM_REMINDER_TIME_UNTIL = "ReminderTimeUntil";
 
   public static final String PROP_USER_CAL_ATTENDEES = "UserCalAttendees";
+
+  public static final JustDate MIN_DATE = new JustDate(2010, 1, 1);
+  public static final JustDate MAX_DATE = TimeUtils.endOfMonth(TimeUtils.today(), 12);
   
   private CalendarConstants() {
   }

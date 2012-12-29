@@ -10,7 +10,7 @@ public enum EditorType {
   LIST("list"),
   PICKER("picker", null, 100),
   DATE("date"),
-  DATETIME("datetime"),
+  DATE_TIME("dateTime"),
   STRING("string"),
   AREA("area", 300, 100),
   TEXT("text", 300, 120),
@@ -21,8 +21,10 @@ public enum EditorType {
   SPINNER("spinner"),
   LONG("long"),
   SELECTOR("selector", null, null, 120, null),
-  TOGGLE("toggle");
-
+  TOGGLE("toggle"),
+  TIME("time"),
+  TIME_OF_DAY("timeOfDay");
+  
   public static EditorType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {
       return null;

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.HasValueType;
@@ -21,7 +22,8 @@ import java.util.List;
  * Contains column properties and methods for managing them.
  */
 
-public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, HasValueType {
+public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, HasValueType,
+    HasBounds {
 
   public enum ColType {
     DATA("DataColumn", false),
@@ -442,7 +444,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
         "Options", getOptions());
-    
+
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
     }
@@ -507,6 +509,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return itemKey;
   }
 
+  @Override
   public String getMaxValue() {
     return maxValue;
   }
@@ -515,6 +518,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return maxWidth;
   }
 
+  @Override
   public String getMinValue() {
     return minValue;
   }
@@ -845,6 +849,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.itemKey = itemKey;
   }
 
+  @Override
   public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
@@ -853,6 +858,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.maxWidth = maxWidth;
   }
 
+  @Override
   public void setMinValue(String minValue) {
     this.minValue = minValue;
   }
@@ -933,7 +939,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
   }
-  
+
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }

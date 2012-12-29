@@ -24,7 +24,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -44,12 +43,14 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -62,7 +63,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -158,13 +158,14 @@ class TaskEditor extends AbstractFormInterceptor {
       col++;
 
       styleName = STYLE_DIALOG + "-dateInput";
-      InputDate input = new InputDate(ValueType.DATETIME);
-      input.setDateTimeFormat(Format.getDefaultDateTimeFormat());
+      InputDateTime input = new InputDateTime();
       input.addStyleName(styleName);
 
       if (def != null) {
-        input.setDate(def);
+        input.setDateTime(def);
       }
+      
+      SimpleEditorHandler.observe(caption, input);
 
       table.setWidget(row, col, input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
@@ -260,6 +261,8 @@ class TaskEditor extends AbstractFormInterceptor {
       InputTime input = new InputTime();
       input.addStyleName(styleName);
 
+      SimpleEditorHandler.observe(caption, input);
+      
       table.setWidget(row, col, input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
@@ -290,8 +293,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     private DateTime getDateTime(String id) {
       Widget child = getChild(id);
-      if (child instanceof InputDate) {
-        return TimeUtils.toDateTimeOrNull(((InputDate) child).getDate());
+      if (child instanceof InputDateTime) {
+        return ((InputDateTime) child).getDateTime();
       } else {
         return null;
       }
@@ -1147,6 +1150,10 @@ class TaskEditor extends AbstractFormInterceptor {
 
     form.updateRow(data, true);
   }
+  
+  private String renderDuration(long millis) {
+    return TimeUtils.renderTime(millis, false);
+  }
 
   private void requeryEvents(final long taskId) {
     ParameterList params = CrmKeeper.createTaskRequestParameters(SVC_GET_TASK_DATA);
@@ -1262,7 +1269,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return true;
   }
 
-  private void showDurations(FormView form, Table<String, String, Integer> durations) {
+  private void showDurations(FormView form, Table<String, String, Long> durations) {
     Widget widget = form.getWidgetByName(VIEW_TASK_DURATIONS);
     if (!(widget instanceof Flow)) {
       return;
@@ -1290,17 +1297,17 @@ class TaskEditor extends AbstractFormInterceptor {
     }
     r++;
 
-    int totMillis = 0;
+    long totMillis = 0;
     for (String row : rows) {
       c = 0;
       addDurationCell(display, r, c++, row, "rowLabel");
 
-      int rowMillis = 0;
+      long rowMillis = 0;
       for (String column : columns) {
-        int millis = BeeUtils.unbox(durations.get(row, column));
+        Long millis = durations.get(row, column);
 
-        if (millis > 0) {
-          addDurationCell(display, r, c, TimeUtils.renderTime(millis), "value");
+        if (BeeUtils.isPositive(millis)) {
+          addDurationCell(display, r, c, renderDuration(millis), "value");
 
           rowMillis += millis;
           totMillis += millis;
@@ -1309,7 +1316,7 @@ class TaskEditor extends AbstractFormInterceptor {
       }
 
       if (columns.size() > 1) {
-        addDurationCell(display, r, c, TimeUtils.renderTime(rowMillis), "rowTotal");
+        addDurationCell(display, r, c, renderDuration(rowMillis), "rowTotal");
       }
       r++;
     }
@@ -1318,17 +1325,17 @@ class TaskEditor extends AbstractFormInterceptor {
       c = 1;
 
       for (String column : columns) {
-        Collection<Integer> values = durations.column(column).values();
+        Collection<Long> values = durations.column(column).values();
 
-        int colMillis = 0;
-        for (Integer value : values) {
+        long colMillis = 0;
+        for (Long value : values) {
           colMillis += BeeUtils.unbox(value);
         }
-        addDurationCell(display, r, c++, TimeUtils.renderTime(colMillis), "rowTotal");
+        addDurationCell(display, r, c++, renderDuration(colMillis), "rowTotal");
       }
 
       if (columns.size() > 1) {
-        addDurationCell(display, r, c, TimeUtils.renderTime(totMillis), "colTotal");
+        addDurationCell(display, r, c, renderDuration(totMillis), "colTotal");
       }
     }
 
@@ -1340,7 +1347,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns, List<StoredFile> files,
-      Table<String, String, Integer> durations) {
+      Table<String, String, Long> durations) {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
@@ -1405,9 +1412,10 @@ class TaskEditor extends AbstractFormInterceptor {
 
       container.add(col2);
 
-      int millis = TimeUtils.parseTime(duration);
-      if (millis > 0 && !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
-        Integer value = durations.get(publisher, durType);
+      Long millis = TimeUtils.parseTime(duration);
+      if (BeeUtils.isPositive(millis) && !BeeUtils.isEmpty(publisher) 
+          && !BeeUtils.isEmpty(durType)) {
+        Long value = durations.get(publisher, durType);
         durations.put(publisher, durType, millis + BeeUtils.unbox(value));
       }
     }
@@ -1435,7 +1443,7 @@ class TaskEditor extends AbstractFormInterceptor {
     Flow panel = (Flow) widget;
     panel.clear();
 
-    Table<String, String, Integer> durations = TreeBasedTable.create();
+    Table<String, String, Long> durations = TreeBasedTable.create();
 
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations);

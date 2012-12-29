@@ -57,7 +57,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
 
   @Override
   public ValueType getValueType() {
-    return ValueType.DATETIME;
+    return ValueType.DATE_TIME;
   }
 
   public void setDateTimeFormat(DateTimeFormat format) {

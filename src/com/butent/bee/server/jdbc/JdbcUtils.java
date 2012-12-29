@@ -648,10 +648,10 @@ public class JdbcUtils {
         valueType = ValueType.DATE;
         break;
       case Types.TIME:
-        valueType = ValueType.TIMEOFDAY;
+        valueType = ValueType.TIME_OF_DAY;
         break;
       case Types.TIMESTAMP:
-        valueType = ValueType.DATETIME;
+        valueType = ValueType.DATE_TIME;
         break;
       default:
         valueType = ValueType.TEXT;

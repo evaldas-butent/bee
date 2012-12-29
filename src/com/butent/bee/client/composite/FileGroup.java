@@ -17,14 +17,14 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.communication.CommUtils;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -72,8 +72,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       Widget createEditor(StoredFile sf) {
-        InputDate editor = new InputDate(ValueType.DATETIME);
-        editor.setValue(sf.getFileDate());
+        InputDateTime editor = new InputDateTime();
+        editor.setDateTime(sf.getFileDate());
         return editor;
       }
 
@@ -87,12 +87,12 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       boolean update(Widget widget, StoredFile sf) {
         boolean changed = false;
-        if (widget instanceof InputDate) {
-          HasDateValue date = ((InputDate) widget).getDate();
+        if (widget instanceof InputDateTime) {
+          DateTime dt = ((InputDateTime) widget).getDateTime();
 
-          if (date != null && !TimeUtils.equals(date, sf.getFileDate())) {
+          if (dt != null && !TimeUtils.equals(dt, sf.getFileDate())) {
             changed = true;
-            sf.setFileDate(date.getDateTime());
+            sf.setFileDate(dt);
           }
         }
         return changed;

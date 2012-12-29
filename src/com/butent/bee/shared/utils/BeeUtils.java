@@ -459,6 +459,10 @@ public class BeeUtils {
     return src.substring(0, start) + src.substring(end);
   }
 
+  public static String emptyToNull(String s) {
+    return isEmpty(s) ? null : s;
+  }
+
   /**
    * Trims both Strings and then compares them.
    * 
@@ -954,7 +958,7 @@ public class BeeUtils {
   public static boolean isEmpty(Map<?, ?> map) {
     return map == null || map.isEmpty();
   }
-
+  
   public static boolean isEmpty(String s) {
     return s == null || s.trim().isEmpty();
   }
@@ -1100,6 +1104,10 @@ public class BeeUtils {
     return (x == null) ? false : x > 0;
   }
 
+  public static boolean isPositive(Long x) {
+    return (x == null) ? false : x > 0L;
+  }
+  
   public static boolean isPositiveDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
@@ -1318,6 +1326,24 @@ public class BeeUtils {
     return (s == null) ? 0 : s.length();
   }
 
+  public static Integer max(Collection<Integer> col) {
+    Integer result = null;
+    if (col == null) {
+      return result;
+    }
+    
+    for (Integer item : col) {
+      if (item != null) {
+        if (result == null) {
+          result = item;
+        } else {
+          result = Math.max(result, item);
+        }
+      }
+    }
+    return result;
+  }
+
   public static String nextString(String value) {
     String expression = trim(value);
     String pattern = "^(.*?)(\\d*?)$";
@@ -1441,11 +1467,11 @@ public class BeeUtils {
   public static int positive(int x, int def) {
     return (x > 0) ? x : def;
   }
-
+  
   public static int positive(int x, int y, int def) {
     return (x > 0) ? x : positive(y, def);
   }
-  
+
   /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
@@ -1812,11 +1838,11 @@ public class BeeUtils {
   public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
   }
-
+  
   public static int resize(int x, int frMin, int frMax, int toMin, int toMax) {
     return round(rescale(x, frMin, frMax, toMin, toMax));
   }
-  
+
   public static String right(String s, int n) {
     if (s == null) {
       return null;
@@ -1844,11 +1870,11 @@ public class BeeUtils {
   public static int rotateForwardInclusive(int x, int min, int max) {
     return (x < min || x >= max) ? min : x + 1;
   }
-
+  
   public static int round(double x) {
     return toInt(Math.round(x));
   }
-  
+
   /**
    * Rounds {@code x} with a specified scale {@code dec}.
    * 
@@ -1920,11 +1946,11 @@ public class BeeUtils {
       return c1.containsAll(c2) && c2.containsAll(c1);
     }
   }
-
+  
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
-  
+
   public static double scaleNormalizedToRange(double x, double min, double max) {
     double z;
 
@@ -2023,7 +2049,7 @@ public class BeeUtils {
     }
     return same(s.trim().charAt(0), c);
   }
-
+  
   public static boolean startsWith(String str, String pfx) {
     if (isEmpty(str) || isEmpty(pfx)) {
       return false;
@@ -2036,7 +2062,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   public static int sum(Collection<Integer> col) {
     int result = 0;
     if (col == null) {
@@ -2050,7 +2076,7 @@ public class BeeUtils {
     }
     return result;
   }
-
+  
   /**
    * Checks if {@code x} is a Boolean value.
    * 
@@ -2167,16 +2193,6 @@ public class BeeUtils {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
 
-  public static int toInt(long x) {
-    if (x <= Integer.MIN_VALUE) {
-      return Integer.MIN_VALUE;
-    } else if (x >= Integer.MAX_VALUE) {
-      return Integer.MAX_VALUE;
-    } else {
-      return (int) x;
-    }
-  }
-  
   public static int toInt(Double d) {
     if (!isDouble(d)) {
       return 0;
@@ -2188,6 +2204,16 @@ public class BeeUtils {
       return Integer.MAX_VALUE;
     }
     return d.intValue();
+  }
+  
+  public static int toInt(long x) {
+    if (x <= Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    } else if (x >= Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    } else {
+      return (int) x;
+    }
   }
 
   /**

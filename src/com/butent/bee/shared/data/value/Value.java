@@ -27,11 +27,11 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
         return TextValue.getNullValue();
       case NUMBER:
         return NumberValue.getNullValue();
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         return TimeOfDayValue.getNullValue();
       case DATE:
         return DateValue.getNullValue();
-      case DATETIME:
+      case DATE_TIME:
         return DateTimeValue.getNullValue();
       case INTEGER:
         return IntegerValue.getNullValue();
@@ -94,17 +94,17 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
         return new TextValue(value);
       case NUMBER:
         return new NumberValue(BeeUtils.toDoubleOrNull(value));
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         return new TimeOfDayValue(value);
       case DATE:
         if (parseDates) {
-          return new DateValue(JustDate.parse(value));
+          return new DateValue(TimeUtils.parseDate(value));
         } else {
           return new DateValue(TimeUtils.toDateOrNull(value));
         }
-      case DATETIME:
+      case DATE_TIME:
         if (parseDates) {
-          return new DateTimeValue(DateTime.parse(value));
+          return new DateTimeValue(TimeUtils.parseDateTime(value));
         } else {
           return new DateTimeValue(TimeUtils.toDateTimeOrNull(value));
         }

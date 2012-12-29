@@ -4,12 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.HasHighlightHandlers;
-import com.google.gwt.event.logical.shared.HasShowRangeHandlers;
-import com.google.gwt.event.logical.shared.HighlightEvent;
-import com.google.gwt.event.logical.shared.HighlightHandler;
-import com.google.gwt.event.logical.shared.ShowRangeEvent;
-import com.google.gwt.event.logical.shared.ShowRangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -26,11 +20,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
-public class DatePicker extends Composite implements HasHighlightHandlers<JustDate>,
-    HasShowRangeHandlers<JustDate>, HasValue<JustDate>, HasKeyDownHandlers {
+public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyDownHandlers {
 
   public static class CssClasses {
-
     private final String widgetStyleName;
     private final String baseStyleName;
 
@@ -51,6 +43,10 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
       return day() + "Is" + dayModifier;
     }
 
+    public String dayIsActive() {
+      return day("Active");
+    }
+    
     public String dayIsDisabled() {
       return day("Disabled");
     }
@@ -59,20 +55,12 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
       return day("Filler");
     }
 
-    public String dayIsHighlighted() {
-      return day("Highlighted");
-    }
-
     public String dayIsToday() {
       return day("Today");
     }
 
     public String dayIsValue() {
       return day("Value");
-    }
-
-    public String dayIsValueAndHighlighted() {
-      return dayIsValue() + "AndHighlighted";
     }
 
     public String dayIsWeekend() {
@@ -103,6 +91,10 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
       return wrap("monthNavigation");
     }
 
+    public String monthNavigationDisabled() {
+      return monthNavigation() + "-disabled";
+    }
+    
     public String monthSelector() {
       return wrap("monthSelector");
     }
@@ -127,14 +119,10 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     }
 
     public String getStyleName(JustDate date) {
-      Assert.notNull(date);
       return styles.get(date);
     }
 
     public void setStyleName(JustDate date, String styleName, boolean add) {
-      Assert.notNull(date);
-      Assert.notEmpty(styleName);
-
       String current = styles.get(date);
 
       if (add) {
@@ -166,26 +154,31 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
   private final MonthView view;
   private final Model model;
 
-  private JustDate value;
-  private JustDate highlighted;
+  private JustDate value = null;
 
-  public DatePicker(JustDate date) {
-    this(date, DEFAULT_CSS_CLASSES);
+  private final JustDate minDate;
+  private final JustDate maxDate;
+
+  public DatePicker(JustDate date, JustDate minDate, JustDate maxDate) {
+    this(date, minDate, maxDate, DEFAULT_CSS_CLASSES);
   }
 
-  public DatePicker(JustDate date, CssClasses cssClasses) {
-    this(date, cssClasses, new MonthSelector(cssClasses), new MonthView(cssClasses),
-        new Model(date));
+  public DatePicker(JustDate date, JustDate minDate, JustDate maxDate, CssClasses cssClasses) {
+    this(date, minDate, maxDate, cssClasses, new MonthSelector(cssClasses),
+        new MonthView(cssClasses), new Model(date));
   }
 
-  public DatePicker(JustDate date, CssClasses cssClasses, MonthSelector monthSelector,
-      MonthView view, Model model) {
+  public DatePicker(JustDate date, JustDate minDate, JustDate maxDate, CssClasses cssClasses,
+      MonthSelector monthSelector, MonthView view, Model model) {
 
     Assert.notNull(date);
     Assert.notNull(cssClasses);
     Assert.notNull(monthSelector);
     Assert.notNull(view);
     Assert.notNull(model);
+    
+    this.minDate = (minDate == null) ? null : TimeUtils.min(date, minDate);
+    this.maxDate = (maxDate == null) ? null : TimeUtils.max(date, maxDate);
 
     this.cssClasses = cssClasses;
     this.monthSelector = monthSelector;
@@ -204,42 +197,8 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
   }
 
   @Override
-  public HandlerRegistration addHighlightHandler(HighlightHandler<JustDate> handler) {
-    return addHandler(handler, HighlightEvent.getType());
-  }
-
-  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return view.addKeyDownHandler(handler);
-  }
-
-  @Override
-  public HandlerRegistration addShowRangeHandler(ShowRangeHandler<JustDate> handler) {
-    return addHandler(handler, ShowRangeEvent.getType());
-  }
-
-  public void addStyleToDate(String styleName, JustDate date) {
-    dateStyler.setStyleName(date, styleName, true);
-    if (isDateVisible(date)) {
-      getView().addStyleToDate(styleName, date);
-    }
-  }
-
-  public void addStyleToDates(String styleName, Iterable<JustDate> dates) {
-    for (JustDate date : dates) {
-      addStyleToDate(styleName, date);
-    }
-  }
-
-  public void addTransientStyleToDate(String styleName, JustDate date) {
-    Assert.state(isDateVisible(date), "date must be visible");
-    getView().addStyleToDate(styleName, date);
-  }
-
-  public void addTransientStyleToDates(String styleName, Iterable<JustDate> dates) {
-    for (JustDate date : dates) {
-      addTransientStyleToDate(styleName, date);
-    }
   }
 
   @Override
@@ -247,78 +206,9 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public CssClasses getCssClasses() {
-    return cssClasses;
-  }
-
-  public YearMonth getCurrentMonth() {
-    return getModel().getCurrentMonth();
-  }
-
-  public JustDate getFirstDate() {
-    return getView().getFirstDate();
-  }
-
-  public JustDate getHighlightedDate() {
-    return JustDate.copyOf(highlighted);
-  }
-
-  public JustDate getLastDate() {
-    return getView().getLastDate();
-  }
-
-  public Model getModel() {
-    return model;
-  }
-
-  public MonthSelector getMonthSelector() {
-    return monthSelector;
-  }
-
-  public String getStyleOfDate(JustDate date) {
-    return dateStyler.getStyleName(date);
-  }
-
   @Override
   public JustDate getValue() {
     return JustDate.copyOf(value);
-  }
-
-  public MonthView getView() {
-    return view;
-  }
-
-  public boolean isDateEnabled(JustDate date) {
-    Assert.state(isDateVisible(date), "date is not visible");
-    return getView().isDateEnabled(date);
-  }
-
-  public boolean isDateVisible(JustDate date) {
-    Assert.notNull(date);
-    return TimeUtils.isBetweenInclusiveRequired(date, getFirstDate(), getLastDate());
-  }
-
-  public void refreshAll() {
-    this.highlighted = null;
-
-    getView().refresh();
-    getMonthSelector().refresh();
-    if (isAttached()) {
-      ShowRangeEvent.fire(this, getFirstDate(), getLastDate());
-    }
-  }
-
-  public void removeStyleFromDate(String styleName, JustDate date) {
-    dateStyler.setStyleName(date, styleName, false);
-    if (isDateVisible(date)) {
-      getView().removeStyleFromDate(styleName, date);
-    }
-  }
-
-  public void removeStyleFromDates(String styleName, Iterable<JustDate> dates) {
-    for (JustDate date : dates) {
-      removeStyleFromDate(styleName, date);
-    }
   }
 
   public void setDate(JustDate newValue) {
@@ -336,22 +226,6 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
 
   public void setFocus(boolean focus) {
     view.setFocus(focus);
-  }
-
-  public void setHighlightedDate(JustDate highlighted) {
-    this.highlighted = highlighted;
-    HighlightEvent.fire(this, highlighted);
-  }
-
-  public void setTransientEnabledOnDate(boolean enabled, JustDate date) {
-    Assert.state(isDateVisible(date), "date must be visible");
-    getView().setEnabledOnDate(enabled, date);
-  }
-
-  public void setTransientEnabledOnDates(boolean enabled, Iterable<JustDate> dates) {
-    for (JustDate date : dates) {
-      setTransientEnabledOnDate(enabled, date);
-    }
   }
 
   @Override
@@ -378,14 +252,83 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
     }
   }
 
-  @Override
-  protected void onLoad() {
-    ShowRangeEvent.fire(this, getFirstDate(), getLastDate());
+  CssClasses getCssClasses() {
+    return cssClasses;
+  }
+
+  YearMonth getCurrentMonth() {
+    return getModel().getCurrentMonth();
+  }
+
+  JustDate getMaxDate() {
+    return maxDate;
+  }
+
+  JustDate getMinDate() {
+    return minDate;
+  }
+
+  Model getModel() {
+    return model;
+  }
+
+  String getStyleOfDate(JustDate date) {
+    return dateStyler.getStyleName(date);
+  }
+
+  boolean isDateEnabled(JustDate date) {
+    if (getMinDate() != null && TimeUtils.isLess(date, getMinDate())) {
+      return false;
+    }
+    
+    if (getMaxDate() != null && TimeUtils.isMore(date, getMaxDate())) {
+      return false;
+    }
+    return true;
+  }
+  
+  boolean isDateVisible(JustDate date) {
+    return TimeUtils.isBetweenInclusiveRequired(date, getFirstDate(), getLastDate());
+  }
+
+  void refreshAll() {
+    getView().refresh();
+    getMonthSelector().refresh();
   }
 
   void setCurrentMonth(YearMonth ym) {
     getModel().setCurrentMonth(ym);
     refreshAll();
+  }
+
+  private void addStyleToDate(String styleName, JustDate date) {
+    dateStyler.setStyleName(date, styleName, true);
+    if (isDateVisible(date)) {
+      getView().addStyleToDate(styleName, date);
+    }
+  }
+
+  private JustDate getFirstDate() {
+    return getView().getFirstDate();
+  }
+
+  private JustDate getLastDate() {
+    return getView().getLastDate();
+  }
+
+  private MonthSelector getMonthSelector() {
+    return monthSelector;
+  }
+
+  private MonthView getView() {
+    return view;
+  }
+
+  private void removeStyleFromDate(String styleName, JustDate date) {
+    dateStyler.setStyleName(date, styleName, false);
+    if (isDateVisible(date)) {
+      getView().removeStyleFromDate(styleName, date);
+    }
   }
 
   private void setup() {

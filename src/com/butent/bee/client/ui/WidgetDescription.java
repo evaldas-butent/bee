@@ -26,8 +26,6 @@ public class WidgetDescription implements HasInfo {
 
   private static final String ATTR_PARENT = "parent";
 
-  private static final String ATTR_MIN_VALUE = "minValue";
-  private static final String ATTR_MAX_VALUE = "maxValue";
   private static final String ATTR_REQUIRED = "required";
 
   private static final String ATTR_ON_FOCUS = "onFocus";
@@ -58,8 +56,6 @@ public class WidgetDescription implements HasInfo {
   private Calculation editable = null;
   private Calculation carry = null;
 
-  private String minValue = null;
-  private String maxValue = null;
   private Boolean required = null;
   private Boolean nullable = null;
   private Boolean hasDefaults = null;
@@ -114,6 +110,7 @@ public class WidgetDescription implements HasInfo {
     return hasDefaults;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Widget Type", getWidgetType(),
@@ -124,8 +121,6 @@ public class WidgetDescription implements HasInfo {
         "Read Only", getReadOnly(),
         "Source", getSource(),
         "Row Property", getRowProperty(),
-        "Min Value", getMinValue(),
-        "Max Value", getMaxValue(),
         "Required", getRequired(),
         "Nullable", getNullable(),
         "Has Defaults", getHasDefaults(),
@@ -177,14 +172,6 @@ public class WidgetDescription implements HasInfo {
 
   public String getItemKey() {
     return itemKey;
-  }
-
-  public String getMaxValue() {
-    return maxValue;
-  }
-
-  public String getMinValue() {
-    return minValue;
   }
 
   public Boolean getNullable() {
@@ -288,10 +275,6 @@ public class WidgetDescription implements HasInfo {
       } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
         setRowProperty(value.trim());
 
-      } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
-        setMinValue(value.trim());
-      } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
-        setMaxValue(value.trim());
       } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
         setRequired(BeeUtils.toBooleanOrNull(value));
 
@@ -334,14 +317,6 @@ public class WidgetDescription implements HasInfo {
 
   public void setItemKey(String itemKey) {
     this.itemKey = itemKey;
-  }
-
-  public void setMaxValue(String maxValue) {
-    this.maxValue = maxValue;
-  }
-
-  public void setMinValue(String minValue) {
-    this.minValue = minValue;
   }
 
   public void setNullable(Boolean nullable) {
@@ -405,9 +380,6 @@ public class WidgetDescription implements HasInfo {
     setRequired(editableColumn.isRequired());
     setNullable(editableColumn.isNullable());
     setHasDefaults(editableColumn.hasDefaults());
-
-    setMinValue(editableColumn.getMinValue());
-    setMaxValue(editableColumn.getMaxValue());
 
     setItemKey(editableColumn.getItemKey());
     setRelation(editableColumn.getRelation());

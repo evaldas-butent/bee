@@ -69,7 +69,7 @@ public class TestTimeOfDayValue {
 
     assertEquals(null, TimeOfDayValue.getNullValue().getObjectValue());
 
-    assertEquals(ValueType.TIMEOFDAY, value.getType());
+    assertEquals(ValueType.TIME_OF_DAY, value.getType());
   }
 
   @Test

@@ -152,7 +152,7 @@ public class GridFactory {
         return new BooleanColumn(cellSource);
       case DATE:
         return new DateColumn(cellSource);
-      case DATETIME:
+      case DATE_TIME:
         return new DateTimeColumn(cellSource);
       case NUMBER:
         return new DoubleColumn(cellSource);

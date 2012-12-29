@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -86,7 +87,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       switch (this.type) {
         case DATE:
-          JustDate date = JustDate.parse(xmlField.defValue);
+          JustDate date = TimeUtils.parseDate(xmlField.defValue);
 
           if (date != null) {
             this.defValue = date.getDays();
@@ -96,7 +97,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           break;
 
         case DATETIME:
-          DateTime time = DateTime.parse(xmlField.defValue);
+          DateTime time = TimeUtils.parseDateTime(xmlField.defValue);
 
           if (time != null) {
             this.defValue = time.getTime();

@@ -27,6 +27,9 @@ import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Implements a text area that allows multiple lines of text to be entered.
  */
@@ -46,6 +49,8 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public InputArea() {
     super();
     init();
@@ -70,7 +75,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addInputHandler(InputHandler handler) {
     return Binder.addInputHandler(this, handler);
@@ -89,7 +94,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public String getDigest() {
     return digest;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -99,7 +104,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public String getIdPrefix() {
     return "area";
   }
-
+  
   @Override
   public String getNormalizedValue() {
     String v = getValue();
@@ -135,6 +140,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
@@ -163,6 +173,10 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
+  public void normalizeDisplay(String normalizedValue) {
+  }
+
+  @Override
   public void onAfterSave(String opt) {
     if (BeeUtils.isEmpty(opt)) {
       updateDigest();
@@ -170,7 +184,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
       setDigest(opt);
     }
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (isEditing() && UiHelper.isSave(event)) {
@@ -188,6 +202,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -241,10 +260,15 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-InputArea");

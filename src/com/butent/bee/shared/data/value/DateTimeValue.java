@@ -147,7 +147,7 @@ public class DateTimeValue extends Value {
 
   @Override
   public ValueType getType() {
-    return ValueType.DATETIME;
+    return ValueType.DATE_TIME;
   }
 
   public int getYear() {

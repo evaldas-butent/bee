@@ -371,12 +371,8 @@ body, select {
   color: green;
 }
 
-.bee-InputInteger,.bee-InputLong,.bee-InputNumber {
+.bee-InputInteger, .bee-InputLong, .bee-InputNumber, .bee-InputSpinner {
   text-align: right;
-}
-
-.bee-InputSpinner {
-  text-align: right;  
 }
 
 .bee-dndSource {
@@ -753,12 +749,12 @@ body, select {
 
 .bee-Notification-error {
   background-color: #ffcccc;
-  font-size: 1.4em;
+  font-size: 1.2em;
 }
 
 .bee-Notification-warning {
   background-color: yellow;
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 
 .bee-Toggle {
@@ -1108,7 +1104,9 @@ body, select {
   width: 100%;
   padding: 1px 0 5px 0;
 }
-
+.bee-DatePicker-monthNavigation-disabled {
+  visibility: hidden;
+}
 .bee-DatePicker-month {
   text-align: center;
   vertical-align: middle;
@@ -1148,22 +1146,18 @@ body, select {
   text-align: center;
 }
 
-.bee-DatePicker-dayIsHighlighted {
+.bee-DatePicker-dayIsActive {
   background-color: cornsilk !important;
 }
-
 .bee-DatePicker-dayIsValue {
   background-color: #f1f1f1;
   border: 1px solid #ccc;
 }
-
 .bee-DatePicker-dayIsToday {
   background-color: #eee;
 }
-
 .bee-DatePicker-dayIsDisabled {
-  color: #999;
-  font-style: italic;
+  visibility: hidden;
 }
 
 .bee-TimePicker {

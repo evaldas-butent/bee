@@ -6,19 +6,18 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -88,10 +87,10 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
     
     getInputDate(display, START_ROW).clearValue();
-    getInputTime(display, START_ROW).clearValue();
+    getInputTimeOfDay(display, START_ROW).clearValue();
 
     getInputDate(display, END_ROW).clearValue();
-    getInputTime(display, END_ROW).clearValue();
+    getInputTimeOfDay(display, END_ROW).clearValue();
     
     setStartValue(null);
     setEndValue(null);
@@ -140,11 +139,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     labelFrom.addStyleName(STYLE_LABEL);
     display.setWidget(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL + STYLE_SUFFIX_CELL);
 
-    InputDate dateFrom = new InputDate(ValueType.DATE);
+    InputDate dateFrom = new InputDate();
     dateFrom.addStyleName(STYLE_DATE);
     display.setWidget(START_ROW, DATE_COL, dateFrom, STYLE_DATE + STYLE_SUFFIX_CELL);
     
-    InputTime timeFrom = new InputTime();
+    InputTimeOfDay timeFrom = new InputTimeOfDay();
     timeFrom.addStyleName(STYLE_TIME);
     display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
 
@@ -152,22 +151,22 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     labelTo.addStyleName(STYLE_LABEL);
     display.setWidget(END_ROW, LABEL_COL, labelTo, STYLE_LABEL + STYLE_SUFFIX_CELL);
 
-    InputDate dateTo = new InputDate(ValueType.DATE);
+    InputDate dateTo = new InputDate();
     dateTo.addStyleName(STYLE_DATE);
     display.setWidget(END_ROW, DATE_COL, dateTo, STYLE_DATE + STYLE_SUFFIX_CELL);
     
-    InputTime timeTo = new InputTime();
+    InputTimeOfDay timeTo = new InputTimeOfDay();
     timeTo.addStyleName(STYLE_TIME);
     display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
     
     if (getStartValue() != null) {
       getInputDate(display, START_ROW).setDate(getStartValue());
-      getInputTime(display, START_ROW).setTime(getStartValue());
+      getInputTimeOfDay(display, START_ROW).setTime(getStartValue());
     }
 
     if (getEndValue() != null) {
       getInputDate(display, END_ROW).setDate(getEndValue());
-      getInputTime(display, END_ROW).setTime(getEndValue());
+      getInputTimeOfDay(display, END_ROW).setTime(getEndValue());
     }
     
     Widget wrapper = wrapDisplay(display, false);
@@ -182,21 +181,21 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
     
-    HasDateValue datePart = null;
+    JustDate datePart = null;
 
     Widget dateWidget = display.getWidget(END_ROW, DATE_COL);
     if (dateWidget instanceof InputDate) {
       datePart = ((InputDate) dateWidget).getDate();
     }
 
-    int timeMillis = 0;
+    Long timeMillis = null;
 
     Widget timeWidget = display.getWidget(END_ROW, TIME_COL);
-    if (timeWidget instanceof InputTime && !((InputTime) timeWidget).isEmpty()) {
-      timeMillis = ((InputTime) timeWidget).getMillis();
+    if (timeWidget instanceof InputTimeOfDay) {
+      timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
     }
     
-    if (datePart == null && timeMillis > 0 && start != null) {
+    if (datePart == null && BeeUtils.isPositive(timeMillis) && start != null) {
       return TimeUtils.combine(start, timeMillis);
 
     } else if (datePart == null) {
@@ -220,10 +219,10 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
-  private InputTime getInputTime(HtmlTable display, int row) {
+  private InputTimeOfDay getInputTimeOfDay(HtmlTable display, int row) {
     Widget widget = display.getWidget(row, TIME_COL);
-    if (widget instanceof InputTime) {
-      return (InputTime) widget;
+    if (widget instanceof InputTimeOfDay) {
+      return (InputTimeOfDay) widget;
     } else {
       return null;
     }
@@ -235,7 +234,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
     
-    HasDateValue datePart = null;
+    JustDate datePart = null;
 
     Widget dateWidget = display.getWidget(START_ROW, DATE_COL);
     if (dateWidget instanceof InputDate) {
@@ -245,11 +244,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
 
-    int timeMillis = 0;
+    Long timeMillis = null;
 
     Widget timeWidget = display.getWidget(START_ROW, TIME_COL);
-    if (timeWidget instanceof InputTime && !((InputTime) timeWidget).isEmpty()) {
-      timeMillis = ((InputTime) timeWidget).getMillis();
+    if (timeWidget instanceof InputTimeOfDay) {
+      timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
     }
     
     return TimeUtils.combine(datePart, timeMillis);

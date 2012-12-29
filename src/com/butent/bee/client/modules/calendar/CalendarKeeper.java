@@ -102,9 +102,9 @@ public class CalendarKeeper {
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES, VIEW_THEMES,
-          VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES,
-          VIEW_CAL_APPOINTMENT_TYPES);
+          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES, 
+          CommonsConstants.VIEW_THEMES, CommonsConstants.VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
+          VIEW_APPOINTMENT_STYLES, VIEW_CAL_APPOINTMENT_TYPES);
 
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
 
@@ -378,11 +378,11 @@ public class CalendarKeeper {
   }
 
   static BeeRowSet getThemeColors() {
-    return CACHE.getRowSet(VIEW_THEME_COLORS);
+    return CACHE.getRowSet(CommonsConstants.VIEW_THEME_COLORS);
   }
 
   static BeeRowSet getThemes() {
-    return CACHE.getRowSet(VIEW_THEMES);
+    return CACHE.getRowSet(CommonsConstants.VIEW_THEMES);
   }
 
   static boolean isAttendeeOpaque(long id) {

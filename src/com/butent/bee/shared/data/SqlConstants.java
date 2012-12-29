@@ -81,7 +81,7 @@ public final class SqlConstants {
         case DATE:
           return ValueType.DATE;
         case DATETIME:
-          return ValueType.DATETIME;
+          return ValueType.DATE_TIME;
         case CHAR:
         case STRING:
         case TEXT:

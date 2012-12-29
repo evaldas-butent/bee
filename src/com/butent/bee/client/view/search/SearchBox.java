@@ -44,11 +44,6 @@ public class SearchBox extends InputText implements SearchView {
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-SearchBox";
-  }
-
-  @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
     if (BeeUtils.isEmpty(getValue())) {
@@ -93,6 +88,11 @@ public class SearchBox extends InputText implements SearchView {
   @Override
   public void setViewPresenter(Presenter presenter) {
     this.presenter = presenter;
+  }
+
+  @Override
+  protected String getDefaultStyleName() {
+    return "bee-SearchBox";
   }
 
   private FilterHandler getFilterHandler() {

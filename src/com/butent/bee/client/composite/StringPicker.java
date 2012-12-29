@@ -42,6 +42,7 @@ import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -110,12 +111,14 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public StringPicker() {
     super(new DefaultCell());
 
     DomUtils.createId(this, getIdPrefix());
     setStyleName(STYLE_CONTAINER);
-    sinkEvents(Event.ONKEYDOWN + Event.ONKEYPRESS + Event.ONMOUSEDOWN + Event.ONBLUR);
+    sinkEvents(Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONMOUSEDOWN | Event.ONBLUR);
   }
 
   @Override
@@ -132,7 +135,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     getBlurHandlers().put(reg, handler);
     return reg;
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -158,7 +161,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
       refresh();
     }
   }
-  
+
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
@@ -168,7 +171,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
-
+  
   @Override
   public StringPicker asWidget() {
     return this;
@@ -190,22 +193,22 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "string-picker";
   }
-  
+
   @Override
   public int getItemCount() {
     return data.size();
   }
-
+  
   @Override
   public List<String> getItems() {
     return data;
   }
-
+  
   @Override
   public String getNormalizedValue() {
     String v = getValue();
@@ -235,12 +238,17 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_ENTER);
   }
-  
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   @Override
   public boolean isEditing() {
     return editing;
   }
-
+  
   @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
@@ -250,20 +258,24 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-
+  
   @Override
   public boolean isNullable() {
     return nullable;
   }
-  
+
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
+  }
+  
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
 
   @Override
@@ -314,7 +326,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
       }
     }
   }
-
+  
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
@@ -323,6 +335,11 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -394,10 +411,15 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   @Override
   protected boolean isKeyboardNavigationSuppressed() {
     return true;

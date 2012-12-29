@@ -140,7 +140,7 @@
       <xs:enumeration value="list" />
       <xs:enumeration value="picker" />
       <xs:enumeration value="date" />
-      <xs:enumeration value="datetime" />
+      <xs:enumeration value="dateTime" />
       <xs:enumeration value="string" />
       <xs:enumeration value="area" />
       <xs:enumeration value="text" />
@@ -152,6 +152,8 @@
       <xs:enumeration value="long" />
       <xs:enumeration value="selector" />
       <xs:enumeration value="toggle" />
+      <xs:enumeration value="time" />
+      <xs:enumeration value="timeOfDay" />
     </xs:restriction>
   </xs:simpleType>
 

@@ -26,6 +26,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.CellValidationBus;
+import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
@@ -33,7 +34,7 @@ import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -178,8 +179,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       Format.setFormat(result, getDataType(), format);
     }
 
-    if (result instanceof HasNumberBounds) {
-      UiHelper.setNumberBounds((HasNumberBounds) result, getMinValue(), getMaxValue());
+    if (result instanceof HasBounds) {
+      UiHelper.setBounds((HasBounds) result, getMinValue(), getMaxValue());
     }
     return result;
   }
@@ -227,7 +228,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
           return null;
         }
 
-      case DATETIME:
+      case DATE_TIME:
         return BeeUtils.isLong(value) ? value.trim() : null;
 
       case DECIMAL:
@@ -243,7 +244,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return BeeUtils.isDouble(value) ? value.trim() : null;
 
       case TEXT:
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         return BeeUtils.trimRight(value);
     }
     return null;
@@ -448,10 +449,12 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.notificationListener = notificationListener;
   }
 
-  public Boolean validate(String oldValue, String newValue, IsRow row, ValidationOrigin origin) {
-    CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-        row, getDataColumn(), getColIndex(), getDataType(), isNullable(),
-        getMinValue(), getMaxValue(), getCaption(), getNotificationListener());
+  public Boolean validate(String oldValue, String newValue, IsRow row, ValidationOrigin origin,
+      EditorValidation editorValidation) {
+    
+    CellValidation cellValidation = new CellValidation(oldValue, newValue, getEditor(),
+        editorValidation, getValidation(), row, getDataColumn(), getColIndex(), getDataType(),
+        isNullable(), getCaption(), getNotificationListener());
 
     return ValidationHelper.validateCell(cellValidation, this, origin);
   }
@@ -620,16 +623,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return true;
       }
 
-      String errorMessage = getEditor().validate();
-      if (!BeeUtils.isEmpty(errorMessage)) {
-        if (getNotificationListener() != null) {
-          getNotificationListener().notifySevere(editorValue, errorMessage);
-        }
-        return false;
-      }
-
       String newValue = getEditor().getNormalizedValue();
-      Boolean ok = validate(oldValue, newValue, getRowValue(), ValidationOrigin.CELL);
+      Boolean ok = validate(oldValue, newValue, getRowValue(), ValidationOrigin.CELL,
+          EditorValidation.INPUT);
 
       if (!BeeUtils.isTrue(ok)) {
         if (ok == null) {

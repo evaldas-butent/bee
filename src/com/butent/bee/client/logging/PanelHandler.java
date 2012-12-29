@@ -5,11 +5,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasVisibility;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -25,6 +27,8 @@ public class PanelHandler extends Handler implements HasVisibility {
   private static final String STYLENAME_DEFAULT = "bee-LogRecord";
   private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";
 
+  private static final String STORAGE_KEY = "logSize";
+  
   private final Flow panel;
 
   private final int capacity;
@@ -55,6 +59,10 @@ public class PanelHandler extends Handler implements HasVisibility {
 
   @Override
   public void flush() {
+  }
+  
+  public int getInitialSize() {
+    return BeeKeeper.getStorage().getInt(STORAGE_KEY);
   }
 
   public Flow getPanel() {
@@ -109,12 +117,13 @@ public class PanelHandler extends Handler implements HasVisibility {
     Widget parent = getPanel().getParent();
     if (parent instanceof Split) {
       if (size <= 0) {
-        hiddenSize = getSize();
+        hiddenSize = BeeUtils.positive(getSize(), 256);
       } else {
         hiddenSize = BeeConst.UNDEF;
       }
 
       ((Split) parent).setWidgetSize(getPanel(), size);
+      BeeKeeper.getStorage().setItem(STORAGE_KEY, BeeUtils.toString(size));
     }
   }
 

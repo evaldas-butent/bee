@@ -622,12 +622,7 @@ public class EventUtils {
 
   public static Element getEventTargetElement(NativeEvent ev) {
     Assert.notNull(ev);
-
-    if (Element.is(ev.getEventTarget())) {
-      return Element.as(ev.getEventTarget());
-    } else {
-      return null;
-    }
+    return getTargetElement(ev.getEventTarget());
   }
 
   public static String getEventTargetId(NativeEvent ev) {
@@ -641,6 +636,15 @@ public class EventUtils {
     }
   }
 
+  public static Element getTargetElement(EventTarget et) {
+    Assert.notNull(et);
+    if (Element.is(et)) {
+      return Element.as(et);
+    } else {
+      return null;
+    }
+  }
+  
   public static String getTargetId(EventTarget et) {
     Assert.notNull(et);
     if (Element.is(et)) {

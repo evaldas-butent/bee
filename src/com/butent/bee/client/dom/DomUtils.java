@@ -642,28 +642,6 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
 
-  public static List<Focusable> getFocusableChildren(Widget parent) {
-    List<Focusable> result = Lists.newArrayList();
-    if (parent == null) {
-      return result;
-    }
-
-    if (parent instanceof HasOneWidget) {
-      result.addAll(getFocusableChildren(((HasOneWidget) parent).getWidget()));
-
-    } else if (parent instanceof HasWidgets) {
-      for (Widget child : (HasWidgets) parent) {
-        result.addAll(getFocusableChildren(child));
-      }
-
-    } else if (parent instanceof Focusable) {
-      if (isVisible(parent)) {
-        result.add((Focusable) parent);
-      }
-    }
-    return result;
-  }
-
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
     if (nodes != null && nodes.getLength() > 0) {

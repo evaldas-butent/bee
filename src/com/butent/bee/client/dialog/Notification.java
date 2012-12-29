@@ -1,21 +1,22 @@
 package com.butent.bee.client.dialog;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.animation.Animation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -31,7 +32,7 @@ import java.util.List;
  * errors etc).
  */
 
-public class Notification extends Composite implements NativePreviewHandler {
+public class Notification extends Composite implements PreviewHandler, IdentifiableWidget {
 
   /**
    * Manages notification message and it's level and text.
@@ -48,6 +49,25 @@ public class Notification extends Composite implements NativePreviewHandler {
 
     private Message(LogLevel level, String... lines) {
       this(level, Lists.newArrayList(lines));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof Message) {
+        return Objects.equal(level, ((Message) obj).level)
+            && Objects.equal(lines, ((Message) obj).lines);
+      } else {
+        return false;
+      }
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((level == null) ? 0 : level.hashCode());
+      result = prime * result + ((lines == null) ? 0 : lines.hashCode());
+      return result;
     }
 
     private LogLevel getLevel() {
@@ -136,8 +156,6 @@ public class Notification extends Composite implements NativePreviewHandler {
   private int openDuration = defaultOpenDuration;
   private int closeDuration = defaultCloseDuration;
 
-  private HandlerRegistration previewReg = null;
-
   private State state = State.PENDING;
 
   private final LinkedList<Message> pendingMessages = Lists.newLinkedList();
@@ -147,9 +165,11 @@ public class Notification extends Composite implements NativePreviewHandler {
     messageContainer.appendChild(createTextElement());
 
     DivElement container = Document.get().createDivElement();
-    container.setId(DomUtils.createUniqueId("note-container"));
+    container.setId(DomUtils.createUniqueId(getIdPrefix()));
+
     container.setClassName(STYLE_CONTAINER);
     container.getStyle().setDisplay(Display.NONE);
+    
     container.appendChild(messageContainer);
 
     Html html = new Html(container);
@@ -158,6 +178,16 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   public void clearPendingMessages() {
     getPendingMessages().clear();
+  }
+
+  @Override
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "notes";
   }
 
   public void hide() {
@@ -184,7 +214,13 @@ public class Notification extends Composite implements NativePreviewHandler {
     show(LogLevel.INFO, lines);
   }
 
-  public void onPreviewNativeEvent(NativePreviewEvent event) {
+  @Override
+  public boolean isModal() {
+    return false;
+  }
+
+  @Override
+  public void onEventPreview(NativePreviewEvent event) {
     Assert.notNull(event);
     String type = event.getNativeEvent().getType();
 
@@ -196,6 +232,11 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   public void setCloseDuration(int duration) {
     this.closeDuration = duration;
+  }
+
+  @Override
+  public void setId(String id) {
+    DomUtils.setId(this, id);
   }
 
   public void setOpenDuration(int duration) {
@@ -216,7 +257,7 @@ public class Notification extends Composite implements NativePreviewHandler {
     if (State.PENDING.equals(getState())) {
       setMessage(message);
       openDisplay();
-    } else {
+    } else if (!getPendingMessages().contains(message)) {
       getPendingMessages().add(message);
     }
   }
@@ -232,10 +273,7 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   private void closePreview() {
-    if (getPreviewReg() != null) {
-      getPreviewReg().removeHandler();
-      setPreviewReg(null);
-    }
+    Previewer.ensureUnregistered(this);
   }
 
   private Element createTextElement() {
@@ -263,10 +301,6 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   private LinkedList<Message> getPendingMessages() {
     return pendingMessages;
-  }
-
-  private HandlerRegistration getPreviewReg() {
-    return previewReg;
   }
 
   private State getState() {
@@ -323,10 +357,6 @@ public class Notification extends Composite implements NativePreviewHandler {
     }
   }
 
-  private void setPreviewReg(HandlerRegistration previewReg) {
-    this.previewReg = previewReg;
-  }
-
   private void setState(State state) {
     Assert.notNull(state, "notification state cannot be null");
     this.state = state;
@@ -342,9 +372,7 @@ public class Notification extends Composite implements NativePreviewHandler {
         break;
 
       case SHOWING:
-        if (getPreviewReg() == null) {
-          setPreviewReg(Event.addNativePreviewHandler(this));
-        }
+        Previewer.ensureRegistered(this);
         break;
 
       case CLOSING:

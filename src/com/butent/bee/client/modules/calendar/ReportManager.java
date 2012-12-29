@@ -16,7 +16,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.RowFactory;
@@ -29,10 +28,13 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -40,6 +42,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -265,6 +268,14 @@ class ReportManager {
   private void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);
   }
+  
+  private Editor createDateEditor(ValueType type) {
+    if (ValueType.DATE.equals(type)) {
+      return new InputDate();
+    } else {
+      return new InputDateTime();
+    }
+  }
 
   private void doReport(final Report report, final BeeRow row) {
     ParameterList params = CalendarKeeper.createRequestParameters(SVC_DO_REPORT);
@@ -361,18 +372,18 @@ class ReportManager {
     addStyle(ldLabel, "ldLabel");
     container.add(ldLabel);
 
-    final InputDate lowerDate = new InputDate(Data.getColumnType(viewName, COL_LOWER_DATE));
+    final Editor lowerDate = createDateEditor(Data.getColumnType(viewName, COL_LOWER_DATE));
     lowerDate.setValue(Data.getString(viewName, options, COL_LOWER_DATE));
-    addStyle(lowerDate, "lowerDate");
+    addStyle(lowerDate.asWidget(), "lowerDate");
     container.add(lowerDate);
 
     BeeLabel udLabel = new BeeLabel("Data iki:");
     addStyle(udLabel, "udLabel");
     container.add(udLabel);
 
-    final InputDate upperDate = new InputDate(Data.getColumnType(viewName, COL_UPPER_DATE));
+    final Editor upperDate = createDateEditor(Data.getColumnType(viewName, COL_UPPER_DATE));
     upperDate.setValue(Data.getString(viewName, options, COL_UPPER_DATE));
-    addStyle(upperDate, "upperDate");
+    addStyle(upperDate.asWidget(), "upperDate");
     container.add(upperDate);
     
     final InputSpinner lowerHour;
@@ -467,8 +478,8 @@ class ReportManager {
       public void execute() {
         String vCap = caption.getValue();
         
-        JustDate vLd = JustDate.get(lowerDate.getDate());
-        JustDate vUd = JustDate.get(upperDate.getDate());
+        JustDate vLd = TimeUtils.parseDate(lowerDate.getValue());
+        JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
         
         if (vLd != null && vUd != null && TimeUtils.isMeq(vLd, vUd)) {
           Global.showError("Neteisingas datų intervalas");

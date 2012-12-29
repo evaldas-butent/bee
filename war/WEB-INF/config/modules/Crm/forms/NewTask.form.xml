@@ -36,7 +36,7 @@
     <FlowPanel style="&section;">
       <Label html="Pradžios data:" style="&lbl1;" />
       <InputDate name="Start_Date" style="&dateStyle;" />
-      <InputTime name="Start_Time" step="&timeStep;" style="&timeStyle;" />
+      <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
       <Label html="Numatoma trukmė:" style="&lbl3;" />
       <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />
     </FlowPanel>
@@ -44,7 +44,7 @@
     <FlowPanel style="&section;">
       <Label html="Pabaigos data:" style="&lbl1;" />
       <InputDate name="End_Date" style="&dateStyle;" />
-      <InputTime name="End_Time" step="&timeStep;" style="&timeStyle;" />
+      <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
       <Label html="Įmonė:" style="&lbl3;" />
       <DataSelector source="Company" editEnabled="true" editPopup="true"
         style="&inp4; width: 200px;" />

@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -493,8 +492,7 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL,
-        CalendarStyleManager.MORE_POPUP);
+    final Popup popup = new Popup(OutsideClick.CLOSE, CalendarStyleManager.MORE_POPUP);
 
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {
       @Override

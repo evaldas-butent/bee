@@ -302,21 +302,28 @@ public class Format {
   }
   
   public static JustDate parseDateQuietly(DateTimeFormat format, String s) {
-    return JustDate.get(parseDateTimeQuietly(format, s));
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    } else if (format == null) {
+      return TimeUtils.parseDate(s);
+    } else {
+      return JustDate.get(parseDateTimeQuietly(format, s));
+    }
   }
-  
+
   public static DateTime parseDateTimeQuietly(DateTimeFormat format, String s) {
-    if (format == null || BeeUtils.isEmpty(s)) {
+    if (BeeUtils.isEmpty(s)) {
       return null;
     }
-
-    DateTime result;
-    try {
-      result = format.parse(s.trim());
-    } catch (IllegalArgumentException ex) {
-      result = null;
+    
+    if (format != null) {
+      DateTime result = format.parseQuietly(s);
+      if (result != null) {
+        return result;
+      }
     }
-    return result;
+
+    return TimeUtils.parseDateTime(s);
   }
   
   public static Double parseQuietly(NumberFormat format, String s) {
@@ -389,7 +396,7 @@ public class Format {
         }
         break;
 
-      case DATETIME:
+      case DATE_TIME:
         DateTime dt = TimeUtils.toDateTimeOrNull(value);
         if (dt == null) {
           result = null;
@@ -419,7 +426,7 @@ public class Format {
         break;
 
       case TEXT:
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         result = BeeUtils.trimRight(value);
         break;
       

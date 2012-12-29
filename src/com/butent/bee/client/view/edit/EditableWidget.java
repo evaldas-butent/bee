@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.edit;
 
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -25,6 +24,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.CellValidationBus;
+import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
@@ -33,7 +33,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -64,9 +63,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final Evaluator validation;
   private final Evaluator carry;
 
-  private final String minValue;
-  private final String maxValue;
-
   private final boolean required;
   private final boolean readOnly;
 
@@ -95,27 +91,12 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       this.validation = Evaluator.create(widgetDescription.getValidation(), source, dataColumns);
       this.carry = Evaluator.create(widgetDescription.getCarry(), source, dataColumns);
 
-      String value = widgetDescription.getMinValue();
-      if (BeeUtils.isEmpty(value) && widgetDescription.getRelation() == null) {
-        value = DataUtils.getMinValue(dataColumn);
-      }
-      this.minValue = value;
-
-      value = widgetDescription.getMaxValue();
-      if (BeeUtils.isEmpty(value) && widgetDescription.getRelation() == null) {
-        value = DataUtils.getMaxValue(dataColumn);
-      }
-      this.maxValue = value;
-
     } else {
       this.dataColumn = null;
 
       this.editable = null;
       this.validation = null;
       this.carry = null;
-
-      this.minValue = null;
-      this.maxValue = null;
     }
 
     this.required = BeeUtils.isTrue(widgetDescription.getRequired());
@@ -157,8 +138,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
-  public boolean checkForUpdate(boolean reset) {
-    return update(null, false, reset);
+  public boolean checkForUpdate(boolean normalize) {
+    return update(null, false, normalize);
   }
 
   @Override
@@ -214,7 +195,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
           return null;
         }
 
-      case DATETIME:
+      case DATE_TIME:
         return BeeUtils.isLong(value) ? value.trim() : null;
 
       case DECIMAL:
@@ -230,7 +211,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
         return BeeUtils.isDouble(value) ? value.trim() : null;
 
       case TEXT:
-      case TIMEOFDAY:
+      case TIME_OF_DAY:
         return BeeUtils.trimRight(value);
     }
     return null;
@@ -263,7 +244,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public String getRowPropertyName() {
     return widgetDescription.getRowProperty();
   }
-  
+
   public HasCellValidationHandlers getValidationDelegate() {
     return validationDelegate;
   }
@@ -296,11 +277,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public boolean hasRelation() {
     return getRelation() != null;
   }
-  
+
   public boolean hasRowProperty() {
     return !BeeUtils.isEmpty(widgetDescription.getRowProperty());
   }
-  
+
   public boolean hasSource(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
@@ -384,7 +365,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       end(event.getKeyCode(), event.hasModifiers());
 
     } else if (event.isEdited()) {
-      if (getForm() != null 
+      if (getForm() != null
           && maybeUpdateRelation(getForm().getViewName(), getForm().getActiveRow(), false)) {
         getForm().refresh(false);
       }
@@ -433,15 +414,13 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       return;
     }
 
-    NativeEvent nativeEvent = event.getNativeEvent();
-
     switch (keyCode) {
       case KeyCodes.KEY_ENTER:
       case KeyCodes.KEY_TAB:
       case KeyCodes.KEY_UP:
       case KeyCodes.KEY_DOWN:
         event.preventDefault();
-        update(keyCode, EventUtils.hasModifierKey(nativeEvent), true);
+        update(keyCode, EventUtils.hasModifierKey(event.getNativeEvent()), true);
         break;
     }
   }
@@ -510,14 +489,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return form;
   }
 
-  private String getMaxValue() {
-    return maxValue;
-  }
-
-  private String getMinValue() {
-    return minValue;
-  }
-
   private String getOldValue() {
     if (getRowValue() == null) {
       return null;
@@ -558,7 +529,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   private void reset() {
-    refresh(getRowValue());
+    if (hasColumn() || isDisplay()) {
+      refresh(getRowValue());
+    } else if (getEditor() != null) {
+      getEditor().normalizeDisplay(getEditor().getNormalizedValue());
+    }
   }
 
   private void setEditor(Editor editor) {
@@ -573,21 +548,30 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.initialized = initialized;
   }
 
-  private boolean update(Integer keyCode, boolean hasModifiers, boolean reset) {
+  private boolean update(Integer keyCode, boolean hasModifiers, boolean normalize) {
     String oldValue = getOldValue();
     String newValue = getEditor().getNormalizedValue();
 
-    boolean eq = BeeUtils.equalsTrimRight(oldValue, newValue);
-    if (eq && reset) {
-      reset();
-    }
-    if (eq && keyCode == null) {
-      return true;
-    }
-
-    if (!eq && !validate(oldValue, newValue, ValidationOrigin.CELL)) {
-      if (reset) {
+    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      if (normalize) {
         reset();
+      }
+      if (keyCode == null) {
+        return true;
+      }
+
+    } else if (validate(oldValue, newValue, ValidationOrigin.CELL)) {
+      if (normalize) {
+        getEditor().normalizeDisplay(newValue);
+      }
+
+    } else {
+      if (normalize) {
+        if (hasColumn() || isDisplay()) {
+          reset();
+        } else {
+          getEditor().clearValue();
+        }
       }
       return false;
     }
@@ -602,11 +586,21 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   private boolean validate(String oldValue, String newValue, ValidationOrigin origin) {
     if (hasColumn()) {
-      CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-          getRowValue(), getDataColumn(), getDataIndex(), getDataType(), isNullable(),
-          getMinValue(), getMaxValue(), getCaption(), getForm());
-
+      CellValidation cellValidation = new CellValidation(oldValue, newValue, getEditor(),
+          EditorValidation.INPUT, getValidation(), getRowValue(), getDataColumn(), getDataIndex(),
+          getDataType(), isNullable(), getCaption(), getForm());
       return BeeUtils.isTrue(ValidationHelper.validateCell(cellValidation, this, origin));
+
+    } else if (getEditor() != null && getForm() != null) {
+      List<String> messages = getEditor().validate(true);
+
+      if (BeeUtils.isEmpty(messages)) {
+        return true;
+      } else {
+        ValidationHelper.showError(getForm(), getCaption(), messages);
+        return false;
+      }
+
     } else {
       return true;
     }

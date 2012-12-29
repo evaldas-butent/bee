@@ -39,13 +39,13 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -68,8 +68,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       Widget createEditor(NewFileInfo fileInfo) {
-        InputDate editor = new InputDate(ValueType.DATETIME);
-        editor.setValue(BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));
+        InputDateTime editor = new InputDateTime();
+        editor.setDateTime(BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));
         return editor;
       }
 
@@ -84,15 +84,15 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       boolean update(Widget widget, NewFileInfo fileInfo) {
         boolean changed = false;
-        if (widget instanceof InputDate) {
-          HasDateValue date = ((InputDate) widget).getDate();
+        if (widget instanceof InputDateTime) {
+          DateTime dt = ((InputDateTime) widget).getDateTime();
 
-          if (date == null || TimeUtils.equals(date, fileInfo.getLastModified())) {
+          if (dt == null || TimeUtils.equals(dt, fileInfo.getLastModified())) {
             changed = (fileInfo.getFileDate() != null);
             fileInfo.setFileDate(null);
-          } else if (!TimeUtils.equals(date, fileInfo.getFileDate())) {
+          } else if (!TimeUtils.equals(dt, fileInfo.getFileDate())) {
             changed = true;
-            fileInfo.setFileDate(date.getDateTime());
+            fileInfo.setFileDate(dt);
           }
         }
         return changed;

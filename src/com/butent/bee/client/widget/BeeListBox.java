@@ -32,6 +32,7 @@ import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,6 +60,8 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public BeeListBox() {
     super();
     init();
@@ -82,7 +85,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
       initVar((Variable) source);
     }
   }
-
+  
   public BeeListBox(HasStringValue source, boolean allVisible) {
     this(source);
     if (allVisible) {
@@ -145,17 +148,17 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public void deselect() {
     setSelectedIndex(-1);
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "list";
@@ -173,7 +176,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public int getMaxSize() {
     return maxSize;
   }
-
+  
   public int getMinSize() {
     return minSize;
   }
@@ -187,7 +190,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
       return BeeUtils.trimRight(v);
     }
   }
-  
+
   public OptionElement getOptionElement(int index) {
     if (isIndex(index)) {
       return getSelectElement().getOptions().getItem(index);
@@ -200,7 +203,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public String getOptions() {
     return options;
   }
-
+  
   public HasStringValue getSource() {
     return source;
   }
@@ -231,22 +234,27 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }
-  
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   @Override
   public boolean isEditing() {
     return editing;
   }
-
+  
   @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-  
+
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-
+  
   @Override
   public boolean isNullable() {
     return nullable;
@@ -256,9 +264,13 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   public boolean isValueNumeric() {
     return valueNumeric;
+  }
+  
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
 
   @Override
@@ -281,7 +293,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
     super.onBrowserEvent(event);
   }
-
+  
   @Override
   public void removeItem(int index) {
     super.removeItem(index);
@@ -298,6 +310,11 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -392,10 +409,15 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   @Override
-  public String validate() {
-    return null;
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
+  }
+  
   private int getIndex(String text) {
     int index = BeeConst.UNDEF;
     if (text == null) {

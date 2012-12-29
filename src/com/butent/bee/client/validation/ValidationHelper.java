@@ -1,16 +1,20 @@
 package com.butent.bee.client.validation;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 public class ValidationHelper {
-  
+
   public static final CellValidateEvent.Handler DO_NOT_VALIDATE = new CellValidateEvent.Handler() {
     @Override
     public Boolean validateCell(CellValidateEvent event) {
@@ -18,6 +22,48 @@ public class ValidationHelper {
       return true;
     }
   };
+
+  public static List<String> getBounds(HasBounds obj) {
+    if (obj == null) {
+      return Lists.newArrayList();
+    } else {
+      return getBounds(obj.getMinValue(), obj.getMaxValue());
+    }
+  }
+
+  public static List<String> getBounds(String minValue, String maxValue) {
+    List<String> result = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(minValue)) {
+      result.add(BeeUtils.joinWords("Min reikšmė:", minValue));
+    }
+    if (!BeeUtils.isEmpty(maxValue)) {
+      result.add(BeeUtils.joinWords("Max reikšmė:", maxValue));
+    }
+    
+    return result;
+  }
+
+  public static void showError(NotificationListener notificationListener, String caption,
+      List<String> messages) {
+    Assert.notNull(notificationListener);
+    
+    if (BeeUtils.isEmpty(messages)) {
+      notificationListener.notifySevere(caption);
+    
+    } else if (BeeUtils.isEmpty(caption)) {
+      notificationListener.notifySevere(ArrayUtils.toArray(messages));
+
+    } else {
+      String arr[] = new String[messages.size() + 1];
+      arr[0] = caption;
+      
+      for (int i = 0; i < messages.size(); i++) {
+        arr[i + 1] = messages.get(i);
+      }
+      notificationListener.notifySevere(arr);
+    }
+  }
 
   public static Boolean validateCell(CellValidation validation, HasCellValidationHandlers source,
       ValidationOrigin origin) {
@@ -62,51 +108,48 @@ public class ValidationHelper {
       return false;
     }
   }
-
+  
   private static boolean validateCell(CellValidation cv) {
-    if (cv.isAdding()) {
-      if (cv.hasDefaults() && BeeUtils.isEmpty(cv.getNewValue())) {
-        return true;
-      }
-    } else if (BeeUtils.equalsTrimRight(cv.getOldValue(), cv.getNewValue())) {
-      return true;
+    List<String> messages = Lists.newArrayList();
+
+    boolean checkForNull = !cv.isAdding() || !cv.hasDefaults();
+
+    if (cv.shouldValidateEditorInput()) {
+      messages.addAll(cv.getEditor().validate(checkForNull));
     }
 
-    String errorMessage = null;
+    if (messages.isEmpty()) {
+      if (!checkForNull && BeeUtils.isEmpty(cv.getNewValue())) {
+        return true;
+      }
+      if (!cv.isAdding() && BeeUtils.equalsTrimRight(cv.getOldValue(), cv.getNewValue())) {
+        return true;
+      }
+    }
 
-    if (cv.getEvaluator() != null) {
+    if (messages.isEmpty() && cv.shouldEditorValidateNewValue()) {
+      messages.addAll(cv.getEditor().validate(cv.getNewValue(), checkForNull));
+    }
+
+    if (messages.isEmpty() && cv.getEvaluator() != null) {
       cv.getEvaluator().update(cv.getRow(), BeeConst.UNDEF, cv.getColIndex(), cv.getType(),
           cv.getOldValue(), cv.getNewValue());
       String msg = cv.getEvaluator().evaluate();
+      
       if (!BeeUtils.isEmpty(msg)) {
-        errorMessage = msg;
+        messages.add(msg);
       }
     }
 
-    if (errorMessage == null && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      errorMessage = "įveskite reikšmę";
+    if (messages.isEmpty() && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
+      messages.add("Laukas negali būti tuščias");
     }
 
-    if (errorMessage == null && cv.getNewValue() != null
-        && (!BeeUtils.isEmpty(cv.getMinValue()) || !BeeUtils.isEmpty(cv.getMaxValue()))) {
-      ValueType type = ValueType.isNumeric(cv.getType()) ? ValueType.NUMBER : cv.getType();
-      Value value = Value.parseValue(type, cv.getNewValue(), false);
-
-      if (!BeeUtils.isEmpty(cv.getMinValue())
-          && value.compareTo(Value.parseValue(type, cv.getMinValue(), true)) < 0) {
-        errorMessage = BeeUtils.joinWords(errorMessage, "Min reikšmė:", cv.getMinValue());
-      }
-      if (!BeeUtils.isEmpty(cv.getMaxValue())
-          && value.compareTo(Value.parseValue(type, cv.getMaxValue(), true)) > 0) {
-        errorMessage = BeeUtils.joinWords(errorMessage, "Max reikšmė:", cv.getMaxValue());
-      }
-    }
-
-    if (errorMessage == null) {
+    if (messages.isEmpty()) {
       return true;
     } else {
       if (cv.getNotificationListener() != null) {
-        cv.getNotificationListener().notifySevere(cv.getCaption(), errorMessage);
+        showError(cv.getNotificationListener(), cv.getCaption(), messages);
       }
       return false;
     }

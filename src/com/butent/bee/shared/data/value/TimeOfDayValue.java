@@ -11,6 +11,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * The {@code DateTimeValue} class represents time values. It allows the interpretation of time as
@@ -18,19 +19,16 @@ import java.math.BigDecimal;
  */
 public class TimeOfDayValue extends Value {
 
-  public static final char FIELD_SEPARATOR = ':';
-  public static final char MILLIS_SEPARATOR = '.';
-
   private static final TimeOfDayValue NULL_VALUE = new TimeOfDayValue();
 
   public static TimeOfDayValue getNullValue() {
     return NULL_VALUE;
   }
 
-  private int hours;
-  private int minutes;
-  private int seconds;
-  private int milliseconds;
+  private final int hours;
+  private final int minutes;
+  private final int seconds;
+  private final int milliseconds;
 
   public TimeOfDayValue(DateTime date) {
     this.hours = date.getHour();
@@ -52,10 +50,10 @@ public class TimeOfDayValue extends Value {
   }
 
   public TimeOfDayValue(int hours, int minutes, int seconds, int milliseconds) {
-    Assert.betweenExclusive(hours, 0, 24);
-    Assert.betweenExclusive(minutes, 0, 60);
-    Assert.betweenExclusive(seconds, 0, 60);
-    Assert.betweenExclusive(milliseconds, 0, 1000);
+    Assert.betweenExclusive(hours, 0, TimeUtils.HOURS_PER_DAY);
+    Assert.betweenExclusive(minutes, 0, TimeUtils.MINUTES_PER_HOUR);
+    Assert.betweenExclusive(seconds, 0, TimeUtils.SECONDS_PER_MINUTE);
+    Assert.betweenExclusive(milliseconds, 0, TimeUtils.MILLIS_PER_SECOND);
 
     this.hours = hours;
     this.minutes = minutes;
@@ -63,8 +61,20 @@ public class TimeOfDayValue extends Value {
     this.milliseconds = milliseconds;
   }
 
-  public TimeOfDayValue(String tod) {
-    this(new DateTime(BeeUtils.toLong(tod)));
+  public TimeOfDayValue(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      this.hours = BeeConst.UNDEF;
+      this.minutes = BeeConst.UNDEF;
+      this.seconds = BeeConst.UNDEF;
+      this.milliseconds = BeeConst.UNDEF;
+
+    } else {
+      List<Integer> fields = TimeUtils.parseFields(s);
+      this.hours = TimeUtils.getField(fields, 0);
+      this.minutes = TimeUtils.getField(fields, 1);
+      this.seconds = TimeUtils.getField(fields, 2);
+      this.milliseconds = TimeUtils.getField(fields, 3);
+    }
   }
 
   private TimeOfDayValue() {
@@ -91,7 +101,7 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return null;
     }
-    Assert.unsupported("get boolean from timeofday");
+    Assert.unsupported("get boolean from time of day");
     return null;
   }
 
@@ -100,7 +110,7 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return null;
     }
-    Assert.unsupported("get date from timeofday");
+    Assert.unsupported("get date from time of day");
     return null;
   }
 
@@ -109,7 +119,7 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return null;
     }
-    Assert.unsupported("get datetime from timeofday");
+    Assert.unsupported("get datetime from time of day");
     return null;
   }
 
@@ -139,7 +149,7 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return null;
     }
-    return getTime();
+    return BeeUtils.toInt(getTime());
   }
 
   @Override
@@ -147,7 +157,7 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return null;
     }
-    return (long) getTime();
+    return getTime();
   }
 
   public int getMilliseconds() {
@@ -183,7 +193,7 @@ public class TimeOfDayValue extends Value {
 
   @Override
   public ValueType getType() {
-    return ValueType.TIMEOFDAY;
+    return ValueType.TIME_OF_DAY;
   }
 
   @Override
@@ -208,19 +218,12 @@ public class TimeOfDayValue extends Value {
   public String toString() {
     if (isNull()) {
       return BeeConst.NULL;
+    } else {
+      return TimeUtils.renderTime(getHours(), getMinutes(), getSeconds(), getMilliseconds(), true);
     }
-    StringBuilder sb = new StringBuilder(12);
-    sb.append(TimeUtils.padTwo(getHours())).append(FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getMinutes())).append(FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getSeconds()));
-    int z = getMilliseconds();
-    if (z != 0) {
-      sb.append(MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
-    }
-    return sb.toString();
   }
 
-  private int getTime() {
+  private long getTime() {
     return TimeUtils.getMillis(getHours(), getMinutes(), getSeconds(), getMilliseconds());
   }
 }

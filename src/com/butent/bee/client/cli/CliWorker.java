@@ -56,7 +56,6 @@ import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.dialog.Popup.Modality;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -1707,11 +1706,11 @@ public class CliWorker {
       }
 
     } else if (!BeeUtils.isEmpty(args)) {
-      t = DateTime.parse(args);
+      t = TimeUtils.parseDateTime(args);
       if (t == null) {
         logger.severe("cannot parse", args);
       } else {
-        d = JustDate.parse(args);
+        d = TimeUtils.parseDate(args);
       }
 
     } else {
@@ -1801,7 +1800,7 @@ public class CliWorker {
       char sep = ';';
       if (BeeUtils.contains(args, sep)) {
         dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
-        t = DateTime.parse(BeeUtils.getSuffix(args, sep));
+        t = TimeUtils.parseDateTime(BeeUtils.getSuffix(args, sep));
       } else {
         dtf = Format.getDateTimeFormat(args);
         t = new DateTime();
@@ -3330,7 +3329,7 @@ public class CliWorker {
   }
 
   private static void upload() {
-    final Popup popup = new Popup(OutsideClick.CLOSE, Modality.MODAL);
+    final Popup popup = new Popup(OutsideClick.CLOSE);
 
     final InputFile widget = new InputFile(true);
     widget.addChangeHandler(new ChangeHandler() {

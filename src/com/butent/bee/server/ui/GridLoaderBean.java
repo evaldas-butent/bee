@@ -8,6 +8,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.ValueType;
@@ -125,9 +126,6 @@ public class GridLoaderBean {
   private static final String ATTR_SHOW_WIDTH = "showWidth";
 
   private static final String ATTR_REQUIRED = "required";
-
-  private static final String ATTR_MIN_VALUE = "minValue";
-  private static final String ATTR_MAX_VALUE = "maxValue";
 
   private static final String ATTR_TYPE = "type";
   private static final String ATTR_PRECISION = "precision";
@@ -569,9 +567,9 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
           dst.setRequired(BeeUtils.toBooleanOrNull(value));
 
-        } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
+        } else if (BeeUtils.same(key, HasBounds.ATTR_MIN_VALUE)) {
           dst.setMinValue(value.trim());
-        } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
+        } else if (BeeUtils.same(key, HasBounds.ATTR_MAX_VALUE)) {
           dst.setMaxValue(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_TYPE)) {

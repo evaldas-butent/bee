@@ -1,15 +1,12 @@
 package com.butent.bee.client.dialog;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.animation.client.Animation;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Visibility;
@@ -20,16 +17,9 @@ import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.HasCloseHandlers;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
@@ -40,16 +30,16 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
-
-public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popup> {
+public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHandlers,
+    PreviewHandler {
 
   public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
@@ -57,10 +47,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
 
   public enum OutsideClick {
     CLOSE, IGNORE
-  }
-
-  public enum Modality {
-    MODAL, MODELESS
   }
 
   public interface PositionCallback {
@@ -95,7 +81,7 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
       if (isDragging()) {
         int absX = event.getX() + getAbsoluteLeft();
         int absY = event.getY() + getAbsoluteTop();
-        if (absX < clientLeft || absX >= getWindowWidth() || absY < clientTop) {
+        if (absX < clientLeft || absX >= Window.getClientWidth() || absY < clientTop) {
           return;
         }
         setPopupPosition(absX - dragStartX, absY - dragStartY);
@@ -113,34 +99,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
 
   private class ResizeAnimation extends Animation {
 
-    private class GlassResizer implements ResizeHandler {
-      private final Element glassElement;
-
-      private GlassResizer(Element glassElement) {
-        this.glassElement = Assert.notNull(glassElement);
-      }
-
-      @Override
-      public void onResize(ResizeEvent event) {
-        Style style = glassElement.getStyle();
-
-        int winWidth = Window.getClientWidth();
-        int winHeight = Window.getClientHeight();
-
-        style.setDisplay(Display.NONE);
-        StyleUtils.setWidth(style, 0);
-        StyleUtils.setHeight(style, 0);
-
-        int width = Document.get().getScrollWidth();
-        int height = Document.get().getScrollHeight();
-
-        StyleUtils.setWidth(style, Math.max(width, winWidth));
-        StyleUtils.setHeight(style, Math.max(height, winHeight));
-
-        style.setDisplay(Display.BLOCK);
-      }
-    }
-
     private final Popup curPanel;
 
     private boolean show = false;
@@ -153,7 +111,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     private Timer showTimer = null;
 
     private boolean glassShowing = false;
-    private HandlerRegistration resizeRegistration = null;
 
     private ResizeAnimation(Popup panel) {
       this.curPanel = panel;
@@ -219,19 +176,11 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
             curPanel.getGlass().getStyle().setZIndex(level);
           }
           Document.get().getBody().appendChild(curPanel.getGlass());
-
-          GlassResizer glassResizer = new GlassResizer(curPanel.getGlass());
-          resizeRegistration = Window.addResizeHandler(glassResizer);
-          glassResizer.onResize(null);
-
           glassShowing = true;
         }
+
       } else if (glassShowing) {
         Document.get().getBody().removeChild(curPanel.getGlass());
-
-        resizeRegistration.removeHandler();
-        resizeRegistration = null;
-
         glassShowing = false;
       }
     }
@@ -318,11 +267,8 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
   private AnimationType animationType = AnimationType.CENTER;
 
   private final OutsideClick onOutsideClick;
-  private final Modality modality;
 
   private boolean showing = false;
-
-  private List<Element> autoHidePartners = null;
 
   private String desiredHeight = null;
   private String desiredWidth = null;
@@ -333,65 +279,40 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
   private int leftPosition = BeeConst.UNDEF;
   private int topPosition = BeeConst.UNDEF;
 
-  private boolean previewAllNativeEvents = false;
-  private HandlerRegistration nativePreviewHandlerRegistration = null;
-  private HandlerRegistration resizeHandlerRegistration = null;
-
-  private List<PreviewHandler> previewHandlers = null;
   private boolean hideOnEscape = false;
   private boolean hideOnSave = false;
-  private Scheduler.ScheduledCommand onSave = null;
-  private Scheduler.ScheduledCommand onEscape = null;
+  private ScheduledCommand onSave = null;
+  private ScheduledCommand onEscape = null;
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
 
   private final String popupStyleName;
 
-  private int windowWidth;
   private boolean dragging = false;
   private MouseHandler mouseHandler = null;
 
-  public Popup(OutsideClick onOutsideClick, Modality modality) {
-    this(onOutsideClick, modality, STYLE_POPUP);
+  private Element keyboardPartner = null;
+
+  public Popup(OutsideClick onOutsideClick) {
+    this(onOutsideClick, STYLE_POPUP);
   }
 
-  public Popup(OutsideClick onOutsideClick, Modality modality, String styleName) {
+  public Popup(OutsideClick onOutsideClick, String styleName) {
     super();
 
     this.onOutsideClick = onOutsideClick;
-    this.modality = modality;
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
 
     this.popupStyleName = styleName;
     setStyleName(styleName);
-
-    this.windowWidth = Window.getClientWidth();
-  }
-
-  public void addAutoHidePartner(Element partner) {
-    Assert.notNull(partner, "auto hide partner cannot be null");
-    if (getAutoHidePartners() == null) {
-      setAutoHidePartners(Lists.newArrayList(partner));
-    } else {
-      getAutoHidePartners().add(partner);
-    }
   }
 
   @Override
-  public HandlerRegistration addCloseHandler(CloseHandler<Popup> handler) {
+  public HandlerRegistration addCloseHandler(CloseEvent.Handler handler) {
     return addHandler(handler, CloseEvent.getType());
-  }
-
-  public void addPreviewHandler(PreviewHandler handler) {
-    if (handler != null) {
-      if (previewHandlers == null) {
-        previewHandlers = Lists.newArrayList();
-      }
-      previewHandlers.add(handler);
-    }
   }
 
   public void center() {
@@ -433,16 +354,24 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     return animationType;
   }
 
+  public Widget getContent() {
+    return getWidget();
+  }
+
   @Override
   public String getIdPrefix() {
     return "popup";
   }
 
-  public Scheduler.ScheduledCommand getOnEscape() {
+  public Element getKeyboardPartner() {
+    return keyboardPartner;
+  }
+
+  public ScheduledCommand getOnEscape() {
     return onEscape;
   }
 
-  public Scheduler.ScheduledCommand getOnSave() {
+  public ScheduledCommand getOnSave() {
     return onSave;
   }
 
@@ -455,17 +384,17 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
   }
 
   public void hide() {
-    hide(false);
+    hide(CloseEvent.Cause.SCRIPT, null);
   }
 
-  public void hide(boolean autoClosed) {
+  public void hide(CloseEvent.Cause cause, EventTarget eventTarget) {
     if (!isShowing()) {
       return;
     }
     Stacking.removeContext(this);
 
     resizeAnimation.setState(false, false, BeeConst.UNDEF);
-    CloseEvent.fire(this, this, autoClosed);
+    CloseEvent.fire(this, cause, eventTarget);
   }
 
   public boolean hideOnEscape() {
@@ -485,8 +414,9 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     return isGlassEnabled;
   }
 
-  public boolean isPreviewingAllNativeEvents() {
-    return previewAllNativeEvents;
+  @Override
+  public boolean isModal() {
+    return OutsideClick.IGNORE.equals(onOutsideClick);
   }
 
   public boolean isShowing() {
@@ -498,9 +428,74 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     return !BeeUtils.same(getElement().getStyle().getVisibility(), Visibility.HIDDEN.getCssName());
   }
 
-  public void removeAutoHidePartner(Element partner) {
-    if (getAutoHidePartners() != null) {
-      getAutoHidePartners().remove(partner);
+  @Override
+  public void onEventPreview(NativePreviewEvent event) {
+    if (DOM.getCaptureElement() != null) {
+      return;
+    }
+
+    NativeEvent nativeEvent = event.getNativeEvent();
+    EventTarget target = nativeEvent.getEventTarget();
+
+    boolean eventTargetsPopup = EventUtils.equalsOrIsChild(getElement(), target);
+
+    String type = nativeEvent.getType();
+
+    if (EventUtils.isMouseDown(type)) {
+      if (eventTargetsPopup) {
+        event.consume();
+      } else if (isModal()) {
+        event.cancel();
+      } else {
+        hide(CloseEvent.Cause.MOUSE, target);
+      }
+
+    } else if (EventUtils.isKeyEvent(type)) {
+
+      if (EventUtils.isKeyDown(type)) {
+        if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
+          if (hideOnEscape()) {
+            event.cancel();
+            hide(CloseEvent.Cause.KEYBOARD, target);
+          }
+          if (getOnEscape() != null) {
+            event.cancel();
+            getOnEscape().execute();
+          }
+
+        } else if (UiHelper.isSave(nativeEvent)) {
+          if (hideOnSave()) {
+            event.cancel();
+            hide(CloseEvent.Cause.KEYBOARD, target);
+          }
+          if (getOnSave() != null) {
+            event.cancel();
+            getOnSave().execute();
+          }
+
+        } else if (nativeEvent.getKeyCode() == KeyCodes.KEY_TAB) {
+          if (!eventTargetsPopup || handleTabulation(EventUtils.getTargetElement(target))) {
+            event.cancel();
+            UiHelper.moveFocus(getWidget(), !EventUtils.hasModifierKey(nativeEvent));
+          }
+        }
+
+        if (!event.isCanceled()) {
+          event.consume();
+        }
+
+      } else if (eventTargetsPopup) {
+        event.consume();
+
+      } else if (getKeyboardPartner() == null 
+          || !EventUtils.equalsOrIsChild(getKeyboardPartner(), target)) {
+        event.cancel();
+      }
+
+    } else if (eventTargetsPopup) {
+      event.consume();
+    } else {
+      event.cancel();
     }
   }
 
@@ -518,11 +513,9 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
 
     if (enabled && getGlass() == null) {
       Element elem = Document.get().createDivElement();
-      elem.addClassName(popupStyleName + "-glass");
 
-      elem.getStyle().setPosition(Position.ABSOLUTE);
-      StyleUtils.setLeft(elem, 0);
-      StyleUtils.setTop(elem, 0);
+      elem.addClassName(popupStyleName + "-glass");
+      StyleUtils.occupy(elem);
 
       setGlass(elem);
     }
@@ -545,11 +538,15 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     this.hideOnSave = hideOnSave;
   }
 
-  public void setOnEscape(Scheduler.ScheduledCommand onEscape) {
+  public void setKeyboardPartner(Element keyboardPartner) {
+    this.keyboardPartner = keyboardPartner;
+  }
+
+  public void setOnEscape(ScheduledCommand onEscape) {
     this.onEscape = onEscape;
   }
 
-  public void setOnSave(Scheduler.ScheduledCommand onSave) {
+  public void setOnSave(ScheduledCommand onSave) {
     this.onSave = onSave;
   }
 
@@ -567,10 +564,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     show();
     callback.setPosition(getOffsetWidth(), getOffsetHeight());
     setVisible(true);
-  }
-
-  public void setPreviewingAllNativeEvents(boolean previewAllNativeEvents) {
-    this.previewAllNativeEvents = previewAllNativeEvents;
   }
 
   @Override
@@ -638,7 +631,7 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
       });
     }
   }
-  
+
   public void showRelativeTo(final Element target) {
     if (target == null) {
       center();
@@ -669,52 +662,12 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     return false;
   }
 
-  protected void onPreviewNativeEvent(NativePreviewEvent event) {
-    if (previewHandlers != null) {
-      for (PreviewHandler handler : previewHandlers) {
-        if (!event.isCanceled() || !event.isConsumed()) {
-          handler.onEventPreview(event);
-        }
-      }
-    }
-  }
-
   @Override
   protected void onUnload() {
     super.onUnload();
     if (isShowing()) {
       resizeAnimation.setState(false, true, BeeConst.UNDEF);
     }
-  }
-
-  private native void blur(Element elt) /*-{
-    if (elt.blur && elt != $doc.body) {
-      elt.blur();
-    }
-  }-*/;
-
-  private boolean eventTargetsPartner(NativeEvent event) {
-    if (getAutoHidePartners() == null) {
-      return false;
-    }
-
-    EventTarget target = event.getEventTarget();
-    if (Element.is(target)) {
-      for (Element elem : getAutoHidePartners()) {
-        if (elem.isOrHasChild(Element.as(target))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private boolean eventTargetsPopup(NativeEvent event) {
-    EventTarget target = event.getEventTarget();
-    if (Node.is(target)) {
-      return getElement().isOrHasChild(Node.as(target));
-    }
-    return false;
   }
 
   private int fitLeft(int left, int width, int margin) {
@@ -729,10 +682,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
 
     return Math.max(Math.min(top, windowBottom - height), windowTop);
-  }
-
-  private List<Element> getAutoHidePartners() {
-    return autoHidePartners;
   }
 
   private String getDesiredHeight() {
@@ -755,20 +704,31 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     return mouseHandler;
   }
 
-  private HandlerRegistration getNativePreviewHandlerRegistration() {
-    return nativePreviewHandlerRegistration;
-  }
-
-  private HandlerRegistration getResizeHandlerRegistration() {
-    return resizeHandlerRegistration;
-  }
-
   private int getTopPosition() {
     return topPosition;
   }
 
-  private int getWindowWidth() {
-    return windowWidth;
+  private boolean handleTabulation(Element target) {
+    if (target == null) {
+      return true;
+    }
+    
+    Widget content = getContent();
+    if (content == null) {
+      return true;
+    }
+    if (content instanceof TabulationHandler && ((TabulationHandler) content).handlesTabulation()) {
+      return false;
+    }
+    
+    Widget w = DomUtils.getChildByElement(content, target);
+    for (Widget p = w; p != null && p != content; p = p.getParent()) {
+      if (p instanceof TabulationHandler && ((TabulationHandler) p).handlesTabulation()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private boolean isDragging() {
@@ -827,85 +787,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     setPopupPosition(left, top);
   }
 
-  private void previewNativeEvent(NativePreviewEvent event) {
-    boolean modal = Modality.MODAL.equals(modality);
-
-    if (event.isCanceled() || (!isPreviewingAllNativeEvents() && event.isConsumed())) {
-      if (modal) {
-        event.cancel();
-      }
-      return;
-    }
-
-    onPreviewNativeEvent(event);
-    if (event.isCanceled()) {
-      return;
-    }
-
-    NativeEvent nativeEvent = event.getNativeEvent();
-    boolean eventTargetsPopupOrPartner = eventTargetsPopup(nativeEvent)
-        || eventTargetsPartner(nativeEvent);
-    if (eventTargetsPopupOrPartner) {
-      event.consume();
-    }
-
-    if (modal) {
-      event.cancel();
-    }
-
-    int type = event.getTypeInt();
-    switch (type) {
-      case Event.ONMOUSEDOWN:
-        if (DOM.getCaptureElement() != null) {
-          event.consume();
-        } else if (!eventTargetsPopupOrPartner && OutsideClick.CLOSE.equals(onOutsideClick)) {
-          hide(true);
-        }
-        break;
-
-      case Event.ONMOUSEUP:
-      case Event.ONMOUSEMOVE:
-      case Event.ONCLICK:
-      case Event.ONDBLCLICK:
-        if (DOM.getCaptureElement() != null) {
-          event.consume();
-        }
-        break;
-
-      case Event.ONFOCUS:
-        Element target = EventUtils.getEventTargetElement(nativeEvent);
-        if (modal && !eventTargetsPopupOrPartner && (target != null)) {
-          blur(target);
-          event.cancel();
-          return;
-        }
-        break;
-
-      case Event.ONKEYDOWN:
-        if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
-          if (hideOnEscape()) {
-            hide(true);
-          }
-          if (getOnEscape() != null) {
-            getOnEscape().execute();
-          }
-
-        } else if (UiHelper.isSave(nativeEvent)) {
-          if (hideOnSave()) {
-            hide(true);
-          }
-          if (getOnSave() != null) {
-            getOnSave().execute();
-          }
-        }
-        break;
-    }
-  }
-
-  private void setAutoHidePartners(List<Element> autoHidePartners) {
-    this.autoHidePartners = autoHidePartners;
-  }
-
   private void setDesiredHeight(String desiredHeight) {
     this.desiredHeight = desiredHeight;
   }
@@ -930,14 +811,6 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     this.mouseHandler = mouseHandler;
   }
 
-  private void setNativePreviewHandlerRegistration(HandlerRegistration nphr) {
-    this.nativePreviewHandlerRegistration = nphr;
-  }
-
-  private void setResizeHandlerRegistration(HandlerRegistration resizeHandlerRegistration) {
-    this.resizeHandlerRegistration = resizeHandlerRegistration;
-  }
-
   private void setShowing(boolean showing) {
     this.showing = showing;
   }
@@ -946,35 +819,11 @@ public class Popup extends Simple implements HasAnimation, HasCloseHandlers<Popu
     this.topPosition = topPosition;
   }
 
-  private void setWindowWidth(int windowWidth) {
-    this.windowWidth = windowWidth;
-  }
-
   private void updateHandlers() {
-    if (getNativePreviewHandlerRegistration() != null) {
-      getNativePreviewHandlerRegistration().removeHandler();
-      setNativePreviewHandlerRegistration(null);
-    }
-
-    if (getResizeHandlerRegistration() != null) {
-      getResizeHandlerRegistration().removeHandler();
-      setResizeHandlerRegistration(null);
-    }
-
     if (isShowing()) {
-      setNativePreviewHandlerRegistration(Event.addNativePreviewHandler(new NativePreviewHandler() {
-        @Override
-        public void onPreviewNativeEvent(NativePreviewEvent event) {
-          previewNativeEvent(event);
-        }
-      }));
-
-      setResizeHandlerRegistration(Window.addResizeHandler(new ResizeHandler() {
-        @Override
-        public void onResize(ResizeEvent event) {
-          setWindowWidth(event.getWidth());
-        }
-      }));
+      Previewer.ensureRegistered(this);
+    } else {
+      Previewer.ensureUnregistered(this);
     }
   }
 }

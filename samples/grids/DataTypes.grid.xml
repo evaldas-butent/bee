@@ -174,7 +174,7 @@
           <ui:inline>-webkit-transform:rotateY(180deg);</ui:inline>
         </bodyStyle>
       </style>
-      <editor type="datetime" onEntry="home" />
+      <editor type="dateTime" onEntry="home" />
     </DataColumn>
   </columns>
 

@@ -5,7 +5,6 @@ import com.google.common.primitives.Ints;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Date;
 
@@ -13,10 +12,8 @@ import java.util.Date;
  * The class {@code JustDate} represents a specific instant in date, with days precision.
  */
 public class JustDate extends AbstractDate implements Comparable<JustDate> {
-  /**
-   * Default field of date separator to separate {@code YYYY.MM.DD} format.
-   */
-  public static final char FIELD_SEPARATOR = '.';
+
+  public static final char FIELD_SEPARATOR = '-';
 
   public static JustDate copyOf(JustDate original) {
     if (original == null) {
@@ -36,26 +33,6 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     }
   }
   
-  /**
-   * Converts {@code String} to date format. If {@code s} is a number format, {@code s} converting
-   * to days since January 1, 1970, otherwise parse date fields separated with separators.
-   * 
-   * @param s string of days since January 1, 1970 or date separated with separators
-   * @return new {@code JustDate} object parsed from {@code s}
-   */
-  public static JustDate parse(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-
-    int[] arr = TimeUtils.parseFields(s);
-    if (Ints.max(arr) <= 0) {
-      return null;
-    }
-
-    return new JustDate(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2]);
-  }
-
   private int days;
   private int[] fields = null;
 

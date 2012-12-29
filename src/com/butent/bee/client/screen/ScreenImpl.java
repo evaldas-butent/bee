@@ -15,6 +15,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
@@ -260,8 +261,12 @@ public class ScreenImpl implements Screen {
   public void start() {
     createUi();
     
-    if (getCentralScrutinizer() != null && getWorkspace() != null) {
-      getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
+    if (getWorkspace() != null) {
+      if (getCentralScrutinizer() != null && getWorkspace() != null) {
+        getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
+      }
+      
+      Previewer.registermouseDownPriorHandler(getWorkspace());
     }
   }
 
@@ -335,7 +340,7 @@ public class ScreenImpl implements Screen {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 256);
+      p.addEast(w, ClientLogManager.getInitialPanelSize());
     }
 
     w = initCenter();
@@ -345,8 +350,6 @@ public class ScreenImpl implements Screen {
 
     getRootPanel().add(p);
     setScreenPanel(p);
-
-    ClientLogManager.setPanelVisible(false);
   }
 
   protected Notification getNotification() {

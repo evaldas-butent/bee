@@ -82,7 +82,7 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
             case DATE:
               z = BeeUtils.compare(row1.getDate(index), row2.getDate(index));
               break;
-            case DATETIME:
+            case DATE_TIME:
               z = BeeUtils.compare(row1.getDateTime(index), row2.getDateTime(index));
               break;
             case NUMBER:

@@ -1,6 +1,5 @@
 package com.butent.bee.shared.time;
 
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.BeeConst;
@@ -17,7 +16,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   /**
    * Separator for fields of date separate to YYYY.MM.DD format.
    */
-  public static final char DATE_FIELD_SEPARATOR = '.';
+  public static final char DATE_FIELD_SEPARATOR = '-';
   /**
    * Separator for date and time.
    */
@@ -53,28 +52,6 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     } else {
       return dt.getDateTime();
     }
-  }
-
-  /**
-   * Parsing {@code String s} to date format. If the {@code s} a number expression is converted to a
-   * milliseconds. Otherwise parses of string an year, month, day, hours, minutes and seconds
-   * between separators. The time fields are not necessary.
-   * 
-   * @param s String of number or date and time expression.
-   * @return new {@code DateTime} object parses of {@code String}
-   */
-  public static DateTime parse(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-
-    int[] arr = TimeUtils.parseFields(s);
-    if (Ints.max(arr) <= 0) {
-      return null;
-    }
-
-    return new DateTime(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2],
-        arr[3], arr[4], arr[5], arr[6]);
   }
 
   public static DateTime restore(String s) {
@@ -148,7 +125,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @param second the seconds between 0-59
    * @param millis milliseconds
    */
-  public DateTime(int year, int month, int dom, int hour, int minute, int second, int millis) {
+  public DateTime(int year, int month, int dom, int hour, int minute, int second, long millis) {
     setLocalDate(year, month, dom, hour, minute, second, millis);
   }
 
@@ -165,6 +142,14 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     }
   }
 
+  public DateTime(JustDate date, int hour, int minute, int second, long millis) {
+    if (date == null) {
+      setTime(0L);
+    } else {
+      setLocalDate(date.getYear(), date.getMonth(), date.getDom(), hour, minute, second, millis);
+    }
+  }
+  
   /**
    * Creates new object of {@code DateTime} with milliseconds parameter.
    * 
@@ -343,7 +328,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   @Override
   public ValueType getType() {
-    return ValueType.DATETIME;
+    return ValueType.DATE_TIME;
   }
 
   /**
@@ -486,7 +471,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   public void setLocalDate(int year, int month, int dom,
-      int hour, int minute, int second, int millis) {
+      int hour, int minute, int second, long millis) {
     long z = computeLocalTime(year, month, dom, hour, minute, second, millis);
     setLocalTime(z);
   }
@@ -564,7 +549,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return sb.toString();
     }
   }
-  
+
   public String toCompactTimeString() {
     if (getMillis() != 0) {
       return toTimeString();
@@ -582,7 +567,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     }
     return sb.toString();
   }
-  
+
   /**
    * Converts the {@code DateTime} in date to {@code String}.
    * 
@@ -658,7 +643,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   private long computeLocalTime(int year, int month, int dom,
-      int hour, int minute, int second, int millis) {
+      int hour, int minute, int second, long millis) {
     long z = Grego.fieldsToDay(year, month, dom);
     z *= TimeUtils.MILLIS_PER_DAY;
 

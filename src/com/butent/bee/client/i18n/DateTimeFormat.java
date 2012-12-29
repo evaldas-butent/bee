@@ -8,6 +8,7 @@ import com.google.gwt.i18n.shared.DefaultDateTimeFormatInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +109,7 @@ public class DateTimeFormat {
 
     DateTimeFormatInfo dtfi = getDefaultDateTimeFormatInfo();
     String pattern;
-    
+
     switch (predef) {
       case DATE_FULL:
         pattern = dtfi.dateFormatFull();
@@ -274,11 +275,11 @@ public class DateTimeFormat {
   }
 
   public String format(HasDateValue date, TimeZone timeZone) {
-    long diff = date.supportsTimezoneOffset() 
+    long diff = date.supportsTimezoneOffset()
         ? (date.getTimezoneOffset() - timeZone.getOffset(date)) * 60000 : 0;
     DateTime keepDate = new DateTime(date.getTime() + diff);
     DateTime keepTime = keepDate;
-    
+
     if (date.supportsTimezoneOffset() && keepDate.getTimezoneOffset() != date.getTimezoneOffset()) {
       if (diff > 0) {
         diff -= TimeUtils.MILLIS_PER_DAY;
@@ -338,20 +339,43 @@ public class DateTimeFormat {
     return pattern;
   }
 
+  public boolean hasFractionalSeconds() {
+    return getPattern().indexOf('S') >= 0;
+  }
+  
+  public boolean hasHours() {
+    return getPattern().indexOf('H') >= 0 || getPattern().indexOf('h') >= 0;
+  }
+
+  public boolean hasMinutes() {
+    return getPattern().contains("mm");
+  }
+  
+  public boolean hasSeconds() {
+    return getPattern().indexOf('s') >= 0;
+  }
+
   public DateTime parse(String text) throws IllegalArgumentException {
     return parse(text, false);
   }
 
-  public int parse(String text, int start, DateTime date) {
-    return parse(text, start, date, false);
+  public DateTime parseQuietly(String text) {
+    if (BeeUtils.isEmpty(text)) {
+      return null;
+    }
+
+    DateTime result;
+    try {
+      result = parse(text.trim());
+    } catch (IllegalArgumentException ex) {
+      result = null;
+    }
+
+    return result;
   }
 
   public DateTime parseStrict(String text) throws IllegalArgumentException {
     return parse(text, true);
-  }
-
-  public int parseStrict(String text, int start, DateTime date) {
-    return parse(text, start, date, true);
   }
 
   protected TimeZone createTimeZone(int timezoneOffset) {
@@ -603,7 +627,7 @@ public class DateTimeFormat {
   private DateTime parse(String text, boolean strict) {
     DateTime curDate = new DateTime();
     DateTime date = new DateTime(curDate.getYear(), curDate.getMonth(), curDate.getDom());
-    
+
     int charsConsumed = parse(text, 0, date, strict);
     if (charsConsumed == 0 || charsConsumed < text.length()) {
       throw new IllegalArgumentException(text);
@@ -904,24 +928,24 @@ public class DateTimeFormat {
 
       case 'M':
         return subParseMonth(text, pos, cal, value, start);
-      
+
       case 'L':
         return subParseStandaloneMonth(text, pos, cal, value, start);
-      
+
       case 'E':
         return subParseDayOfWeek(text, pos, start, cal);
-      
+
       case 'c':
         return subParseStandaloneDay(text, pos, start, cal);
-      
+
       case 'a':
         value = matchString(text, start, dateTimeFormatInfo.ampms(), pos);
         cal.setAmpm(value);
         return true;
-      
+
       case 'y':
         return subParseYear(text, pos, start, value, part, cal);
-      
+
       case 'd':
         if (value <= 0) {
           return false;

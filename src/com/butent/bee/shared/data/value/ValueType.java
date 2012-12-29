@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public enum ValueType {
   BOOLEAN("boolean", 'b'), NUMBER("double", 'n'), TEXT("string", 's'),
-  DATE("date", 'd'), TIMEOFDAY("timeofday", 's'), DATETIME("datetime", 'd'),
+  DATE("date", 'd'), TIME_OF_DAY("timeofday", 's'), DATE_TIME("datetime", 'd'),
   INTEGER("integer", 'n'), LONG("long", 'n'), DECIMAL("decimal", 'n');
 
   private static final Map<String, ValueType> typeCodeToValueType;
@@ -93,9 +93,9 @@ public enum ValueType {
       ret = ((Boolean) value).booleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
     } else if ((this == DATE) && TimeUtils.isDateOrDateTime(value)) {
       ret = new DateValue(TimeUtils.toDate(value));
-    } else if ((this == DATETIME) && TimeUtils.isDateOrDateTime(value)) {
+    } else if ((this == DATE_TIME) && TimeUtils.isDateOrDateTime(value)) {
       ret = new DateTimeValue(TimeUtils.toDateTime(value));
-    } else if ((this == TIMEOFDAY) && (value instanceof String)) {
+    } else if ((this == TIME_OF_DAY) && (value instanceof String)) {
       ret = new TimeOfDayValue((String) value);
     }
 

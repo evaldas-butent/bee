@@ -61,6 +61,7 @@ import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.view.add.AddEndEvent;
@@ -1570,10 +1571,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         oldValue = oldRow.getString(index);
       }
       newValue = newRow.getString(index);
-
-      CellValidation cv = new CellValidation(oldValue, newValue, ec.getValidation(), newRow,
-          ec.getDataColumn(), index, ec.getDataType(), ec.isNullable(), ec.getMinValue(),
-          ec.getMaxValue(), ec.getCaption(), notificationListener);
+      
+      CellValidation cv = new CellValidation(oldValue, newValue, ec.getEditor(),
+          EditorValidation.NEW_VALUE, ec.getValidation(), newRow, ec.getDataColumn(), index,
+          ec.getDataType(), ec.isNullable(), ec.getCaption(), notificationListener);
 
       ok = BeeUtils.isTrue(ValidationHelper.validateCell(cv, ec, ValidationOrigin.GRID));
       if (!ok) {
@@ -2382,7 +2383,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, row, ValidationOrigin.CELL);
+    Boolean ok = editableColumn.validate(oldValue, newValue, row, ValidationOrigin.CELL,
+        EditorValidation.NEW_VALUE);
     if (!BeeUtils.isTrue(ok)) {
       return false;
     }

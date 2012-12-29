@@ -288,11 +288,11 @@ public class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = JustDate.parse(expr);
+        val = TimeUtils.parseDate(expr);
         break;
 
       case DATETIME:
-        val = DateTime.parse(expr);
+        val = TimeUtils.parseDateTime(expr);
         break;
 
       case LIST:

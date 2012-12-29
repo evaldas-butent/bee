@@ -15,8 +15,12 @@ public class CliWidget extends InputText {
 
   public CliWidget() {
     super();
-    addStyleName("bee-CliWidget");
     sinkEvents(Event.ONKEYDOWN);
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "cli";
   }
 
   @Override
@@ -29,5 +33,10 @@ public class CliWidget extends InputText {
 
     event.preventDefault();
     CliWorker.execute(getValue());
+  }
+
+  @Override
+  protected String getDefaultStyleName() {
+    return "bee-CliWidget";
   }
 }

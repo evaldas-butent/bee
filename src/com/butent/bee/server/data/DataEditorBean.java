@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
@@ -212,6 +213,7 @@ public class DataEditorBean {
 
         if (updates.size() > 1 && !refreshUpdates(updates, view)) {
           response.addError("Optimistic lock exception");
+          logger.warning("refreshUpdates:", view.getName(), updates);
         }
       }
       if (!response.hasErrors()) {
@@ -225,6 +227,7 @@ public class DataEditorBean {
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
+            logger.warning("commitRow:", view.getName(), id, "row set empty");
           } else if (BeeRowSet.class.equals(returnType)) {
             response.setResponse(newRs);
           } else {
@@ -838,6 +841,7 @@ public class DataEditorBean {
     SimpleRow res = qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id), null)));
 
     if (res == null) {
+      logger.warning("refreshUpdates:", ss.getQuery(), "getRow is null");
       return false;
     }
     for (TableInfo tblInfo : updates.values()) {
@@ -850,8 +854,16 @@ public class DataEditorBean {
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
           String value = res.getValue(fldInfo.fieldAlias);
+          
+          if (!BeeUtils.isEmpty(value) 
+              && SqlDataType.DATE.equals(view.getColumnType(fldInfo.fieldAlias))) {
+            JustDate date = res.getDate(fldInfo.fieldAlias);
+            value = (date == null) ? null : date.serialize();
+          }
 
           if (!Objects.equal(value, fldInfo.oldValue)) {
+            logger.warning("refreshUpdates:", tblInfo.tableName, tblInfo.id, fldInfo.fieldName,
+                "old:", fldInfo.oldValue, "value:", value);
             return false;
           }
         }

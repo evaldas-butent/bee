@@ -30,6 +30,8 @@ import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 /**
  * Implements a component used for making changes to multiple lines of text.
  */
@@ -42,6 +44,8 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
 
   private String options = null;
 
+  private boolean handlesTabulation = false;
+  
   public TextEditor() {
     super();
     this.area = new InputArea();
@@ -77,7 +81,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return getArea().addDomHandler(handler, FocusEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
@@ -87,7 +91,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return getArea().addValueChangeHandler(handler);
   }
-  
+
   @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
@@ -102,12 +106,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public EditorAction getDefaultFocusAction() {
     return getArea().getDefaultFocusAction();
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "text-editor";
   }
-
+  
   @Override
   public String getNormalizedValue() {
     return getArea().getNormalizedValue();
@@ -117,22 +121,22 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public String getOptions() {
     return options;
   }
-  
+
   @Override
   public int getTabIndex() {
     return getArea().getTabIndex();
   }
-
+  
   @Override
   public TextBoxBase getTextBox() {
     return getArea();
   }
-
+  
   @Override
   public String getValue() {
     return getArea().getValue();
   }
-  
+
   @Override
   public int getVisibleLines() {
     return getArea().getVisibleLines();
@@ -142,17 +146,22 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_AREA;
   }
-
+  
   @Override
   public boolean handlesKey(int keyCode) {
     return getArea().handlesKey(keyCode);
   }
-  
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
   @Override
   public boolean isEditing() {
     return getArea().isEditing();
   }
-
+  
   @Override
   public boolean isEnabled() {
     return getArea().isEnabled();
@@ -166,6 +175,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
+  }
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
+    getArea().normalizeDisplay(normalizedValue);
   }
 
   @Override
@@ -185,7 +199,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     }
     super.onBrowserEvent(event);
   }
-
+  
   @Override
   public void setAccessKey(char key) {
     getArea().setAccessKey(key);
@@ -209,6 +223,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   @Override
   public void setFocus(boolean focused) {
     getArea().setFocus(focused);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   @Override
@@ -248,10 +267,15 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   }
 
   @Override
-  public String validate() {
-    return getArea().validate();
+  public List<String> validate(boolean checkForNull) {
+    return getArea().validate(checkForNull);
   }
 
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return getArea().validate(normalizedValue, checkForNull);
+  }
+  
   private String getAcceptId() {
     return acceptId;
   }

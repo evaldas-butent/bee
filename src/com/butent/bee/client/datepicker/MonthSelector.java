@@ -3,11 +3,13 @@ package com.butent.bee.client.datepicker;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
 import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 
 class MonthSelector extends Component {
@@ -20,24 +22,27 @@ class MonthSelector extends Component {
       this.months = months;
     }
 
+    @Override
     public void execute() {
       addMonths(months);
       getDatePicker().setFocus(true);
     }
   }
 
-  private final Widget prevYear;
-  private final Widget prevMonth;
-  private final Widget nextMonth;
-  private final Widget nextYear;
+  private final BeeImage prevYear;
+  private final BeeImage prevMonth;
+  private final BeeImage nextMonth;
+  private final BeeImage nextYear;
   
   private final Grid grid;
   
   MonthSelector(CssClasses cssClasses) {
-    this.prevYear = new BeeImage(Global.getImages().rewind(), new Navigation(-12));
-    this.prevMonth = new BeeImage(Global.getImages().previous(), new Navigation(-1));
-    this.nextMonth = new BeeImage(Global.getImages().next(), new Navigation(1));
-    this.nextYear = new BeeImage(Global.getImages().forward(), new Navigation(12));
+    String styleDisabled = cssClasses.monthNavigationDisabled(); 
+
+    this.prevYear = new BeeImage(Global.getImages().rewind(), new Navigation(-12), styleDisabled);
+    this.prevMonth = new BeeImage(Global.getImages().previous(), new Navigation(-1), styleDisabled);
+    this.nextMonth = new BeeImage(Global.getImages().next(), new Navigation(1), styleDisabled);
+    this.nextYear = new BeeImage(Global.getImages().forward(), new Navigation(12), styleDisabled);
     
     this.grid = new Grid(1, 5);
     grid.setWidget(0, 0, prevYear);
@@ -61,17 +66,41 @@ class MonthSelector extends Component {
  
   @Override
   protected void refresh() {
-    grid.setText(0, 2, getModel().formatCurrentMonth());
+    YearMonth current = getModel().getCurrentMonth();
+    grid.setText(0, 2, getModel().format(current));
     
-    YearMonth ym = getModel().getCurrentMonth();
-
-    prevYear.setTitle(ym.previousYear().format());
-    prevMonth.setTitle(ym.previousMonth().format());
-    nextMonth.setTitle(ym.nextMonth().format());
-    nextYear.setTitle(ym.nextYear().format());
+    refresh(prevYear, current.previousYear());
+    refresh(prevMonth, current.previousMonth());
+    
+    refresh(nextMonth, current.nextMonth());
+    refresh(nextYear, current.nextYear());
   }
 
   @Override
   protected void setup() {
+  }
+  
+  private boolean isEnabled(YearMonth ym) {
+    JustDate minDate = getDatePicker().getMinDate();
+    if (minDate != null && TimeUtils.isMore(minDate, ym.getLast())) {
+      return false;
+    }
+
+    JustDate maxDate = getDatePicker().getMaxDate();
+    if (maxDate != null && TimeUtils.isLess(maxDate, ym)) {
+      return false;
+    }
+    return true;
+  }
+  
+  private void refresh(BeeImage widget, YearMonth ym) {
+    boolean enabled = isEnabled(ym);
+    widget.setEnabled(enabled);
+    
+    if (enabled) {
+      widget.setTitle(getModel().format(ym));
+    } else {
+      widget.setTitle(BeeConst.STRING_EMPTY);
+    }
   }
 }

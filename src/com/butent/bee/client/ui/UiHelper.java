@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -31,9 +30,10 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -177,6 +177,28 @@ public class UiHelper {
     return align;
   }
 
+  public static List<Focusable> getFocusableChildren(Widget parent) {
+    List<Focusable> result = Lists.newArrayList();
+    if (parent == null) {
+      return result;
+    }
+
+    if (parent instanceof HasOneWidget) {
+      result.addAll(getFocusableChildren(((HasOneWidget) parent).getWidget()));
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getFocusableChildren(child));
+      }
+
+    } else if (parent instanceof Focusable) {
+      if (DomUtils.isVisible(parent)) {
+        result.add((Focusable) parent);
+      }
+    }
+    return result;
+  }
+  
   public static FormView getForm(Widget widget) {
     if (widget == null) {
       return null;
@@ -210,6 +232,28 @@ public class UiHelper {
     }
   }
 
+  public static List<Widget> getImmediateChildren(Widget parent) {
+    List<Widget> result = Lists.newArrayList();
+    if (parent == null) {
+      return result;
+    }
+
+    if (parent instanceof HasOneWidget) {
+      Widget child = ((HasOneWidget) parent).getWidget();
+      if (child != null) {
+        result.add(child);
+      }
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        if (child != null) {
+          result.add(child);
+        }
+      }
+    }
+    return result;
+  }
+  
   public static int getMaxLength(IsColumn column) {
     if (column == null) {
       return BeeConst.UNDEF;
@@ -229,7 +273,7 @@ public class UiHelper {
           precision = 10;
           break;
 
-        case DATETIME:
+        case DATE_TIME:
           precision = 23;
           break;
 
@@ -245,9 +289,12 @@ public class UiHelper {
           precision = 20;
           break;
 
+        case TIME_OF_DAY:
+          precision = 8;
+          break;
+
         case DECIMAL:
         case TEXT:
-        case TIMEOFDAY:
       }
     }
 
@@ -259,7 +306,7 @@ public class UiHelper {
       return precision;
     }
   }
-  
+
   public static Procedure<InputText> getTextBoxResizer(final int reserve) {
     return new Procedure<InputText>() {
       @Override
@@ -283,12 +330,12 @@ public class UiHelper {
       }
     };
   }
-  
+
   public static boolean hasImmediateChild(HasWidgets parent, String id) {
     if (parent == null || BeeUtils.isEmpty(id)) {
       return false;
     }
-    
+
     for (Widget child : parent) {
       if (DomUtils.idEquals(child, id)) {
         return true;
@@ -318,7 +365,7 @@ public class UiHelper {
     return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
         && EventUtils.hasModifierKey(event);
   }
-  
+
   public static boolean maybeResize(Widget root, String id) {
     Widget child = DomUtils.getChildQuietly(root, id);
     if (child instanceof RequiresResize && child.isVisible()) {
@@ -329,48 +376,47 @@ public class UiHelper {
     }
   }
 
-  public static boolean moveFocus(Widget parent, Element currentElement, boolean forward) {
-    if (parent == null || currentElement == null) {
+  public static boolean moveFocus(Widget parent, boolean forward) {
+    if (parent == null) {
       return false;
     }
 
-    List<Focusable> children = DomUtils.getFocusableChildren(parent);
-    if (children == null || children.size() <= 1) {
+    List<Focusable> children = getFocusableChildren(parent);
+    if (children.isEmpty()) {
       return false;
     }
+    int count = children.size();
 
-    int index = BeeConst.UNDEF;
-    for (int i = 0; i < children.size(); i++) {
-      if (children.get(i) instanceof Widget
-          && ((Widget) children.get(i)).getElement().isOrHasChild(currentElement)) {
-        index = i;
-        break;
+    Element activeElement = DomUtils.getActiveElement();
+    int index;
+
+    if (activeElement == null) {
+      index = forward ? 0 : count - 1;
+
+    } else if (count == 1) {
+      index = 0;
+      if (isOrHasChild(children.get(index), activeElement)) {
+        return false;
+      }
+
+    } else {
+      index = BeeConst.UNDEF;
+      for (int i = 0; i < children.size(); i++) {
+        if (isOrHasChild(children.get(i), activeElement)) {
+          index = i;
+          break;
+        }
+      }
+
+      if (forward) {
+        index = BeeUtils.rotateForwardExclusive(index, 0, count);
+      } else {
+        index = BeeUtils.rotateBackwardExclusive(index, 0, count);
       }
     }
-    if (BeeConst.isUndef(index)) {
-      return false;
-    }
 
-    if (forward) {
-      index++;
-    } else {
-      index--;
-    }
-
-    if (index >= 0 && index < children.size()) {
-      children.get(index).setFocus(true);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public static boolean moveFocus(Widget parent, UIObject currentObject, boolean forward) {
-    if (currentObject == null) {
-      return false;
-    } else {
-      return moveFocus(parent, currentObject.getElement(), forward);
-    }
+    children.get(index).setFocus(true);
+    return true;
   }
 
   public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
@@ -463,6 +509,35 @@ public class UiHelper {
     });
   }
 
+  public static void setBounds(HasBounds obj, String min, String max) {
+    Assert.notNull(obj);
+    if (!BeeUtils.isEmpty(min)) {
+      obj.setMinValue(min);
+    }
+    if (!BeeUtils.isEmpty(max)) {
+      obj.setMaxValue(max);
+    }
+  }
+
+  public static void setDefaultBounds(HasBounds obj, IsColumn column) {
+    Assert.notNull(obj);
+    Assert.notNull(column);
+
+    if (BeeUtils.isEmpty(obj.getMinValue())) {
+      String min = DataUtils.getMinValue(column);
+      if (!BeeUtils.isEmpty(min)) {
+        obj.setMinValue(min);
+      }
+    }
+
+    if (BeeUtils.isEmpty(obj.getMaxValue())) {
+      String max = DataUtils.getMaxValue(column);
+      if (!BeeUtils.isEmpty(max)) {
+        obj.setMaxValue(max);
+      }
+    }
+  }
+
   public static void setDefaultHorizontalAlignment(HasHorizontalAlignment obj, ValueType type) {
     Assert.notNull(obj);
     HorizontalAlignmentConstant align = getDefaultHorizontalAlignment(type);
@@ -486,16 +561,6 @@ public class UiHelper {
     HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
     if (align != null) {
       obj.setHorizontalAlignment(align);
-    }
-  }
-
-  public static void setNumberBounds(HasNumberBounds obj, String min, String max) {
-    Assert.notNull(obj);
-    if (BeeUtils.isDouble(min)) {
-      obj.setMinValue(BeeUtils.toDoubleOrNull(min));
-    }
-    if (BeeUtils.isDouble(max)) {
-      obj.setMaxValue(BeeUtils.toDoubleOrNull(max));
     }
   }
 
@@ -543,7 +608,7 @@ public class UiHelper {
     }
     return w;
   }
-  
+
   public static void updateForm(String widgetId, String columnId, String value) {
     Assert.notEmpty(widgetId);
     Assert.notEmpty(columnId);
@@ -562,7 +627,11 @@ public class UiHelper {
 
     form.updateCell(columnId, value);
   }
-  
+
+  private static boolean isOrHasChild(Focusable widget, Element element) {
+    return widget instanceof Widget && ((Widget) widget).getElement().isOrHasChild(element);
+  }
+
   private UiHelper() {
   }
 }

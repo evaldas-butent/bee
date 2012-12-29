@@ -12,7 +12,7 @@
         <CheckBox source="Boolean" html="Boolean" />
         <Toggle source="Boolean" />
         <InputInteger source="Integer" readOnly="true" />
-        <InputSlider source="Integer" min="-10" max="10" />
+        <InputSlider source="Integer" minValue="-10" maxValue="10" />
         <TabBar source="Integer" itemKey="TaskPriority" />
       </row>
 

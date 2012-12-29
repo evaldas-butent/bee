@@ -17,6 +17,10 @@ public class ClientLogManager implements BeeLoggerFactory {
     getPanelHandler().clear();
   }
 
+  public static int getInitialPanelSize() {
+    return getPanelHandler().getInitialSize();
+  }
+  
   public static IdentifiableWidget getLogPanel() {
     return getPanelHandler().getPanel();
   }

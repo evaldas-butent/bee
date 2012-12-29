@@ -8,7 +8,7 @@
   caption="=appointment" disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; margin: 2ex 1em; width: 760px; height: 360px;">
-    <InputText source="Summary" caption="Santrauka:" style="width: 236px;"
+    <InputText source="Summary" required="true" caption="Santrauka:" style="width: 236px;"
       d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
 
     <InputText source="Location" caption="Vieta:" style="width: 320px;"
@@ -28,17 +28,18 @@
 
     <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
       style="width: 80px;" d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 160px;" />
-    <InputTime name="StartTime" step="30" style="&absolute; left: 280px; top: 160px; width: 40px;" />
+    <InputTimeOfDay name="StartTime" step="30"
+      style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
-    <InputSpinner name="Hours" caption="Trukmė:" min="0" max="99" style="width: 40px;"
+    <InputSpinner name="Hours" caption="Trukmė:" minValue="0" maxValue="99" style="width: 40px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 160px;" />
-    <InputSpinner name="Minutes" min="0" max="60" step="5"
+    <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
       style="&absolute; left: 480px; top: 160px; width: 40px;" />
 
     <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:" style="width: 80px;"
       d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
-    <InputTime name="EndTime" step="30" style="&absolute; left: 280px; top: 192px; width: 40px;"
-      options="60" />
+    <InputTimeOfDay name="EndTime" step="30"
+      style="&absolute; left: 280px; top: 192px; width: 40px;" options="60" />
 
     <FlowPanel name="Colors" style="&absolute; left: 360px; top: 194px; width: 380px;" />
 
