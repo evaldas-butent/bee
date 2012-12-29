@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -30,13 +29,12 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -204,21 +202,16 @@ public class MessageHandler extends AbstractFormInterceptor {
     return getRecipients(AddressType.TO.name());
   }
 
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
-    requery(row.getId(), null);
-    return true;
-  }
-
-  void requery(Long messageId, Long addressId) {
-    Assert.isPositive(messageId);
+  void requery(Long messageId, Long addressId, Long placeId, boolean showBcc, boolean isSeen) {
+    Assert.state(DataUtils.isId(messageId));
     deactivate();
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
-    if (addressId != null) {
-      params.addDataItem(COL_ADDRESS, addressId);
-    }
     params.addDataItem(COL_MESSAGE, messageId);
+    params.addDataItem(COL_ADDRESS, addressId);
+    params.addDataItem(COL_PLACE, placeId);
+    params.addDataItem("showBcc", showBcc ? 1 : 0);
+    params.addDataItem("markAsRead", isSeen ? 0 : 1);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override

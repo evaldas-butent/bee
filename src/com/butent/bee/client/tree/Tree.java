@@ -73,6 +73,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -306,6 +307,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     addItem(widget);
   }
 
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
@@ -315,66 +317,82 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return addHandler(handler, CatchEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addCloseHandler(CloseHandler<TreeItem> handler) {
     return addHandler(handler, CloseEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
 
+  @Override
   public TreeItem addItem(String itemHtml) {
     return root.addItem(itemHtml);
   }
 
+  @Override
   public void addItem(TreeItem item) {
     root.addItem(item);
   }
 
+  @Override
   public TreeItem addItem(Widget widget) {
     return root.addItem(widget);
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
     return addDomHandler(handler, KeyPressEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
     return addDomHandler(handler, KeyUpEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
     return addDomHandler(handler, MouseDownEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
     return addDomHandler(handler, MouseMoveEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseOutHandler(MouseOutHandler handler) {
     return addDomHandler(handler, MouseOutEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseOverHandler(MouseOverHandler handler) {
     return addDomHandler(handler, MouseOverEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
     return addDomHandler(handler, MouseUpEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
     return addDomHandler(handler, MouseWheelEvent.getType());
   }
 
+  @Override
   public final HandlerRegistration addOpenHandler(OpenHandler<TreeItem> handler) {
     return addHandler(handler, OpenEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<TreeItem> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
@@ -399,10 +417,12 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "tree";
   }
@@ -411,6 +431,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return root.getChild(index);
   }
 
+  @Override
   public int getItemCount() {
     return root.getChildCount();
   }
@@ -419,8 +440,14 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return selectedItem;
   }
 
+  @Override
   public int getTabIndex() {
     return FocusImpl.getFocusImplForPanel().getTabIndex(focusable);
+  }
+
+  @Override
+  public Collection<TreeItem> getTreeItems() {
+    return root.getTreeItems();
   }
 
   public TreeItem insertItem(int beforeIndex, String itemText) {
@@ -435,6 +462,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return root.insertItem(beforeIndex, widget);
   }
 
+  @Override
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
   }
@@ -444,6 +472,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return enabled;
   }
 
+  @Override
   public Iterator<Widget> iterator() {
     WidgetCollection widgetCollection = new WidgetCollection(this);
     for (Widget widget : childWidgets.keySet()) {
@@ -513,20 +542,24 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return true;
   }
 
+  @Override
   public void removeItem(TreeItem item) {
     root.removeItem(item);
   }
 
+  @Override
   public void removeItems() {
     while (getItemCount() > 0) {
       removeItem(getItem(0));
     }
   }
 
+  @Override
   public void setAccessKey(char key) {
     FocusImpl.getFocusImplForPanel().setAccessKey(focusable, key);
   }
 
+  @Override
   public void setAnimationEnabled(boolean enable) {
     this.isAnimationEnabled = enable;
   }
@@ -539,6 +572,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     this.enabled = enabled;
   }
 
+  @Override
   public void setFocus(boolean focus) {
     if (focus) {
       FocusImpl.getFocusImplForPanel().focus(focusable);
@@ -547,6 +581,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -568,6 +603,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     onSelection(item, fireEvents, true);
   }
 
+  @Override
   public void setTabIndex(int index) {
     FocusImpl.getFocusImplForPanel().setTabIndex(focusable, index);
   }

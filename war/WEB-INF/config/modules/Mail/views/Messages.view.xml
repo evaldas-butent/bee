@@ -5,6 +5,7 @@
   >
   <Columns>
     <HiddenColumn name="Folder" />
+    <SimpleColumn name="Flags" />
     <SimpleColumn name="Message" />
 
     <SimpleJoin name="Message" joinType="INNER">

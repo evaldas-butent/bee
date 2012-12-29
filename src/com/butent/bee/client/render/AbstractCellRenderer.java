@@ -20,7 +20,7 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
   public ValueType getValueType() {
     return (cellSource == null) ? null : cellSource.getValueType();
   }
-  
+
   protected CellSource getCellSource() {
     return cellSource;
   }
@@ -32,7 +32,7 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
       return cellSource.getInteger(row);
     }
   }
-  
+
   protected String getString(IsRow row) {
     if (row == null || cellSource == null) {
       return null;
@@ -40,7 +40,7 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
       return cellSource.getString(row);
     }
   }
-  
+
   protected Value getValue(IsRow row) {
     if (row == null || cellSource == null) {
       return null;
@@ -48,7 +48,7 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
       return cellSource.getValue(row);
     }
   }
-  
+
   protected Value parse(String value, boolean parseDates) {
     if (value == null || value.isEmpty() || cellSource == null) {
       return null;

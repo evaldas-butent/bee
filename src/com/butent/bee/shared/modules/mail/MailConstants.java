@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.mail;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class MailConstants {
 
   public enum SystemFolder {
@@ -24,16 +26,36 @@ public class MailConstants {
     POP3, IMAP, SMTP
   }
 
-  public static enum MessageStatus {
-    NEUTRAL, DRAFT, DELETED, PURGED
+  public enum MessageFlag {
+    ANSWERED(1), DELETED(2), FLAGGED(4), SEEN(8), USER(16);
+
+    public static boolean isFlagged(Integer bits) {
+      return (BeeUtils.unbox(bits) & FLAGGED.getMask()) != 0;
+    }
+
+    public static boolean isSeen(Integer bits) {
+      return (BeeUtils.unbox(bits) & SEEN.getMask()) != 0;
+    }
+
+    final int mask;
+
+    private MessageFlag(int mask) {
+      this.mask = mask;
+    }
+
+    public int getMask() {
+      return mask;
+    }
   }
 
   public static final String MAIL_MODULE = "Mail";
   public static final String MAIL_METHOD = MAIL_MODULE + "Method";
 
   public static final String SVC_RESTART_PROXY = "restart_proxy";
-  public static final String SVC_GET_MESSAGE = "get_message";
   public static final String SVC_GET_ACCOUNTS = "get_accounts";
+  public static final String SVC_GET_FOLDERS = "get_folders";
+  public static final String SVC_GET_MESSAGE = "get_message";
+  public static final String SVC_FLAG_MESSAGE = "flag_message";
   public static final String SVC_CHECK_MAIL = "check_mail";
   public static final String SVC_SEND_MAIL = "send_mail";
   public static final String SVC_REMOVE_MESSAGES = "remove_messages";
@@ -79,7 +101,9 @@ public class MailConstants {
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
 
+  public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";
+  public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
 
   private MailConstants() {

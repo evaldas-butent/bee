@@ -5,7 +5,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
 public class StarRenderer extends AbstractCellRenderer {
-  
+
   public StarRenderer(CellSource cellSource) {
     super(cellSource);
   }
@@ -15,7 +15,7 @@ public class StarRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
-    
+
     Integer index = getInteger(row);
     if (index == null) {
       return null;

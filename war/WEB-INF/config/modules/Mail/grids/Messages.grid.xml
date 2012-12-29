@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Messages" viewName="Messages" headerMode="none" readOnly="true" 
+  name="Messages" viewName="Messages" headerMode="none" readOnly="true"
   asyncThreshold="0" pagingThreshold="0" searchThreshold="0"
   rowChangeSensitivityMillis="500"
   >
   <body height="40" borderWidth="0 0 1 0" />
 
   <columns>
+    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20" />
     <CalcColumn name="Envelope" type="string" cellType="html" flexGrow="1" />
   </columns>
 </Grid>

@@ -22,6 +22,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
@@ -243,8 +244,18 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     return "t-i";
   }
 
+  @Override
+  public int getItemCount() {
+    return getChildCount();
+  }
+
   public TreeItem getParentItem() {
     return parentItem;
+  }
+
+  @Override
+  public Collection<TreeItem> getTreeItems() {
+    return getChildren();
   }
 
   public Object getUserObject() {
@@ -353,6 +364,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     }
   }
 
+  @Override
   public void removeItems() {
     while (getChildCount() > 0) {
       removeItem(getChild(0));
@@ -364,6 +376,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     contentElem.setInnerHTML(html);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

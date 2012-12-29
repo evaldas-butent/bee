@@ -27,11 +27,11 @@ import java.util.List;
 public class RendererFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RendererFactory.class);
-  
+
   public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns) {
     return createRenderer(viewName, renderColumns, null);
   }
-  
+
   public static AbstractCellRenderer getRenderer(RendererDescription description,
       Calculation calculation, List<RenderableToken> tokens, String itemKey,
       List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource source) {
@@ -44,10 +44,10 @@ public class RendererFactory {
 
     } else if (!BeeUtils.isEmpty(tokens)) {
       return createRenderer(tokens, dataColumns);
-      
+
     } else if (!BeeUtils.isEmpty(itemKey) && source != null) {
       return new EnumRenderer(source, itemKey);
-    
+
     } else if (!BeeUtils.isEmpty(renderColumns)) {
       if (renderColumns.size() == 1) {
         int index = DataUtils.getColumnIndex(renderColumns.get(0), dataColumns);
@@ -60,12 +60,12 @@ public class RendererFactory {
       return null;
     }
   }
-  
+
   public static AbstractCellRenderer getRenderer(RendererDescription description,
       Calculation calculation, List<RenderableToken> tokens, String itemKey,
       List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource cellSource,
       Relation relation) {
-    
+
     List<? extends IsColumn> columns;
     CellSource source;
 
@@ -74,7 +74,7 @@ public class RendererFactory {
       source = null;
     } else {
       columns = dataColumns;
-      source = getDataSource(description, calculation, itemKey, dataColumns, cellSource, relation); 
+      source = getDataSource(description, calculation, itemKey, dataColumns, cellSource, relation);
     }
 
     return getRenderer(description, calculation, tokens, itemKey, renderColumns, columns, source);
@@ -96,7 +96,7 @@ public class RendererFactory {
 
     return new EvalRenderer(source, evaluator);
   }
-  
+
   private static AbstractCellRenderer createRenderer(RendererDescription description,
       String itemKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
       CellSource source) {
@@ -135,7 +135,7 @@ public class RendererFactory {
       case JOIN:
         renderer = new JoinRenderer(dataColumns, description.getSeparator(), renderColumns);
         break;
-        
+
       case FLAG:
         renderer = new FlagRenderer(source);
         break;
@@ -143,7 +143,7 @@ public class RendererFactory {
       case STAR:
         renderer = new StarRenderer(source);
         break;
-        
+
       default:
         logger.severe("renderer", type.name(), "not supported");
     }
@@ -163,17 +163,17 @@ public class RendererFactory {
     if (BeeUtils.isEmpty(tokens) || BeeUtils.isEmpty(dataColumns)) {
       return null;
     }
-    
+
     List<ColumnToken> columnTokens = Lists.newArrayList();
     for (RenderableToken token : tokens) {
       String source = token.getSource();
       if (BeeUtils.isEmpty(source)) {
         continue;
       }
-      
+
       int index = DataUtils.getColumnIndex(source, dataColumns);
       ValueType type = null;
-      
+
       if (BeeConst.isUndef(index)) {
         if (BeeUtils.same(source, DataUtils.ID_TAG)) {
           index = DataUtils.ID_INDEX;
@@ -182,35 +182,35 @@ public class RendererFactory {
           index = DataUtils.VERSION_INDEX;
           type = ValueType.DATE_TIME;
         }
-        
+
       } else {
         type = dataColumns.get(index).getType();
       }
-      
+
       if (type == null) {
         logger.severe("token source not recognized:", source);
       } else {
         columnTokens.add(ColumnToken.create(index, type, token));
       }
     }
-    
+
     if (columnTokens.isEmpty()) {
       logger.severe("cannot create TokenRenderer");
       return null;
     }
     return new TokenRenderer(columnTokens);
   }
-  
+
   private static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns,
       String separator) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(renderColumns);
-    
+
     DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
       return null;
     }
-    
+
     if (renderColumns.size() > 1) {
       return new JoinRenderer(dataInfo.getColumns(), separator, renderColumns);
     } else {
@@ -238,7 +238,7 @@ public class RendererFactory {
       return source;
     }
   }
-  
+
   private RendererFactory() {
   }
 }

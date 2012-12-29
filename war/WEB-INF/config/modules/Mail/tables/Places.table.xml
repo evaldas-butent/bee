@@ -7,12 +7,12 @@
   <Fields>
     <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
     <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <Integer name="Flags" />
     <Long name="MessageUID" />
   </Fields>
   <Keys>
-    <Key unique="true">
-      <KeyField>Folder</KeyField>
-      <KeyField>Message</KeyField>
+    <Key>
+      <KeyField>MessageUID</KeyField>
     </Key>
   </Keys>
 </Table>

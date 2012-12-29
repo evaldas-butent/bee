@@ -140,7 +140,7 @@ public class FileStorageBean {
         id = qs.insertData(new SqlInsert(TBL_FILES)
             .addConstant(COL_FILE_HASH, hash)
             .addConstant(COL_FILE_REPO, target.getPath())
-            .addConstant(COL_FILE_NAME, fileName)
+            .addConstant(COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"))
             .addConstant(COL_FILE_SIZE, target.length())
             .addConstant(COL_FILE_TYPE, mimeType));
       }

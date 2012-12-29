@@ -198,6 +198,7 @@
       <xs:enumeration value="filterDelete" />
       <xs:enumeration value="first" />
       <xs:enumeration value="forward" />
+      <xs:enumeration value="forwardTo" />
       <xs:enumeration value="green" />
       <xs:enumeration value="greenSmall" />
       <xs:enumeration value="html" />
@@ -215,6 +216,8 @@
       <xs:enumeration value="redo" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="reload" />
+      <xs:enumeration value="replyTo" />
+      <xs:enumeration value="replyToAll" />
       <xs:enumeration value="report" />
       <xs:enumeration value="rewind" />
       <xs:enumeration value="save" />

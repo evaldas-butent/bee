@@ -112,33 +112,20 @@
   border-style: dashed;
 }
 
-.bee-mail-DisplayMode-panel {
-  float: right;
-  border-collapse: collapse;
-}
-
 .bee-mail-DisplayMode-item {
   padding: 4px 8px 4px 8px;
   cursor: pointer;
   background-color: WhiteSmoke;
   color: #444;
   text-align: center;
+  font-weight: normal;
   border: 1px solid #ccc;
-  border-left: 0;
+  border-radius: 5px;
   outline: none;
-}
-
-.bee-mail-DisplayMode-panel td:first-child .bee-mail-DisplayMode-item {
-  border-left: 1px solid #ccc;
-  border-radius: 5px 0 0 5px;
-}
-
-.bee-mail-DisplayMode-panel td:last-child .bee-mail-DisplayMode-item {
-  border-radius: 0 5px 5px 0;
+  width: 200px;
 }
 
 .bee-mail-DisplayMode-item-selected {
-  cursor: default;
   color: white;
   background-color: #0A8DE9;
 }

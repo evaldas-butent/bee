@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -29,6 +28,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -181,7 +181,7 @@ public class NewMessageHandler extends AbstractFormInterceptor {
     return false;
   }
 
-  public void save(final NotificationListener notificator) {
+  public void save(final MailPanel panel) {
     if (saveMode && !hasChanges()) {
       return;
     }
@@ -210,7 +210,11 @@ public class NewMessageHandler extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        response.notify(notificator);
+        if (panel.getCurrentAccount()
+            .getSystemFolder(panel.getCurrentFolderId()) == SystemFolder.Drafts) {
+          panel.refresh(null);
+        }
+        response.notify(panel.getFormView());
       }
     });
   }

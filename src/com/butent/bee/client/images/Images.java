@@ -43,7 +43,7 @@ public class Images {
 
     @Source("arrow_up.png")
     ImageResource arrowUp();
-    
+
     @Source("ascending.gif")
     ImageResource ascending();
 
@@ -58,7 +58,7 @@ public class Images {
 
     @Source("calendar.png")
     ImageResource calendar();
-    
+
     @Source("cancel.png")
     ImageResource cancel();
 
@@ -82,7 +82,7 @@ public class Images {
 
     @Source("disclosureOpen.png")
     ImageResource disclosureOpen();
-    
+
     @Source("edit.png")
     ImageResource edit();
 
@@ -100,12 +100,15 @@ public class Images {
 
     @Source("filter_delete.png")
     ImageResource filterDelete();
-    
+
     @Source("first.png")
     ImageResource first();
 
     @Source("forward.png")
     ImageResource forward();
+
+    @Source("forward_to.png")
+    ImageResource forwardTo();
 
     @Source("green.gif")
     ImageResource green();
@@ -164,9 +167,15 @@ public class Images {
     @Source("reload.png")
     ImageResource reload();
 
+    @Source("reply_to.png")
+    ImageResource replyTo();
+
+    @Source("reply_to_all.png")
+    ImageResource replyToAll();
+
     @Source("report.png")
     ImageResource report();
-    
+
     @Source("rewind.png")
     ImageResource rewind();
 
@@ -230,17 +239,17 @@ public class Images {
 
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
-  private static final ImageElement imageElement = Browser.getDocument().createImageElement(); 
+  private static final ImageElement imageElement = Browser.getDocument().createImageElement();
 
   public static String asString(ImageResource imageResource) {
     if (imageResource == null) {
       return null;
     }
-    
+
     imageElement.setSrc(imageResource.getSafeUri().asString());
     return imageElement.getOuterHTML();
   }
-  
+
   public static Resources createResources() {
     return GWT.create(Resources.class);
   }
@@ -253,7 +262,7 @@ public class Images {
   public static String getHtml(String name) {
     return asString(get(name));
   }
-  
+
   public static Map<String, ImageResource> getMap() {
     return map;
   }
@@ -310,6 +319,8 @@ public class Images {
 
     map.put(key("forward"), resources.forward());
 
+    map.put(key("forwardTo"), resources.forwardTo());
+
     map.put(key("green"), resources.green());
     map.put(key("greenSmall"), resources.greenSmall());
 
@@ -340,6 +351,9 @@ public class Images {
 
     map.put(key("refresh"), resources.refresh());
     map.put(key("reload"), resources.reload());
+
+    map.put(key("replyTo"), resources.replyTo());
+    map.put(key("replyToAll"), resources.replyToAll());
 
     map.put(key("report"), resources.report());
 

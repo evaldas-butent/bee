@@ -6,20 +6,18 @@
   >
   <FlowPanel class="flexBox-vertical" style="margin: 5px;">
     <HorizontalPanel style="width: 100%; padding-bottom: 5px; border-bottom: 1px solid lightgray;">
+      <InputText placeholder="Čia bus paieška..." style="width: 280px" />
+    
       <ListBox name="Accounts" />
-
-      <Image name="Create" resource="silverEdit" />
-      <Image name="Trash" resource="silverDelete" />
-      <Image name="Reply" resource="previous" />
-      <Image name="ReplyAll" resource="rewind" />
-      <Image name="Forward" resource="forward" />
-
-      <TabBar name="DisplayMode" stylePrefix="bee-mail-DisplayMode-" cellStyle="padding: 0;">
-        <tab><Label html="Gautieji" /></tab>
-        <tab><Label html="Siųstieji" /></tab>
-        <tab><Label html="Juodraščiai" /></tab>
-        <tab><Label html="Šiukšlinė" /></tab>
-      </TabBar>
+      
+      <HorizontalPanel cellStyle="padding: 5px">
+        <Image name="create" resource="edit" />
+        <Image name="reply" resource="replyTo" />
+        <Image name="replyAll" resource="replyToAll" />
+        <Image name="forward" resource="forwardTo" />
+        <Image name="delete" resource="delete" />
+      </HorizontalPanel>
+      
     </HorizontalPanel>
 
     <SplitPanel class="flexible" splitterSize="1">

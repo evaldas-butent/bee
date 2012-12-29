@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import java.util.Set;
 public class MailKeeper {
 
   private static MailController controller = null;
+  private static MailPanel activePanel;
   private static final Set<MailPanel> mailPanels = Sets.newHashSet();
 
   public static void register() {
@@ -69,10 +71,30 @@ public class MailKeeper {
   static void activateController(MailPanel mailPanel) {
     if (controller == null) {
       controller = new MailController();
-      BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null, "Paštas");
+      BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null, "Laiškai");
     }
-    controller.setActivePanel(mailPanel);
+    activePanel = mailPanel;
+    rebuildController();
     BeeKeeper.getScreen().activateDomainEntry(Domain.MAIL, null);
+  }
+
+  static void activateMailPanel() {
+    if (activePanel != null) {
+      BeeKeeper.getScreen()
+          .activateWidget(activePanel.getFormView().getViewPresenter().getMainView());
+    }
+  }
+
+  static void clickFolder(Long folderId) {
+    if (activePanel != null) {
+      activePanel.refresh(folderId);
+    }
+  }
+
+  static void clickSystemFolder(SystemFolder sysFolder) {
+    if (activePanel != null) {
+      clickFolder(activePanel.getCurrentAccount().getSystemFolderId(sysFolder));
+    }
   }
 
   static ParameterList createArgs(String name) {
@@ -81,17 +103,38 @@ public class MailKeeper {
     return args;
   }
 
+  static void rebuildController() {
+    if (controller != null && activePanel != null) {
+      controller.rebuild(activePanel.getCurrentAccount());
+      refreshController();
+    }
+  }
+
+  static void refreshController() {
+    if (controller != null && activePanel != null) {
+      Long folderId = activePanel.getCurrentFolderId();
+      SystemFolder sysFolder = activePanel.getCurrentAccount().getSystemFolder(folderId);
+
+      if (sysFolder != null) {
+        controller.refresh(sysFolder);
+      } else {
+        controller.refresh(folderId);
+      }
+    }
+  }
+
   static void removeMailPanel(MailPanel mailPanel) {
     mailPanels.remove(mailPanel);
 
     if (mailPanels.size() > 0) {
-      if (mailPanel == controller.getActivePanel()) {
-        controller.setActivePanel(mailPanels.iterator().next());
+      if (mailPanel == activePanel) {
+        activePanel = mailPanels.iterator().next();
+        rebuildController();
       }
     } else {
-      controller.setActivePanel(null);
-      BeeKeeper.getScreen().removeDomainEntry(Domain.MAIL, null);
+      activePanel = null;
       controller = null;
+      BeeKeeper.getScreen().removeDomainEntry(Domain.MAIL, null);
     }
   }
 
@@ -100,6 +143,7 @@ public class MailKeeper {
       BeeKeeper.getScreen().closeWidget(mailPanel.getFormView().getViewPresenter().getMainView());
     }
     mailPanels.clear();
+    activePanel = null;
     controller = null;
   }
 

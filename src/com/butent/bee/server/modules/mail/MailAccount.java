@@ -6,20 +6,29 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
+import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Properties;
 
+import javax.mail.Flags;
+import javax.mail.Flags.Flag;
 import javax.mail.Folder;
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.UIDFolder;
 import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
+
+  private static final BeeLogger logger = LogUtils.getLogger(MailAccount.class);
 
   private String error = null;
 
@@ -39,6 +48,8 @@ public class MailAccount {
   private final Long draftsFolderId;
   private final Long sentFolderId;
   private final Long trashFolderId;
+
+  private MailFolder rootFolder;
 
   MailAccount(SimpleRow data) {
     if (data == null) {
@@ -88,6 +99,10 @@ public class MailAccount {
 
   public Long getDraftsFolderId() {
     return draftsFolderId;
+  }
+
+  public MailFolder getRootFolder() {
+    return rootFolder;
   }
 
   public Long getSentFolderId() {
@@ -174,7 +189,7 @@ public class MailAccount {
     Assert.state(Objects.equal(localFolder.getAccountId(), getAccountId()),
         BeeUtils.joinWords("Folder", localFolder.getName(), "Doesn't belong to this account"));
 
-    if (getStoreProtocol() == Protocol.POP3) {
+    if (getStoreProtocol() == Protocol.POP3 || !localFolder.isConnected()) {
       return false;
     }
     Store store = null;
@@ -205,6 +220,7 @@ public class MailAccount {
     if (!isValidStoreAccount()) {
       throw new MessagingException(getStoreErrorMessage());
     }
+    logger.debug("Connecting to store...");
     Session session = Session.getInstance(new Properties(), null);
     session.setDebug(debug);
 
@@ -213,9 +229,19 @@ public class MailAccount {
     return store;
   }
 
+  boolean copyMessagesToRemoteFolder(MailFolder source, long[] uids, MailFolder destination)
+      throws MessagingException {
+    return processMessages(source, uids, destination, false);
+  }
+
+  boolean deleteMessagesFromRemoteFolder(MailFolder source, long[] uids) throws MessagingException {
+    return processMessages(source, uids, null, true);
+  }
+
   void disconnectFromStore(Store store) {
     if (store != null) {
       try {
+        logger.debug("Disconnecting from store...");
         store.close();
       } catch (MessagingException e) {
       }
@@ -224,6 +250,10 @@ public class MailAccount {
 
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
+
+    if (!localFolder.isConnected()) {
+      return null;
+    }
     Folder remoteParent;
 
     if (localFolder.getParent() != null) {
@@ -232,11 +262,117 @@ public class MailAccount {
       remoteParent = remoteStore.getDefaultFolder();
     }
     Assert.notNull(remoteParent);
+    String msg = BeeUtils.join(" in ", localFolder.getName(), remoteParent.getName());
+
+    logger.debug("Looking for remote folder", msg);
     Folder remote = remoteParent.getFolder(localFolder.getName());
 
-    if (!remote.exists() && !remote.create(Folder.HOLDS_FOLDERS & Folder.HOLDS_MESSAGES)) {
-      remote = null;
+    if (!remote.exists()) {
+      logger.debug("Creating remote folder", msg);
+
+      if (!remote.create(Folder.HOLDS_FOLDERS & Folder.HOLDS_MESSAGES)) {
+        remote = null;
+      }
     }
     return remote;
+  }
+
+  boolean moveMessagesToRemoteFolder(MailFolder source, long[] uids, MailFolder destination)
+      throws MessagingException {
+    return processMessages(source, uids, destination, true);
+  }
+
+  boolean setFlag(MailFolder source, long[] uids, Flag flag, boolean on) throws MessagingException {
+    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+      return false;
+    }
+    Store store = null;
+    Folder folder = null;
+
+    try {
+      store = connectToStore(true);
+      folder = getRemoteFolder(store, source);
+
+      if (folder == null) {
+        throw new MessagingException("Cannot connect to remote folder: " + source.getName());
+      }
+      logger.debug("Checking folder UIDValidity with", source.getUidValidity());
+
+      if (!Objects.equal(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
+        throw new MessagingException("Folder out of sync: " + source.getName());
+      }
+      logger.debug("Opening folder", folder.getName());
+      folder.open(Folder.READ_WRITE);
+
+      logger.debug("Getting messages from folder by UIDs:", uids);
+      Message[] msgs = ((UIDFolder) folder).getMessagesByUID(uids);
+
+      logger.debug("Setting flag for selected messages");
+      folder.setFlags(msgs, new Flags(flag), on);
+
+    } finally {
+      if (folder != null && folder.isOpen()) {
+        try {
+          logger.debug("Closing folder:", folder.getName());
+          folder.close(false);
+        } catch (MessagingException e) {
+        }
+      }
+      disconnectFromStore(store);
+    }
+    return true;
+  }
+
+  void setRootFolder(MailFolder folder) {
+    this.rootFolder = folder;
+  }
+
+  private boolean processMessages(MailFolder source, long[] uids, MailFolder destination,
+      boolean move) throws MessagingException {
+    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+      return false;
+    }
+    Store store = null;
+    Folder folder = null;
+
+    try {
+      store = connectToStore(true);
+      folder = getRemoteFolder(store, source);
+
+      if (folder == null) {
+        throw new MessagingException("Cannot connect to remote folder: " + source.getName());
+      }
+      logger.debug("Checking folder UIDValidity with", source.getUidValidity());
+
+      if (!Objects.equal(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
+        throw new MessagingException("Folder out of sync: " + source.getName());
+      }
+      logger.debug("Opening folder", folder.getName());
+      folder.open(Folder.READ_WRITE);
+
+      logger.debug("Getting messages from folder by UIDs:", uids);
+      Message[] msgs = ((UIDFolder) folder).getMessagesByUID(uids);
+
+      if (destination != null) {
+        logger.debug("Copying messages to folder:", destination.getName());
+        folder.copyMessages(msgs, getRemoteFolder(store, destination));
+      }
+      if (move) {
+        logger.debug("Deleting seleted messages from folder:", folder.getName());
+        folder.setFlags(msgs, new Flags(Flag.DELETED), true);
+      }
+      logger.debug("Closing folder:", folder.getName());
+      folder.close(move);
+
+    } finally {
+      if (folder != null && folder.isOpen()) {
+        try {
+          folder.close(false);
+        } catch (MessagingException e) {
+        }
+      }
+      disconnectFromStore(store);
+    }
+    return true;
   }
 }
