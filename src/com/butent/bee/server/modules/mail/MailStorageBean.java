@@ -168,6 +168,12 @@ public class MailStorageBean {
     }
     if (inbox == null) {
       inbox = createFolder(accountId, null, SystemFolder.Inbox.getFullName(), null);
+
+      for (SystemFolder sysFolder : SystemFolder.values()) {
+        if (sysFolder != SystemFolder.Inbox) {
+          createSysFolder(inbox, sysFolder);
+        }
+      }
     } else {
       createTree(inbox, folders);
     }
@@ -224,7 +230,7 @@ public class MailStorageBean {
         .addFrom(TBL_MESSAGES)
         .addFromLeft(TBL_PLACES,
             SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
-                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId)))
+                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId, COL_MESSAGE_UID, messageUID)))
         .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId())));
 
     if (data != null) {
@@ -363,6 +369,16 @@ public class MailStorageBean {
     return folder;
   }
 
+  private MailFolder createSysFolder(MailFolder inbox, SystemFolder sysFolder) {
+    MailFolder folder = createFolder(inbox, sysFolder.getFullName());
+
+    qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
+        .addConstant(sysFolder.name() + "Folder", folder.getId())
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, inbox.getAccountId())));
+
+    return folder;
+  }
+
   private void createTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
     for (SimpleRow row : folders.get(parent.getId())) {
       MailFolder folder = new MailFolder(parent.getAccountId(), parent, row.getLong(COL_FOLDER),
@@ -380,14 +396,10 @@ public class MailStorageBean {
       folder = findFolder(account, folderId);
     }
     if (folder == null) {
-      folder = createFolder(getInboxFolder(account), sysFolder.getFullName());
-
-      if (account.getStoreProtocol() == Protocol.POP3 && folder.isConnected()) {
-        disconnectFolder(folder);
-      }
-      qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
-          .addConstant(sysFolder.name() + "Folder", folder.getId())
-          .setWhere(sys.idEquals(TBL_ACCOUNTS, account.getAccountId())));
+      folder = createSysFolder(getInboxFolder(account), sysFolder);
+    }
+    if (account.getStoreProtocol() == Protocol.POP3 && folder.isConnected()) {
+      disconnectFolder(folder);
     }
     return folder;
   }

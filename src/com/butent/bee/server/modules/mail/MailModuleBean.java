@@ -19,6 +19,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
@@ -33,14 +34,12 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -126,41 +125,21 @@ public class MailModuleBean implements BeeModule {
       response = getAccounts(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER)));
 
     } else if (BeeUtils.same(svc, SVC_GET_FOLDERS)) {
-      response = ResponseObject.response(mail.getRootFolder(BeeUtils.toLongOrNull(reqInfo
-          .getParameter(COL_ACCOUNT))));
+      Object resp = mail.getRootFolder(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT)));
+      Long addressId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS));
+
+      if (DataUtils.isId(addressId)) {
+        resp = Pair.of(getAccount(addressId), resp);
+      }
+      response = ResponseObject.response(resp);
 
     } else if (BeeUtils.same(svc, SVC_CHECK_MAIL)) {
       MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
-      MailFolder folder = null;
+      MailFolder folder = mail.findFolder(account, folderId);
 
-      if (DataUtils.isId(folderId)) {
-        folder = mail.findFolder(account, folderId);
-      } else {
-        SystemFolder sysFolder = NameUtils.getEnumByName(SystemFolder.class,
-            reqInfo.getParameter(COL_FOLDER_NAME));
-
-        if (sysFolder != null) {
-          switch (sysFolder) {
-            case Drafts:
-              folder = mail.getDraftsFolder(account);
-              break;
-            case Inbox:
-              folder = mail.getInboxFolder(account);
-              break;
-            case Sent:
-              folder = mail.getSentFolder(account);
-              break;
-            case Trash:
-              folder = mail.getTrashFolder(account);
-              break;
-          }
-        }
-      }
       if (folder == null) {
-        response = ResponseObject.error("Folder does not exist:", DataUtils.isId(folderId)
-            ? BeeUtils.join("=", "ID", folderId)
-            : reqInfo.getParameter(COL_FOLDER_NAME));
+        response = ResponseObject.error("Folder does not exist: ID =", folderId);
       } else {
         response = checkMail(account, folder, false);
       }
@@ -569,9 +548,9 @@ public class MailModuleBean implements BeeModule {
     Assert.notNull(user);
 
     return ResponseObject.response(qs.getData(new SqlSelect()
+        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
         .addFields(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION, COL_ADDRESS, COL_ACCOUNT_DEFAULT,
             "SentFolder", "DraftsFolder", "TrashFolder")
-        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
         .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), "InboxFolder")
         .addFrom(TBL_ACCOUNTS)
         .addFromLeft(TBL_FOLDERS,
