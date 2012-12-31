@@ -8,8 +8,8 @@ public class CustomDiv extends CustomWidget {
     super(Document.get().createDivElement());
   }
 
-  public CustomDiv(String style) {
-    super(Document.get().createDivElement(), style);
+  public CustomDiv(String styleName) {
+    super(Document.get().createDivElement(), styleName);
   }
 
   @Override

@@ -9,7 +9,15 @@
 
     <SimpleColumn name="FxPixelsPerCustomer" />
     <SimpleColumn name="FxPixelsPerOrder" />
+    <SimpleColumn name="FxPixelsPerDay" />
+
     <SimpleColumn name="FxPixelsPerRow" />
+
+    <SimpleColumn name="FxHeaderHeight" />
+    <SimpleColumn name="FxFooterHeight" />
+
+    <SimpleColumn name="FxSliderWidth" />
+    <SimpleColumn name="FxBarHeight" />
     
     <SimpleColumn name="FxTheme" />
     <SimpleJoin name="FxTheme" joinType="LEFT">

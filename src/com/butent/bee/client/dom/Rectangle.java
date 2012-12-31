@@ -47,11 +47,6 @@ public class Rectangle implements HasDimensions {
     super();
   }
 
-  public Rectangle(Style style) {
-    this();
-    setFromStyle(style);
-  }
-
   public Rectangle(Double leftValue, CssUnit leftUnit, Double topValue, CssUnit topUnit,
       Double widthValue, CssUnit widthUnit, Double heightValue, CssUnit heightUnit) {
     this.leftValue = leftValue;
@@ -70,6 +65,23 @@ public class Rectangle implements HasDimensions {
         (double) widthValue, DEFAULT_UNIT, (double) heightValue, DEFAULT_UNIT);
   }
 
+  public Rectangle(Style style) {
+    this();
+    setFromStyle(style);
+  }
+
+  public void applyHeight(Style st) {
+    if (st != null && getHeightValue() != null) {
+      setStyleProperty(st, StyleUtils.STYLE_HEIGHT, getHeightValue(), getHeightUnit());
+    }
+  }
+
+  public void applyLeft(Style st) {
+    if (st != null && getLeftValue() != null) {
+      setStyleProperty(st, StyleUtils.STYLE_LEFT, getLeftValue(), getLeftUnit());
+    }
+  }
+
   public void applyTo(Element el) {
     Assert.notNull(el);
     applyTo(el.getStyle());
@@ -77,25 +89,28 @@ public class Rectangle implements HasDimensions {
 
   public void applyTo(Style st) {
     Assert.notNull(st);
-
-    if (getLeftValue() != null) {
-      setStyleProperty(st, StyleUtils.STYLE_LEFT, getLeftValue(), getLeftUnit());
-    }
-    if (getTopValue() != null) {
-      setStyleProperty(st, StyleUtils.STYLE_TOP, getTopValue(), getTopUnit());
-    }
-
-    if (getWidthValue() != null) {
-      setStyleProperty(st, StyleUtils.STYLE_WIDTH, getWidthValue(), getWidthUnit());
-    }
-    if (getHeightValue() != null) {
-      setStyleProperty(st, StyleUtils.STYLE_HEIGHT, getHeightValue(), getHeightUnit());
-    }
+    
+    applyLeft(st);
+    applyTop(st);
+    applyWidth(st);
+    applyHeight(st);
   }
 
   public void applyTo(UIObject obj) {
     Assert.notNull(obj);
     applyTo(obj.getElement());
+  }
+  
+  public void applyTop(Style st) {
+    if (st != null && getTopValue() != null) {
+      setStyleProperty(st, StyleUtils.STYLE_TOP, getTopValue(), getTopUnit());
+    }
+  }
+  
+  public void applyWidth(Style st) {
+    if (st != null && getWidthValue() != null) {
+      setStyleProperty(st, StyleUtils.STYLE_WIDTH, getWidthValue(), getWidthUnit());
+    }
   }
 
   public void clearHeight() {
@@ -114,10 +129,6 @@ public class Rectangle implements HasDimensions {
     setWidth(null, null);
   }
 
-  public boolean contains(int x, int y) {
-    return contains((double) x, (double) y);
-  }
-
   public boolean contains(double x, double y) {
     if (isValid()) {
       return x >= getLeftValue() && x <= getLeftValue() + getWidthValue()
@@ -125,6 +136,10 @@ public class Rectangle implements HasDimensions {
     } else {
       return false;
     }
+  }
+
+  public boolean contains(int x, int y) {
+    return contains((double) x, (double) y);
   }
 
   @Override

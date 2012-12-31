@@ -101,7 +101,11 @@ public class TransportConstants {
 
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
+  public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
   public static final String COL_FX_PIXELS_PER_ROW = "FxPixelsPerRow";
+  public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
+  public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
+  public static final String COL_FX_SLIDER_WIDTH = "FxSliderWidth";
   public static final String COL_FX_THEME = "FxTheme";
   
   public static final String FORM_NEW_VEHICLE = "NewVehicle";

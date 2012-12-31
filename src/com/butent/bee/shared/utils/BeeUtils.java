@@ -797,6 +797,20 @@ public class BeeUtils {
     return new StringBuilder(src).insert(pos, c).toString();
   }
 
+  public static <C extends Comparable<C>> boolean intersects(Collection<Range<C>> col,
+      Range<C> range) {
+    if (col == null || range == null) {
+      return false;
+    }
+    
+    for (Range<C> item : col) {
+      if (intersects(item, range)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -806,7 +820,7 @@ public class BeeUtils {
       return false;
     }
   }
-
+  
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
@@ -1248,35 +1262,15 @@ public class BeeUtils {
    *         separator {@code sep} between each.
    */
   public static String join(String sep, Object first, Object second, Object... rest) {
-    Assert.notNull(sep);
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(transform(first));
-
-    String s = transform(second);
-    if (!s.isEmpty()) {
-      if (sb.length() > 0 && !sep.isEmpty()) {
-        sb.append(sep);
-      }
-      sb.append(s);
-    }
-
-    if (rest != null) {
-      for (Object x : rest) {
-        s = transform(x);
-        if (!s.isEmpty()) {
-          if (sb.length() > 0 && !sep.isEmpty()) {
-            sb.append(sep);
-          }
-          sb.append(s);
-        }
-      }
-    }
-    return sb.toString();
+    return doJoin(true, sep, first, second, rest);
   }
 
   public static String joinItems(Object first, Object second, Object... rest) {
     return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
+  }
+  
+  public static String joinNoDuplicates(String sep, Object first, Object second, Object... rest) {
+    return doJoin(false, sep, first, second, rest);
   }
 
   public static String joinOptions(String... options) {
@@ -1406,6 +1400,10 @@ public class BeeUtils {
     return (o1 == null) ? o2 : o1;
   }
 
+  public static <T> T nvl(T o1, T o2, T o3) {
+    return nvl(nvl(o1, o2), o3);
+  }
+  
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
@@ -2545,6 +2543,35 @@ public class BeeUtils {
     }
   }
 
+  private static String doJoin(boolean allowDuplicates, String sep, Object first, Object second,
+      Object... rest) {
+    Assert.notNull(sep);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(transform(first));
+
+    String s = transform(second);
+    if (!s.isEmpty() && (allowDuplicates || !containsSame(sb.toString(), s))) {
+      if (sb.length() > 0 && !sep.isEmpty()) {
+        sb.append(sep);
+      }
+      sb.append(s);
+    }
+
+    if (rest != null) {
+      for (Object x : rest) {
+        s = transform(x);
+        if (!s.isEmpty() && (allowDuplicates || !containsSame(sb.toString(), s))) {
+          if (sb.length() > 0 && !sep.isEmpty()) {
+            sb.append(sep);
+          }
+          sb.append(s);
+        }
+      }
+    }
+    return sb.toString();
+  }
+  
   private BeeUtils() {
   }
 }

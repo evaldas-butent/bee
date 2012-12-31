@@ -77,6 +77,26 @@ public class RowEditor {
     return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
   }
 
+  public static boolean opendRow(String viewName, Long rowId, boolean modal,
+      RowCallback rowCallback) {
+    if (BeeUtils.isEmpty(viewName) || !DataUtils.isId(rowId)) {
+      return false;
+    }
+
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (dataInfo == null) {
+      return false;
+    }
+
+    String formName = getFormName(null, dataInfo);
+    if (BeeUtils.isEmpty(formName)) {
+      return false;
+    }
+
+    getRow(formName, dataInfo, rowId, modal, null, rowCallback);
+    return true;
+  }
+
   public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
       RowCallback rowCallback) {
     if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
@@ -94,7 +114,7 @@ public class RowEditor {
     getRow(formName, dataInfo, rowId, modal, null, rowCallback);
     return true;
   }
-
+  
   public static void openRow(String viewName, BeeRow row, boolean modal) {
     openRow(viewName, row, modal, null, null, modal ? null : PresenterCallback.SHOW_IN_NEW_TAB);
   }
@@ -110,16 +130,6 @@ public class RowEditor {
 
     String formName = getFormName(null, dataInfo);
     openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
-  }
-
-  public static void openRow(String formName, DataInfo dataInfo, long rowId) {
-    openRow(formName, dataInfo, rowId, false, null, null);
-  }
-
-  public static void openRow(String formName, DataInfo dataInfo, long rowId,
-      boolean modal, UIObject target, RowCallback rowCallback) {
-    Assert.notNull(dataInfo);
-    getRow(formName, dataInfo, rowId, modal, target, rowCallback);
   }
 
   public static void openRow(String formName, DataInfo dataInfo, BeeRow row, boolean modal,
@@ -139,6 +149,16 @@ public class RowEditor {
     }
 
     createForm(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
+  }
+
+  public static void openRow(String formName, DataInfo dataInfo, long rowId) {
+    openRow(formName, dataInfo, rowId, false, null, null);
+  }
+
+  public static void openRow(String formName, DataInfo dataInfo, long rowId,
+      boolean modal, UIObject target, RowCallback rowCallback) {
+    Assert.notNull(dataInfo);
+    getRow(formName, dataInfo, rowId, modal, target, rowCallback);
   }
 
   public static void registerHasDelegate(String viewName) {

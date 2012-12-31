@@ -1,5 +1,7 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragEnterEvent;
@@ -15,6 +17,7 @@ import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
@@ -30,10 +33,15 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
  */
 
 public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAndDropHandlers,
-    HasIndexedWidgets, ProvidesResize, RequiresResize {
+    HasIndexedWidgets, ProvidesResize, RequiresResize, HasClickHandlers {
 
   public Flow() {
     DomUtils.createId(this, getIdPrefix());
+  }
+
+  @Override
+  public HandlerRegistration addClickHandler(ClickHandler handler) {
+    return addDomHandler(handler, ClickEvent.getType());
   }
 
   @Override
@@ -95,7 +103,7 @@ public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAnd
   public void onDetach() {
     super.onDetach();
   }
-
+  
   @Override
   public void onResize() {
     for (Widget child : getChildren()) {
@@ -104,7 +112,7 @@ public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAnd
       }
     }
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);

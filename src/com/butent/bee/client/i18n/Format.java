@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -169,6 +170,8 @@ public class Format {
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
   private static DateTimeFormat defaultTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
+
+  private static DateTimeFormat weekdayFullFormat = DateTimeFormat.getFormat("EEEE");
   
   private static Character defaultTrueChar = BeeConst.CHECK_MARK;
   private static Character defaultFalseChar = null;
@@ -435,6 +438,10 @@ public class Format {
         result = null;
     }
     return result;
+  }
+  
+  public static String renderDayOfWeek(HasDateValue date) {
+    return (date == null) ? null : weekdayFullFormat.format(date);
   }
 
   public static void setFormat(Object target, ValueType type, String pattern) {

@@ -6,8 +6,172 @@
 }
 
 .bee-tr-fx-Canvas {
-  top: 33px;
-  bootom: 0;
+  position: absolute;
+  top: 32px;
+  bottom: 0;
   left: 0;
   right: 0;
+  border-top: 1px solid #ccc;
+}
+
+.bee-tr-fx-Header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.bee-tr-fx-ScrollArea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: auto;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #888;
+}
+
+.bee-tr-fx-Content {
+  position: relative;
+}
+
+.bee-tr-fx-Customer-col-sep, .bee-tr-fx-Order-col-sep {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background-color: #888;
+}
+
+.bee-tr-fx-Customer-panel, .bee-tr-fx-Order-panel {
+  position: absolute;
+  display: -webkit-flex;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
+  overflow: auto;
+}
+
+.bee-tr-fx-Customer-label, .bee-tr-fx-Order-label {
+  -webkit-flex: 1;
+  padding-left: 2px;
+}
+
+.bee-tr-fx-Customer-label:hover, .bee-tr-fx-Order-label:hover, .bee-tr-visibleRange-start:hover, .bee-tr-visibleRange-end:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+
+.bee-tr-fx-Item-panel {
+  position: absolute;
+  opacity: 0.5;
+  cursor: pointer;
+}
+.bee-tr-fx-Item-load, .bee-tr-fx-Item-unload {
+  position: absolute;
+  cursor: pointer;
+  font-size: 12px;
+}
+.bee-tr-fx-Item-unload {
+  text-align: right;
+}
+
+.bee-tr-fx-Customer-row-sep, .bee-tr-fx-Order-row-sep, .bee-tr-fx-row-sep, .bee-tr-fx-bottom-sep {
+  position: absolute;
+  height: 1px;
+}
+.bee-tr-fx-Customer-row-sep, .bee-tr-fx-bottom-sep {
+  background-color: #888;
+}
+.bee-tr-fx-Order-row-sep {
+  background-color: #ddd;
+}
+.bee-tr-fx-row-sep {
+  background-color: #ddd;
+}
+
+.bee-tr-fx-Footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.bee-tr-fx-Selector-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.bee-tr-fx-Selector-strip {
+  position: absolute;
+  opacity: 0.5;
+}
+
+.bee-tr-fx-Selector-startSlider, .bee-tr-fx-Selector-endSlider {
+  position: absolute;
+  top: 0;
+  bottom: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: col-resize;
+}
+.bee-tr-fx-Selector-startSlider:hover, .bee-tr-fx-Selector-endSlider:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.bee-tr-fx-Selector-bar {
+  position: absolute;
+  height: 8px;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: move;
+}
+.bee-tr-fx-Selector-bar:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.bee-tr-daySeparator, .bee-tr-monthSeparator, .bee-tr-rightSeparator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+.bee-tr-daySeparator {
+  background-color: #ddd;
+}
+.bee-tr-monthSeparator {
+  background-color: #888;
+}
+.bee-tr-rightSeparator {
+  background-color: #888;
+}
+
+.bee-tr-dayLabel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  text-align: center;
+}
+
+.bee-tr-visibleRange-panel, .bee-tr-maxRange-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: -webkit-flex;
+}
+.bee-tr-visibleRange-start, .bee-tr-visibleRange-end, .bee-tr-maxRange-start, .bee-tr-maxRange-end {
+  -webkit-flex: 1;
+}
+
+.bee-tr-dayBackground {
+  position: absolute;
+  top: 0;
+}
+
+.bee-tr-past {
+  background-color: #e8e8e8;
+}
+.bee-tr-today {
+  background-color: #f1f1f1;
+}
+.bee-tr-weekend {
+  background-color: #f8f8f8;
 }

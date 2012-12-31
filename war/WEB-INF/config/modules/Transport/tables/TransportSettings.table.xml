@@ -9,7 +9,15 @@
 
     <Integer name="FxPixelsPerCustomer" />
     <Integer name="FxPixelsPerOrder" />
+    <Integer name="FxPixelsPerDay" />
+
     <Integer name="FxPixelsPerRow" />
+
+    <Integer name="FxHeaderHeight" />
+    <Integer name="FxFooterHeight" />
+
+    <Integer name="FxSliderWidth" />
+    <Integer name="FxBarHeight" />
 
     <Relation name="FxTheme" relation="Themes" />
   </Fields>
