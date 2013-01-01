@@ -107,6 +107,9 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_FX_DATA)) {
       response = getFxData();
+
+    } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
+      response = getColors(reqInfo);
       
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -353,6 +356,17 @@ public class TransportModuleBean implements BeeModule {
         "ServicesCost:", res.getValue("ServicesCost")});
   }
 
+  private ResponseObject getColors(RequestInfo reqInfo) {
+    Long theme;
+    if (reqInfo.hasParameter(VAR_THEME_ID)) {
+      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_THEME_ID));
+    } else {
+      theme = null;
+    }
+    
+    return ResponseObject.response(getBackgroundColors(theme));
+  }
+
   /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
    * 
@@ -419,7 +433,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-
+  
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {

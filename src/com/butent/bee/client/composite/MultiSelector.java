@@ -376,7 +376,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       rowCallback = null;
     }
     
-    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
+    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), true, rowCallback);
   }
   
   private InsertPanel getContainer() {

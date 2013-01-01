@@ -10,9 +10,5 @@ interface HasVisibleRange {
 
   Range<JustDate> getVisibleRange();
   
-  void setVisibleEnd(JustDate end);
-
   void setVisibleRange(JustDate start, JustDate end);
-
-  void setVisibleStart(JustDate start);
 }

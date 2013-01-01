@@ -51,7 +51,6 @@
 
 .bee-tr-fx-Customer-label, .bee-tr-fx-Order-label {
   -webkit-flex: 1;
-  padding-left: 2px;
 }
 
 .bee-tr-fx-Customer-label:hover, .bee-tr-fx-Order-label:hover, .bee-tr-visibleRange-start:hover, .bee-tr-visibleRange-end:hover {
@@ -102,7 +101,16 @@
 }
 .bee-tr-fx-Selector-strip {
   position: absolute;
-  opacity: 0.5;
+  opacity: 0.3;
+}
+
+.bee-tr-fx-Selector-startSlider-label, .bee-tr-fx-Selector-endSlider-label {
+  position: absolute;
+  padding: 2px;
+  margin-bottom: 2px;
+  background-color: whiteSmoke;
+  color: #222;
+  border: 1px solid #ccc;
 }
 
 .bee-tr-fx-Selector-startSlider, .bee-tr-fx-Selector-endSlider {

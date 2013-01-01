@@ -77,19 +77,19 @@ class ChartHelper {
     panel.add(separator);
   }
 
-  static void addLegendWidget(HasWidgets panel, Widget widget,
-      int left, int width, int firstRow, int lastRow, int rowHeight) {
+  static void addLegendWidget(HasWidgets panel, Widget widget, int left, int width,
+      int firstRow, int lastRow, int rowHeight, int leftMargin, int topMargin) {
 
     if (left >= 0) {
-      StyleUtils.setLeft(widget, left);
+      StyleUtils.setLeft(widget, left + leftMargin);
     }
     if (width > 0) {
-      StyleUtils.setWidth(widget, width);
+      StyleUtils.setWidth(widget, width - leftMargin);
     }
 
     if (firstRow >= 0 && lastRow >= firstRow && rowHeight > 0) {
-      StyleUtils.setTop(widget, firstRow * rowHeight);
-      StyleUtils.setHeight(widget, (lastRow - firstRow + 1) * rowHeight);
+      StyleUtils.setTop(widget, firstRow * rowHeight + topMargin);
+      StyleUtils.setHeight(widget, (lastRow - firstRow + 1) * rowHeight - topMargin);
     }
 
     panel.add(widget);
@@ -119,7 +119,7 @@ class ChartHelper {
     if (id == null || count <= 0) {
       return BeeConst.UNDEF;
     } else {
-      return Codec.crc32(BeeUtils.toString(id)).hashCode() % count;
+      return Math.abs(Codec.crc32(BeeUtils.toString(id)).hashCode()) % count;
     }
   }
 

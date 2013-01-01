@@ -30,10 +30,12 @@ public class TransportConstants {
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_FX_DATA = "GetFxData";
+  public static final String SVC_GET_COLORS = "GetColors";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_ORDER_ID = Service.RPC_VAR_PREFIX + "order_id";
+  public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
 
   public static final String TBL_TRIPS = "Trips";
 
@@ -103,15 +105,21 @@ public class TransportConstants {
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
   public static final String COL_FX_PIXELS_PER_ROW = "FxPixelsPerRow";
+
   public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
   public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
+  
   public static final String COL_FX_SLIDER_WIDTH = "FxSliderWidth";
+  public static final String COL_FX_BAR_HEIGHT = "FxBarHeight";
+  
   public static final String COL_FX_THEME = "FxTheme";
   
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_CARGO = "OrderCargo";
+
+  public static final String FORM_FX_SETTINGS = "TrFxSettings";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";

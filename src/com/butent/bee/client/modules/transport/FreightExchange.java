@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -20,8 +21,10 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rectangle;
@@ -68,6 +71,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class FreightExchange extends Flow implements Presenter, View, Printable,
@@ -85,9 +89,6 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     private final Long cargoId;
     private final String cargoDescription;
-
-    private final Long loadingPlaceId;
-    private final Long unloadingPlaceId;
 
     private final JustDate loadingDate;
     private final Long loadingCountry;
@@ -116,9 +117,6 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
       this.cargoId = row.getLong(COL_CARGO_ID);
       this.cargoDescription = row.getValue(COL_DESCRIPTION);
 
-      this.loadingPlaceId = row.getLong(COL_LOADING_PLACE);
-      this.unloadingPlaceId = row.getLong(COL_UNLOADING_PLACE);
-
       this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
       this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
       this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
@@ -138,18 +136,6 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     @Override
     public Range<JustDate> getRange() {
       return range;
-    }
-
-    @Override
-    public String toString() {
-      return "orderId=" + orderId + ", orderStatus=" + orderStatus + ", orderDate="
-          + orderDate + ", orderNo=" + orderNo + ", customerId=" + customerId + ", customerName="
-          + customerName + ", cargoId=" + cargoId + ", cargoDescription=" + cargoDescription
-          + ", loadingPlaceId=" + loadingPlaceId + ", unloadingPlaceId=" + unloadingPlaceId
-          + ", loadingDate=" + loadingDate + ", loadingCountry=" + loadingCountry
-          + ", loadingPlace=" + loadingPlace + ", loadingTerminal=" + loadingTerminal
-          + ", unloadingDate=" + unloadingDate + ", unloadingCountry=" + unloadingCountry
-          + ", unloadingPlace=" + unloadingPlace + ", unloadingTerminal=" + unloadingTerminal;
     }
   }
 
@@ -197,6 +183,14 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
   private static final String STYLE_SELECTOR_END_SLIDER = STYLE_SELECTOR_PREFIX + "endSlider";
   private static final String STYLE_SELECTOR_BAR = STYLE_SELECTOR_PREFIX + "bar";
 
+  private static final String STYLE_START_SLIDER_LABEL = STYLE_SELECTOR_START_SLIDER + "-label";
+  private static final String STYLE_END_SLIDER_LABEL = STYLE_SELECTOR_END_SLIDER + "-label";
+
+  private static final String DEFAULT_ITEM_COLOR = "yellow";
+
+  private static final int DEFAULT_SEPARATOR_WIDTH = 1;
+  private static final int DEFAULT_SEPARATOR_HEIGHT = 1;
+
   static void open(final Callback<IdentifiableWidget> callback) {
     Assert.notNull(callback);
 
@@ -233,11 +227,15 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
   private boolean renderPending = false;
 
-  private String startSliderId = null;
-  private String endSliderId = null;
-  private String selectorBarId = null;
-  
   private int sliderWidth = 0;
+
+  private Widget startSliderLabel = null;
+  private Widget endSliderLabel = null;
+
+  private final EnumMap<RangeMover, Element> rangeMovers = Maps.newEnumMap(RangeMover.class);
+
+  private String scrollAreaId = null;
+  private String contentId = null;
 
   private FreightExchange() {
     super();
@@ -322,6 +320,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
         break;
 
       case CONFIGURE:
+        editSettings();
         break;
 
       case CLOSE:
@@ -333,7 +332,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.info(getCaption(), action, "not implemented");
     }
   }
 
@@ -353,41 +352,22 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     Element source = ((Mover) event.getSource()).getElement();
     Element panel = source.getParentElement();
 
-    EnumMap<RangeMover, Element> movers = Maps.newEnumMap(RangeMover.class);
-
-    RangeMover sourceType = getMoverType(source);
+    RangeMover sourceType = null;
+    for (Map.Entry<RangeMover, Element> entry : rangeMovers.entrySet()) {
+      if (entry.getValue().getId().equals(source.getId())) {
+        sourceType = entry.getKey();
+        break;
+      }
+    }
     if (sourceType == null) {
-      return;
-    }
-    movers.put(sourceType, source);
-
-    for (Element elem = source.getPreviousSiblingElement(); elem != null; elem =
-        elem.getPreviousSiblingElement()) {
-      RangeMover type = getMoverType(elem);
-      if (type == null) {
-        break;
-      }
-      movers.put(type, elem);
-    }
-
-    for (Element elem = source.getNextSiblingElement(); elem != null; elem =
-        elem.getNextSiblingElement()) {
-      RangeMover type = getMoverType(elem);
-      if (type == null) {
-        break;
-      }
-      movers.put(type, elem);
-    }
-
-    if (movers.size() != RangeMover.values().length) {
-      logger.warning("found movers:", movers.keySet());
+      logger.warning("range mover not found:", source);
       return;
     }
 
     int panelWidth = StyleUtils.getWidth(panel) - getSliderWidth();
 
-    int startPos = StyleUtils.getLeft(movers.get(RangeMover.START_SLIDER));
-    int endPos = StyleUtils.getLeft(movers.get(RangeMover.END_SLIDER));
+    int startPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.START_SLIDER));
+    int endPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.END_SLIDER));
 
     boolean changed = false;
 
@@ -398,9 +378,10 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
           if (newStart != startPos) {
             startPos = newStart;
 
-            StyleUtils.setLeft(movers.get(RangeMover.START_SLIDER), startPos);
-            StyleUtils.setLeft(movers.get(RangeMover.BAR), startPos);
-            StyleUtils.setWidth(movers.get(RangeMover.BAR), endPos - startPos + getSliderWidth());
+            StyleUtils.setLeft(source, startPos);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), startPos);
+            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
+                endPos - startPos + getSliderWidth());
 
             changed = true;
           }
@@ -411,8 +392,9 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
           if (newEnd != endPos) {
             endPos = newEnd;
 
-            StyleUtils.setLeft(movers.get(RangeMover.END_SLIDER), endPos);
-            StyleUtils.setWidth(movers.get(RangeMover.BAR), endPos - startPos + getSliderWidth());
+            StyleUtils.setLeft(source, endPos);
+            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
+                endPos - startPos + getSliderWidth());
 
             changed = true;
           }
@@ -424,9 +406,9 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
             startPos += dx;
             endPos += dx;
 
-            StyleUtils.setLeft(movers.get(RangeMover.START_SLIDER), startPos);
-            StyleUtils.setLeft(movers.get(RangeMover.END_SLIDER), endPos);
-            StyleUtils.setLeft(movers.get(RangeMover.BAR), startPos);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.START_SLIDER), startPos);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), endPos);
+            StyleUtils.setLeft(source, startPos);
 
             changed = true;
           }
@@ -443,12 +425,33 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
       JustDate end = TimeUtils.clamp(ChartHelper.getDate(min, endPos, dayWidth), start, max);
 
       if (event.isFinished()) {
+        getStartSliderLabel().setVisible(false);
+        getEndSliderLabel().setVisible(false);
+
         setVisibleRange(start, end);
 
       } else {
-        movers.get(RangeMover.START_SLIDER).setTitle(start.toString());
-        movers.get(RangeMover.END_SLIDER).setTitle(end.toString());
-        movers.get(RangeMover.BAR).setTitle(ChartHelper.getRangeLabel(start, end));
+        int panelLeft = StyleUtils.getLeft(panel);
+
+        String startLabel = start.toString();
+        String endLabel = end.toString();
+
+        getStartSliderLabel().setVisible(true);
+        getEndSliderLabel().setVisible(true);
+
+        getStartSliderLabel().getElement().setInnerText(startLabel);
+        getEndSliderLabel().getElement().setInnerText(endLabel);
+
+        int startWidth = getStartSliderLabel().getOffsetWidth();
+        int endWidth = getStartSliderLabel().getOffsetWidth();
+
+        int startLeft = startPos - (startWidth - getSliderWidth()) / 2;
+        startLeft = BeeUtils.clamp(startLeft, -panelLeft, panelWidth - startWidth - endWidth);
+        StyleUtils.setLeft(getStartSliderLabel(), panelLeft + startLeft);
+
+        int endLeft = endPos - (endWidth - getSliderWidth()) / 2;
+        endLeft = BeeUtils.clamp(endLeft, startLeft + startWidth, panelWidth - endWidth);
+        StyleUtils.setLeft(getEndSliderLabel(), panelLeft + endLeft);
       }
     }
   }
@@ -459,12 +462,17 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     String id = source.getId();
 
     if (getId().equals(id)) {
-      int height = source.getClientHeight() + getPrintHeightAdjustment();
-      StyleUtils.setSize(target, source.getClientWidth(), height);
+      int adjustment = getPrintHeightAdjustment();
+      if (adjustment != 0) {
+        StyleUtils.setHeight(target, source.getClientHeight() + adjustment);
+      }
       ok = true;
 
     } else if (headerView.asWidget().getElement().isOrHasChild(source)) {
       ok = headerView.onPrint(source, target);
+
+    } else if (rangeMovers.containsValue(source)) {
+      ok = !rangeMovers.get(RangeMover.BAR).getId().equals(id);
 
     } else {
       ok = true;
@@ -505,20 +513,6 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
   }
 
   @Override
-  public void setVisibleEnd(JustDate end) {
-    if (getVisibleRange() != null && end != null
-        && !getVisibleRange().upperEndpoint().equals(end)) {
-
-      JustDate start = getVisibleRange().lowerEndpoint();
-
-      if (TimeUtils.isMeq(end, start)) {
-        setVisibleRange(Range.closed(start, end));
-        render(false);
-      }
-    }
-  }
-
-  @Override
   public void setVisibleRange(JustDate start, JustDate end) {
     if (start != null && end != null && TimeUtils.isLeq(start, end)) {
 
@@ -526,20 +520,6 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
       if (!range.equals(getVisibleRange())) {
         setVisibleRange(range);
-        render(false);
-      }
-    }
-  }
-
-  @Override
-  public void setVisibleStart(JustDate start) {
-    if (getVisibleRange() != null && start != null
-        && !getVisibleRange().lowerEndpoint().equals(start)) {
-
-      JustDate end = getVisibleRange().upperEndpoint();
-
-      if (TimeUtils.isLeq(start, end)) {
-        setVisibleRange(Range.closed(start, end));
         render(false);
       }
     }
@@ -580,7 +560,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     ClickHandler opener = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.opendRow(VIEW_CARGO, cargoId, openModal(event), null);
+        openDataRow(event, VIEW_CARGO, cargoId);
       }
     };
 
@@ -590,14 +570,14 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
       itemWidget.setTitle(title);
       itemWidget.addClickHandler(opener);
     }
-    
+
     if (!BeeUtils.isEmpty(loading)) {
       BeeLabel loadingLabel = new BeeLabel(loading);
       loadingLabel.addStyleName(STYLE_ITEM_LOAD);
 
       if (BeeUtils.isEmpty(unloading)) {
         rectangle.applyTo(loadingLabel);
-      
+
         loadingLabel.setTitle(title);
         loadingLabel.addClickHandler(opener);
 
@@ -631,7 +611,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.opendRow(CommonsConstants.VIEW_COMPANIES, customerId, openModal(event), null);
+        openDataRow(event, CommonsConstants.VIEW_COMPANIES, customerId);
       }
     });
 
@@ -655,7 +635,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.opendRow(VIEW_ORDERS, orderId, openModal(event), null);
+        openDataRow(event, VIEW_ORDERS, orderId);
       }
     });
 
@@ -695,13 +675,44 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     return rows;
   }
 
+  private void editSettings() {
+    if (DataUtils.isEmpty(getSettings())) {
+      return;
+    }
+
+    BeeRow oldSettings = getSettings().getRow(0);
+    final Integer oldTheme = oldSettings.getInteger(getSettings().getColumnIndex(COL_FX_THEME));
+
+    RowEditor.openRow(FORM_FX_SETTINGS, getSettings().getViewName(), oldSettings, true, false,
+        new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (result != null) {
+              getSettings().clearRows();
+              getSettings().addRow(DataUtils.cloneRow(result));
+
+              Integer newTheme = result.getInteger(getSettings().getColumnIndex(COL_FX_THEME));
+              if (Objects.equal(oldTheme, newTheme)) {
+                render(false);
+              } else {
+                updateColorTheme(newTheme);
+              }
+            }
+          }
+        });
+  }
+
   private String getColor(Long id) {
     int index = ChartHelper.getColorIndex(id, colors.size());
     if (BeeUtils.isIndex(colors, index)) {
       return colors.get(index);
     } else {
-      return "red";
+      return DEFAULT_ITEM_COLOR;
     }
+  }
+
+  private String getContentId() {
+    return contentId;
   }
 
   private BeeRowSet getCountries() {
@@ -727,29 +738,8 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     }
   }
 
-  private String getEndSliderId() {
-    return endSliderId;
-  }
-
-  private RangeMover getMoverType(Element element) {
-    if (element == null) {
-      return null;
-    }
-
-    String id = element.getId();
-    if (BeeUtils.isEmpty(id)) {
-      return null;
-    }
-
-    if (id.equals(getStartSliderId())) {
-      return RangeMover.START_SLIDER;
-    } else if (id.equals(getEndSliderId())) {
-      return RangeMover.END_SLIDER;
-    } else if (id.equals(getSelectorBarId())) {
-      return RangeMover.BAR;
-    } else {
-      return null;
-    }
+  private Widget getEndSliderLabel() {
+    return endSliderLabel;
   }
 
   private String getPlaceLabel(Long countryId, String placeName, String terminal) {
@@ -764,11 +754,20 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
   }
 
   private int getPrintHeightAdjustment() {
-    return 0;
+    if (BeeUtils.anyEmpty(getScrollAreaId(), getContentId())) {
+      return 0;
+    }
+
+    Element scrollArea = Document.get().getElementById(getScrollAreaId());
+    Element content = Document.get().getElementById(getContentId());
+    if (scrollArea == null || content == null) {
+      return 0;
+    }
+    return content.getClientHeight() - scrollArea.getClientHeight();
   }
 
-  private String getSelectorBarId() {
-    return selectorBarId;
+  private String getScrollAreaId() {
+    return scrollAreaId;
   }
 
   private BeeRowSet getSettings() {
@@ -779,16 +778,17 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     return sliderWidth;
   }
 
-  private String getStartSliderId() {
-    return startSliderId;
+  private Widget getStartSliderLabel() {
+    return startSliderLabel;
   }
 
   private boolean isRenderPending() {
     return renderPending;
   }
 
-  private boolean openModal(HasNativeEvent event) {
-    return !EventUtils.hasModifierKey(event.getNativeEvent());
+  private void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
+    RowEditor.openRow(viewName, rowId, !EventUtils.hasModifierKey(event.getNativeEvent()),
+        true, null);
   }
 
   private void refresh() {
@@ -836,7 +836,10 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     int slider = ChartHelper.getPixels(getSettings(), COL_FX_SLIDER_WIDTH, 5);
     setSliderWidth(BeeUtils.clamp(slider, 1, chartRight));
-    
+
+    int barHeight = ChartHelper.getPixels(getSettings(), COL_FX_BAR_HEIGHT, BeeConst.UNDEF,
+        footerHeight / 2);
+
     if (updateRange || getVisibleRange() == null || !getMaxRange().encloses(getVisibleRange())) {
       setVisibleRange(ChartHelper.getDefaultRange(getMaxRange(), chartWidth, dayWidth));
     }
@@ -868,6 +871,9 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     scroll.setWidget(content);
 
+    setContentId(content.getId());
+    setScrollAreaId(scroll.getId());
+
     canvas.add(scroll);
 
     Flow footer = new Flow();
@@ -881,11 +887,27 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     StyleUtils.setLeft(selector, chartLeft);
     StyleUtils.setWidth(selector, chartWidth + getSliderWidth());
 
-    renderRangeSelector(selector, chartWidth, footerHeight);
+    renderRangeSelector(selector, chartWidth, footerHeight, barHeight);
 
     footer.add(selector);
 
     canvas.add(footer);
+
+    BeeLabel startLabel = new BeeLabel();
+    startLabel.addStyleName(STYLE_START_SLIDER_LABEL);
+    StyleUtils.setBottom(startLabel, footerHeight);
+    startLabel.setVisible(false);
+
+    setStartSliderLabel(startLabel);
+    canvas.add(startLabel);
+
+    BeeLabel endLabel = new BeeLabel();
+    endLabel.addStyleName(STYLE_END_SLIDER_LABEL);
+    StyleUtils.setBottom(endLabel, footerHeight);
+    endLabel.setVisible(false);
+
+    setEndSliderLabel(endLabel);
+    canvas.add(endLabel);
 
     setRenderPending(false);
   }
@@ -941,7 +963,8 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
         if (customerChanged) {
           ChartHelper.addLegendWidget(panel, customerWidget, 0, customerWidth,
-              customerStartRow, row - 1, rowHeight);
+              customerStartRow, row - 1, rowHeight,
+              DEFAULT_SEPARATOR_WIDTH, DEFAULT_SEPARATOR_HEIGHT);
 
           customerWidget = createCustomerWidget(rowItem);
           customerStartRow = row;
@@ -951,7 +974,8 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
         if (orderChanged) {
           ChartHelper.addLegendWidget(panel, orderWidget, customerWidth, orderWidth,
-              orderStartRow, row - 1, rowHeight);
+              orderStartRow, row - 1, rowHeight,
+              DEFAULT_SEPARATOR_WIDTH, DEFAULT_SEPARATOR_HEIGHT);
 
           orderWidget = createOrderWidget(rowItem);
           orderStartRow = row;
@@ -978,7 +1002,9 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
         int left = chartLeft + TimeUtils.dayDiff(firstDate, start) * dayWidth;
         int width = (TimeUtils.dayDiff(start, end) + 1) * dayWidth;
 
-        Rectangle rectangle = new Rectangle(left + 1, top + 1, width, rowHeight);
+        Rectangle rectangle = new Rectangle(left + DEFAULT_SEPARATOR_WIDTH,
+            top + DEFAULT_SEPARATOR_HEIGHT, width - DEFAULT_SEPARATOR_WIDTH,
+            rowHeight - DEFAULT_SEPARATOR_HEIGHT);
         addItemWidgets(item, panel, rectangle);
       }
     }
@@ -987,24 +1013,28 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     if (customerWidget != null) {
       ChartHelper.addLegendWidget(panel, customerWidget, 0, customerWidth,
-          customerStartRow, lastRow, rowHeight);
+          customerStartRow, lastRow, rowHeight, DEFAULT_SEPARATOR_WIDTH, DEFAULT_SEPARATOR_HEIGHT);
     }
     if (orderWidget != null) {
       ChartHelper.addLegendWidget(panel, orderWidget, customerWidth, orderWidth,
-          orderStartRow, lastRow, rowHeight);
+          orderStartRow, lastRow, rowHeight, DEFAULT_SEPARATOR_WIDTH, DEFAULT_SEPARATOR_HEIGHT);
     }
 
     ChartHelper.addRowSeparator(panel, STYLE_CONTENT_BOTTOM_SEPARATOR, height,
-        0, customerWidth + orderWidth + chartWidth + 1);
+        0, customerWidth + orderWidth + chartWidth + DEFAULT_SEPARATOR_WIDTH);
   }
 
-  private void renderRangeSelector(HasWidgets panel, int width, int height) {
+  private void renderRangeSelector(HasWidgets panel, int width, int height, int barHeight) {
+    if (getMaxRange() == null) {
+      return;
+    }
     JustDate firstDate = getMaxRange().lowerEndpoint();
     JustDate lastDate = getMaxRange().upperEndpoint();
 
     double dayWidth = (double) width / ChartHelper.getSize(getMaxRange());
-    int itemHeight = BeeUtils.clamp(height / items.size(), Math.max(height / 10, 3), height);
-    int rowCount = height / itemHeight;
+
+    int rowCount = BeeUtils.resize(items.size(), 0, 100, 1, height / 3);
+    int itemHeight = height / rowCount;
 
     Set<Range<JustDate>> ranges = Sets.newHashSet();
     int row = 0;
@@ -1044,35 +1074,61 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     int endPos = ChartHelper.getPosition(firstDate, TimeUtils.nextDay(lastVisible), dayWidth);
     endPos = BeeUtils.clamp(endPos, startPos + getSliderWidth(), width);
 
+    rangeMovers.clear();
+
     Mover startSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_START_SLIDER);
     StyleUtils.setLeft(startSlider, startPos);
     StyleUtils.setWidth(startSlider, getSliderWidth());
+    if (barHeight > 0) {
+      StyleUtils.setBottom(startSlider, barHeight);
+    }
+
     startSlider.setTitle(firstVisible.toString());
 
     startSlider.addMoveHandler(this);
+    rangeMovers.put(RangeMover.START_SLIDER, startSlider.getElement());
 
-    setStartSliderId(startSlider.getId());
     panel.add(startSlider);
 
     Mover endSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_END_SLIDER);
     StyleUtils.setLeft(endSlider, endPos);
     StyleUtils.setWidth(endSlider, getSliderWidth());
+    if (barHeight > 0) {
+      StyleUtils.setBottom(endSlider, barHeight);
+    }
+
     endSlider.setTitle(lastVisible.toString());
 
     endSlider.addMoveHandler(this);
+    rangeMovers.put(RangeMover.END_SLIDER, endSlider.getElement());
 
-    setEndSliderId(endSlider.getId());
     panel.add(endSlider);
 
     Mover bar = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_BAR);
     StyleUtils.setLeft(bar, startPos);
     StyleUtils.setWidth(bar, endPos - startPos + getSliderWidth());
+    if (barHeight > 0) {
+      StyleUtils.setHeight(bar, barHeight);
+    }
+
     bar.setTitle(ChartHelper.getRangeLabel(firstDate, lastVisible));
 
     bar.addMoveHandler(this);
+    rangeMovers.put(RangeMover.BAR, bar.getElement());
 
-    setSelectorBarId(bar.getId());
     panel.add(bar);
+  }
+
+  private void restoreColors(String serialized) {
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+    if (arr != null && arr.length > 0) {
+      colors.clear();
+      colors.addAll(Arrays.asList(arr));
+    }
+  }
+
+  private void setContentId(String contentId) {
+    this.contentId = contentId;
   }
 
   private void setCountries(BeeRowSet countries) {
@@ -1094,11 +1150,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     serialized = rowSet.getTableProperty(PROP_COLORS);
     if (!BeeUtils.isEmpty(serialized)) {
-      String[] arr = Codec.beeDeserializeCollection(serialized);
-      if (arr != null) {
-        colors.clear();
-        colors.addAll(Arrays.asList(arr));
-      }
+      restoreColors(serialized);
     }
 
     serialized = rowSet.getTableProperty(PROP_DATA);
@@ -1110,7 +1162,7 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
         items.add(new Freight(row));
       }
 
-      logger.debug(NameUtils.getName(this), "loaded", items.size(), "items");
+      logger.debug(getCaption(), "loaded", items.size(), "items");
       if (!items.isEmpty()) {
         setMaxRange(ChartHelper.getSpan(items));
       }
@@ -1118,9 +1170,9 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
 
     return true;
   }
-
-  private void setEndSliderId(String endSliderId) {
-    this.endSliderId = endSliderId;
+  
+  private void setEndSliderLabel(Widget endSliderLabel) {
+    this.endSliderLabel = endSliderLabel;
   }
 
   private void setItemWidgetColor(Freight item, Widget widget) {
@@ -1135,8 +1187,8 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     this.renderPending = renderPending;
   }
 
-  private void setSelectorBarId(String selectorBarId) {
-    this.selectorBarId = selectorBarId;
+  private void setScrollAreaId(String scrollAreaId) {
+    this.scrollAreaId = scrollAreaId;
   }
 
   private void setSettings(BeeRowSet settings) {
@@ -1147,11 +1199,26 @@ class FreightExchange extends Flow implements Presenter, View, Printable,
     this.sliderWidth = sliderWidth;
   }
 
-  private void setStartSliderId(String startSliderId) {
-    this.startSliderId = startSliderId;
+  private void setStartSliderLabel(Widget startSliderLabel) {
+    this.startSliderLabel = startSliderLabel;
   }
 
   private void setVisibleRange(Range<JustDate> visibleRange) {
     this.visibleRange = visibleRange;
+  }
+
+  private void updateColorTheme(Integer theme) {
+    ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
+    if (theme != null) {
+      args.addQueryItem(VAR_THEME_ID, theme);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        restoreColors((String) response.getResponse());
+        render(false);
+      }
+    });
   }
 }
