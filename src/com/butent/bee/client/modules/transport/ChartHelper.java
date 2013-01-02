@@ -19,6 +19,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -34,9 +35,12 @@ import java.util.Collection;
 
 class ChartHelper {
 
+  static final int DEFAULT_SEPARATOR_WIDTH = 1;
+  static final int DEFAULT_SEPARATOR_HEIGHT = 1;
+
   private static final BeeLogger logger = LogUtils.getLogger(ChartHelper.class);
 
-  private static final String STYLE_PREFIX = "bee-tr-";
+  private static final String STYLE_PREFIX = "bee-tr-chart-";
 
   private static final String STYLE_MOHTH_SEPARATOR = STYLE_PREFIX + "monthSeparator";
   private static final String STYLE_DAY_SEPARATOR = STYLE_PREFIX + "daySeparator";
@@ -61,8 +65,15 @@ class ChartHelper {
 
   private static final String STYLE_DAY_BACKGROUND = STYLE_PREFIX + "dayBackground";
 
+  private static final String STYLE_CONTENT_ROW_SEPARATOR = STYLE_PREFIX + "row-sep";
+  private static final String STYLE_CONTENT_BOTTOM_SEPARATOR = STYLE_PREFIX + "bottom-sep";
+  
   private static final int DAY_SEPARATOR_WIDTH = 1;
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 15;
+
+  static void addBottomSeparator(HasWidgets panel, int top, int left, int width) {
+    addRowSeparator(panel, STYLE_CONTENT_BOTTOM_SEPARATOR, top, left, width);
+  }
 
   static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
     CustomDiv separator = new CustomDiv(styleName);
@@ -95,6 +106,10 @@ class ChartHelper {
     panel.add(widget);
   }
 
+  static void addRowSeparator(HasWidgets panel, int top, int left, int width) {
+    addRowSeparator(panel, STYLE_CONTENT_ROW_SEPARATOR, top, left, width);
+  }
+  
   static void addRowSeparator(HasWidgets panel, String styleName, int top, int left, int width) {
     CustomDiv separator = new CustomDiv(styleName);
 
@@ -109,6 +124,31 @@ class ChartHelper {
     }
 
     panel.add(separator);
+  }
+  
+  static String buildTitle(Object... labelsAndValues) {
+    Assert.notNull(labelsAndValues);
+    int c = labelsAndValues.length;
+    Assert.parameterCount(c, 2);
+    Assert.isEven(c);
+
+    String valueSeparator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
+    char lineSeparator = BeeConst.CHAR_EOL;
+
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < c - 1; i += 2) {
+      Object label = labelsAndValues[i];
+      Object value = labelsAndValues[i + 1];
+      
+      if (label instanceof String && value != null) {
+        if (sb.length() > 0) {
+          sb.append(lineSeparator);
+        }
+        sb.append(BeeUtils.join(valueSeparator, label, value));
+      }
+    }
+    return sb.toString();
   }
 
   static JustDate clamp(JustDate date, Range<JustDate> range) {

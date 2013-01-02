@@ -30,6 +30,7 @@ public class TransportConstants {
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_FX_DATA = "GetFxData";
+  public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_COLORS = "GetColors";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
@@ -37,7 +38,11 @@ public class TransportConstants {
   public static final String VAR_ORDER_ID = Service.RPC_VAR_PREFIX + "order_id";
   public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
 
+  public static final String TBL_VEHICLES = "Vehicles";
+  public static final String TBL_DRIVERS = "Drivers";
+
   public static final String TBL_TRIPS = "Trips";
+  public static final String TBL_TRIP_DRIVERS = "TripDrivers";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
   
@@ -71,8 +76,16 @@ public class TransportConstants {
   public static final String VIEW_TRANSPORT_SETTINGS = "TransportSettings";
   
   public static final String COL_TRIP = "Trip";
+  public static final String COL_TRIP_ID = "TripID";
+  public static final String COL_TRIP_NO = "TripNo";
+  public static final String COL_TRIP_DATE = "Date";
+  public static final String COL_TRIP_DATE_FROM = "DateFrom";
+  public static final String COL_TRIP_DATE_TO = "DateTo";
+  public static final String COL_TRIP_PERCENT = "TripPercent";
+
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_ID = "CargoID";
+  public static final String COL_CARGO_PERCENT = "CargoPercent";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
@@ -101,6 +114,18 @@ public class TransportConstants {
 
   public static final String COL_USER = "User";
 
+  public static final String COL_VEHICLE_ID = "VehicleID";
+  public static final String COL_VEHICLE = "Vehicle";
+  public static final String COL_TRAILER = "Trailer";
+
+  public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
+  public static final String COL_TRAILER_NUMBER = "TrailerNumber";
+  
+  public static final String COL_EXPEDITION = "Expedition";
+
+  public static final String COL_DRIVER = "Driver";
+  public static final String COL_DRIVER_PERSON = "CompanyPerson";
+  
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
@@ -113,6 +138,18 @@ public class TransportConstants {
   public static final String COL_FX_BAR_HEIGHT = "FxBarHeight";
   
   public static final String COL_FX_THEME = "FxTheme";
+
+  public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
+  public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
+  public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
+
+  public static final String COL_SS_HEADER_HEIGHT = "SsHeaderHeight";
+  public static final String COL_SS_FOOTER_HEIGHT = "SsFooterHeight";
+  
+  public static final String COL_SS_SLIDER_WIDTH = "SsSliderWidth";
+  public static final String COL_SS_BAR_HEIGHT = "SsBarHeight";
+  
+  public static final String COL_SS_THEME = "SsTheme";
   
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
@@ -120,10 +157,18 @@ public class TransportConstants {
   public static final String FORM_CARGO = "OrderCargo";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
+  public static final String FORM_SS_SETTINGS = "TrSsSettings";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
+  public static final String PROP_DRIVERS = "Drivers";
   public static final String PROP_DATA = "Data";
+
+  public static final String ALS_TRIP_DATE = "TripDate";
+  public static final String ALS_ORDER_DATE = "OrderDate";
+
+  public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
+  public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
   
   public static final String loadingColumnAlias(String colName) {
     return "Loading" + colName;

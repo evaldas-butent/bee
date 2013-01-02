@@ -1,11 +1,11 @@
-.bee-tr-fx-Container .bee-WindowHeader, .bee-tr-ss-Container .bee-WindowHeader {
+.bee-tr-chart-Container .bee-WindowHeader {
   top: 0;
   height: 32px;
   left: 0;
   right: 0;
 }
 
-.bee-tr-fx-Canvas {
+.bee-tr-chart-Canvas {
   position: absolute;
   top: 32px;
   bottom: 0;
@@ -14,14 +14,14 @@
   border-top: 1px solid #ccc;
 }
 
-.bee-tr-fx-Header {
+.bee-tr-chart-Header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
 }
 
-.bee-tr-fx-ScrollArea {
+.bee-tr-chart-ScrollArea {
   position: absolute;
   left: 0;
   right: 0;
@@ -30,81 +30,45 @@
   border-bottom: 1px solid #888;
 }
 
-.bee-tr-fx-Content {
+.bee-tr-chart-Content {
   position: relative;
 }
 
-.bee-tr-fx-Customer-col-sep, .bee-tr-fx-Order-col-sep {
-  position: absolute;
-  top: 0;
-  width: 1px;
-  background-color: #888;
-}
-
-.bee-tr-fx-Customer-panel, .bee-tr-fx-Order-panel {
-  position: absolute;
-  display: -webkit-flex;
-  -webkit-justify-content: center;
-  -webkit-align-items: center;
-  overflow: auto;
-}
-
-.bee-tr-fx-Customer-label, .bee-tr-fx-Order-label {
-  -webkit-flex: 1;
-}
-
-.bee-tr-fx-Customer-label:hover, .bee-tr-fx-Order-label:hover, .bee-tr-visibleRange-start:hover, .bee-tr-visibleRange-end:hover {
+.bee-tr-chart-visibleRange-start:hover, .bee-tr-chart-visibleRange-end:hover {
   text-decoration: underline;
   color: #00e;
   cursor: pointer;
 }
 
-.bee-tr-fx-Item-panel {
-  position: absolute;
-  opacity: 0.5;
-  cursor: pointer;
-}
-.bee-tr-fx-Item-load, .bee-tr-fx-Item-unload {
-  position: absolute;
-  cursor: pointer;
-  font-size: 12px;
-}
-.bee-tr-fx-Item-unload {
-  text-align: right;
-}
-
-.bee-tr-fx-Customer-row-sep, .bee-tr-fx-Order-row-sep, .bee-tr-fx-row-sep, .bee-tr-fx-bottom-sep {
+.bee-tr-chart-row-sep, .bee-tr-chart-bottom-sep {
   position: absolute;
   height: 1px;
 }
-.bee-tr-fx-Customer-row-sep, .bee-tr-fx-bottom-sep {
+.bee-tr-chart-bottom-sep {
   background-color: #888;
 }
-.bee-tr-fx-Order-row-sep {
-  background-color: #ddd;
-}
-.bee-tr-fx-row-sep {
+.bee-tr-chart-row-sep {
   background-color: #ddd;
 }
 
-.bee-tr-fx-Footer {
+.bee-tr-chart-Footer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
 }
 
-.bee-tr-fx-Selector-panel {
+.bee-tr-chart-Selector-panel {
   position: absolute;
   top: 0;
   bottom: 0;
 }
-.bee-tr-fx-Selector-strip {
+.bee-tr-chart-Selector-strip {
   position: absolute;
   opacity: 0.3;
 }
 
-.bee-tr-fx-Selector-startSlider-label, .bee-tr-fx-Selector-endSlider-label {
+.bee-tr-chart-Selector-startSlider-label, .bee-tr-chart-Selector-endSlider-label {
   position: absolute;
   padding: 2px;
   margin-bottom: 2px;
@@ -113,73 +77,123 @@
   border: 1px solid #ccc;
 }
 
-.bee-tr-fx-Selector-startSlider, .bee-tr-fx-Selector-endSlider {
+.bee-tr-chart-Selector-startSlider, .bee-tr-chart-Selector-endSlider {
   position: absolute;
   top: 0;
   bottom: 8px;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-image: -webkit-linear-gradient(left, white, gray, white);
   cursor: col-resize;
 }
-.bee-tr-fx-Selector-startSlider:hover, .bee-tr-fx-Selector-endSlider:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+.bee-tr-chart-Selector-startSlider:hover, .bee-tr-chart-Selector-endSlider:hover {
+  background-image: -webkit-linear-gradient(left, white, black, white);
 }
 
-.bee-tr-fx-Selector-bar {
+.bee-tr-chart-Selector-bar {
   position: absolute;
   height: 8px;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-image: -webkit-linear-gradient(top, white, gray, white);
   cursor: move;
 }
-.bee-tr-fx-Selector-bar:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+.bee-tr-chart-Selector-bar:hover {
+  background-image: -webkit-linear-gradient(top, white, black, white);
 }
 
-.bee-tr-daySeparator, .bee-tr-monthSeparator, .bee-tr-rightSeparator {
+.bee-tr-chart-daySeparator, .bee-tr-chart-monthSeparator, .bee-tr-chart-rightSeparator {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 1px;
 }
-.bee-tr-daySeparator {
+.bee-tr-chart-daySeparator {
   background-color: #ddd;
 }
-.bee-tr-monthSeparator {
+.bee-tr-chart-monthSeparator {
   background-color: #888;
 }
-.bee-tr-rightSeparator {
+.bee-tr-chart-rightSeparator {
   background-color: #888;
 }
 
-.bee-tr-dayLabel {
+.bee-tr-chart-dayLabel {
   position: absolute;
   top: 0;
   bottom: 0;
   text-align: center;
 }
 
-.bee-tr-visibleRange-panel, .bee-tr-maxRange-panel {
+.bee-tr-chart-visibleRange-panel, .bee-tr-chart-maxRange-panel {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   display: -webkit-flex;
 }
-.bee-tr-visibleRange-start, .bee-tr-visibleRange-end, .bee-tr-maxRange-start, .bee-tr-maxRange-end {
+.bee-tr-chart-visibleRange-start, .bee-tr-chart-visibleRange-end, .bee-tr-chart-maxRange-start, .bee-tr-chart-maxRange-end {
   -webkit-flex: 1;
 }
 
-.bee-tr-dayBackground {
+.bee-tr-chart-dayBackground {
   position: absolute;
   top: 0;
 }
 
-.bee-tr-past {
+.bee-tr-chart-past {
   background-color: #e8e8e8;
 }
-.bee-tr-today {
+.bee-tr-chart-today {
   background-color: #f1f1f1;
 }
-.bee-tr-weekend {
+.bee-tr-chart-weekend {
   background-color: #f8f8f8;
+}
+
+.bee-tr-fx-Customer-col-sep, .bee-tr-fx-Order-col-sep, .bee-tr-ss-Vehicle-col-sep {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background-color: #888;
+}
+
+.bee-tr-fx-Customer-panel, .bee-tr-fx-Order-panel, .bee-tr-ss-Vehicle-panel {
+  position: absolute;
+  display: -webkit-flex;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
+  overflow: auto;
+}
+
+.bee-tr-fx-Customer-label, .bee-tr-fx-Order-label, .bee-tr-ss-Vehicle-label {
+  -webkit-flex: 1;
+}
+
+.bee-tr-fx-Customer-label:hover, .bee-tr-fx-Order-label:hover, .bee-tr-ss-Vehicle-label:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+
+.bee-tr-fx-Item-panel, .bee-tr-ss-Item-panel {
+  position: absolute;
+  opacity: 0.5;
+  cursor: pointer;
+}
+.bee-tr-fx-Item-load, .bee-tr-fx-Item-unload, .bee-tr-ss-Item-load, .bee-tr-ss-Item-unload {
+  position: absolute;
+  cursor: pointer;
+  font-size: 12px;
+}
+.bee-tr-fx-Item-unload, .bee-tr-ss-Item-unload {
+  text-align: right;
+}
+
+.bee-tr-fx-Customer-row-sep, .bee-tr-fx-Order-row-sep {
+  position: absolute;
+  height: 1px;
+}
+.bee-tr-fx-Customer-row-sep, .bee-tr-chart-bottom-sep {
+  background-color: #888;
+}
+.bee-tr-fx-Order-row-sep {
+  background-color: #ddd;
 }

@@ -508,7 +508,7 @@ public class TransportHandler {
       }
     };
 
-    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.supplierKey,
+    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.SUPPLIER_KEY,
         new MenuManager.MenuCallback() {
           @Override
           public void onSelection(String parameters) {
@@ -516,14 +516,14 @@ public class TransportHandler {
           }
         });
 
-    WidgetFactory.registerSupplier(FreightExchange.supplierKey, new WidgetSupplier() {
+    WidgetFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
       public void create(Callback<IdentifiableWidget> callback) {
         FreightExchange.open(callback);
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.supplierKey,
+    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.SUPPLIER_KEY,
         new MenuManager.MenuCallback() {
           @Override
           public void onSelection(String parameters) {
@@ -531,7 +531,7 @@ public class TransportHandler {
           }
         });
 
-    WidgetFactory.registerSupplier(ShippingSchedule.supplierKey, new WidgetSupplier() {
+    WidgetFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
       public void create(Callback<IdentifiableWidget> callback) {
         ShippingSchedule.open(callback);

@@ -9,8 +9,8 @@
 
     <Integer name="FxPixelsPerCustomer" />
     <Integer name="FxPixelsPerOrder" />
-    <Integer name="FxPixelsPerDay" />
 
+    <Integer name="FxPixelsPerDay" />
     <Integer name="FxPixelsPerRow" />
 
     <Integer name="FxHeaderHeight" />
@@ -20,5 +20,18 @@
     <Integer name="FxBarHeight" />
 
     <Relation name="FxTheme" relation="Themes" />
+
+    <Integer name="SsPixelsPerTruck" />
+
+    <Integer name="SsPixelsPerDay" />
+    <Integer name="SsPixelsPerRow" />
+
+    <Integer name="SsHeaderHeight" />
+    <Integer name="SsFooterHeight" />
+
+    <Integer name="SsSliderWidth" />
+    <Integer name="SsBarHeight" />
+
+    <Relation name="SsTheme" relation="Themes" />
   </Fields>
 </Table>

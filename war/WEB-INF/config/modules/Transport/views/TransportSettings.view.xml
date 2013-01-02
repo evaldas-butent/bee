@@ -9,8 +9,8 @@
 
     <SimpleColumn name="FxPixelsPerCustomer" />
     <SimpleColumn name="FxPixelsPerOrder" />
-    <SimpleColumn name="FxPixelsPerDay" />
 
+    <SimpleColumn name="FxPixelsPerDay" />
     <SimpleColumn name="FxPixelsPerRow" />
 
     <SimpleColumn name="FxHeaderHeight" />
@@ -22,6 +22,22 @@
     <SimpleColumn name="FxTheme" />
     <SimpleJoin name="FxTheme" joinType="LEFT">
       <SimpleColumn alias="FxThemeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SsPixelsPerTruck" />
+
+    <SimpleColumn name="SsPixelsPerDay" />
+    <SimpleColumn name="SsPixelsPerRow" />
+
+    <SimpleColumn name="SsHeaderHeight" />
+    <SimpleColumn name="SsFooterHeight" />
+
+    <SimpleColumn name="SsSliderWidth" />
+    <SimpleColumn name="SsBarHeight" />
+    
+    <SimpleColumn name="SsTheme" />
+    <SimpleJoin name="SsTheme" joinType="LEFT">
+      <SimpleColumn alias="SsThemeName" name="Name" />
     </SimpleJoin>
     
   </Columns>

@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -21,6 +22,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,6 +42,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -108,9 +111,12 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_FX_DATA)) {
       response = getFxData();
 
+    } else if (BeeUtils.same(svc, SVC_GET_SS_DATA)) {
+      response = getSsData();
+
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
-      
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -227,7 +233,7 @@ public class TransportModuleBean implements BeeModule {
         return result;
       }
     }
-    
+
     int index = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
     for (BeeRow row : rowSet.getRows()) {
       String bc = row.getString(index);
@@ -363,8 +369,61 @@ public class TransportModuleBean implements BeeModule {
     } else {
       theme = null;
     }
-    
+
     return ResponseObject.response(getBackgroundColors(theme));
+  }
+
+  private Map<Long, String> getDrivers(IsCondition condition) {
+    Map<Long, String> result = Maps.newHashMap();
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TRIP_DRIVERS)
+        .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_DRIVER_PERSON))
+        .addFromLeft(CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON));
+    
+    query.addFields(TBL_TRIP_DRIVERS, COL_TRIP);
+    query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+        CommonsConstants.COL_LAST_NAME);
+
+    query.addOrder(TBL_TRIP_DRIVERS, COL_TRIP);
+    
+    if (condition != null) {
+      query.setWhere(condition);
+    }
+
+    SimpleRowSet data = qs.getData(query);
+    if (data == null || data.getNumberOfRows() == 0) {
+      return result;
+    }
+    
+    List<String> drivers = Lists.newArrayList();
+    String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
+    
+    Long lastTrip = null;
+    for (SimpleRow row : data) {
+      Long trip = row.getLong(COL_TRIP);
+
+      if (!trip.equals(lastTrip)) {
+        if (!drivers.isEmpty()) {
+          result.put(lastTrip, BeeUtils.join(separator, drivers));
+          drivers.clear();
+        }
+        lastTrip = trip;
+      }
+      
+      drivers.add(BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
+          row.getValue(CommonsConstants.COL_LAST_NAME)));
+    }
+    
+    if (!drivers.isEmpty()) {
+      result.put(lastTrip, BeeUtils.join(separator, drivers));
+    }
+    return result;
   }
 
   /**
@@ -433,7 +492,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-  
+
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -442,57 +501,57 @@ public class TransportModuleBean implements BeeModule {
 
     Long theme = settings.getLong(0, settings.getColumnIndex(COL_FX_THEME));
     List<String> colors = getBackgroundColors(theme);
-    
+
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
-    
+
     BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
     String loadAlias = "load_" + SqlUtils.uniqueName();
     String unlAlias = "unl_" + SqlUtils.uniqueName();
-    
+
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-    
+
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_ORDER_CARGO)
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES, 
+        .addFromLeft(CommonsConstants.TBL_COMPANIES,
             sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
             SqlUtils.join(loadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
             SqlUtils.join(unlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
-        .addFromLeft(TBL_CARGO_TRIPS, 
+        .addFromLeft(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID));
-    
+
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
     query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
 
     query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_DESCRIPTION,
         COL_LOADING_PLACE, COL_UNLOADING_PLACE);
-    
+
     query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
     query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
     query.addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME));
     query.addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL));
-    
+
     query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
     query.addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY));
     query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
     query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
-    
+
     Set<Integer> statuses = Sets.newHashSet(OrderStatus.CREATED.ordinal(),
         OrderStatus.ACTIVATED.ordinal(), OrderStatus.CONFIRMED.ordinal());
     IsCondition where = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
         SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
-    
+
     query.setWhere(where);
-    
+
     query.addOrder(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME);
     query.addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
     query.addOrder(loadAlias, COL_PLACE_DATE);
     query.addOrder(unlAlias, COL_PLACE_DATE);
-    
+
     SimpleRowSet data = qs.getData(query);
     if (data == null) {
       return ResponseObject.error(SVC_GET_FX_DATA, "data not available");
@@ -501,7 +560,7 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_DATA, data.serialize());
     return ResponseObject.response(settings);
   }
-  
+
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
@@ -519,6 +578,91 @@ public class TransportModuleBean implements BeeModule {
     }
 
     return qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
+  }
+
+  private ResponseObject getSsData() {
+    BeeRowSet settings = getSettings();
+    if (settings == null) {
+      return ResponseObject.error("user settings not available");
+    }
+
+    Long theme = settings.getLong(0, settings.getColumnIndex(COL_SS_THEME));
+    List<String> colors = getBackgroundColors(theme);
+
+    settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+
+    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
+    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
+
+    IsCondition where = SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION);
+
+    Map<Long, String> drivers = getDrivers(where);
+    if (!drivers.isEmpty()) {
+      settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
+    }
+
+    String vehicleJoinAlias = "veh_" + SqlUtils.uniqueName();
+    String trailerJoinAlias = "trail_" + SqlUtils.uniqueName();
+
+    String loadAlias = "load_" + SqlUtils.uniqueName();
+    String unlAlias = "unl_" + SqlUtils.uniqueName();
+
+    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TRIPS)
+        .addFromLeft(TBL_VEHICLES, vehicleJoinAlias,
+            SqlUtils.join(vehicleJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_VEHICLES, trailerJoinAlias,
+            SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_CARGO_TRIPS,
+            SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+        .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(CommonsConstants.TBL_COMPANIES,
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+        .addFromLeft(TBL_CARGO_PLACES, loadAlias,
+            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_TRIPS, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, unlAlias,
+            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE));
+
+    query.addField(TBL_TRIPS, COL_TRIP_DATE, ALS_TRIP_DATE);
+    query.addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
+        COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO);
+
+    query.addField(vehicleJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER);
+    query.addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER);
+
+    query.addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP_PERCENT, COL_CARGO_PERCENT);
+
+    query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
+    query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
+    query.addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME));
+    query.addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL));
+
+    query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
+    query.addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY));
+    query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
+    query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
+
+    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION);
+
+    query.addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE);
+    query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_NO, COL_CUSTOMER);
+    query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
+
+    query.setWhere(where);
+
+    query.addOrder(vehicleJoinAlias, COL_NUMBER);
+    query.addOrder(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_NO);
+
+    SimpleRowSet data = qs.getData(query);
+    if (data == null) {
+      return ResponseObject.error(SVC_GET_SS_DATA, "data not available");
+    }
+
+    settings.setTableProperty(PROP_DATA, data.serialize());
+    return ResponseObject.response(settings);
   }
 
   private ResponseObject getTripBeforeData(long vehicle, long date) {
