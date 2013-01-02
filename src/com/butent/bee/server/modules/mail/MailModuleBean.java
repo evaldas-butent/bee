@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.mail;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -19,7 +20,6 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
@@ -34,6 +34,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -129,10 +130,80 @@ public class MailModuleBean implements BeeModule {
       Long addressId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS));
 
       if (DataUtils.isId(addressId)) {
-        resp = Pair.of(getAccount(addressId), resp);
+        MailAccount account = getAccount(addressId);
+        resp = ImmutableMap.of(SystemFolder.Inbox, resp,
+            SystemFolder.Sent, account.getSentFolderId(),
+            SystemFolder.Drafts, account.getDraftsFolderId(),
+            SystemFolder.Trash, account.getTrashFolderId());
       }
       response = ResponseObject.response(resp);
 
+    } else if (BeeUtils.same(svc, SVC_CREATE_FOLDER)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+      MailFolder parent = mail.getInboxFolder(account);
+
+      if (folderId != null) {
+        parent = parent.findFolder(folderId);
+      }
+      if (parent == null) {
+        response = ResponseObject.error("Folder does not exist: ID =", folderId);
+      } else {
+        String name = reqInfo.getParameter(COL_FOLDER_NAME);
+
+        try {
+          if (account.createRemoteFolder(parent, name)) {
+            mail.createFolder(parent, name);
+            response = ResponseObject.info("Folder created:", name);
+          } else {
+            response = ResponseObject.error("Cannot create folder:", name);
+          }
+        } catch (MessagingException e) {
+          response = ResponseObject.error(e);
+        }
+      }
+    } else if (BeeUtils.same(svc, SVC_RENAME_FOLDER)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+      MailFolder folder = mail.findFolder(account, folderId);
+      String name = reqInfo.getParameter(COL_FOLDER_NAME);
+
+      if (folder == null) {
+        response = ResponseObject.error("Folder does not exist: ID =", folderId);
+      } else {
+        try {
+          if (account.renameRemoteFolder(folder, name)) {
+            mail.renameFolder(folder, name);
+            response = ResponseObject.info("Folder renamed: " + folder.getName() + "->" + name);
+          } else {
+            response = ResponseObject.error("Cannot rename folder", folder.getName(), "to", name);
+          }
+        } catch (MessagingException e) {
+          response = ResponseObject.error(e);
+        }
+      }
+    } else if (BeeUtils.same(svc, SVC_DROP_FOLDER)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+      MailFolder folder = mail.findFolder(account, folderId);
+
+      if (folder == null) {
+        response = ResponseObject.error("Folder does not exist: ID =", folderId);
+      } else {
+        try {
+          if (account.dropRemoteFolder(folder)) {
+            if (mail.dropFolder(folder)) {
+              response = ResponseObject.info("Folder dropped: " + folder.getName());
+            } else {
+              response = ResponseObject.info("Folder disconnected: " + folder.getName());
+            }
+          } else {
+            response = ResponseObject.error("Cannot drop folder", folder.getName());
+          }
+        } catch (MessagingException e) {
+          response = ResponseObject.error(e);
+        }
+      }
     } else if (BeeUtils.same(svc, SVC_CHECK_MAIL)) {
       MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
@@ -515,11 +586,8 @@ public class MailModuleBean implements BeeModule {
 
     try {
       store = account.connectToStore(true);
-      Folder remoteFolder = account.getRemoteFolder(store, localFolder);
+      c = checkFolder(account.getRemoteFolder(store, localFolder), localFolder, recurse);
 
-      if (remoteFolder != null) {
-        c = checkFolder(remoteFolder, localFolder, recurse);
-      }
     } catch (MessagingException e) {
       ctx.setRollbackOnly();
       logger.error(e);

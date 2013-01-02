@@ -188,6 +188,12 @@ public class MailStorageBean {
     return getSysFolder(account, account.getTrashFolderId(), SystemFolder.Trash);
   }
 
+  public void renameFolder(MailFolder folder, String name) {
+    qs.updateData(new SqlUpdate(TBL_FOLDERS)
+        .addConstant(COL_FOLDER_NAME, name)
+        .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
+  }
+
   public Long storeAddress(Address address) throws AddressException {
     Assert.notNull(address);
     String email;

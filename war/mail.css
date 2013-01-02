@@ -112,20 +112,44 @@
   border-style: dashed;
 }
 
-.bee-mail-DisplayMode-item {
-  padding: 4px 8px 4px 8px;
-  cursor: pointer;
-  background-color: WhiteSmoke;
-  color: #444;
-  text-align: center;
-  font-weight: normal;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  outline: none;
-  width: 200px;
+.bee-mail-Controller {
+  margin: 10px;
 }
 
-.bee-mail-DisplayMode-item-selected {
-  color: white;
-  background-color: #0A8DE9;
+.bee-mail-SysFolder, .bee-mail-Folder {
+  padding: 3px;
+  cursor: pointer;
+  color: #444;
+  font-weight: normal;
+}
+
+.bee-mail-FolderCaption {
+  color: #444;
+  font-weight: bold;
+}
+
+.bee-mail-FolderRow {
+  border-collapse: collapse;
+}
+
+.bee-mail-FolderRow tr td:first-child {
+  width: 100%;
+}
+
+.bee-mail-SysFolder:hover, .bee-mail-FolderRow tr:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-mail-FolderAdd, .bee-mail-FolderEdit, .bee-mail-FolderDelete {
+  margin: 0 3px 0 3px;
+  visibility: hidden;
+}
+
+.bee-mail-FolderRow tr:hover .bee-mail-FolderAdd, .bee-mail-FolderRow tr:hover .bee-mail-FolderEdit, .bee-mail-FolderRow  tr:hover .bee-mail-FolderDelete {
+  visibility: visible;
+}
+
+.bee-mail-SysFolder-selected, .bee-mail-Folder-selected {
+  font-weight: bold;
+  color: #FD6268;
 }
