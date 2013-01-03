@@ -38,7 +38,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -106,34 +105,6 @@ public class UiHelper {
     } else {
       return DomUtils.focus(target);
     }
-  }
-
-  public static String getCaption(Class<? extends Enum<?>> clazz, int index) {
-    Assert.notNull(clazz);
-    if (!BeeUtils.isOrdinal(clazz, index)) {
-      return null;
-    }
-
-    Enum<?> constant = clazz.getEnumConstants()[index];
-    if (constant instanceof HasCaption) {
-      return ((HasCaption) constant).getCaption();
-    } else {
-      return BeeUtils.proper(constant);
-    }
-  }
-
-  public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
-    Assert.notNull(clazz);
-    List<String> result = Lists.newArrayList();
-
-    for (Enum<?> constant : clazz.getEnumConstants()) {
-      if (constant instanceof HasCaption) {
-        result.add(((HasCaption) constant).getCaption());
-      } else {
-        result.add(BeeUtils.proper(constant));
-      }
-    }
-    return result;
   }
 
   public static DataView getDataView(Widget widget) {

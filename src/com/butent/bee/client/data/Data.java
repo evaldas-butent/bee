@@ -1,13 +1,10 @@
 package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Table;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -30,8 +27,6 @@ public class Data {
 
   private static final ColumnMapper COLUMN_MAPPER = new ColumnMapper(DATA_INFO_PROVIDER);
   
-  private static final Table<String, String, String> CAPTION_KEYS = HashBasedTable.create(); 
-  
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
   
   public static void clearCell(String viewName, IsRow row, String colName) {
@@ -51,10 +46,6 @@ public class Data {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
 
-  public static String getCaptionKey(String viewName, String columnid) {
-    return CAPTION_KEYS.get(viewName, columnid);
-  }
-  
   public static BeeColumn getColumn(String viewName, String colName) {
     return getDataInfo(viewName).getColumn(colName);
   }
@@ -139,10 +130,6 @@ public class Data {
     return COLUMN_MAPPER.getLong(viewName, row, colName);
   }
 
-  public static String getRegisteredCaption(String viewName, String columnid, int index) {
-    return Global.getCaption(getCaptionKey(viewName, columnid), index);
-  }
-  
   public static String getString(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getString(viewName, row, colName);
   }
@@ -150,10 +137,6 @@ public class Data {
   public static String getViewCaption(String viewName) {
     DataInfo dataInfo = getDataInfo(viewName);
     return (dataInfo == null) ? null : dataInfo.getCaption(); 
-  }
-  
-  public static boolean hasCaptionKey(String viewName, String columnid) {
-    return CAPTION_KEYS.contains(viewName, columnid);
   }
   
   public static void init(Callback<Integer> callback) {
@@ -166,10 +149,6 @@ public class Data {
   
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
-  }
-  
-  public static void registerCaptionKey(String viewName, String columnid, String captionKey) {
-    CAPTION_KEYS.put(viewName, columnid, captionKey);
   }
   
   public static void setValue(String viewName, IsRow row, String colName, BigDecimal value) {

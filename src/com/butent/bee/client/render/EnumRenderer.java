@@ -2,12 +2,11 @@ package com.butent.bee.client.render;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.Global;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -28,7 +27,7 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
   }
 
   public EnumRenderer(CellSource cellSource, String key, int valueStartIndex) {
-    this(cellSource, Global.getCaptions(key), valueStartIndex);
+    this(cellSource, Captions.getCaptions(key), valueStartIndex);
   }
 
   public EnumRenderer(CellSource cellSource, Class<? extends Enum<?>> clazz) {
@@ -36,7 +35,7 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
   }
 
   public EnumRenderer(CellSource cellSource, Class<? extends Enum<?>> clazz, int valueStartIndex) {
-    this(cellSource, UiHelper.getCaptions(clazz), valueStartIndex);
+    this(cellSource, Captions.getCaptions(clazz), valueStartIndex);
   }
 
   private EnumRenderer(CellSource cellSource, List<String> captions, int valueStartIndex) {

@@ -8,13 +8,13 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -197,7 +197,7 @@ class AppointmentRenderer {
       String value = row.getString(i);
 
       if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
-        value = UiHelper.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
+        value = Captions.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
       } else if (value != null && ValueType.DATE_TIME.equals(columns.get(i).getType())) {
         value = renderDateTime(row.getDateTime(i));
       }

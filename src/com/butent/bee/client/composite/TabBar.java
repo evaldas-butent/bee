@@ -17,7 +17,6 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Horizontal;
@@ -26,12 +25,12 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -159,12 +158,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(UiHelper.getCaptions(clazz));
+    addItems(Captions.getCaptions(clazz));
   }
 
   @Override
   public void addCaptions(String captionKey) {
-    addItems(Global.getCaptions(captionKey));
+    addItems(Captions.getCaptions(captionKey));
   }
 
   public void addItem(SafeHtml html) {

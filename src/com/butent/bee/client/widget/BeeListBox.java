@@ -12,13 +12,11 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ListBox;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
@@ -27,6 +25,7 @@ import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -102,12 +101,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(UiHelper.getCaptions(clazz));
+    addItems(Captions.getCaptions(clazz));
   }
 
   @Override
   public void addCaptions(String captionKey) {
-    addItems(Global.getCaptions(captionKey));
+    addItems(Captions.getCaptions(captionKey));
   }
 
   @Override

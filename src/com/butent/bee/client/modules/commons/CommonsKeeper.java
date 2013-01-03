@@ -1,10 +1,8 @@
 package com.butent.bee.client.modules.commons;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
@@ -14,6 +12,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CommonsKeeper {
@@ -39,12 +38,12 @@ public class CommonsKeeper {
 
     SelectorEvent.register(new CommonsSelectorHandler());
 
-    Global.registerCaptions(RightsObjectType.class);
-    Global.registerCaptions(RightsState.class);
-    Global.registerCaptions(ParameterType.class);
+    Captions.register(RightsObjectType.class);
+    Captions.register(RightsState.class);
+    Captions.register(ParameterType.class);
     
-    String key = Global.registerCaptions(ReminderMethod.class);
-    Data.registerCaptionKey(CommonsConstants.VIEW_REMINDER_TYPES,
+    String key = Captions.register(ReminderMethod.class);
+    Captions.registerColumn(CommonsConstants.VIEW_REMINDER_TYPES,
         CommonsConstants.COL_REMINDER_METHOD, key);
   }
   

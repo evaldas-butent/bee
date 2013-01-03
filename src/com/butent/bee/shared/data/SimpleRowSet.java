@@ -448,6 +448,10 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return null;
   }
 
+  public boolean isEmpty() {
+    return rows.isEmpty();
+  }
+  
   @Override
   public Iterator<SimpleRow> iterator() {
     return new RowSetIterator();

@@ -311,7 +311,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   public void selectPage(int index, SelectionOrigin origin) {
     super.selectPage(index, origin);
 
-    if (SelectionOrigin.CLICK.equals(origin) || SelectionOrigin.REMOVE.equals(origin)) {
+    if (SelectionOrigin.CLICK.equals(origin) || SelectionOrigin.INSERT.equals(origin)
+        || SelectionOrigin.REMOVE.equals(origin)) {
       Tile tile = getActiveTile();
 
       Historian.goTo(tile.getId());

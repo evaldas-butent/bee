@@ -40,6 +40,8 @@ public class TransportConstants {
 
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_DRIVERS = "Drivers";
+  public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
+  public static final String TBL_SERVICE_TYPES = "ServiceTypes";
 
   public static final String TBL_TRIPS = "Trips";
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
@@ -125,6 +127,10 @@ public class TransportConstants {
 
   public static final String COL_DRIVER = "Driver";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
+
+  public static final String COL_SERVICE_DATE = "Date";
+  public static final String COL_SERVICE_TYPE = "Type";
+  public static final String COL_SERVICE_NAME = "Name";
   
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
@@ -162,6 +168,7 @@ public class TransportConstants {
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_DRIVERS = "Drivers";
+  public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
   public static final String PROP_DATA = "Data";
 
   public static final String ALS_TRIP_DATE = "TripDate";

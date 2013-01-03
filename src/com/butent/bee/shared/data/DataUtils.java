@@ -7,7 +7,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -595,6 +595,10 @@ public class DataUtils {
     return rowSet == null || rowSet.isEmpty();
   }
 
+  public static boolean isEmpty(SimpleRowSet rowSet) {
+    return rowSet == null || rowSet.isEmpty();
+  }
+  
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
@@ -859,10 +863,10 @@ public class DataUtils {
       }
 
     } else if (ValueType.INTEGER.equals(column.getType()) 
-        && Data.hasCaptionKey(dataInfo.getViewName(), column.getId())) {
+        && Captions.isColumnRegistered(dataInfo.getViewName(), column.getId())) {
       Integer value = row.getInteger(index);
       if (BeeUtils.isNonNegative(value)) {
-        return Data.getRegisteredCaption(dataInfo.getViewName(), column.getId(), value);
+        return Captions.getValueCaption(dataInfo.getViewName(), column.getId(), value);
       }
     }
     

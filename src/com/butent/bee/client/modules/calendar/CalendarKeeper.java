@@ -48,6 +48,7 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -171,27 +172,27 @@ public class CalendarKeeper {
   }
 
   public static void register() {
-    String key = Global.registerCaptions(AppointmentStatus.class);
-    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_STATUS, key);
+    String key = Captions.register(AppointmentStatus.class);
+    Captions.registerColumn(VIEW_APPOINTMENTS, COL_STATUS, key);
 
-    Global.registerCaptions(ResponseStatus.class);
+    Captions.register(ResponseStatus.class);
 
-    key = Global.registerCaptions(Transparency.class);
-    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_TRANSPARENCY, key);
-    Data.registerCaptionKey(VIEW_ATTENDEES, COL_TRANSPARENCY, key);
-    Data.registerCaptionKey(VIEW_ATTENDEE_TYPES, COL_TRANSPARENCY, key);
-    Data.registerCaptionKey(VIEW_CALENDARS, COL_TRANSPARENCY, key);
+    key = Captions.register(Transparency.class);
+    Captions.registerColumn(VIEW_APPOINTMENTS, COL_TRANSPARENCY, key);
+    Captions.registerColumn(VIEW_ATTENDEES, COL_TRANSPARENCY, key);
+    Captions.registerColumn(VIEW_ATTENDEE_TYPES, COL_TRANSPARENCY, key);
+    Captions.registerColumn(VIEW_CALENDARS, COL_TRANSPARENCY, key);
 
-    Data.registerCaptionKey(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
-    Data.registerCaptionKey(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
+    Captions.registerColumn(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
+    Captions.registerColumn(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
     
-    key = Global.registerCaptions("Calendar_Visibility", Visibility.class);
-    Data.registerCaptionKey(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
-    Data.registerCaptionKey(VIEW_CALENDARS, COL_VISIBILITY, key);
+    key = Captions.register("Calendar_Visibility", Visibility.class);
+    Captions.registerColumn(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
+    Captions.registerColumn(VIEW_CALENDARS, COL_VISIBILITY, key);
 
-    key = Global.registerCaptions(TimeBlockClick.class);
-    Data.registerCaptionKey(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
-    Data.registerCaptionKey(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
+    key = Captions.register(TimeBlockClick.class);
+    Captions.registerColumn(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
+    Captions.registerColumn(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
 
     BeeKeeper.getMenu().registerMenuCallback("calendar_parameters", new MenuManager.MenuCallback() {
       @Override

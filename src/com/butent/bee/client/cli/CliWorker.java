@@ -136,6 +136,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -1524,7 +1525,7 @@ public class CliWorker {
   }
 
   private static void showCaptions() {
-    Set<String> keys = Global.getRegisteredCaptionKeys();
+    Set<String> keys = Captions.getRegisteredKeys();
     if (BeeUtils.isEmpty(keys)) {
       logger.debug("no captions registered");
       return;
@@ -1534,7 +1535,7 @@ public class CliWorker {
         BeeUtils.bracket(keys.size()));
 
     for (String key : keys) {
-      for (String caption : Global.getCaptions(key)) {
+      for (String caption : Captions.getCaptions(key)) {
         props.add(new Property(key, caption));
       }
     }

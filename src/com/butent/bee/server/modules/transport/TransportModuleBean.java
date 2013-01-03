@@ -492,7 +492,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-
+  
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -599,6 +599,11 @@ public class TransportModuleBean implements BeeModule {
     Map<Long, String> drivers = getDrivers(where);
     if (!drivers.isEmpty()) {
       settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
+    }
+    
+    SimpleRowSet vehicleServices = getVehicleServices(null);
+    if (!DataUtils.isEmpty(vehicleServices)) {
+      settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
     }
 
     String vehicleJoinAlias = "veh_" + SqlUtils.uniqueName();
@@ -1015,5 +1020,22 @@ public class TransportModuleBean implements BeeModule {
 
     return ResponseObject.response(new String[] {"TripCost:", res.getValue("TripCost"),
         "FuelCost:", res.getValue("FuelCost"), "TripIncome:", tripIncome});
+  }
+
+  private SimpleRowSet getVehicleServices(IsCondition condition) {
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_VEHICLE_SERVICES)
+        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE))
+        .addFromLeft(TBL_SERVICE_TYPES, sys.joinTables(TBL_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
+            COL_SERVICE_TYPE));
+
+    query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE);
+    query.addFields(TBL_SERVICE_TYPES, COL_SERVICE_NAME);
+
+    if (condition != null) {
+      query.setWhere(condition);
+    }
+
+    return qs.getData(query);
   }
 }

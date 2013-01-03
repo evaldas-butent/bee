@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -483,7 +484,8 @@ public class TransportHandler {
   }
 
   public static void register() {
-    Global.registerCaptions(OrderStatus.class);
+    Captions.register(OrderStatus.class);
+
     GridFactory.registerGridInterceptor(TransportConstants.VIEW_VEHICLES,
         new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(TransportConstants.VIEW_SPARE_PARTS,

@@ -15,13 +15,11 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -29,6 +27,7 @@ import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,7 +103,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public RadioGroup(String name, boolean vertical, Enum<?> value, Class<? extends Enum<?>> clazz) {
     this(name, vertical);
 
-    List<String> opt = UiHelper.getCaptions(clazz);
+    List<String> opt = Captions.getCaptions(clazz);
     int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
     addButtons(opt, z);
   }
@@ -153,12 +152,12 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addButtons(UiHelper.getCaptions(clazz));
+    addButtons(Captions.getCaptions(clazz));
   }
 
   @Override
   public void addCaptions(String captionKey) {
-    addButtons(Global.getCaptions(captionKey));
+    addButtons(Captions.getCaptions(captionKey));
   }
 
   @Override

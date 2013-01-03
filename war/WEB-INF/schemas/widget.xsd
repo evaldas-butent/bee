@@ -700,7 +700,6 @@
             <xs:element name="selectorColumn" type="ui:selectorColumn" />
           </xs:choice>
         </xs:sequence>
-        <xs:attribute name="viewName" type="type:nameType" />
         <xs:attributeGroup ref="ui:relation" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
@@ -709,19 +708,26 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="DataSelector" type="selectorType" substitutionGroup="widget" />
-  <xs:element name="MultiSelector" type="selectorType" substitutionGroup="widget" />
-<!-- 
-  <xs:element name="MultiSelector" substitutionGroup="widget">
+  <xs:element name="DataSelector" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:restriction base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" use="required" />
-        </xs:restriction>
+        <xs:extension base="selectorType">
+          <xs:attribute name="viewName" type="type:nameType" />
+        </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
- -->
+
+  <xs:element name="MultiSelector" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="selectorType">
+          <xs:attribute name="viewName" type="type:nameType" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="HtmlPanel" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>

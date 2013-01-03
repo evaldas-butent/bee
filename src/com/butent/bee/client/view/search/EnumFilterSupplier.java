@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.shared.BeeConst;
@@ -15,6 +14,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -48,7 +48,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   public EnumFilterSupplier(String viewName, BeeColumn column, String options, String key) {
     super(viewName, column, options);
 
-    this.captions = Global.getCaptions(key);
+    this.captions = Captions.getCaptions(key);
     this.nullIndex = (captions == null) ? BeeConst.UNDEF : captions.size();
   }
 

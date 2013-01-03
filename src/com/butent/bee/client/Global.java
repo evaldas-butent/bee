@@ -21,7 +21,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -39,10 +38,8 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.CssUnit;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,8 +68,6 @@ public class Global implements Module {
 
   private static final Map<String, String> STYLE_SHEETS = Maps.newHashMap();
   
-  private static final Map<String, Class<? extends Enum<?>>> CAPTIONS = Maps.newHashMap();
-
   private static final Favorites FAVORITES = new Favorites();
   
   private static final Defaults DEFAULTS = new ClientDefaults();
@@ -194,33 +189,6 @@ public class Global implements Module {
     return CACHE;
   }
   
-  public static String getCaption(String key, int index) {
-    if (BeeUtils.isEmpty(key)) {
-      logger.severe("Caption key not specified");
-      return null;
-    }
-    
-    List<String> list = getCaptions(key);
-    if (!BeeUtils.isIndex(list, index)) {
-      logger.severe("cannot get caption: key", key, "index", index);
-      return null;
-    } else {
-      return list.get(index);
-    }
-  }
-  
-  public static List<String> getCaptions(String key) {
-    Assert.notEmpty(key);
-    Class<? extends Enum<?>> clazz = CAPTIONS.get(BeeUtils.normalize(key));
-
-    if (clazz == null) {
-      logger.severe("Captions not registered: " + key);
-      return null;
-    } else {
-      return UiHelper.getCaptions(clazz);
-    }
-  }
-
   public static Defaults getDefaults() {
     return DEFAULTS;
   }
@@ -239,10 +207,6 @@ public class Global implements Module {
 
   public static MessageBoxes getMsgBoxen() {
     return MSG_BOXEN;
-  }
-  
-  public static Set<String> getRegisteredCaptionKeys() {
-    return CAPTIONS.keySet();
   }
   
   public static Reports getReports() {
@@ -373,22 +337,6 @@ public class Global implements Module {
     return MSG_BOXEN.nativeConfirm(lines);
   }
 
-  public static <E extends Enum<?> & HasCaption> String registerCaptions(Class<E> clazz) {
-    Assert.notNull(clazz);
-    return registerCaptions(NameUtils.getClassName(clazz), clazz);
-  }
-
-  public static <E extends Enum<?> & HasCaption> String registerCaptions(String key,
-      Class<E> clazz) {
-    Assert.notEmpty(key);
-    Assert.notNull(clazz);
-    
-    String normalized = BeeUtils.normalize(key);
-    CAPTIONS.put(normalized, clazz);
-    
-    return normalized;
-  }
-  
   public static void sayHuh(String... messages) {
     int n = (messages == null) ? 0 : messages.length;
     String[] arr = new String[n + 1];
@@ -537,7 +485,7 @@ public class Global implements Module {
 
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
-    $wnd.Bee_getCaption = $entry(@com.butent.bee.client.Global::getCaption(Ljava/lang/String;I));
+    $wnd.Bee_getCaption = $entry(@com.butent.bee.shared.ui.Captions::getCaption(Ljava/lang/String;I));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
   }-*/;

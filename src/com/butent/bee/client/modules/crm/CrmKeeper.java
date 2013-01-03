@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
@@ -18,6 +17,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -69,18 +69,18 @@ public class CrmKeeper {
     
     DocumentHandler.register();
     
-    String key = Global.registerCaptions(CrmConstants.TaskPriority.class);
-    Data.registerCaptionKey(VIEW_TASKS, COL_PRIORITY, key);
-    Data.registerCaptionKey(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
-    Data.registerCaptionKey(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
+    String key = Captions.register(CrmConstants.TaskPriority.class);
+    Captions.registerColumn(VIEW_TASKS, COL_PRIORITY, key);
+    Captions.registerColumn(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
+    Captions.registerColumn(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
     
-    key = Global.registerCaptions(CrmConstants.TaskEvent.class);
-    Data.registerCaptionKey(VIEW_TASK_EVENTS, COL_EVENT, key);
+    key = Captions.register(CrmConstants.TaskEvent.class);
+    Captions.registerColumn(VIEW_TASK_EVENTS, COL_EVENT, key);
     
-    key = Global.registerCaptions(CrmConstants.TaskStatus.class);
-    Data.registerCaptionKey(VIEW_TASKS, COL_STATUS, key);
+    key = Captions.register(CrmConstants.TaskStatus.class);
+    Captions.registerColumn(VIEW_TASKS, COL_STATUS, key);
 
-    Global.registerCaptions(CrmConstants.ProjectEvent.class);
+    Captions.register(CrmConstants.ProjectEvent.class);
     
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
