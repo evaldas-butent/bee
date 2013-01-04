@@ -65,6 +65,7 @@ import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -367,6 +368,9 @@ public class CliWorker {
     } else if (z.startsWith("ping")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_PING);
 
+    } else if (z.startsWith("prev")) {
+      Global.showModalGrid("Previewers", new PropertiesData(Previewer.getInstance().getInfo()));
+      
     } else if (z.startsWith("print")) {
       print(args);
 

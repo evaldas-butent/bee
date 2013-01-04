@@ -31,7 +31,11 @@ public class Previewer implements NativePreviewHandler, HasInfo {
       INSTANCE.remove(handler);
     }
   }
-  
+
+  public static Previewer getInstance() {
+    return INSTANCE;
+  }
+
   public static void register(PreviewHandler handler) {
     Assert.notNull(handler);
     
@@ -69,8 +73,14 @@ public class Previewer implements NativePreviewHandler, HasInfo {
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     info.add(new Property("Modal Count", BeeUtils.toString(modalCount)));
-    
+
+    info.add(new Property("Handlers", BeeUtils.toString(handlers.size())));
     for (PreviewHandler handler : handlers) {
+      info.add(new Property(handler.getId(), NameUtils.getName(handler)));
+    }
+
+    info.add(new Property("Mouse Down Prior", BeeUtils.toString(mouseDownPriorHandlers.size())));
+    for (PreviewHandler handler : mouseDownPriorHandlers) {
       info.add(new Property(handler.getId(), NameUtils.getName(handler)));
     }
     return info;

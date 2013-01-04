@@ -1683,6 +1683,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     formView.setViewPresenter(gfp);
 
     formView.addActionHandler(this);
+    
+    formView.setState(State.CLOSED);
 
     return DomUtils.getId(container);
   }

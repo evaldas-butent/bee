@@ -752,7 +752,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
     }
-    
+
     if (getFormInterceptor() != null) {
       getFormInterceptor().onClose(messages, getOldRow(), getActiveRow());
     }
@@ -849,23 +849,25 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public void onEventPreview(NativePreviewEvent event) {
-    String type = event.getNativeEvent().getType();
+    if (isAttached() && !isClosed() && DomUtils.isVisible(getElement())) {
+      String type = event.getNativeEvent().getType();
 
-    if (EventUtils.isClick(type)) {
-      if (!BeeUtils.isEmpty(getPreviewId())) {
-        setPreviewId(null);
-        event.cancel();
-      }
+      if (EventUtils.isClick(type)) {
+        if (!BeeUtils.isEmpty(getPreviewId())) {
+          setPreviewId(null);
+          event.cancel();
+        }
 
-    } else if (EventUtils.isMouseDown(type)) {
-      if (!BeeConst.isUndef(getActiveEditableIndex())) {
-        Element targetElement = EventUtils.getEventTargetElement(event);
-        EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+      } else if (EventUtils.isMouseDown(type)) {
+        if (!BeeConst.isUndef(getActiveEditableIndex())) {
+          Element targetElement = EventUtils.getEventTargetElement(event);
+          EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
 
-        if (!editableWidget.getEditor().isOrHasPartner(targetElement)) {
-          if (!editableWidget.checkForUpdate(true)) {
-            setPreviewId(editableWidget.getWidgetId());
-            event.cancel();
+          if (!editableWidget.getEditor().isOrHasPartner(targetElement)) {
+            if (!editableWidget.checkForUpdate(true)) {
+              setPreviewId(editableWidget.getWidgetId());
+              event.cancel();
+            }
           }
         }
       }
@@ -945,7 +947,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         return;
       }
     }
-    
+
     fireEvent(event);
   }
 
@@ -1091,6 +1093,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void setState(State state) {
     this.state = state;
+    
+    if (State.OPEN.equals(state)) {
+      Previewer.ensureRegistered(this);
+    } else if (State.CLOSED.equals(state)) {
+      Previewer.ensureUnregistered(this);
+    }
   }
 
   @Override
@@ -1422,6 +1430,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return false;
   }
 
+  private boolean isClosed() {
+    return State.CLOSED.equals(getState());
+  }
+
   private boolean isReadOnly() {
     return readOnly;
   }
@@ -1447,8 +1459,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   private void navigate(Integer keyCode, boolean hasModifiers, String widgetId) {
-    if (keyCode != null && !BeeUtils.isEmpty(widgetId) && getTabOrder().size() > 1
-        && !State.CLOSED.equals(getState())) {
+    if (keyCode != null && !BeeUtils.isEmpty(widgetId) && getTabOrder().size() > 1 && !isClosed()) {
       switch (BeeUtils.unbox(keyCode)) {
         case KeyCodes.KEY_ENTER:
         case KeyCodes.KEY_DOWN:
@@ -1593,11 +1604,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
-    
+
     if (showRowId() && getViewPresenter() != null) {
       long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
       String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
-      
+
       getViewPresenter().getHeader().setMessage(message);
     }
   }
