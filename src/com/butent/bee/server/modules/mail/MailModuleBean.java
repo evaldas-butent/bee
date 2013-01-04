@@ -117,10 +117,14 @@ public class MailModuleBean implements BeeModule {
           BeeUtils.toBoolean(reqInfo.getParameter("markAsRead")));
 
     } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
-      response = ResponseObject.response(setMessageFlag(getAccount(BeeUtils
-          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS))),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)), MessageFlag.FLAGGED,
-          BeeUtils.toBoolean(reqInfo.getParameter("toggle"))));
+      try {
+        response = ResponseObject.response(setMessageFlag(getAccount(BeeUtils
+            .toLongOrNull(reqInfo.getParameter(COL_ADDRESS))),
+            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)), MessageFlag.FLAGGED,
+            BeeUtils.toBoolean(reqInfo.getParameter("toggle"))));
+      } catch (MessagingException e) {
+        response = ResponseObject.error(e);
+      }
 
     } else if (BeeUtils.same(svc, SVC_GET_ACCOUNTS)) {
       response = getAccounts(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER)));
@@ -153,7 +157,7 @@ public class MailModuleBean implements BeeModule {
 
         try {
           if (account.createRemoteFolder(parent, name)) {
-            mail.createFolder(parent, name);
+            mail.createFolder(account, parent, name);
             response = ResponseObject.info("Folder created:", name);
           } else {
             response = ResponseObject.error("Cannot create folder:", name);
@@ -515,8 +519,8 @@ public class MailModuleBean implements BeeModule {
     return message;
   }
 
-  private int checkFolder(Folder remoteFolder, MailFolder localFolder, boolean recurse)
-      throws MessagingException {
+  private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
+      boolean recurse) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
     int c = 0;
     boolean uidMode = (remoteFolder instanceof UIDFolder);
@@ -562,10 +566,10 @@ public class MailModuleBean implements BeeModule {
     if ((remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0) {
       for (Folder subFolder : remoteFolder.list()) {
         visitedFolders.add(subFolder.getName());
-        MailFolder localSubFolder = mail.createFolder(localFolder, subFolder.getName());
+        MailFolder localSubFolder = mail.createFolder(account, localFolder, subFolder.getName());
 
         if (recurse) {
-          c += checkFolder(subFolder, localSubFolder, true);
+          c += checkFolder(account, subFolder, localSubFolder, true);
         }
       }
     }
@@ -586,7 +590,7 @@ public class MailModuleBean implements BeeModule {
 
     try {
       store = account.connectToStore(true);
-      c = checkFolder(account.getRemoteFolder(store, localFolder), localFolder, recurse);
+      c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, recurse);
 
     } catch (MessagingException e) {
       ctx.setRollbackOnly();
@@ -660,9 +664,6 @@ public class MailModuleBean implements BeeModule {
       boolean markAsRead) {
     Assert.notNull(id);
 
-    if (markAsRead) {
-      setMessageFlag(getAccount(addressId), placeId, MessageFlag.SEEN, true);
-    }
     Map<String, SimpleRowSet> packet = Maps.newHashMap();
     IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, id);
 
@@ -702,7 +703,16 @@ public class MailModuleBean implements BeeModule {
             sys.joinTables(CommonsConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
         .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, id))));
 
-    return ResponseObject.response(packet);
+    ResponseObject response = ResponseObject.response(packet);
+
+    if (markAsRead) {
+      try {
+        setMessageFlag(getAccount(addressId), placeId, MessageFlag.SEEN, true);
+      } catch (MessagingException e) {
+        response.addError(e);
+      }
+    }
+    return response;
   }
 
   private ResponseObject removeMessages(MailAccount account, MailFolder folder, String[] messages,
@@ -748,7 +758,8 @@ public class MailModuleBean implements BeeModule {
     return response;
   }
 
-  private int setMessageFlag(MailAccount account, Long placeId, MessageFlag flag, boolean on) {
+  private int setMessageFlag(MailAccount account, Long placeId, MessageFlag flag, boolean on)
+      throws MessagingException {
     SimpleRow row = qs.getRow(new SqlSelect()
         .addFields(TBL_PLACES, COL_FOLDER, COL_FLAGS, COL_MESSAGE_UID)
         .addFrom(TBL_PLACES)
@@ -758,22 +769,18 @@ public class MailModuleBean implements BeeModule {
     int value = BeeUtils.unbox(row.getInt(COL_FLAGS));
     MailFolder folder = mail.findFolder(account, row.getLong(COL_FOLDER));
 
-    try {
-      account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
-          MailEnvelope.getFlag(flag), on);
+    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
+        MailEnvelope.getFlag(flag), on);
 
-      if (on) {
-        value = value | flag.getMask();
-      } else {
-        value = value & ~flag.getMask();
-      }
-      qs.updateData(new SqlUpdate(TBL_PLACES)
-          .addConstant(COL_FLAGS, value)
-          .setWhere(sys.idEquals(TBL_PLACES, placeId)));
-
-    } catch (MessagingException e) {
-      logger.error(e);
+    if (on) {
+      value = value | flag.getMask();
+    } else {
+      value = value & ~flag.getMask();
     }
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FLAGS, value)
+        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+
     return value;
   }
 }

@@ -133,7 +133,10 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
   void refresh(Long folderId) {
     refresh((SystemFolder) null);
-    folders.get(folderId).addStyleDependentName(STYLE_SELECTED);
+
+    if (folders.containsKey(folderId)) {
+      folders.get(folderId).addStyleDependentName(STYLE_SELECTED);
+    }
   }
 
   private void buildTree(final AccountInfo account, MailFolder folder, int margin) {

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -117,6 +118,13 @@ public class MailPanel extends AbstractFormInterceptor {
 
     public String getDescription() {
       return description;
+    }
+
+    public MailFolder getFolder(Long folderId) {
+      if (rootFolder != null) {
+        return rootFolder.findFolder(folderId);
+      }
+      return null;
     }
 
     public long getId() {
@@ -346,7 +354,7 @@ public class MailPanel extends AbstractFormInterceptor {
     }
 
     @Override
-    public void onEditStart(EditStartEvent event) {
+    public void onEditStart(final EditStartEvent event) {
       if ("Star".equals(event.getColumnId())) {
         final IsRow row = event.getRowValue();
 
@@ -364,10 +372,16 @@ public class MailPanel extends AbstractFormInterceptor {
         BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            Data.setValue(viewName, row, COL_FLAGS, (String) response.getResponse());
+            response.notify(getFormView());
+
+            if (!response.hasErrors()) {
+              Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
+              Data.setValue(viewName, row, COL_FLAGS, flags);
+              event.getSourceElement()
+                  .setInnerHTML(StarRenderer.render(MessageFlag.isFlagged(flags)));
+            }
           }
         });
-        event.getSourceElement().setInnerHTML(StarRenderer.render(toggle));
       }
     }
 
@@ -514,11 +528,14 @@ public class MailPanel extends AbstractFormInterceptor {
   public void onShow(FormPresenter presenter) {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
-    initFolders(false);
 
-    if (getCurrentAccount() != null) {
-      refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
-    }
+    initFolders(false, new ScheduledCommand() {
+      @Override
+      public void execute() {
+        refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
+      }
+    });
+    messageHandler.setFormView(getFormView());
   }
 
   @Override
@@ -543,7 +560,7 @@ public class MailPanel extends AbstractFormInterceptor {
     return currentFolder;
   }
 
-  void initFolders(boolean forced) {
+  void initFolders(boolean forced, final ScheduledCommand update) {
     final AccountInfo account = getCurrentAccount();
     if (account == null) {
       return;
@@ -584,12 +601,19 @@ public class MailPanel extends AbstractFormInterceptor {
           }
           if (account == getCurrentAccount()) {
             MailKeeper.rebuildController();
-            MailKeeper.refreshController();
+
+            if (update != null) {
+              update.execute();
+            }
           }
         }
       });
     } else {
       MailKeeper.rebuildController();
+
+      if (update != null) {
+        update.execute();
+      }
     }
   }
 
@@ -600,6 +624,11 @@ public class MailPanel extends AbstractFormInterceptor {
         return;
       }
       if (Objects.equal(folderId, getCurrentFolderId())) {
+        MailFolder folder = account.getFolder(folderId);
+
+        if (folder != null && !folder.isConnected()) {
+          return;
+        }
         ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
         params.addDataItem(COL_ADDRESS, account.getAddress());
         params.addDataItem(COL_FOLDER, folderId);
@@ -610,10 +639,14 @@ public class MailPanel extends AbstractFormInterceptor {
             response.notify(getFormView());
 
             if (!response.hasErrors()) {
-              if (Objects.equal(folderId, getCurrentFolderId())) {
-                refresh(null);
-              }
-              initFolders(true);
+              initFolders(true, new ScheduledCommand() {
+                @Override
+                public void execute() {
+                  if (Objects.equal(folderId, getCurrentFolderId())) {
+                    refresh(null);
+                  }
+                }
+              });
               int msgCnt = BeeUtils.toInt((String) response.getResponse());
 
               if (msgCnt > 0) {
@@ -653,10 +686,15 @@ public class MailPanel extends AbstractFormInterceptor {
         int selectedAccount = accountsWidget.getSelectedIndex();
 
         if (selectedAccount != currentAccount) {
-          currentAccount = accountsWidget.getSelectedIndex();
-          initFolders(false);
-          currentFolder = null;
-          refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
+          currentAccount = selectedAccount;
+
+          initFolders(false, new ScheduledCommand() {
+            @Override
+            public void execute() {
+              currentFolder = null;
+              refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
+            }
+          });
         }
       }
     });

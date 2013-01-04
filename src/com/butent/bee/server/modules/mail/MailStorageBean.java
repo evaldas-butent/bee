@@ -71,7 +71,7 @@ public class MailStorageBean {
     validateFolder(folder, null);
   }
 
-  public MailFolder createFolder(MailFolder parent, String name) {
+  public MailFolder createFolder(MailAccount account, MailFolder parent, String name) {
     Assert.notNull(parent);
 
     for (MailFolder subFolder : parent.getSubFolders()) {
@@ -79,7 +79,12 @@ public class MailStorageBean {
         return subFolder;
       }
     }
-    return createFolder(parent.getAccountId(), parent, name, null);
+    MailFolder folder = createFolder(parent.getAccountId(), parent, name, null);
+
+    if (account.getStoreProtocol() == Protocol.POP3) {
+      disconnectFolder(folder);
+    }
+    return folder;
   }
 
   public void disconnectFolder(MailFolder folder) {
@@ -167,11 +172,13 @@ public class MailStorageBean {
       }
     }
     if (inbox == null) {
+      MailAccount account = getAccount(accountId);
       inbox = createFolder(accountId, null, SystemFolder.Inbox.getFullName(), null);
+      account.setRootFolder(inbox);
 
       for (SystemFolder sysFolder : SystemFolder.values()) {
         if (sysFolder != SystemFolder.Inbox) {
-          createSysFolder(inbox, sysFolder);
+          createSysFolder(account, sysFolder);
         }
       }
     } else {
@@ -375,8 +382,9 @@ public class MailStorageBean {
     return folder;
   }
 
-  private MailFolder createSysFolder(MailFolder inbox, SystemFolder sysFolder) {
-    MailFolder folder = createFolder(inbox, sysFolder.getFullName());
+  private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder) {
+    MailFolder inbox = getInboxFolder(account);
+    MailFolder folder = createFolder(account, inbox, sysFolder.getFullName());
 
     qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
         .addConstant(sysFolder.name() + "Folder", folder.getId())
@@ -395,6 +403,19 @@ public class MailStorageBean {
     }
   }
 
+  private MailAccount getAccount(Long accountId) {
+    Assert.state(DataUtils.isId(accountId));
+
+    return new MailAccount(qs.getRow(new SqlSelect()
+        .addAllFields(TBL_ACCOUNTS)
+        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
+        .addFields(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL_ADDRESS)
+        .addFrom(TBL_ACCOUNTS)
+        .addFromInner(CommonsConstants.TBL_EMAILS,
+            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_ACCOUNTS, COL_ADDRESS))
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId))));
+  }
+
   private MailFolder getSysFolder(MailAccount account, Long folderId, SystemFolder sysFolder) {
     MailFolder folder = null;
 
@@ -402,10 +423,7 @@ public class MailStorageBean {
       folder = findFolder(account, folderId);
     }
     if (folder == null) {
-      folder = createSysFolder(getInboxFolder(account), sysFolder);
-    }
-    if (account.getStoreProtocol() == Protocol.POP3 && folder.isConnected()) {
-      disconnectFolder(folder);
+      folder = createSysFolder(account, sysFolder);
     }
     return folder;
   }

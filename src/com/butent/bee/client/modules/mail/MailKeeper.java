@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -79,7 +80,6 @@ public class MailKeeper {
     }
     activePanel = mailPanel;
     rebuildController();
-    refreshController();
     BeeKeeper.getScreen().activateDomainEntry(Domain.MAIL, null);
   }
 
@@ -109,8 +109,9 @@ public class MailKeeper {
   }
 
   static void createFolder(String name) {
-    final AccountInfo account = activePanel.getCurrentAccount();
-    Long parentId = activePanel.getCurrentFolderId();
+    final MailPanel panel = activePanel;
+    AccountInfo account = panel.getCurrentAccount();
+    Long parentId = panel.getCurrentFolderId();
 
     ParameterList params = createArgs(SVC_CREATE_FOLDER);
     params.addDataItem(COL_ADDRESS, account.getAddress());
@@ -122,10 +123,10 @@ public class MailKeeper {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        response.notify(activePanel.getFormView());
+        response.notify(panel.getFormView());
 
-        if (!response.hasErrors() && account == activePanel.getCurrentAccount()) {
-          activePanel.initFolders(true);
+        if (!response.hasErrors()) {
+          panel.initFolders(true, null);
         }
       }
     });
@@ -134,6 +135,7 @@ public class MailKeeper {
   static void rebuildController() {
     if (controller != null && activePanel != null) {
       controller.rebuild(activePanel.getCurrentAccount());
+      refreshController();
     }
   }
 
@@ -151,6 +153,7 @@ public class MailKeeper {
   }
 
   static void removeFolder(final AccountInfo account, final Long folderId) {
+    final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_DROP_FOLDER);
     params.addDataItem(COL_ADDRESS, account.getAddress());
     params.addDataItem(COL_FOLDER, folderId);
@@ -158,13 +161,17 @@ public class MailKeeper {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        response.notify(activePanel.getFormView());
+        response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          if (Objects.equal(folderId, activePanel.getCurrentFolderId())) {
-            activePanel.refresh(account.getSystemFolderId(SystemFolder.Inbox));
-          }
-          activePanel.initFolders(true);
+          panel.initFolders(true, new ScheduledCommand() {
+            @Override
+            public void execute() {
+              if (Objects.equal(folderId, panel.getCurrentFolderId())) {
+                panel.refresh(account.getSystemFolderId(SystemFolder.Inbox));
+              }
+            }
+          });
         }
       }
     });
@@ -177,7 +184,6 @@ public class MailKeeper {
       if (mailPanel == activePanel) {
         activePanel = mailPanels.iterator().next();
         rebuildController();
-        refreshController();
       }
     } else {
       activePanel = null;
@@ -196,6 +202,7 @@ public class MailKeeper {
   }
 
   static void renameFolder(AccountInfo account, final Long folderId, String name) {
+    final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_RENAME_FOLDER);
     params.addDataItem(COL_ADDRESS, account.getAddress());
     params.addDataItem(COL_FOLDER, folderId);
@@ -204,13 +211,13 @@ public class MailKeeper {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        response.notify(activePanel.getFormView());
+        response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          if (Objects.equal(folderId, activePanel.getCurrentFolderId())) {
-            activePanel.refresh(folderId);
+          if (Objects.equal(folderId, panel.getCurrentFolderId())) {
+            panel.refresh(folderId);
           } else {
-            activePanel.initFolders(true);
+            panel.initFolders(true, null);
           }
         }
       }

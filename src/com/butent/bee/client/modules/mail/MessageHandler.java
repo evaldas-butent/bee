@@ -216,7 +216,7 @@ public class MessageHandler extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        Assert.isTrue(response.hasResponse());
+        response.notify(getFormView());
 
         String[] data = Codec.beeDeserializeCollection((String) response.getResponse());
 
