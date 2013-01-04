@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TaskTemplates"
-  source="TaskTemplates"
+  name="TaskTemplates" source="TaskTemplates" newRowCaption="Naujas užduočių šablonas"
   >
   <Columns>
     <SimpleColumn name="Name" />

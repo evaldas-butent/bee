@@ -1603,24 +1603,20 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     super.onUnload();
   }
 
-  private void amendGeneratedSize(ModalForm popup, FormView form) {
-    boolean animationEnabled = popup.isAnimationEnabled();
-    popup.setAnimationEnabled(false);
-    popup.setVisible(false);
-    popup.show();
+  private void amendGeneratedSize(final ModalForm popup, final FormView form) {
+    popup.attachAmendDetach(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
+        int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
+            + form.getViewPresenter().getHeader().getHeight() + 1;
 
-    int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
-    int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
-        + form.getViewPresenter().getHeader().getHeight() + 1;
-
-    popup.hide();
-    popup.setAnimationEnabled(animationEnabled);
-    popup.setVisible(true);
-
-    if (width > BeeUtils.toInt(form.getWidthValue())) {
-      StyleUtils.setWidth(popup, width);
-    }
-    StyleUtils.setHeight(popup, height);
+        if (width > BeeUtils.toInt(form.getWidthValue())) {
+          StyleUtils.setWidth(popup, width);
+        }
+        StyleUtils.setHeight(popup, height);
+      }
+    });
   }
 
   private void closeEditForm() {

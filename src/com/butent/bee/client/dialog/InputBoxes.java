@@ -81,7 +81,7 @@ public class InputBoxes {
         case KeyCodes.KEY_ESCAPE:
           event.preventDefault();
           if (callback == null) {
-            dialog.hide();
+            dialog.close();
           } else {
             callback.onCancel(dialog);
           }
@@ -97,7 +97,7 @@ public class InputBoxes {
             event.preventDefault();
             EventUtils.getEventTargetElement(event).blur();
             if (callback == null || callback.onConfirm(dialog)) {
-              dialog.hide();
+              dialog.close();
             }
             break;
           }
@@ -198,7 +198,7 @@ public class InputBoxes {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
           event.preventDefault();
           state.set(State.CANCELED);
-          dialog.hide();
+          dialog.close();
           return;
         }
 
@@ -207,7 +207,7 @@ public class InputBoxes {
           if (BeeUtils.isEmpty(message)) {
             event.preventDefault();
             state.set(State.CONFIRMED);
-            dialog.hide();
+            dialog.close();
             return;
           } else {
             showError(errorDisplay.get(), message);
@@ -405,7 +405,7 @@ public class InputBoxes {
       public void execute() {
         String message = callback.getErrorMessage();
         if (BeeUtils.isEmpty(message)) {
-          dialog.hide();
+          dialog.close();
           callback.onSuccess();
         } else {
           showError(errorDisplay.get(), message);
@@ -424,7 +424,7 @@ public class InputBoxes {
         callback.onClose(new CloseCallback() {
           @Override
           public void onClose() {
-            dialog.hide();
+            dialog.close();
             callback.onCancel();
           }
 
@@ -480,7 +480,7 @@ public class InputBoxes {
           String message = errorSupplier.get();
           if (BeeUtils.isEmpty(message)) {
             state.set(State.CONFIRMED);
-            dialog.hide();
+            dialog.close();
           } else {
             showError(errorDisplay.get(), message);
           }
@@ -498,7 +498,7 @@ public class InputBoxes {
       cancel.addClickHandler(new ClickHandler() {
         public void onClick(ClickEvent event) {
           state.set(State.CANCELED);
-          dialog.hide();
+          dialog.close();
         }
       });
 

@@ -2,7 +2,6 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -12,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.style.StyleUtils;
@@ -319,7 +319,7 @@ public class RowFactory {
     final CloseCallback close = new CloseCallback() {
       @Override
       public void onClose() {
-        dialog.hide();
+        dialog.close();
         if (callback != null) {
           callback.onCancel();
         }
@@ -330,7 +330,7 @@ public class RowFactory {
         presenter.save(new RowCallback() {
           @Override
           public void onCancel() {
-            dialog.hide();
+            dialog.close();
             if (callback != null) {
               callback.onCancel();
             }
@@ -338,7 +338,7 @@ public class RowFactory {
 
           @Override
           public void onSuccess(BeeRow result) {
-            dialog.hide();
+            dialog.close();
             if (callback != null) {
               callback.onSuccess(result);
             }
@@ -375,13 +375,11 @@ public class RowFactory {
         }
       }
     });
-
-    dialog.addAttachHandler(new AttachEvent.Handler() {
+    
+    dialog.addOpenHandler(new OpenEvent.Handler() {
       @Override
-      public void onAttachOrDetach(AttachEvent event) {
-        if (event.isAttached()) {
-          formView.updateRow(row, true);
-        }
+      public void onOpen(OpenEvent event) {
+        formView.updateRow(row, true);
       }
     });
 

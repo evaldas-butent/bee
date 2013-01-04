@@ -112,7 +112,7 @@ class CargoTripsGridHandler extends AbstractGridInterceptor {
       if (!DataUtils.isId(tripId)) {
         return;
       }
-      dialog.hide();
+      dialog.close();
 
       List<BeeColumn> columns =
           DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);

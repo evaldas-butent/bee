@@ -131,7 +131,7 @@ public class MessageHandler extends AbstractFormInterceptor {
             link.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent ev) {
-                popup.hide();
+                popup.close();
               }
             });
             bar.addItem(link);

@@ -113,7 +113,7 @@ public class DialogBox extends Popup implements Printable {
     BeeImage close = new BeeImage(imageResource, new ScheduledCommand() {
       @Override
       public void execute() {
-        hide();
+        close();
       }
     });
     

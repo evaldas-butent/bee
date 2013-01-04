@@ -3,6 +3,7 @@ package com.butent.bee.client.cli;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -1537,6 +1538,15 @@ public class CliWorker {
     for (String key : keys) {
       for (String caption : Captions.getCaptions(key)) {
         props.add(new Property(key, caption));
+      }
+    }
+    
+    Table<String, String, String> columnKeys = Captions.getColumnKeys();
+    props.add(new Property("Column Keys", BeeUtils.bracket(columnKeys.size())));
+    
+    for (String viewName : columnKeys.rowKeySet()) {
+      for (Map.Entry<String, String> entry : columnKeys.row(viewName).entrySet()) {
+        props.add(new Property(BeeUtils.joinWords(viewName, entry.getKey()), entry.getValue()));
       }
     }
 
@@ -3336,7 +3346,7 @@ public class CliWorker {
     widget.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        popup.hide();
+        popup.close();
         List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
 
         for (final NewFileInfo fi : files) {

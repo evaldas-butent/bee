@@ -477,7 +477,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     private void hide() {
-      getPopup().hide();
+      getPopup().close();
     }
 
     private void initNavigationItem(MenuItem item) {
@@ -542,7 +542,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private void showSuggestions(Response response, UIObject target) {
       Collection<Suggestion> suggestions = response.getSuggestions();
       if (BeeUtils.isEmpty(suggestions)) {
-        getPopup().hide();
+        getPopup().close();
         return;
       }
 

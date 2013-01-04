@@ -604,7 +604,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
       @Override
       public void onValueChange(ValueChangeEvent<JustDate> event) {
-        popup.hide();
+        popup.close();
         setDate(event.getValue(), true);
       }
     });

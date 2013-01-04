@@ -174,7 +174,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   protected void closeDialog() {
     if (getDialog() != null) {
-      getDialog().hide();
+      getDialog().close();
       setDialog(null);
     }
   }

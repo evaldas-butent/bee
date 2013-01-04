@@ -467,7 +467,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
       @Override
       public void onValueChange(ValueChangeEvent<JustDate> event) {
         setDate(event.getValue());
-        popup.hide();
+        popup.close();
 
         fireEvent(new EditStopEvent(State.CHANGED));
       }

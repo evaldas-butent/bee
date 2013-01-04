@@ -82,6 +82,10 @@ public class Captions {
     return COLUMN_KEYS.get(viewName, columnid);
   }
 
+  public static Table<String, String, String> getColumnKeys() {
+    return COLUMN_KEYS;
+  }
+
   public static Set<String> getRegisteredKeys() {
     return CLASSES.keySet();
   }

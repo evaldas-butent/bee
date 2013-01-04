@@ -190,7 +190,7 @@ class ReportManager {
       public void onDoubleClick(DoubleClickEvent event) {
         Popup popup = DomUtils.getParentPopup(widget);
         if (popup != null) {
-          popup.hide();
+          popup.close();
           callback.onSuccess();
         }
       }
@@ -255,7 +255,7 @@ class ReportManager {
       public void onDoubleClick(DoubleClickEvent event) {
         Popup popup = DomUtils.getParentPopup(widget);
         if (popup != null) {
-          popup.hide();
+          popup.close();
           callback.onSuccess();
         }
       }

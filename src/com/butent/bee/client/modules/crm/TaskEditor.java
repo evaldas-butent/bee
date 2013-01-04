@@ -641,7 +641,7 @@ class TaskEditor extends AbstractFormInterceptor {
             dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.ACTIVATE);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -670,7 +670,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ParameterList params = createParams(TaskEvent.APPROVE, newRow, dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.APPROVE);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -696,7 +696,7 @@ class TaskEditor extends AbstractFormInterceptor {
             comment);
 
         sendRequest(params, TaskEvent.CANCEL);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -728,7 +728,7 @@ class TaskEditor extends AbstractFormInterceptor {
         if (setDurationParams(dialog, durIds, params)) {
           final List<NewFileInfo> files = dialog.getFiles(fid);
 
-          dialog.hide();
+          dialog.close();
 
           sendRequest(params, new Callback<ResponseObject>() {
             @Override
@@ -789,7 +789,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         if (setDurationParams(dialog, durIds, params)) {
           sendRequest(params, TaskEvent.COMPLETE);
-          dialog.hide();
+          dialog.close();
         }
       }
     });
@@ -887,7 +887,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.EXTEND);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -937,7 +937,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
 
         sendRequest(params, TaskEvent.FORWARD);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -962,7 +962,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ParameterList params = createParams(TaskEvent.RENEW, newRow, dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.RENEW);
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -988,7 +988,7 @@ class TaskEditor extends AbstractFormInterceptor {
             comment);
 
         sendRequest(params, TaskEvent.SUSPEND);
-        dialog.hide();
+        dialog.close();
       }
     });
 

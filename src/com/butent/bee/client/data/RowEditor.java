@@ -3,13 +3,13 @@ package com.butent.bee.client.data;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -279,7 +279,7 @@ public class RowEditor {
 
       private void closeForm() {
         if (modal) {
-          dialog.hide();
+          dialog.close();
         } else {
           BeeKeeper.getScreen().closeWidget(presenter.getWidget());
         }
@@ -326,13 +326,11 @@ public class RowEditor {
           }
         }
       });
-
-      dialog.addAttachHandler(new AttachEvent.Handler() {
+      
+      dialog.addOpenHandler(new OpenEvent.Handler() {
         @Override
-        public void onAttachOrDetach(AttachEvent event) {
-          if (event.isAttached()) {
-            formView.editRow(oldRow, focusCommand);
-          }
+        public void onOpen(OpenEvent event) {
+          formView.editRow(oldRow, focusCommand);
         }
       });
 

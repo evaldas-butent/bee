@@ -504,7 +504,7 @@ public class MonthView extends CalendarView {
           for (int i = 0; i < panel.getWidgetCount(); i++) {
             if (panel.getWidget(i).getElement().isOrHasChild(element)) {
               appointment = ((AppointmentWidget) panel.getWidget(i)).getAppointment();
-              popup.hide();
+              popup.close();
               break;
             }
           }

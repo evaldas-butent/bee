@@ -608,7 +608,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     bar.addSelectionHandler(new SelectionHandler<Integer>() {
       @Override
       public void onSelection(SelectionEvent<Integer> event) {
-        popup.hide();
+        popup.close();
         doAction(actions.get(event.getSelectedItem()), index);
       }
     });

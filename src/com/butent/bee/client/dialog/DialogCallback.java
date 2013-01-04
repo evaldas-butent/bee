@@ -11,7 +11,7 @@ public abstract class DialogCallback {
       @Override
       public void execute() {
         if (callback == null) {
-          popup.hide();
+          popup.close();
         } else {
           callback.onCancel(popup);
         }
@@ -26,14 +26,14 @@ public abstract class DialogCallback {
       @Override
       public void execute() {
         if (callback == null || callback.onConfirm(popup)) {
-          popup.hide();
+          popup.close();
         }
       }
     };
   }
   
   public void onCancel(Popup popup) {
-    popup.hide();
+    popup.close();
   }
 
   public abstract boolean onConfirm(Popup popup);

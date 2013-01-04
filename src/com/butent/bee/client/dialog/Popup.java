@@ -32,14 +32,16 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.CloseEvent;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHandlers,
-    PreviewHandler {
+    OpenEvent.HasOpenHandlers, PreviewHandler {
 
   public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
@@ -315,6 +317,29 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return addHandler(handler, CloseEvent.getType());
   }
 
+  @Override
+  public HandlerRegistration addOpenHandler(OpenEvent.Handler handler) {
+    return addHandler(handler, OpenEvent.getType());
+  }
+  
+  public void attachAmendDetach(ScheduledCommand command) {
+    Assert.notNull(command);
+    Assert.state(!isShowing());
+    
+    boolean animationEnabled = isAnimationEnabled();
+    boolean visible = isVisible();
+
+    setAnimationEnabled(false);
+    setVisible(false);
+    show();
+    
+    command.execute();
+
+    hide(false);
+    setAnimationEnabled(animationEnabled);
+    setVisible(visible);
+  }
+
   public void center() {
     boolean initiallyShowing = isShowing();
     boolean initiallyAnimated = isAnimationEnabled;
@@ -344,6 +369,12 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         setVisible(true);
       }
     }
+    
+    OpenEvent.fire(this);
+  }
+
+  public void close() {
+    hide(true);
   }
 
   public void enableGlass() {
@@ -382,21 +413,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   public int getPopupTop() {
     return DOM.getAbsoluteTop(getElement());
   }
-
-  public void hide() {
-    hide(CloseEvent.Cause.SCRIPT, null);
-  }
-
-  public void hide(CloseEvent.Cause cause, EventTarget eventTarget) {
-    if (!isShowing()) {
-      return;
-    }
-    Stacking.removeContext(this);
-
-    resizeAnimation.setState(false, false, BeeConst.UNDEF);
-    CloseEvent.fire(this, cause, eventTarget);
-  }
-
+  
   public boolean hideOnEscape() {
     return hideOnEscape;
   }
@@ -447,7 +464,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       } else if (isModal()) {
         event.cancel();
       } else {
-        hide(CloseEvent.Cause.MOUSE, target);
+        hide(CloseEvent.Cause.MOUSE, target, true);
       }
 
     } else if (EventUtils.isKeyEvent(type)) {
@@ -456,7 +473,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
           if (hideOnEscape()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target);
+            hide(CloseEvent.Cause.KEYBOARD, target, true);
           }
           if (getOnEscape() != null) {
             event.cancel();
@@ -466,7 +483,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         } else if (UiHelper.isSave(nativeEvent)) {
           if (hideOnSave()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target);
+            hide(CloseEvent.Cause.KEYBOARD, target, true);
           }
           if (getOnSave() != null) {
             event.cancel();
@@ -564,6 +581,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     show();
     callback.setPosition(getOffsetWidth(), getOffsetHeight());
     setVisible(true);
+    
+    OpenEvent.fire(this);
   }
 
   @Override
@@ -587,18 +606,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (BeeUtils.isEmpty(width)) {
       setDesiredWidth(null);
     }
-  }
-
-  public void show() {
-    if (isShowing()) {
-      return;
-    }
-    if (isAttached()) {
-      this.removeFromParent();
-    }
-
-    int level = Stacking.addContext(this);
-    resizeAnimation.setState(true, false, level);
   }
 
   public void showAt(final int x, final int y, final int margin) {
@@ -731,6 +738,22 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return true;
   }
 
+  private void hide(boolean fireEvent) {
+    hide(CloseEvent.Cause.SCRIPT, null, fireEvent);
+  }
+
+  private void hide(CloseEvent.Cause cause, EventTarget eventTarget, boolean fireEvent) {
+    if (!isShowing()) {
+      return;
+    }
+    Stacking.removeContext(this);
+
+    resizeAnimation.setState(false, false, BeeConst.UNDEF);
+    if (fireEvent) {
+      CloseEvent.fire(this, cause, eventTarget);
+    }
+  }
+
   private boolean isDragging() {
     return dragging;
   }
@@ -814,9 +837,21 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private void setShowing(boolean showing) {
     this.showing = showing;
   }
-
+  
   private void setTopPosition(int topPosition) {
     this.topPosition = topPosition;
+  }
+
+  private void show() {
+    if (isShowing()) {
+      return;
+    }
+    if (isAttached()) {
+      this.removeFromParent();
+    }
+
+    int level = Stacking.addContext(this);
+    resizeAnimation.setState(true, false, level);
   }
 
   private void updateHandlers() {

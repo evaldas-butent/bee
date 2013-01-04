@@ -19,6 +19,6 @@ public class DialogTimer extends Timer {
   @Override
   public void run() {
     state.set(State.EXPIRED);
-    dialog.hide();
+    dialog.close();
   }
 }

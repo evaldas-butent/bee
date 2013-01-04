@@ -93,16 +93,6 @@ public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAnd
   public boolean isEmpty() {
     return getWidgetCount() <= 0;
   }
-
-  @Override
-  public void onAttach() {
-    super.onAttach();
-  }
-
-  @Override
-  public void onDetach() {
-    super.onDetach();
-  }
   
   @Override
   public void onResize() {

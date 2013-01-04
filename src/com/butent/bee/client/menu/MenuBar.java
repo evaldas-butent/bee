@@ -147,7 +147,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   public void closePopup() {
     if (popup != null) {
-      popup.hide();
+      popup.close();
     }
   }
 

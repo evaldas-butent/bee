@@ -42,10 +42,6 @@ public class ModalForm extends Popup {
     }
   }
 
-  public void close() {
-    hide();
-  }
-
   @Override
   public String getIdPrefix() {
     return "modal-form";

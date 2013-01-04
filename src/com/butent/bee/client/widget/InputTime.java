@@ -483,7 +483,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   private void onPick(Popup popup, BeeListBox widget) {
     if (widget.getSelectedIndex() >= 0) {
       String text = widget.getItemText(widget.getSelectedIndex());
-      popup.hide();
+      popup.close();
       setValue(text);
       
       fireEvent(new EditStopEvent(State.CHANGED));

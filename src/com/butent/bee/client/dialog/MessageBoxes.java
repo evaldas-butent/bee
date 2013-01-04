@@ -165,7 +165,7 @@ public class MessageBoxes {
     group.addSelectionHandler(new SelectionHandler<Integer>() {
       public void onSelection(SelectionEvent<Integer> event) {
         selectedIndex.set(event.getSelectedItem());
-        dialog.hide();
+        dialog.close();
       }
     });
 
@@ -217,7 +217,7 @@ public class MessageBoxes {
     if (source != null) {
       Popup p = DomUtils.getParentPopup(source);
       if (p != null) {
-        p.hide();
+        p.close();
         ok = true;
       }
     }
@@ -266,7 +266,7 @@ public class MessageBoxes {
     BeeImage ok = new BeeImage(Global.getImages().ok(), new Command() {
       @Override
       public void execute() {
-        panel.hide();
+        panel.close();
         callback.onConfirm();
       }
     });
@@ -275,7 +275,7 @@ public class MessageBoxes {
     BeeImage cancel = new BeeImage(Global.getImages().cancel(), new Command() {
       @Override
       public void execute() {
-        panel.hide();
+        panel.close();
         callback.onCancel();
       }
     });
@@ -345,7 +345,7 @@ public class MessageBoxes {
     final BeeButton yes = new BeeButton(Global.CONSTANTS.yes(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        popup.hide();
+        popup.close();
         callback.onConfirm();
       }
     });
@@ -354,7 +354,7 @@ public class MessageBoxes {
     final BeeButton no = new BeeButton(Global.CONSTANTS.no(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        popup.hide();
+        popup.close();
         callback.onDeny();
       }
     });
@@ -363,7 +363,7 @@ public class MessageBoxes {
     final BeeButton cancel = new BeeButton(Global.CONSTANTS.cancel(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        popup.hide();
+        popup.close();
         callback.onCancel();
       }
     });
@@ -449,7 +449,7 @@ public class MessageBoxes {
     cluster.addSelectionHandler(new SelectionHandler<Integer>() {
       public void onSelection(SelectionEvent<Integer> event) {
         selectedIndex.set(event.getSelectedItem());
-        popup.hide();
+        popup.close();
       }
     });
 

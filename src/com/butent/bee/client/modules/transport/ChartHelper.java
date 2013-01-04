@@ -466,7 +466,7 @@ class ChartHelper {
         datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
           @Override
           public void onValueChange(ValueChangeEvent<JustDate> vce) {
-            popup.hide();
+            popup.close();
             JustDate newValue = vce.getValue();
 
             if (newValue != null && !newValue.equals(oldValue)

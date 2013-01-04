@@ -762,7 +762,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       public void onDoubleClick(DoubleClickEvent event) {
         Popup popup = DomUtils.getParentPopup(widget);
         if (popup != null) {
-          popup.hide();
+          popup.close();
           callback.onSuccess();
         }
       }
