@@ -18,10 +18,11 @@
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="OrderNo" caption="Užsakymo Nr." />
     <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />
-    <RelColumn name="Customer" caption="Užsakovas" />
-    <RelColumn name="Payer" caption="Mokėtojas" />
-    <RelColumn name="Manager" caption="Vadybininkas" />
-    <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
+    <RelColumn name="Customer" caption="Užsakovas" flexGrow="1" />
+    <RelColumn name="Payer" caption="Mokėtojas" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Manager" caption="Vadybininkas" flexGrow="1" flexShrink="1" />
+    <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo"
+      flexGrow="2" flexShrink="3" flexBasis="200">
       <render>
         <ui:function>
           if (!row.MinCargo) {

@@ -4,6 +4,7 @@
 
   name="CargoTrips" viewName="CargoTrips"
   editForm="CargoPlace" editPopup="true" editInPlace="TripPercent"
+  flexGrow="1" flexShrink="1"
   >
   <header borderWidth="1 0" />
   <body height="68" borderWidth="0">
@@ -17,7 +18,7 @@
     <ActionColumn element="link" name="TripNo" caption="Reiso Nr." />
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas">
+    <CalcColumn name="Vehicle" type="string" caption="Transportas" flexBasis="120">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -37,7 +38,7 @@
     <DataColumn name="DateFrom" caption="Išvyko" />
     <DataColumn name="DateTo" caption="Sugrįžo" />
     <DataColumn name="TripPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" flexBasis="120" />
   </columns>
 </Grid>

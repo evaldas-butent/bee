@@ -4,6 +4,6 @@
   name="ServiceTypes" viewName="ServiceTypes" caption="Serviso tipai"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
+    <DataColumn name="Name" source="Name" minWidth="200" />
   </columns>
 </Grid>

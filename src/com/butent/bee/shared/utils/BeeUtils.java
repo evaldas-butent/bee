@@ -1911,6 +1911,42 @@ public class BeeUtils {
     return BeeConst.DOUBLE_ZERO;
   }
 
+  public static String round(String s, int dec) {
+    if (!isDouble(s)) {
+      return null;
+
+    } else if (dec <= 0 || !isLong(Math.pow(10, dec))) {
+      double d = round(toDouble(s), dec);
+      if (dec == 0 && isLong(d)) {
+        return toString(toLong(d));
+      } else {
+        return toString(d);
+      }
+    
+    } else {
+      long scale = 1;
+      for (int i = 0; i < dec; i++) {
+        scale *= 10;
+      }
+
+      double d = round(toDouble(s) * scale, 0);
+      if (isLong(d)) {
+        long x = toLong(d);
+        StringBuilder sb = new StringBuilder();
+
+        if (x < 0) {
+          sb.append(BeeConst.CHAR_MINUS);
+        }
+        sb.append(Math.abs(x) / scale).append(BeeConst.STRING_POINT); 
+        sb.append(padLeft(Long.toString(Math.abs(x) % scale), dec, BeeConst.CHAR_ZERO));
+        return sb.toString();
+
+      } else {
+        return toString(round(toDouble(s), dec));
+      }
+    }
+  }
+  
   public static boolean same(char c1, char c2) {
     if (c1 == c2) {
       return true;
@@ -2256,9 +2292,9 @@ public class BeeUtils {
    */
   public static String toLeadingZeroes(int x, int n) {
     if (x >= 0 && n > 0) {
-      return padLeft(((Integer) x).toString(), n, BeeConst.CHAR_ZERO);
+      return padLeft(toString(x), n, BeeConst.CHAR_ZERO);
     } else {
-      return ((Integer) x).toString();
+      return toString(x);
     }
   }
 

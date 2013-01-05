@@ -161,7 +161,7 @@ public class Assert {
   }
 
   public static int isScale(int x) {
-    return isPositive(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
+    return nonNegative(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
         + BeeConst.MAX_SCALE);
   }
 

@@ -4,6 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="Vehicles" viewName="Vehicles" editForm="Vehicle" caption="Transporto priemonės"
+  flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <west size="160" splitterSize="2">
     <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
@@ -32,7 +33,7 @@
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />
     <DataColumn name="Number" caption="Valst.Nr." />
     <RelColumn name="Owner" caption="Savininkas" />
-    <DataColumn name="ProductionDate" caption="Pag. data" />
+    <DataColumn name="ProductionDate" caption="Pag. data" width="80" />
     <RelColumn name="Fuel" caption="Kuro rūšis" />
     <DataColumn name="Power" caption="Galia kW" />
     <DataColumn name="EngineVolume" caption="Tūris cm&#x00b3;" />

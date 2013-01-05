@@ -5,6 +5,7 @@
   
   name="SpareParts" viewName="SpareParts" parent="SparePartTypes"
   caption="Keičiamos dalys" newRowCaption="Nauja dalis"
+  flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <west size="150" splitterSize="2">
     <w:DataTree name="SparePartTypes" caption="Tipai" source="SparePartTypes" parentColumn="Parent">
@@ -37,8 +38,8 @@
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Description" caption="Aprašymas" />
     <DataColumn name="Run" caption="Pradinė rida" />
-    <DataColumn name="Obtained" caption="Gauta" />
-    <DataColumn name="WrittenOff" caption="Nurašyta" />
+    <DataColumn name="Obtained" caption="Gauta" width="80" />
+    <DataColumn name="WrittenOff" caption="Nurašyta" width="80" />
     <DataColumn name="Notes" caption="Pastabos" />
   </columns>
 </Grid>

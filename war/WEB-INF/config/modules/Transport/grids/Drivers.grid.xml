@@ -4,6 +4,7 @@
 
   name="Drivers" viewName="Drivers" caption="Vairuotojai"
   newRowForm="Driver" editForm="Driver"
+  flexGrow="1" flexShrink="1"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
@@ -15,7 +16,7 @@
 
   <columns>
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
-    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyName" caption="Įmonė" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
 
@@ -24,7 +25,7 @@
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
 
-    <DataColumn name="Experience" caption="Stažas nuo" />
+    <DataColumn name="Experience" caption="Stažas nuo" width="88" />
     <DataColumn name="Notes" caption="Pastabos" />
   </columns>
 </Grid>

@@ -6,7 +6,7 @@
   name="CargoPlace" caption="Vieta"
   width="600" widthUnit="px" height="200" heightUnit="px"
   >
-  <SimplePanel class="flexBox-vertical-center">
+  <SimplePanel class="flexBox-vertical-center" style="background-color: WhiteSmoke;">
     <xi:include href="widgets/CargoPlaces.widget.xml" />
   </SimplePanel>
 </f:Form>

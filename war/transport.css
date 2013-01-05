@@ -197,3 +197,12 @@
 .bee-tr-fx-Order-row-sep {
   background-color: #ddd;
 }
+
+.bee-tr-PlaceRenderer-table {
+  border-spacing: 0;
+}
+.bee-tr-PlaceRenderer-labelCell {
+  text-align: right;
+  font-weight: bold;
+  padding-right: 3px;
+}

@@ -15,11 +15,16 @@ public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeF
 
   private DateTimeFormat format;
 
+  public DateTimeCell() {
+    this(null);
+  }
+  
   public DateTimeCell(DateTimeFormat format) {
     super();
     this.format = format;
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }
@@ -27,10 +32,11 @@ public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeF
   @Override
   public void render(Context context, DateTime value, SafeHtmlBuilder sb) {
     if (value != null) {
-      sb.appendEscaped((format == null) ? value.toString() : format.format(value));
+      sb.appendEscaped((format == null) ? value.toCompactString() : format.format(value));
     }
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.format = format;
   }

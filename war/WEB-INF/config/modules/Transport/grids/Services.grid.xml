@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="Services" viewName="Services" caption="Transporto paslaugos"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
     <DataColumn name="Name" source="Name" />

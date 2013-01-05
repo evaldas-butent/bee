@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="FuelTypes" viewName="FuelTypes" caption="Kuro rūšys"
+  flexGrow="1" flexShrink="1" minColumnWidth="100"
   >
   <columns>
     <DataColumn name="Name" source="Name" />

@@ -4,6 +4,7 @@
 
   name="TripCargo" viewName="TripCargo"
   editForm="CargoPlace" editPopup="true" editInPlace="CargoPercent" disabledActions="add"
+  flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <header borderWidth="1 0" />
   <body height="68" borderWidth="0">
@@ -14,8 +15,9 @@
   <footer borderWidth="0" />
 
   <columns>
-    <RelColumn name="OrderNo"  caption="Užsakymo Nr." />
-    <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true" />
+    <RelColumn name="OrderNo"  caption="Užsakymo Nr." minWidth="100" />
+    <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
+      minWidth="100" />
     <DataColumn name="Weight" caption="Svoris" />
     <DataColumn name="Volume" caption="Tūris" />
     <DataColumn name="Quantity" caption="Kiekis" />
@@ -29,8 +31,10 @@
       </style>
     </DataColumn>
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta"
+      minWidth="120" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta"
+      minWidth="120" flexBasis="120" />
     <DataColumn name="Income" caption="Pajamos" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>

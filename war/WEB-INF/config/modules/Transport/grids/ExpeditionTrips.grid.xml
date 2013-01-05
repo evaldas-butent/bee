@@ -17,9 +17,9 @@
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="TripNo" caption="Reiso Nr." />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <DataColumn name="ForwarderVehicle" caption="Transportas" />
-    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" />
-    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" />
+    <DataColumn name="ForwarderName" caption="Vežėjas" flexGrow="1" flexShrink="1" />
+    <DataColumn name="ForwarderVehicle" caption="Transportas" flexGrow="1" flexShrink="1" />
+    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" width="80" />
+    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" width="80" />
   </columns>
 </Grid>

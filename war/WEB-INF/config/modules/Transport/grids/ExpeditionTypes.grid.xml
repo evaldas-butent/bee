@@ -4,6 +4,6 @@
   name="ExpeditionTypes" viewName="ExpeditionTypes" caption="Ekspedijavimo rūšys"
   >
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" minWidth="200" />
   </columns>
 </Grid>

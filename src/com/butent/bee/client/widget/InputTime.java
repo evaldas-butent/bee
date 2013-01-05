@@ -193,7 +193,11 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
     setValue(oldValue);
     if (!handleChar(charCode)) {
-      super.startEdit(oldValue, charCode, onEntry, sourceElement);
+      if (BeeUtils.isDigit(charCode)) {
+        setText(BeeUtils.toString(charCode));
+      } else {
+        selectAll();
+      }
     }
   }
 

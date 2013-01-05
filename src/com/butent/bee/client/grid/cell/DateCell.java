@@ -15,11 +15,16 @@ public class DateCell extends AbstractCell<JustDate> implements HasDateTimeForma
 
   private DateTimeFormat format;
 
+  public DateCell() {
+    this(null);
+  }
+  
   public DateCell(DateTimeFormat format) {
     super();
     this.format = format;
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }
@@ -31,6 +36,7 @@ public class DateCell extends AbstractCell<JustDate> implements HasDateTimeForma
     }
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.format = format;
   }

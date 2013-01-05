@@ -13,11 +13,11 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo">
+    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo" minWidth="80">
       <carry><ui:expression>row.DateTo</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="DateTo" source="DateTo" caption="Data iki" />
-    <RelColumn name="Driver" caption="Vardas, Pavardė" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
+    <DataColumn name="DateTo" source="DateTo" caption="Data iki" minWidth="80" />
+    <RelColumn name="Driver" caption="Vardas, Pavardė" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Note" source="Note" caption="Pastaba" flexGrow="2" flexShrink="2" />
   </columns>
 </Grid>

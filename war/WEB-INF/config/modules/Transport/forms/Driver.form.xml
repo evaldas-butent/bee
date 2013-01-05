@@ -44,7 +44,7 @@
             </TextLabel>
           </FlowPanel>
           <InlineLabel html="Stažas nuo" style="&LABEL_STYLE;" />
-          <InputDate source="Experience" style="width: 7em" />
+          <InputDate source="Experience" style="width: 7em"  minValue="1960" />
         </FlowPanel>
       </FlowPanel>
       

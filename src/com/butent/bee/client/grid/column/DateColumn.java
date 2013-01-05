@@ -4,7 +4,6 @@ import com.google.gwt.cell.client.Cell;
 
 import com.butent.bee.client.grid.cell.DateCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -13,7 +12,7 @@ import com.butent.bee.shared.time.JustDate;
 public class DateColumn extends DataColumn<JustDate> implements HasDateTimeFormat {
 
   public DateColumn(CellSource cellSource) {
-    this(Format.getDefaultDateFormat(), cellSource);
+    this(new DateCell(), cellSource);
   }
 
   public DateColumn(DateTimeFormat format, CellSource cellSource) {
@@ -24,6 +23,7 @@ public class DateColumn extends DataColumn<JustDate> implements HasDateTimeForma
     super(cell, cellSource);
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     if (getCell() instanceof HasDateTimeFormat) {
       return ((HasDateTimeFormat) getCell()).getDateTimeFormat();

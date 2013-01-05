@@ -4,6 +4,6 @@
   name="VehicleTypes" viewName="VehicleTypes" caption="Transporto priemonų tipai"
   >
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" minWidth="200" />
   </columns>
 </Grid>

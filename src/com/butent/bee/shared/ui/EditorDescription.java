@@ -78,7 +78,8 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private EditorDescription() {
   }
-
+  
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -156,6 +157,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     return height;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Type", getType(),
@@ -202,6 +204,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     return onEntry;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -230,6 +233,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     return Boolean.TRUE.equals(getUpperCase());
   }
   
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
@@ -327,6 +331,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     this.items = items;
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }

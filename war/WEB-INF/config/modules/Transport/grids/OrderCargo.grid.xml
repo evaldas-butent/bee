@@ -5,6 +5,7 @@
   name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
   newRowCaption="Naujas krovinys" newRowPopup="true"
   editForm="OrderCargo" editPopup="true"
+  flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <header borderWidth="1 0" />
   <body height="68" borderWidth="0">
@@ -16,8 +17,10 @@
 
   <columns>
     <DataColumn name="Description" caption="Krovinys" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas"
+      minWidth="80" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas"
+      minWidth="80" flexBasis="120" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="Notes" caption="Pastabos">

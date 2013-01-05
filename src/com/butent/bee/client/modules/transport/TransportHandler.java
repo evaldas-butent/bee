@@ -60,6 +60,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -89,7 +90,21 @@ public class TransportHandler {
             Global.showError(Lists.newArrayList(response.getErrors()));
 
           } else if (response.hasArrayResponse(String.class)) {
-            form.notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
+            String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+            List<String> messages = Lists.newArrayList();
+            
+            if (arr != null && arr.length % 2 == 0) {
+              for (int i = 0; i < arr.length; i += 2) {
+                messages.add(BeeUtils.joinWords(arr[i],
+                    BeeUtils.isDouble(arr[i + 1]) ? BeeUtils.round(arr[i + 1], 2) : arr[i + 1]));
+              }
+            }
+
+            if (messages.isEmpty()) {
+              form.notifyInfo(arr);
+            } else {
+              form.notifyInfo(ArrayUtils.toArray(messages));
+            }
 
           } else {
             Global.showError("Unknown response");

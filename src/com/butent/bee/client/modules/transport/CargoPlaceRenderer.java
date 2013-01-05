@@ -1,15 +1,27 @@
 package com.butent.bee.client.modules.transport;
 
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 class CargoPlaceRenderer extends AbstractCellRenderer {
+  
+  private static final String STYLE_PREFIX = "bee-tr-PlaceRenderer-";
+
+  private static final String TR = "<tr>";
+  private static final String TRE = "</tr>";
+
+  private static final String TD_0 = "<td class=\"" + STYLE_PREFIX + "labelCell\">";
+  private static final String TD_1 = "<td class=\"" + STYLE_PREFIX + "valueCell\">";
+  private static final String TDE = "</td>";
+
+  private static final String TBL = "<table class=\"" + STYLE_PREFIX + "table\">";
+  private static final String TBLE = "</table>";
+  
   private final int dateIndex;
   private final int countryIndex;
   private final int placeIndex;
@@ -26,28 +38,25 @@ class CargoPlaceRenderer extends AbstractCellRenderer {
 
   @Override
   public String render(IsRow row) {
-    String s = "";
-    String tr = "<tr>";
-    String tre = "</tr>";
-    String tdc = "<td align=\"right\" style=\"font-weight: bold;\">";
-    String td = "<td>";
-    String tde = "</td>";
+    StringBuilder sb = new StringBuilder();
 
     if (!row.isNull(dateIndex)) {
-      s = s + tr + tdc + "Data: " + tde + td + new JustDate(row.getInteger(dateIndex)) + tde + tre;
+      sb.append(renderTr("Data", row.getDate(dateIndex).toString()));
     }
     if (!row.isNull(countryIndex)) {
-      s = s + tr + tdc + "Šalis: " + tde + td + row.getString(countryIndex) + tde + tre;
+      sb.append(renderTr("Šalis", row.getString(countryIndex)));
     }
     if (!row.isNull(placeIndex)) {
-      s = s + tr + tdc + "Vieta: " + tde + td + row.getString(placeIndex) + tde + tre;
+      sb.append(renderTr("Vieta", row.getString(placeIndex)));
     }
     if (!row.isNull(terminalIndex)) {
-      s = s + tr + tdc + "Terminalas: " + tde + td + row.getString(terminalIndex) + tde + tre;
+      sb.append(renderTr("Term", row.getString(terminalIndex)));
     }
-    if (!BeeUtils.isEmpty(s)) {
-      s = "<table border=\"0\" style=\"border-collapse: collapse;\">" + s + "</table>";
-    }
-    return s;
+
+    return (sb.length() > 0) ? TBL + sb.toString() + TBLE : BeeConst.STRING_EMPTY;
+  }
+  
+  private String renderTr(String label, String value) {
+    return TR + TD_0 + label + ":" + TDE + TD_1 + value + TDE + TRE;
   }
 }
