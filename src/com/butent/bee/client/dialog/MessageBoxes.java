@@ -309,6 +309,10 @@ public class MessageBoxes {
     DomUtils.setFocus(panel, true);
   }
 
+  public void decide(String caption, List<String> messages, DecisionCallback callback) {
+    decide(caption, messages, callback, BeeConst.UNDEF);
+  }
+  
   public void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
     decide(caption, messages, callback, defaultValue, null, null);

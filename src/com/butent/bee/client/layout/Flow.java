@@ -16,7 +16,6 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -25,15 +24,15 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 
 /**
  * Implements a panel that formats its child widgets using the default HTML layout behavior.
  */
 
-public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAndDropHandlers,
-    HasIndexedWidgets, ProvidesResize, RequiresResize, HasClickHandlers {
+public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, ProvidesResize,
+    RequiresResize, HasClickHandlers {
 
   public Flow() {
     DomUtils.createId(this, getIdPrefix());
@@ -93,7 +92,7 @@ public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAnd
   public boolean isEmpty() {
     return getWidgetCount() <= 0;
   }
-  
+
   @Override
   public void onResize() {
     for (Widget child : getChildren()) {

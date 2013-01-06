@@ -1,19 +1,12 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DragEnterEvent;
-import com.google.gwt.event.dom.client.DragEnterHandler;
-import com.google.gwt.event.dom.client.DragLeaveEvent;
-import com.google.gwt.event.dom.client.DragLeaveHandler;
-import com.google.gwt.event.dom.client.DragOverEvent;
-import com.google.gwt.event.dom.client.DragOverHandler;
-import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -24,8 +17,11 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dom.Rectangle;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
@@ -33,10 +29,16 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -65,6 +67,9 @@ class ShippingSchedule extends ChartBase {
     private final JustDate tripDateFrom;
     private final JustDate tripDateTo;
 
+    private final Long cargoTripId;
+    private final Long cargoTripVersion;
+    
     private final Long cargoId;
     private final String cargoDescription;
 
@@ -96,6 +101,9 @@ class ShippingSchedule extends ChartBase {
       this.vehicleId = row.getLong(COL_VEHICLE);
       this.vehicleNumber = row.getValue(ALS_VEHICLE_NUMBER);
       this.trailerNumber = row.getValue(ALS_TRAILER_NUMBER);
+
+      this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
+      this.cargoTripVersion = row.getLong(ALS_CARGO_TRIP_VERSION);
 
       this.cargoId = row.getLong(COL_CARGO);
       this.cargoDescription = row.getValue(COL_DESCRIPTION);
@@ -209,9 +217,12 @@ class ShippingSchedule extends ChartBase {
 
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "Item-";
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
+  private static final String STYLE_ITEM_TRIP = STYLE_ITEM_PREFIX + "trip";
+  private static final String STYLE_ITEM_CARGO = STYLE_ITEM_PREFIX + "cargo";
   private static final String STYLE_ITEM_LOAD = STYLE_ITEM_PREFIX + "load";
   private static final String STYLE_ITEM_UNLOAD = STYLE_ITEM_PREFIX + "unload";
 
+  private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
   private static final String STYLE_ITEM_OVER = STYLE_ITEM_PREFIX + "over";
 
   private static final String STYLE_SERVICE_PREFIX = STYLE_PREFIX + "Service-";
@@ -478,11 +489,16 @@ class ShippingSchedule extends ChartBase {
   protected void renderVisibleRange(HasWidgets panel) {
   }
 
-  private Widget createItemWidget(Freight item) {
+  private Widget createItemWidget(final Freight item) {
     final Flow panel = new Flow();
     panel.addStyleName(STYLE_ITEM_PANEL);
     setItemWidgetColor(item, panel);
 
+    final Long tripId = item.tripId;
+    Long cargoId = item.cargoId;
+
+    panel.addStyleName((cargoId == null) ? STYLE_ITEM_TRIP : STYLE_ITEM_CARGO);
+    
     String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
     String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
         item.unloadingTerminal);
@@ -490,14 +506,17 @@ class ShippingSchedule extends ChartBase {
     String loadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.loadingDate, loading));
     String unloadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.unloadingDate, unloading));
 
-    final Long tripId = item.tripId;
-
-    panel.setTitle(ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
+    final String tripTitle = ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
         "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
-        "Vairuotojai", drivers.get(tripId),
+        "Vairuotojai", drivers.get(tripId));
+
+    String cargoTitle = (cargoId == null) ? null : ChartHelper.buildTitle(
         "Užsakymo Nr.", item.orderNo, "Užsakovas", item.customerName,
         "Krovinys", item.cargoDescription,
-        "Pakrovimas", loadTitle, "Iškrovimas", unloadTitle));
+        "Pakrovimas", loadTitle, "Iškrovimas", unloadTitle);
+
+    String itemTitle = BeeUtils.buildLines(tripTitle, cargoTitle);
+    panel.setTitle(itemTitle);
 
     panel.addClickHandler(new ClickHandler() {
       @Override
@@ -506,36 +525,23 @@ class ShippingSchedule extends ChartBase {
       }
     });
 
-    panel.addDragEnterHandler(new DragEnterHandler() {
-      @Override
-      public void onDragEnter(DragEnterEvent event) {
-        panel.addStyleName(STYLE_ITEM_OVER);
-      }
-    });
+    if (cargoId != null) {
+      DndHelper.makeSource(panel, DndHelper.ContentType.CARGO, cargoId, tripId, itemTitle,
+          STYLE_ITEM_DRAG);
+    }
 
-    panel.addDragOverHandler(new DragOverHandler() {
-      @Override
-      public void onDragOver(DragOverEvent event) {
-        event.preventDefault();
-
-        EventUtils.selectDropMove(event);
-      }
-    });
-
-    panel.addDragLeaveHandler(new DragLeaveHandler() {
-      @Override
-      public void onDragLeave(DragLeaveEvent event) {
-        panel.removeStyleName(STYLE_ITEM_OVER);
-      }
-    });
-
-    panel.addDropHandler(new DropHandler() {
-      @Override
-      public void onDrop(DropEvent event) {
-        event.stopPropagation();
-        LogUtils.getRootLogger().debug("drop", EventUtils.getDndData(event));
-      }
-    });
+    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_ITEM_OVER,
+        new Predicate<Long>() {
+          @Override
+          public boolean apply(Long input) {
+            return !Objects.equal(tripId, DndHelper.getRelatedId());
+          }
+        }, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            onDropCargo(parameter, tripId, tripTitle, panel);
+          }
+        });
 
     if (!BeeUtils.isEmpty(loading)) {
       BeeLabel loadingLabel = new BeeLabel(loading);
@@ -643,6 +649,88 @@ class ShippingSchedule extends ChartBase {
 
   private int getVehicleWidth() {
     return vehicleWidth;
+  }
+
+  private void onDropCargo(final Long cargoId, final Long targetTrip, String targetDescription,
+      final Widget targetWidget) {
+
+    final Long sourceTrip = DndHelper.getRelatedId();
+    String sourceDescription = DndHelper.getDataDescription();
+
+    if (!DataUtils.isId(cargoId) || !DataUtils.isId(targetTrip)) {
+      return;
+    }
+    if (Objects.equal(sourceTrip, targetTrip)) {
+      return;
+    }
+    
+    List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "REISAS:",
+        targetDescription, "Priskirti krovinį reisui ?");
+    
+    Global.getMsgBoxen().decide("Krovinio priskyrimas reisui", messages, new DecisionCallback() {
+      @Override
+      public void onCancel() {
+        reset();
+      }
+      
+      @Override
+      public void onConfirm() {
+        reset();
+        
+        final String viewName = VIEW_CARGO_TRIPS;
+        
+        if (sourceTrip == null) {
+          List<BeeColumn> columns = Data.getColumns(viewName,
+              Lists.newArrayList(COL_CARGO, COL_TRIP));
+          List<String> values = Lists.newArrayList(BeeUtils.toString(cargoId),
+              BeeUtils.toString(targetTrip));
+          
+          Queries.insert(viewName, columns, values, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+            }
+          });
+
+        } else {
+          Freight sourceItem = null;
+          for (Freight item : items) {
+            if (Objects.equal(cargoId, item.cargoId)) {
+              sourceItem = item;
+              break;
+            }
+          }
+          
+          if (sourceItem == null) {
+            LogUtils.getRootLogger().warning("cargo source not found:", cargoId, sourceTrip);
+            return;
+          }
+          
+          List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
+          List<String> oldValues = Lists.newArrayList(BeeUtils.toString(sourceTrip));
+          List<String> newValues = Lists.newArrayList(BeeUtils.toString(targetTrip));
+
+          Queries.update(viewName, sourceItem.cargoTripId, sourceItem.cargoTripVersion,
+              columns, oldValues, newValues, new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+                }
+              });
+        }
+      }
+
+      @Override
+      public void onDeny() {
+        reset();
+      }
+
+      private void reset() {
+        if (targetWidget != null) {
+          targetWidget.removeStyleName(STYLE_ITEM_OVER);
+        }
+      }
+    });
   }
 
   private void setVehicleWidth(int vehicleWidth) {

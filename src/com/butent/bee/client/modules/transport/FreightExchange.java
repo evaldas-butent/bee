@@ -5,10 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DragEndEvent;
-import com.google.gwt.event.dom.client.DragEndHandler;
-import com.google.gwt.event.dom.client.DragStartEvent;
-import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -18,9 +14,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rectangle;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
@@ -161,8 +155,8 @@ class FreightExchange extends ChartBase {
     super();
     addStyleName(STYLE_PREFIX + "View");
     
-    setRelevantDataViews(VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS, CommonsConstants.VIEW_COLORS,
-        CommonsConstants.VIEW_THEME_COLORS);
+    setRelevantDataViews(VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+        CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
   }
 
   @Override
@@ -394,11 +388,16 @@ class FreightExchange extends ChartBase {
     String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
         item.unloadingTerminal);
 
-    panel.setTitle(BeeUtils.buildLines(item.cargoDescription,
+    String title = BeeUtils.buildLines(item.cargoDescription,
         BeeUtils.joinWords("Pakrovimas:", item.loadingDate, loading),
-        BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading)));
+        BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading));
+    
+    panel.setTitle(title);
 
     final Long cargoId = item.cargoId;
+    
+    DndHelper.makeSource(panel, DndHelper.ContentType.CARGO, cargoId, null, title, STYLE_ITEM_DRAG);
+    
     ClickHandler opener = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -406,26 +405,7 @@ class FreightExchange extends ChartBase {
       }
     };
     
-    DomUtils.setDraggable(panel);
-    
-    panel.addDragStartHandler(new DragStartHandler() {
-      @Override
-      public void onDragStart(DragStartEvent event) {
-        panel.addStyleName(STYLE_ITEM_DRAG);
-        
-        EventUtils.allowMove(event);
-        EventUtils.setDndData(event, cargoId);
-      }
-    });
-    
-    panel.addDragEndHandler(new DragEndHandler() {
-      @Override
-      public void onDragEnd(DragEndEvent event) {
-        panel.removeStyleName(STYLE_ITEM_DRAG);
-      }
-    });
-
-//    panel.addClickHandler(opener);
+    panel.addClickHandler(opener);
 
     if (!BeeUtils.isEmpty(loading)) {
       BeeLabel loadingLabel = new BeeLabel(loading);

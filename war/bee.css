@@ -1618,6 +1618,7 @@ body, select {
 .bee-DecisionMessage {
   max-width: 360px;
   margin-left: 10px;
+  white-space: pre-wrap;
 }
 .bee-DecisionGroup {
   margin-left: 100px;

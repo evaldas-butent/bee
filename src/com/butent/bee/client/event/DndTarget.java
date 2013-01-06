@@ -1,0 +1,12 @@
+package com.butent.bee.client.event;
+
+import com.google.gwt.event.dom.client.HasDragEnterHandlers;
+import com.google.gwt.event.dom.client.HasDragLeaveHandlers;
+import com.google.gwt.event.dom.client.HasDragOverHandlers;
+import com.google.gwt.event.dom.client.HasDropHandlers;
+
+import com.butent.bee.client.ui.IdentifiableWidget;
+
+public interface DndTarget extends HasDragEnterHandlers, HasDragLeaveHandlers, HasDragOverHandlers,
+    HasDropHandlers, IdentifiableWidget {
+}

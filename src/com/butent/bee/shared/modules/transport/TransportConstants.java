@@ -90,6 +90,7 @@ public class TransportConstants {
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
+  public static final String COL_CARGO_TRIP_ID = "CargoTripID";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
@@ -186,6 +187,8 @@ public class TransportConstants {
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
+  public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVer";
+  
   public static final String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;
   }

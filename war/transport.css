@@ -127,6 +127,7 @@
   bottom: 0;
   left: 0;
   display: -webkit-flex;
+  overflow: hidden;
 }
 .bee-tr-chart-visibleRange-start, .bee-tr-chart-visibleRange-end, .bee-tr-chart-maxRange-start, .bee-tr-chart-maxRange-end {
   -webkit-flex: 1;
@@ -175,6 +176,7 @@
 .bee-tr-fx-Item-panel {
   position: absolute;
   cursor: move;
+  overflow: hidden;
 }
 .bee-tr-fx-Item-load, .bee-tr-fx-Item-unload {
   position: absolute;
@@ -188,14 +190,17 @@
   right: 0;
 }
 
-.bee-tr-fx-Item-drag {
-  border: 3px dashed #999;
-}
-
 .bee-tr-ss-Item-panel {
   position: absolute;
+  overflow: hidden;
+}
+.bee-tr-ss-Item-trip {
   cursor: pointer;
 }
+.bee-tr-ss-Item-cargo {
+  cursor: move;
+}
+
 .bee-tr-ss-Item-load, .bee-tr-ss-Item-unload {
   position: absolute;
   top: 0;
@@ -208,8 +213,14 @@
   right: 0;
 }
 
+.bee-tr-fx-Item-drag, .bee-tr-ss-Item-drag {
+  background-image: -webkit-linear-gradient(top, white, white);
+  box-sizing: border-box;
+  border: 2px inset darkgreen;
+}
 .bee-tr-ss-Item-over {
-  border: 3px dashed #999;
+  background-image: -webkit-linear-gradient(top, white, white);
+  outline: red outset 3px;
 }
 
 .bee-tr-ss-Service-panel {

@@ -645,7 +645,8 @@ public class TransportModuleBean implements BeeModule {
     query.addField(vehicleJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER);
     query.addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER);
 
-    query.addFields(TBL_CARGO_TRIPS, COL_CARGO);
+    query.addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID);
+    query.addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION);
 
     query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
     query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
