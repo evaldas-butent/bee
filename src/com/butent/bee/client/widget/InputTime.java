@@ -389,6 +389,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
         } else if (event.isKeyboard()) {
           setPickerState(State.CLOSING);
           setFocus(true);
+          selectAll();
 
         } else {
           setPickerState(State.CLOSED);

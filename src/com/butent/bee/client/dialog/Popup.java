@@ -216,7 +216,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
 
       curPanel.setShowing(show);
-      curPanel.updateHandlers();
 
       boolean animate = !isUnloading && curPanel.isAnimationEnabled();
       if (curPanel.getAnimationType() != AnimationType.CENTER && !show) {
@@ -447,7 +446,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   @Override
   public void onEventPreview(NativePreviewEvent event) {
-    if (DOM.getCaptureElement() != null) {
+    if (!isShowing() || DOM.getCaptureElement() != null) {
       return;
     }
 
@@ -670,8 +669,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   @Override
+  protected void onLoad() {
+    Previewer.ensureRegistered(this);
+    super.onLoad();
+  }
+
+  @Override
   protected void onUnload() {
     super.onUnload();
+
+    Previewer.ensureUnregistered(this);
     if (isShowing()) {
       resizeAnimation.setState(false, true, BeeConst.UNDEF);
     }
@@ -852,13 +859,5 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     int level = Stacking.addContext(this);
     resizeAnimation.setState(true, false, level);
-  }
-
-  private void updateHandlers() {
-    if (isShowing()) {
-      Previewer.ensureRegistered(this);
-    } else {
-      Previewer.ensureUnregistered(this);
-    }
   }
 }

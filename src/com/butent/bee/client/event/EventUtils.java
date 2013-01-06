@@ -187,17 +187,17 @@ public class EventUtils {
 
   private static final Map<String, JsFunction> domHandlers = Maps.newHashMap();
 
+  public static void addClassName(HasNativeEvent ev, String className) {
+    Assert.notNull(ev);
+    addClassName(ev.getNativeEvent(), className);
+  }
+
   public static void addClassName(NativeEvent ev, String className) {
     Assert.notEmpty(className);
     Element element = getEventTargetElement(ev);
     if (element != null) {
       element.addClassName(className);
     }
-  }
-
-  public static void addClassName(HasNativeEvent ev, String className) {
-    Assert.notNull(ev);
-    addClassName(ev.getNativeEvent(), className);
   }
 
   public static boolean addDomHandler(final Widget widget, String type, String body) {
@@ -545,6 +545,14 @@ public class EventUtils {
     return false;
   }
 
+  public static void allowCopy(DragStartEvent event) {
+    setEffectAllowed(event, EFFECT_COPY);
+  }
+
+  public static void allowMove(DragStartEvent event) {
+    setEffectAllowed(event, EFFECT_MOVE);
+  }
+
   public static void clearRegistry(Collection<? extends HandlerRegistration> registry) {
     if (BeeUtils.isEmpty(registry)) {
       for (HandlerRegistration hr : registry) {
@@ -601,6 +609,11 @@ public class EventUtils {
   public static void fireKeyUp(EventTarget target, int keyCode) {
     Assert.notNull(target);
     fireKeyUp(Element.as(target), keyCode);
+  }
+
+  public static String getDndData(DragDropEventBase<?> event) {
+    Assert.notNull(event);
+    return event.getData(DEFAULT_DND_DATA_FORMAT);
   }
 
   public static List<Property> getEventInfo(NativeEvent ev) {
@@ -691,14 +704,6 @@ public class EventUtils {
     return ev.getShiftKey() || ev.getCtrlKey() || ev.getAltKey() || ev.getMetaKey();
   }
 
-  public static boolean isArrowKey(NativeEvent ev) {
-    if (ev == null) {
-      return false;
-    } else {
-      return isArrowKey(ev.getKeyCode());
-    }
-  }
-
   public static boolean isArrowKey(int keyCode) {
     switch (keyCode) {
       case KeyCodes.KEY_DOWN:
@@ -708,6 +713,14 @@ public class EventUtils {
         return true;
       default:
         return false;
+    }
+  }
+
+  public static boolean isArrowKey(NativeEvent ev) {
+    if (ev == null) {
+      return false;
+    } else {
+      return isArrowKey(ev.getKeyCode());
     }
   }
 
@@ -913,6 +926,11 @@ public class EventUtils {
     }
     return true;
   }
+  
+  public static void removeClassName(HasNativeEvent ev, String className) {
+    Assert.notNull(ev);
+    removeClassName(ev.getNativeEvent(), className);
+  }
 
   public static void removeClassName(NativeEvent ev, String className) {
     Assert.notEmpty(className);
@@ -922,16 +940,25 @@ public class EventUtils {
     }
   }
 
-  public static void removeClassName(HasNativeEvent ev, String className) {
-    Assert.notNull(ev);
-    removeClassName(ev.getNativeEvent(), className);
+  public static void selectDropCopy(DragOverEvent event) {
+    setDropEffect(event, EFFECT_COPY);
   }
 
-  public static void setDndData(DragDropEventBase<?> event, String data) {
+  public static void selectDropMove(DragOverEvent event) {
+    setDropEffect(event, EFFECT_MOVE);
+  }
+
+  public static void setDndData(DragStartEvent event, Long id) {
+    if (id != null) {
+      setDndData(event, BeeUtils.toString(id));
+    }
+  }
+  
+  public static void setDndData(DragStartEvent event, String data) {
     setDndData(event, DEFAULT_DND_DATA_FORMAT, data);
   }
 
-  public static void setDndData(DragDropEventBase<?> event, String format, String data) {
+  public static void setDndData(DragStartEvent event, String format, String data) {
     Assert.notNull(event);
     Assert.notEmpty(format);
     Assert.notEmpty(data);
@@ -939,14 +966,14 @@ public class EventUtils {
     event.setData(format, data);
   }
 
-  public static void setDropEffect(DragDropEventBase<?> event, String effect) {
+  public static void setDropEffect(DragOverEvent event, String effect) {
     Assert.notNull(event);
     Assert.notEmpty(effect);
 
     JsUtils.setProperty(event.getDataTransfer(), PROPERTY_DROP_EFFECT, effect);
   }
-
-  public static void setEffectAllowed(DragDropEventBase<?> event, String effect) {
+  
+  public static void setEffectAllowed(DragStartEvent event, String effect) {
     Assert.notNull(event);
     Assert.notEmpty(effect);
 

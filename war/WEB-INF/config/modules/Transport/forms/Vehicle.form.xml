@@ -29,15 +29,12 @@
         </FlowPanel>
       </page>
       <page>
-        <text>Remontai, servisas</text>
-        <ComplexPanel>
-          <layer top="0" bottom="40" bottomUnit="%" left="0" right="0">
-            <ChildGrid name="Repairs" relColumn="Vehicle" />
-          </layer>
-          <layer top="60" topUnit="%" bottom="0" left="0" right="30" rightUnit="%">
-            <ChildGrid name="VehicleServices" relColumn="Vehicle" />
-          </layer>
-        </ComplexPanel>
+        <text>Remontai</text>
+        <ChildGrid name="Repairs" relColumn="Vehicle" />
+      </page>
+      <page>
+        <text>Servisas</text>
+        <ChildGrid name="VehicleServices" relColumn="Vehicle" />
       </page>
       <page>
         <text>Reisai</text>

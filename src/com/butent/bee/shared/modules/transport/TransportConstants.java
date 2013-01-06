@@ -64,12 +64,14 @@ public class TransportConstants {
   public static final String VIEW_ALL_TRIPS = "AllTrips";
 
   public static final String VIEW_TRIP_CARGO = "TripCargo";
+  public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
   public static final String VIEW_TRIP_ROUTES = "TripRoutes";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
   public static final String VIEW_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
 
   public static final String VIEW_VEHICLES = "Vehicles";
+  public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";
   public static final String VIEW_FUEL_CONSUMPTIONS = "FuelConsumptions";
   public static final String VIEW_FUEL_TEMPERATURES = "FuelTemperatures";
 
@@ -131,6 +133,7 @@ public class TransportConstants {
   public static final String COL_SERVICE_DATE = "Date";
   public static final String COL_SERVICE_TYPE = "Type";
   public static final String COL_SERVICE_NAME = "Name";
+  public static final String COL_SERVICE_NOTES = "Notes";
   
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
@@ -145,6 +148,9 @@ public class TransportConstants {
   
   public static final String COL_FX_THEME = "FxTheme";
 
+  public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
+  public static final String COL_FX_STRIP_OPACITY = "FxStripOpacity";
+
   public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
@@ -156,6 +162,9 @@ public class TransportConstants {
   public static final String COL_SS_BAR_HEIGHT = "SsBarHeight";
   
   public static final String COL_SS_THEME = "SsTheme";
+
+  public static final String COL_SS_ITEM_OPACITY = "SsItemOpacity";
+  public static final String COL_SS_STRIP_OPACITY = "SsStripOpacity";
   
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
@@ -176,6 +185,14 @@ public class TransportConstants {
 
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
+
+  public static final String defaultLoadingColumnAlias(String colName) {
+    return "DefLoad" + colName;
+  }
+
+  public static final String defaultUnloadingColumnAlias(String colName) {
+    return "DefUnload" + colName;
+  }
   
   public static final String loadingColumnAlias(String colName) {
     return "Loading" + colName;

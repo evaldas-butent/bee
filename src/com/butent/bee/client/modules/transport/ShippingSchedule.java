@@ -2,9 +2,18 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEnterHandler;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragLeaveHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -16,27 +25,34 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 class ShippingSchedule extends ChartBase {
 
-  private static class Freight implements ChartItem {
+  private static class Freight implements ChartItem, TruckItem {
 
     private final Long tripId;
     private final DateTime tripDate;
@@ -49,6 +65,7 @@ class ShippingSchedule extends ChartBase {
     private final JustDate tripDateFrom;
     private final JustDate tripDateTo;
 
+    private final Long cargoId;
     private final String cargoDescription;
 
     private final JustDate loadingDate;
@@ -80,17 +97,26 @@ class ShippingSchedule extends ChartBase {
       this.vehicleNumber = row.getValue(ALS_VEHICLE_NUMBER);
       this.trailerNumber = row.getValue(ALS_TRAILER_NUMBER);
 
+      this.cargoId = row.getLong(COL_CARGO);
       this.cargoDescription = row.getValue(COL_DESCRIPTION);
 
-      this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
-      this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
-      this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
-      this.loadingTerminal = row.getValue(loadingColumnAlias(COL_TERMINAL));
+      this.loadingDate = BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
+          row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)));
+      this.loadingCountry = BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
+          row.getLong(defaultLoadingColumnAlias(COL_COUNTRY)));
+      this.loadingPlace = BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
+          row.getValue(defaultLoadingColumnAlias(COL_PLACE_NAME)));
+      this.loadingTerminal = BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_TERMINAL)),
+          row.getValue(defaultLoadingColumnAlias(COL_TERMINAL)));
 
-      this.unloadingDate = row.getDate(unloadingColumnAlias(COL_PLACE_DATE));
-      this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_COUNTRY));
-      this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_NAME));
-      this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_TERMINAL));
+      this.unloadingDate = BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)),
+          row.getDate(defaultUnloadingColumnAlias(COL_PLACE_DATE)));
+      this.unloadingCountry = BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_COUNTRY)),
+          row.getLong(defaultUnloadingColumnAlias(COL_COUNTRY)));
+      this.unloadingPlace = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
+          row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NAME)));
+      this.unloadingTerminal = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
+          row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL)));
 
       this.orderNo = row.getValue(COL_ORDER_NO);
       this.customerName = row.getValue(COL_CUSTOMER_NAME);
@@ -112,6 +138,62 @@ class ShippingSchedule extends ChartBase {
     public Range<JustDate> getRange() {
       return range;
     }
+
+    @Override
+    public Long getVehicleId() {
+      return vehicleId;
+    }
+
+    @Override
+    public String getVehicleNumber() {
+      return vehicleNumber;
+    }
+  }
+
+  private interface TruckItem extends HasDateRange {
+
+    Long getVehicleId();
+
+    String getVehicleNumber();
+  }
+
+  private static class VehicleService implements TruckItem {
+    private final Long vehicleId;
+    private final String vehicleNumber;
+
+    private final JustDate date;
+    private final String name;
+    private final String notes;
+
+    private final Range<JustDate> range;
+
+    private VehicleService(SimpleRow row) {
+      super();
+
+      this.vehicleId = row.getLong(COL_VEHICLE);
+      this.vehicleNumber = row.getValue(COL_NUMBER);
+
+      this.date = row.getDate(COL_SERVICE_DATE);
+      this.name = row.getValue(COL_SERVICE_NAME);
+      this.notes = row.getValue(COL_SERVICE_NOTES);
+
+      this.range = Range.closed(date, date);
+    }
+
+    @Override
+    public Range<JustDate> getRange() {
+      return range;
+    }
+
+    @Override
+    public Long getVehicleId() {
+      return vehicleId;
+    }
+
+    @Override
+    public String getVehicleNumber() {
+      return vehicleNumber;
+    }
   }
 
   static final String SUPPLIER_KEY = "shipping_schedule";
@@ -121,6 +203,7 @@ class ShippingSchedule extends ChartBase {
 
   private static final String STYLE_VEHICLE_PREFIX = STYLE_PREFIX + "Vehicle-";
   private static final String STYLE_VEHICLE_COLUMN_SEPARATOR = STYLE_VEHICLE_PREFIX + "col-sep";
+  private static final String STYLE_VEHICLE_ROW_SEPARATOR = STYLE_VEHICLE_PREFIX + "row-sep";
   private static final String STYLE_VEHICLE_PANEL = STYLE_VEHICLE_PREFIX + "panel";
   private static final String STYLE_VEHICLE_LABEL = STYLE_VEHICLE_PREFIX + "label";
 
@@ -128,6 +211,12 @@ class ShippingSchedule extends ChartBase {
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
   private static final String STYLE_ITEM_LOAD = STYLE_ITEM_PREFIX + "load";
   private static final String STYLE_ITEM_UNLOAD = STYLE_ITEM_PREFIX + "unload";
+
+  private static final String STYLE_ITEM_OVER = STYLE_ITEM_PREFIX + "over";
+
+  private static final String STYLE_SERVICE_PREFIX = STYLE_PREFIX + "Service-";
+  private static final String STYLE_SERVICE_PANEL = STYLE_SERVICE_PREFIX + "panel";
+  private static final String STYLE_SERVICE_LABEL = STYLE_SERVICE_PREFIX + "label";
 
   static void open(final Callback<IdentifiableWidget> callback) {
     Assert.notNull(callback);
@@ -149,11 +238,18 @@ class ShippingSchedule extends ChartBase {
 
   private final List<Freight> items = Lists.newArrayList();
 
+  private final Map<Long, String> drivers = Maps.newHashMap();
+  private final Map<Long, List<VehicleService>> services = Maps.newHashMap();
+
   private int vehicleWidth = BeeConst.UNDEF;
 
   private ShippingSchedule() {
     super();
     addStyleName(STYLE_PREFIX + "View");
+
+    setRelevantDataViews(VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS,
+        VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES, CommonsConstants.VIEW_COLORS,
+        CommonsConstants.VIEW_THEME_COLORS);
   }
 
   @Override
@@ -187,8 +283,61 @@ class ShippingSchedule extends ChartBase {
   }
 
   @Override
+  protected String getStripOpacityColumnName() {
+    return COL_SS_STRIP_OPACITY;
+  }
+
+  @Override
   protected String getThemeColumnName() {
     return COL_SS_THEME;
+  }
+
+  @Override
+  protected void initData(BeeRowSet rowSet) {
+    drivers.clear();
+    services.clear();
+
+    if (rowSet == null) {
+      return;
+    }
+
+    String serialized = rowSet.getTableProperty(PROP_DRIVERS);
+    if (!BeeUtils.isEmpty(serialized)) {
+      String[] arr = Codec.beeDeserializeCollection(serialized);
+      if (arr != null) {
+        for (int i = 0; i < arr.length - 1; i += 2) {
+          if (BeeUtils.isLong(arr[i]) && !BeeUtils.isEmpty(arr[i + 1])) {
+            drivers.put(BeeUtils.toLong(arr[i]), arr[i + 1]);
+          }
+        }
+      }
+    }
+
+    serialized = rowSet.getTableProperty(PROP_VEHICLE_SERVICES);
+    if (!BeeUtils.isEmpty(serialized)) {
+      SimpleRowSet vsData = SimpleRowSet.restore(serialized);
+
+      List<VehicleService> vs = Lists.newArrayList();
+      Long lastVehicle = null;
+
+      for (SimpleRow row : vsData) {
+        VehicleService service = new VehicleService(row);
+
+        if (!Objects.equal(service.vehicleId, lastVehicle)) {
+          if (!vs.isEmpty()) {
+            services.put(lastVehicle, Lists.newArrayList(vs));
+            vs.clear();
+          }
+          lastVehicle = service.vehicleId;
+        }
+
+        vs.add(service);
+      }
+
+      if (!vs.isEmpty()) {
+        services.put(lastVehicle, Lists.newArrayList(vs));
+      }
+    }
   }
 
   @Override
@@ -229,7 +378,7 @@ class ShippingSchedule extends ChartBase {
 
   @Override
   protected void renderContent(ComplexPanel panel) {
-    List<List<Freight>> layoutRows = doLayout();
+    List<List<TruckItem>> layoutRows = doLayout();
     if (layoutRows.isEmpty()) {
       return;
     }
@@ -239,32 +388,49 @@ class ShippingSchedule extends ChartBase {
 
     ChartHelper.addColumnSeparator(panel, STYLE_VEHICLE_COLUMN_SEPARATOR, getVehicleWidth(),
         height);
-
     ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
         height, false, true);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
 
+    Widget vehicleWidget = null;
+
+    Long lastVehicle = null;
+    int vehicleStartRow = 0;
+
+    Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_SS_ITEM_OPACITY);
+
     for (int row = 0; row < layoutRows.size(); row++) {
-      List<Freight> rowItems = layoutRows.get(row);
+      List<TruckItem> rowItems = layoutRows.get(row);
       int top = row * getRowHeight();
 
-      Widget vehicleWidget = createvehicleWidget(rowItems.get(0));
-      StyleUtils.setLeft(vehicleWidget, 0);
-      StyleUtils.setWidth(vehicleWidget, getVehicleWidth() - ChartHelper.DEFAULT_SEPARATOR_WIDTH);
+      TruckItem firstItem = rowItems.get(0);
 
-      StyleUtils.setTop(vehicleWidget, top + ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
-      StyleUtils.setHeight(vehicleWidget, getRowHeight() - ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+      if (row == 0) {
+        vehicleWidget = createVehicleWidget(firstItem);
 
-      panel.add(vehicleWidget);
+        vehicleStartRow = row;
+        lastVehicle = firstItem.getVehicleId();
 
-      if (row < layoutRows.size() - 1) {
-        ChartHelper.addRowSeparator(panel, top + getRowHeight(), 0,
+      } else if (Objects.equal(lastVehicle, firstItem.getVehicleId())) {
+        ChartHelper.addRowSeparator(panel, top, getChartLeft(), getChartWidth());
+
+      } else {
+        ChartHelper.addLegendWidget(panel, vehicleWidget, 0, getVehicleWidth(),
+            vehicleStartRow, row - 1, getRowHeight(),
+            ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+
+        vehicleWidget = createVehicleWidget(firstItem);
+
+        vehicleStartRow = row;
+        lastVehicle = firstItem.getVehicleId();
+
+        ChartHelper.addRowSeparator(panel, STYLE_VEHICLE_ROW_SEPARATOR, top, 0,
             getVehicleWidth() + getChartWidth());
       }
 
-      for (Freight item : rowItems) {
+      for (TruckItem item : rowItems) {
         JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
         JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
 
@@ -275,8 +441,29 @@ class ShippingSchedule extends ChartBase {
             top + ChartHelper.DEFAULT_SEPARATOR_HEIGHT,
             width - ChartHelper.DEFAULT_SEPARATOR_WIDTH,
             getRowHeight() - ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
-        addItemWidgets(item, panel, rectangle);
+
+        if (item instanceof Freight) {
+          Widget itemWidget = createItemWidget((Freight) item);
+          rectangle.applyTo(itemWidget);
+          if (itemOpacity != null) {
+            StyleUtils.setOpacity(itemWidget, itemOpacity);
+          }
+
+          panel.add(itemWidget);
+
+        } else if (item instanceof VehicleService) {
+          Widget serviceWidget = createServiceWidget((VehicleService) item);
+          rectangle.applyTo(serviceWidget);
+
+          panel.add(serviceWidget);
+        }
       }
+    }
+
+    if (vehicleWidget != null) {
+      ChartHelper.addLegendWidget(panel, vehicleWidget, 0, getVehicleWidth(),
+          vehicleStartRow, layoutRows.size() - 1, getRowHeight(),
+          ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
     }
 
     ChartHelper.addBottomSeparator(panel, height, 0, getVehicleWidth() + getChartWidth()
@@ -291,11 +478,10 @@ class ShippingSchedule extends ChartBase {
   protected void renderVisibleRange(HasWidgets panel) {
   }
 
-  private void addItemWidgets(Freight item, HasWidgets panel, Rectangle rectangle) {
-    CustomDiv itemWidget = new CustomDiv(STYLE_ITEM_PANEL);
-    setItemWidgetColor(item, itemWidget);
-
-    rectangle.applyTo(itemWidget);
+  private Widget createItemWidget(Freight item) {
+    final Flow panel = new Flow();
+    panel.addStyleName(STYLE_ITEM_PANEL);
+    setItemWidgetColor(item, panel);
 
     String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
     String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
@@ -303,42 +489,57 @@ class ShippingSchedule extends ChartBase {
 
     String loadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.loadingDate, loading));
     String unloadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.unloadingDate, unloading));
-    
-    String title = ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
-        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
-        "Užsakymo Nr.", item.orderNo, "Užsakovas", item.customerName,
-        "Krovinys", item.cargoDescription,
-        "Pakrovimas", loadTitle, "Iškrovimas", unloadTitle);
 
     final Long tripId = item.tripId;
-    ClickHandler opener = new ClickHandler() {
+
+    panel.setTitle(ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
+        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
+        "Vairuotojai", drivers.get(tripId),
+        "Užsakymo Nr.", item.orderNo, "Užsakovas", item.customerName,
+        "Krovinys", item.cargoDescription,
+        "Pakrovimas", loadTitle, "Iškrovimas", unloadTitle));
+
+    panel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         openDataRow(event, VIEW_TRIPS, tripId);
       }
-    };
+    });
 
-    panel.add(itemWidget);
+    panel.addDragEnterHandler(new DragEnterHandler() {
+      @Override
+      public void onDragEnter(DragEnterEvent event) {
+        panel.addStyleName(STYLE_ITEM_OVER);
+      }
+    });
 
-    if (BeeUtils.allEmpty(loading, unloading)) {
-      itemWidget.setTitle(title);
-      itemWidget.addClickHandler(opener);
-    }
+    panel.addDragOverHandler(new DragOverHandler() {
+      @Override
+      public void onDragOver(DragOverEvent event) {
+        event.preventDefault();
+
+        EventUtils.selectDropMove(event);
+      }
+    });
+
+    panel.addDragLeaveHandler(new DragLeaveHandler() {
+      @Override
+      public void onDragLeave(DragLeaveEvent event) {
+        panel.removeStyleName(STYLE_ITEM_OVER);
+      }
+    });
+
+    panel.addDropHandler(new DropHandler() {
+      @Override
+      public void onDrop(DropEvent event) {
+        event.stopPropagation();
+        LogUtils.getRootLogger().debug("drop", EventUtils.getDndData(event));
+      }
+    });
 
     if (!BeeUtils.isEmpty(loading)) {
       BeeLabel loadingLabel = new BeeLabel(loading);
       loadingLabel.addStyleName(STYLE_ITEM_LOAD);
-
-      if (BeeUtils.isEmpty(unloading)) {
-        rectangle.applyTo(loadingLabel);
-
-        loadingLabel.setTitle(title);
-        loadingLabel.addClickHandler(opener);
-
-      } else {
-        rectangle.applyLeft(loadingLabel.getElement().getStyle());
-        rectangle.applyTop(loadingLabel.getElement().getStyle());
-      }
 
       panel.add(loadingLabel);
     }
@@ -347,20 +548,39 @@ class ShippingSchedule extends ChartBase {
       BeeLabel unloadingLabel = new BeeLabel(unloading);
       unloadingLabel.addStyleName(STYLE_ITEM_UNLOAD);
 
-      rectangle.applyTo(unloadingLabel);
-
-      unloadingLabel.setTitle(title);
-      unloadingLabel.addClickHandler(opener);
-
       panel.add(unloadingLabel);
     }
+
+    return panel;
   }
 
-  private Widget createvehicleWidget(Freight item) {
-    BeeLabel widget = new BeeLabel(item.vehicleNumber);
+  private Widget createServiceWidget(VehicleService service) {
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_SERVICE_PANEL);
+
+    panel.setTitle(BeeUtils.buildLines(service.name, service.notes));
+
+    final Long vehicleId = service.getVehicleId();
+    panel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_VEHICLES, vehicleId);
+      }
+    });
+
+    BeeLabel label = new BeeLabel(service.name);
+    label.addStyleName(STYLE_SERVICE_LABEL);
+
+    panel.add(label);
+
+    return panel;
+  }
+
+  private Widget createVehicleWidget(TruckItem item) {
+    BeeLabel widget = new BeeLabel(item.getVehicleNumber());
     widget.addStyleName(STYLE_VEHICLE_LABEL);
 
-    final Long vehicleId = item.vehicleId;
+    final Long vehicleId = item.getVehicleId();
 
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -375,24 +595,42 @@ class ShippingSchedule extends ChartBase {
     return panel;
   }
 
-  private List<List<Freight>> doLayout() {
-    List<List<Freight>> rows = Lists.newArrayList();
+  private List<List<TruckItem>> doLayout() {
+    List<List<TruckItem>> rows = Lists.newArrayList();
 
-    Long vehicleId = null;
-    List<Freight> rowItems = Lists.newArrayList();
+    Long lastVehicle = null;
+    List<TruckItem> rowItems = Lists.newArrayList();
 
     for (Freight item : items) {
-      if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
-        if (!Objects.equal(item.vehicleId, vehicleId)) {
-          if (!rowItems.isEmpty()) {
-            rows.add(Lists.newArrayList(rowItems));
-            rowItems.clear();
-          }
+      if (!Objects.equal(item.vehicleId, lastVehicle)) {
+        lastVehicle = item.vehicleId;
 
-          vehicleId = item.vehicleId;
+        if (!rowItems.isEmpty()) {
+          rows.add(Lists.newArrayList(rowItems));
+          rowItems.clear();
         }
 
+        if (services.containsKey(lastVehicle)) {
+          List<VehicleService> vs = services.get(lastVehicle);
+
+          for (VehicleService service : vs) {
+            if (BeeUtils.intersects(getVisibleRange(), service.getRange())) {
+              if (ChartHelper.intersects(rowItems, service.getRange())) {
+                rows.add(Lists.newArrayList(rowItems));
+                rowItems.clear();
+              }
+              rowItems.add(service);
+            }
+          }
+        }
+      }
+
+      if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
+        if (ChartHelper.intersects(rowItems, item.getRange())) {
+          rows.add(Lists.newArrayList(rowItems));
+          rowItems.clear();
+        }
         rowItems.add(item);
       }
     }

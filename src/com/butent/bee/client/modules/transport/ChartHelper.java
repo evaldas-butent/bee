@@ -189,6 +189,21 @@ class ChartHelper {
     return Range.closed(start, end);
   }
 
+  static Double getOpacity(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    }
+
+    Integer value = settings.getInteger(0, index);
+    return (BeeUtils.isPositive(value) && value < 100) ? value / 100.0 : null;
+  }
+  
   static int getPixels(BeeRowSet settings, String colName, int def) {
     if (DataUtils.isEmpty(settings)) {
       return def;

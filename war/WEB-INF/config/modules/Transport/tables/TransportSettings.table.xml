@@ -21,6 +21,9 @@
 
     <Relation name="FxTheme" relation="Themes" />
 
+    <Integer name="FxItemOpacity" />
+    <Integer name="FxStripOpacity" />
+
     <Integer name="SsPixelsPerTruck" />
 
     <Integer name="SsPixelsPerDay" />
@@ -31,6 +34,9 @@
 
     <Integer name="SsSliderWidth" />
     <Integer name="SsBarHeight" />
+
+    <Integer name="SsItemOpacity" />
+    <Integer name="SsStripOpacity" />
 
     <Relation name="SsTheme" relation="Themes" />
   </Fields>

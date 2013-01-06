@@ -612,6 +612,9 @@ public class TransportModuleBean implements BeeModule {
     String loadAlias = "load_" + SqlUtils.uniqueName();
     String unlAlias = "unl_" + SqlUtils.uniqueName();
 
+    String defLoadAlias = "defl_" + SqlUtils.uniqueName();
+    String defUnlAlias = "defu_" + SqlUtils.uniqueName();
+    
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
 
     SqlSelect query = new SqlSelect()
@@ -622,14 +625,18 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
         .addFromLeft(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
-        .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
             SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_TRIPS, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE));
+            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .addFromLeft(TBL_CARGO_PLACES, defLoadAlias,
+            SqlUtils.join(defLoadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, defUnlAlias,
+            SqlUtils.join(defUnlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(CommonsConstants.TBL_COMPANIES,
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER));
 
     query.addField(TBL_TRIPS, COL_TRIP_DATE, ALS_TRIP_DATE);
     query.addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
@@ -652,6 +659,16 @@ public class TransportModuleBean implements BeeModule {
 
     query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION);
 
+    query.addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE));
+    query.addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY));
+    query.addField(defLoadAlias, COL_PLACE, defaultLoadingColumnAlias(COL_PLACE_NAME));
+    query.addField(defLoadAlias, COL_TERMINAL, defaultLoadingColumnAlias(COL_TERMINAL));
+
+    query.addField(defUnlAlias, COL_PLACE_DATE, defaultUnloadingColumnAlias(COL_PLACE_DATE));
+    query.addField(defUnlAlias, COL_COUNTRY, defaultUnloadingColumnAlias(COL_COUNTRY));
+    query.addField(defUnlAlias, COL_PLACE, defaultUnloadingColumnAlias(COL_PLACE_NAME));
+    query.addField(defUnlAlias, COL_TERMINAL, defaultUnloadingColumnAlias(COL_TERMINAL));
+    
     query.addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE);
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_NO, COL_CUSTOMER);
     query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
@@ -1029,9 +1046,12 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_SERVICE_TYPES, sys.joinTables(TBL_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
             COL_SERVICE_TYPE));
 
-    query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE);
+    query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE, COL_SERVICE_NOTES);
+    query.addFields(TBL_VEHICLES, COL_NUMBER);
     query.addFields(TBL_SERVICE_TYPES, COL_SERVICE_NAME);
 
+    query.addOrder(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE);
+    
     if (condition != null) {
       query.setWhere(condition);
     }

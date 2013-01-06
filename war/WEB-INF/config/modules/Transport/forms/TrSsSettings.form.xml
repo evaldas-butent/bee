@@ -5,17 +5,20 @@
   <!ENTITY separator "<br/>">
 
   <!ENTITY row "margin-bottom: 3px;">
+  <!ENTITY slider_row "position: relative; height: 25px;">
 
-  <!ENTITY lbl "&inline; width: 240px; padding: 2px 1em 0 1em; text-align: right;">
+  <!ENTITY lbl "&inline; width: 260px; padding: 2px 10px 0 10px; text-align: right;">
   <!ENTITY spin "&inline; width: 50px;">
+  <!ENTITY slider_inp "position: absolute; left: 280px; top: 0; width: 100px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrSsSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="400" height="380"
+  width="440" height="420"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
+
     <FlowPanel style="&row; margin-top: 2ex;">
       <Label html="Vilkiko stulpelio plotis px:" style="&lbl;" />
       <InputSpinner source="SsPixelsPerTruck" minValue="5" maxValue="300" step="5" style="&spin;" />
@@ -56,6 +59,16 @@
       <Label html="Spalvų tema:" style="&lbl;" />
       <DataSelector source="SsTheme" style="&inline; width: 100px;" />
     </FlowPanel>
-  </FlowPanel>
 
+    &separator;
+    <FlowPanel style="&slider_row;">
+      <Label html="Item opacity:" style="&lbl;" />
+      <InputSlider source="SsItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+    </FlowPanel>
+    <FlowPanel style="&slider_row;">
+      <Label html="Strip opacity:" style="&lbl;" />
+      <InputSlider source="SsStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+    </FlowPanel>
+
+  </FlowPanel>
 </f:Form>

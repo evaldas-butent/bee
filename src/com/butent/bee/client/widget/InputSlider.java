@@ -4,6 +4,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a user interface component which lets to select a value by dragging a slider with a
@@ -50,6 +51,15 @@ public class InputSlider extends InputInteger {
     return FormWidget.INPUT_SLIDER;
   }
   
+  @Override
+  public void setValue(String value) {
+    if (BeeUtils.isEmpty(value) && BeeUtils.isInt(getMinValue())) {
+      super.setValue(getMinValue());
+    } else {
+      super.setValue(value);
+    }
+  }
+
   @Override
   protected String getDefaultStyleName() {
     return "bee-InputSlider";

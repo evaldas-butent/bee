@@ -13,12 +13,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <RelColumn name="Type" caption="Tipas" />
+    <RelColumn name="Type" caption="Tipas" minWidth="100" />
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="Run" caption="Rida" />
     <DataColumn name="ValidUntil" caption="Galioja iki" />
     <DataColumn name="ValidForKilometers" caption="Galioja km" />
     <DataColumn name="ValidForHours" caption="Galioja motoval." />
-    <DataColumn name="Notes" caption="Pastabos" />
+    <DataColumn name="Notes" caption="Pastabos" flexGrow="1" flexShrink="1" />
   </columns>
 </Grid>

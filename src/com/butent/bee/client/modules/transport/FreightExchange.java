@@ -5,8 +5,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEndHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -15,12 +18,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -127,6 +132,8 @@ class FreightExchange extends ChartBase {
   private static final String STYLE_ITEM_LOAD = STYLE_ITEM_PREFIX + "load";
   private static final String STYLE_ITEM_UNLOAD = STYLE_ITEM_PREFIX + "unload";
 
+  private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
+
   static void open(final Callback<IdentifiableWidget> callback) {
     Assert.notNull(callback);
 
@@ -146,13 +153,16 @@ class FreightExchange extends ChartBase {
   }
 
   private final List<Freight> items = Lists.newArrayList();
-  
-  private int customerWidth = BeeConst.UNDEF;  
-  private int orderWidth = BeeConst.UNDEF;  
+
+  private int customerWidth = BeeConst.UNDEF;
+  private int orderWidth = BeeConst.UNDEF;
 
   private FreightExchange() {
     super();
     addStyleName(STYLE_PREFIX + "View");
+    
+    setRelevantDataViews(VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS, CommonsConstants.VIEW_COLORS,
+        CommonsConstants.VIEW_THEME_COLORS);
   }
 
   @Override
@@ -186,10 +196,15 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getStripOpacityColumnName() {
+    return COL_FX_STRIP_OPACITY;
+  }
+
+  @Override
   protected String getThemeColumnName() {
     return COL_FX_THEME;
   }
-  
+
   @Override
   protected Collection<? extends ChartItem> initItems(SimpleRowSet data) {
     items.clear();
@@ -256,6 +271,8 @@ class FreightExchange extends ChartBase {
 
     int customerStartRow = 0;
     int orderStartRow = 0;
+    
+    Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_FX_ITEM_OPACITY);
 
     for (int row = 0; row < layoutRows.size(); row++) {
       List<Freight> rowItems = layoutRows.get(row);
@@ -321,7 +338,14 @@ class FreightExchange extends ChartBase {
             top + ChartHelper.DEFAULT_SEPARATOR_HEIGHT,
             width - ChartHelper.DEFAULT_SEPARATOR_WIDTH,
             getRowHeight() - ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
-        addItemWidgets(item, panel, rectangle);
+
+        Widget itemWidget = createItemWidget(item);
+        rectangle.applyTo(itemWidget);
+        if (itemOpacity != null) {
+          StyleUtils.setOpacity(itemWidget, itemOpacity);
+        }
+
+        panel.add(itemWidget);
       }
     }
 
@@ -338,68 +362,8 @@ class FreightExchange extends ChartBase {
           ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
     }
 
-    ChartHelper.addBottomSeparator(panel, height, 0, getCustomerWidth() + getOrderWidth() 
+    ChartHelper.addBottomSeparator(panel, height, 0, getCustomerWidth() + getOrderWidth()
         + getChartWidth() + ChartHelper.DEFAULT_SEPARATOR_WIDTH);
-  }
-
-  private void addItemWidgets(Freight item, HasWidgets panel, Rectangle rectangle) {
-    CustomDiv itemWidget = new CustomDiv(STYLE_ITEM_PANEL);
-    setItemWidgetColor(item, itemWidget);
-
-    rectangle.applyTo(itemWidget);
-
-    String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
-    String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
-        item.unloadingTerminal);
-
-    String title = BeeUtils.buildLines(item.cargoDescription,
-        BeeUtils.joinWords("Pakrovimas:", item.loadingDate, loading),
-        BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading));
-
-    final Long cargoId = item.cargoId;
-    ClickHandler opener = new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_CARGO, cargoId);
-      }
-    };
-
-    panel.add(itemWidget);
-
-    if (BeeUtils.allEmpty(loading, unloading)) {
-      itemWidget.setTitle(title);
-      itemWidget.addClickHandler(opener);
-    }
-
-    if (!BeeUtils.isEmpty(loading)) {
-      BeeLabel loadingLabel = new BeeLabel(loading);
-      loadingLabel.addStyleName(STYLE_ITEM_LOAD);
-
-      if (BeeUtils.isEmpty(unloading)) {
-        rectangle.applyTo(loadingLabel);
-
-        loadingLabel.setTitle(title);
-        loadingLabel.addClickHandler(opener);
-
-      } else {
-        rectangle.applyLeft(loadingLabel.getElement().getStyle());
-        rectangle.applyTop(loadingLabel.getElement().getStyle());
-      }
-
-      panel.add(loadingLabel);
-    }
-
-    if (!BeeUtils.isEmpty(unloading)) {
-      BeeLabel unloadingLabel = new BeeLabel(unloading);
-      unloadingLabel.addStyleName(STYLE_ITEM_UNLOAD);
-
-      rectangle.applyTo(unloadingLabel);
-
-      unloadingLabel.setTitle(title);
-      unloadingLabel.addClickHandler(opener);
-
-      panel.add(unloadingLabel);
-    }
   }
 
   private Widget createCustomerWidget(Freight item) {
@@ -417,6 +381,65 @@ class FreightExchange extends ChartBase {
 
     Simple panel = new Simple(widget);
     panel.addStyleName(STYLE_CUSTOMER_PANEL);
+
+    return panel;
+  }
+
+  private Widget createItemWidget(Freight item) {
+    final Flow panel = new Flow();
+    panel.addStyleName(STYLE_ITEM_PANEL);
+    setItemWidgetColor(item, panel);
+
+    String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+    String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+        item.unloadingTerminal);
+
+    panel.setTitle(BeeUtils.buildLines(item.cargoDescription,
+        BeeUtils.joinWords("Pakrovimas:", item.loadingDate, loading),
+        BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading)));
+
+    final Long cargoId = item.cargoId;
+    ClickHandler opener = new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_CARGO, cargoId);
+      }
+    };
+    
+    DomUtils.setDraggable(panel);
+    
+    panel.addDragStartHandler(new DragStartHandler() {
+      @Override
+      public void onDragStart(DragStartEvent event) {
+        panel.addStyleName(STYLE_ITEM_DRAG);
+        
+        EventUtils.allowMove(event);
+        EventUtils.setDndData(event, cargoId);
+      }
+    });
+    
+    panel.addDragEndHandler(new DragEndHandler() {
+      @Override
+      public void onDragEnd(DragEndEvent event) {
+        panel.removeStyleName(STYLE_ITEM_DRAG);
+      }
+    });
+
+//    panel.addClickHandler(opener);
+
+    if (!BeeUtils.isEmpty(loading)) {
+      BeeLabel loadingLabel = new BeeLabel(loading);
+      loadingLabel.addStyleName(STYLE_ITEM_LOAD);
+
+      panel.add(loadingLabel);
+    }
+
+    if (!BeeUtils.isEmpty(unloading)) {
+      BeeLabel unloadingLabel = new BeeLabel(unloading);
+      unloadingLabel.addStyleName(STYLE_ITEM_UNLOAD);
+
+      panel.add(unloadingLabel);
+    }
 
     return panel;
   }

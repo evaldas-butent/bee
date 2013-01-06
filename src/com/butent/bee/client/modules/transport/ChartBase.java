@@ -47,6 +47,13 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -66,7 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-abstract class ChartBase extends Flow implements Presenter, View, Printable,
+abstract class ChartBase extends Flow implements Presenter, View, Printable, HandlesAllDataEvents,
     VisibilityChangeEvent.Handler, HasWidgetSupplier, HasVisibleRange, MoveEvent.Handler {
 
   protected interface ChartItem extends HasDateRange {
@@ -138,6 +145,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   private String scrollAreaId = null;
   private String contentId = null;
 
+  private final Set<String> relevantDataViews = Sets.newHashSet();
+  
   protected ChartBase() {
     super();
     addStyleName(STYLE_CONTAINER);
@@ -228,6 +237,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
   }
 
   @Override
@@ -344,6 +360,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
       }
     }
   }
+  
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
+  }
 
   @Override
   public boolean onPrint(Element source, Element target) {
@@ -373,6 +396,27 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   @Override
   public void onResize() {
     render(false);
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
+  }
+  
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
   }
 
   @Override
@@ -538,7 +582,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   protected String getScrollAreaId() {
     return scrollAreaId;
   }
-  
+
   protected BeeRowSet getSettings() {
     return settings;
   }
@@ -548,21 +592,35 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   protected int getSliderWidth() {
     return sliderWidth;
   }
-  
+
   protected Widget getStartSliderLabel() {
     return startSliderLabel;
   }
   
+  protected abstract String getStripOpacityColumnName();
+  
   protected abstract String getThemeColumnName();
+
+  /**
+   * @param rowSet  
+   */
+  protected void initData(BeeRowSet rowSet) {
+  }
   
   protected abstract Collection<? extends ChartItem> initItems(SimpleRowSet data);
+  
+  protected boolean isDataEventRelevant(DataEvent event) {
+    return event != null && relevantDataViews.contains(event.getViewName());
+  }
 
   @Override
   protected void onLoad() {
     super.onLoad();
 
     EventUtils.clearRegistry(registry);
+   
     registry.add(VisibilityChangeEvent.register(this));
+    registry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
     render(true);
   }
@@ -707,6 +765,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
 
     int rowCount = BeeUtils.resize(chartItems.size(), 0, 100, 1, height / 3);
     int itemHeight = height / rowCount;
+    
+    Double stripOpacity = BeeUtils.isEmpty(getStripOpacityColumnName())
+        ? null : ChartHelper.getOpacity(getSettings(), getStripOpacityColumnName());
 
     Set<Range<JustDate>> ranges = Sets.newHashSet();
     int row = 0;
@@ -714,6 +775,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
     for (ChartItem item : chartItems) {
       Widget itemStrip = new CustomDiv(STYLE_SELECTOR_STRIP);
       setItemWidgetColor(item, itemStrip);
+      if (stripOpacity != null) {
+        StyleUtils.setOpacity(itemStrip, stripOpacity);
+      }
 
       if (BeeUtils.intersects(ranges, item.getRange()) && row < rowCount - 1) {
         row++;
@@ -828,7 +892,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
   protected void setChartWidth(int chartWidth) {
     this.chartWidth = chartWidth;
   }
-
+  
   protected boolean setData(ResponseObject response) {
     if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class, null)) {
       return false;
@@ -858,6 +922,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
         setMaxRange(ChartHelper.getSpan(items));
       }
     }
+    
+    initData(rowSet);
 
     return true;
   }
@@ -880,6 +946,18 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable,
 
   protected void setItemWidgetColor(ChartItem item, Widget widget) {
     widget.getElement().getStyle().setBackgroundColor(getColor(item.getColorSource()));
+  }
+
+  protected void setRelevantDataViews(String... viewNames) {
+    relevantDataViews.clear();
+
+    if (viewNames != null) {
+      for (String viewName : viewNames) {
+        if (!BeeUtils.isEmpty(viewName)) {
+          relevantDataViews.add(viewName);
+        }
+      }
+    }
   }
 
   protected void setRowHeight(int rowHeight) {

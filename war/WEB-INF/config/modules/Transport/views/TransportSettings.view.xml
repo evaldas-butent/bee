@@ -24,6 +24,9 @@
       <SimpleColumn alias="FxThemeName" name="Name" />
     </SimpleJoin>
 
+    <SimpleColumn name="FxItemOpacity" />
+    <SimpleColumn name="FxStripOpacity" />
+
     <SimpleColumn name="SsPixelsPerTruck" />
 
     <SimpleColumn name="SsPixelsPerDay" />
@@ -39,6 +42,9 @@
     <SimpleJoin name="SsTheme" joinType="LEFT">
       <SimpleColumn alias="SsThemeName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="SsItemOpacity" />
+    <SimpleColumn name="SsStripOpacity" />
     
   </Columns>
 </View>

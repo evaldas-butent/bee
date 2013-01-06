@@ -493,6 +493,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
         } else if (event.isKeyboard()) {
           setPickerState(State.CLOSING);
           setFocus(true);
+          selectAll();
 
         } else {
           setPickerState(State.CLOSED);
