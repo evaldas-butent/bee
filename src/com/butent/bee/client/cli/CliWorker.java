@@ -88,6 +88,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.style.Color;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
@@ -108,6 +109,7 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
@@ -231,6 +233,9 @@ public class CliWorker {
     } else if (z.startsWith("data")) {
       showDataInfo(args);
 
+    } else if (z.startsWith("color")) {
+      showColor(args);
+      
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
 
@@ -1657,6 +1662,76 @@ public class CliWorker {
     });
   }
 
+  private static void showColor(String args) {
+    if (BeeUtils.isEmpty(args)) {
+      Map<String, String> names = Color.getNames();
+      
+      List<String> keys = Lists.newArrayList(names.keySet());
+      Collections.sort(keys);
+      
+      HtmlTable table = new HtmlTable();
+      
+      for (int row = 0; row < keys.size(); row++) {
+        String key = keys.get(row);
+        String value = names.get(key);
+        
+        if (value.length() != 7 || !value.substring(0, 1).equals("#")) {
+          logger.warning(key, value);
+        }
+        
+        int col = 0;
+        table.getCellFormatter().setHorizontalAlignment(row, col,
+            HasHorizontalAlignment.ALIGN_RIGHT);
+        table.setText(row, col, BeeUtils.toString(row + 1));
+        col++;
+
+        table.setText(row, col, key);
+        col++;
+        
+        CustomDiv keySwatch = new CustomDiv();
+        StyleUtils.setSize(keySwatch, 60, 20);
+        StyleUtils.setBackgroundColor(keySwatch, key);
+        table.setWidget(row, col, keySwatch);
+        col++;
+
+        CustomDiv valueSwatch = new CustomDiv();
+        StyleUtils.setSize(valueSwatch, 60, 20);
+        StyleUtils.setBackgroundColor(valueSwatch, value);
+        table.setWidget(row, col, valueSwatch);
+        col++;
+
+        table.setText(row, col, value);
+      }
+
+      BeeKeeper.getScreen().updateActivePanel(table);
+
+    } else {
+      String normalized = Color.normalize(args);
+      if (BeeUtils.isEmpty(normalized)) {
+        showError(args, "color not recognized");
+        return;
+      }
+      
+      HtmlTable table = new HtmlTable();
+
+      table.setText(0, 0, args);
+      
+      CustomDiv argSwatch = new CustomDiv();
+      StyleUtils.setSize(argSwatch, 50, 50);
+      StyleUtils.setBackgroundColor(argSwatch, args);
+      table.setWidget(0, 1, argSwatch);
+
+      table.setText(1, 0, normalized);
+      
+      CustomDiv normSwatch = new CustomDiv();
+      StyleUtils.setSize(normSwatch, 50, 50);
+      StyleUtils.setBackgroundColor(normSwatch, normalized);
+      table.setWidget(1, 1, normSwatch);
+      
+      Global.showModalWidget(table);
+    }
+  }
+  
   private static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());

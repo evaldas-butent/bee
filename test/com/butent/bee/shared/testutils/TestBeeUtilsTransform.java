@@ -716,15 +716,15 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testVal() {
-    assertEquals(0, beeUtils.val("abcd 10 efg"));
-    assertEquals(10, beeUtils.val("10"));
-    assertEquals(10, beeUtils.val("10.5"));
-    assertEquals(-10, beeUtils.val("   -10.5"));
-    assertEquals(0, beeUtils.val("-inf"));
-    assertEquals(10, beeUtils.val("     10   "));
-    assertEquals(0, beeUtils.val("abcd  rft 10 4 6 kl"));
-    assertEquals(0, beeUtils.val(""));
-    assertEquals(0, beeUtils.val("         "));
-    assertEquals(0, beeUtils.val(null));
+    assertEquals(10, beeUtils.val("abcd 10 efg", true));
+    assertEquals(10, beeUtils.val("10", false));
+    assertEquals(10, beeUtils.val("10.5", false));
+    assertEquals(-10, beeUtils.val("   -10.5", true));
+    assertEquals(0, beeUtils.val("-inf", false));
+    assertEquals(10, beeUtils.val("     10   ", true));
+    assertEquals(0, beeUtils.val("abcd  rft 10 4 6 kl", false));
+    assertEquals(0, beeUtils.val("", false));
+    assertEquals(0, beeUtils.val("         ", true));
+    assertEquals(0, beeUtils.val(null, false));
   }
 }

@@ -23,7 +23,8 @@ public enum EditorType {
   SELECTOR("selector", null, null, 120, null),
   TOGGLE("toggle"),
   TIME("time"),
-  TIME_OF_DAY("timeOfDay");
+  TIME_OF_DAY("timeOfDay"),
+  COLOR("color", null, null, 100, null);
   
   public static EditorType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

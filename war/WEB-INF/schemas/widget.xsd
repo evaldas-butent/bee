@@ -413,7 +413,8 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="display">
-          <xs:attribute name="max" type="type:positiveDecimal" use="required" />
+          <xs:attribute name="max" type="type:positiveDecimal" />
+          <xs:attribute name="value" type="type:nonNegativeDecimal" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -657,7 +658,6 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="ValueSpinner" type="spinnerBase" substitutionGroup="widget" />
   <xs:element name="VolumeSlider" type="spinnerBase" substitutionGroup="widget" />
 
   <xs:element name="SliderBar" substitutionGroup="widget">
@@ -930,5 +930,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="ColorEditor" type="inputWidget" substitutionGroup="widget" />
 
 </xs:schema>

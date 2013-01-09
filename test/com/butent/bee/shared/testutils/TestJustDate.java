@@ -270,7 +270,7 @@ public class TestJustDate {
 
   @Test
   public final void testParse() {
-    String str = "46";
+    String str = "2046";
     JustDate jd = TimeUtils.parseDate(str);
 
     assertEquals(2046, jd.getYear());
@@ -319,7 +319,7 @@ public class TestJustDate {
 
     String str1 = "2010-";
     JustDate jd1 = TimeUtils.parseDate(str1);
-    assertEquals("2010.01.01", jd1.toString());
+    assertEquals("2010-01-01", jd1.toString());
   }
 
   @Test
@@ -362,10 +362,9 @@ public class TestJustDate {
   public final void testToString() {
     JustDate jd = new JustDate(2011, 4, 8);
 
-    assertEquals("2011.04.08", jd.toString());
+    assertEquals("2011-04-08", jd.toString());
 
     jd = new JustDate(1298362388227L);
-    assertEquals("2011.02.22", jd.toString());
+    assertEquals("2011-02-22", jd.toString());
   }
-
 }

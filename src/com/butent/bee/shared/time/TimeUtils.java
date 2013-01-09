@@ -599,7 +599,7 @@ public class TimeUtils {
 
     switch (count) {
       case 1:
-        String digits = getDigits(input);
+        String digits = BeeUtils.parseDigits(input);
         int len = digits.length();
 
         if (len <= 8) {
@@ -1109,10 +1109,6 @@ public class TimeUtils {
     return delta;
   }
   
-  private static String getDigits(String input) {
-    return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).retainFrom(input);    
-  }
-
   private static JustDate parseDate(String input, List<Integer> fields) {
     int count = fields.size();
 
@@ -1120,7 +1116,7 @@ public class TimeUtils {
       case 1:
         int v = fields.get(0);
 
-        String digits = getDigits(input);
+        String digits = BeeUtils.parseDigits(input);
         int len = digits.length();
 
         String sep = String.valueOf(JustDate.FIELD_SEPARATOR);

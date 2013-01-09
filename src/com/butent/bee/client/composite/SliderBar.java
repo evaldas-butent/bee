@@ -2,13 +2,17 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -20,17 +24,23 @@ import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.FontSize;
+import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Contains presentation and logic of a slider bar user interface component.
  */
-public class SliderBar extends Focus implements RequiresResize {
+public class SliderBar extends Focus implements RequiresResize, Editor {
   /**
    * Requires that classes implementing this interface have formatLabel method.
    */
@@ -52,9 +62,9 @@ public class SliderBar extends Focus implements RequiresResize {
       }
 
       if (shiftRight) {
-        setCurrentValue(curValue + multiplier * stepSize);
+        setCurrentValue(curValue + multiplier * stepSize, true);
       } else {
-        setCurrentValue(curValue - multiplier * stepSize);
+        setCurrentValue(curValue - multiplier * stepSize, true);
       }
 
       schedule(repeatDelay);
@@ -68,13 +78,13 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
-  private String styleNameShell = "bee-SliderBar-shell";
-  private String styleNameLine = "bee-SliderBar-line";
-  private String styleNameKnob = "bee-SliderBar-knob";
-  private String styleNameLabel = "bee-SliderBar-label";
-  private String styleNameTick = "bee-SliderBar-tick";
+  private final static String STYLE_SHELL = "bee-SliderBar-shell";
+  private final static String STYLE_LINE = "bee-SliderBar-line";
+  private final static String STYLE_KNOB = "bee-SliderBar-knob";
+  private final static String STYLE_LABEL = "bee-SliderBar-label";
+  private final static String STYLE_TICK = "bee-SliderBar-tick";
 
-  private String styleNameSliding = "sliding";
+  private final static String STYLE_SLIDING = "sliding";
 
   private Object source;
 
@@ -83,16 +93,16 @@ public class SliderBar extends Focus implements RequiresResize {
   private double minValue;
   private double stepSize;
 
-  private BeeImage knobImage;
+  private final BeeImage knobImage;
 
   private int numLabels = 0;
-  private List<Element> labelElements = new ArrayList<Element>();
-  private LabelFormatter labelFormatter;
+  private final List<Element> labelElements = new ArrayList<Element>();
+  private LabelFormatter labelFormatter = null;
 
   private int numTicks = 0;
-  private List<Element> tickElements = new ArrayList<Element>();
+  private final List<Element> tickElements = new ArrayList<Element>();
 
-  private Element lineElement;
+  private final Element lineElement;
   private int lineLeftOffset = 0;
 
   private boolean slidingKeyboard = false;
@@ -101,6 +111,14 @@ public class SliderBar extends Focus implements RequiresResize {
   private boolean enabled = true;
 
   private KeyTimer keyTimer = new KeyTimer();
+
+  private boolean nullable = true;
+
+  private boolean editing = false;
+
+  private String options = null;
+
+  private boolean handlesTabulation = false;
 
   public SliderBar(Object src, double min, double max, double step) {
     this(src, min, max, step, 0, 0);
@@ -118,26 +136,46 @@ public class SliderBar extends Focus implements RequiresResize {
     this.numLabels = labels;
     this.numTicks = ticks;
 
-    setStyleName(styleNameShell);
+    setStyleName(STYLE_SHELL);
 
     lineElement = DOM.createDiv();
     getElement().appendChild(lineElement);
-    lineElement.setClassName(styleNameLine);
+    lineElement.setClassName(STYLE_LINE);
     DomUtils.createId(lineElement, "line");
     lineElement.getStyle().setPosition(Position.ABSOLUTE);
 
     knobImage = new BeeImage(knobDefault());
     Element knobElement = knobImage.getElement();
     getElement().appendChild(knobElement);
-    knobElement.setClassName(styleNameKnob);
+    knobElement.setClassName(STYLE_KNOB);
     DomUtils.createId(knobElement, "knob");
     knobElement.getStyle().setPosition(Position.ABSOLUTE);
 
     sinkEvents(Event.MOUSEEVENTS | Event.ONMOUSEWHEEL | Event.KEYEVENTS | Event.FOCUSEVENTS);
   }
 
+  @Override
+  public HandlerRegistration addEditStopHandler(Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return addHandler(handler, ValueChangeEvent.getType());
+  }
+
+  @Override
+  public void clearValue() {
+    setCurrentValue(getMinValue(), false);
+  }
+
   public double getCurrentValue() {
     return curValue;
+  }
+
+  @Override
+  public EditorAction getDefaultFocusAction() {
+    return null;
   }
 
   @Override
@@ -157,12 +195,22 @@ public class SliderBar extends Focus implements RequiresResize {
     return minValue;
   }
 
+  @Override
+  public String getNormalizedValue() {
+    return getValue();
+  }
+
   public int getNumLabels() {
     return numLabels;
   }
 
   public int getNumTicks() {
     return numTicks;
+  }
+
+  @Override
+  public String getOptions() {
+    return this.options;
   }
 
   public double getStepSize() {
@@ -177,8 +225,43 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
+  @Override
+  public String getValue() {
+    return BeeUtils.toString(getCurrentValue());
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.SLIDER_BAR;
+  }
+
+  @Override
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
+  @Override
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public boolean isNullable() {
+    return nullable;
+  }
+
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
   }
 
   public ImageResource knobDefault() {
@@ -191,6 +274,10 @@ public class SliderBar extends Focus implements RequiresResize {
 
   public ImageResource knobSliding() {
     return Global.getImages().sliderSliding();
+  }
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
 
   @Override
@@ -237,11 +324,11 @@ public class SliderBar extends Focus implements RequiresResize {
             switch (event.getKeyCode()) {
               case KeyCodes.KEY_HOME:
                 event.preventDefault();
-                setCurrentValue(minValue);
+                setCurrentValue(minValue, true);
                 break;
               case KeyCodes.KEY_END:
                 event.preventDefault();
-                setCurrentValue(maxValue);
+                setCurrentValue(maxValue, true);
                 break;
               case KeyCodes.KEY_LEFT:
                 event.preventDefault();
@@ -259,7 +346,7 @@ public class SliderBar extends Focus implements RequiresResize {
                 break;
               case 32:
                 event.preventDefault();
-                setCurrentValue(minValue + getTotalRange() / 2);
+                setCurrentValue(minValue + getTotalRange() / 2, true);
                 break;
             }
           }
@@ -309,7 +396,7 @@ public class SliderBar extends Focus implements RequiresResize {
     if (force || isReady()) {
       int width = getShellWidth();
       int lineWidth = getLineWidth();
-      
+
       lineLeftOffset = (width / 2) - (lineWidth / 2);
       StyleUtils.setLeft(lineElement, lineLeftOffset);
 
@@ -319,7 +406,7 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
-  public void setCurrentValue(double curValue) {
+  public void setCurrentValue(double curValue, boolean fireEvents) {
     this.curValue = Math.max(minValue, Math.min(maxValue, curValue));
     double remainder = (this.curValue - minValue) % stepSize;
     this.curValue -= remainder;
@@ -330,6 +417,15 @@ public class SliderBar extends Focus implements RequiresResize {
 
     drawKnob(false);
     source = ValueUtils.setDouble(source, this.curValue);
+    
+    if (fireEvents) {
+      ValueChangeEvent.fire(this, BeeUtils.toString(this.curValue));
+    }
+  }
+
+  @Override
+  public void setEditing(boolean editing) {
+    this.editing = editing;
   }
 
   public void setEnabled(boolean enabled) {
@@ -342,6 +438,11 @@ public class SliderBar extends Focus implements RequiresResize {
       StyleUtils.addStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
     }
     redraw(false);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
   }
 
   public void setLabelFormatter(LabelFormatter labelFormatter) {
@@ -360,6 +461,11 @@ public class SliderBar extends Focus implements RequiresResize {
     resetCurrentValue();
   }
 
+  @Override
+  public void setNullable(boolean nullable) {
+    this.nullable = nullable;
+  }
+
   public void setNumLabels(int numLabels) {
     this.numLabels = numLabels;
   }
@@ -368,17 +474,40 @@ public class SliderBar extends Focus implements RequiresResize {
     this.numTicks = numTicks;
   }
 
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
+  }
+
   public void setStepSize(double stepSize) {
     this.stepSize = stepSize;
     resetCurrentValue();
   }
 
-  public void shiftLeft(int numSteps) {
-    setCurrentValue(getCurrentValue() - numSteps * stepSize);
+  @Override
+  public void setValue(String value) {
+    setValue(value, false);
   }
 
-  public void shiftRight(int numSteps) {
-    setCurrentValue(getCurrentValue() + numSteps * stepSize);
+  @Override
+  public void setValue(String value, boolean fireEvents) {
+    if (BeeUtils.toDouble(value) != getCurrentValue()) {
+      setCurrentValue(BeeUtils.toDouble(value), fireEvents);
+    }
+  }
+
+  @Override
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  }
+
+  @Override
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
   }
 
   protected String formatLabel(double value) {
@@ -401,7 +530,7 @@ public class SliderBar extends Focus implements RequiresResize {
   @Override
   protected void onLoad() {
     super.onLoad();
-    
+
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -439,7 +568,7 @@ public class SliderBar extends Focus implements RequiresResize {
           DomUtils.createId(label, "label");
           label.getStyle().setPosition(Position.ABSOLUTE);
           label.getStyle().setDisplay(Display.NONE);
-          label.setClassName(styleNameLabel);
+          label.setClassName(STYLE_LABEL);
           if (!enabled) {
             StyleUtils.addStyleDependentName(label, StyleUtils.NAME_DISABLED);
           }
@@ -492,7 +621,7 @@ public class SliderBar extends Focus implements RequiresResize {
           DomUtils.createId(tick, "tick");
           tick.getStyle().setPosition(Position.ABSOLUTE);
           tick.getStyle().setDisplay(Display.NONE);
-          tick.setClassName(styleNameTick);
+          tick.setClassName(STYLE_TICK);
 
           getElement().appendChild(tick);
           tickElements.add(tick);
@@ -531,7 +660,7 @@ public class SliderBar extends Focus implements RequiresResize {
     }
     return width;
   }
-  
+
   private int getLineWidth() {
     int width = lineElement.getOffsetWidth();
     if (width <= 0) {
@@ -539,7 +668,7 @@ public class SliderBar extends Focus implements RequiresResize {
     }
     return width;
   }
-  
+
   private int getShellWidth() {
     int width = getElement().getClientWidth();
     if (width <= 0) {
@@ -551,13 +680,21 @@ public class SliderBar extends Focus implements RequiresResize {
   private void highlight() {
     addStyleDependentName(StyleUtils.NAME_FOCUSED);
   }
-  
+
   private boolean isReady() {
     return isAttached() && getElement().getClientWidth() > 0 && lineElement.getOffsetWidth() > 0;
   }
 
   private void resetCurrentValue() {
-    setCurrentValue(getCurrentValue());
+    setCurrentValue(getCurrentValue(), false);
+  }
+
+  private void shiftLeft(int numSteps) {
+    setCurrentValue(getCurrentValue() - numSteps * stepSize, true);
+  }
+
+  private void shiftRight(int numSteps) {
+    setCurrentValue(getCurrentValue() + numSteps * stepSize, true);
   }
 
   private void slideKnob(Event event) {
@@ -566,22 +703,22 @@ public class SliderBar extends Focus implements RequiresResize {
       int lineWidth = getLineWidth();
       int lineLeft = lineElement.getAbsoluteLeft();
       double percent = (double) (x - lineLeft) / lineWidth * 1.0;
-      setCurrentValue(getTotalRange() * percent + minValue);
+      setCurrentValue(getTotalRange() * percent + minValue, true);
     }
   }
 
   private void startSliding(boolean highlight) {
     if (highlight) {
-      StyleUtils.addStyleDependentName(lineElement, styleNameSliding);
-      StyleUtils.addStyleDependentName(knobImage.getElement(), styleNameSliding);
+      StyleUtils.addStyleDependentName(lineElement, STYLE_SLIDING);
+      StyleUtils.addStyleDependentName(knobImage.getElement(), STYLE_SLIDING);
       knobImage.setResource(knobSliding());
     }
   }
 
   private void stopSliding(boolean unhighlight) {
     if (unhighlight) {
-      StyleUtils.removeStyleDependentName(lineElement, styleNameSliding);
-      StyleUtils.removeStyleDependentName(knobImage.getElement(), styleNameSliding);
+      StyleUtils.removeStyleDependentName(lineElement, STYLE_SLIDING);
+      StyleUtils.removeStyleDependentName(knobImage.getElement(), STYLE_SLIDING);
       knobImage.setResource(knobDefault());
     }
   }

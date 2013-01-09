@@ -30,7 +30,7 @@
 
     <DataColumn name="ColorName" caption="Spalva">
       <dynStyle>
-        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
+        <ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>
       </dynStyle>
     </DataColumn>
     <DataColumn name="StyleName" caption="Stilius" />

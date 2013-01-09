@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -1094,6 +1095,10 @@ public class BeeUtils {
     return (x == null) ? false : x >= 0;
   }
 
+  public static boolean isNonNegativeDouble(String s) {
+    return isDouble(s, BeeConst.DOUBLE_ZERO, true);
+  }
+  
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -1452,6 +1457,14 @@ public class BeeUtils {
     }
   }
 
+  public static String parseDigits(String input) {
+    if (isEmpty(input)) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).retainFrom(input);
+    }
+  }
+
   public static <T> T peek(Iterable<T> container) {
     if (container == null) {
       return null;
@@ -1461,11 +1474,11 @@ public class BeeUtils {
     }
     return null;
   }
-
+  
   public static int positive(int x, int def) {
     return (x > 0) ? x : def;
   }
-  
+
   public static int positive(int x, int y, int def) {
     return (x > 0) ? x : positive(y, def);
   }
@@ -1832,11 +1845,11 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-
+  
   public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
   }
-  
+
   public static int resize(int x, int frMin, int frMax, int toMin, int toMax) {
     return round(rescale(x, frMin, frMax, toMin, toMax));
   }
@@ -1864,11 +1877,11 @@ public class BeeUtils {
   public static int rotateForwardExclusive(int x, int min, int max) {
     return rotateForwardInclusive(x, min, max - 1);
   }
-
+  
   public static int rotateForwardInclusive(int x, int min, int max) {
     return (x < min || x >= max) ? min : x + 1;
   }
-  
+
   public static int round(double x) {
     return toInt(Math.round(x));
   }
@@ -1910,7 +1923,7 @@ public class BeeUtils {
     }
     return BeeConst.DOUBLE_ZERO;
   }
-
+  
   public static String round(String s, int dec) {
     if (!isDouble(s)) {
       return null;
@@ -1946,7 +1959,7 @@ public class BeeUtils {
       }
     }
   }
-  
+
   public static boolean same(char c1, char c2) {
     if (c1 == c2) {
       return true;
@@ -1970,7 +1983,7 @@ public class BeeUtils {
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
-
+  
   public static <T> boolean sameElements(Collection<T> c1, Collection<T> c2) {
     if (isEmpty(c1)) {
       return isEmpty(c2);
@@ -1980,7 +1993,7 @@ public class BeeUtils {
       return c1.containsAll(c2) && c2.containsAll(c1);
     }
   }
-  
+
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
@@ -2055,7 +2068,7 @@ public class BeeUtils {
 
     return ArrayUtils.toArray(lst);
   }
-
+  
   /**
    * Checks if {@code s1} and {@code s2} starts the same. The shorter String is compared with the
    * start of the longer String.
@@ -2525,7 +2538,7 @@ public class BeeUtils {
    * @param s the String to search value from
    * @return an Integer value if found, otherwise 0;
    */
-  public static int val(String s) {
+  public static int val(String s, boolean extract) {
     if (s == null) {
       return 0;
     }
@@ -2535,9 +2548,26 @@ public class BeeUtils {
     }
 
     int start = 0;
-    while (start < len && s.charAt(start) <= BeeConst.CHAR_SPACE) {
-      start++;
+    
+    if (extract) {
+      while (start < len) {
+        if (isDigit(s.charAt(start))) {
+          break;
+        } else if (s.charAt(start) == BeeConst.CHAR_MINUS) {
+          if (start < len - 1 && isDigit(s.charAt(start + 1))) {
+            break;
+          }
+        }
+        
+        start++;
+      }
+
+    } else {  
+      while (start < len && s.charAt(start) <= BeeConst.CHAR_SPACE) {
+        start++;
+      }
     }
+
     if (start >= len) {
       return 0;
     }

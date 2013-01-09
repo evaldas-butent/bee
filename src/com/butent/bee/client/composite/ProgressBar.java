@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Enables an user interface component, which indicates to a user how much progress a process has
  * made and how much is still left to be done.
  */
-public class ProgressBar extends Widget implements IdentifiableWidget, RequiresResize {
+public class ProgressBar extends FocusWidget implements IdentifiableWidget, RequiresResize {
 
   /**
    * Requires classes implementing this interface to have TextFormatter method.

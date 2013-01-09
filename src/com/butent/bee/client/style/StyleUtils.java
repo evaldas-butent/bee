@@ -987,7 +987,7 @@ public class StyleUtils {
 
   public static int getHeight(Style st) {
     Assert.notNull(st);
-    return BeeUtils.val(st.getHeight());
+    return BeeUtils.val(st.getHeight(), false);
   }
 
   public static int getHeight(UIObject obj) {
@@ -1006,7 +1006,7 @@ public class StyleUtils {
 
   public static int getLeft(Style st) {
     Assert.notNull(st);
-    return BeeUtils.val(st.getLeft());
+    return BeeUtils.val(st.getLeft(), false);
   }
 
   public static int getLeft(UIObject obj) {
@@ -1125,7 +1125,7 @@ public class StyleUtils {
 
   public static int getTop(Style st) {
     Assert.notNull(st);
-    return BeeUtils.val(st.getTop());
+    return BeeUtils.val(st.getTop(), false);
   }
 
   public static int getTop(UIObject obj) {
@@ -1144,7 +1144,7 @@ public class StyleUtils {
 
   public static int getWidth(Style st) {
     Assert.notNull(st);
-    return BeeUtils.val(st.getWidth());
+    return BeeUtils.val(st.getWidth(), false);
   }
 
   public static int getWidth(UIObject obj) {

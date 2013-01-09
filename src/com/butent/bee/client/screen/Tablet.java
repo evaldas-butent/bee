@@ -38,8 +38,8 @@ public class Tablet extends Mobile {
         "c" + minCount.getValue() + "-" + maxCount.getValue(),
         "r" + minRadius.getValue() + "-" + maxRadius.getValue(),
         "s" + colorStep.getValue(),
-        "o" + BeeUtils.toString(minOpacity.getValue() / 100.0) + "-"
-            + BeeUtils.toString(maxOpacity.getValue() / 100.0));
+        "o" + BeeUtils.toString(minOpacity.getLong() / 100.0) + "-"
+            + BeeUtils.toString(maxOpacity.getLong() / 100.0));
       CliWorker.execute("svg " + opt);
     }
   }

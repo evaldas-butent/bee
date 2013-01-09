@@ -177,12 +177,12 @@ public class BeeParameter implements BeeSerializable {
     return (String) getTypedValue(ParameterType.TEXT, getUserValue(userId));
   }
 
-  public Integer getTime() {
-    return (Integer) getTypedValue(ParameterType.TIME, getValue());
+  public Long getTime() {
+    return (Long) getTypedValue(ParameterType.TIME, getValue());
   }
 
-  public Integer getTime(Long userId) {
-    return (Integer) getTypedValue(ParameterType.TIME, getUserValue(userId));
+  public Long getTime(Long userId) {
+    return (Long) getTypedValue(ParameterType.TIME, getUserValue(userId));
   }
 
   public ParameterType getType() {

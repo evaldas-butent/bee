@@ -1,22 +1,40 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Implements a volume slider user interface component (note:similar to sound level slider in MS
  * Windows).
  */
 
-public class VolumeSlider extends Absolute {
+public class VolumeSlider extends Absolute implements Editor {
 
   private class VolumeSpinner extends SpinnerBase {
     private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,
@@ -65,18 +83,28 @@ public class VolumeSlider extends Absolute {
     }
   }
 
-  private VolumeSpinner spinner;
-  private ProgressBar progressBar;
-  private Object source;
+  private final VolumeSpinner spinner;
+  private final ProgressBar progressBar;
+  private Object source = null;
 
   private int spacing = 5;
   private int padding = 1;
+
+  private boolean nullable = true;
+
+  private boolean editing = false;
+
+  private String options = null;
+
+  private boolean handlesTabulation = false;
 
   private SpinnerListener listener = new SpinnerListener() {
     @Override
     public void onSpinning(long value) {
       progressBar.setProgress(value);
       source = ValueUtils.setLong(source, value);
+
+      ValueChangeEvent.fire(VolumeSlider.this, BeeUtils.toString(value));
     }
   };
 
@@ -107,10 +135,59 @@ public class VolumeSlider extends Absolute {
 
     sinkEvents(Event.ONMOUSEWHEEL);
   }
-  
+
+  @Override
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return progressBar.addBlurHandler(handler);
+  }
+
+  @Override
+  public HandlerRegistration addEditStopHandler(Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return progressBar.addFocusHandler(handler);
+  }
+
+  @Override
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return addHandler(handler, ValueChangeEvent.getType());
+  }
+
+  @Override
+  public void clearValue() {
+    spinner.setValue(BeeUtils.toLong(progressBar.getMinProgress()), false);
+  }
+
+  @Override
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+
   @Override
   public String getIdPrefix() {
     return "volume-slider";
+  }
+
+  public long getLong() {
+    return spinner.getValue();
+  }
+
+  @Override
+  public String getNormalizedValue() {
+    return getValue();
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
   }
 
   public int getPadding() {
@@ -128,13 +205,54 @@ public class VolumeSlider extends Absolute {
   public VolumeSpinner getSpinner() {
     return spinner;
   }
-  
-  public long getValue() {
-    return spinner.getValue();
+
+  @Override
+  public int getTabIndex() {
+    return progressBar.getTabIndex();
   }
 
+  @Override
+  public String getValue() {
+    return BeeUtils.toString(spinner.getValue());
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.VOLUME_SLIDER;
+  }
+
+  @Override
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
+  @Override
+  public boolean handlesTabulation() {
+    return handlesTabulation;
+  }
+
+  @Override
+  public boolean isEditing() {
+    return editing;
+  }
+
+  @Override
   public boolean isEnabled() {
     return spinner.isEnabled();
+  }
+
+  @Override
+  public boolean isNullable() {
+    return nullable;
+  }
+
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+
+  @Override
+  public void normalizeDisplay(String normalizedValue) {
   }
 
   @Override
@@ -156,8 +274,39 @@ public class VolumeSlider extends Absolute {
     redraw();
   }
 
+  @Override
+  public void setAccessKey(char key) {
+    progressBar.setAccessKey(key);
+  }
+
+  @Override
+  public void setEditing(boolean editing) {
+    this.editing = editing;
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     spinner.setEnabled(enabled);
+  }
+
+  @Override
+  public void setFocus(boolean focused) {
+    progressBar.setFocus(focused);
+  }
+
+  @Override
+  public void setHandlesTabulation(boolean handlesTabulation) {
+    this.handlesTabulation = handlesTabulation;
+  }
+
+  @Override
+  public void setNullable(boolean nullable) {
+    this.nullable = nullable;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setPadding(int padding) {
@@ -166,6 +315,35 @@ public class VolumeSlider extends Absolute {
 
   public void setSpacing(int spacing) {
     this.spacing = spacing;
+  }
+
+  @Override
+  public void setTabIndex(int index) {
+    progressBar.setTabIndex(index);
+  }
+
+  @Override
+  public void setValue(String value) {
+    setValue(value, false);
+  }
+
+  @Override
+  public void setValue(String value, boolean fireEvents) {
+    spinner.setValue(BeeUtils.toLong(value), fireEvents);
+  }
+
+  @Override
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  }
+
+  @Override
+  public List<String> validate(boolean checkForNull) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    return Collections.emptyList();
   }
 
   @Override

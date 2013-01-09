@@ -410,17 +410,6 @@ body, select {
   visibility: hidden;
 }
 
-.bee-ValueSpinner {
-  width: 60px;
-}
-
-.bee-ValueSpinner .valueBox {
-  text-align: right;
-  margin: 0;
-  border: 1px solid #7f9db9;
-  padding: 1px;
-}
-
 .bee-VolumeSlider {
   border: 1px solid #7f9db9;
   height: 18px;
@@ -1969,6 +1958,37 @@ body, select {
 
 .bee-resizable {
   resize: both;
+}
+
+.bee-ColorEditor-container {
+  position: relative;
+  width: 200px;
+  height: 23px;
+  margin-left: 2px;
+}
+.bee-ColorEditor-textBox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 25px;
+  margin: 0;
+}
+.bee-ColorEditor-picker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 19px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.bee-CellGridEditor .bee-ColorEditor-textBox {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  padding-top: 3px;
+  padding-left: 5px;
 }
 
 .bee-MainSearchOptionsContainer {

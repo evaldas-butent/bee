@@ -2,6 +2,7 @@ package com.butent.bee.client.view.edit;
 
 import com.google.gwt.event.shared.HasHandlers;
 
+import com.butent.bee.client.composite.ColorEditor;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
@@ -173,7 +174,11 @@ public class EditorFactory {
       case DATE_TIME:
         editor = new InputDateTime();
         break;
-
+        
+      case COLOR:
+        editor = new ColorEditor();
+        break;
+        
       case INTEGER:
         editor = new InputInteger();
         break;

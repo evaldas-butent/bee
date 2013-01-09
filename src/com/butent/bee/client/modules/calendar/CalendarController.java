@@ -65,7 +65,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       Widget create(BeeRow row) {
         CustomDiv widget = new CustomDiv();
 
-        String bg = BeeUtils.notEmpty(row.getString(attBgIndex), row.getString(bgIndex));
+        String bg = BeeUtils.notEmpty(row.getString(bgIndex), row.getString(attBgIndex));
         if (!BeeUtils.isEmpty(bg)) {
           widget.getElement().getStyle().setBackgroundColor(bg.trim());
         }
@@ -330,6 +330,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
             @Override
             public void onClick(ClickEvent event) {
               setActiveRowId(rowId);
+              colorPicker.setColor(getColor(getRow(rowId)));
               colorPicker.click();
             }
           });
@@ -546,7 +547,11 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private String getColor(BeeRow row) {
-    return BeeUtils.notEmpty(row.getString(attBgIndex), row.getString(bgIndex));
+    if (row == null) {
+      return null;
+    } else {
+      return BeeUtils.notEmpty(row.getString(bgIndex), row.getString(attBgIndex));
+    }
   }
 
   private BeeRow getRow(long rowId) {

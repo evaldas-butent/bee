@@ -12,7 +12,7 @@
 
     <RelColumn name="DefaultColorName" caption="Pagrindinė spalva:">
       <dynStyle>
-        <ui:inline>background: [row.DefaultBackground]; color: [row.DefaultForeground];</ui:inline>
+        <ui:inline>background-color: [row.DefaultBackground] !important; color: [row.DefaultForeground];</ui:inline>
         <ui:expression>row.DefaultColor > 0</ui:expression>
       </dynStyle>
     </RelColumn>

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid [
+  <!ENTITY dyn "<dynStyle><ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline></dynStyle>">
+]>
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
@@ -8,12 +11,14 @@
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" width="120" />
 
-    <DataColumn name="Background" caption="Fono spalva" minWidth="100" />
-    <DataColumn name="Foreground" caption="Teksto spalva" />
+    <DataColumn name="Background" caption="Fono spalva" minWidth="100" updateMode="row">
+      &dyn;
+      <editor type="color" />
+    </DataColumn>
+    
+    <DataColumn name="Foreground" caption="Teksto spalva" updateMode="row">
+      &dyn;
+      <editor type="color" />
+    </DataColumn>
   </columns>
-  
-  <rowStyle>
-    <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-  </rowStyle>
-  
 </Grid>

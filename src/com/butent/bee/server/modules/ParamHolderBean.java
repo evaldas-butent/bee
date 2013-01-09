@@ -182,7 +182,7 @@ public class ParamHolderBean {
         ? parameter.getText(usr.getCurrentUserId()) : parameter.getText();
   }
 
-  public Integer getTime(String module, String name) {
+  public Long getTime(String module, String name) {
     BeeParameter parameter = getModuleParameter(module, name);
     return parameter.supportsUsers()
         ? parameter.getTime(usr.getCurrentUserId()) : parameter.getTime();

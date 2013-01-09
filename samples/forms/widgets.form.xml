@@ -54,9 +54,6 @@
             <layer top="2" topUnit="em">
               <VolumeSlider min="0" max="10000" minStep="10" maxStep="100" />
             </layer>
-            <layer top="20" topUnit="%">
-              <ValueSpinner min="-10" max="30" />
-            </layer>
             <layer top="50" topUnit="%">
               <ListBox allItemsVisible="true">
                 <item>item 1</item>
@@ -68,9 +65,6 @@
             </layer>
             <layer bottom="60">
               <Meter min="-50" max="100" />
-            </layer>
-            <layer bottom="30">
-              <Progress max="500" style="width: 80px" />
             </layer>
           </AbsolutePanel>
         </stack>
@@ -110,122 +104,92 @@
             <Image resource="bookmark" />
           </SpanPanel>
 
-          <ScrollPanel>
+          <ScrollPanel> 
             <Table style="border-collapse: collapse;" cellStyle="padding: 3px; border: 1px solid black;">
               <col index="0" width="20" widthUnit="%" />
 
               <row>
-                <cell>
-                  <CheckBox />
-                </cell>
-                <cell>
-                  <CheckBox html="Check" />
-                </cell>
-              </row>
-              <row>
-                <cell>
-                  <Radio vertical="true">
-                    <option>Option 1</option>
-                    <option>Option 2</option>
-                    <option>Option 3</option>
-                  </Radio>
-                </cell>
-                <cell>
-                  <Radio vertical="false">
-                    <option>Option A</option>
-                    <option>Option B</option>
-                    <option>Option C</option>
-                  </Radio>
-                </cell>
+                <CheckBox />
+                <CheckBox html="Check" />
               </row>
 
               <row>
-                <cell>
-                  <text>Area</text>
-                </cell>
-                <cell>
-                  <InputArea />
-                </cell>
+                <Radio vertical="true">
+                  <option>Option 1</option>
+                  <option>Option 2</option>
+                  <option>Option 3</option>
+                </Radio>
+                <Radio vertical="false">
+                  <option>Option A</option>
+                  <option>Option B</option>
+                  <option>Option C</option>
+                </Radio>
+              </row>
+
+              <row>
+                <text>Area</text>
+                <InputArea />
+              </row>
+
+              <row>
+                <html>Currency</html>
+                <InputCurrency />
+              </row>
+
+              <row>
+                <html>Date</html>
+                <InputDate />
               </row>
               <row>
-                <cell>
-                  <html>Currency</html>
-                </cell>
-                <cell>
-                  <InputCurrency />
-                </cell>
+                <html>DateTime</html>
+                <InputDateTime />
               </row>
-              <row>
-                <cell>
-                  <html>Date</html>
-                </cell>
-                <cell>
-                  <InputDate format="date_short" />
-                </cell>
-              </row>
-              <row>
-                <cell>
-                  <html>DateTime</html>
-                </cell>
-                <cell>
-                  <InputDateTime />
-                </cell>
-              </row>
+
               <row>
                 <cell horizontalAlignment="end">
                   <html>Decimal</html>
                 </cell>
-                <cell>
-                  <InputDecimal scale="3" />
-                </cell>
+                <InputDecimal scale="3" />
               </row>
               <row>
                 <cell horizontalAlignment="end">
                   <html>Double</html>
                 </cell>
-                <cell>
-                  <InputDouble />
-                </cell>
+                <InputDouble />
               </row>
+
               <row>
                 <cell horizontalAlignment="end">
                   <html>Integer</html>
                 </cell>
-                <cell>
-                  <InputInteger />
-                </cell>
+                <InputInteger />
               </row>
               <row>
                 <cell horizontalAlignment="end">
                   <html>Long</html>
                 </cell>
-                <cell>
-                  <InputLong />
-                </cell>
+                <InputLong />
               </row>
+
               <row>
-                <cell>
-                  <html>Slider</html>
-                </cell>
-                <cell>
-                  <InputSlider />
-                </cell>
+                <html>Slider</html>
+                <InputSlider />
               </row>
               <row>
                 <cell horizontalAlignment="end">
                   <html>Spinner</html>
                 </cell>
-                <cell>
-                  <InputSpinner />
-                </cell>
+                <InputSpinner />
               </row>
+
               <row>
-                <cell>
-                  <html>Text</html>
-                </cell>
-                <cell>
-                  <InputText />
-                </cell>
+                <html>Text</html>
+                <InputText />
+              </row>
+
+              <row>
+                <html>Color</html>
+                <ColorEditor />
               </row>
             </Table>
           </ScrollPanel>
@@ -245,11 +209,11 @@
               <Label html="Audio" horizontalAlignment="center" />
             </north>
             <north size="50">
-              <!-- <Audio url="http://www.drchinese.com/wav/Snowball.mp3" /> -->
+<!--               <Audio url="http://www.drchinese.com/wav/Snowball.mp3" /> -->
               <Audio />
             </north>
             <center>
-              <!-- <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" /> -->
+<!--               <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" /> -->
               <Video />
             </center>
           </SplitPanel>

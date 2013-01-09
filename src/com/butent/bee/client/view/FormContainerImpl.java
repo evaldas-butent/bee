@@ -394,8 +394,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
           pager.start(getContent().getDisplay());
         }
       }
-
       getContent().start(rowCount);
+
+    } else {
+      getContent().start(null);
     }
   }
 

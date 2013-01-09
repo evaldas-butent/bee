@@ -105,7 +105,6 @@ class CargoTripsGridHandler extends AbstractGridInterceptor {
       }));
       dialog.setWidget(container);
       dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
-      UiHelper.focus(selector);
     }
 
     private void addTrip(long tripId) {
@@ -143,7 +142,8 @@ class CargoTripsGridHandler extends AbstractGridInterceptor {
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter) {
-    new Action(presenter.getGridView());
+    Action action = new Action(presenter.getGridView());
+    UiHelper.focus(action.dialog.getContent());
     return false;
   }
 

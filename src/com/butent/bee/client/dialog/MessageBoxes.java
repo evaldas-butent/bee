@@ -594,23 +594,26 @@ public class MessageBoxes {
     Simple container = new Simple(grid);
     container.addStyleName(STYLE_TABLE_CONTAINER);
 
-    Popup box = new Popup(OutsideClick.CLOSE);
-    box.setAnimationEnabled(true);
+    Popup popup = new Popup(OutsideClick.CLOSE);
+    popup.setAnimationEnabled(true);
+    popup.setHideOnEscape(true);
 
-    box.setWidget(container);
+    popup.setWidget(container);
 
-    box.center();
+    popup.center();
     close.setFocus(true);
   }
 
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
-    Popup box = new Popup(OutsideClick.CLOSE);
-    box.setAnimationEnabled(true);
+    Popup popup = new Popup(OutsideClick.CLOSE);
+    popup.setAnimationEnabled(true);
+    popup.setHideOnEscape(true);
 
-    box.setWidget(widget);
-    box.center();
+    popup.setWidget(widget);
+
+    popup.center();
   }
 
   private Popup createPopup(Widget bottom, String... messages) {

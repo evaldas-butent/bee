@@ -52,7 +52,7 @@ public class TestDateValue {
   @Test
   public final void testGetObjectValue() {
     DateValue data = new DateValue(2011, 04, 19);
-    assertEquals("2011.04.19", data.getObjectValue().toString());
+    assertEquals("2011-04-19", data.getObjectValue().toString());
     assertEquals(null, DateValue.getNullValue().getObjectValue());
   }
 
@@ -74,6 +74,6 @@ public class TestDateValue {
   public final void testToString() {
     DateValue data = new DateValue(2011, 04, 19);
     assertEquals("null", DateValue.getNullValue().toString());
-    assertEquals("2011.04.19", data.toString());
+    assertEquals("2011-04-19", data.toString());
   }
 }

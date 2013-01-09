@@ -100,6 +100,12 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="nonNegativeDecimal">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="positiveDecimal">
     <xs:restriction base="xs:decimal">
       <xs:minExclusive value="0" />

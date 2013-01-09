@@ -38,12 +38,12 @@ public class TestValueType {
     assertEquals(BooleanValue.FALSE, ValueType.valueOf("BOOLEAN").createValue(false));
     assertEquals(new DateValue(2011, 02, 22), ValueType.valueOf("DATE").createValue(
         new DateTime(1298362388227L)));
-    assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATETIME")
+    assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATE_TIME")
         .createValue(new DateTime(2011, 02, 22, 10, 13, 8)));
-    assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATETIME")
+    assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATE_TIME")
         .createValue(new DateTime(2011, 02, 22, 10, 13, 8)));
     assertEquals(new TimeOfDayValue(10, 13, 8, 227), ValueType.valueOf("TIME_OF_DAY").createValue(
-        "1298362388227"));
+        "10:13:08.227"));
   }
 
   @Test

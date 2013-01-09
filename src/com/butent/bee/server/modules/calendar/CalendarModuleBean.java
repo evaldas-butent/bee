@@ -200,13 +200,13 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (start != null) {
         DateTime time = TimeUtils.toDateTimeOrNull(start);
-        int from = prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM);
-        int until = prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL);
+        long from = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM));
+        long until = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL));
 
         if (from < until) {
           int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
 
-          if (!BeeUtils.betweenInclusive(current, from, until)) {
+          if (current < from || current > until) {
             time = new DateTime(((current < from) ? TimeUtils.previousDay(time) : time.getDate()));
             time.setTime(time.getTime() + until);
           }

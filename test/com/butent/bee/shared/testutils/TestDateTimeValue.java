@@ -96,7 +96,7 @@ public class TestDateTimeValue {
     DateTimeValue laikas1 = new DateTimeValue(2011, 2, 22, 8, 13, 8);
 
     assertEquals(null, DateTimeValue.getNullValue().getObjectValue());
-    assertEquals("2011.02.22 08:13:08", laikas1.getObjectValue().toString());
+    assertEquals("2011-02-22 08:13:08", laikas1.getObjectValue().toString());
   }
 
   @Test
@@ -112,9 +112,9 @@ public class TestDateTimeValue {
     DateTime tempLaikas = new DateTime(1298362388227L);
     DateTimeValue laikas2 = new DateTimeValue(tempLaikas);
 
-    assertEquals("2011.02.22 08:13:08", laikas1.toString());
+    assertEquals("2011-02-22 08:13:08", laikas1.toString());
     assertEquals("null", DateTimeValue.getNullValue().toString());
-    assertEquals("2011.02.22 10:13:08.227", laikas2.toString());
+    assertEquals("2011-02-22 10:13:08.227", laikas2.toString());
   }
 
 }

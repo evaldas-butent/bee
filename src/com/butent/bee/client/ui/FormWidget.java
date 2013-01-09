@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.ColorEditor;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.FileCollector;
@@ -27,7 +28,6 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TabBar;
-import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -162,6 +162,7 @@ public enum FormWidget {
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   CHILD_GRID("ChildGrid", EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
+  COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
   CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
@@ -232,7 +233,6 @@ public enum FormWidget {
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
   TOGGLE("Toggle", EnumSet.of(Type.EDITABLE)),
   UNORDERED_LIST("UnorderedList", null),
-  VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.EDITABLE)),
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
@@ -351,7 +351,6 @@ public enum FormWidget {
 
   private static final String ATTR_MIN_STEP = "minStep";
   private static final String ATTR_MAX_STEP = "maxStep";
-  private static final String ATTR_CONSTRAINED = "constrained";
 
   private static final String ATTR_HIGH = "high";
   private static final String ATTR_LOW = "low";
@@ -516,6 +515,10 @@ public enum FormWidget {
           widget = new ChildGrid(gridName, sourceIndex, relColumn,
               GridFactory.getGridOptions(attributes));
         }
+        break;
+        
+      case COLOR_EDITOR:
+        widget = new ColorEditor();
         break;
 
       case COMPLEX_PANEL:
@@ -894,9 +897,18 @@ public enum FormWidget {
         break;
 
       case PROGRESS:
-        max = attributes.get(ATTR_MAX);
-        if (Features.supportsElementProgress() && BeeUtils.isPositiveDouble(max)) {
-          widget = new Progress(BeeUtils.toDouble(max));
+        if (Features.supportsElementProgress()) {
+          widget = new Progress();
+
+          max = attributes.get(ATTR_MAX);
+          if (BeeUtils.isPositiveDouble(max)) {
+            ((Progress) widget).setMax(BeeUtils.toDouble(max));
+          }
+          
+          String value = attributes.get(ATTR_VALUE);
+          if (BeeUtils.isNonNegativeDouble(value)) {
+            ((Progress) widget).setValue(BeeUtils.toDouble(value));
+          }
         }
         break;
 
@@ -999,48 +1011,6 @@ public enum FormWidget {
 
       case UNORDERED_LIST:
         widget = new HtmlList(false);
-        break;
-
-      case VALUE_SPINNER:
-        min = attributes.get(ATTR_MIN);
-        max = attributes.get(ATTR_MAX);
-
-        if (BeeUtils.isLong(min) && BeeUtils.isLong(max)
-            && BeeUtils.toLong(min) < BeeUtils.toLong(max)) {
-          step = attributes.get(ATTR_STEP);
-          String minStep = attributes.get(ATTR_MIN_STEP);
-          String maxStep = attributes.get(ATTR_MAX_STEP);
-          String constrained = attributes.get(ATTR_CONSTRAINED);
-
-          Object pSrc = null;
-          long pMin = BeeUtils.toLong(min);
-          long pMax = BeeUtils.toLong(max);
-
-          boolean hasStep = BeeUtils.isInt(step) && BeeUtils.toInt(step) > 0;
-          boolean hasStepBounds = BeeUtils.isInt(minStep) && BeeUtils.isInt(maxStep)
-              && BeeUtils.toInt(minStep) > 0 && BeeUtils.toInt(maxStep) >= BeeUtils.toInt(minStep);
-
-          if (BeeUtils.isBoolean(constrained)) {
-            boolean pConstr = BeeUtils.toBoolean(constrained);
-            if (hasStepBounds) {
-              widget = new ValueSpinner(pSrc, pMin, pMax,
-                  BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep), pConstr);
-            } else if (hasStep) {
-              int z = BeeUtils.toInt(step);
-              widget = new ValueSpinner(pSrc, pMin, pMax, z, z, pConstr);
-            } else {
-              widget = new ValueSpinner(pSrc, pMin, pMax, pConstr);
-            }
-
-          } else if (hasStepBounds) {
-            widget = new ValueSpinner(pSrc, pMin, pMax,
-                BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep));
-          } else if (hasStep) {
-            widget = new ValueSpinner(pSrc, pMin, pMax, BeeUtils.toInt(step));
-          } else {
-            widget = new ValueSpinner(pSrc, pMin, pMax);
-          }
-        }
         break;
 
       case VERTICAL_PANEL:
