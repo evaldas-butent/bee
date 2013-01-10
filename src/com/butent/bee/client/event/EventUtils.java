@@ -818,6 +818,18 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_KEY_UP);
   }
 
+  public static boolean isLeftButton(int button) {
+    return button == NativeEvent.BUTTON_LEFT;
+  }
+
+  public static boolean isLeftButton(NativeEvent event) {
+    return (event == null) ? false : isLeftButton(event.getButton());
+  }
+  
+  public static boolean isMouseButtonEvent(String type) {
+    return isMouseDown(type) || isMouseUp(type) || isClick(type) || isDblClick(type);
+  }
+  
   public static boolean isMouseDown(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_DOWN);
   }
@@ -1088,6 +1100,14 @@ public class EventUtils {
     return sb.toString();
   }
 
+  public static String transformEventTarget(EventTarget et) {
+    if (et != null && Element.is(et)) {
+      return DomUtils.transformElement(Element.as(et));
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
   public static String transformMediaError(MediaError error) {
     if (error == null) {
       return BeeConst.STRING_EMPTY;
@@ -1159,14 +1179,6 @@ public class EventUtils {
       domHandlers.put(key, handler);
     }
     return handler;
-  }
-
-  private static String transformEventTarget(EventTarget et) {
-    if (et != null && Element.is(et)) {
-      return DomUtils.transformElement(Element.as(et));
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
   }
 
   private EventUtils() {

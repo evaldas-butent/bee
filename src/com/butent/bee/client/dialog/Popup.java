@@ -320,18 +320,18 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   public HandlerRegistration addOpenHandler(OpenEvent.Handler handler) {
     return addHandler(handler, OpenEvent.getType());
   }
-  
+
   public void attachAmendDetach(ScheduledCommand command) {
     Assert.notNull(command);
     Assert.state(!isShowing());
-    
+
     boolean animationEnabled = isAnimationEnabled();
     boolean visible = isVisible();
 
     setAnimationEnabled(false);
     setVisible(false);
     show();
-    
+
     command.execute();
 
     hide(false);
@@ -368,7 +368,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         setVisible(true);
       }
     }
-    
+
     OpenEvent.fire(this);
   }
 
@@ -412,7 +412,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   public int getPopupTop() {
     return DOM.getAbsoluteTop(getElement());
   }
-  
+
   public boolean hideOnEscape() {
     return hideOnEscape;
   }
@@ -495,17 +495,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
             UiHelper.moveFocus(getWidget(), !EventUtils.hasModifierKey(nativeEvent));
           }
         }
+      }
 
-        if (!event.isCanceled()) {
+      if (!event.isCanceled()) {
+        if (eventTargetsPopup || getKeyboardPartner() != null
+            && EventUtils.equalsOrIsChild(getKeyboardPartner(), target)) {
           event.consume();
+
+        } else {
+          event.cancel();
         }
-
-      } else if (eventTargetsPopup) {
-        event.consume();
-
-      } else if (getKeyboardPartner() == null 
-          || !EventUtils.equalsOrIsChild(getKeyboardPartner(), target)) {
-        event.cancel();
       }
 
     } else if (eventTargetsPopup) {
@@ -580,7 +579,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     show();
     callback.setPosition(getOffsetWidth(), getOffsetHeight());
     setVisible(true);
-    
+
     OpenEvent.fire(this);
   }
 
@@ -726,7 +725,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (target == null) {
       return true;
     }
-    
+
     Widget content = getContent();
     if (content == null) {
       return true;
@@ -734,7 +733,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (content instanceof TabulationHandler && ((TabulationHandler) content).handlesTabulation()) {
       return false;
     }
-    
+
     Widget w = DomUtils.getChildByElement(content, target);
     for (Widget p = w; p != null && p != content; p = p.getParent()) {
       if (p instanceof TabulationHandler && ((TabulationHandler) p).handlesTabulation()) {
@@ -844,7 +843,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private void setShowing(boolean showing) {
     this.showing = showing;
   }
-  
+
   private void setTopPosition(int topPosition) {
     this.topPosition = topPosition;
   }

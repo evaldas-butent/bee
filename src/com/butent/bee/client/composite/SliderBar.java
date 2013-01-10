@@ -78,13 +78,13 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     }
   }
 
-  private final static String STYLE_SHELL = "bee-SliderBar-shell";
-  private final static String STYLE_LINE = "bee-SliderBar-line";
-  private final static String STYLE_KNOB = "bee-SliderBar-knob";
-  private final static String STYLE_LABEL = "bee-SliderBar-label";
-  private final static String STYLE_TICK = "bee-SliderBar-tick";
+  private static final String STYLE_SHELL = "bee-SliderBar-shell";
+  private static final String STYLE_LINE = "bee-SliderBar-line";
+  private static final String STYLE_KNOB = "bee-SliderBar-knob";
+  private static final String STYLE_LABEL = "bee-SliderBar-label";
+  private static final String STYLE_TICK = "bee-SliderBar-tick";
 
-  private final static String STYLE_SLIDING = "sliding";
+  private static final String STYLE_SLIDING = "sliding";
 
   private Object source;
 

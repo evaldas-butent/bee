@@ -61,11 +61,11 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -105,7 +105,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_START_SLIDER_LABEL = STYLE_SELECTOR_START_SLIDER + "-label";
   private static final String STYLE_END_SLIDER_LABEL = STYLE_SELECTOR_END_SLIDER + "-label";
 
-  private static final String DEFAULT_ITEM_COLOR = "yellow";
+  private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
   private final HeaderView headerView;
   private final Flow canvas;
@@ -114,7 +114,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private boolean enabled = true;
 
-  private final List<String> colors = Lists.newArrayList();
+  private final List<Color> colors = Lists.newArrayList();
 
   private BeeRowSet settings = null;
   private BeeRowSet countries = null;
@@ -520,7 +520,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return chartWidth;
   }
 
-  protected String getColor(Long id) {
+  protected Color getColor(Long id) {
     int index = ChartHelper.getColorIndex(id, colors.size());
     if (BeeUtils.isIndex(colors, index)) {
       return colors.get(index);
@@ -945,7 +945,17 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void setItemWidgetColor(ChartItem item, Widget widget) {
-    widget.getElement().getStyle().setBackgroundColor(getColor(item.getColorSource()));
+    Color color = getColor(item.getColorSource());
+    if (color == null) {
+      return;
+    }
+    
+    if (!BeeUtils.isEmpty(color.getBackground())) {
+      StyleUtils.setBackgroundColor(widget, color.getBackground());
+    }
+    if (!BeeUtils.isEmpty(color.getForeground())) {
+      StyleUtils.setColor(widget, color.getForeground());
+    }
   }
 
   protected void setRelevantDataViews(String... viewNames) {
@@ -1015,7 +1025,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (arr != null && arr.length > 0) {
       colors.clear();
-      colors.addAll(Arrays.asList(arr));
+      
+      for (String s : arr) {
+        Color color = Color.restore(s);
+        if (color != null) {
+          colors.add(color);
+        }
+      }
     }
   }
 

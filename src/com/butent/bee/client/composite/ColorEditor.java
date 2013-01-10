@@ -1,10 +1,15 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -16,15 +21,15 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.TextBoxBase;
 
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.InputEvent;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.style.Color;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -34,13 +39,13 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ColorEditor extends Composite implements Editor, HasTextBox {
+public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHandler {
 
   private static final String STYLE_PREFIX = "bee-ColorEditor-";
 
@@ -57,6 +62,7 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
 
   public ColorEditor() {
     super();
+    addStyleName(STYLE_CONTAINER);
 
     this.textBox = new InputText();
     textBox.addStyleName(STYLE_TEXT_BOX);
@@ -67,23 +73,13 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
     textBox.addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
-        EventUtils.logEvent(event.getNativeEvent());
-        LogUtils.getRootLogger().debug("blur", getPickerState());
-        if (isPickerPending()) {
-          setPickerState(State.ACTIVATED);
-        } else {
-          setPickerState(State.CLOSED);
-          for (BlurHandler handler : blurHandlers) {
-            handler.onBlur(event);
-          }
-        }
+        doBlur(event);
       }
     });
 
     textBox.addKeyPressHandler(new KeyPressHandler() {
       @Override
       public void onKeyPress(KeyPressEvent event) {
-        LogUtils.getRootLogger().debug("press", getPickerState());
         if (event.getCharCode() == BeeConst.CHAR_ALL) {
           event.preventDefault();
           event.stopPropagation();
@@ -96,8 +92,8 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
     picker.addInputHandler(new InputHandler() {
       @Override
       public void onInput(InputEvent event) {
-        LogUtils.getRootLogger().debug("input", getPickerState());
-        setPickerState(State.CLOSED);
+        closePicker();
+
         textBox.setValue(picker.getValue());
         fireEvent(new EditStopEvent(State.CHANGED));
       }
@@ -106,18 +102,21 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
     picker.addMouseDownHandler(new MouseDownHandler() {
       @Override
       public void onMouseDown(MouseDownEvent event) {
-        LogUtils.getRootLogger().debug("mouse", getPickerState());
-        setPickerState(State.PENDING);
+        if (EventUtils.isLeftButton(event.getNativeButton())) {
+          setPickerState(State.PENDING);
+        }
+      }
+    });
+    
+    picker.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Previewer.ensureRegistered(ColorEditor.this);
       }
     });
 
-    Flow container = new Flow();
-    container.addStyleName(STYLE_CONTAINER);
-
-    container.add(textBox);
-    container.add(picker);
-
-    initWidget(container);
+    add(textBox);
+    add(picker);
   }
 
   @Override
@@ -161,11 +160,6 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
   @Override
   public EditorAction getDefaultFocusAction() {
     return EditorAction.SELECT;
-  }
-
-  @Override
-  public String getId() {
-    return DomUtils.getId(this);
   }
 
   @Override
@@ -224,6 +218,11 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
   }
 
   @Override
+  public boolean isModal() {
+    return false;
+  }
+
+  @Override
   public boolean isNullable() {
     return textBox.isNullable();
   }
@@ -236,6 +235,23 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
   @Override
   public void normalizeDisplay(String normalizedValue) {
     picker.setColor(normalizedValue);
+  }
+
+  @Override
+  public void onEventPreview(NativePreviewEvent event) {
+    if (isPickerPending()) {
+      String type = event.getNativeEvent().getType();
+
+      if (EventUtils.isKeyEvent(type) || EventUtils.isMouseButtonEvent(type)) {
+        EventTarget target = event.getNativeEvent().getEventTarget();
+        boolean isTarget = EventUtils.equalsOrIsChild(getElement(), target);
+
+        closePicker();
+        if (!isTarget) {
+          DomEvent.fireNativeEvent(Document.get().createBlurEvent(), textBox);
+        }
+      }
+    }
   }
 
   @Override
@@ -262,11 +278,6 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
   @Override
   public void setHandlesTabulation(boolean handlesTabulation) {
     textBox.setHandlesTabulation(handlesTabulation);
-  }
-
-  @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
   }
 
   @Override
@@ -298,7 +309,7 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
-    
+
     if (charCode == BeeConst.CHAR_ALL) {
       setValue(oldValue);
       openPicker();
@@ -328,9 +339,34 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
     }
     return messages;
   }
+  
+  @Override
+  protected void onUnload() {
+    super.onUnload();
+    Previewer.ensureUnregistered(this);
+  }
+
+  private void closePicker() {
+    if (!isPickerClosed()) {
+      setPickerState(State.CLOSED);
+      Previewer.ensureUnregistered(this);
+    }
+  }
+  
+  private void doBlur(BlurEvent event) {
+    if (isPickerClosed()) {
+      for (BlurHandler handler : blurHandlers) {
+        handler.onBlur(event);
+      }
+    }
+  }
 
   private State getPickerState() {
     return pickerState;
+  }
+  
+  private boolean isPickerClosed() {
+    return State.CLOSED.equals(getPickerState());
   }
 
   private boolean isPickerPending() {
@@ -341,6 +377,7 @@ public class ColorEditor extends Composite implements Editor, HasTextBox {
     if (!isPickerPending()) {
       setPickerState(State.PENDING);
       picker.click();
+      Previewer.ensureRegistered(this);
     }
   }
 

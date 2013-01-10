@@ -48,6 +48,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   private StyleDeclaration() {
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 3);
@@ -65,6 +66,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
     return fontDeclaration;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
 
@@ -93,6 +95,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
     return BeeUtils.allEmpty(getClassName(), getInline(), getFontDeclaration());
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getClassName(), getInline(), getFontDeclaration()});
   }

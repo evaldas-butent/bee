@@ -1299,7 +1299,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.isIndex(getTabOrder(), index)) {
       return;
     }
-    if (!isRowEditable(false)) {
+    if (hasData() && !isRowEditable(false)) {
       return;
     }
 

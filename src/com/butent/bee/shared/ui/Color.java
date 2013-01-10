@@ -1,16 +1,19 @@
-package com.butent.bee.client.style;
+package com.butent.bee.shared.ui;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 import java.util.Map;
 
-public class Color {
+public class Color implements BeeSerializable {
 
   private static final String HEX_PREFIX = "#";
 
@@ -85,6 +88,17 @@ public class Color {
     } else {
       return null;
     }
+  }
+
+  public static Color restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    
+    Color color = new Color();
+    color.deserialize(s);
+
+    return color;
   }
   
   public static boolean validate(String value) {
@@ -297,5 +311,49 @@ public class Color {
   private static String toHex(int value) {
     String hex = Integer.toHexString(value);
     return (hex.length() == 1) ? BeeConst.STRING_ZERO + hex : hex;
+  }
+  
+  private String background = null;
+  private String foreground = null;
+
+  public Color(String background, String foreground) {
+    super();
+    this.background = background;
+    this.foreground = foreground;
+  }
+
+  private Color() {
+    super();
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Assert.lengthEquals(arr, 2);
+    
+    setBackground(arr[0]);
+    setForeground(arr[1]);
+  }
+
+  public String getBackground() {
+    return background;
+  }
+
+  public String getForeground() {
+    return foreground;
+  }
+
+  @Override
+  public String serialize() {
+    List<String> values = Lists.newArrayList(getBackground(), getForeground());
+    return Codec.beeSerialize(values);
+  }
+
+  public void setBackground(String background) {
+    this.background = background;
+  }
+
+  public void setForeground(String foreground) {
+    this.foreground = foreground;
   }
 }

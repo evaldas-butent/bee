@@ -1,5 +1,7 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -11,8 +13,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
-import com.butent.bee.client.style.Color;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
@@ -20,7 +22,7 @@ import elemental.client.Browser;
 import elemental.html.InputElement;
 
 public class InputColor extends Widget implements HasEnabled, IdentifiableWidget, HasInputHandlers,
-    HasMouseDownHandlers {
+    HasMouseDownHandlers, HasClickHandlers {
 
   public InputColor() {
     super();
@@ -30,6 +32,11 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
 
     setElement((Element) inputElement);
     init();
+  }
+
+  @Override
+  public HandlerRegistration addClickHandler(ClickHandler handler) {
+    return Binder.addClickHandler(this, handler);
   }
 
   @Override

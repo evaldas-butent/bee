@@ -37,6 +37,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -216,34 +217,6 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private List<String> getBackgroundColors(Long theme) {
-    List<String> result = Lists.newArrayList();
-
-    BeeRowSet rowSet;
-    if (theme != null) {
-      rowSet = qs.getViewData(CommonsConstants.VIEW_THEME_COLORS,
-          ComparisonFilter.isEqual(CommonsConstants.COL_THEME, new LongValue(theme)));
-    } else {
-      rowSet = null;
-    }
-
-    if (DataUtils.isEmpty(rowSet)) {
-      rowSet = qs.getViewData(CommonsConstants.VIEW_COLORS);
-      if (DataUtils.isEmpty(rowSet)) {
-        return result;
-      }
-    }
-
-    int index = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
-    for (BeeRow row : rowSet.getRows()) {
-      String bc = row.getString(index);
-      if (!BeeUtils.isEmpty(bc)) {
-        result.add(bc.trim());
-      }
-    }
-    return result;
-  }
-
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
    * 
@@ -370,7 +343,7 @@ public class TransportModuleBean implements BeeModule {
       theme = null;
     }
 
-    return ResponseObject.response(getBackgroundColors(theme));
+    return ResponseObject.response(getThemeColors(theme));
   }
 
   private Map<Long, String> getDrivers(IsCondition condition) {
@@ -492,7 +465,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-  
+
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -500,7 +473,7 @@ public class TransportModuleBean implements BeeModule {
     }
 
     Long theme = settings.getLong(0, settings.getColumnIndex(COL_FX_THEME));
-    List<String> colors = getBackgroundColors(theme);
+    List<Color> colors = getThemeColors(theme);
 
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
@@ -560,7 +533,7 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_DATA, data.serialize());
     return ResponseObject.response(settings);
   }
-
+  
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
@@ -587,7 +560,7 @@ public class TransportModuleBean implements BeeModule {
     }
 
     Long theme = settings.getLong(0, settings.getColumnIndex(COL_SS_THEME));
-    List<String> colors = getBackgroundColors(theme);
+    List<Color> colors = getThemeColors(theme);
 
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
@@ -686,6 +659,38 @@ public class TransportModuleBean implements BeeModule {
 
     settings.setTableProperty(PROP_DATA, data.serialize());
     return ResponseObject.response(settings);
+  }
+
+  private List<Color> getThemeColors(Long theme) {
+    List<Color> result = Lists.newArrayList();
+
+    BeeRowSet rowSet;
+    if (theme != null) {
+      rowSet = qs.getViewData(CommonsConstants.VIEW_THEME_COLORS,
+          ComparisonFilter.isEqual(CommonsConstants.COL_THEME, new LongValue(theme)));
+    } else {
+      rowSet = null;
+    }
+
+    if (DataUtils.isEmpty(rowSet)) {
+      rowSet = qs.getViewData(CommonsConstants.VIEW_COLORS);
+      if (DataUtils.isEmpty(rowSet)) {
+        return result;
+      }
+    }
+
+    int bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
+    int fgIndex = rowSet.getColumnIndex(CommonsConstants.COL_FOREGROUND);
+    
+    for (BeeRow row : rowSet.getRows()) {
+      String bg = row.getString(bgIndex);
+      String fg = row.getString(fgIndex);
+      
+      if (!BeeUtils.isEmpty(bg)) {
+        result.add(new Color(bg.trim(), BeeUtils.trim(fg)));
+      }
+    }
+    return result;
   }
 
   private ResponseObject getTripBeforeData(long vehicle, long date) {
