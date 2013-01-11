@@ -1,8 +1,10 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class CalendarFormat {
 
@@ -25,9 +27,21 @@ public class CalendarFormat {
   }
   
   public static String format(JustDate date) {
-    return DATE_FORMAT.format(date);
+    if (date == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return DATE_FORMAT.format(date);
+    }
   }
 
+  public static String formatWeekOfYear(JustDate date) {
+    if (date == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.joinWords(TimeUtils.weekOfYear(date), "sav.");
+    }
+  }
+  
   public static String[] getDayOfWeekNames() {
     return weekDayNames;
   }

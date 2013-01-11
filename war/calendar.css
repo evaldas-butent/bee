@@ -19,7 +19,7 @@
 .bee-cal .calendar-header td {
   padding: 0;
 }
-.bee-cal .calendar-header .year-cell, .bee-cal .calendar-header .date-cell {
+.bee-cal .calendar-header .date-cell {
   width: 50px;
   font-size: 12px;
   text-align: center;
@@ -380,46 +380,47 @@
 
 .bee-cal-Panel-controls {
   position: absolute;
-  top: 37px;
-  height: 32px;
-  left: 1em;
-  right: 1em;
+  top: 33px;
+  height: 40px;
+  left: 0;
+  right: 0;
+  display: -webkit-flex;
+  -webkit-justify-content: space-between;
+  -webkit-align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .bee-cal-Panel-today {
-  position: absolute;
-  top: 0;
-  left: 0;
+  border: 1px solid #ccc;
   border-radius: 3px;
 }
 
 .bee-cal-Panel-navContainer {
-  position: absolute;
-  top: 0;
-  left: 100px;
   border-collapse: collapse;
 }
 .bee-cal-Panel-navContainer td {
   padding: 0;
 }
 .bee-cal-Panel-navItem {
+  border: 1px solid #ccc;
   font-weight: bold;
 }
+.bee-cal-Panel-navPrev {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
 .bee-cal-Panel-navNext {
-  border-left-width: 0 !important;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 
 .bee-cal-Panel-date {
-  position: absolute;
-  top: 0;
-  left: 200px;
-  border-radius: 3px;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 
 .bee-cal-Panel-view-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 
 .bee-cal-Panel-view-item, .bee-cal-Panel-today, .bee-cal-Panel-navItem, .bee-cal-Panel-date {
@@ -428,11 +429,11 @@
   background-color: whiteSmoke;
   color: #444;
   text-align: center;
-  border: 1px solid #ccc;
   outline: none;
 }
 
 .bee-cal-Panel-view-item {
+  border: 1px solid #ccc;
   border-radius: 3px;
 }
 .bee-cal-Panel-view-item-selected {

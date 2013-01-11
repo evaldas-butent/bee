@@ -26,11 +26,17 @@ import java.util.List;
 public class LocaleUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(LocaleUtils.class);
-  
-  public static final String LOCALE_SEPARATOR = "_";
+
+  private static final String LOCALE_SEPARATOR = "_";
 
   private static final char L10N_PREFIX = '=';
+
+  private static final String LOCALE_NAME_LT = "lt";
   
+  private static final String[] LT_MONTHS_FULL = {
+      "sausio", "vasario", "kovo", "balandžio", "gegužės", "birželio",
+      "liepos", "rugpjūčio", "rugsėjo", "spalio", "lapkričio", "gruodžio"};
+
   public static boolean copyDateTimeFormat(Object src, Object dst) {
     if (src instanceof HasDateTimeFormat && dst instanceof HasDateTimeFormat && src != dst) {
       ((HasDateTimeFormat) dst).setDateTimeFormat(((HasDateTimeFormat) src).getDateTimeFormat());
@@ -48,7 +54,7 @@ public class LocaleUtils {
       return false;
     }
   }
-  
+
   public static List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> lst = Lists.newArrayList();
 
@@ -183,19 +189,31 @@ public class LocaleUtils {
       return name;
     }
   }
-  
+
   public static String maybeLocalize(String text) {
     if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
       return text;
     }
 
     String localized = BeeKeeper.getUser().getConstant(text.substring(1));
-    
+
     if (localized == null) {
       logger.warning("cannot localize:", text);
       return text;
     } else {
       return localized;
+    }
+  }
+  
+  /**
+   * cldr patch.
+   */
+  public static String[] monthsFull(LocaleInfo localeInfo) {
+    Assert.notNull(localeInfo);
+    if (BeeUtils.same(localeInfo.getLocaleName(), LOCALE_NAME_LT)) {
+      return LT_MONTHS_FULL;
+    } else {
+      return localeInfo.getDateTimeFormatInfo().monthsFull();
     }
   }
 

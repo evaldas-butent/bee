@@ -80,6 +80,8 @@ public class TimeUtils {
   private static final Splitter FIELD_SPLITTER =
       Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
           .omitEmptyStrings().trimResults();
+  
+  private static final int MINIMAL_DAYS_IN_FIRST_WEEK = 4;
 
   /**
    * Adds an amount of field type data to the date.
@@ -873,14 +875,27 @@ public class TimeUtils {
     return date;
   }
 
+  public static JustDate startOfWeekYear(int year, int minimalDaysInFirstWeek) {
+    JustDate date = new JustDate(year, 1, 1);
+    int dow = date.getDow();
+    
+    if (dow == 1) {
+      return date;
+    } else if (DAYS_PER_WEEK - dow + 1 < minimalDaysInFirstWeek) {
+      return startOfWeek(date, 1);
+    } else {
+      return startOfWeek(date);
+    }
+  }
+
   public static JustDate startOfYear() {
     return startOfYear(today());
   }
-
+  
   public static JustDate startOfYear(HasYearMonth ref) {
     return startOfYear(ref, 0);
   }
-
+  
   public static JustDate startOfYear(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -1015,6 +1030,24 @@ public class TimeUtils {
 
   public static String toTimeString(long millis) {
     return new DateTime(millis).toTimeString();
+  }
+
+  public static int weekOfYear(HasDateValue ref) {
+    return weekOfYear(ref, MINIMAL_DAYS_IN_FIRST_WEEK);
+  }
+
+  public static int weekOfYear(HasDateValue ref, int minimalDaysInFirstWeek) {
+    Assert.notNull(ref);
+    
+    JustDate start = startOfWeekYear(ref.getYear() + 1, minimalDaysInFirstWeek);
+    if (isLess(ref, start)) {
+      start = startOfWeekYear(ref.getYear(), minimalDaysInFirstWeek);
+    }
+    if (isLess(ref, start)) {
+      start = startOfWeekYear(ref.getYear() - 1, minimalDaysInFirstWeek);
+    }
+    
+    return dayDiff(start, ref) / DAYS_PER_WEEK + 1;
   }
 
   public static int year() {

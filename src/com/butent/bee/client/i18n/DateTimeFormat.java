@@ -104,7 +104,7 @@ public class DateTimeFormat {
         default:
           throw new IllegalStateException("Unexpected predef type " + predef);
       }
-      return getFormat(pattern, new DefaultDateTimeFormatInfo());
+      return getFormat(pattern, LocaleInfo.getCurrentLocale(), new DefaultDateTimeFormatInfo());
     }
 
     DateTimeFormatInfo dtfi = getDefaultDateTimeFormatInfo();
@@ -216,21 +216,24 @@ public class DateTimeFormat {
       default:
         throw new IllegalArgumentException("Unexpected predefined format " + predef);
     }
-    return getFormat(pattern, dtfi);
+    
+    return getFormat(pattern, LocaleInfo.getCurrentLocale(), dtfi);
   }
 
   public static DateTimeFormat getFormat(String pattern) {
-    return getFormat(pattern, getDefaultDateTimeFormatInfo());
+    return getFormat(pattern, LocaleInfo.getCurrentLocale(), getDefaultDateTimeFormatInfo());
   }
 
-  protected static DateTimeFormat getFormat(String pattern, DateTimeFormatInfo dtfi) {
+  protected static DateTimeFormat getFormat(String pattern, LocaleInfo localeInfo, 
+      DateTimeFormatInfo dtfi) {
+
     DateTimeFormatInfo defaultDtfi = getDefaultDateTimeFormatInfo();
     DateTimeFormat dtf = null;
     if (dtfi == defaultDtfi) {
       dtf = cache.get(pattern);
     }
     if (dtf == null) {
-      dtf = new DateTimeFormat(pattern, dtfi);
+      dtf = new DateTimeFormat(pattern, localeInfo, dtfi);
       if (dtfi == defaultDtfi) {
         cache.put(pattern, dtf);
       }
@@ -256,16 +259,18 @@ public class DateTimeFormat {
   private final List<PatternPart> patternParts = Lists.newArrayList();
 
   private final DateTimeFormatInfo dateTimeFormatInfo;
+  private final String[] monthsFull;
 
   private final String pattern;
 
   protected DateTimeFormat(String pattern) {
-    this(pattern, getDefaultDateTimeFormatInfo());
+    this(pattern, LocaleInfo.getCurrentLocale(), getDefaultDateTimeFormatInfo());
   }
 
-  protected DateTimeFormat(String pattern, DateTimeFormatInfo dtfi) {
+  protected DateTimeFormat(String pattern, LocaleInfo localeInfo, DateTimeFormatInfo dtfi) {
     this.pattern = pattern;
     this.dateTimeFormatInfo = dtfi;
+    this.monthsFull = LocaleUtils.monthsFull(localeInfo);
 
     parsePattern(pattern);
   }
@@ -487,7 +492,7 @@ public class DateTimeFormat {
         buf.append(dateTimeFormatInfo.monthsNarrow()[value]);
         break;
       case 4:
-        buf.append(dateTimeFormatInfo.monthsFull()[value]);
+        buf.append(monthsFull[value]);
         break;
       case 3:
         buf.append(dateTimeFormatInfo.monthsShort()[value]);
@@ -1045,7 +1050,7 @@ public class DateTimeFormat {
   private boolean subParseMonth(String text, int[] pos, DateRecord cal, int value, int start) {
     int v = value;
     if (v < 0) {
-      v = matchString(text, start, dateTimeFormatInfo.monthsFull(), pos);
+      v = matchString(text, start, monthsFull, pos);
       if (v < 0) {
         v = matchString(text, start, dateTimeFormatInfo.monthsShort(), pos);
       }

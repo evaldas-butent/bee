@@ -12,7 +12,8 @@ public class CalendarStyleManager {
   public static final String MONTH_VIEW = "bee-cal-MonthView";
 
   public static final String CALENDAR_HEADER = "calendar-header";
-  public static final String YEAR_CELL = "year-cell";
+  public static final String DATE_CELL = "date-cell";
+
   public static final String DAY_CELL_CONTAINER = "day-cell-container";
 
   public static final String DAY_CELL = "day-cell";
@@ -40,7 +41,6 @@ public class CalendarStyleManager {
   public static final String WORKING_HOURS = "working-hours";
   public static final String NON_WORKING = "non-working";
 
-  public static final String RESOURCE_DATE_CELL = "date-cell";
   public static final String RESOURCE_CAPTION_CONTAINER = "caption-container";
   public static final String RESOURCE_CAPTION_CELL = "caption-cell";
   

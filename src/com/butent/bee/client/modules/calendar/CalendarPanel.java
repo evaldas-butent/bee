@@ -31,6 +31,7 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -101,8 +102,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
-  private static final DateTimeFormat MONTH_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
 
   private final long calendarId;
 
@@ -226,11 +225,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     Horizontal nav = new Horizontal();
     nav.addStyleName(STYLE_NAV_CONTAINER);
+
     nav.add(prev);
+    nav.add(dateBox);
     nav.add(next);
     controls.add(nav);
-
-    controls.add(dateBox);
 
     controls.add(viewTabs);
     add(controls);
@@ -626,13 +625,27 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     String html;
     if (date == null) {
       html = BeeConst.STRING_EMPTY;
+
     } else if (Type.MONTH.equals(type)) {
-      html = MONTH_FORMAT.format(date);
+      html = BeeUtils.joinWords(date.getYear(), Format.renderMonthFullStandalone(date));
+    
     } else if (type == null || Type.RESOURCE.equals(type) || days <= 1) {
       html = DATE_FORMAT.format(date);
+    
     } else {
+      String from = BeeUtils.joinWords(date.getYear(), Format.renderMonthFull(date), date.getDom());
+
       JustDate end = TimeUtils.nextDay(date, days - 1);
-      html = date.toString() + " - " + end.toString();
+      String to;
+      if (TimeUtils.sameMonth(date, end)) {
+        to = BeeUtils.toString(end.getDom());
+      } else if (date.getYear() == end.getYear()) {
+        to = BeeUtils.joinWords(Format.renderMonthFull(end), end.getDom());
+      } else {
+        to = BeeUtils.joinWords(end.getYear(), Format.renderMonthFull(end), end.getDom());
+      }
+      
+      html = from + " - " + to;
     }
 
     dateBox.setHTML(html);

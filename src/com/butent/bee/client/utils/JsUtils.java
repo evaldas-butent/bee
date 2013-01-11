@@ -313,7 +313,7 @@ public class JsUtils {
   public static native String toTime(double millis) /*-{
     if (millis > 0) {
       var d = new Date(millis);
-      return d.toLocaleTimeString() + "."
+      return d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "."
           + (d.getMilliseconds() + 1000).toString().substr(1);
     }
     return "";

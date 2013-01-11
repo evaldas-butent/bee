@@ -13,20 +13,19 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.CssUnit;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class DayViewHeader extends Horizontal {
 
-  private static final int YEAR_CELL_INDEX = 0;
+  private static final int DATE_CELL_INDEX = 0;
   private static final int DAY_PANEL_INDEX = 1;
 
   public DayViewHeader() {
     super();
     addStyleName(CalendarStyleManager.CALENDAR_HEADER);
 
-    BeeLabel yearLabel = new BeeLabel();
-    add(yearLabel);
-    addStyleToCell(yearLabel, CalendarStyleManager.YEAR_CELL);
+    BeeLabel dateLabel = new BeeLabel();
+    add(dateLabel);
+    addStyleToCell(dateLabel, CalendarStyleManager.DATE_CELL);
     
     Flow dayPanel = new Flow();
     dayPanel.addStyleName(CalendarStyleManager.DAY_CELL_CONTAINER);
@@ -64,6 +63,6 @@ public class DayViewHeader extends Horizontal {
   }
 
   public void setYear(JustDate date) {
-    getWidget(YEAR_CELL_INDEX).getElement().setInnerHTML(BeeUtils.toString(date.getYear()));
+    getWidget(DATE_CELL_INDEX).getElement().setInnerHTML(CalendarFormat.formatWeekOfYear(date));
   }
 }

@@ -157,6 +157,25 @@ public class TestTimeUtils {
   }
 
   @Test
+  public final void testStartOfWeekYear() {
+    JustDate prev = new JustDate(2012, 12, 31);
+    JustDate next = new JustDate(2013, 1, 7);
+
+    assertEquals(TimeUtils.startOfWeekYear(2013, 0), prev);
+    assertEquals(TimeUtils.startOfWeekYear(2013, 6), prev);
+    assertEquals(TimeUtils.startOfWeekYear(2013, 7), next);
+    assertEquals(TimeUtils.startOfWeekYear(2013, 100), next);
+
+    prev = new JustDate(2011, 12, 26);
+    next = new JustDate(2012, 1, 2);
+
+    assertEquals(TimeUtils.startOfWeekYear(2012, 0), prev);
+    assertEquals(TimeUtils.startOfWeekYear(2012, 1), prev);
+    assertEquals(TimeUtils.startOfWeekYear(2012, 2), next);
+    assertEquals(TimeUtils.startOfWeekYear(2012, 7), next);
+  }
+
+  @Test
   public final void testToDate() {
     JustDate first = new JustDate(2011, 02, 22);
     DateTime dt = new DateTime(2011, 02, 22);
@@ -195,6 +214,75 @@ public class TestTimeUtils {
     assertEquals(true, TimeUtils.toJava(d).compareTo(first2) == 0);
   }
 
+  @Test
+  public final void testWeekOfYear() {
+    JustDate d = new JustDate(2000, 1, 1);
+    assertEquals(TimeUtils.weekOfYear(d), 52);
+    
+    d.setYear(2001);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2002);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+    
+    d.setYear(2003);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2004);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+    
+    d.setYear(2005);
+    assertEquals(TimeUtils.weekOfYear(d), 53);
+
+    d.setYear(2006);
+    assertEquals(TimeUtils.weekOfYear(d), 52);
+
+    d.setYear(2007);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2008);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2009);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2010);
+    assertEquals(TimeUtils.weekOfYear(d), 53);
+
+    d.setYear(2011);
+    assertEquals(TimeUtils.weekOfYear(d), 52);
+
+    d.setYear(2012);
+    assertEquals(TimeUtils.weekOfYear(d), 52);
+    
+    d.setYear(2013);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    d.setYear(2014);
+    assertEquals(TimeUtils.weekOfYear(d), 1);
+
+    DateTime dt = new DateTime(2013, 1, 13, 23, 59, 59);
+    assertEquals(TimeUtils.weekOfYear(dt), 2);
+
+    dt = new DateTime(2013, 1, 14);
+    assertEquals(TimeUtils.weekOfYear(dt), 3);
+  }
+  
+  @Test
+  public final void testWeekOfYearMin() {
+    JustDate d = new JustDate(2013, 1, 1);
+
+    assertEquals(TimeUtils.weekOfYear(d, 0), 1);
+    assertEquals(TimeUtils.weekOfYear(d, 6), 1);
+    
+    int diff = TimeUtils.dayDiff(TimeUtils.startOfWeekYear(2012, 7),
+        TimeUtils.startOfWeekYear(2013, 7));
+    assertEquals(diff, 53 * 7);
+
+    assertEquals(TimeUtils.weekOfYear(d, 7), 53);
+    assertEquals(TimeUtils.weekOfYear(d, 10), 53);
+  }
+  
   @Test
   public final void testYearToString() {
     assertEquals("1995", TimeUtils.yearToString(1995));

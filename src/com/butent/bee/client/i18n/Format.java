@@ -161,7 +161,7 @@ public class Format {
   private static NumberFormat defaultCurrencyFormat = getNumberFormat("#,##0.00;(#)");
 
   private static NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
-  
+
   private static String defaultDecimalPatternInteger = "#,##0";
 
   private static DateTimeFormat defaultDateFormat =
@@ -172,11 +172,11 @@ public class Format {
       DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
 
   private static DateTimeFormat weekdayFullFormat = DateTimeFormat.getFormat("EEEE");
-  
+
   private static Character defaultTrueChar = BeeConst.CHECK_MARK;
   private static Character defaultFalseChar = null;
   private static Character defaultNullChar = null;
-  
+
   public static DateTimeFormat getDateTimeFormat(String pattern) {
     Assert.notEmpty(pattern);
     DateTimeFormat format = getPredefinedFormat(pattern);
@@ -185,7 +185,7 @@ public class Format {
     }
     return format;
   }
-  
+
   public static DateTimeFormat getDateTimeFormat(String pattern, DateTimeFormat defaultFormat) {
     if (BeeUtils.isEmpty(pattern)) {
       return defaultFormat;
@@ -201,7 +201,7 @@ public class Format {
     return getNumberFormat(defaultDecimalPatternInteger + BeeConst.STRING_POINT
         + BeeUtils.replicate(BeeConst.CHAR_ZERO, scale));
   }
-  
+
   public static NumberFormat getDefaultCurrencyFormat() {
     return defaultCurrencyFormat;
   }
@@ -280,7 +280,7 @@ public class Format {
   public static Character getDefaultTrueChar() {
     return defaultTrueChar;
   }
-  
+
   public static NumberFormat getNumberFormat(String pattern) {
     Assert.notEmpty(pattern);
     return new NumberFormatter(pattern);
@@ -293,7 +293,7 @@ public class Format {
       return getNumberFormat(pattern);
     }
   }
-  
+
   public static DateTimeFormat getPredefinedFormat(String name) {
     Assert.notNull(name);
     for (DateTimeFormat.PredefinedFormat predef : DateTimeFormat.PredefinedFormat.values()) {
@@ -303,7 +303,7 @@ public class Format {
     }
     return null;
   }
-  
+
   public static JustDate parseDateQuietly(DateTimeFormat format, String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -318,7 +318,7 @@ public class Format {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     if (format != null) {
       DateTime result = format.parseQuietly(s);
       if (result != null) {
@@ -328,7 +328,7 @@ public class Format {
 
     return TimeUtils.parseDateTime(s);
   }
-  
+
   public static Double parseQuietly(NumberFormat format, String s) {
     if (format == null || BeeUtils.isEmpty(s)) {
       return null;
@@ -342,7 +342,7 @@ public class Format {
     }
     return d;
   }
-  
+
   public static String render(Boolean value) {
     Character ch = (value == null) ? defaultNullChar : (value ? defaultTrueChar : defaultFalseChar);
     if (ch == null) {
@@ -351,12 +351,12 @@ public class Format {
       return BeeUtils.toString(ch);
     }
   }
-  
+
   public static String render(Number value, ValueType type, NumberFormat format, int scale) {
     if (value == null) {
       return null;
     }
-    
+
     NumberFormat nf;
     if (format != null) {
       nf = format;
@@ -378,7 +378,7 @@ public class Format {
     if (type == null) {
       return value;
     }
-    
+
     final String result;
 
     switch (type) {
@@ -395,7 +395,7 @@ public class Format {
         } else if (getDefaultDateFormat() != null) {
           result = getDefaultDateFormat().format(jd);
         } else {
-          result = jd.toString(); 
+          result = jd.toString();
         }
         break;
 
@@ -408,7 +408,7 @@ public class Format {
         } else if (getDefaultDateTimeFormat() != null) {
           result = getDefaultDateTimeFormat().format(dt);
         } else {
-          result = dt.toString(); 
+          result = dt.toString();
         }
         break;
 
@@ -432,16 +432,26 @@ public class Format {
       case TIME_OF_DAY:
         result = BeeUtils.trimRight(value);
         break;
-      
+
       default:
         Assert.untouchable();
         result = null;
     }
     return result;
   }
-  
+
   public static String renderDayOfWeek(HasDateValue date) {
     return (date == null) ? null : weekdayFullFormat.format(date);
+  }
+
+  public static String renderMonthFull(HasDateValue date) {
+    return (date == null) 
+        ? null : LocaleUtils.monthsFull(LocaleInfo.getCurrentLocale())[date.getMonth() - 1];
+  }
+
+  public static String renderMonthFullStandalone(HasDateValue date) {
+    return (date == null) ? null : LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
+        .monthsFullStandalone()[date.getMonth() - 1];
   }
 
   public static void setFormat(Object target, ValueType type, String pattern) {
