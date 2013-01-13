@@ -204,6 +204,10 @@ public class Rectangle implements HasDimensions {
         && getTopValue() != null && BeeUtils.isNonNegative(getHeightValue());
   }
 
+  public void setHeight(int value) {
+    setHeight((double) value, DEFAULT_UNIT);
+  }
+  
   public void setHeight(Double value, CssUnit unit) {
     setHeightValue(value);
     setHeightUnit(unit);
@@ -219,6 +223,10 @@ public class Rectangle implements HasDimensions {
     this.heightValue = heightValue;
   }
 
+  public void setLeft(int value) {
+    setLeft((double) value, DEFAULT_UNIT);
+  }
+  
   public void setLeft(Double value, CssUnit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
@@ -232,6 +240,10 @@ public class Rectangle implements HasDimensions {
     this.leftValue = leftValue;
   }
 
+  public void setTop(int value) {
+    setTop((double) value, DEFAULT_UNIT);
+  }
+  
   public void setTop(Double value, CssUnit unit) {
     setTopValue(value);
     setTopUnit(unit);
@@ -245,6 +257,10 @@ public class Rectangle implements HasDimensions {
     this.topValue = topValue;
   }
 
+  public void setWidth(int value) {
+    setWidth((double) value, DEFAULT_UNIT);
+  }
+  
   public void setWidth(Double value, CssUnit unit) {
     setWidthValue(value);
     setWidthUnit(unit);

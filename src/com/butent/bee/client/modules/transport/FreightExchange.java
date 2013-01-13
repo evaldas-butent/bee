@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -14,6 +15,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -110,13 +112,11 @@ class FreightExchange extends ChartBase {
   private static final String STYLE_PREFIX = "bee-tr-fx-";
 
   private static final String STYLE_CUSTOMER_PREFIX = STYLE_PREFIX + "Customer-";
-  private static final String STYLE_CUSTOMER_COLUMN_SEPARATOR = STYLE_CUSTOMER_PREFIX + "col-sep";
   private static final String STYLE_CUSTOMER_ROW_SEPARATOR = STYLE_CUSTOMER_PREFIX + "row-sep";
   private static final String STYLE_CUSTOMER_PANEL = STYLE_CUSTOMER_PREFIX + "panel";
   private static final String STYLE_CUSTOMER_LABEL = STYLE_CUSTOMER_PREFIX + "label";
 
   private static final String STYLE_ORDER_PREFIX = STYLE_PREFIX + "Order-";
-  private static final String STYLE_ORDER_COLUMN_SEPARATOR = STYLE_ORDER_PREFIX + "col-sep";
   private static final String STYLE_ORDER_ROW_SEPARATOR = STYLE_ORDER_PREFIX + "row-sep";
   private static final String STYLE_ORDER_PANEL = STYLE_ORDER_PREFIX + "panel";
   private static final String STYLE_ORDER_LABEL = STYLE_ORDER_PREFIX + "label";
@@ -185,6 +185,16 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getFooterHeightColumnName() {
+    return COL_FX_FOOTER_HEIGHT;
+  }
+
+  @Override
+  protected String getHeaderHeightColumnName() {
+    return COL_FX_HEADER_HEIGHT;
+  }
+
+  @Override
   protected String getSettingsFormName() {
     return FORM_FX_SETTINGS;
   }
@@ -212,29 +222,24 @@ class FreightExchange extends ChartBase {
   @Override
   protected void prepareChart(int canvasWidth, int canvasHeight) {
     setCustomerWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
-        canvasWidth / 5));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
     setOrderWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 60,
-        canvasWidth / 5));
-
-    setHeaderHeight(ChartHelper.getPixels(getSettings(), COL_FX_HEADER_HEIGHT, 20,
-        canvasHeight / 5));
-    setFooterHeight(ChartHelper.getPixels(getSettings(), COL_FX_FOOTER_HEIGHT, 30,
-        canvasHeight / 3));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
 
     setChartLeft(getCustomerWidth() + getOrderWidth());
     setChartWidth(canvasWidth - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20));
+    setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20,
+        1, getChartWidth()));
 
-    int scrollAreaHeight = canvasHeight - getHeaderHeight() - getFooterHeight();
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ROW, 20,
-        scrollAreaHeight / 2));
+        1, getScrollAreaHeight(canvasHeight) / 2));
 
-    int slider = ChartHelper.getPixels(getSettings(), COL_FX_SLIDER_WIDTH, 5);
-    setSliderWidth(BeeUtils.clamp(slider, 1, getChartRight()));
+    setSliderWidth(ChartHelper.getPixels(getSettings(), COL_FX_SLIDER_WIDTH, 5,
+        1, getChartWidth() / 3));
 
     setBarHeight(ChartHelper.getPixels(getSettings(), COL_FX_BAR_HEIGHT, BeeConst.UNDEF,
-        getFooterHeight() / 2));
+        1, getFooterHeight() / 2));
   }
 
   @Override
@@ -247,12 +252,11 @@ class FreightExchange extends ChartBase {
     int height = layoutRows.size() * getRowHeight();
     StyleUtils.setHeight(panel, height);
 
-    ChartHelper.addColumnSeparator(panel, STYLE_CUSTOMER_COLUMN_SEPARATOR, getCustomerWidth(),
-        height);
-    ChartHelper.addColumnSeparator(panel, STYLE_ORDER_COLUMN_SEPARATOR, getChartLeft(), height);
+    ChartHelper.addHorizontalMover(panel, getCustomerWidth(), height);
+    ChartHelper.addHorizontalMover(panel, getChartLeft(), height);
 
     ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
-        height, false, true);
+        height);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
@@ -289,9 +293,7 @@ class FreightExchange extends ChartBase {
         boolean orderChanged = customerChanged || !Objects.equal(lastOrder, rowItem.orderId);
 
         if (customerChanged) {
-          ChartHelper.addLegendWidget(panel, customerWidget, 0, getCustomerWidth(),
-              customerStartRow, row - 1, getRowHeight(),
-              ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+          addCustomerWidget(panel, customerWidget, customerStartRow, row - 1);
 
           customerWidget = createCustomerWidget(rowItem);
           customerStartRow = row;
@@ -300,9 +302,7 @@ class FreightExchange extends ChartBase {
         }
 
         if (orderChanged) {
-          ChartHelper.addLegendWidget(panel, orderWidget, getCustomerWidth(), getOrderWidth(),
-              orderStartRow, row - 1, getRowHeight(),
-              ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+          addOrderWidget(panel, orderWidget, orderStartRow, row - 1);
 
           orderWidget = createOrderWidget(rowItem);
           orderStartRow = row;
@@ -328,10 +328,8 @@ class FreightExchange extends ChartBase {
         int left = getChartLeft() + TimeUtils.dayDiff(firstDate, start) * getDayColumnWidth();
         int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
 
-        Rectangle rectangle = new Rectangle(left + ChartHelper.DEFAULT_SEPARATOR_WIDTH,
-            top + ChartHelper.DEFAULT_SEPARATOR_HEIGHT,
-            width - ChartHelper.DEFAULT_SEPARATOR_WIDTH,
-            getRowHeight() - ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+        Rectangle rectangle = new Rectangle(left, top, width,
+            getRowHeight() - ChartHelper.ROW_SEPARATOR_HEIGHT);
 
         Widget itemWidget = createItemWidget(item);
         rectangle.applyTo(itemWidget);
@@ -346,20 +344,40 @@ class FreightExchange extends ChartBase {
     int lastRow = layoutRows.size() - 1;
 
     if (customerWidget != null) {
-      ChartHelper.addLegendWidget(panel, customerWidget, 0, getCustomerWidth(),
-          customerStartRow, lastRow, getRowHeight(),
-          ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+      addCustomerWidget(panel, customerWidget, customerStartRow, lastRow);
     }
     if (orderWidget != null) {
-      ChartHelper.addLegendWidget(panel, orderWidget, getCustomerWidth(), getOrderWidth(),
-          orderStartRow, lastRow, getRowHeight(),
-          ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+      addOrderWidget(panel, orderWidget, orderStartRow, lastRow);
     }
 
     ChartHelper.addBottomSeparator(panel, height, 0, getCustomerWidth() + getOrderWidth()
-        + getChartWidth() + ChartHelper.DEFAULT_SEPARATOR_WIDTH);
+        + getChartWidth());
+  }
+  
+  private void addCustomerWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
+    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getCustomerWidth(),
+        firstRow, lastRow, getRowHeight());
+    
+    Edges margins = new Edges();
+    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+    
+    ChartHelper.apply(widget, rectangle, margins);
+    panel.add(widget);
   }
 
+  private void addOrderWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
+    Rectangle rectangle = ChartHelper.getLegendRectangle(getCustomerWidth(), getOrderWidth(),
+        firstRow, lastRow, getRowHeight());
+    
+    Edges margins = new Edges();
+    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+    
+    ChartHelper.apply(widget, rectangle, margins);
+    panel.add(widget);
+  }
+  
   private Widget createCustomerWidget(Freight item) {
     BeeLabel widget = new BeeLabel(item.customerName);
     widget.addStyleName(STYLE_CUSTOMER_LABEL);

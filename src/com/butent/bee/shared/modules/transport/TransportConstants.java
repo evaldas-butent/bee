@@ -153,6 +153,9 @@ public class TransportConstants {
   public static final String COL_FX_STRIP_OPACITY = "FxStripOpacity";
 
   public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
+  public static final String COL_SS_PIXELS_PER_TRIP = "SsPixelsPerTrip";
+  public static final String COL_SS_SEPARATE_TRIPS = "SsSeparateTrips";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 

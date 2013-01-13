@@ -650,7 +650,7 @@ public class TransportModuleBean implements BeeModule {
     query.setWhere(where);
 
     query.addOrder(vehicleJoinAlias, COL_NUMBER);
-    query.addOrder(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_NO);
+    query.addOrder(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_NO, COL_TRIP_ID);
 
     SimpleRowSet data = qs.getData(query);
     if (data == null) {

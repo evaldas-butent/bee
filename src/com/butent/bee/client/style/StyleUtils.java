@@ -957,6 +957,25 @@ public class StyleUtils {
     fullWidth(obj.getElement());
   }
 
+  public static int getBottom(Element el) {
+    Assert.notNull(el);
+    return getBottom(el.getStyle());
+  }
+
+  public static int getBottom(String id) {
+    return getBottom(DomUtils.getElement(id));
+  }
+
+  public static int getBottom(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.val(st.getBottom(), false);
+  }
+
+  public static int getBottom(UIObject obj) {
+    Assert.notNull(obj);
+    return getBottom(obj.getElement());
+  }
+
   public static String getCssText(Element el) {
     Assert.notNull(el);
     return getCssText(el.getStyle());
@@ -975,7 +994,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     return getCssText(obj.getElement());
   }
-
+  
   public static int getHeight(Element el) {
     Assert.notNull(el);
     return getHeight(el.getStyle());

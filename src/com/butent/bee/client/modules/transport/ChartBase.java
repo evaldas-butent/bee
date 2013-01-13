@@ -43,6 +43,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -90,10 +91,15 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "Container";
   private static final String STYLE_CANVAS = STYLE_PREFIX + "Canvas";
+
   private static final String STYLE_HEADER = STYLE_PREFIX + "Header";
+  private static final String STYLE_HEADER_SPLITTER = STYLE_HEADER + "Splitter";
+
   private static final String STYLE_SCROLL_AREA = STYLE_PREFIX + "ScrollArea";
   private static final String STYLE_CONTENT = STYLE_PREFIX + "Content";
+
   private static final String STYLE_FOOTER = STYLE_PREFIX + "Footer";
+  private static final String STYLE_FOOTER_SPLITTER = STYLE_FOOTER + "Splitter";
 
   private static final String STYLE_SELECTOR_PREFIX = STYLE_PREFIX + "Selector-";
   private static final String STYLE_SELECTOR_PANEL = STYLE_SELECTOR_PREFIX + "panel";
@@ -124,7 +130,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private boolean renderPending = false;
 
-  private int headerHeight = 0; 
+  private int headerHeight = 0;
   private int footerHeight = 0;
 
   private int chartLeft = 0;
@@ -146,7 +152,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private String contentId = null;
 
   private final Set<String> relevantDataViews = Sets.newHashSet();
-  
+
   protected ChartBase() {
     super();
     addStyleName(STYLE_CONTAINER);
@@ -360,7 +366,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       }
     }
   }
-  
+
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isDataEventRelevant(event)) {
@@ -411,7 +417,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       refresh();
     }
   }
-  
+
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (isDataEventRelevant(event)) {
@@ -466,6 +472,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
+  protected int clampFooterHeight(int height, int canvasHeight) {
+    return BeeUtils.clamp(height, 3, BeeUtils.clamp(canvasHeight / 2, 3, 1000));
+  }
+
+  protected int clampHeaderHeight(int height, int canvasHeight) {
+    return BeeUtils.clamp(height, 1, BeeUtils.clamp(canvasHeight / 5, 1, 100));
+  }
+
   protected void editSettings() {
     if (BeeUtils.isEmpty(getSettingsFormName()) || DataUtils.isEmpty(getSettings())) {
       return;
@@ -504,6 +518,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected Flow getCanvas() {
     return canvas;
+  }
+
+  protected int getCanvasHeight() {
+    return canvas.getElement().getClientHeight();
+  }
+
+  protected int getCanvasWidth() {
+    return canvas.getElement().getClientWidth();
   }
 
   protected abstract Collection<? extends ChartItem> getChartItems();
@@ -547,8 +569,20 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return footerHeight;
   }
 
+  protected abstract String getFooterHeightColumnName();
+
+  protected int getFooterSplitterSize() {
+    return ChartHelper.DEFAULT_MOVER_HEIGHT;
+  }
+
   protected int getHeaderHeight() {
     return headerHeight;
+  }
+
+  protected abstract String getHeaderHeightColumnName();
+
+  protected int getHeaderSplitterSize() {
+    return ChartHelper.DEFAULT_MOVER_HEIGHT;
   }
 
   protected String getPlaceLabel(Long countryId, String placeName, String terminal) {
@@ -567,7 +601,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return 0;
     }
 
-    Element scrollArea = Document.get().getElementById(getScrollAreaId());
+    Element scrollArea = getScrollArea();
     Element content = Document.get().getElementById(getContentId());
     if (scrollArea == null || content == null) {
       return 0;
@@ -579,6 +613,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return rowHeight;
   }
 
+  protected int getScrollAreaHeight(int canvasHeight) {
+    return canvasHeight - getHeaderHeight() - getHeaderSplitterSize() - getFooterHeight()
+        - getFooterSplitterSize();
+  }
+
   protected String getScrollAreaId() {
     return scrollAreaId;
   }
@@ -588,7 +627,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected abstract String getSettingsFormName();
-  
+
   protected int getSliderWidth() {
     return sliderWidth;
   }
@@ -596,21 +635,61 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected Widget getStartSliderLabel() {
     return startSliderLabel;
   }
-  
+
   protected abstract String getStripOpacityColumnName();
-  
+
   protected abstract String getThemeColumnName();
 
   /**
-   * @param rowSet  
+   * @param rowSet
    */
   protected void initData(BeeRowSet rowSet) {
   }
-  
+
   protected abstract Collection<? extends ChartItem> initItems(SimpleRowSet data);
-  
+
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
+  }
+
+  protected void onFooterSplitterMove(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element splitter = ((Mover) event.getSource()).getElement();
+    int oldBottom = StyleUtils.getBottom(splitter);
+
+    int canvasHeight = getCanvasHeight();
+    int newBottom = Math.min(clampFooterHeight(oldBottom - delta, canvasHeight),
+        canvasHeight - getHeaderHeight() - getHeaderSplitterSize() - getRowHeight());
+
+    if (newBottom != oldBottom) {
+      StyleUtils.setBottom(splitter, newBottom);
+      StyleUtils.setBottom(getScrollArea(), newBottom + getFooterSplitterSize());
+    }
+
+    if (event.isFinished() && updateSetting(getFooterHeightColumnName(), newBottom)) {
+      render(false);
+    }
+  }
+
+  protected void onHeaderSplitterMove(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element splitter = ((Mover) event.getSource()).getElement();
+    int oldTop = StyleUtils.getTop(splitter);
+
+    int canvasHeight = getCanvasHeight();
+    int newTop = Math.min(clampHeaderHeight(oldTop + delta, canvasHeight),
+        canvasHeight - getFooterHeight() - getFooterSplitterSize() - getRowHeight());
+
+    if (newTop != oldTop) {
+      StyleUtils.setTop(splitter, newTop);
+      StyleUtils.setTop(getScrollArea(), newTop + getHeaderSplitterSize());
+    }
+
+    if (event.isFinished() && updateSetting(getHeaderHeightColumnName(), newTop)) {
+      render(false);
+    }
   }
 
   @Override
@@ -618,7 +697,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     super.onLoad();
 
     EventUtils.clearRegistry(registry);
-   
+
     registry.add(VisibilityChangeEvent.register(this));
     registry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
@@ -631,14 +710,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     super.onUnload();
   }
-  
+
   protected void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
     RowEditor.openRow(viewName, rowId, !EventUtils.hasModifierKey(event.getNativeEvent()),
         true, null);
   }
-  
+
   protected abstract void prepareChart(int canvasWidth, int canvasHeight);
-  
+
+  protected void prepareDefaults(int canvasWidth, int canvasHeight) {
+    setChartRight(DomUtils.getScrollBarWidth());
+    
+    int hh = ChartHelper.getPixels(getSettings(), getHeaderHeightColumnName(), 20);
+    setHeaderHeight(clampHeaderHeight(hh, canvasHeight));
+
+    int fh = ChartHelper.getPixels(getSettings(), getFooterHeightColumnName(), 30);
+    setFooterHeight(clampFooterHeight(fh, canvasHeight));
+  }
+
   protected void refresh() {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(getDataService()),
         new ResponseCallback() {
@@ -657,25 +746,26 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return;
     }
 
-    int width = canvas.getElement().getClientWidth();
-    int height = canvas.getElement().getClientHeight();
+    int width = getCanvasWidth();
+    int height = getCanvasHeight();
     if (width < 30 || height < 30) {
       setRenderPending(true);
       return;
     }
-    
-    setChartRight(DomUtils.getScrollBarWidth() + ChartHelper.DEFAULT_SEPARATOR_WIDTH);
-    
+
+    prepareDefaults(width, height);
+
     prepareChart(width, height);
 
     if (updateRange || getVisibleRange() == null || !getMaxRange().encloses(getVisibleRange())) {
       setVisibleRange(ChartHelper.getDefaultRange(getMaxRange(), getChartWidth(),
           getDayColumnWidth()));
     }
-    
+
     adjustWidths();
-    
+
     renderHeader();
+    renderHeaderSplitter();
 
     Flow content = new Flow();
     content.addStyleName(STYLE_CONTENT);
@@ -684,8 +774,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     Simple scroll = new Simple();
     scroll.addStyleName(STYLE_SCROLL_AREA);
-    StyleUtils.setTop(scroll, getHeaderHeight());
-    StyleUtils.setBottom(scroll, getFooterHeight());
+    StyleUtils.setTop(scroll, getHeaderHeight() + getHeaderSplitterSize());
+    StyleUtils.setBottom(scroll, getFooterHeight() + getFooterSplitterSize());
 
     scroll.setWidget(content);
 
@@ -693,18 +783,20 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     setScrollAreaId(scroll.getId());
 
     canvas.add(scroll);
-    
+
+    renderFooterSplitter();
     renderFooter();
 
     setRenderPending(false);
   }
-  
+
   protected abstract void renderContent(ComplexPanel panel);
 
   protected void renderDayLabels(HasWidgets panel) {
-    ChartHelper.renderDayLabels(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth());
+    ChartHelper.renderDayLabels(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
+        getHeaderHeight());
   }
-  
+
   protected void renderFooter() {
     if (getFooterHeight() <= 0) {
       return;
@@ -718,8 +810,26 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     renderRangeSelector(footer);
 
     canvas.add(footer);
-    
+
     renderSliderLabels();
+  }
+
+  protected void renderFooterSplitter() {
+    if (getFooterSplitterSize() > 0) {
+      Mover mover = ChartHelper.createVerticalMover();
+
+      mover.addStyleName(STYLE_FOOTER_SPLITTER);
+      StyleUtils.setBottom(mover, Math.max(getFooterHeight(), 0));
+
+      mover.addMoveHandler(new MoveEvent.Handler() {
+        @Override
+        public void onMove(MoveEvent event) {
+          onFooterSplitterMove(event);
+        }
+      });
+
+      canvas.add(mover);
+    }
   }
 
   protected void renderHeader() {
@@ -730,8 +840,26 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
       renderVisibleRange(header);
       renderDayLabels(header);
-      
+
       canvas.add(header);
+    }
+  }
+
+  protected void renderHeaderSplitter() {
+    if (getHeaderSplitterSize() > 0) {
+      Mover mover = ChartHelper.createVerticalMover();
+
+      mover.addStyleName(STYLE_HEADER_SPLITTER);
+      StyleUtils.setTop(mover, Math.max(getHeaderHeight(), 0));
+
+      mover.addMoveHandler(new MoveEvent.Handler() {
+        @Override
+        public void onMove(MoveEvent event) {
+          onHeaderSplitterMove(event);
+        }
+      });
+
+      canvas.add(mover);
     }
   }
 
@@ -754,10 +882,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (getMaxRange() == null) {
       return;
     }
-    
+
     int width = getChartWidth();
     int height = getFooterHeight();
-    
+
     JustDate firstDate = getMaxRange().lowerEndpoint();
     JustDate lastDate = getMaxRange().upperEndpoint();
 
@@ -765,7 +893,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     int rowCount = BeeUtils.resize(chartItems.size(), 0, 100, 1, height / 3);
     int itemHeight = height / rowCount;
-    
+
     Double stripOpacity = BeeUtils.isEmpty(getStripOpacityColumnName())
         ? null : ChartHelper.getOpacity(getSettings(), getStripOpacityColumnName());
 
@@ -872,7 +1000,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     setEndSliderLabel(endLabel);
     canvas.add(endLabel);
   }
-  
+
   protected void renderVisibleRange(HasWidgets panel) {
     ChartHelper.renderVisibleRange(this, panel, getChartLeft());
   }
@@ -892,7 +1020,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void setChartWidth(int chartWidth) {
     this.chartWidth = chartWidth;
   }
-  
+
   protected boolean setData(ResponseObject response) {
     if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class, null)) {
       return false;
@@ -914,7 +1042,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     serialized = rowSet.getTableProperty(PROP_DATA);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet data = SimpleRowSet.restore(serialized);
-      
+
       Collection<? extends ChartItem> items = initItems(data);
       logger.debug(getCaption(), "loaded", items.size(), "items");
 
@@ -922,7 +1050,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         setMaxRange(ChartHelper.getSpan(items));
       }
     }
-    
+
     initData(rowSet);
 
     return true;
@@ -949,7 +1077,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (color == null) {
       return;
     }
-    
+
     if (!BeeUtils.isEmpty(color.getBackground())) {
       StyleUtils.setBackgroundColor(widget, color.getBackground());
     }
@@ -986,6 +1114,45 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.visibleRange = visibleRange;
   }
 
+  protected boolean updateSetting(String colName, int newValue) {
+    if (DataUtils.isEmpty(getSettings())) {
+      logger.severe("update settings: rowSet isempty");
+      return false;
+    }
+
+    int index = getSettings().getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(getSettings().getViewName(), colName, "column not found");
+      return false;
+    }
+
+    BeeRow row = getSettings().getRow(0);
+
+    String oldValue = row.getString(index);
+    if (BeeUtils.isInt(oldValue) && BeeUtils.toInt(oldValue) == newValue) {
+      return false;
+    }
+
+    row.setValue(index, newValue);
+
+    List<BeeColumn> columns = Lists.newArrayList(getSettings().getColumn(index));
+    List<String> oldValues = Lists.newArrayList(oldValue);
+    List<String> newValues = Lists.newArrayList(BeeUtils.toString(newValue));
+
+    Queries.update(getSettings().getViewName(), row.getId(), row.getVersion(), columns, oldValues,
+        newValues, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (result != null) {
+              getSettings().clearRows();
+              getSettings().addRow(DataUtils.cloneRow(result));
+            }
+          }
+        });
+
+    return true;
+  }
+
   private Long getColorTheme(BeeRow row) {
     if (row == null || BeeUtils.isEmpty(getThemeColumnName()) || DataUtils.isEmpty(getSettings())) {
       return null;
@@ -1017,6 +1184,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
+  private Element getScrollArea() {
+    if (BeeUtils.isEmpty(getScrollAreaId())) {
+      return null;
+    } else {
+      return Document.get().getElementById(getScrollAreaId());
+    }
+  }
+
   private boolean isRenderPending() {
     return renderPending;
   }
@@ -1025,7 +1200,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (arr != null && arr.length > 0) {
       colors.clear();
-      
+
       for (String s : arr) {
         Color color = Color.restore(s);
         if (color != null) {

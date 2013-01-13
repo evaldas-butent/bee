@@ -1,8 +1,9 @@
 .bee-tr-chart-Container .bee-WindowHeader {
   top: 0;
-  height: 32px;
+  height: 31px;
   left: 0;
   right: 0;
+  border-bottom: 1px solid #ccc;
 }
 
 .bee-tr-chart-Canvas {
@@ -11,7 +12,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  border-top: 1px solid #ccc;
 }
 
 .bee-tr-chart-Header {
@@ -26,12 +26,23 @@
   left: 0;
   right: 0;
   overflow: auto;
-  border-top: 1px solid #888;
-  border-bottom: 1px solid #888;
 }
 
 .bee-tr-chart-Content {
   position: relative;
+}
+
+.bee-tr-chart-Footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.bee-tr-chart-HeaderSplitter, .bee-tr-chart-FooterSplitter {
+  position: absolute;
+  left: 0;
+  right: 0;
 }
 
 .bee-tr-chart-visibleRange-start:hover, .bee-tr-chart-visibleRange-end:hover {
@@ -49,13 +60,6 @@
 }
 .bee-tr-chart-row-sep {
   background-color: #ddd;
-}
-
-.bee-tr-chart-Footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
 }
 
 .bee-tr-chart-Selector-panel {
@@ -114,11 +118,32 @@
   background-color: #888;
 }
 
-.bee-tr-chart-dayLabel {
+.bee-tr-chart-dayLabel, .bee-tr-chart-dayPicture {
   position: absolute;
   top: 0;
   bottom: 0;
+}
+.bee-tr-chart-dayLabel {
   text-align: center;
+}
+.bee-tr-chart-dayNarrow {
+  font-size: 12px;
+  line-height: 12px;
+  word-wrap: break-word;
+}
+
+.bee-tr-chart-dayPicture {
+  display: -webkit-flex;
+  -webkit-justify-content: center;
+  -webkit-align-items: flex-end;
+  -webkit-align-content: flex-end;
+  -webkit-flex-wrap: wrap;
+}
+.bee-tr-chart-dayTens {
+  background-color: #888;
+}
+.bee-tr-chart-dayOnes {
+  background-color: #ccc;
 }
 
 .bee-tr-chart-visibleRange-panel, .bee-tr-chart-maxRange-panel {
@@ -148,11 +173,23 @@
   background-color: #f8f8f8;
 }
 
-.bee-tr-fx-Customer-col-sep, .bee-tr-fx-Order-col-sep, .bee-tr-ss-Vehicle-col-sep {
+.bee-tr-chart-horizontalMover {
   position: absolute;
   top: 0;
   width: 1px;
-  background-color: #888;
+  background-color: #ccc;
+  border-left: 1px solid #888;
+  border-right: 1px solid #888;
+  cursor: col-resize;
+}
+.bee-tr-chart-verticalMover {
+  position: absolute;
+  left: 0;
+  height: 1px;
+  background-color: #ccc;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #888;
+  cursor: row-resize;
 }
 
 .bee-tr-fx-Customer-panel, .bee-tr-fx-Order-panel, .bee-tr-ss-Vehicle-panel {
@@ -177,22 +214,20 @@
   position: absolute;
   cursor: move;
   overflow: hidden;
+  display: -webkit-flex;
+  -webkit-justify-content: space-between;
+  -webkit-align-items: center;
 }
 .bee-tr-fx-Item-load, .bee-tr-fx-Item-unload {
-  position: absolute;
-  top: 0;
   font-size: 12px;
-}
-.bee-tr-fx-Item-load {
-  left: 0;
-}
-.bee-tr-fx-Item-unload {
-  right: 0;
 }
 
 .bee-tr-ss-Item-panel {
   position: absolute;
   overflow: hidden;
+  display: -webkit-flex;
+  -webkit-justify-content: space-between;
+  -webkit-align-items: center;
 }
 .bee-tr-ss-Item-trip {
   cursor: pointer;
@@ -202,15 +237,7 @@
 }
 
 .bee-tr-ss-Item-load, .bee-tr-ss-Item-unload {
-  position: absolute;
-  top: 0;
   font-size: 12px;
-}
-.bee-tr-ss-Item-load {
-  left: 0;
-}
-.bee-tr-ss-Item-unload {
-  right: 0;
 }
 
 .bee-tr-fx-Item-drag, .bee-tr-ss-Item-drag {
@@ -227,6 +254,7 @@
   position: absolute;
   cursor: pointer;
   background-image: url("images/checkered_background.png");
+  overflow: hidden;
 }
 .bee-tr-ss-Service-label {
   position: absolute;

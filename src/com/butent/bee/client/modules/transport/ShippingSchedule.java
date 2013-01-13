@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -210,7 +211,6 @@ class ShippingSchedule extends ChartBase {
   private static final String STYLE_PREFIX = "bee-tr-ss-";
 
   private static final String STYLE_VEHICLE_PREFIX = STYLE_PREFIX + "Vehicle-";
-  private static final String STYLE_VEHICLE_COLUMN_SEPARATOR = STYLE_VEHICLE_PREFIX + "col-sep";
   private static final String STYLE_VEHICLE_ROW_SEPARATOR = STYLE_VEHICLE_PREFIX + "row-sep";
   private static final String STYLE_VEHICLE_PANEL = STYLE_VEHICLE_PREFIX + "panel";
   private static final String STYLE_VEHICLE_LABEL = STYLE_VEHICLE_PREFIX + "label";
@@ -289,6 +289,16 @@ class ShippingSchedule extends ChartBase {
   }
 
   @Override
+  protected String getFooterHeightColumnName() {
+    return COL_SS_FOOTER_HEIGHT;
+  }
+
+  @Override
+  protected String getHeaderHeightColumnName() {
+    return COL_SS_HEADER_HEIGHT;
+  }
+
+  @Override
   protected String getSettingsFormName() {
     return FORM_SS_SETTINGS;
   }
@@ -364,29 +374,24 @@ class ShippingSchedule extends ChartBase {
   @Override
   protected void prepareChart(int canvasWidth, int canvasHeight) {
     setVehicleWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_TRUCK, 80,
-        canvasWidth / 5));
-
-    setHeaderHeight(ChartHelper.getPixels(getSettings(), COL_SS_HEADER_HEIGHT, 20,
-        canvasHeight / 5));
-    setFooterHeight(ChartHelper.getPixels(getSettings(), COL_SS_FOOTER_HEIGHT, 30,
-        canvasHeight / 3));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
 
     setChartLeft(getVehicleWidth());
     setChartWidth(canvasWidth - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20));
+    setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20,
+        1, getChartWidth()));
 
-    int scrollAreaHeight = canvasHeight - getHeaderHeight() - getFooterHeight();
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_ROW, 20,
-        scrollAreaHeight / 2));
+        1, getScrollAreaHeight(canvasHeight) / 2));
 
-    int slider = ChartHelper.getPixels(getSettings(), COL_SS_SLIDER_WIDTH, 5);
-    setSliderWidth(BeeUtils.clamp(slider, 1, getChartRight()));
+    setSliderWidth(ChartHelper.getPixels(getSettings(), COL_SS_SLIDER_WIDTH, 5,
+        1, getChartWidth() / 3));
 
     setBarHeight(ChartHelper.getPixels(getSettings(), COL_SS_BAR_HEIGHT, BeeConst.UNDEF,
-        getFooterHeight() / 2));
+        1, getFooterHeight() / 2));
   }
-
+  
   @Override
   protected void renderContent(ComplexPanel panel) {
     List<List<TruckItem>> layoutRows = doLayout();
@@ -397,10 +402,9 @@ class ShippingSchedule extends ChartBase {
     int height = layoutRows.size() * getRowHeight();
     StyleUtils.setHeight(panel, height);
 
-    ChartHelper.addColumnSeparator(panel, STYLE_VEHICLE_COLUMN_SEPARATOR, getVehicleWidth(),
-        height);
+    ChartHelper.addHorizontalMover(panel, getVehicleWidth(), height);
     ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
-        height, false, true);
+        height);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
@@ -428,9 +432,7 @@ class ShippingSchedule extends ChartBase {
         ChartHelper.addRowSeparator(panel, top, getChartLeft(), getChartWidth());
 
       } else {
-        ChartHelper.addLegendWidget(panel, vehicleWidget, 0, getVehicleWidth(),
-            vehicleStartRow, row - 1, getRowHeight(),
-            ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+        addVehicleWidget(panel, vehicleWidget, vehicleStartRow, row - 1);
 
         vehicleWidget = createVehicleWidget(firstItem);
 
@@ -448,10 +450,8 @@ class ShippingSchedule extends ChartBase {
         int left = getChartLeft() + TimeUtils.dayDiff(firstDate, start) * getDayColumnWidth();
         int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
 
-        Rectangle rectangle = new Rectangle(left + ChartHelper.DEFAULT_SEPARATOR_WIDTH,
-            top + ChartHelper.DEFAULT_SEPARATOR_HEIGHT,
-            width - ChartHelper.DEFAULT_SEPARATOR_WIDTH,
-            getRowHeight() - ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+        Rectangle rectangle = new Rectangle(left, top, width,
+            getRowHeight() - ChartHelper.ROW_SEPARATOR_HEIGHT);
 
         if (item instanceof Freight) {
           Widget itemWidget = createItemWidget((Freight) item);
@@ -472,21 +472,22 @@ class ShippingSchedule extends ChartBase {
     }
 
     if (vehicleWidget != null) {
-      ChartHelper.addLegendWidget(panel, vehicleWidget, 0, getVehicleWidth(),
-          vehicleStartRow, layoutRows.size() - 1, getRowHeight(),
-          ChartHelper.DEFAULT_SEPARATOR_WIDTH, ChartHelper.DEFAULT_SEPARATOR_HEIGHT);
+      addVehicleWidget(panel, vehicleWidget, vehicleStartRow, layoutRows.size() - 1);
     }
 
-    ChartHelper.addBottomSeparator(panel, height, 0, getVehicleWidth() + getChartWidth()
-        + ChartHelper.DEFAULT_SEPARATOR_WIDTH);
+    ChartHelper.addBottomSeparator(panel, height, 0, getVehicleWidth() + getChartWidth());
   }
 
-  @Override
-  protected void renderMaxRange(HasWidgets panel) {
-  }
-
-  @Override
-  protected void renderVisibleRange(HasWidgets panel) {
+  private void addVehicleWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
+    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getVehicleWidth(),
+        firstRow, lastRow, getRowHeight());
+    
+    Edges margins = new Edges();
+    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+    
+    ChartHelper.apply(widget, rectangle, margins);
+    panel.add(widget);
   }
 
   private Widget createItemWidget(final Freight item) {

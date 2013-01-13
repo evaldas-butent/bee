@@ -25,6 +25,8 @@
     <Integer name="FxStripOpacity" />
 
     <Integer name="SsPixelsPerTruck" />
+    <Integer name="SsPixelsPerTrip" />
+    <Boolean name="SsSeparateTrips" />
 
     <Integer name="SsPixelsPerDay" />
     <Integer name="SsPixelsPerRow" />

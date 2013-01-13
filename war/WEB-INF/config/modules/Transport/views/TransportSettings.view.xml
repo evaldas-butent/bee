@@ -28,6 +28,8 @@
     <SimpleColumn name="FxStripOpacity" />
 
     <SimpleColumn name="SsPixelsPerTruck" />
+    <SimpleColumn name="SsPixelsPerTrip" />
+    <SimpleColumn name="SsSeparateTrips" />
 
     <SimpleColumn name="SsPixelsPerDay" />
     <SimpleColumn name="SsPixelsPerRow" />
