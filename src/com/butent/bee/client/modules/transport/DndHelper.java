@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragEnterEvent;
@@ -27,6 +28,8 @@ class DndHelper {
   enum ContentType {
     CARGO
   }
+  
+  static final Predicate<Long> alwaysTarget = Predicates.alwaysTrue();
 
   private static ContentType dataType = null;
   

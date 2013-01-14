@@ -58,10 +58,14 @@ class ChartHelper {
   private static final String STYLE_RIGHT_SEPARATOR = STYLE_PREFIX + "rightSeparator";
 
   private static final String STYLE_DAY_LABEL = STYLE_PREFIX + "dayLabel";
+
   private static final String STYLE_DAY_NARROW = STYLE_PREFIX + "dayNarrow";
+  private static final String STYLE_DAY_NARROW_TENS = STYLE_DAY_NARROW + "-tens";
+  private static final String STYLE_DAY_NARROW_ONES = STYLE_DAY_NARROW + "-ones";
+
   private static final String STYLE_DAY_PICTURE = STYLE_PREFIX + "dayPicture";
-  private static final String STYLE_DAY_TENS = STYLE_PREFIX + "dayTens";
-  private static final String STYLE_DAY_ONES = STYLE_PREFIX + "dayOnes";
+  private static final String STYLE_DAY_PICTURE_TENS = STYLE_DAY_PICTURE + "-tens";
+  private static final String STYLE_DAY_PICTURE_ONES = STYLE_DAY_PICTURE + "-ones";
 
   private static final String STYLE_PAST = STYLE_PREFIX + "past";
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
@@ -103,27 +107,6 @@ class ChartHelper {
     }
 
     panel.add(separator);
-  }
-
-  static void addHorizontalMover(HasWidgets panel, int right, int height) {
-    Rectangle rectangle = new Rectangle();
-
-    rectangle.setLeft(right - DEFAULT_MOVER_WIDTH);
-    if (height > 0) {
-      rectangle.setHeight(height);
-    }
-
-    addHorizontalMover(panel, rectangle);
-  }
-
-  static void addHorizontalMover(HasWidgets panel, Rectangle rectangle) {
-    Mover mover = new Mover(Orientation.HORIZONTAL, STYLE_HORIZONTAL_MOVER);
-
-    if (rectangle != null) {
-      rectangle.applyTo(mover);
-    }
-
-    panel.add(mover);
   }
 
   static void addRowSeparator(HasWidgets panel, int top, int left, int width) {
@@ -198,14 +181,13 @@ class ChartHelper {
     }
   }
 
-  static String buildTitle(Object... labelsAndValues) {
+  static String buildMessage(String separator, Object... labelsAndValues) {
     Assert.notNull(labelsAndValues);
     int c = labelsAndValues.length;
     Assert.parameterCount(c, 2);
     Assert.isEven(c);
 
     String valueSeparator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
-    char lineSeparator = BeeConst.CHAR_EOL;
 
     StringBuilder sb = new StringBuilder();
 
@@ -215,22 +197,44 @@ class ChartHelper {
 
       if (label instanceof String && value != null) {
         if (sb.length() > 0) {
-          sb.append(lineSeparator);
+          sb.append(separator);
         }
         sb.append(BeeUtils.join(valueSeparator, label, value));
       }
     }
     return sb.toString();
   }
+  
+  static String buildTitle(Object... labelsAndValues) {
+    return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
+  }
 
   static JustDate clamp(JustDate date, Range<JustDate> range) {
     return TimeUtils.clamp(date, range.lowerEndpoint(), range.upperEndpoint());
+  }
+
+  static Mover createHorizontalMover() {
+    return new Mover(Orientation.HORIZONTAL, STYLE_HORIZONTAL_MOVER);
   }
 
   static Mover createVerticalMover() {
     return new Mover(Orientation.VERTICAL, STYLE_VERTICAL_MOVER);
   }
 
+  static boolean getBoolean(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return false;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return false;
+    }
+
+    return BeeUtils.unbox(settings.getBoolean(0, index));
+  }
+  
   static int getColorIndex(Long id, int count) {
     if (id == null || count <= 0) {
       return BeeConst.UNDEF;
@@ -257,7 +261,7 @@ class ChartHelper {
       return span;
     }
 
-    int days = BeeUtils.clamp(chartWidth / dayWidth, 2, spanSize);
+    int days = BeeUtils.clamp(chartWidth / dayWidth, 1, spanSize);
 
     JustDate start = span.lowerEndpoint();
     JustDate end = TimeUtils.nextDay(start, days - 1);
@@ -283,6 +287,16 @@ class ChartHelper {
     }
 
     return rectangle;
+  }
+
+  static JustDate getLowerBound(JustDate min, int size, JustDate max) {
+    if (max == null || size <= 0) {
+      return min;
+    } else if (min == null) {
+      return TimeUtils.nextDay(max, 1 - size);
+    } else {
+      return TimeUtils.max(TimeUtils.nextDay(max, 1 - size), min);
+    }
   }
 
   static Double getOpacity(BeeRowSet settings, String colName) {
@@ -353,9 +367,11 @@ class ChartHelper {
     return end - start;
   }
 
-  static Range<JustDate> getSpan(Collection<? extends HasDateRange> items) {
-    JustDate min = null;
-    JustDate max = null;
+  static Range<JustDate> getSpan(Collection<? extends HasDateRange> items,
+      JustDate defMin, JustDate defMax) {
+
+    JustDate min = defMin;
+    JustDate max = defMax;
 
     for (HasDateRange item : items) {
       if (min == null || TimeUtils.isLess(item.getRange().lowerEndpoint(), min)) {
@@ -371,6 +387,16 @@ class ChartHelper {
       return null;
     } else {
       return Range.closed(min, max);
+    }
+  }
+
+  static JustDate getUpperBound(JustDate min, int size, JustDate max) {
+    if (min == null || size <= 0) {
+      return max;
+    } else if (max == null) {
+      return TimeUtils.nextDay(min, size - 1);
+    } else {
+      return TimeUtils.min(TimeUtils.nextDay(min, size - 1), max);
     }
   }
 
@@ -454,15 +480,16 @@ class ChartHelper {
     JustDate date = JustDate.copyOf(range.lowerEndpoint());
     int count = getSize(range);
 
-    int left = startLeft;
+    int maxSeparatorWidth = getDaySeparatorWidth(range.upperEndpoint(), dayWidth, count - 1, count);
     int separatorWidth;
 
+    int left = startLeft;
     JustDate next = TimeUtils.nextDay(date);
 
     for (int i = 0; i < count; i++) {
       separatorWidth = getDaySeparatorWidth(next, dayWidth, i, count);
 
-      Widget label = createDayLabel(date, dayWidth - separatorWidth, height);
+      Widget label = createDayLabel(date, dayWidth - maxSeparatorWidth, height);
       StyleUtils.setLeft(label, left);
       StyleUtils.setWidth(label, dayWidth - separatorWidth);
 
@@ -523,7 +550,7 @@ class ChartHelper {
     addVisibleRangeDatePicker(owner, startWidget, true);
     panel.add(startWidget);
 
-    if (getSize(range) > 1) {
+    if (getSize(owner.getMaxRange()) > 1) {
       BeeLabel endWidget = new BeeLabel(range.upperEndpoint().toString());
       endWidget.addStyleName(STYLE_VISIBLE_RANGE_END);
       addVisibleRangeDatePicker(owner, endWidget, false);
@@ -532,7 +559,7 @@ class ChartHelper {
 
     container.add(panel);
   }
-
+  
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -555,8 +582,8 @@ class ChartHelper {
         final JustDate startBound = owner.getMaxRange().lowerEndpoint();
         final JustDate endBound = owner.getMaxRange().upperEndpoint();
 
-        JustDate oldStart = owner.getVisibleRange().lowerEndpoint();
-        JustDate oldEnd = owner.getVisibleRange().upperEndpoint();
+        final JustDate oldStart = owner.getVisibleRange().lowerEndpoint();
+        final JustDate oldEnd = owner.getVisibleRange().upperEndpoint();
 
         final JustDate oldValue = isStart ? oldStart : oldEnd;
 
@@ -572,15 +599,17 @@ class ChartHelper {
             if (newValue != null && !newValue.equals(oldValue)
                 && owner.getMaxRange().contains(newValue)) {
 
-              int size = getSize(owner.getVisibleRange());
+              int maxSize = owner.getMaxSize();
               JustDate newStart;
               JustDate newEnd;
 
               if (isStart) {
                 newStart = newValue;
-                newEnd = TimeUtils.min(TimeUtils.nextDay(newValue, size), endBound);
+                newEnd = TimeUtils.clamp(oldEnd, newValue,
+                    getUpperBound(newValue, maxSize, endBound));
               } else {
-                newStart = TimeUtils.max(TimeUtils.nextDay(newValue, -size), startBound);
+                newStart = TimeUtils.clamp(oldStart, getLowerBound(startBound, maxSize, newValue),
+                    newValue);
                 newEnd = newValue;
               }
 
@@ -608,20 +637,37 @@ class ChartHelper {
     Html widget;
     int day = date.getDom();
 
-    if (width >= 15 && height >= 10 || width >= 8 && height >= 24) {
+    int tens = day / 10;
+    int ones = day % 10;
+
+    if (width >= 15 && height >= 10) {
       widget = new Html(BeeUtils.toString(day));
 
       widget.addStyleName(STYLE_DAY_LABEL);
-      if (width < 15) {
-        widget.addStyleName(STYLE_DAY_NARROW);
+      addDayStyle(widget, date);
+
+    } else if (width >= 7 && height >= 22) {
+      Element root = Document.get().createDivElement();
+      if (tens > 0) {
+        Element tensElement = Document.get().createDivElement();
+        tensElement.setInnerText(BeeUtils.toString(tens));
+        tensElement.addClassName(STYLE_DAY_NARROW_TENS);
+        
+        root.appendChild(tensElement);
       }
-      
+
+      Element onesElement = Document.get().createDivElement();
+      onesElement.setInnerText(BeeUtils.toString(ones));
+      onesElement.addClassName(STYLE_DAY_NARROW_ONES);
+
+      root.appendChild(onesElement);
+
+      widget = new Html(root);
+
+      widget.addStyleName(STYLE_DAY_NARROW);
       addDayStyle(widget, date);
 
     } else {
-      int tens = day / 10;
-      int ones = day % 10;
-
       int tensWidth = 1;
       int tensHeight = 1;
       int onesWidth = 1;
@@ -671,8 +717,8 @@ class ChartHelper {
       if (tens > 0) {
         for (int i = 0; i < tensCount; i++) {
           Element tensElement = Document.get().createDivElement();
-          tensElement.addClassName(STYLE_DAY_TENS);
-          tensElement.addClassName(STYLE_DAY_TENS + styleSuffix);
+          tensElement.addClassName(STYLE_DAY_PICTURE_TENS);
+          tensElement.addClassName(STYLE_DAY_PICTURE_TENS + styleSuffix);
           StyleUtils.setSize(tensElement, tensWidth, tensHeight);
 
           root.appendChild(tensElement);
@@ -682,8 +728,8 @@ class ChartHelper {
       if (ones > 0) {
         for (int i = 0; i < onesCount; i++) {
           Element onesElement = Document.get().createDivElement();
-          onesElement.addClassName(STYLE_DAY_ONES);
-          onesElement.addClassName(STYLE_DAY_ONES + styleSuffix);
+          onesElement.addClassName(STYLE_DAY_PICTURE_ONES);
+          onesElement.addClassName(STYLE_DAY_PICTURE_ONES + styleSuffix);
           StyleUtils.setSize(onesElement, onesWidth, onesHeight);
 
           root.appendChild(onesElement);
@@ -716,8 +762,7 @@ class ChartHelper {
         && dayWidth > DAY_SEPARATOR_WIDTH * 2
         && (index == count - 1
             || date.getDom() == 1
-            || TimeUtils.isMore(date, TimeUtils.today())
-            && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
+            || TimeUtils.isMore(date, TimeUtils.today()) && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
       return DAY_SEPARATOR_WIDTH;
     } else {
       return 0;

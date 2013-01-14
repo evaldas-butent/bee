@@ -7,8 +7,10 @@ import com.butent.bee.shared.time.JustDate;
 interface HasVisibleRange {
   
   Range<JustDate> getMaxRange();
+  
+  int getMaxSize();
 
   Range<JustDate> getVisibleRange();
   
-  void setVisibleRange(JustDate start, JustDate end);
+  boolean setVisibleRange(JustDate start, JustDate end);
 }

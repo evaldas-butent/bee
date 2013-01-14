@@ -8,6 +8,8 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -23,6 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
@@ -192,6 +195,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   @Override
+  public int getMaxSize() {
+    return getChartWidth();
+  }
+
+  @Override
   public Element getPrintElement() {
     return getElement();
   }
@@ -277,6 +285,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     int panelWidth = StyleUtils.getWidth(panel) - getSliderWidth();
 
+    double dayWidth = (double) panelWidth / ChartHelper.getSize(getMaxRange());
+    int maxWidth = BeeUtils.round(dayWidth * getMaxSize());
+
     int startPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.START_SLIDER));
     int endPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.END_SLIDER));
 
@@ -286,6 +297,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       switch (sourceType) {
         case START_SLIDER:
           int newStart = BeeUtils.clamp(startPos + delta, 0, endPos - getSliderWidth());
+          if (maxWidth > 0 && endPos - newStart > maxWidth) {
+            newStart = endPos - maxWidth;
+          }
+
           if (newStart != startPos) {
             startPos = newStart;
 
@@ -300,6 +315,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
         case END_SLIDER:
           int newEnd = BeeUtils.clamp(endPos + delta, startPos + getSliderWidth(), panelWidth);
+          if (maxWidth > 0 && newEnd - startPos > maxWidth) {
+            newEnd = startPos + maxWidth;
+          }
+
           if (newEnd != endPos) {
             endPos = newEnd;
 
@@ -328,21 +347,43 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
 
     if (changed || event.isFinished()) {
-      JustDate min = getMaxRange().lowerEndpoint();
-      JustDate max = getMaxRange().upperEndpoint();
-
-      double dayWidth = (double) panelWidth / ChartHelper.getSize(getMaxRange());
-      JustDate start = TimeUtils.clamp(ChartHelper.getDate(min, startPos, dayWidth), min, max);
-      JustDate end = TimeUtils.clamp(ChartHelper.getDate(min, endPos, dayWidth), start, max);
 
       if (event.isFinished()) {
         getStartSliderLabel().setVisible(false);
         getEndSliderLabel().setVisible(false);
 
-        setVisibleRange(start, end);
+        JustDate min = getMaxRange().lowerEndpoint();
+        JustDate max = getMaxRange().upperEndpoint();
+
+        JustDate start = TimeUtils.clamp(ChartHelper.getDate(min, startPos, dayWidth), min, max);
+        JustDate end = TimeUtils.clamp(TimeUtils.previousDay(ChartHelper.getDate(min, endPos,
+            dayWidth)), start, max);
+
+        if (!setVisibleRange(start, end)) {
+          JustDate firstVisible = getVisibleRange().lowerEndpoint();
+          JustDate lastVisible = getVisibleRange().upperEndpoint();
+
+          int p1 = ChartHelper.getPosition(min, firstVisible, dayWidth);
+          p1 = BeeUtils.clamp(p1, 0, panelWidth - getSliderWidth());
+
+          int p2 = ChartHelper.getPosition(min, TimeUtils.nextDay(lastVisible), dayWidth);
+          p2 = BeeUtils.clamp(p2, startPos + getSliderWidth(), panelWidth);
+
+          if (p1 != startPos || p2 != endPos) {
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.START_SLIDER), p1);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), p2);
+
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), p1);
+            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR), p2 - p1 + getSliderWidth());
+          }
+        }
 
       } else {
-        int panelLeft = StyleUtils.getLeft(panel);
+        JustDate min = getMaxRange().lowerEndpoint();
+        JustDate max = TimeUtils.nextDay(getMaxRange().upperEndpoint());
+
+        JustDate start = TimeUtils.clamp(ChartHelper.getDate(min, startPos, dayWidth), min, max);
+        JustDate end = TimeUtils.clamp(ChartHelper.getDate(min, endPos, dayWidth), start, max);
 
         String startLabel = start.toString();
         String endLabel = end.toString();
@@ -355,6 +396,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
         int startWidth = getStartSliderLabel().getOffsetWidth();
         int endWidth = getStartSliderLabel().getOffsetWidth();
+
+        int panelLeft = StyleUtils.getLeft(panel);
 
         int startLeft = startPos - (startWidth - getSliderWidth()) / 2;
         startLeft = BeeUtils.clamp(startLeft, -panelLeft, panelWidth - startWidth - endWidth);
@@ -452,23 +495,46 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   @Override
-  public void setVisibleRange(JustDate start, JustDate end) {
+  public boolean setVisibleRange(JustDate start, JustDate end) {
     if (start != null && end != null && TimeUtils.isLeq(start, end)) {
 
       Range<JustDate> range = Range.closed(start, end);
+      if (getMaxSize() > 0 && ChartHelper.getSize(range) > getMaxSize()) {
+        range = Range.closed(start, TimeUtils.nextDay(start, getMaxSize() - 1));
+      }
 
       if (!range.equals(getVisibleRange())) {
         setVisibleRange(range);
         render(false);
+        return true;
       }
     }
+    return false;
+  }
+
+  protected void addContentHandlers(Widget content) {
+    Binder.addDoubleClickHandler(content, new DoubleClickHandler() {
+      @Override
+      public void onDoubleClick(DoubleClickEvent event) {
+        int x = event.getX();
+        int y = event.getY();
+
+        if (x >= getChartLeft() && getVisibleRange() != null && getDayColumnWidth() > 0) {
+          JustDate date = TimeUtils.nextDay(getVisibleRange().lowerEndpoint(),
+              (x - getChartLeft()) / getDayColumnWidth());
+
+          if (getVisibleRange().contains(date)) {
+            onDoubleClickChart(y / getRowHeight(), date);
+          }
+        }
+      }
+    });
   }
 
   protected void adjustWidths() {
     int chartColumnCount = ChartHelper.getSize(getVisibleRange());
     if (chartColumnCount > 0) {
-      setDayColumnWidth(getChartWidth() / chartColumnCount);
-      setChartWidth(getDayColumnWidth() * chartColumnCount);
+      setDayColumnWidth(Math.max(getChartWidth() / chartColumnCount, 1));
     }
   }
 
@@ -514,6 +580,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected int getBarHeight() {
     return barHeight;
+  }
+
+  protected int getCalendarWidth() {
+    return ChartHelper.getSize(getVisibleRange()) * getDayColumnWidth();
   }
 
   protected Flow getCanvas() {
@@ -652,6 +722,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return event != null && relevantDataViews.contains(event.getViewName());
   }
 
+  protected void onDoubleClickChart(int row, JustDate date) {
+    logger.debug(row, date);
+  }
+
   protected void onFooterSplitterMove(MoveEvent event) {
     int delta = event.getDelta();
 
@@ -720,7 +794,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void prepareDefaults(int canvasWidth, int canvasHeight) {
     setChartRight(DomUtils.getScrollBarWidth());
-    
+
     int hh = ChartHelper.getPixels(getSettings(), getHeaderHeightColumnName(), 20);
     setHeaderHeight(clampHeaderHeight(hh, canvasHeight));
 
@@ -771,6 +845,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     content.addStyleName(STYLE_CONTENT);
 
     renderContent(content);
+    addContentHandlers(content);
 
     Simple scroll = new Simple();
     scroll.addStyleName(STYLE_SCROLL_AREA);
@@ -879,54 +954,67 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void renderSelector(HasWidgets panel, Collection<? extends ChartItem> chartItems) {
-    if (getMaxRange() == null) {
+    if (getMaxRange() == null || chartItems.isEmpty()) {
       return;
     }
 
     int width = getChartWidth();
     int height = getFooterHeight();
 
+    if (width <= getSliderWidth() * 2 || height <= getBarHeight()) {
+      return;
+    }
+
     JustDate firstDate = getMaxRange().lowerEndpoint();
     JustDate lastDate = getMaxRange().upperEndpoint();
 
     double dayWidth = (double) width / ChartHelper.getSize(getMaxRange());
 
-    int rowCount = BeeUtils.resize(chartItems.size(), 0, 100, 1, height / 3);
-    int itemHeight = height / rowCount;
+    int itemAreaHeight = height;
+    if (getBarHeight() > 0 && getBarHeight() <= height / 2) {
+      itemAreaHeight -= getBarHeight();
+    }
+
+    int maxRows;
+    if (itemAreaHeight <= 10) {
+      maxRows = itemAreaHeight;
+    } else if (itemAreaHeight <= 20) {
+      maxRows = itemAreaHeight / 2;
+    } else {
+      maxRows = itemAreaHeight / 3;
+    }
+
+    List<List<ChartItem>> rows = doStripLayout(chartItems, maxRows);
+
+    int rowCount = rows.size();
+    int itemHeight = itemAreaHeight / rowCount;
 
     Double stripOpacity = BeeUtils.isEmpty(getStripOpacityColumnName())
         ? null : ChartHelper.getOpacity(getSettings(), getStripOpacityColumnName());
 
-    Set<Range<JustDate>> ranges = Sets.newHashSet();
-    int row = 0;
+    for (int row = 0; row < rowCount; row++) {
+      for (ChartItem item : rows.get(row)) {
 
-    for (ChartItem item : chartItems) {
-      Widget itemStrip = new CustomDiv(STYLE_SELECTOR_STRIP);
-      setItemWidgetColor(item, itemStrip);
-      if (stripOpacity != null) {
-        StyleUtils.setOpacity(itemStrip, stripOpacity);
+        Widget itemStrip = new CustomDiv(STYLE_SELECTOR_STRIP);
+        setItemWidgetColor(item, itemStrip);
+        if (stripOpacity != null) {
+          StyleUtils.setOpacity(itemStrip, stripOpacity);
+        }
+
+        StyleUtils.setTop(itemStrip, row * itemHeight);
+        StyleUtils.setHeight(itemStrip, itemHeight);
+
+        JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
+        JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
+
+        int left = BeeUtils.round(TimeUtils.dayDiff(firstDate, start) * dayWidth);
+        StyleUtils.setLeft(itemStrip, BeeUtils.clamp(left, 0, width - 1));
+
+        int w = BeeUtils.round((TimeUtils.dayDiff(start, end) + 1) * dayWidth);
+        StyleUtils.setWidth(itemStrip, BeeUtils.clamp(w, 1, width - left));
+
+        panel.add(itemStrip);
       }
-
-      if (BeeUtils.intersects(ranges, item.getRange()) && row < rowCount - 1) {
-        row++;
-      } else {
-        row = 0;
-      }
-      ranges.add(item.getRange());
-
-      StyleUtils.setTop(itemStrip, row * itemHeight);
-      StyleUtils.setHeight(itemStrip, itemHeight);
-
-      JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
-      JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
-
-      int left = BeeUtils.round(TimeUtils.dayDiff(firstDate, start) * dayWidth);
-      StyleUtils.setLeft(itemStrip, BeeUtils.clamp(left, 0, width - 1));
-
-      int w = BeeUtils.round((TimeUtils.dayDiff(start, end) + 1) * dayWidth);
-      StyleUtils.setWidth(itemStrip, BeeUtils.clamp(w, 1, width - left));
-
-      panel.add(itemStrip);
     }
 
     JustDate firstVisible = getVisibleRange().lowerEndpoint();
@@ -961,7 +1049,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       StyleUtils.setBottom(endSlider, getBarHeight());
     }
 
-    endSlider.setTitle(lastVisible.toString());
+    endSlider.setTitle(TimeUtils.nextDay(lastVisible).toString());
 
     endSlider.addMoveHandler(this);
     rangeMovers.put(RangeMover.END_SLIDER, endSlider.getElement());
@@ -975,7 +1063,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       StyleUtils.setHeight(bar, getBarHeight());
     }
 
-    bar.setTitle(ChartHelper.getRangeLabel(firstDate, lastVisible));
+    bar.setTitle(ChartHelper.getRangeLabel(firstVisible, lastVisible));
 
     bar.addMoveHandler(this);
     rangeMovers.put(RangeMover.BAR, bar.getElement());
@@ -1047,7 +1135,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       logger.debug(getCaption(), "loaded", items.size(), "items");
 
       if (!items.isEmpty()) {
-        setMaxRange(ChartHelper.getSpan(items));
+        setMaxRange(ChartHelper.getSpan(items, TimeUtils.today(), TimeUtils.today(1)));
       }
     }
 
@@ -1114,30 +1202,56 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.visibleRange = visibleRange;
   }
 
-  protected boolean updateSetting(String colName, int newValue) {
+  protected boolean updateSetting(String colName, int value) {
+    List<String> colNames = Lists.newArrayList(colName);
+    List<String> values = Lists.newArrayList(BeeUtils.toString(value));
+
+    return updateSettings(colNames, values);
+  }
+
+  protected boolean updateSettings(List<String> colNames, List<String> values) {
     if (DataUtils.isEmpty(getSettings())) {
       logger.severe("update settings: rowSet isempty");
       return false;
     }
 
-    int index = getSettings().getColumnIndex(colName);
-    if (BeeConst.isUndef(index)) {
-      logger.severe(getSettings().getViewName(), colName, "column not found");
-      return false;
+    List<Integer> indexes = Lists.newArrayList();
+
+    for (String colName : colNames) {
+      int index = getSettings().getColumnIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        logger.severe(getSettings().getViewName(), colName, "column not found");
+        return false;
+      } else {
+        indexes.add(index);
+      }
     }
+
+    List<BeeColumn> columns = Lists.newArrayList();
+    List<String> oldValues = Lists.newArrayList();
+    List<String> newValues = Lists.newArrayList();
 
     BeeRow row = getSettings().getRow(0);
 
-    String oldValue = row.getString(index);
-    if (BeeUtils.isInt(oldValue) && BeeUtils.toInt(oldValue) == newValue) {
-      return false;
+    for (int i = 0; i < indexes.size(); i++) {
+      int index = indexes.get(i);
+
+      String oldValue = row.getString(index);
+      String newValue = values.get(i);
+
+      if (!BeeUtils.equalsTrim(oldValue, newValue)) {
+        row.setValue(index, newValue);
+
+        columns.add(getSettings().getColumn(index));
+        oldValues.add(oldValue);
+        newValues.add(newValue);
+      }
     }
 
-    row.setValue(index, newValue);
-
-    List<BeeColumn> columns = Lists.newArrayList(getSettings().getColumn(index));
-    List<String> oldValues = Lists.newArrayList(oldValue);
-    List<String> newValues = Lists.newArrayList(BeeUtils.toString(newValue));
+    if (columns.isEmpty()) {
+      return false;
+    }
 
     Queries.update(getSettings().getViewName(), row.getId(), row.getVersion(), columns, oldValues,
         newValues, new RowCallback() {
@@ -1151,6 +1265,45 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         });
 
     return true;
+  }
+
+  protected boolean updateSettings(String col1, int val1, String col2, int val2) {
+    List<String> colNames = Lists.newArrayList(col1, col2);
+    List<String> values = Lists.newArrayList(BeeUtils.toString(val1), BeeUtils.toString(val2));
+
+    return updateSettings(colNames, values);
+  }
+
+  private List<List<ChartItem>> doStripLayout(Collection<? extends ChartItem> chartItems,
+      int maxRows) {
+
+    List<List<ChartItem>> rows = Lists.newArrayList();
+
+    for (ChartItem item : chartItems) {
+      int row = BeeConst.UNDEF;
+      for (int i = 0; i < rows.size(); i++) {
+        if (!ChartHelper.intersects(rows.get(i), item.getRange())) {
+          row = i;
+          break;
+        }
+      }
+
+      if (BeeConst.isUndef(row)) {
+        if (rows.size() < maxRows) {
+          row = rows.size();
+
+          List<ChartItem> rowItems = Lists.newArrayList();
+          rows.add(rowItems);
+
+        } else {
+          row = BeeUtils.randomInt(0, rows.size());
+        }
+      }
+
+      rows.get(row).add(item);
+    }
+
+    return rows;
   }
 
   private Long getColorTheme(BeeRow row) {

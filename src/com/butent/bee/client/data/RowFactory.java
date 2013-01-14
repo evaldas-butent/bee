@@ -129,11 +129,17 @@ public class RowFactory {
       return;
     }
     
+    BeeRow row = createEmptyRow(dataInfo, true);
+
+    createRow(dataInfo, row);
+  }
+
+  public static void createRow(DataInfo dataInfo, BeeRow row) {
+    Assert.notNull(dataInfo);
+
     String formName = dataInfo.getNewRowForm();
     String caption = dataInfo.getNewRowCaption();
-    
-    BeeRow row = createEmptyRow(dataInfo, true);
-    
+
     createRow(formName, caption, dataInfo, row, null, null);
   }
   

@@ -39,19 +39,22 @@
   right: 0;
 }
 
-.bee-tr-chart-HeaderSplitter, .bee-tr-chart-FooterSplitter {
+.bee-tr-chart-HeaderSplitter,
+.bee-tr-chart-FooterSplitter {
   position: absolute;
   left: 0;
   right: 0;
 }
 
-.bee-tr-chart-visibleRange-start:hover, .bee-tr-chart-visibleRange-end:hover {
+.bee-tr-chart-visibleRange-start:hover,
+.bee-tr-chart-visibleRange-end:hover {
   text-decoration: underline;
   color: #00e;
   cursor: pointer;
 }
 
-.bee-tr-chart-row-sep, .bee-tr-chart-bottom-sep {
+.bee-tr-chart-row-sep,
+.bee-tr-chart-bottom-sep {
   position: absolute;
   height: 1px;
 }
@@ -71,7 +74,8 @@
   position: absolute;
 }
 
-.bee-tr-chart-Selector-startSlider-label, .bee-tr-chart-Selector-endSlider-label {
+.bee-tr-chart-Selector-startSlider-label,
+.bee-tr-chart-Selector-endSlider-label {
   position: absolute;
   padding: 2px;
   margin-bottom: 2px;
@@ -80,14 +84,16 @@
   border: 1px solid #ccc;
 }
 
-.bee-tr-chart-Selector-startSlider, .bee-tr-chart-Selector-endSlider {
+.bee-tr-chart-Selector-startSlider,
+.bee-tr-chart-Selector-endSlider {
   position: absolute;
   top: 0;
   bottom: 8px;
   background-image: -webkit-linear-gradient(left, white, gray, white);
   cursor: col-resize;
 }
-.bee-tr-chart-Selector-startSlider:hover, .bee-tr-chart-Selector-endSlider:hover {
+.bee-tr-chart-Selector-startSlider:hover,
+.bee-tr-chart-Selector-endSlider:hover {
   background-image: -webkit-linear-gradient(left, white, black, white);
 }
 
@@ -102,7 +108,9 @@
   background-image: -webkit-linear-gradient(top, white, black, white);
 }
 
-.bee-tr-chart-daySeparator, .bee-tr-chart-monthSeparator, .bee-tr-chart-rightSeparator {
+.bee-tr-chart-daySeparator,
+.bee-tr-chart-monthSeparator,
+.bee-tr-chart-rightSeparator {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -118,7 +126,9 @@
   background-color: #888;
 }
 
-.bee-tr-chart-dayLabel, .bee-tr-chart-dayPicture {
+.bee-tr-chart-dayLabel,
+.bee-tr-chart-dayNarrow,
+.bee-tr-chart-dayPicture {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -126,10 +136,18 @@
 .bee-tr-chart-dayLabel {
   text-align: center;
 }
-.bee-tr-chart-dayNarrow {
+
+.bee-tr-chart-dayNarrow > * {
+  position: absolute;
+  left: 0;
   font-size: 12px;
   line-height: 12px;
-  word-wrap: break-word;
+}
+.bee-tr-chart-dayNarrow-tens {
+  top: 0;
+}
+.bee-tr-chart-dayNarrow-ones {
+  bottom: 0;
 }
 
 .bee-tr-chart-dayPicture {
@@ -139,14 +157,15 @@
   -webkit-align-content: flex-end;
   -webkit-flex-wrap: wrap;
 }
-.bee-tr-chart-dayTens {
+.bee-tr-chart-dayPicture-tens {
   background-color: #888;
 }
-.bee-tr-chart-dayOnes {
+.bee-tr-chart-dayPicture-ones {
   background-color: #ccc;
 }
 
-.bee-tr-chart-visibleRange-panel, .bee-tr-chart-maxRange-panel {
+.bee-tr-chart-visibleRange-panel,
+.bee-tr-chart-maxRange-panel {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -154,7 +173,10 @@
   display: -webkit-flex;
   overflow: hidden;
 }
-.bee-tr-chart-visibleRange-start, .bee-tr-chart-visibleRange-end, .bee-tr-chart-maxRange-start, .bee-tr-chart-maxRange-end {
+.bee-tr-chart-visibleRange-start,
+.bee-tr-chart-visibleRange-end,
+.bee-tr-chart-maxRange-start,
+.bee-tr-chart-maxRange-end {
   -webkit-flex: 1;
 }
 
@@ -192,7 +214,10 @@
   cursor: row-resize;
 }
 
-.bee-tr-fx-Customer-panel, .bee-tr-fx-Order-panel, .bee-tr-ss-Vehicle-panel {
+.bee-tr-fx-Customer-panel,
+.bee-tr-fx-Order-panel,
+.bee-tr-ss-Vehicle-panel,
+.bee-tr-ss-Trip-panel {
   position: absolute;
   display: -webkit-flex;
   -webkit-justify-content: center;
@@ -200,11 +225,19 @@
   overflow: auto;
 }
 
-.bee-tr-fx-Customer-label, .bee-tr-fx-Order-label, .bee-tr-ss-Vehicle-label {
+.bee-tr-fx-Customer-label,
+.bee-tr-fx-Order-label,
+.bee-tr-ss-Vehicle-label,
+.bee-tr-ss-Trip-label,
+.bee-tr-ss-Trip-trailer {
   -webkit-flex: 1;
 }
 
-.bee-tr-fx-Customer-label:hover, .bee-tr-fx-Order-label:hover, .bee-tr-ss-Vehicle-label:hover {
+.bee-tr-fx-Customer-label:hover,
+.bee-tr-fx-Order-label:hover,
+.bee-tr-ss-Vehicle-label:hover,
+.bee-tr-ss-Trip-label:hover,
+.bee-tr-ss-Trip-trailer:hover {
   text-decoration: underline;
   color: #00e;
   cursor: pointer;
@@ -218,7 +251,8 @@
   -webkit-justify-content: space-between;
   -webkit-align-items: center;
 }
-.bee-tr-fx-Item-load, .bee-tr-fx-Item-unload {
+.bee-tr-fx-Item-load,
+.bee-tr-fx-Item-unload {
   font-size: 12px;
 }
 
@@ -236,18 +270,27 @@
   cursor: move;
 }
 
-.bee-tr-ss-Item-load, .bee-tr-ss-Item-unload {
+.bee-tr-ss-Item-load,
+.bee-tr-ss-Item-unload {
   font-size: 12px;
 }
 
-.bee-tr-fx-Item-drag, .bee-tr-ss-Item-drag {
+.bee-tr-fx-Item-drag,
+.bee-tr-ss-Item-drag {
   background-image: -webkit-linear-gradient(top, white, white);
   box-sizing: border-box;
   border: 2px inset darkgreen;
+  color: black;
 }
 .bee-tr-ss-Item-over {
   background-image: -webkit-linear-gradient(top, white, white);
   outline: red outset 3px;
+  color: #222;
+}
+
+.bee-tr-ss-Vehicle-over,
+.bee-tr-ss-Trip-over {
+  border: 3px solid red;
 }
 
 .bee-tr-ss-Service-panel {
@@ -264,14 +307,20 @@
   display: none;
 }
 
-.bee-tr-fx-Customer-row-sep, .bee-tr-fx-Order-row-sep, .bee-tr-ss-Vehicle-row-sep {
+.bee-tr-fx-Customer-row-sep,
+.bee-tr-fx-Order-row-sep,
+.bee-tr-ss-Vehicle-row-sep,
+.bee-tr-ss-Trip-row-sep {
   position: absolute;
   height: 1px;
 }
-.bee-tr-fx-Customer-row-sep, .bee-tr-ss-Vehicle-row-sep, .bee-tr-chart-bottom-sep {
+.bee-tr-fx-Customer-row-sep,
+.bee-tr-ss-Vehicle-row-sep,
+.bee-tr-chart-bottom-sep {
   background-color: #888;
 }
-.bee-tr-fx-Order-row-sep {
+.bee-tr-fx-Order-row-sep,
+.bee-tr-ss-Trip-row-sep {
   background-color: #ddd;
 }
 

@@ -5,6 +5,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -20,14 +23,17 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
@@ -40,6 +46,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -52,10 +59,11 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class ShippingSchedule extends ChartBase {
 
-  private static class Freight implements ChartItem, TruckItem {
+  private static class Freight implements ChartItem {
 
     private final Long tripId;
     private final DateTime tripDate;
@@ -63,6 +71,8 @@ class ShippingSchedule extends ChartBase {
 
     private final Long vehicleId;
     private final String vehicleNumber;
+
+    private final Long trailerId;
     private final String trailerNumber;
 
     private final JustDate tripDateFrom;
@@ -70,7 +80,7 @@ class ShippingSchedule extends ChartBase {
 
     private final Long cargoTripId;
     private final Long cargoTripVersion;
-    
+
     private final Long cargoId;
     private final String cargoDescription;
 
@@ -101,6 +111,8 @@ class ShippingSchedule extends ChartBase {
 
       this.vehicleId = row.getLong(COL_VEHICLE);
       this.vehicleNumber = row.getValue(ALS_VEHICLE_NUMBER);
+
+      this.trailerId = row.getLong(COL_TRAILER);
       this.trailerNumber = row.getValue(ALS_TRAILER_NUMBER);
 
       this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
@@ -147,26 +159,9 @@ class ShippingSchedule extends ChartBase {
     public Range<JustDate> getRange() {
       return range;
     }
-
-    @Override
-    public Long getVehicleId() {
-      return vehicleId;
-    }
-
-    @Override
-    public String getVehicleNumber() {
-      return vehicleNumber;
-    }
   }
 
-  private interface TruckItem extends HasDateRange {
-
-    Long getVehicleId();
-
-    String getVehicleNumber();
-  }
-
-  private static class VehicleService implements TruckItem {
+  private static class VehicleService implements HasDateRange {
     private final Long vehicleId;
     private final String vehicleNumber;
 
@@ -193,16 +188,6 @@ class ShippingSchedule extends ChartBase {
     public Range<JustDate> getRange() {
       return range;
     }
-
-    @Override
-    public Long getVehicleId() {
-      return vehicleId;
-    }
-
-    @Override
-    public String getVehicleNumber() {
-      return vehicleNumber;
-    }
   }
 
   static final String SUPPLIER_KEY = "shipping_schedule";
@@ -214,6 +199,14 @@ class ShippingSchedule extends ChartBase {
   private static final String STYLE_VEHICLE_ROW_SEPARATOR = STYLE_VEHICLE_PREFIX + "row-sep";
   private static final String STYLE_VEHICLE_PANEL = STYLE_VEHICLE_PREFIX + "panel";
   private static final String STYLE_VEHICLE_LABEL = STYLE_VEHICLE_PREFIX + "label";
+  private static final String STYLE_VEHICLE_OVER = STYLE_VEHICLE_PREFIX + "over";
+
+  private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
+  private static final String STYLE_TRIP_ROW_SEPARATOR = STYLE_TRIP_PREFIX + "row-sep";
+  private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
+  private static final String STYLE_TRIP_LABEL = STYLE_TRIP_PREFIX + "label";
+  private static final String STYLE_TRIP_TRAILER = STYLE_TRIP_PREFIX + "trailer";
+  private static final String STYLE_TRIP_OVER = STYLE_TRIP_PREFIX + "over";
 
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "Item-";
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
@@ -253,6 +246,15 @@ class ShippingSchedule extends ChartBase {
   private final Map<Long, List<VehicleService>> services = Maps.newHashMap();
 
   private int vehicleWidth = BeeConst.UNDEF;
+  private int tripWidth = BeeConst.UNDEF;
+
+  private boolean separateTrips = false;
+
+  private final Set<String> vehiclePanels = Sets.newHashSet();
+  private final Set<String> tripPanels = Sets.newHashSet();
+
+  private final Map<Integer, Long> vehiclesByRow = Maps.newHashMap();
+  private final Map<Integer, Long> tripsByRow = Maps.newHashMap();
 
   private ShippingSchedule() {
     super();
@@ -372,11 +374,50 @@ class ShippingSchedule extends ChartBase {
   }
 
   @Override
+  protected void onDoubleClickChart(int row, JustDate date) {
+    Long vehicleId = vehiclesByRow.get(row);
+
+    if (vehicleId != null && TimeUtils.isMeq(date, TimeUtils.today())) {
+      DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
+      BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+
+      if (TimeUtils.isMore(date, TimeUtils.today())) {
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRIP_DATE), date.getDateTime());
+      }
+
+      newRow.setValue(dataInfo.getColumnIndex(COL_VEHICLE), vehicleId);
+      newRow.setValue(dataInfo.getColumnIndex(COL_VEHICLE_NUMBER), findVehicleNumber(vehicleId));
+
+      if (tripsByRow.containsKey(row)) {
+        List<Freight> tripItems = filterByTrip(tripsByRow.get(row));
+        if (!tripItems.isEmpty()) {
+          Freight item = tripItems.get(0);
+
+          if (item.trailerId != null) {
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRAILER), item.trailerId);
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRAILER_NUMBER), item.trailerNumber);
+          }
+        }
+      }
+
+      RowFactory.createRow(dataInfo, newRow);
+    }
+  }
+
+  @Override
   protected void prepareChart(int canvasWidth, int canvasHeight) {
     setVehicleWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_TRUCK, 80,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
 
-    setChartLeft(getVehicleWidth());
+    setSeparateTrips(ChartHelper.getBoolean(getSettings(), COL_SS_SEPARATE_TRIPS));
+    if (separateTrips()) {
+      setTripWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_TRIP, 80,
+          ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
+    } else {
+      setTripWidth(0);
+    }
+
+    setChartLeft(getVehicleWidth() + getTripWidth());
     setChartWidth(canvasWidth - getChartLeft() - getChartRight());
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20,
@@ -391,10 +432,10 @@ class ShippingSchedule extends ChartBase {
     setBarHeight(ChartHelper.getPixels(getSettings(), COL_SS_BAR_HEIGHT, BeeConst.UNDEF,
         1, getFooterHeight() / 2));
   }
-  
+
   @Override
   protected void renderContent(ComplexPanel panel) {
-    List<List<TruckItem>> layoutRows = doLayout();
+    List<List<Freight>> layoutRows = doLayout();
     if (layoutRows.isEmpty()) {
       return;
     }
@@ -402,48 +443,84 @@ class ShippingSchedule extends ChartBase {
     int height = layoutRows.size() * getRowHeight();
     StyleUtils.setHeight(panel, height);
 
-    ChartHelper.addHorizontalMover(panel, getVehicleWidth(), height);
     ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
         height);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
 
-    Widget vehicleWidget = null;
+    int calendarWidth = getCalendarWidth();
 
     Long lastVehicle = null;
+    Long lastTrip = null;
+
+    IdentifiableWidget vehicleWidget = null;
+    IdentifiableWidget tripWidget = null;
+
     int vehicleStartRow = 0;
+    int tripStartRow = 0;
 
     Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_SS_ITEM_OPACITY);
 
+    vehiclePanels.clear();
+    tripPanels.clear();
+
+    vehiclesByRow.clear();
+    tripsByRow.clear();
+
     for (int row = 0; row < layoutRows.size(); row++) {
-      List<TruckItem> rowItems = layoutRows.get(row);
+      List<Freight> rowItems = layoutRows.get(row);
       int top = row * getRowHeight();
 
-      TruckItem firstItem = rowItems.get(0);
+      Freight rowItem = rowItems.get(0);
 
       if (row == 0) {
-        vehicleWidget = createVehicleWidget(firstItem);
-
+        vehicleWidget = createVehicleWidget(rowItem);
         vehicleStartRow = row;
-        lastVehicle = firstItem.getVehicleId();
+        lastVehicle = rowItem.vehicleId;
 
-      } else if (Objects.equal(lastVehicle, firstItem.getVehicleId())) {
-        ChartHelper.addRowSeparator(panel, top, getChartLeft(), getChartWidth());
+        if (separateTrips()) {
+          tripWidget = createTripWidget(rowItem);
+        }
+        tripStartRow = row;
+        lastTrip = rowItem.tripId;
 
       } else {
-        addVehicleWidget(panel, vehicleWidget, vehicleStartRow, row - 1);
+        boolean vehicleChanged = !Objects.equal(lastVehicle, rowItem.vehicleId);
+        boolean tripChanged = vehicleChanged || !Objects.equal(lastTrip, rowItem.tripId);
 
-        vehicleWidget = createVehicleWidget(firstItem);
+        if (vehicleChanged) {
+          addVehicleWidget(panel, vehicleWidget, lastVehicle, vehicleStartRow, row - 1);
+          addVehicleServices(panel, lastVehicle, vehicleStartRow, row - 1);
 
-        vehicleStartRow = row;
-        lastVehicle = firstItem.getVehicleId();
+          vehicleWidget = createVehicleWidget(rowItem);
 
-        ChartHelper.addRowSeparator(panel, STYLE_VEHICLE_ROW_SEPARATOR, top, 0,
-            getVehicleWidth() + getChartWidth());
+          vehicleStartRow = row;
+          lastVehicle = rowItem.vehicleId;
+        }
+
+        if (tripChanged) {
+          if (separateTrips()) {
+            addTripWidget(panel, tripWidget, lastTrip, tripStartRow, row - 1);
+            tripWidget = createTripWidget(rowItem);
+          }
+
+          tripStartRow = row;
+          lastTrip = rowItem.tripId;
+        }
+
+        if (vehicleChanged) {
+          ChartHelper.addRowSeparator(panel, STYLE_VEHICLE_ROW_SEPARATOR, top, 0,
+              getVehicleWidth() + getTripWidth() + calendarWidth);
+        } else if (tripChanged && separateTrips()) {
+          ChartHelper.addRowSeparator(panel, STYLE_TRIP_ROW_SEPARATOR, top, getVehicleWidth(),
+              getTripWidth() + calendarWidth);
+        } else {
+          ChartHelper.addRowSeparator(panel, top, getChartLeft(), calendarWidth);
+        }
       }
 
-      for (TruckItem item : rowItems) {
+      for (Freight item : rowItems) {
         JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
         JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
 
@@ -453,41 +530,146 @@ class ShippingSchedule extends ChartBase {
         Rectangle rectangle = new Rectangle(left, top, width,
             getRowHeight() - ChartHelper.ROW_SEPARATOR_HEIGHT);
 
-        if (item instanceof Freight) {
-          Widget itemWidget = createItemWidget((Freight) item);
-          rectangle.applyTo(itemWidget);
-          if (itemOpacity != null) {
-            StyleUtils.setOpacity(itemWidget, itemOpacity);
-          }
+        Widget itemWidget = createItemWidget(item);
+        rectangle.applyTo(itemWidget);
+        if (itemOpacity != null) {
+          StyleUtils.setOpacity(itemWidget, itemOpacity);
+        }
 
-          panel.add(itemWidget);
+        panel.add(itemWidget);
+      }
+    }
 
-        } else if (item instanceof VehicleService) {
-          Widget serviceWidget = createServiceWidget((VehicleService) item);
+    int lastRow = layoutRows.size() - 1;
+
+    if (vehicleWidget != null) {
+      addVehicleWidget(panel, vehicleWidget, lastVehicle, vehicleStartRow, lastRow);
+      addVehicleServices(panel, lastVehicle, vehicleStartRow, lastRow);
+    }
+    if (tripWidget != null) {
+      addTripWidget(panel, tripWidget, lastTrip, tripStartRow, lastRow);
+    }
+
+    ChartHelper.addBottomSeparator(panel, height, 0, getChartLeft() + calendarWidth);
+
+    renderMovers(panel, height);
+  }
+
+  private void addTripWidget(HasWidgets panel, IdentifiableWidget widget, Long tripId,
+      int firstRow, int lastRow) {
+
+    Rectangle rectangle = ChartHelper.getLegendRectangle(getVehicleWidth(), getTripWidth(),
+        firstRow, lastRow, getRowHeight());
+
+    Edges margins = new Edges();
+    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+
+    ChartHelper.apply(widget.asWidget(), rectangle, margins);
+    panel.add(widget.asWidget());
+
+    tripPanels.add(widget.getId());
+    for (int row = firstRow; row <= lastRow; row++) {
+      tripsByRow.put(row, tripId);
+    }
+  }
+
+  private void addVehicleServices(HasWidgets panel, Long vehicleId, int firstRow, int lastRow) {
+    if (services.containsKey(vehicleId)) {
+      JustDate firstDate = getVisibleRange().lowerEndpoint();
+      JustDate lastDate = getVisibleRange().upperEndpoint();
+
+      List<VehicleService> serviceItems = services.get(vehicleId);
+
+      for (VehicleService item : serviceItems) {
+        if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
+          JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
+          JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
+
+          int left = getChartLeft() + TimeUtils.dayDiff(firstDate, start) * getDayColumnWidth();
+          int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
+
+          int top = firstRow * getRowHeight();
+          int height = (lastRow - firstRow + 1) * getRowHeight();
+
+          Rectangle rectangle = new Rectangle(left, top, width,
+              height - ChartHelper.ROW_SEPARATOR_HEIGHT);
+
+          Widget serviceWidget = createServiceWidget(item);
           rectangle.applyTo(serviceWidget);
 
           panel.add(serviceWidget);
         }
       }
     }
-
-    if (vehicleWidget != null) {
-      addVehicleWidget(panel, vehicleWidget, vehicleStartRow, layoutRows.size() - 1);
-    }
-
-    ChartHelper.addBottomSeparator(panel, height, 0, getVehicleWidth() + getChartWidth());
   }
 
-  private void addVehicleWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
+  private void addVehicleWidget(HasWidgets panel, IdentifiableWidget widget, Long vehicleId,
+      int firstRow, int lastRow) {
+
     Rectangle rectangle = ChartHelper.getLegendRectangle(0, getVehicleWidth(),
         firstRow, lastRow, getRowHeight());
-    
+
     Edges margins = new Edges();
     margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
-    
-    ChartHelper.apply(widget, rectangle, margins);
-    panel.add(widget);
+
+    ChartHelper.apply(widget.asWidget(), rectangle, margins);
+    panel.add(widget.asWidget());
+
+    vehiclePanels.add(widget.getId());
+    for (int row = firstRow; row <= lastRow; row++) {
+      vehiclesByRow.put(row, vehicleId);
+    }
+  }
+
+  private void assignCargoToTrip(long cargoId, Long sourceTrip, long targetTrip) {
+    final String viewName = VIEW_CARGO_TRIPS;
+
+    if (sourceTrip == null) {
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
+      List<String> values = Lists.newArrayList(BeeUtils.toString(cargoId),
+          BeeUtils.toString(targetTrip));
+
+      Queries.insert(viewName, columns, values, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+        }
+      });
+
+    } else {
+      Freight sourceItem = null;
+      for (Freight item : items) {
+        if (Objects.equal(cargoId, item.cargoId)) {
+          sourceItem = item;
+          break;
+        }
+      }
+
+      if (sourceItem == null) {
+        LogUtils.getRootLogger().warning("cargo source not found:", cargoId, sourceTrip);
+        return;
+      }
+
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
+      List<String> oldValues = Lists.newArrayList(BeeUtils.toString(sourceTrip));
+      List<String> newValues = Lists.newArrayList(BeeUtils.toString(targetTrip));
+
+      Queries.update(viewName, sourceItem.cargoTripId, sourceItem.cargoTripVersion,
+          columns, oldValues, newValues, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+            }
+          });
+    }
+  }
+
+  private String buildTripTitle(Freight item) {
+    return ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
+        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
+        "Vairuotojai", drivers.get(item.tripId));
   }
 
   private Widget createItemWidget(final Freight item) {
@@ -499,7 +681,7 @@ class ShippingSchedule extends ChartBase {
     Long cargoId = item.cargoId;
 
     panel.addStyleName((cargoId == null) ? STYLE_ITEM_TRIP : STYLE_ITEM_CARGO);
-    
+
     String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
     String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
         item.unloadingTerminal);
@@ -507,9 +689,7 @@ class ShippingSchedule extends ChartBase {
     String loadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.loadingDate, loading));
     String unloadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.unloadingDate, unloading));
 
-    final String tripTitle = ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
-        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
-        "Vairuotojai", drivers.get(tripId));
+    final String tripTitle = buildTripTitle(item);
 
     String cargoTitle = (cargoId == null) ? null : ChartHelper.buildTitle(
         "Užsakymo Nr.", item.orderNo, "Užsakovas", item.customerName,
@@ -540,7 +720,7 @@ class ShippingSchedule extends ChartBase {
         }, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {
-            onDropCargo(parameter, tripId, tripTitle, panel);
+            dropCargoOnTrip(parameter, tripId, tripTitle, panel, STYLE_ITEM_OVER);
           }
         });
 
@@ -565,9 +745,9 @@ class ShippingSchedule extends ChartBase {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_SERVICE_PANEL);
 
-    panel.setTitle(BeeUtils.buildLines(service.name, service.notes));
+    panel.setTitle(BeeUtils.buildLines(service.vehicleNumber, service.name, service.notes));
 
-    final Long vehicleId = service.getVehicleId();
+    final Long vehicleId = service.vehicleId;
     panel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -583,11 +763,76 @@ class ShippingSchedule extends ChartBase {
     return panel;
   }
 
-  private Widget createVehicleWidget(TruckItem item) {
-    BeeLabel widget = new BeeLabel(item.getVehicleNumber());
-    widget.addStyleName(STYLE_VEHICLE_LABEL);
+  private IdentifiableWidget createTripWidget(Freight item) {
+    final Flow panel = new Flow();
+    panel.addStyleName(STYLE_TRIP_PANEL);
 
-    final Long vehicleId = item.getVehicleId();
+    final Long tripId = item.tripId;
+    final String tripTitle = buildTripTitle(item);
+
+    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_TRIP_OVER,
+        new Predicate<Long>() {
+          @Override
+          public boolean apply(Long input) {
+            return !Objects.equal(tripId, DndHelper.getRelatedId());
+          }
+        }, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            dropCargoOnTrip(parameter, tripId, tripTitle, panel, STYLE_TRIP_OVER);
+          }
+        });
+
+    BeeLabel label = new BeeLabel(item.tripNo);
+    label.addStyleName(STYLE_TRIP_LABEL);
+
+    label.setTitle(tripTitle);
+
+    label.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_TRIPS, tripId);
+      }
+    });
+
+    panel.add(label);
+
+    if (item.trailerId != null) {
+      BeeLabel trailer = new BeeLabel(item.trailerNumber);
+      trailer.addStyleName(STYLE_TRIP_TRAILER);
+
+      final Long trailerId = item.trailerId;
+
+      trailer.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          openDataRow(event, VIEW_VEHICLES, trailerId);
+        }
+      });
+
+      panel.add(trailer);
+    }
+
+    return panel;
+  }
+
+  private IdentifiableWidget createVehicleWidget(Freight item) {
+    final Simple panel = new Simple();
+    panel.addStyleName(STYLE_VEHICLE_PANEL);
+
+    final Long vehicleId = item.vehicleId;
+    final String vehicleNumber = item.vehicleNumber;
+
+    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_VEHICLE_OVER,
+        DndHelper.alwaysTarget, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            dropCargoOnVehicle(parameter, vehicleId, vehicleNumber, panel, STYLE_VEHICLE_OVER);
+          }
+        });
+
+    BeeLabel widget = new BeeLabel(vehicleNumber);
+    widget.addStyleName(STYLE_VEHICLE_LABEL);
 
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -596,48 +841,33 @@ class ShippingSchedule extends ChartBase {
       }
     });
 
-    Simple panel = new Simple(widget);
-    panel.addStyleName(STYLE_VEHICLE_PANEL);
+    panel.add(widget);
 
     return panel;
   }
 
-  private List<List<TruckItem>> doLayout() {
-    List<List<TruckItem>> rows = Lists.newArrayList();
+  private List<List<Freight>> doLayout() {
+    List<List<Freight>> rows = Lists.newArrayList();
 
-    Long lastVehicle = null;
-    List<TruckItem> rowItems = Lists.newArrayList();
+    Long lastId = null;
+    List<Freight> rowItems = Lists.newArrayList();
 
     for (Freight item : items) {
-
-      if (!Objects.equal(item.vehicleId, lastVehicle)) {
-        lastVehicle = item.vehicleId;
-
-        if (!rowItems.isEmpty()) {
-          rows.add(Lists.newArrayList(rowItems));
-          rowItems.clear();
-        }
-
-        if (services.containsKey(lastVehicle)) {
-          List<VehicleService> vs = services.get(lastVehicle);
-
-          for (VehicleService service : vs) {
-            if (BeeUtils.intersects(getVisibleRange(), service.getRange())) {
-              if (ChartHelper.intersects(rowItems, service.getRange())) {
-                rows.add(Lists.newArrayList(rowItems));
-                rowItems.clear();
-              }
-              rowItems.add(service);
-            }
-          }
-        }
-      }
-
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
-        if (ChartHelper.intersects(rowItems, item.getRange())) {
-          rows.add(Lists.newArrayList(rowItems));
-          rowItems.clear();
+
+        Long id = separateTrips() ? item.tripId : item.vehicleId;
+
+        if (!Objects.equal(id, lastId) ||
+            ChartHelper.intersects(rowItems, item.getRange())) {
+
+          if (!rowItems.isEmpty()) {
+            rows.add(Lists.newArrayList(rowItems));
+            rowItems.clear();
+          }
+
+          lastId = id;
         }
+
         rowItems.add(item);
       }
     }
@@ -648,12 +878,8 @@ class ShippingSchedule extends ChartBase {
     return rows;
   }
 
-  private int getVehicleWidth() {
-    return vehicleWidth;
-  }
-
-  private void onDropCargo(final Long cargoId, final Long targetTrip, String targetDescription,
-      final Widget targetWidget) {
+  private void dropCargoOnTrip(final Long cargoId, final Long targetTrip, String targetDescription,
+      final Widget targetWidget, final String targetStyle) {
 
     final Long sourceTrip = DndHelper.getRelatedId();
     String sourceDescription = DndHelper.getDataDescription();
@@ -664,61 +890,45 @@ class ShippingSchedule extends ChartBase {
     if (Objects.equal(sourceTrip, targetTrip)) {
       return;
     }
-    
+
     List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "REISAS:",
-        targetDescription, "Priskirti krovinį reisui ?");
-    
+        targetDescription);
+
+    List<Freight> targetItems = filterByTrip(targetTrip);
+    List<String> targetCargo = Lists.newArrayList();
+
+    for (Freight item : targetItems) {
+      if (item.cargoId != null) {
+        String loading = BeeUtils.joinWords(item.loadingDate,
+            getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal));
+        String unloading = BeeUtils.joinWords(item.unloadingDate,
+            getPlaceLabel(item.unloadingCountry, item.unloadingPlace, item.unloadingTerminal));
+
+        String message = ChartHelper.buildMessage(BeeConst.DEFAULT_LIST_SEPARATOR,
+            "Krovinys", item.cargoDescription, "Pakrovimas", loading, "Iškrovimas", unloading);
+        if (!BeeUtils.isEmpty(message)) {
+          targetCargo.add(message);
+        }
+      }
+    }
+
+    if (!targetCargo.isEmpty()) {
+      messages.add(BeeUtils.joinWords("REISO KROVINIAI:", BeeUtils.bracket(targetCargo.size())));
+      messages.add(BeeUtils.join(BeeConst.STRING_EOL, targetCargo));
+    }
+
+    messages.add("Priskirti krovinį reisui ?");
+
     Global.getMsgBoxen().decide("Krovinio priskyrimas reisui", messages, new DecisionCallback() {
       @Override
       public void onCancel() {
         reset();
       }
-      
+
       @Override
       public void onConfirm() {
         reset();
-        
-        final String viewName = VIEW_CARGO_TRIPS;
-        
-        if (sourceTrip == null) {
-          List<BeeColumn> columns = Data.getColumns(viewName,
-              Lists.newArrayList(COL_CARGO, COL_TRIP));
-          List<String> values = Lists.newArrayList(BeeUtils.toString(cargoId),
-              BeeUtils.toString(targetTrip));
-          
-          Queries.insert(viewName, columns, values, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
-            }
-          });
-
-        } else {
-          Freight sourceItem = null;
-          for (Freight item : items) {
-            if (Objects.equal(cargoId, item.cargoId)) {
-              sourceItem = item;
-              break;
-            }
-          }
-          
-          if (sourceItem == null) {
-            LogUtils.getRootLogger().warning("cargo source not found:", cargoId, sourceTrip);
-            return;
-          }
-          
-          List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
-          List<String> oldValues = Lists.newArrayList(BeeUtils.toString(sourceTrip));
-          List<String> newValues = Lists.newArrayList(BeeUtils.toString(targetTrip));
-
-          Queries.update(viewName, sourceItem.cargoTripId, sourceItem.cargoTripVersion,
-              columns, oldValues, newValues, new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
-                }
-              });
-        }
+        assignCargoToTrip(cargoId, sourceTrip, targetTrip);
       }
 
       @Override
@@ -727,11 +937,230 @@ class ShippingSchedule extends ChartBase {
       }
 
       private void reset() {
-        if (targetWidget != null) {
-          targetWidget.removeStyleName(STYLE_ITEM_OVER);
+        if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
+          targetWidget.removeStyleName(targetStyle);
         }
       }
     });
+  }
+
+  private void dropCargoOnVehicle(final Long cargoId, final Long vehicleId,
+      String vehicleNumber, final Widget targetWidget, final String targetStyle) {
+
+    final Long sourceTrip = DndHelper.getRelatedId();
+    String sourceDescription = DndHelper.getDataDescription();
+
+    if (!DataUtils.isId(cargoId) || !DataUtils.isId(vehicleId)) {
+      return;
+    }
+
+    List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "VILKIKAS:",
+        vehicleNumber, "Sukurti kroviniui naują reisą ?");
+
+    Global.getMsgBoxen().decide("Naujo reiso sukūrimas", messages, new DecisionCallback() {
+      @Override
+      public void onCancel() {
+        reset();
+      }
+
+      @Override
+      public void onConfirm() {
+        reset();
+        
+        final String viewName = VIEW_TRIPS;
+        final DataInfo dataInfo = Data.getDataInfo(viewName);
+
+        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+        newRow.setValue(dataInfo.getColumnIndex(COL_VEHICLE), vehicleId);
+        
+        Queries.insert(viewName, dataInfo.getColumns(), newRow, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+            assignCargoToTrip(cargoId, sourceTrip, result.getId());
+            
+            BeeKeeper.getScreen().notifyInfo("Sukurtas naujas reisas",
+                "Nr. " + result.getString(dataInfo.getColumnIndex(COL_TRIP_NO)));
+          }
+        });
+      }
+
+      @Override
+      public void onDeny() {
+        reset();
+      }
+
+      private void reset() {
+        if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
+          targetWidget.removeStyleName(targetStyle);
+        }
+      }
+    });
+  }
+
+  private List<Freight> filterByTrip(Long tripId) {
+    List<Freight> result = Lists.newArrayList();
+
+    for (Freight item : items) {
+      if (Objects.equal(item.tripId, tripId)) {
+        result.add(item);
+      }
+    }
+
+    return result;
+  }
+
+  private String findVehicleNumber(Long vehicleId) {
+    if (services.containsKey(vehicleId)) {
+      List<VehicleService> vsList = services.get(vehicleId);
+      if (!vsList.isEmpty()) {
+        return vsList.get(0).vehicleNumber;
+      }
+    }
+
+    for (Freight item : items) {
+      if (Objects.equal(item.vehicleId, vehicleId)) {
+        return item.vehicleNumber;
+      }
+    }
+
+    return null;
+  }
+
+  private int getTripWidth() {
+    return tripWidth;
+  }
+
+  private int getVehicleWidth() {
+    return vehicleWidth;
+  }
+
+  private void onTripResize(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element resizer = ((Mover) event.getSource()).getElement();
+    int oldLeft = StyleUtils.getLeft(resizer);
+
+    int maxLeft = getVehicleWidth() + 300;
+    if (getChartWidth() > 0) {
+      maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
+    }
+
+    int newLeft = BeeUtils.clamp(oldLeft + delta, getVehicleWidth() + 1, maxLeft);
+
+    if (newLeft != oldLeft || event.isFinished()) {
+      int tripPx = newLeft - getVehicleWidth() + ChartHelper.DEFAULT_MOVER_WIDTH;
+
+      if (newLeft != oldLeft) {
+        StyleUtils.setLeft(resizer, newLeft);
+
+        for (String id : tripPanels) {
+          StyleUtils.setWidth(id, tripPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+        }
+      }
+
+      if (event.isFinished() && updateSetting(COL_SS_PIXELS_PER_TRIP, tripPx)) {
+        setTripWidth(tripPx);
+        render(false);
+      }
+    }
+  }
+
+  private void onVehicleResize(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element resizer = ((Mover) event.getSource()).getElement();
+    int oldLeft = StyleUtils.getLeft(resizer);
+
+    int maxLeft;
+    if (separateTrips()) {
+      maxLeft = getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH * 2 - 1;
+    } else {
+      maxLeft = 300;
+      if (getChartWidth() > 0) {
+        maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
+      }
+    }
+
+    int newLeft = BeeUtils.clamp(oldLeft + delta, 1, maxLeft);
+
+    if (newLeft != oldLeft || event.isFinished()) {
+      int vehiclePx = newLeft + ChartHelper.DEFAULT_MOVER_WIDTH;
+      int tripPx = separateTrips() ? getChartLeft() - vehiclePx : BeeConst.UNDEF;
+
+      if (newLeft != oldLeft) {
+        StyleUtils.setLeft(resizer, newLeft);
+
+        for (String id : vehiclePanels) {
+          StyleUtils.setWidth(id, vehiclePx - ChartHelper.DEFAULT_MOVER_WIDTH);
+        }
+
+        if (separateTrips()) {
+          for (String id : tripPanels) {
+            Element element = Document.get().getElementById(id);
+            if (element != null) {
+              StyleUtils.setLeft(element, vehiclePx);
+              StyleUtils.setWidth(element, tripPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+            }
+          }
+        }
+      }
+
+      if (event.isFinished()) {
+        if (separateTrips()) {
+          if (updateSettings(COL_SS_PIXELS_PER_TRUCK, vehiclePx, COL_SS_PIXELS_PER_TRIP, tripPx)) {
+            setVehicleWidth(vehiclePx);
+            setTripWidth(tripPx);
+          }
+
+        } else if (updateSetting(COL_SS_PIXELS_PER_TRUCK, vehiclePx)) {
+          setVehicleWidth(vehiclePx);
+          render(false);
+        }
+      }
+    }
+  }
+  
+  private void renderMovers(HasWidgets panel, int height) {
+    Mover vehicleMover = ChartHelper.createHorizontalMover();
+    StyleUtils.setLeft(vehicleMover, getVehicleWidth() - ChartHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(vehicleMover, height);
+
+    vehicleMover.addMoveHandler(new MoveEvent.Handler() {
+      @Override
+      public void onMove(MoveEvent event) {
+        onVehicleResize(event);
+      }
+    });
+
+    panel.add(vehicleMover);
+
+    if (separateTrips()) {
+      Mover tripMover = ChartHelper.createHorizontalMover();
+      StyleUtils.setLeft(tripMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
+      StyleUtils.setHeight(tripMover, height);
+
+      tripMover.addMoveHandler(new MoveEvent.Handler() {
+        @Override
+        public void onMove(MoveEvent event) {
+          onTripResize(event);
+        }
+      });
+
+      panel.add(tripMover);
+    }
+  }
+
+  private boolean separateTrips() {
+    return separateTrips;
+  }
+
+  private void setSeparateTrips(boolean separateTrips) {
+    this.separateTrips = separateTrips;
+  }
+
+  private void setTripWidth(int tripWidth) {
+    this.tripWidth = tripWidth;
   }
 
   private void setVehicleWidth(int vehicleWidth) {

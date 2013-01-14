@@ -2,7 +2,11 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -15,18 +19,24 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -36,6 +46,8 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 class FreightExchange extends ChartBase {
 
@@ -151,10 +163,16 @@ class FreightExchange extends ChartBase {
   private int customerWidth = BeeConst.UNDEF;
   private int orderWidth = BeeConst.UNDEF;
 
+  private final Set<String> customerPanels = Sets.newHashSet();
+  private final Set<String> orderPanels = Sets.newHashSet();
+
+  private final Map<Integer, Long> customersByRow = Maps.newHashMap();
+  private final Map<Integer, Long> ordersByRow = Maps.newHashMap();
+  
   private FreightExchange() {
     super();
     addStyleName(STYLE_PREFIX + "View");
-    
+
     setRelevantDataViews(VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
         CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
   }
@@ -218,13 +236,34 @@ class FreightExchange extends ChartBase {
 
     return items;
   }
+  
+  @Override
+  protected void onDoubleClickChart(int row, JustDate date) {
+    Long customerId = customersByRow.get(row);
+
+    if (customerId != null && TimeUtils.isMeq(date, TimeUtils.today())) {
+      DataInfo dataInfo = Data.getDataInfo(VIEW_ORDERS);
+      BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+      
+      if (TimeUtils.isMore(date, TimeUtils.today())) {
+        newRow.setValue(dataInfo.getColumnIndex(COL_ORDER_DATE), date.getDateTime());
+      }
+      
+      newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER), customerId);
+      newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER_NAME), findCustomerName(customerId));
+      
+      newRow.setValue(dataInfo.getColumnIndex(COL_STATUS), OrderStatus.CREATED.ordinal());
+      
+      RowFactory.createRow(dataInfo, newRow);
+    }
+  }
 
   @Override
   protected void prepareChart(int canvasWidth, int canvasHeight) {
     setCustomerWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
     setOrderWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 60,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 5));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
 
     setChartLeft(getCustomerWidth() + getOrderWidth());
     setChartWidth(canvasWidth - getChartLeft() - getChartRight());
@@ -252,25 +291,30 @@ class FreightExchange extends ChartBase {
     int height = layoutRows.size() * getRowHeight();
     StyleUtils.setHeight(panel, height);
 
-    ChartHelper.addHorizontalMover(panel, getCustomerWidth(), height);
-    ChartHelper.addHorizontalMover(panel, getChartLeft(), height);
-
     ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
         height);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
 
+    int calendarWidth = getCalendarWidth();
+
     Long lastCustomer = null;
     Long lastOrder = null;
 
-    Widget customerWidget = null;
-    Widget orderWidget = null;
+    IdentifiableWidget customerWidget = null;
+    IdentifiableWidget orderWidget = null;
 
     int customerStartRow = 0;
     int orderStartRow = 0;
-    
+
     Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_FX_ITEM_OPACITY);
+
+    customerPanels.clear();
+    orderPanels.clear();
+    
+    customersByRow.clear();
+    ordersByRow.clear();
 
     for (int row = 0; row < layoutRows.size(); row++) {
       List<Freight> rowItems = layoutRows.get(row);
@@ -293,7 +337,7 @@ class FreightExchange extends ChartBase {
         boolean orderChanged = customerChanged || !Objects.equal(lastOrder, rowItem.orderId);
 
         if (customerChanged) {
-          addCustomerWidget(panel, customerWidget, customerStartRow, row - 1);
+          addCustomerWidget(panel, customerWidget, lastCustomer, customerStartRow, row - 1);
 
           customerWidget = createCustomerWidget(rowItem);
           customerStartRow = row;
@@ -302,7 +346,7 @@ class FreightExchange extends ChartBase {
         }
 
         if (orderChanged) {
-          addOrderWidget(panel, orderWidget, orderStartRow, row - 1);
+          addOrderWidget(panel, orderWidget, lastOrder, orderStartRow, row - 1);
 
           orderWidget = createOrderWidget(rowItem);
           orderStartRow = row;
@@ -312,12 +356,12 @@ class FreightExchange extends ChartBase {
 
         if (customerChanged) {
           ChartHelper.addRowSeparator(panel, STYLE_CUSTOMER_ROW_SEPARATOR, top, 0,
-              getCustomerWidth() + getOrderWidth() + getChartWidth());
+              getCustomerWidth() + getOrderWidth() + calendarWidth);
         } else if (orderChanged) {
           ChartHelper.addRowSeparator(panel, STYLE_ORDER_ROW_SEPARATOR, top, getCustomerWidth(),
-              getOrderWidth() + getChartWidth());
+              getOrderWidth() + calendarWidth);
         } else {
-          ChartHelper.addRowSeparator(panel, top, getChartLeft(), getChartWidth());
+          ChartHelper.addRowSeparator(panel, top, getChartLeft(), calendarWidth);
         }
       }
 
@@ -344,41 +388,56 @@ class FreightExchange extends ChartBase {
     int lastRow = layoutRows.size() - 1;
 
     if (customerWidget != null) {
-      addCustomerWidget(panel, customerWidget, customerStartRow, lastRow);
+      addCustomerWidget(panel, customerWidget, lastCustomer, customerStartRow, lastRow);
     }
     if (orderWidget != null) {
-      addOrderWidget(panel, orderWidget, orderStartRow, lastRow);
+      addOrderWidget(panel, orderWidget, lastOrder, orderStartRow, lastRow);
     }
 
-    ChartHelper.addBottomSeparator(panel, height, 0, getCustomerWidth() + getOrderWidth()
-        + getChartWidth());
-  }
-  
-  private void addCustomerWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
-    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getCustomerWidth(),
-        firstRow, lastRow, getRowHeight());
+    ChartHelper.addBottomSeparator(panel, height, 0, getChartLeft() + calendarWidth);
     
-    Edges margins = new Edges();
-    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
-    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
-    
-    ChartHelper.apply(widget, rectangle, margins);
-    panel.add(widget);
+    renderMovers(panel, height);
   }
 
-  private void addOrderWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
-    Rectangle rectangle = ChartHelper.getLegendRectangle(getCustomerWidth(), getOrderWidth(),
+  private void addCustomerWidget(HasWidgets panel, IdentifiableWidget widget, Long customerId,
+      int firstRow, int lastRow) {
+
+    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getCustomerWidth(),
         firstRow, lastRow, getRowHeight());
-    
+
     Edges margins = new Edges();
     margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
-    
-    ChartHelper.apply(widget, rectangle, margins);
-    panel.add(widget);
+
+    ChartHelper.apply(widget.asWidget(), rectangle, margins);
+    panel.add(widget.asWidget());
+
+    customerPanels.add(widget.getId());
+    for (int row = firstRow; row <= lastRow; row++) {
+      customersByRow.put(row, customerId);
+    }
   }
-  
-  private Widget createCustomerWidget(Freight item) {
+
+  private void addOrderWidget(HasWidgets panel, IdentifiableWidget widget, Long orderId,
+      int firstRow, int lastRow) {
+
+    Rectangle rectangle = ChartHelper.getLegendRectangle(getCustomerWidth(), getOrderWidth(),
+        firstRow, lastRow, getRowHeight());
+
+    Edges margins = new Edges();
+    margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+
+    ChartHelper.apply(widget.asWidget(), rectangle, margins);
+    panel.add(widget.asWidget());
+
+    orderPanels.add(widget.getId());
+    for (int row = firstRow; row <= lastRow; row++) {
+      ordersByRow.put(row, orderId);
+    }
+  }
+
+  private IdentifiableWidget createCustomerWidget(Freight item) {
     BeeLabel widget = new BeeLabel(item.customerName);
     widget.addStyleName(STYLE_CUSTOMER_LABEL);
 
@@ -409,20 +468,20 @@ class FreightExchange extends ChartBase {
     String title = BeeUtils.buildLines(item.cargoDescription,
         BeeUtils.joinWords("Pakrovimas:", item.loadingDate, loading),
         BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading));
-    
+
     panel.setTitle(title);
 
     final Long cargoId = item.cargoId;
-    
+
     DndHelper.makeSource(panel, DndHelper.ContentType.CARGO, cargoId, null, title, STYLE_ITEM_DRAG);
-    
+
     ClickHandler opener = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         openDataRow(event, VIEW_CARGO, cargoId);
       }
     };
-    
+
     panel.addClickHandler(opener);
 
     if (!BeeUtils.isEmpty(loading)) {
@@ -442,7 +501,7 @@ class FreightExchange extends ChartBase {
     return panel;
   }
 
-  private Widget createOrderWidget(Freight item) {
+  private IdentifiableWidget createOrderWidget(Freight item) {
     BeeLabel widget = new BeeLabel(item.orderNo);
     widget.addStyleName(STYLE_ORDER_LABEL);
 
@@ -496,12 +555,119 @@ class FreightExchange extends ChartBase {
     return rows;
   }
 
+  private String findCustomerName(Long customerId) {
+    for (Freight item : items) {
+      if (Objects.equal(item.customerId, customerId)) {
+        return item.customerName;
+      }
+    }
+    
+    return null;
+  }
+
   private int getCustomerWidth() {
     return customerWidth;
   }
 
   private int getOrderWidth() {
     return orderWidth;
+  }
+
+  private void onCustomerResize(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element resizer = ((Mover) event.getSource()).getElement();
+    int oldLeft = StyleUtils.getLeft(resizer);
+
+    int newLeft = BeeUtils.clamp(oldLeft + delta, 1,
+        getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH * 2 - 1);
+
+    if (newLeft != oldLeft || event.isFinished()) {
+      int customerPx = newLeft + ChartHelper.DEFAULT_MOVER_WIDTH;
+      int orderPx = getChartLeft() - customerPx;
+
+      if (newLeft != oldLeft) {
+        StyleUtils.setLeft(resizer, newLeft);
+
+        for (String id : customerPanels) {
+          StyleUtils.setWidth(id, customerPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+        }
+
+        for (String id : orderPanels) {
+          Element element = Document.get().getElementById(id);
+          if (element != null) {
+            StyleUtils.setLeft(element, customerPx);
+            StyleUtils.setWidth(element, orderPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+          }
+        }
+      }
+
+      if (event.isFinished()
+          && updateSettings(COL_FX_PIXELS_PER_CUSTOMER, customerPx, COL_FX_PIXELS_PER_ORDER,
+              orderPx)) {
+        setCustomerWidth(customerPx);
+        setOrderWidth(orderPx);
+      }
+    }
+  }
+
+  private void onOrderResize(MoveEvent event) {
+    int delta = event.getDelta();
+
+    Element resizer = ((Mover) event.getSource()).getElement();
+    int oldLeft = StyleUtils.getLeft(resizer);
+
+    int maxLeft = getCustomerWidth() + 300;
+    if (getChartWidth() > 0) {
+      maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
+    }
+
+    int newLeft = BeeUtils.clamp(oldLeft + delta, getCustomerWidth() + 1, maxLeft);
+
+    if (newLeft != oldLeft || event.isFinished()) {
+      int orderPx = newLeft - getCustomerWidth() + ChartHelper.DEFAULT_MOVER_WIDTH;
+
+      if (newLeft != oldLeft) {
+        StyleUtils.setLeft(resizer, newLeft);
+
+        for (String id : orderPanels) {
+          StyleUtils.setWidth(id, orderPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+        }
+      }
+
+      if (event.isFinished() && updateSetting(COL_FX_PIXELS_PER_ORDER, orderPx)) {
+        setOrderWidth(orderPx);
+        render(false);
+      }
+    }
+  }
+
+  private void renderMovers(HasWidgets panel, int height) {
+    Mover customerMover = ChartHelper.createHorizontalMover();
+    StyleUtils.setLeft(customerMover, getCustomerWidth() - ChartHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(customerMover, height);
+
+    customerMover.addMoveHandler(new MoveEvent.Handler() {
+      @Override
+      public void onMove(MoveEvent event) {
+        onCustomerResize(event);
+      }
+    });
+
+    panel.add(customerMover);
+
+    Mover orderMover = ChartHelper.createHorizontalMover();
+    StyleUtils.setLeft(orderMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(orderMover, height);
+
+    orderMover.addMoveHandler(new MoveEvent.Handler() {
+      @Override
+      public void onMove(MoveEvent event) {
+        onOrderResize(event);
+      }
+    });
+
+    panel.add(orderMover);
   }
 
   private void setCustomerWidth(int customerWidth) {
