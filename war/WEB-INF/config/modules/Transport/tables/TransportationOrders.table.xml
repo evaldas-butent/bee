@@ -6,7 +6,7 @@
   x="741" y="101"
   >
   <Fields>
-    <Integer name="Status" notNull="true" label="Būsena" />
+    <Integer name="Status" notNull="true" label="Būsena" defValue="0" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
     <String name="OrderNo" precision="20" unique="true" notNull="true" label="Užsakymo Nr."
       defExpr="NEXT_NUMBER" defValue="U/" />

@@ -162,9 +162,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     this.headerView = GWT.create(HeaderImpl.class);
 
-    Set<Action> enabledActions = BeeUtils.isEmpty(getSettingsFormName())
-        ? EnumSet.of(Action.REFRESH) : EnumSet.of(Action.REFRESH, Action.CONFIGURE);
-    headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), enabledActions, null);
+    headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), getEnabledActions(),
+        null);
 
     headerView.setViewPresenter(this);
     add(headerView);
@@ -173,6 +172,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     canvas.addStyleName(STYLE_CANVAS);
     add(canvas);
   }
+
+  protected abstract Set<Action> getEnabledActions();
 
   @Override
   public String getEventSource() {

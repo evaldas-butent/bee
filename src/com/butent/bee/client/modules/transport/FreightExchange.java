@@ -41,10 +41,12 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -193,6 +195,15 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  public void handleAction(Action action) {
+    if (Action.ADD.equals(action)) {
+      RowFactory.createRow(VIEW_ORDERS);
+    } else {
+      super.handleAction(action);
+    }
+  }
+
+  @Override
   protected Collection<? extends ChartItem> getChartItems() {
     return items;
   }
@@ -200,6 +211,11 @@ class FreightExchange extends ChartBase {
   @Override
   protected String getDataService() {
     return DATA_SERVICE;
+  }
+
+  @Override
+  protected Set<Action> getEnabledActions() {
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
   }
 
   @Override
@@ -251,8 +267,6 @@ class FreightExchange extends ChartBase {
       
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER), customerId);
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER_NAME), findCustomerName(customerId));
-      
-      newRow.setValue(dataInfo.getColumnIndex(COL_STATUS), OrderStatus.CREATED.ordinal());
       
       RowFactory.createRow(dataInfo, newRow);
     }

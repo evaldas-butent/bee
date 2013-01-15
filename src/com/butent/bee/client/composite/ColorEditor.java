@@ -314,6 +314,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
       setValue(oldValue);
       openPicker();
     } else {
+      picker.setColor(oldValue);
       textBox.startEdit(oldValue, charCode, onEntry, sourceElement);
     }
   }

@@ -53,10 +53,12 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -281,6 +283,15 @@ class ShippingSchedule extends ChartBase {
   }
 
   @Override
+  public void handleAction(Action action) {
+    if (Action.ADD.equals(action)) {
+      RowFactory.createRow(VIEW_TRIPS);
+    } else {
+      super.handleAction(action);
+    }
+  }
+  
+  @Override
   protected Collection<? extends ChartItem> getChartItems() {
     return items;
   }
@@ -290,6 +301,11 @@ class ShippingSchedule extends ChartBase {
     return DATA_SERVICE;
   }
 
+  @Override
+  protected Set<Action> getEnabledActions() {
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
+  }
+  
   @Override
   protected String getFooterHeightColumnName() {
     return COL_SS_FOOTER_HEIGHT;

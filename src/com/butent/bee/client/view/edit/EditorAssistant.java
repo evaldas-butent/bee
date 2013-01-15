@@ -24,10 +24,12 @@ public class EditorAssistant {
     Assert.notNull(widget);
 
     boolean acceptChar;
-    if (widget instanceof HasCharacterFilter) {
+    if (charCode < BeeConst.CHAR_SPACE) {
+      acceptChar = false;
+    } else if (widget instanceof HasCharacterFilter) {
       acceptChar = ((HasCharacterFilter) widget).acceptChar(charCode);
     } else {
-      acceptChar = Character.isLetterOrDigit(charCode);
+      acceptChar = true;
     }
     String charValue = acceptChar ? BeeUtils.toString(charCode) : BeeConst.STRING_EMPTY;
 

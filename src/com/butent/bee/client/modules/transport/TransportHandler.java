@@ -157,12 +157,6 @@ public class TransportHandler {
     public FormInterceptor getInstance() {
       return new OrderFormHandler();
     }
-
-    @Override
-    public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(form.getDataIndex(TransportConstants.COL_STATUS),
-          OrderStatus.CREATED.ordinal());
-    }
   }
 
   private static class SparePartsGridHandler extends AbstractGridInterceptor
