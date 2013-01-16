@@ -2309,12 +2309,37 @@ public class StyleUtils {
     Assert.notNull(obj);
     setTop(obj.getElement(), px);
   }
+
+  public static void setTransformRotate(Element el, int angle) {
+    Assert.notNull(el);
+    setTransformRotate(el.getStyle(), angle);
+  }
+  
+  public static void setTransformRotate(Style st, int angle) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_TRANSFORM, "rotate(" + angle + "deg)");
+  }
+  
+  public static void setTransformRotate(UIObject obj, int angle) {
+    Assert.notNull(obj);
+    setTransformRotate(obj.getElement(), angle);
+  }
+  
+  public static void setTransformScale(Element el, double x, double y) {
+    Assert.notNull(el);
+    setTransformScale(el.getStyle(), x, y);
+  }
   
   public static void setTransformScale(Style st, double x, double y) {
     Assert.notNull(st);
     st.setProperty(STYLE_TRANSFORM, "scale(" + x + "," + y + ")");
   }
 
+  public static void setTransformScale(UIObject obj, double x, double y) {
+    Assert.notNull(obj);
+    setTransformScale(obj.getElement(), x, y);
+  }
+  
   public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
     Assert.notNull(el);
     setVerticalAlign(el.getStyle(), align);

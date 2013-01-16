@@ -46,13 +46,6 @@
   right: 0;
 }
 
-.bee-tr-chart-visibleRange-start:hover,
-.bee-tr-chart-visibleRange-end:hover {
-  text-decoration: underline;
-  color: #00e;
-  cursor: pointer;
-}
-
 .bee-tr-chart-row-sep,
 .bee-tr-chart-bottom-sep {
   position: absolute;
@@ -88,24 +81,15 @@
 .bee-tr-chart-Selector-endSlider {
   position: absolute;
   top: 0;
-  bottom: 8px;
-  background-image: -webkit-linear-gradient(left, white, gray, white);
+  background-image: -webkit-linear-gradient(left, #888, #ccc, #888);
   cursor: col-resize;
-}
-.bee-tr-chart-Selector-startSlider:hover,
-.bee-tr-chart-Selector-endSlider:hover {
-  background-image: -webkit-linear-gradient(left, white, black, white);
 }
 
 .bee-tr-chart-Selector-bar {
   position: absolute;
-  height: 8px;
   bottom: 0;
-  background-image: -webkit-linear-gradient(top, white, gray, white);
+  background-image: -webkit-linear-gradient(top, #888, #ccc, #888);
   cursor: move;
-}
-.bee-tr-chart-Selector-bar:hover {
-  background-image: -webkit-linear-gradient(top, white, black, white);
 }
 
 .bee-tr-chart-daySeparator,
@@ -167,17 +151,18 @@
 .bee-tr-chart-visibleRange-panel,
 .bee-tr-chart-maxRange-panel {
   position: absolute;
-  top: 0;
-  bottom: 0;
   left: 0;
-  display: -webkit-flex;
+  top: 0;
   overflow: hidden;
+  display: -webkit-flex;
+  -webkit-justify-content: space-around;
 }
-.bee-tr-chart-visibleRange-start,
-.bee-tr-chart-visibleRange-end,
-.bee-tr-chart-maxRange-start,
-.bee-tr-chart-maxRange-end {
-  -webkit-flex: 1;
+
+.bee-tr-chart-visibleRange-start:hover,
+.bee-tr-chart-visibleRange-end:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
 }
 
 .bee-tr-chart-dayBackground {
@@ -216,21 +201,31 @@
 
 .bee-tr-fx-Customer-panel,
 .bee-tr-fx-Order-panel,
-.bee-tr-ss-Vehicle-panel,
-.bee-tr-ss-Trip-panel {
+.bee-tr-ss-Vehicle-panel {
   position: absolute;
   display: -webkit-flex;
   -webkit-justify-content: center;
   -webkit-align-items: center;
-  overflow: auto;
+  overflow: hidden;
+}
+.bee-tr-ss-Trip-panel {
+  position: absolute;
+  display: -webkit-flex;
+  -webkit-flex-wrap: wrap;
+  -webkit-justify-content: space-between;
+  -webkit-align-items: center;
+  overflow: hidden;
 }
 
 .bee-tr-fx-Customer-label,
 .bee-tr-fx-Order-label,
-.bee-tr-ss-Vehicle-label,
+.bee-tr-ss-Vehicle-label {
+  word-wrap: break-word;
+  min-width: 100%;
+}
 .bee-tr-ss-Trip-label,
 .bee-tr-ss-Trip-trailer {
-  -webkit-flex: 1;
+  word-wrap: break-word;
 }
 
 .bee-tr-fx-Customer-label:hover,
@@ -284,13 +279,19 @@
 }
 .bee-tr-ss-Item-over {
   background-image: -webkit-linear-gradient(top, white, white);
-  outline: red outset 3px;
+  outline: red dashed 2px;
   color: #222;
 }
 
 .bee-tr-ss-Vehicle-over,
 .bee-tr-ss-Trip-over {
-  border: 3px solid red;
+  border: 2px dashed red;
+}
+
+.bee-tr-ss-Item-over > *,
+.bee-tr-ss-Vehicle-over > *,
+.bee-tr-ss-Trip-over > * {
+  pointer-events: none;
 }
 
 .bee-tr-ss-Service-panel {

@@ -58,7 +58,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
-import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Rulers;
@@ -122,6 +121,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -2631,21 +2631,21 @@ public class CliWorker {
     }
 
     Font font = (len > pos) ? Font.parse(ArrayUtils.slice(arr, pos)) : null;
-    Dimensions lineDim = Rulers.getLineDimensions(font, html, false);
-    Dimensions areaDim = Rulers.getAreaDimensions(font, html, true);
+    Size lineSize = Rulers.getLineSize(font, html, false);
+    Size areaSize = Rulers.getAreaSize(font, html, true);
 
     int lineW = -1;
     int lineH = -1;
     int areaW = -1;
     int areaH = -1;
 
-    if (lineDim != null) {
-      lineW = BeeUtils.toInt(lineDim.getWidthValue());
-      lineH = BeeUtils.toInt(lineDim.getHeightValue());
+    if (lineSize != null) {
+      lineW = lineSize.getWidth();
+      lineH = lineSize.getHeight();
     }
-    if (areaDim != null) {
-      areaW = BeeUtils.toInt(areaDim.getWidthValue());
-      areaH = BeeUtils.toInt(areaDim.getHeightValue());
+    if (areaSize != null) {
+      areaW = areaSize.getWidth();
+      areaH = areaSize.getHeight();
     }
 
     List<Property> info = PropertyUtils.createProperties("Text Width", lineW, "Text Height", lineH,

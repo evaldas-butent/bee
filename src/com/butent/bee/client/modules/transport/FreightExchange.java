@@ -204,6 +204,11 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getBarHeightColumnName() {
+    return COL_FX_BAR_HEIGHT;
+  }
+
+  @Override
   protected Collection<? extends ChartItem> getChartItems() {
     return items;
   }
@@ -234,10 +239,15 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getSliderWidthColumnName() {
+    return COL_FX_SLIDER_WIDTH;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_FX_STRIP_OPACITY;
   }
-
+  
   @Override
   protected String getThemeColumnName() {
     return COL_FX_THEME;
@@ -287,12 +297,6 @@ class FreightExchange extends ChartBase {
 
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ROW, 20,
         1, getScrollAreaHeight(canvasHeight) / 2));
-
-    setSliderWidth(ChartHelper.getPixels(getSettings(), COL_FX_SLIDER_WIDTH, 5,
-        1, getChartWidth() / 3));
-
-    setBarHeight(ChartHelper.getPixels(getSettings(), COL_FX_BAR_HEIGHT, BeeConst.UNDEF,
-        1, getFooterHeight() / 2));
   }
 
   @Override

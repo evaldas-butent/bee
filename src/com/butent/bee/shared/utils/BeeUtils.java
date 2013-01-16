@@ -172,6 +172,10 @@ public class BeeUtils {
     return sb.toString();
   }
 
+  public static int ceil(double x) {
+    return toInt(Math.ceil(x));
+  }
+
   public static <T> boolean check(Predicate<T> predicate, T input) {
     return (predicate == null) ? true : predicate.apply(input);
   }
@@ -811,7 +815,7 @@ public class BeeUtils {
     }
     return false;
   }
-
+  
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -821,7 +825,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
@@ -969,11 +973,11 @@ public class BeeUtils {
   public static boolean isEmpty(Collection<?> col) {
     return col == null || col.isEmpty();
   }
-
+  
   public static boolean isEmpty(Map<?, ?> map) {
     return map == null || map.isEmpty();
   }
-  
+
   public static boolean isEmpty(String s) {
     return s == null || s.trim().isEmpty();
   }
@@ -1016,11 +1020,11 @@ public class BeeUtils {
   public static boolean isIndex(Collection<?> col, int idx) {
     return col != null && idx >= 0 && idx < col.size();
   }
-
+  
   public static boolean isInt(long x) {
     return x >= Integer.MIN_VALUE && x <= Integer.MAX_VALUE;
   }
-  
+
   /**
    * Checks if a String value can be transformed to an Integer value.
    * 
@@ -1094,11 +1098,11 @@ public class BeeUtils {
   public static boolean isNonNegative(Integer x) {
     return (x == null) ? false : x >= 0;
   }
-
+  
   public static boolean isNonNegativeDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }
-  
+
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -1122,11 +1126,11 @@ public class BeeUtils {
   public static boolean isPositive(Integer x) {
     return (x == null) ? false : x > 0;
   }
-
+  
   public static boolean isPositive(Long x) {
     return (x == null) ? false : x > 0L;
   }
-  
+
   public static boolean isPositiveDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
@@ -1269,11 +1273,11 @@ public class BeeUtils {
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
   }
-
+  
   public static String joinItems(Object first, Object second, Object... rest) {
     return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
   }
-  
+
   public static String joinNoDuplicates(String sep, Object first, Object second, Object... rest) {
     return doJoin(false, sep, first, second, rest);
   }
@@ -1404,11 +1408,11 @@ public class BeeUtils {
   public static <T> T nvl(T o1, T o2) {
     return (o1 == null) ? o2 : o1;
   }
-
+  
   public static <T> T nvl(T o1, T o2, T o3) {
     return nvl(nvl(o1, o2), o3);
   }
-  
+
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
@@ -1464,7 +1468,7 @@ public class BeeUtils {
       return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).retainFrom(input);
     }
   }
-
+  
   public static <T> T peek(Iterable<T> container) {
     if (container == null) {
       return null;
@@ -1474,7 +1478,7 @@ public class BeeUtils {
     }
     return null;
   }
-  
+
   public static int positive(int x, int def) {
     return (x > 0) ? x : def;
   }
@@ -1830,7 +1834,7 @@ public class BeeUtils {
 
     return sb.toString();
   }
-
+  
   /**
    * Fills a String with value {@code z} for the length of {@code n}.
    * 
@@ -1845,7 +1849,7 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-  
+
   public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
   }
@@ -1873,15 +1877,15 @@ public class BeeUtils {
   public static int rotateBackwardInclusive(int x, int min, int max) {
     return (x <= min || x > max) ? max : x - 1;
   }
-
+  
   public static int rotateForwardExclusive(int x, int min, int max) {
     return rotateForwardInclusive(x, min, max - 1);
   }
-  
+
   public static int rotateForwardInclusive(int x, int min, int max) {
     return (x < min || x >= max) ? min : x + 1;
   }
-
+  
   public static int round(double x) {
     return toInt(Math.round(x));
   }

@@ -14,6 +14,7 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.event.dom.client.HasNativeEvent;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndSource;
@@ -108,7 +109,7 @@ class DndHelper {
     widget.addDragOverHandler(new DragOverHandler() {
       @Override
       public void onDragOver(DragOverEvent event) {
-        if (isTarget(contentType, targetPredicate)) {
+        if (isTarget(widget, event, contentType, targetPredicate)) {
           event.preventDefault();
           EventUtils.selectDropMove(event);
         }
@@ -118,7 +119,7 @@ class DndHelper {
     widget.addDragLeaveHandler(new DragLeaveHandler() {
       @Override
       public void onDragLeave(DragLeaveEvent event) {
-        if (isTarget(contentType, targetPredicate)) {
+        if (isTarget(widget, event, contentType, targetPredicate)) {
           if (!BeeUtils.isEmpty(overStyle)) {
             widget.asWidget().removeStyleName(overStyle);
           }
@@ -129,7 +130,7 @@ class DndHelper {
     widget.addDropHandler(new DropHandler() {
       @Override
       public void onDrop(DropEvent event) {
-        if (isTarget(contentType, targetPredicate)) {
+        if (isTarget(widget, event, contentType, targetPredicate)) {
           event.stopPropagation();
           onDrop.call(getDataId());
         }
@@ -147,6 +148,12 @@ class DndHelper {
 
   private static boolean isTarget(ContentType contentType, Predicate<Long> targetPredicate) {
     return getDataType() == contentType && targetPredicate.apply(getDataId());
+  }
+  
+  private static boolean isTarget(DndTarget widget, HasNativeEvent event, ContentType contentType,
+      Predicate<Long> targetPredicate) {
+    return widget.getId().equals(EventUtils.getEventTargetId(event.getNativeEvent()))
+        && isTarget(contentType, targetPredicate);
   }
 
   private static void reset() {

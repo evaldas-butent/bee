@@ -11,6 +11,7 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -89,12 +90,12 @@ public class Rulers {
     Document.get().getBody().appendChild(relativeUnitRuler);
   }
 
-  public static Dimensions getAreaDimensions(Font font, String content, boolean asHtml) {
-    return getDimensions(areaRuler, font, content, asHtml);
-  }
-
   public static int getAreaHeight(Font font, String content, boolean asHtml) {
     return getHeight(areaRuler, font, content, asHtml);
+  }
+
+  public static Size getAreaSize(Font font, String content, boolean asHtml) {
+    return getSize(areaRuler, font, content, asHtml);
   }
 
   public static int getAreaWidth(Font font, String content, boolean asHtml) {
@@ -117,12 +118,12 @@ public class Rulers {
     return BeeUtils.toInt(getPixels(value, unit, font, containerSize));
   }
 
-  public static Dimensions getLineDimensions(Font font, String content, boolean asHtml) {
-    return getDimensions(lineRuler, font, content, asHtml);
-  }
-
   public static int getLineHeight(Font font, String content, boolean asHtml) {
     return getHeight(lineRuler, font, content, asHtml);
+  }
+
+  public static Size getLineSize(Font font, String content, boolean asHtml) {
+    return getSize(lineRuler, font, content, asHtml);
   }
 
   public static int getLineWidth(Font font, String content, boolean asHtml) {
@@ -189,21 +190,6 @@ public class Rulers {
     }
   }
 
-  private static Dimensions getDimensions(Element ruler, Font font, String content, boolean asHtml) {
-    if (content == null) {
-      return null;
-    }
-
-    prepareRuler(ruler, font, content, asHtml);
-
-    int width = ruler.getOffsetWidth();
-    int height = ruler.getOffsetHeight();
-
-    resetRuler(ruler, font);
-
-    return new Dimensions(width, height);
-  }
-
   private static double getFixedUnitSizeInPixels(CssUnit unit) {
     switch (unit) {
       case PX:
@@ -254,6 +240,21 @@ public class Rulers {
     resetRuler(ruler, font);
 
     return height;
+  }
+
+  private static Size getSize(Element ruler, Font font, String content, boolean asHtml) {
+    if (content == null) {
+      return null;
+    }
+
+    prepareRuler(ruler, font, content, asHtml);
+
+    int width = ruler.getOffsetWidth();
+    int height = ruler.getOffsetHeight();
+
+    resetRuler(ruler, font);
+
+    return new Size(width, height);
   }
 
   private static int getWidth(Element ruler, Font font, String content, boolean asHtml) {

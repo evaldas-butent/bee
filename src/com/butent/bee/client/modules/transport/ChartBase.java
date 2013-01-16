@@ -143,8 +143,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private int dayColumnWidth = BeeConst.UNDEF;
   private int rowHeight = BeeConst.UNDEF;
 
-  private int sliderWidth = BeeConst.UNDEF;
-  private int barHeight = BeeConst.UNDEF;
+  private int sliderWidth = 0;
+  private int barHeight = 0;
 
   private Widget startSliderLabel = null;
   private Widget endSliderLabel = null;
@@ -172,8 +172,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     canvas.addStyleName(STYLE_CANVAS);
     add(canvas);
   }
-
-  protected abstract Set<Action> getEnabledActions();
 
   @Override
   public String getEventSource() {
@@ -268,9 +266,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
 
     int delta = event.getDelta();
-
     Element source = ((Mover) event.getSource()).getElement();
-    Element panel = source.getParentElement();
 
     RangeMover sourceType = null;
     for (Map.Entry<RangeMover, Element> entry : rangeMovers.entrySet()) {
@@ -284,20 +280,22 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return;
     }
 
-    int panelWidth = StyleUtils.getWidth(panel) - getSliderWidth();
+    int itemAreaWidth = getChartWidth();
 
-    double dayWidth = (double) panelWidth / ChartHelper.getSize(getMaxRange());
+    double dayWidth = (double) itemAreaWidth / ChartHelper.getSize(getMaxRange());
     int maxWidth = BeeUtils.round(dayWidth * getMaxSize());
 
     int startPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.START_SLIDER));
-    int endPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.END_SLIDER));
+    int endPos = StyleUtils.getLeft(rangeMovers.get(RangeMover.END_SLIDER)) - getSliderWidth();
+
+    boolean hasBar = rangeMovers.containsKey(RangeMover.BAR);
 
     boolean changed = false;
 
     if (delta != 0) {
       switch (sourceType) {
         case START_SLIDER:
-          int newStart = BeeUtils.clamp(startPos + delta, 0, endPos - getSliderWidth());
+          int newStart = BeeUtils.clamp(startPos + delta, 0, endPos - 1);
           if (maxWidth > 0 && endPos - newStart > maxWidth) {
             newStart = endPos - maxWidth;
           }
@@ -306,16 +304,18 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
             startPos = newStart;
 
             StyleUtils.setLeft(source, startPos);
-            StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), startPos);
-            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
-                endPos - startPos + getSliderWidth());
+            if (hasBar) {
+              StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), startPos);
+              StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
+                  endPos - startPos + getSliderWidth() * 2);
+            }
 
             changed = true;
           }
           break;
 
         case END_SLIDER:
-          int newEnd = BeeUtils.clamp(endPos + delta, startPos + getSliderWidth(), panelWidth);
+          int newEnd = BeeUtils.clamp(endPos + delta, startPos + 1, itemAreaWidth);
           if (maxWidth > 0 && newEnd - startPos > maxWidth) {
             newEnd = startPos + maxWidth;
           }
@@ -323,22 +323,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
           if (newEnd != endPos) {
             endPos = newEnd;
 
-            StyleUtils.setLeft(source, endPos);
-            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
-                endPos - startPos + getSliderWidth());
+            StyleUtils.setLeft(source, endPos + getSliderWidth());
+            if (hasBar) {
+              StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR),
+                  endPos - startPos + getSliderWidth() * 2);
+            }
 
             changed = true;
           }
           break;
 
         case BAR:
-          int dx = BeeUtils.clamp(delta, -startPos, panelWidth - endPos);
+          int dx = BeeUtils.clamp(delta, -startPos, itemAreaWidth - endPos);
           if (dx != 0) {
             startPos += dx;
             endPos += dx;
 
             StyleUtils.setLeft(rangeMovers.get(RangeMover.START_SLIDER), startPos);
-            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), endPos);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), endPos + getSliderWidth());
             StyleUtils.setLeft(source, startPos);
 
             changed = true;
@@ -365,17 +367,19 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
           JustDate lastVisible = getVisibleRange().upperEndpoint();
 
           int p1 = ChartHelper.getPosition(min, firstVisible, dayWidth);
-          p1 = BeeUtils.clamp(p1, 0, panelWidth - getSliderWidth());
+          p1 = BeeUtils.clamp(p1, 0, itemAreaWidth - getSliderWidth());
 
           int p2 = ChartHelper.getPosition(min, TimeUtils.nextDay(lastVisible), dayWidth);
-          p2 = BeeUtils.clamp(p2, startPos + getSliderWidth(), panelWidth);
+          p2 = BeeUtils.clamp(p2, startPos + getSliderWidth(), itemAreaWidth);
 
           if (p1 != startPos || p2 != endPos) {
             StyleUtils.setLeft(rangeMovers.get(RangeMover.START_SLIDER), p1);
-            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), p2);
+            StyleUtils.setLeft(rangeMovers.get(RangeMover.END_SLIDER), p2 + getSliderWidth());
 
-            StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), p1);
-            StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR), p2 - p1 + getSliderWidth());
+            if (hasBar) {
+              StyleUtils.setLeft(rangeMovers.get(RangeMover.BAR), p1);
+              StyleUtils.setWidth(rangeMovers.get(RangeMover.BAR), p2 - p1 + getSliderWidth() * 2);
+            }
           }
         }
 
@@ -398,14 +402,17 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         int startWidth = getStartSliderLabel().getOffsetWidth();
         int endWidth = getStartSliderLabel().getOffsetWidth();
 
-        int panelLeft = StyleUtils.getLeft(panel);
+        int canvasWidth = getCanvasWidth();
+        int panelLeft = getChartLeft() - getSliderWidth();
 
         int startLeft = startPos - (startWidth - getSliderWidth()) / 2;
-        startLeft = BeeUtils.clamp(startLeft, -panelLeft, panelWidth - startWidth - endWidth);
+        startLeft = BeeUtils.clamp(startLeft, -panelLeft,
+            canvasWidth - panelLeft - startWidth - endWidth);
         StyleUtils.setLeft(getStartSliderLabel(), panelLeft + startLeft);
 
         int endLeft = endPos - (endWidth - getSliderWidth()) / 2;
-        endLeft = BeeUtils.clamp(endLeft, startLeft + startWidth, panelWidth - endWidth);
+        endLeft = BeeUtils.clamp(endLeft, startLeft + startWidth,
+            canvasWidth - panelLeft - endWidth);
         StyleUtils.setLeft(getEndSliderLabel(), panelLeft + endLeft);
       }
     }
@@ -583,6 +590,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return barHeight;
   }
 
+  protected abstract String getBarHeightColumnName();
+
   protected int getCalendarWidth() {
     return ChartHelper.getSize(getVisibleRange()) * getDayColumnWidth();
   }
@@ -631,6 +640,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected int getDayColumnWidth() {
     return dayColumnWidth;
   }
+
+  protected abstract Set<Action> getEnabledActions();
 
   protected Widget getEndSliderLabel() {
     return endSliderLabel;
@@ -702,6 +713,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected int getSliderWidth() {
     return sliderWidth;
   }
+
+  protected abstract String getSliderWidthColumnName();
 
   protected Widget getStartSliderLabel() {
     return startSliderLabel;
@@ -803,6 +816,22 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     setFooterHeight(clampFooterHeight(fh, canvasHeight));
   }
 
+  protected void prepareFooter() {
+    if (!BeeUtils.isEmpty(getSliderWidthColumnName()) && getChartWidth() > 0) {
+      setSliderWidth(ChartHelper.getPixels(getSettings(), getSliderWidthColumnName(), 3,
+          1, Math.min(getChartLeft(), getChartRight())));
+    } else {
+      setSliderWidth(0);
+    }
+
+    if (!BeeUtils.isEmpty(getBarHeightColumnName()) && getFooterHeight() > 1) {
+      setBarHeight(ChartHelper.getPixels(getSettings(), getBarHeightColumnName(), 5,
+          1, Math.min(BeeUtils.ceil(getFooterHeight() / 3.0), 20)));
+    } else {
+      setBarHeight(0);
+    }
+  }
+
   protected void refresh() {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(getDataService()),
         new ResponseCallback() {
@@ -861,6 +890,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     canvas.add(scroll);
 
     renderFooterSplitter();
+
+    prepareFooter();
     renderFooter();
 
     setRenderPending(false);
@@ -909,7 +940,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void renderHeader() {
-    if (getHeaderHeight() >= 0) {
+    if (getHeaderHeight() > 0) {
       Flow header = new Flow();
       header.addStyleName(STYLE_HEADER);
       StyleUtils.setHeight(header, getHeaderHeight());
@@ -940,15 +971,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void renderMaxRange(HasWidgets panel) {
-    ChartHelper.renderMaxRange(getMaxRange(), panel, getChartLeft());
+    ChartHelper.renderMaxRange(getMaxRange(), panel, getChartLeft() - getSliderWidth(),
+        getFooterHeight());
   }
 
   protected void renderRangeSelector(HasWidgets panel) {
     Flow selector = new Flow();
     selector.addStyleName(STYLE_SELECTOR_PANEL);
 
-    StyleUtils.setLeft(selector, getChartLeft());
-    StyleUtils.setWidth(selector, getChartWidth() + getSliderWidth());
+    StyleUtils.setLeft(selector, getChartLeft() - getSliderWidth());
+    StyleUtils.setWidth(selector, getChartWidth() + getSliderWidth() * 2);
 
     renderSelector(selector, getChartItems());
     panel.add(selector);
@@ -959,17 +991,19 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return;
     }
 
-    int width = getChartWidth();
+    int itemAreaLeft = getSliderWidth();
+    int itemAreaWidth = getChartWidth();
+
     int height = getFooterHeight();
 
-    if (width <= getSliderWidth() * 2 || height <= getBarHeight()) {
+    if (itemAreaWidth <= 0 || height <= getBarHeight()) {
       return;
     }
 
     JustDate firstDate = getMaxRange().lowerEndpoint();
     JustDate lastDate = getMaxRange().upperEndpoint();
 
-    double dayWidth = (double) width / ChartHelper.getSize(getMaxRange());
+    double dayWidth = (double) itemAreaWidth / ChartHelper.getSize(getMaxRange());
 
     int itemAreaHeight = height;
     if (getBarHeight() > 0 && getBarHeight() <= height / 2) {
@@ -1009,10 +1043,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
 
         int left = BeeUtils.round(TimeUtils.dayDiff(firstDate, start) * dayWidth);
-        StyleUtils.setLeft(itemStrip, BeeUtils.clamp(left, 0, width - 1));
+        StyleUtils.setLeft(itemStrip, itemAreaLeft + BeeUtils.clamp(left, 0, itemAreaWidth - 1));
 
         int w = BeeUtils.round((TimeUtils.dayDiff(start, end) + 1) * dayWidth);
-        StyleUtils.setWidth(itemStrip, BeeUtils.clamp(w, 1, width - left));
+        StyleUtils.setWidth(itemStrip, BeeUtils.clamp(w, 1, itemAreaWidth - left));
 
         panel.add(itemStrip);
       }
@@ -1022,54 +1056,59 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     JustDate lastVisible = getVisibleRange().upperEndpoint();
 
     int startPos = ChartHelper.getPosition(firstDate, firstVisible, dayWidth);
-    startPos = BeeUtils.clamp(startPos, 0, width - getSliderWidth());
+    startPos = BeeUtils.clamp(startPos, 0, itemAreaWidth - getSliderWidth());
 
     int endPos = ChartHelper.getPosition(firstDate, TimeUtils.nextDay(lastVisible), dayWidth);
-    endPos = BeeUtils.clamp(endPos, startPos + getSliderWidth(), width);
+    endPos = BeeUtils.clamp(endPos, startPos + getSliderWidth(), itemAreaWidth);
 
     rangeMovers.clear();
 
-    Mover startSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_START_SLIDER);
-    StyleUtils.setLeft(startSlider, startPos);
-    StyleUtils.setWidth(startSlider, getSliderWidth());
-    if (getBarHeight() > 0) {
-      StyleUtils.setBottom(startSlider, getBarHeight());
+    if (getSliderWidth() > 0) {
+      Mover startSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_START_SLIDER);
+      StyleUtils.setLeft(startSlider, startPos);
+      StyleUtils.setWidth(startSlider, getSliderWidth());
+
+      if (getBarHeight() >= 0) {
+        StyleUtils.setBottom(startSlider, getBarHeight());
+      }
+
+      startSlider.setTitle(firstVisible.toString());
+
+      startSlider.addMoveHandler(this);
+      rangeMovers.put(RangeMover.START_SLIDER, startSlider.getElement());
+
+      panel.add(startSlider);
+
+      Mover endSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_END_SLIDER);
+      StyleUtils.setLeft(endSlider, endPos + getSliderWidth());
+      StyleUtils.setWidth(endSlider, getSliderWidth());
+
+      if (getBarHeight() >= 0) {
+        StyleUtils.setBottom(endSlider, getBarHeight());
+      }
+
+      endSlider.setTitle(TimeUtils.nextDay(lastVisible).toString());
+
+      endSlider.addMoveHandler(this);
+      rangeMovers.put(RangeMover.END_SLIDER, endSlider.getElement());
+
+      panel.add(endSlider);
+
+      if (getBarHeight() > 0) {
+        Mover bar = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_BAR);
+        StyleUtils.setLeft(bar, startPos);
+        StyleUtils.setWidth(bar, endPos - startPos + getSliderWidth() * 2);
+
+        StyleUtils.setHeight(bar, getBarHeight());
+
+        bar.setTitle(ChartHelper.getRangeLabel(firstVisible, lastVisible));
+
+        bar.addMoveHandler(this);
+        rangeMovers.put(RangeMover.BAR, bar.getElement());
+
+        panel.add(bar);
+      }
     }
-
-    startSlider.setTitle(firstVisible.toString());
-
-    startSlider.addMoveHandler(this);
-    rangeMovers.put(RangeMover.START_SLIDER, startSlider.getElement());
-
-    panel.add(startSlider);
-
-    Mover endSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_END_SLIDER);
-    StyleUtils.setLeft(endSlider, endPos);
-    StyleUtils.setWidth(endSlider, getSliderWidth());
-    if (getBarHeight() > 0) {
-      StyleUtils.setBottom(endSlider, getBarHeight());
-    }
-
-    endSlider.setTitle(TimeUtils.nextDay(lastVisible).toString());
-
-    endSlider.addMoveHandler(this);
-    rangeMovers.put(RangeMover.END_SLIDER, endSlider.getElement());
-
-    panel.add(endSlider);
-
-    Mover bar = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_BAR);
-    StyleUtils.setLeft(bar, startPos);
-    StyleUtils.setWidth(bar, endPos - startPos + getSliderWidth());
-    if (getBarHeight() > 0) {
-      StyleUtils.setHeight(bar, getBarHeight());
-    }
-
-    bar.setTitle(ChartHelper.getRangeLabel(firstVisible, lastVisible));
-
-    bar.addMoveHandler(this);
-    rangeMovers.put(RangeMover.BAR, bar.getElement());
-
-    panel.add(bar);
   }
 
   protected void renderSliderLabels() {
@@ -1091,7 +1130,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void renderVisibleRange(HasWidgets panel) {
-    ChartHelper.renderVisibleRange(this, panel, getChartLeft());
+    ChartHelper.renderVisibleRange(this, panel, getChartLeft(), getHeaderHeight());
   }
 
   protected void setBarHeight(int barHeight) {

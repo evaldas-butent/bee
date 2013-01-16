@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -18,6 +17,8 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -28,6 +29,8 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -204,7 +207,7 @@ class ChartHelper {
     }
     return sb.toString();
   }
-  
+
   static String buildTitle(Object... labelsAndValues) {
     return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
   }
@@ -234,7 +237,7 @@ class ChartHelper {
 
     return BeeUtils.unbox(settings.getBoolean(0, index));
   }
-  
+
   static int getColorIndex(Long id, int count) {
     if (id == null || count <= 0) {
       return BeeConst.UNDEF;
@@ -509,57 +512,81 @@ class ChartHelper {
     }
   }
 
-  static void renderMaxRange(Range<JustDate> range, HasWidgets container, int width) {
-    if (range == null || range.isEmpty()) {
+  static void renderMaxRange(Range<JustDate> range, HasWidgets container, int width, int height) {
+    if (range == null || range.isEmpty() || !checkRangePanelSize(width, height)) {
       return;
     }
 
     Flow panel = new Flow();
     panel.addStyleName(STYLE_MAX_RANGE_PANEL);
-    if (width > 0) {
-      StyleUtils.setWidth(panel, width);
-    }
-
-    BeeLabel startWidget = new BeeLabel(range.lowerEndpoint().toString());
-    startWidget.addStyleName(STYLE_MAX_RANGE_START);
-    panel.add(startWidget);
+    StyleUtils.setSize(panel, width, height);
+    
+    Widget startWidget = null;
+    Widget endWidget = null;
 
     if (getSize(range) > 1) {
-      BeeLabel endWidget = new BeeLabel(range.upperEndpoint().toString());
-      endWidget.addStyleName(STYLE_MAX_RANGE_END);
-      panel.add(endWidget);
+      Pair<Widget, Widget> widgets = renderRange(range.lowerEndpoint(), STYLE_MAX_RANGE_START,
+          range.upperEndpoint(), STYLE_MAX_RANGE_END, width, height);
+      
+      if (widgets != null) {
+        startWidget = widgets.getA();
+        endWidget = widgets.getB();
+      }
+
+    } else {
+      startWidget = renderDate(range.lowerEndpoint(), STYLE_MAX_RANGE_START, width, height);
     }
-
-    container.add(panel);
-  }
-
-  static void renderVisibleRange(HasVisibleRange owner, HasWidgets container, int width) {
-    Range<JustDate> range = owner.getVisibleRange();
-    if (range == null || range.isEmpty()) {
-      return;
+    
+    if (startWidget != null) {
+      panel.add(startWidget);
     }
-
-    Flow panel = new Flow();
-    panel.addStyleName(STYLE_VISIBLE_RANGE_PANEL);
-    if (width > 0) {
-      StyleUtils.setWidth(panel, width);
-    }
-
-    BeeLabel startWidget = new BeeLabel(range.lowerEndpoint().toString());
-    startWidget.addStyleName(STYLE_VISIBLE_RANGE_START);
-    addVisibleRangeDatePicker(owner, startWidget, true);
-    panel.add(startWidget);
-
-    if (getSize(owner.getMaxRange()) > 1) {
-      BeeLabel endWidget = new BeeLabel(range.upperEndpoint().toString());
-      endWidget.addStyleName(STYLE_VISIBLE_RANGE_END);
-      addVisibleRangeDatePicker(owner, endWidget, false);
+    if (endWidget != null) {
       panel.add(endWidget);
     }
 
     container.add(panel);
   }
   
+  static void renderVisibleRange(HasVisibleRange owner, HasWidgets container,
+      int width, int height) {
+
+    Range<JustDate> range = owner.getVisibleRange();
+    if (range == null || range.isEmpty() || !checkRangePanelSize(width, height)) {
+      return;
+    }
+
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_VISIBLE_RANGE_PANEL);
+    StyleUtils.setSize(panel, width, height);
+    
+    Widget startWidget = null;
+    Widget endWidget = null;
+
+    if (getSize(owner.getMaxRange()) > 1) {
+      Pair<Widget, Widget> widgets = renderRange(range.lowerEndpoint(), STYLE_VISIBLE_RANGE_START,
+          range.upperEndpoint(), STYLE_VISIBLE_RANGE_END, width, height);
+      
+      if (widgets != null) {
+        startWidget = widgets.getA();
+        endWidget = widgets.getB();
+      }
+
+    } else {
+      startWidget = renderDate(range.lowerEndpoint(), STYLE_VISIBLE_RANGE_START, width, height);
+    }
+    
+    if (startWidget != null) {
+      addVisibleRangeDatePicker(owner, startWidget, true);
+      panel.add(startWidget);
+    }
+    if (endWidget != null) {
+      addVisibleRangeDatePicker(owner, endWidget, false);
+      panel.add(endWidget);
+    }
+
+    container.add(panel);
+  }
+
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -573,9 +600,9 @@ class ChartHelper {
   }
 
   private static void addVisibleRangeDatePicker(final HasVisibleRange owner,
-      final HasClickHandlers widget, final boolean isStart) {
+      final Widget widget, final boolean isStart) {
 
-    widget.addClickHandler(new ClickHandler() {
+    Binder.addClickHandler(widget, new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
 
@@ -624,6 +651,10 @@ class ChartHelper {
     });
   }
 
+  private static boolean checkRangePanelSize(int width, int height) {
+    return width > 2 && height > 2 && width * height > 100;
+  }
+
   private static Widget createDayBackground(JustDate date) {
     CustomDiv widget = new CustomDiv();
 
@@ -652,7 +683,7 @@ class ChartHelper {
         Element tensElement = Document.get().createDivElement();
         tensElement.setInnerText(BeeUtils.toString(tens));
         tensElement.addClassName(STYLE_DAY_NARROW_TENS);
-        
+
         root.appendChild(tensElement);
       }
 
@@ -766,6 +797,125 @@ class ChartHelper {
       return DAY_SEPARATOR_WIDTH;
     } else {
       return 0;
+    }
+  }
+
+  private static Widget renderDate(JustDate date, String styleName, int width, int height) {
+    Size maxSize = new Size(width, height);
+
+    String text = date.toString();
+    Size size = Rulers.getLineSize(null, text, false);
+
+    if (maxSize.encloses(size)) {
+      return renderLabel(text, styleName);
+
+    } else if (BeeUtils.betweenExclusive(size.getHeight(), height - 3, height)) {
+      return renderDate(date, styleName, new Size(width, size.getHeight()));
+
+    } else {
+      return renderDate(date, styleName, maxSize);
+    }
+  }
+
+  private static Widget renderDate(JustDate date, String styleName, Size maxSize) {
+    String text = date.toString();
+    Size size = Rulers.getLineSize(null, text, false);
+
+    String s = null;
+
+    for (int i = 0; i < 5 && size.getWidth() > maxSize.getWidth(); i++) {
+      switch (i) {
+        case 0:
+          s = text.substring(2);
+          break;
+
+        case 1:
+          s = BeeUtils.join(String.valueOf(JustDate.FIELD_SEPARATOR), date.getYear() % 100,
+              date.getMonth(), date.getDom());
+          break;
+
+        case 2:
+          s = text.substring(5);
+          break;
+
+        case 3:
+          s = BeeUtils.join(String.valueOf(JustDate.FIELD_SEPARATOR),
+              date.getMonth(), date.getDom());
+          break;
+
+        default:
+          s = text.substring(5);
+      }
+
+      size = Rulers.getLineSize(null, s, false);
+    }
+
+    Widget widget = renderLabel(BeeUtils.nvl(s, text), styleName);
+
+    if (!maxSize.encloses(size) && size.isValid()) {
+      double x = Math.min((double) maxSize.getWidth() / size.getWidth(), 1.0);
+      double y = Math.min((double) maxSize.getHeight() / size.getHeight(), 1.0);
+
+      StyleUtils.setTransformScale(widget, x, y);
+    }
+
+    return widget;
+  }
+
+  private static Widget renderLabel(String text, String styleName) {
+    BeeLabel widget = new BeeLabel(text);
+    if (!BeeUtils.isEmpty(styleName)) {
+      widget.addStyleName(styleName);
+    }
+
+    return widget;
+  }
+
+  private static Pair<Widget, Widget> renderRange(JustDate start, String startStyle,
+      JustDate end, String endStyle, int width, int height) {
+
+    Size maxSize = new Size(width, height);
+
+    String startText = start.toString();
+    Size startSize = Rulers.getLineSize(null, startText, false);
+
+    String endText = end.toString();
+    Size endSize = Rulers.getLineSize(null, endText, false);
+
+    if (maxSize.encloses(startSize, endSize)) {
+      return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));
+    }
+
+    if (start.getYear() == end.getYear()) {
+      if (TimeUtils.sameMonth(start, end)) {
+        endText = BeeUtils.right(end.toString(), 2);
+      } else {
+        endText = BeeUtils.right(end.toString(), 5);
+      }
+
+      if (maxSize.encloses(startSize, endSize)) {
+        return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));
+      }
+    }
+    
+    if (width >= height) {
+      double z = (double) startSize.getWidth() / (startSize.getWidth() + endSize.getWidth());
+      int startWidth = BeeUtils.clamp(BeeUtils.round(z * width), 1, width - 1); 
+      int endWidth = width - startWidth;
+      
+      Widget startWidget = renderDate(start, startStyle, startWidth, height);
+      Widget endWidget = renderDate(end, endStyle, endWidth, height);
+      
+      return Pair.of(startWidget, endWidget);
+
+    } else {
+      int startHeight = height / 2 + 1;
+      int endHeight = height - startHeight;
+      
+      Widget startWidget = renderDate(start, startStyle, width, startHeight);
+      Widget endWidget = renderDate(end, endStyle, width, endHeight);
+      
+      return Pair.of(startWidget, endWidget);
     }
   }
 

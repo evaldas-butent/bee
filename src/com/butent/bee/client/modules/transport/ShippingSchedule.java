@@ -292,6 +292,11 @@ class ShippingSchedule extends ChartBase {
   }
   
   @Override
+  protected String getBarHeightColumnName() {
+    return COL_SS_BAR_HEIGHT;
+  }
+
+  @Override
   protected Collection<? extends ChartItem> getChartItems() {
     return items;
   }
@@ -300,12 +305,12 @@ class ShippingSchedule extends ChartBase {
   protected String getDataService() {
     return DATA_SERVICE;
   }
-
+  
   @Override
   protected Set<Action> getEnabledActions() {
     return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
   }
-  
+
   @Override
   protected String getFooterHeightColumnName() {
     return COL_SS_FOOTER_HEIGHT;
@@ -319,6 +324,11 @@ class ShippingSchedule extends ChartBase {
   @Override
   protected String getSettingsFormName() {
     return FORM_SS_SETTINGS;
+  }
+
+  @Override
+  protected String getSliderWidthColumnName() {
+    return COL_SS_SLIDER_WIDTH;
   }
 
   @Override
@@ -441,14 +451,8 @@ class ShippingSchedule extends ChartBase {
 
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_ROW, 20,
         1, getScrollAreaHeight(canvasHeight) / 2));
-
-    setSliderWidth(ChartHelper.getPixels(getSettings(), COL_SS_SLIDER_WIDTH, 5,
-        1, getChartWidth() / 3));
-
-    setBarHeight(ChartHelper.getPixels(getSettings(), COL_SS_BAR_HEIGHT, BeeConst.UNDEF,
-        1, getFooterHeight() / 2));
   }
-
+  
   @Override
   protected void renderContent(ComplexPanel panel) {
     List<List<Freight>> layoutRows = doLayout();
