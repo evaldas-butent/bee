@@ -182,6 +182,7 @@ public class EventUtils {
 
   public static final String EFFECT_COPY = "copy";
   public static final String EFFECT_MOVE = "move";
+  public static final String EFFECT_COPY_MOVE = "copyMove";
 
   public static final String DEFAULT_DND_DATA_FORMAT = "text/plain";
 
@@ -209,6 +210,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_BLUR)) {
       Binder.addBlurHandler(widget, new BlurHandler() {
+        @Override
         public void onBlur(BlurEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -218,6 +220,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_CAN_PLAY_THROUGH)) {
       Binder.addCanPlayThroughHandler(widget, new CanPlayThroughHandler() {
+        @Override
         public void onCanPlayThrough(CanPlayThroughEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -227,6 +230,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_CHANGE)) {
       Binder.addChangeHandler(widget, new ChangeHandler() {
+        @Override
         public void onChange(ChangeEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -236,6 +240,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_CLICK)) {
       Binder.addClickHandler(widget, new ClickHandler() {
+        @Override
         public void onClick(ClickEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -245,6 +250,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_CONTEXT_MENU)) {
       Binder.addContextMenuHandler(widget, new ContextMenuHandler() {
+        @Override
         public void onContextMenu(ContextMenuEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -254,6 +260,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DBL_CLICK)) {
       Binder.addDoubleClickHandler(widget, new DoubleClickHandler() {
+        @Override
         public void onDoubleClick(DoubleClickEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -263,6 +270,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG)) {
       Binder.addDragHandler(widget, new DragHandler() {
+        @Override
         public void onDrag(DragEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -272,6 +280,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_END)) {
       Binder.addDragEndHandler(widget, new DragEndHandler() {
+        @Override
         public void onDragEnd(DragEndEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -281,6 +290,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_ENTER)) {
       Binder.addDragEnterHandler(widget, new DragEnterHandler() {
+        @Override
         public void onDragEnter(DragEnterEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -290,6 +300,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_LEAVE)) {
       Binder.addDragLeaveHandler(widget, new DragLeaveHandler() {
+        @Override
         public void onDragLeave(DragLeaveEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -299,6 +310,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_OVER)) {
       Binder.addDragOverHandler(widget, new DragOverHandler() {
+        @Override
         public void onDragOver(DragOverEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -308,6 +320,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DRAG_START)) {
       Binder.addDragStartHandler(widget, new DragStartHandler() {
+        @Override
         public void onDragStart(DragStartEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -317,6 +330,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_DROP)) {
       Binder.addDropHandler(widget, new DropHandler() {
+        @Override
         public void onDrop(DropEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -326,6 +340,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_ENDED)) {
       Binder.addEndedHandler(widget, new EndedHandler() {
+        @Override
         public void onEnded(EndedEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -335,6 +350,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_ERROR)) {
       Binder.addErrorHandler(widget, new ErrorHandler() {
+        @Override
         public void onError(ErrorEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -344,6 +360,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_FOCUS)) {
       Binder.addFocusHandler(widget, new FocusHandler() {
+        @Override
         public void onFocus(FocusEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -353,6 +370,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_CHANGE)) {
       Binder.addGestureChangeHandler(widget, new GestureChangeHandler() {
+        @Override
         public void onGestureChange(GestureChangeEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -362,6 +380,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_END)) {
       Binder.addGestureEndHandler(widget, new GestureEndHandler() {
+        @Override
         public void onGestureEnd(GestureEndEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -371,6 +390,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_GESTURE_START)) {
       Binder.addGestureStartHandler(widget, new GestureStartHandler() {
+        @Override
         public void onGestureStart(GestureStartEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -380,6 +400,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_INPUT)) {
       Binder.addInputHandler(widget, new InputHandler() {
+        @Override
         public void onInput(InputEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -389,6 +410,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_DOWN)) {
       Binder.addKeyDownHandler(widget, new KeyDownHandler() {
+        @Override
         public void onKeyDown(KeyDownEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -398,6 +420,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_PRESS)) {
       Binder.addKeyPressHandler(widget, new KeyPressHandler() {
+        @Override
         public void onKeyPress(KeyPressEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -407,6 +430,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_KEY_UP)) {
       Binder.addKeyUpHandler(widget, new KeyUpHandler() {
+        @Override
         public void onKeyUp(KeyUpEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -416,6 +440,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_LOAD)) {
       Binder.addLoadHandler(widget, new LoadHandler() {
+        @Override
         public void onLoad(LoadEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -425,6 +450,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_LOSE_CAPTURE)) {
       Binder.addLoseCaptureHandler(widget, new LoseCaptureHandler() {
+        @Override
         public void onLoseCapture(LoseCaptureEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -434,6 +460,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_DOWN)) {
       Binder.addMouseDownHandler(widget, new MouseDownHandler() {
+        @Override
         public void onMouseDown(MouseDownEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -443,6 +470,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_MOVE)) {
       Binder.addMouseMoveHandler(widget, new MouseMoveHandler() {
+        @Override
         public void onMouseMove(MouseMoveEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -452,6 +480,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OUT)) {
       Binder.addMouseOutHandler(widget, new MouseOutHandler() {
+        @Override
         public void onMouseOut(MouseOutEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -461,6 +490,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OVER)) {
       Binder.addMouseOverHandler(widget, new MouseOverHandler() {
+        @Override
         public void onMouseOver(MouseOverEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -470,6 +500,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_UP)) {
       Binder.addMouseUpHandler(widget, new MouseUpHandler() {
+        @Override
         public void onMouseUp(MouseUpEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -479,6 +510,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_MOUSE_WHEEL)) {
       Binder.addMouseWheelHandler(widget, new MouseWheelHandler() {
+        @Override
         public void onMouseWheel(MouseWheelEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -488,6 +520,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_PROGRESS)) {
       Binder.addProgressHandler(widget, new ProgressHandler() {
+        @Override
         public void onProgress(ProgressEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -497,6 +530,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_SCROLL)) {
       Binder.addScrollHandler(widget, new ScrollHandler() {
+        @Override
         public void onScroll(ScrollEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -506,6 +540,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_CANCEL)) {
       Binder.addTouchCancelHandler(widget, new TouchCancelHandler() {
+        @Override
         public void onTouchCancel(TouchCancelEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -515,6 +550,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_END)) {
       Binder.addTouchEndHandler(widget, new TouchEndHandler() {
+        @Override
         public void onTouchEnd(TouchEndEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -524,6 +560,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_MOVE)) {
       Binder.addTouchMoveHandler(widget, new TouchMoveHandler() {
+        @Override
         public void onTouchMove(TouchMoveEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -533,6 +570,7 @@ public class EventUtils {
 
     if (BeeUtils.same(type, EVENT_TYPE_TOUCH_START)) {
       Binder.addTouchStartHandler(widget, new TouchStartHandler() {
+        @Override
         public void onTouchStart(TouchStartEvent event) {
           dispatchDomEvent(widget, handler, event);
         }
@@ -547,6 +585,10 @@ public class EventUtils {
 
   public static void allowCopy(DragStartEvent event) {
     setEffectAllowed(event, EFFECT_COPY);
+  }
+
+  public static void allowCopyMove(DragStartEvent event) {
+    setEffectAllowed(event, EFFECT_COPY_MOVE);
   }
 
   public static void allowMove(DragStartEvent event) {
@@ -825,11 +867,11 @@ public class EventUtils {
   public static boolean isLeftButton(NativeEvent event) {
     return (event == null) ? false : isLeftButton(event.getButton());
   }
-  
+
   public static boolean isMouseButtonEvent(String type) {
     return isMouseDown(type) || isMouseUp(type) || isClick(type) || isDblClick(type);
   }
-  
+
   public static boolean isMouseDown(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_DOWN);
   }
@@ -938,7 +980,7 @@ public class EventUtils {
     }
     return true;
   }
-  
+
   public static void removeClassName(HasNativeEvent ev, String className) {
     Assert.notNull(ev);
     removeClassName(ev.getNativeEvent(), className);
@@ -965,7 +1007,7 @@ public class EventUtils {
       setDndData(event, BeeUtils.toString(id));
     }
   }
-  
+
   public static void setDndData(DragStartEvent event, String data) {
     setDndData(event, DEFAULT_DND_DATA_FORMAT, data);
   }
@@ -984,7 +1026,7 @@ public class EventUtils {
 
     JsUtils.setProperty(event.getDataTransfer(), PROPERTY_DROP_EFFECT, effect);
   }
-  
+
   public static void setEffectAllowed(DragStartEvent event, String effect) {
     Assert.notNull(event);
     Assert.notEmpty(effect);

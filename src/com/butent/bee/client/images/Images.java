@@ -83,6 +83,9 @@ public class Images {
     @Source("disclosureOpen.png")
     ImageResource disclosureOpen();
 
+    @Source("disconnect.png")
+    ImageResource disconnect();
+
     @Source("edit.png")
     ImageResource edit();
 
@@ -305,6 +308,8 @@ public class Images {
 
     map.put(key("disclosureClosed"), resources.disclosureClosed());
     map.put(key("disclosureOpen"), resources.disclosureOpen());
+
+    map.put(key("disconnect"), resources.disconnect());
 
     map.put(key("edit"), resources.edit());
 

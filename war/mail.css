@@ -1,3 +1,4 @@
+
 .bee-mail-Headers {
   margin-top: 5px;
   margin-right: 5px;
@@ -116,11 +117,26 @@
   margin: 10px;
 }
 
+.bee-mail-Folders {
+  border-width: 1px 0 0 0;
+  border-style: dotted;
+}
+
 .bee-mail-SysFolder, .bee-mail-Folder {
   padding: 3px;
   cursor: pointer;
   color: #444;
   font-weight: normal;
+}
+
+.bee-mail-Folder-branch:before {
+  content: "\0025BE";
+  margin-right: 3px;
+}
+
+.bee-mail-Folder-leaf:before {
+  content: "-";
+  margin-right: 3px;
 }
 
 .bee-mail-FolderCaption {
@@ -140,16 +156,24 @@
   background-color: #f2f2f2;
 }
 
-.bee-mail-FolderAdd, .bee-mail-FolderEdit, .bee-mail-FolderDelete {
+.bee-mail-FolderAction {
   margin: 0 3px 0 3px;
   visibility: hidden;
 }
 
-.bee-mail-FolderRow tr:hover .bee-mail-FolderAdd, .bee-mail-FolderRow tr:hover .bee-mail-FolderEdit, .bee-mail-FolderRow  tr:hover .bee-mail-FolderDelete {
+.bee-mail-FolderRow tr:hover .bee-mail-FolderAction {
   visibility: visible;
 }
 
 .bee-mail-SysFolder-selected, .bee-mail-Folder-selected {
   font-weight: bold;
   color: #FD6268;
+}
+
+.bee-mail-Folder-disconnected {
+  font-style: italic;
+}
+
+.bee-mail-Folder-dragOver {
+  border: 1px dashed red;
 }

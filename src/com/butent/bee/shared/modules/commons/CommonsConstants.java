@@ -88,6 +88,12 @@ public class CommonsConstants {
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
+  public static final String TBL_USERS = "Users";
+  public static final String TBL_ROLES = "Roles";
+  public static final String TBL_USER_ROLES = "UserRoles";
+  public static final String TBL_OBJECTS = "Objects";
+  public static final String TBL_RIGHTS = "Rights";
+
   public static final String TBL_FILES = "Files";
 
   public static final String TBL_ITEMS = "Items";
@@ -100,7 +106,7 @@ public class CommonsConstants {
   public static final String TBL_PERSONS = "Persons";
 
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
-  
+
   public static final String TBL_RELATIONS = "Relations";
 
   public static final String VIEW_COMPANIES = "Companies";
@@ -114,7 +120,21 @@ public class CommonsConstants {
   public static final String VIEW_THEME_COLORS = "ThemeColors";
 
   public static final String VIEW_COUNTRIES = "Countries";
-  
+
+  public static final String FLD_LOGIN = "Login";
+  public static final String FLD_PASSWORD = "Password";
+  public static final String FLD_PROPERTIES = "Properties";
+  public static final String FLD_HOST = "Host";
+  public static final String FLD_ROLE_NAME = "Name";
+  public static final String FLD_USER = "User";
+  public static final String FLD_ROLE = "Role";
+  public static final String FLD_COMPANY_PERSON = "CompanyPerson";
+  public static final String FLD_PERSON = "Person";
+  public static final String FLD_OBJECT_TYPE = "Type";
+  public static final String FLD_OBJECT = "Object";
+  public static final String FLD_OBJECT_NAME = "Name";
+  public static final String FLD_STATE = "State";
+
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
   public static final String COL_FILE_REPO = "Repository";
@@ -125,7 +145,7 @@ public class CommonsConstants {
   public static final String COL_EMAIL_LABEL = "Label";
 
   public static final String COL_PERSON = "Person";
-  
+
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
 
@@ -159,7 +179,7 @@ public class CommonsConstants {
   public static final String COL_FOREGROUND = "Foreground";
 
   public static final String COL_THEME = "Theme";
-  
+
   public static final String FORM_NEW_COMPANY = "Company";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";

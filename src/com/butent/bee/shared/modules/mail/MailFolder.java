@@ -34,7 +34,7 @@ public class MailFolder implements BeeSerializable {
   private String name;
   private Long uidValidity;
 
-  private final Map<String, MailFolder> childs = Maps.newHashMap();
+  private final Map<String, MailFolder> childs = Maps.newLinkedHashMap();
 
   public MailFolder(long accountId, MailFolder parent, long id, String name, Long uidValidity) {
     this.accountId = accountId;

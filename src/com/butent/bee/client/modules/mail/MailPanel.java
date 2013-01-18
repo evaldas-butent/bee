@@ -10,13 +10,15 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
@@ -35,9 +37,13 @@ import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -58,6 +64,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -225,8 +232,10 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public String render(final IsRow row) {
-      Panel fp = new FlowPanel();
+      Flow fp = new Flow();
       fp.setStyleName("bee-mail-Header");
+
+      DomUtils.setDraggable(fp);
 
       TextLabel sender = new TextLabel(false);
       sender.setStyleName("bee-mail-HeaderAddress");
@@ -354,6 +363,28 @@ public class MailPanel extends AbstractFormInterceptor {
     }
 
     @Override
+    public void afterCreate(final GridView gridView) {
+      Binder.addDragStartHandler(gridView.getGrid(), new DragStartHandler() {
+        @Override
+        public void onDragStart(DragStartEvent event) {
+          EventTarget target = event.getNativeEvent().getEventTarget();
+
+          if (!Element.is(target)) {
+            return;
+          }
+          Integer rowIdx = BeeUtils.toIntOrNull(DomUtils
+              .getDataRow(Element.as(target).getParentElement()));
+
+          if (rowIdx == null || !BeeUtils.isIndex(gridView.getGrid().getRowData(), rowIdx)) {
+            return;
+          }
+          EventUtils.allowCopyMove(event);
+          EventUtils.setDndData(event, gridView.getGrid().getRowData().get(rowIdx).getId());
+        }
+      });
+    }
+
+    @Override
     public void onEditStart(final EditStartEvent event) {
       if ("Star".equals(event.getColumnId())) {
         final IsRow row = event.getRowValue();
@@ -459,7 +490,11 @@ public class MailPanel extends AbstractFormInterceptor {
           }
           accounts.add(account);
         }
-        FormFactory.openForm("Mail", MailPanel.this);
+        if (!BeeUtils.isEmpty(accounts)) {
+          FormFactory.openForm("Mail", MailPanel.this);
+        } else {
+          BeeKeeper.getScreen().notifyWarning("No accounts found");
+        }
       }
     });
   }
@@ -650,7 +685,7 @@ public class MailPanel extends AbstractFormInterceptor {
               int msgCnt = BeeUtils.toInt((String) response.getResponse());
 
               if (msgCnt > 0) {
-                getFormView().notifyInfo(BeeUtils.joinWords(folderId, "naujų žinučių:", msgCnt));
+                getFormView().notifyInfo(BeeUtils.joinWords("Naujų žinučių:", msgCnt));
               }
             }
           }

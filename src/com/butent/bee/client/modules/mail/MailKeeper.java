@@ -8,10 +8,12 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +56,11 @@ public class MailKeeper {
     BeeKeeper.getMenu().registerMenuCallback("open_mail", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
-        mailPanels.add(new MailPanel());
+        MailPanel panel = new MailPanel();
+
+        if (panel.getCurrentAccount() != null) {
+          mailPanels.add(new MailPanel());
+        }
       }
     });
 
@@ -108,18 +115,45 @@ public class MailKeeper {
     return args;
   }
 
-  static void createFolder(String name) {
+  static void createFolder(String title) {
     final MailPanel panel = activePanel;
-    AccountInfo account = panel.getCurrentAccount();
-    Long parentId = panel.getCurrentFolderId();
-
-    ParameterList params = createArgs(SVC_CREATE_FOLDER);
-    params.addDataItem(COL_ADDRESS, account.getAddress());
-    params.addDataItem(COL_FOLDER_NAME, name);
+    final AccountInfo account = panel.getCurrentAccount();
+    final Long parentId = panel.getCurrentFolderId();
+    String caption = null;
 
     if (account.getSystemFolder(parentId) == null) {
-      params.addDataItem(COL_FOLDER, parentId);
+      caption = "Aplanke " + BeeUtils.bracket(account.getFolder(parentId).getName());
     }
+    Global.inputString(title, caption, new StringCallback() {
+      @Override
+      public void onSuccess(String value) {
+        ParameterList params = createArgs(SVC_CREATE_FOLDER);
+        params.addDataItem(COL_ADDRESS, account.getAddress());
+        params.addDataItem(COL_FOLDER_NAME, value);
+
+        if (account.getSystemFolder(parentId) == null) {
+          params.addDataItem(COL_FOLDER, parentId);
+        }
+        BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(panel.getFormView());
+
+            if (!response.hasErrors()) {
+              panel.initFolders(true, null);
+            }
+          }
+        });
+      }
+    });
+  }
+
+  static void disconnectFolder(final AccountInfo account, final Long folderId) {
+    final MailPanel panel = activePanel;
+    ParameterList params = createArgs(SVC_DISCONNECT_FOLDER);
+    params.addDataItem(COL_ADDRESS, account.getAddress());
+    params.addDataItem(COL_FOLDER, folderId);
+
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {

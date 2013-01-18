@@ -10,7 +10,6 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -26,7 +25,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), UserServiceBean.TBL_ROLES)) {
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_ROLES)) {
       handleRoles(event);
     } else if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
       handleEmails(event);
@@ -82,11 +81,11 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     }
     long id = row.getId();
 
-    if (BeeUtils.same(gridView.getViewName(), UserServiceBean.TBL_USER_ROLES)) {
+    if (BeeUtils.same(gridView.getViewName(), TBL_USER_ROLES)) {
       Provider provider = ((HasDataProvider) gridView.getViewPresenter()).getDataProvider();
 
       if (provider != null) {
-        int index = provider.getColumnIndex(UserServiceBean.FLD_ROLE);
+        int index = provider.getColumnIndex(FLD_ROLE);
         Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
         List<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
 

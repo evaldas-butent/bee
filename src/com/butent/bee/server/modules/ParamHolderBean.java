@@ -43,6 +43,7 @@ public class ParamHolderBean {
   private static final String TBL_PARAMS = "Parameters";
   private static final String TBL_USER_PARAMS = "UserParameters";
   private static final String FLD_MODULE = "Module";
+  private static final String FLD_USER = "User";
   private static final String FLD_NAME = "Name";
   private static final String FLD_TYPE = "Type";
   private static final String FLD_DESCRIPTION = "Description";
@@ -217,7 +218,7 @@ public class ParamHolderBean {
     if (hasUserParameters) {
       data = qs.getData(new SqlSelect()
           .addFields(TBL_PARAMS, FLD_NAME)
-          .addFields(TBL_USER_PARAMS, UserServiceBean.FLD_USER, FLD_VALUE)
+          .addFields(TBL_USER_PARAMS, FLD_USER, FLD_VALUE)
           .addFrom(TBL_PARAMS)
           .addFromInner(TBL_USER_PARAMS, sys.joinTables(TBL_PARAMS, TBL_USER_PARAMS, FLD_PARAM))
           .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module),
@@ -225,7 +226,7 @@ public class ParamHolderBean {
 
       for (SimpleRow row : data) {
         getModuleParameter(module, row.getValue(FLD_NAME))
-            .setUserValue(row.getLong(UserServiceBean.FLD_USER), row.getValue(FLD_VALUE));
+            .setUserValue(row.getLong(FLD_USER), row.getValue(FLD_VALUE));
       }
     }
   }
@@ -262,7 +263,7 @@ public class ParamHolderBean {
       if (prmId == null) {
         prmId = storeParameter(parameter);
       }
-      wh = SqlUtils.equals(TBL_USER_PARAMS, FLD_PARAM, prmId, UserServiceBean.FLD_USER, userId);
+      wh = SqlUtils.equals(TBL_USER_PARAMS, FLD_PARAM, prmId, FLD_USER, userId);
 
       if (value == null) {
         qs.updateData(new SqlDelete(TBL_USER_PARAMS)
@@ -274,7 +275,7 @@ public class ParamHolderBean {
 
           qs.insertData(new SqlInsert(TBL_USER_PARAMS)
               .addConstant(FLD_PARAM, prmId)
-              .addConstant(UserServiceBean.FLD_USER, userId)
+              .addConstant(FLD_USER, userId)
               .addConstant(FLD_VALUE, value));
         }
       }

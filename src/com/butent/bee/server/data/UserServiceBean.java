@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.sql.HasConditions;
@@ -134,28 +136,6 @@ public class UserServiceBean {
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserServiceBean.class);
-
-  public static final String TBL_USERS = "Users";
-  public static final String TBL_ROLES = "Roles";
-  public static final String TBL_USER_ROLES = "UserRoles";
-  public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
-  public static final String TBL_PERSONS = "Persons";
-  public static final String TBL_OBJECTS = "Objects";
-  public static final String TBL_RIGHTS = "Rights";
-
-  public static final String FLD_LOGIN = "Login";
-  public static final String FLD_PASSWORD = "Password";
-  public static final String FLD_PROPERTIES = "Properties";
-  public static final String FLD_HOST = "Host";
-  public static final String FLD_ROLE_NAME = "Name";
-  public static final String FLD_USER = "User";
-  public static final String FLD_ROLE = "Role";
-  public static final String FLD_COMPANY_PERSON = "CompanyPerson";
-  public static final String FLD_PERSON = "Person";
-  public static final String FLD_OBJECT_TYPE = "Type";
-  public static final String FLD_OBJECT = "Object";
-  public static final String FLD_OBJECT_NAME = "Name";
-  public static final String FLD_STATE = "State";
 
   @Resource
   EJBContext ctx;

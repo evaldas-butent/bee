@@ -56,6 +56,7 @@ public class MailConstants {
   public static final String SVC_GET_FOLDERS = "get_folders";
   public static final String SVC_CREATE_FOLDER = "create_folder";
   public static final String SVC_RENAME_FOLDER = "rename_folder";
+  public static final String SVC_DISCONNECT_FOLDER = "disconnect_folder";
   public static final String SVC_DROP_FOLDER = "drop_folder";
   public static final String SVC_GET_MESSAGE = "get_message";
   public static final String SVC_FLAG_MESSAGE = "flag_message";

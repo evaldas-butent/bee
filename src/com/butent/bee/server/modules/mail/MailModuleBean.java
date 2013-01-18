@@ -166,6 +166,17 @@ public class MailModuleBean implements BeeModule {
           response = ResponseObject.error(e);
         }
       }
+    } else if (BeeUtils.same(svc, SVC_DISCONNECT_FOLDER)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+      MailFolder folder = mail.findFolder(account, folderId);
+
+      if (folder == null) {
+        response = ResponseObject.error("Folder does not exist: ID =", folderId);
+      } else {
+        mail.disconnectFolder(folder);
+        response = ResponseObject.info("Folder disconnected: " + folder.getName());
+      }
     } else if (BeeUtils.same(svc, SVC_RENAME_FOLDER)) {
       MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
@@ -196,11 +207,8 @@ public class MailModuleBean implements BeeModule {
       } else {
         try {
           if (account.dropRemoteFolder(folder)) {
-            if (mail.dropFolder(folder)) {
-              response = ResponseObject.info("Folder dropped: " + folder.getName());
-            } else {
-              response = ResponseObject.info("Folder disconnected: " + folder.getName());
-            }
+            mail.dropFolder(folder);
+            response = ResponseObject.info("Folder dropped: " + folder.getName());
           } else {
             response = ResponseObject.error("Cannot drop folder", folder.getName());
           }
@@ -216,7 +224,7 @@ public class MailModuleBean implements BeeModule {
       if (folder == null) {
         response = ResponseObject.error("Folder does not exist: ID =", folderId);
       } else {
-        response = checkMail(account, folder, false);
+        response = checkMail(account, folder, true);
       }
     } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
       response = new ResponseObject();
@@ -520,7 +528,7 @@ public class MailModuleBean implements BeeModule {
   }
 
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
-      boolean recurse) throws MessagingException {
+      boolean sync) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
     int c = 0;
     boolean uidMode = (remoteFolder instanceof UIDFolder);
@@ -535,7 +543,7 @@ public class MailModuleBean implements BeeModule {
           Message[] newMessages;
 
           if (uidMode) {
-            long lastUid = mail.syncFolder(localFolder, remoteFolder);
+            long lastUid = mail.syncFolder(localFolder, remoteFolder, sync);
             newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1,
                 UIDFolder.LASTUID);
           } else {
@@ -568,29 +576,28 @@ public class MailModuleBean implements BeeModule {
         visitedFolders.add(subFolder.getName());
         MailFolder localSubFolder = mail.createFolder(account, localFolder, subFolder.getName());
 
-        if (recurse) {
-          c += checkFolder(account, subFolder, localSubFolder, true);
-        }
+        c += checkFolder(account, subFolder, localSubFolder, false);
       }
     }
     for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext();) {
       MailFolder subFolder = iter.next();
 
-      if (!visitedFolders.contains(subFolder.getName()) && mail.dropFolder(subFolder)) {
+      if (!visitedFolders.contains(subFolder.getName()) && subFolder.isConnected()) {
+        mail.dropFolder(subFolder);
         iter.remove();
       }
     }
     return c;
   }
 
-  private ResponseObject checkMail(MailAccount account, MailFolder localFolder, boolean recurse) {
+  private ResponseObject checkMail(MailAccount account, MailFolder localFolder, boolean sync) {
     Assert.noNulls(account, localFolder);
     Store store = null;
     int c = 0;
 
     try {
       store = account.connectToStore(true);
-      c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, recurse);
+      c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, sync);
 
     } catch (MessagingException e) {
       ctx.setRollbackOnly();
