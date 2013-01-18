@@ -32,6 +32,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -283,20 +284,20 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected void prepareChart(int canvasWidth, int canvasHeight) {
+  protected void prepareChart(Size canvasSize) {
     setCustomerWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
     setOrderWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 60,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
 
     setChartLeft(getCustomerWidth() + getOrderWidth());
-    setChartWidth(canvasWidth - getChartLeft() - getChartRight());
+    setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
 
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ROW, 20,
-        1, getScrollAreaHeight(canvasHeight) / 2));
+        1, getScrollAreaHeight(canvasSize.getHeight()) / 2));
   }
 
   @Override

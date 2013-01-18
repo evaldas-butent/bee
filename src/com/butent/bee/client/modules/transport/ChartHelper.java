@@ -260,14 +260,23 @@ class ChartHelper {
 
   static Range<JustDate> getDefaultRange(Range<JustDate> span, int chartWidth, int dayWidth) {
     int spanSize = getSize(span);
-    if (spanSize <= 1) {
-      return span;
+    int days = Math.max(chartWidth / dayWidth, 1);
+
+    if (days >= spanSize) {
+      return normalizedCopyOf(span);
     }
 
-    int days = BeeUtils.clamp(chartWidth / dayWidth, 1, spanSize);
-
-    JustDate start = span.lowerEndpoint();
+    JustDate start = JustDate.copyOf(span.lowerEndpoint());
     JustDate end = TimeUtils.nextDay(start, days - 1);
+    
+    JustDate preferred = TimeUtils.today((days > 2) ? -1 : 0);
+    int diff = TimeUtils.dayDiff(start, preferred);
+    
+    if (diff > 0) {
+      int shift = Math.min(diff, spanSize - days);
+      TimeUtils.addDay(start, shift);
+      TimeUtils.addDay(end, shift);
+    }
 
     return Range.closed(start, end);
   }
@@ -416,24 +425,6 @@ class ChartHelper {
     return false;
   }
 
-  static Range<JustDate> normalize(Range<JustDate> range) {
-    if (range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED) {
-      return range;
-    }
-
-    int start = range.lowerEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.OPEN) {
-      start--;
-    }
-
-    int end = range.upperEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.OPEN) {
-      end--;
-    }
-
-    return Range.closed(new JustDate(start), new JustDate(end));
-  }
-
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -476,7 +467,7 @@ class ChartHelper {
       left += dayWidth;
     }
   }
-
+  
   static void renderDayLabels(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -546,7 +537,7 @@ class ChartHelper {
 
     container.add(panel);
   }
-  
+
   static void renderVisibleRange(HasVisibleRange owner, HasWidgets container,
       int width, int height) {
 
@@ -586,7 +577,7 @@ class ChartHelper {
 
     container.add(panel);
   }
-
+  
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -797,6 +788,32 @@ class ChartHelper {
       return DAY_SEPARATOR_WIDTH;
     } else {
       return 0;
+    }
+  }
+
+  private static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
+    if (range == null || range.isEmpty()) {
+      return null;
+    }
+
+    if (range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED) {
+      return Range.closed(range.lowerEndpoint(), range.upperEndpoint());
+    }
+
+    int start = range.lowerEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.OPEN) {
+      start++;
+    }
+
+    int end = range.upperEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.OPEN) {
+      end--;
+    }
+    
+    if (start <= end) {
+      return Range.closed(new JustDate(start), new JustDate(end));
+    } else {
+      return null;
     }
   }
 

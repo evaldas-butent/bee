@@ -653,6 +653,17 @@ public class EventUtils {
     fireKeyUp(Element.as(target), keyCode);
   }
 
+  public static String getCurrentTargetId(NativeEvent ev) {
+    Assert.notNull(ev);
+    EventTarget target = ev.getCurrentEventTarget();
+
+    if (target == null) {
+      return null;
+    } else {
+      return getTargetId(target);
+    }
+  }
+  
   public static String getDndData(DragDropEventBase<?> event) {
     Assert.notNull(event);
     return event.getData(DEFAULT_DND_DATA_FORMAT);
@@ -900,11 +911,16 @@ public class EventUtils {
     return isMouseMove(type) || isMouseOut(type) || isMouseOver(type);
   }
 
+  public static boolean isTargetId(HasNativeEvent ev, String id) {
+    return (ev == null) ? false : isTargetId(ev.getNativeEvent().getEventTarget(), id);
+  }
+  
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
+    } else {
+      return BeeUtils.same(getTargetId(et), id);
     }
-    return BeeUtils.same(getTargetId(et), id);
   }
 
   public static boolean isTargetTagName(EventTarget et, String tagName) {

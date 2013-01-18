@@ -45,6 +45,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -695,6 +696,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return rowHeight;
   }
 
+  protected Element getScrollArea() {
+    if (BeeUtils.isEmpty(getScrollAreaId())) {
+      return null;
+    } else {
+      return Document.get().getElementById(getScrollAreaId());
+    }
+  }
+
   protected int getScrollAreaHeight(int canvasHeight) {
     return canvasHeight - getHeaderHeight() - getHeaderSplitterSize() - getFooterHeight()
         - getFooterSplitterSize();
@@ -779,15 +788,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       render(false);
     }
   }
-
+  
   @Override
   protected void onLoad() {
     super.onLoad();
 
     EventUtils.clearRegistry(registry);
-
-    registry.add(VisibilityChangeEvent.register(this));
-    registry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
+    registry.addAll(register());
 
     render(true);
   }
@@ -804,16 +811,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         true, null);
   }
 
-  protected abstract void prepareChart(int canvasWidth, int canvasHeight);
+  protected abstract void prepareChart(Size canvasSize);
 
-  protected void prepareDefaults(int canvasWidth, int canvasHeight) {
+  protected void prepareDefaults(Size canvasSize) {
     setChartRight(DomUtils.getScrollBarWidth());
 
     int hh = ChartHelper.getPixels(getSettings(), getHeaderHeightColumnName(), 20);
-    setHeaderHeight(clampHeaderHeight(hh, canvasHeight));
+    setHeaderHeight(clampHeaderHeight(hh, canvasSize.getHeight()));
 
     int fh = ChartHelper.getPixels(getSettings(), getFooterHeightColumnName(), 30);
-    setFooterHeight(clampFooterHeight(fh, canvasHeight));
+    setFooterHeight(clampFooterHeight(fh, canvasSize.getHeight()));
   }
 
   protected void prepareFooter() {
@@ -844,6 +851,15 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         });
   }
 
+  protected List<HandlerRegistration> register() {
+    List<HandlerRegistration> result = Lists.newArrayList();
+
+    result.add(VisibilityChangeEvent.register(this));
+    result.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
+    
+    return result;
+  }
+
   protected void render(boolean updateRange) {
     canvas.clear();
     if (getChartItems().isEmpty() || getMaxRange() == null) {
@@ -856,10 +872,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       setRenderPending(true);
       return;
     }
+    
+    Size canvasSize = new Size(width, height);
 
-    prepareDefaults(width, height);
-
-    prepareChart(width, height);
+    prepareDefaults(canvasSize);
+    prepareChart(canvasSize);
 
     if (updateRange || getVisibleRange() == null || !getMaxRange().encloses(getVisibleRange())) {
       setVisibleRange(ChartHelper.getDefaultRange(getMaxRange(), getChartWidth(),
@@ -1374,14 +1391,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return BeeUtils.trim(row.getString(getCountries().getColumnIndex(CommonsConstants.COL_NAME)));
     } else {
       return BeeUtils.trim(label).toUpperCase();
-    }
-  }
-
-  private Element getScrollArea() {
-    if (BeeUtils.isEmpty(getScrollAreaId())) {
-      return null;
-    } else {
-      return Document.get().getElementById(getScrollAreaId());
     }
   }
 

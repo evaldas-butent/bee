@@ -15,7 +15,7 @@ public class ActionEvent extends GwtEvent<ActionEvent.Handler> {
   public interface HasActionHandlers extends HasHandlers {
     HandlerRegistration addActionHandler(Handler handler);
   }
-  
+
   public interface Handler extends EventHandler {
     void onAction(ActionEvent event);
   }
@@ -27,7 +27,7 @@ public class ActionEvent extends GwtEvent<ActionEvent.Handler> {
   }
 
   private final Set<Action> actions;
-  
+
   public ActionEvent(Set<Action> actions) {
     super();
     this.actions = actions;
@@ -36,11 +36,11 @@ public class ActionEvent extends GwtEvent<ActionEvent.Handler> {
   public ActionEvent(Action action) {
     this(EnumSet.of(action));
   }
-  
+
   public boolean contains(Action action) {
     return getActions().contains(action);
   }
-  
+
   public Set<Action> getActions() {
     return actions;
   }
@@ -49,7 +49,7 @@ public class ActionEvent extends GwtEvent<ActionEvent.Handler> {
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
-  
+
   @Override
   protected void dispatch(Handler handler) {
     handler.onAction(this);

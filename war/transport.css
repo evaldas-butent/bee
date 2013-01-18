@@ -288,12 +288,6 @@
   border: 2px dashed red;
 }
 
-.bee-tr-ss-Item-over > *,
-.bee-tr-ss-Vehicle-over > *,
-.bee-tr-ss-Trip-over > * {
-  pointer-events: none;
-}
-
 .bee-tr-ss-Service-panel {
   position: absolute;
   cursor: pointer;

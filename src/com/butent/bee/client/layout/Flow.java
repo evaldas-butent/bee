@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.State;
 
 /**
  * Implements a panel that formats its child widgets using the default HTML layout behavior.
@@ -34,6 +35,8 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
 public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, ProvidesResize,
     RequiresResize, HasClickHandlers {
 
+  private State targetState = null;
+  
   public Flow() {
     DomUtils.createId(this, getIdPrefix());
   }
@@ -89,6 +92,11 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   }
 
   @Override
+  public State getTargetState() {
+    return targetState;
+  }
+
+  @Override
   public boolean isEmpty() {
     return getWidgetCount() <= 0;
   }
@@ -105,5 +113,10 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setTargetState(State targetState) {
+    this.targetState = targetState;
   }
 }

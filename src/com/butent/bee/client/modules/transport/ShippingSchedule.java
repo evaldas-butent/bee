@@ -13,6 +13,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -28,6 +29,8 @@ import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.event.logical.MotionEvent;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
@@ -37,6 +40,7 @@ import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -63,7 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ShippingSchedule extends ChartBase {
+class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   private static class Freight implements ChartItem {
 
@@ -224,6 +228,8 @@ class ShippingSchedule extends ChartBase {
   private static final String STYLE_SERVICE_PANEL = STYLE_SERVICE_PREFIX + "panel";
   private static final String STYLE_SERVICE_LABEL = STYLE_SERVICE_PREFIX + "label";
 
+  private static final int SCROLL_STEP = 2;
+
   static void open(final Callback<IdentifiableWidget> callback) {
     Assert.notNull(callback);
 
@@ -290,7 +296,42 @@ class ShippingSchedule extends ChartBase {
       super.handleAction(action);
     }
   }
-  
+
+  @Override
+  public void onMotion(MotionEvent event) {
+    Element panel = getScrollArea();
+
+    if (event.getDirectionY() != null && panel != null
+        && BeeUtils.betweenInclusive(event.getCurrentX(), panel.getAbsoluteLeft(),
+            panel.getAbsoluteRight())) {
+
+      int panelTop = panel.getAbsoluteTop();
+      int panelheight = panel.getClientHeight();
+
+      int oldPos = panel.getScrollTop();
+      int scrollHeight = panel.getScrollHeight();
+
+      int y = event.getCurrentY();
+      int rh = getRowHeight();
+
+      int newPos = BeeConst.UNDEF;
+
+      if (oldPos > 0 && BeeUtils.betweenExclusive(y, panelTop - rh, panelTop)
+          && event.getDirectionY() == Direction.NORTH) {
+        newPos = Math.max(oldPos - SCROLL_STEP, 0);
+
+      } else if (panelheight < scrollHeight 
+          && BeeUtils.betweenInclusive(y, panelTop + panelheight + 1, panelTop + panelheight + rh) 
+          && event.getDirectionY() == Direction.SOUTH) {
+        newPos = Math.min(oldPos + SCROLL_STEP, scrollHeight - panelheight);
+      }
+
+      if (newPos >= 0 && newPos != oldPos) {
+        panel.setScrollTop(newPos);
+      }
+    }
+  }
+
   @Override
   protected String getBarHeightColumnName() {
     return COL_SS_BAR_HEIGHT;
@@ -305,7 +346,7 @@ class ShippingSchedule extends ChartBase {
   protected String getDataService() {
     return DATA_SERVICE;
   }
-  
+
   @Override
   protected Set<Action> getEnabledActions() {
     return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
@@ -431,28 +472,36 @@ class ShippingSchedule extends ChartBase {
   }
 
   @Override
-  protected void prepareChart(int canvasWidth, int canvasHeight) {
+  protected void prepareChart(Size canvasSize) {
     setVehicleWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_TRUCK, 80,
-        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
+        ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
 
     setSeparateTrips(ChartHelper.getBoolean(getSettings(), COL_SS_SEPARATE_TRIPS));
     if (separateTrips()) {
       setTripWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_TRIP, 80,
-          ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasWidth / 3));
+          ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
     } else {
       setTripWidth(0);
     }
 
     setChartLeft(getVehicleWidth() + getTripWidth());
-    setChartWidth(canvasWidth - getChartLeft() - getChartRight());
+    setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
 
     setRowHeight(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_ROW, 20,
-        1, getScrollAreaHeight(canvasHeight) / 2));
+        1, getScrollAreaHeight(canvasSize.getHeight()) / 2));
   }
-  
+
+  @Override
+  protected List<HandlerRegistration> register() {
+    List<HandlerRegistration> list = super.register();
+    list.add(MotionEvent.register(this));
+
+    return list;
+  }
+
   @Override
   protected void renderContent(ComplexPanel panel) {
     List<List<Freight>> layoutRows = doLayout();
@@ -986,19 +1035,19 @@ class ShippingSchedule extends ChartBase {
       @Override
       public void onConfirm() {
         reset();
-        
+
         final String viewName = VIEW_TRIPS;
         final DataInfo dataInfo = Data.getDataInfo(viewName);
 
         BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
         newRow.setValue(dataInfo.getColumnIndex(COL_VEHICLE), vehicleId);
-        
+
         Queries.insert(viewName, dataInfo.getColumns(), newRow, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
             assignCargoToTrip(cargoId, sourceTrip, result.getId());
-            
+
             BeeKeeper.getScreen().notifyInfo("Sukurtas naujas reisas",
                 "Nr. " + result.getString(dataInfo.getColumnIndex(COL_TRIP_NO)));
           }
@@ -1140,7 +1189,7 @@ class ShippingSchedule extends ChartBase {
       }
     }
   }
-  
+
   private void renderMovers(HasWidgets panel, int height) {
     Mover vehicleMover = ChartHelper.createHorizontalMover();
     StyleUtils.setLeft(vehicleMover, getVehicleWidth() - ChartHelper.DEFAULT_MOVER_WIDTH);

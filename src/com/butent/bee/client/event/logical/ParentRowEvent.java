@@ -17,10 +17,6 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements Has
 
   private static final Type<Handler> TYPE = new Type<Handler>();
 
-  public static Type<Handler> getType() {
-    return TYPE;
-  }
-
   public static HandlerRegistration register(EventBus eventBus, Object source, Handler handler) {
     Assert.notNull(eventBus);
     Assert.notNull(handler);
