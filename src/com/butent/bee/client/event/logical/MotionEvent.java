@@ -22,6 +22,7 @@ public class MotionEvent extends Event<MotionEvent.Handler> {
     return BeeKeeper.getBus().addHandler(TYPE, handler, false);
   }
   
+  private final String dataType;
   private final String sourceId;
 
   private final int sourceLeft;
@@ -45,12 +46,13 @@ public class MotionEvent extends Event<MotionEvent.Handler> {
   private long changeMillisX;
   private long changeMillisY;
 
-  public MotionEvent(IdentifiableWidget widget, int startX, int startY) {
+  public MotionEvent(String dataType, IdentifiableWidget widget, int startX, int startY) {
     super();
     
     Assert.notNull(widget);
     Assert.isTrue(widget.asWidget().isAttached(), "MotionEvent: widget must be attached");
     
+    this.dataType = dataType;
     this.sourceId = widget.getId();
     
     this.sourceLeft = widget.asWidget().getAbsoluteLeft();
@@ -97,6 +99,10 @@ public class MotionEvent extends Event<MotionEvent.Handler> {
 
   public int getCurrentY() {
     return currentY;
+  }
+
+  public String getDataType() {
+    return dataType;
   }
 
   public Direction getDirectionX() {

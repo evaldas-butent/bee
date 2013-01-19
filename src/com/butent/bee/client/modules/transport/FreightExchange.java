@@ -23,6 +23,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -492,7 +493,7 @@ class FreightExchange extends ChartBase {
 
     final Long cargoId = item.cargoId;
 
-    DndHelper.makeSource(panel, DndHelper.ContentType.CARGO, cargoId, null, title, STYLE_ITEM_DRAG);
+    DndHelper.makeSource(panel, DATA_TYPE_CARGO, cargoId, null, title, STYLE_ITEM_DRAG, true);
 
     ClickHandler opener = new ClickHandler() {
       @Override

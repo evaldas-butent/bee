@@ -28,6 +28,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.client.layout.Direction;
@@ -299,6 +300,10 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   @Override
   public void onMotion(MotionEvent event) {
+    if (!DATA_TYPE_CARGO.equals(event.getDataType())) {
+      return;
+    }
+
     Element panel = getScrollArea();
 
     if (event.getDirectionY() != null && panel != null
@@ -320,8 +325,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           && event.getDirectionY() == Direction.NORTH) {
         newPos = Math.max(oldPos - SCROLL_STEP, 0);
 
-      } else if (panelheight < scrollHeight 
-          && BeeUtils.betweenInclusive(y, panelTop + panelheight + 1, panelTop + panelheight + rh) 
+      } else if (panelheight < scrollHeight
+          && BeeUtils.betweenInclusive(y, panelTop + panelheight + 1, panelTop + panelheight + rh)
           && event.getDirectionY() == Direction.SOUTH) {
         newPos = Math.min(oldPos + SCROLL_STEP, scrollHeight - panelheight);
       }
@@ -776,11 +781,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     });
 
     if (cargoId != null) {
-      DndHelper.makeSource(panel, DndHelper.ContentType.CARGO, cargoId, tripId, itemTitle,
-          STYLE_ITEM_DRAG);
+      DndHelper.makeSource(panel, DATA_TYPE_CARGO, cargoId, tripId, itemTitle, STYLE_ITEM_DRAG,
+          true);
     }
 
-    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_ITEM_OVER,
+    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_ITEM_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
@@ -839,7 +844,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long tripId = item.tripId;
     final String tripTitle = buildTripTitle(item);
 
-    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_TRIP_OVER,
+    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_TRIP_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
@@ -892,7 +897,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long vehicleId = item.vehicleId;
     final String vehicleNumber = item.vehicleNumber;
 
-    DndHelper.makeTarget(panel, DndHelper.ContentType.CARGO, STYLE_VEHICLE_OVER,
+    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_VEHICLE_OVER,
         DndHelper.alwaysTarget, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {

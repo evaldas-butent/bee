@@ -191,6 +191,8 @@ public class TransportConstants {
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
   public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVer";
+
+  public static final String DATA_TYPE_CARGO = "Cargo";
   
   public static final String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;

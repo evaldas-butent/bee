@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.event;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -19,43 +19,44 @@ import com.google.gwt.event.dom.client.DropHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.DndSource;
-import com.butent.bee.client.event.DndTarget;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class DndHelper {
+public class DndHelper {
 
-  enum ContentType {
-    CARGO
-  }
-  
-  static final Predicate<Long> alwaysTarget = Predicates.alwaysTrue();
+  public static final Predicate<Long> alwaysTarget = Predicates.alwaysTrue();
 
-  private static ContentType dataType = null;
-  
+  private static String dataType = null;
+
   private static Long dataId = null;
   private static Long relatedId = null;
-  
+
   private static String dataDescription = null;
-  
+
   private static MotionEvent motionEvent = null;
-  
-  static String getDataDescription() {
+
+  public static String getDataDescription() {
     return dataDescription;
   }
 
-  static Long getRelatedId() {
+  public static Long getDataId() {
+    return dataId;
+  }
+
+  public static String getDataType() {
+    return dataType;
+  }
+
+  public static Long getRelatedId() {
     return relatedId;
   }
 
-  static void makeSource(final DndSource widget, final ContentType contentType,
+  public static void makeSource(final DndSource widget, final String contentType,
       final Long contentId, final Long relId, final String contentDescription,
-      final String dragStyle) {
+      final String dragStyle, final boolean fireMotion) {
 
     Assert.notNull(widget);
     Assert.notNull(contentType);
@@ -74,31 +75,35 @@ class DndHelper {
         EventUtils.setDndData(event, contentId);
 
         setDataType(contentType);
-        
+
         setDataId(contentId);
         setRelatedId(relId);
 
         setDataDescription(contentDescription);
-        
-        setMotionEvent(new MotionEvent(widget, event.getNativeEvent().getClientX(),
-            event.getNativeEvent().getClientY()));
-      }
-    });
-    
-    widget.addDragHandler(new DragHandler() {
-      @Override
-      public void onDrag(DragEvent event) {
-        if (getMotionEvent() != null) {
-          int x = event.getNativeEvent().getClientX();
-          int y = event.getNativeEvent().getClientY();
-          
-          if (x > 0 || y > 0) {
-            getMotionEvent().moveTo(x, y);
-            BeeKeeper.getBus().fireEvent(getMotionEvent());
-          }
+
+        if (fireMotion) {
+          setMotionEvent(new MotionEvent(contentType, widget, event.getNativeEvent().getClientX(),
+              event.getNativeEvent().getClientY()));
         }
       }
     });
+
+    if (fireMotion) {
+      widget.addDragHandler(new DragHandler() {
+        @Override
+        public void onDrag(DragEvent event) {
+          if (getMotionEvent() != null) {
+            int x = event.getNativeEvent().getClientX();
+            int y = event.getNativeEvent().getClientY();
+
+            if (x > 0 || y > 0) {
+              getMotionEvent().moveTo(x, y);
+              BeeKeeper.getBus().fireEvent(getMotionEvent());
+            }
+          }
+        }
+      });
+    }
 
     widget.addDragEndHandler(new DragEndHandler() {
       @Override
@@ -111,14 +116,14 @@ class DndHelper {
     });
   }
 
-  static void makeTarget(final DndTarget widget, final ContentType contentType,
+  public static void makeTarget(final DndTarget widget, final String contentType,
       final String overStyle, final Predicate<Long> targetPredicate, final Procedure<Long> onDrop) {
 
     Assert.notNull(widget);
     Assert.notNull(contentType);
     Assert.notNull(targetPredicate);
     Assert.notNull(onDrop);
-    
+
     widget.addDragEnterHandler(new DragEnterHandler() {
       @Override
       public void onDragEnter(DragEnterEvent event) {
@@ -171,33 +176,25 @@ class DndHelper {
     });
   }
 
-  private static Long getDataId() {
-    return dataId;
-  }
-
-  private static ContentType getDataType() {
-    return dataType;
-  }
-
   private static MotionEvent getMotionEvent() {
     return motionEvent;
   }
-  
-  private static boolean isTarget(ContentType contentType, Predicate<Long> targetPredicate) {
-    return getDataType() == contentType && targetPredicate.apply(getDataId());
+
+  private static boolean isTarget(String contentType, Predicate<Long> targetPredicate) {
+    return BeeUtils.same(getDataType(), contentType) && targetPredicate.apply(getDataId());
   }
 
   private static void reset() {
     setDataType(null);
-    
+
     setDataId(null);
     setRelatedId(null);
-    
+
     setDataDescription(null);
-    
+
     setMotionEvent(null);
   }
-  
+
   private static void setDataDescription(String dataDescription) {
     DndHelper.dataDescription = dataDescription;
   }
@@ -206,7 +203,7 @@ class DndHelper {
     DndHelper.dataId = dataId;
   }
 
-  private static void setDataType(ContentType dataType) {
+  private static void setDataType(String dataType) {
     DndHelper.dataType = dataType;
   }
 
