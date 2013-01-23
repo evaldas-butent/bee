@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.calendar.layout;
 import com.google.common.collect.Range;
 
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription.WidgetPart;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -73,7 +72,7 @@ public class MonthLayoutDescription {
 
   private void placeAppointments(List<Appointment> appointments, int maxLayer) {
     for (Appointment appointment : appointments) {
-      if (!BeeUtils.intersects(CalendarUtils.getRange(appointment), layoutRange)) {
+      if (!BeeUtils.intersects(appointment.getRange(), layoutRange)) {
         continue;
       }
 

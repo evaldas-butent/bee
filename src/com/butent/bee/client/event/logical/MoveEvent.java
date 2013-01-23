@@ -5,6 +5,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 
 public class MoveEvent extends GwtEvent<MoveEvent.Handler> {
@@ -23,14 +24,14 @@ public class MoveEvent extends GwtEvent<MoveEvent.Handler> {
 
   private static final Type<Handler> TYPE = new Type<Handler>();
   
-  public static void fireFinish(HasMoveHandlers source, int delta) {
+  public static void fireFinish(HasMoveHandlers source, int deltaX, int deltaY) {
     Assert.notNull(source);
-    source.fireEvent(new MoveEvent(State.FINISHED, delta));
+    source.fireEvent(new MoveEvent(State.FINISHED, deltaX, deltaY));
   }
 
-  public static void fireMove(HasMoveHandlers source, int delta) {
+  public static void fireMove(HasMoveHandlers source, int deltaX, int deltaY) {
     Assert.notNull(source);
-    source.fireEvent(new MoveEvent(State.MOVING, delta));
+    source.fireEvent(new MoveEvent(State.MOVING, deltaX, deltaY));
   }
   
   public static Type<Handler> getType() {
@@ -38,12 +39,16 @@ public class MoveEvent extends GwtEvent<MoveEvent.Handler> {
   }
   
   private final State state;
-  private final int delta;
 
-  private MoveEvent(State state, int delta) {
+  private final int deltaX;
+  private final int deltaY;
+
+  private MoveEvent(State state, int deltaX, int deltaY) {
     super();
     this.state = state;
-    this.delta = delta;
+
+    this.deltaX = deltaX;
+    this.deltaY = deltaY;
   }
 
   @Override
@@ -51,8 +56,20 @@ public class MoveEvent extends GwtEvent<MoveEvent.Handler> {
     return TYPE;
   }
 
-  public int getDelta() {
-    return delta;
+  public int getDeltaX() {
+    return deltaX;
+  }
+
+  public int getDeltaY() {
+    return deltaY;
+  }
+  
+  public Mover getMover() {
+    if (getSource() instanceof Mover) {
+      return (Mover) getSource();
+    } else {
+      return null;
+    }
   }
 
   public boolean isFinished() {

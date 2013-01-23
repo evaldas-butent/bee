@@ -175,7 +175,7 @@ public class BeeUtils {
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
   }
-
+  
   public static <T> boolean check(Predicate<T> predicate, T input) {
     return (predicate == null) ? true : predicate.apply(input);
   }
@@ -546,6 +546,10 @@ public class BeeUtils {
     } else {
       return end - len;
     }
+  }
+
+  public static int floor(double x) {
+    return toInt(Math.floor(x));
   }
 
   /**
@@ -2027,7 +2031,7 @@ public class BeeUtils {
     if (x == 0 || to <= 1) {
       return x;
     } else {
-      return Math.round((float) x / to) * to;
+      return round((double) x / to) * to;
     }
   }
 

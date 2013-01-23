@@ -7,13 +7,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -45,7 +42,6 @@ class AppointmentRenderer {
 
   private static final String STRING_SEPARATOR = ", ";
   private static final String CHILD_SEPARATOR = ", ";
-  private static final String PERIOD_SEPARATOR = " - ";
 
   private static final String SUBSTITUTE_PREFIX = "{";
   private static final String SUBSTITUTE_SUFFIX = "}";
@@ -55,16 +51,6 @@ class AppointmentRenderer {
   private static final String KEY_REMINDERS = "Reminders";
 
   private static final String KEY_PERIOD = "Period";
-
-  private static final DateTimeFormat DATE_TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-  private static final DateTimeFormat DATE_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-  private static final DateTimeFormat TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
-
-  private static final DateTimeFormat MONTH_DAY = DateTimeFormat.getFormat("MM-dd");
-  private static final DateTimeFormat MONTH_DAY_TIME = DateTimeFormat.getFormat("MM-dd HH:mm");
 
   static {
     DEFAULT_SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
@@ -157,25 +143,6 @@ class AppointmentRenderer {
         DEFAULT_MULTI_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, true);
   }
 
-  String renderPeriod(DateTime start, DateTime end) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return PERIOD_SEPARATOR + renderDateTime(end);
-      }
-
-    } else if (end == null) {
-      return renderDateTime(start) + PERIOD_SEPARATOR;
-
-    } else if (TimeUtils.sameDate(start, end)) {
-      return renderDateTime(start) + PERIOD_SEPARATOR + TIME_FORMAT.format(end);
-
-    } else {
-      return renderDateTime(start) + PERIOD_SEPARATOR + renderDateTime(end);
-    }
-  }
-
   void renderSimple(long calendarId, AppointmentWidget appointmentWidget) {
     render(calendarId, appointmentWidget, DEFAULT_SIMPLE_HEADER_TEMPLATE,
         DEFAULT_SIMPLE_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, false);
@@ -199,7 +166,7 @@ class AppointmentRenderer {
       if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
         value = Captions.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
       } else if (value != null && ValueType.DATE_TIME.equals(columns.get(i).getType())) {
-        value = renderDateTime(row.getDateTime(i));
+        value = CalendarUtils.renderDateTime(row.getDateTime(i));
       }
 
       result.put(wrap(key), BeeUtils.trim(value));
@@ -231,7 +198,7 @@ class AppointmentRenderer {
     result.put(wrap(KEY_PROPERTIES), propNames);
     result.put(wrap(KEY_REMINDERS), remindNames);
 
-    result.put(wrap(KEY_PERIOD), renderPeriod(appointment.getStart(), appointment.getEnd()));
+    result.put(wrap(KEY_PERIOD), CalendarUtils.renderPeriod(appointment.getStart(), appointment.getEnd()));
 
     return result;
   }
@@ -268,24 +235,7 @@ class AppointmentRenderer {
     return sb.toString();
   }
 
-  private String renderDateTime(DateTime dateTime) {
-    if (dateTime.getYear() == TimeUtils.today().getYear()) {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return MONTH_DAY_TIME.format(dateTime);
-      } else {
-        return MONTH_DAY.format(dateTime);
-      }
-
-    } else {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return DATE_TIME_FORMAT.format(dateTime);
-      } else {
-        return DATE_FORMAT.format(dateTime);
-      }
-    }
-  }
-  
   private String renderEmpty(Appointment appointment) {
-    return renderPeriod(appointment.getStart(), appointment.getEnd());
+    return CalendarUtils.renderPeriod(appointment.getStart(), appointment.getEnd());
   }
 }

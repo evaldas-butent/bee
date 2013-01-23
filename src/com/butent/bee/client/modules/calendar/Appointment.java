@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -77,6 +78,10 @@ public class Appointment implements Comparable<Appointment> {
   public String getDescription() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
   }
+  
+  public long getDuration() {
+    return getEnd().getTime() - getStart().getTime();
+  }
 
   public DateTime getEnd() {
     return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
@@ -94,6 +99,10 @@ public class Appointment implements Comparable<Appointment> {
     return properties;
   }
 
+  public Range<DateTime> getRange() {
+    return Range.closedOpen(getStart(), getEnd());
+  }
+  
   public List<Long> getReminders() {
     return reminders;
   }

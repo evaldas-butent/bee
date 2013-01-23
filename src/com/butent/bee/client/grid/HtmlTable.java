@@ -90,6 +90,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       ensureElement(row, column).setClassName(styleName);
     }
 
+    public void setStyleName(int row, int column, String styleName, boolean add) {
+      if (add) {
+        addStyleName(row, column, styleName);
+      } else {
+        removeStyleName(row, column, styleName);
+      }
+    }
+    
     public void setVerticalAlignment(int row, int column, VerticalAlignmentConstant align) {
       StyleUtils.setVerticalAlign(ensureElement(row, column), align);
     }

@@ -63,6 +63,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -720,6 +721,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
           @Override
           public void onSuccess(BeeRow result) {
             row.setVersion(result.getVersion());
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_APPOINTMENTS, result));
           }
         });
 

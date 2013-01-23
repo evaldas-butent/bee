@@ -12,8 +12,7 @@ import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
-import com.butent.bee.client.modules.calendar.dnd.DayDragController;
-import com.butent.bee.client.modules.calendar.dnd.DayDropController;
+import com.butent.bee.client.modules.calendar.dnd.DayMoveController;
 import com.butent.bee.client.modules.calendar.dnd.ResizeController;
 import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
 import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Orientation;
 
 import java.util.List;
 import java.util.Map;
@@ -36,8 +36,7 @@ public class ResourceView extends CalendarView {
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
 
-  private DayDragController dragController = null;
-  private DayDropController dropController = null;
+  private DayMoveController moveController = null;
   private ResizeController resizeController = null;
 
   public ResourceView() {
@@ -52,8 +51,7 @@ public class ResourceView extends CalendarView {
     addWidget(viewMulti);
     addWidget(viewBody);
 
-    createDragController();
-    createDropController();
+    createMoveController();
     createResizeController();
   }
 
@@ -74,10 +72,9 @@ public class ResourceView extends CalendarView {
       viewBody.build(cc, getSettings());
     }
 
-    dragController.setDate(JustDate.copyOf(date));
-
-    dropController.setColumns(cc);
-    dropController.setSettings(getSettings());
+    moveController.setDate(JustDate.copyOf(date));
+    moveController.setColumnCount(cc);
+    moveController.setSettings(getSettings());
 
     resizeController.setSettings(getSettings());
 
@@ -179,9 +176,11 @@ public class ResourceView extends CalendarView {
   private void addAppointmentsToGrid(long calendarId, List<AppointmentAdapter> adapters,
       boolean multi, int columnIndex, String bg) {
 
+    Orientation footerOrientation = multi ? null : Orientation.VERTICAL;
+    
     for (AppointmentAdapter adapter : adapters) {
       AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
-          columnIndex, adapter.getHeight());
+          columnIndex, adapter.getHeight(), footerOrientation);
 
       widget.setLeft(adapter.getLeft());
       widget.setWidth(adapter.getWidth());
@@ -198,30 +197,21 @@ public class ResourceView extends CalendarView {
       } else {
         viewBody.getGrid().add(widget);
 
-        resizeController.makeDraggable(widget.getResizeHandle());
-        dragController.makeDraggable(widget, widget.getMoveHandle());
+        widget.getMoveHandle().addMoveHandler(moveController);
+        widget.getResizeHandle().addMoveHandler(resizeController);
       }
     }
   }
 
-  private void createDragController() {
-    if (dragController == null) {
-      dragController = new DayDragController(viewBody.getGrid());
-      dragController.addDefaultHandler(this);
-    }
-  }
-
-  private void createDropController() {
-    if (dropController == null) {
-      dropController = new DayDropController(viewBody.getGrid());
-      dragController.registerDropController(dropController);
+  private void createMoveController() {
+    if (moveController == null) {
+      moveController = new DayMoveController(this, viewBody.getScrollArea().getElement());
     }
   }
 
   private void createResizeController() {
     if (resizeController == null) {
-      resizeController = new ResizeController(viewBody.getGrid());
-      resizeController.addDefaultHandler(this);
+      resizeController = new ResizeController(this, viewBody.getScrollArea());
     }
   }
 

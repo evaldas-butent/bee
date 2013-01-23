@@ -217,11 +217,11 @@ class ChartHelper {
   }
 
   static Mover createHorizontalMover() {
-    return new Mover(Orientation.HORIZONTAL, STYLE_HORIZONTAL_MOVER);
+    return new Mover(STYLE_HORIZONTAL_MOVER, Orientation.HORIZONTAL);
   }
 
   static Mover createVerticalMover() {
-    return new Mover(Orientation.VERTICAL, STYLE_VERTICAL_MOVER);
+    return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
   static boolean getBoolean(BeeRowSet settings, String colName) {

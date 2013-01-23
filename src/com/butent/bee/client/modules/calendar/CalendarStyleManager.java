@@ -80,6 +80,9 @@ public class CalendarStyleManager {
 
   public static final String TODAY = "bee-cal-today";
   public static final String TODAY_MARKER = "bee-cal-todayMarker";
+
+  public static final String DRAG = "drag";
+  public static final String POSITIONER = "positioner";
   
   static void applyStyle(Widget widget, String styles) {
     if (!BeeUtils.isEmpty(styles)) {

@@ -4,7 +4,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.event.logical.MoveEvent;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Orientation;
 
 public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
@@ -13,14 +12,21 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
 
   private boolean mouseDown = false;
 
-  private int startPosition = 0;
-  private int currentPosition = 0;
+  private int startX = 0;
+  private int startY = 0;
 
-  public Mover(Orientation orientation) {
-    this(orientation, null);
+  private int currentX = 0;
+  private int currentY = 0;
+
+  public Mover() {
+    this(null, null);
+  }
+  
+  public Mover(String styleName) {
+    this(styleName, null);
   }
 
-  public Mover(Orientation orientation, String styleName) {
+  public Mover(String styleName, Orientation orientation) {
     super(styleName);
     this.orientation = orientation;
 
@@ -32,8 +38,12 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
     return addHandler(handler, MoveEvent.getType());
   }
 
-  public int getCurrentPosition() {
-    return currentPosition;
+  public int getCurrentX() {
+    return currentX;
+  }
+
+  public int getCurrentY() {
+    return currentY;
   }
 
   @Override
@@ -41,20 +51,28 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
     return "mover";
   }
 
-  public int getStartPosition() {
-    return startPosition;
+  public int getStartX() {
+    return startX;
+  }
+
+  public int getStartY() {
+    return startY;
   }
 
   @Override
   public void onBrowserEvent(Event event) {
-    int p = getEventPosition(event);
+    int x = event.getClientX();
+    int y = event.getClientY();
 
     switch (event.getTypeInt()) {
       case Event.ONMOUSEDOWN:
         setMouseDown(true);
 
-        setStartPosition(p);
-        setCurrentPosition(p);
+        setStartX(x);
+        setStartY(y);
+        
+        setCurrentX(x);
+        setCurrentY(y);
 
         Event.setCapture(getElement());
 
@@ -66,41 +84,37 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
         if (isMouseDown()) {
           setMouseDown(false);
 
-          int delta = p - getCurrentPosition();
-          setCurrentPosition(p);
+          int dx = x - getCurrentX();
+          int dy = y - getCurrentY();
+          
+          setCurrentX(x);
+          setCurrentY(y);
 
           Event.releaseCapture(getElement());
 
           event.preventDefault();
           event.stopPropagation();
 
-          MoveEvent.fireFinish(this, delta);
+          MoveEvent.fireFinish(this, dx, dy);
         }
         break;
 
       case Event.ONMOUSEMOVE:
         if (isMouseDown()) {
-          int delta = p - getCurrentPosition();
-          setCurrentPosition(p);
+          int dx = x - getCurrentX();
+          int dy = y - getCurrentY();
+          
+          setCurrentX(x);
+          setCurrentY(y);
 
           event.preventDefault();
           event.stopPropagation();
 
-          if (delta != 0) {
-            MoveEvent.fireMove(this, delta);
+          if (shoudFire(dx, dy)) {
+            MoveEvent.fireMove(this, dx, dy);
           }
         }
         break;
-    }
-  }
-
-  private int getEventPosition(Event event) {
-    if (orientation == null) {
-      return BeeConst.UNDEF;
-    } else if (Orientation.HORIZONTAL.equals(orientation)) {
-      return event.getClientX();
-    } else {
-      return event.getClientY();
     }
   }
 
@@ -108,15 +122,33 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
     return mouseDown;
   }
 
-  private void setCurrentPosition(int currentPosition) {
-    this.currentPosition = currentPosition;
+  private void setCurrentX(int currentX) {
+    this.currentX = currentX;
+  }
+
+  private void setCurrentY(int currentY) {
+    this.currentY = currentY;
   }
 
   private void setMouseDown(boolean mouseDown) {
     this.mouseDown = mouseDown;
   }
 
-  private void setStartPosition(int startPosition) {
-    this.startPosition = startPosition;
+  private void setStartX(int startX) {
+    this.startX = startX;
+  }
+
+  private void setStartY(int startY) {
+    this.startY = startY;
+  }
+
+  private boolean shoudFire(int dx, int dy) {
+    if (orientation == null) {
+      return dx != 0 || dy != 0;
+    } else if (Orientation.HORIZONTAL.equals(orientation)) {
+      return dx != 0;
+    } else {
+      return dy != 0;
+    }
   }
 }

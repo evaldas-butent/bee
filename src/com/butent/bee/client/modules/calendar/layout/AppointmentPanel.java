@@ -79,7 +79,7 @@ public class AppointmentPanel extends Composite {
       result.setDom(result.getDom() + day);
     }
     
-    int minutes = CalendarUtils.getCoordinateMinutesSinceDayStarted(relativeY, settings);
+    int minutes = CalendarUtils.getMinutes(relativeY, settings);
     if (minutes > 0) {
       result.setMinute(minutes);
     }

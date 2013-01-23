@@ -594,7 +594,7 @@ class FreightExchange extends ChartBase {
   }
 
   private void onCustomerResize(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaX();
 
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);
@@ -632,7 +632,7 @@ class FreightExchange extends ChartBase {
   }
 
   private void onOrderResize(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaX();
 
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);

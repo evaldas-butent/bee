@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumMap;
@@ -150,7 +151,7 @@ public class CalendarSettings {
   }
 
   public void setDefaultDisplayedDays(int defaultDisplayedDays) {
-    this.defaultDisplayedDays = defaultDisplayedDays;
+    this.defaultDisplayedDays = BeeUtils.clamp(defaultDisplayedDays, 2, 100);
   }
 
   private boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
@@ -168,11 +169,16 @@ public class CalendarSettings {
   }
 
   private void setIntervalsPerHour(int intervals) {
-    intervalsPerHour = intervals;
+    int value = BeeUtils.clamp(intervals, 1, TimeUtils.MINUTES_PER_HOUR);
+    while (TimeUtils.MINUTES_PER_HOUR % value != 0) {
+      value--;
+    }
+
+    intervalsPerHour = value;
   }
 
   private void setPixelsPerInterval(int px) {
-    pixelsPerInterval = px;
+    pixelsPerInterval = BeeUtils.clamp(px, 1, 100);
   }
   
   private void setScrollToHour(int hour) {

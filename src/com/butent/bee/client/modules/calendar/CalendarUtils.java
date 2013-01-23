@@ -5,7 +5,7 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dnd.DragContext;
+import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -19,6 +19,18 @@ import java.util.List;
 
 public class CalendarUtils {
 
+  private static final String PERIOD_SEPARATOR = " - ";
+
+  private static final DateTimeFormat DATE_TIME_FORMAT =
+      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
+  private static final DateTimeFormat DATE_FORMAT =
+      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+  private static final DateTimeFormat TIME_FORMAT =
+      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
+
+  private static final DateTimeFormat MONTH_DAY = DateTimeFormat.getFormat("MM-dd");
+  private static final DateTimeFormat MONTH_DAY_TIME = DateTimeFormat.getFormat("MM-dd HH:mm");
+  
   public static List<Appointment> filterByAttendee(Collection<Appointment> input, long id) {
     List<Appointment> result = Lists.newArrayList();
     for (Appointment appointment : input) {
@@ -105,21 +117,21 @@ public class CalendarUtils {
   }
 
   public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
-      long id) {
-    List<Appointment> lst = filterSimple(input, date);
-    if (lst.isEmpty()) {
-      return lst;
-    }
-    return filterByAttendee(lst, id);
-  }
-
-  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
       Collection<Long> attIds, boolean separate) {
     List<Appointment> lst = filterSimple(input, date);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendees(lst, attIds, separate);
+  }
+
+  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
+      long id) {
+    List<Appointment> lst = filterSimple(input, date);
+    if (lst.isEmpty()) {
+      return lst;
+    }
+    return filterByAttendee(lst, id);
   }
   
   public static AppointmentWidget findWidget(Collection<AppointmentWidget> widgets,
@@ -136,6 +148,15 @@ public class CalendarUtils {
     return null;
   }
 
+  public static AppointmentWidget getAppointmentWidget(Widget child) {
+    for (Widget widget = child; widget != null; widget = widget.getParent()) {
+      if (widget instanceof AppointmentWidget) {
+        return (AppointmentWidget) widget;
+      }
+    }
+    return null;
+  }
+
   public static int getColumnWidth(Widget widget, int columnCount) {
     int totalWidth = widget.getElement().getClientWidth();
     if (columnCount <= 1) {
@@ -143,32 +164,6 @@ public class CalendarUtils {
     } else {
       return totalWidth * (100 / columnCount) / 100;
     }
-  }
-
-  public static int getCoordinateMinutesSinceDayStarted(int y, CalendarSettings settings) {
-    int hour = y / settings.getHourHeight();
-
-    int interval = (y - hour * settings.getHourHeight()) / settings.getPixelsPerInterval();
-    int minute = interval * TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
-
-    return hour * TimeUtils.MINUTES_PER_HOUR + minute;
-  }
-
-  public static Appointment getDragAppointment(DragContext context) {
-    AppointmentWidget appointmentWidget = getDragAppointmentWidget(context);
-    return (appointmentWidget == null) ? null : appointmentWidget.getAppointment();
-  }
-
-  public static AppointmentWidget getDragAppointmentWidget(DragContext context) {
-    Widget widget = context.draggable;
-
-    while (widget != null) {
-      if (widget instanceof AppointmentWidget) {
-        return (AppointmentWidget) widget;
-      }
-      widget = widget.getParent();
-    }
-    return null;
   }
 
   public static int getEndHour(Collection<AppointmentWidget> widgets) {
@@ -210,7 +205,26 @@ public class CalendarUtils {
       hour = TimeUtils.HOURS_PER_DAY;
     }
 
-    return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
+    return hour * settings.getHourHeight();
+  }
+
+  public static int getIntervalStartPixels(DateTime dt, CalendarSettings settings) {
+    Assert.notNull(dt);
+    Assert.notNull(settings);
+    
+    int mpi = TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
+    
+    return dt.getHour() * settings.getHourHeight() 
+        + dt.getMinute() / mpi * settings.getPixelsPerInterval();
+  }
+
+  public static int getMinutes(int y, CalendarSettings settings) {
+    int hour = y / settings.getHourHeight();
+
+    int interval = (y - hour * settings.getHourHeight()) / settings.getPixelsPerInterval();
+    int minute = interval * TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
+
+    return hour * TimeUtils.MINUTES_PER_HOUR + minute;
   }
 
   public static int getNowY(CalendarSettings settings) {
@@ -219,11 +233,7 @@ public class CalendarUtils {
 
     return now.getHour() * hourHeight + now.getMinute() * hourHeight / TimeUtils.MINUTES_PER_HOUR;
   }
-
-  public static Range<DateTime> getRange(Appointment appointment) {
-    return Range.closedOpen(appointment.getStart(), appointment.getEnd());
-  }
-
+  
   public static int getStartHour(Collection<AppointmentWidget> widgets) {
     int result = BeeConst.UNDEF;
     if (widgets == null) {
@@ -257,7 +267,7 @@ public class CalendarUtils {
       hour = Math.min(hour, minHour);
     }
 
-    return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
+    return hour * settings.getHourHeight();
   }
 
   public static int getTodayColumn(JustDate date, int days) {
@@ -270,5 +280,46 @@ public class CalendarUtils {
     DateTime end = appointment.getEnd();
 
     return TimeUtils.isLess(start, max) && TimeUtils.isMore(end, min);
+  }
+  
+  public static String renderDateTime(DateTime dateTime) {
+    if (dateTime.getYear() == TimeUtils.today().getYear()) {
+      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
+        return MONTH_DAY_TIME.format(dateTime);
+      } else {
+        return MONTH_DAY.format(dateTime);
+      }
+
+    } else {
+      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
+        return DATE_TIME_FORMAT.format(dateTime);
+      } else {
+        return DATE_FORMAT.format(dateTime);
+      }
+    }
+  }
+
+  public static String renderPeriod(DateTime start, DateTime end) {
+    if (start == null) {
+      if (end == null) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + renderDateTime(end);
+      }
+
+    } else if (end == null) {
+      return renderDateTime(start) + PERIOD_SEPARATOR;
+
+    } else if (TimeUtils.sameDate(start, end)) {
+      return renderDateTime(start) + PERIOD_SEPARATOR + TIME_FORMAT.format(end);
+
+    } else {
+      return renderDateTime(start) + PERIOD_SEPARATOR + renderDateTime(end);
+    }
+  }
+  
+  public static String renderRange(Range<DateTime> range) {
+    return (range == null) ? BeeConst.STRING_EMPTY 
+        : renderPeriod(range.lowerEndpoint(), range.upperEndpoint()); 
   }
 }

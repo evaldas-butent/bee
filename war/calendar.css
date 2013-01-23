@@ -5,7 +5,6 @@
   left: 0;
   right: 0;
   overflow: hidden;
-  white-space: nowrap;
   border: 1px solid #ccc;
   outline: none;
 }
@@ -166,6 +165,7 @@
   height: 15px;
   padding-left: 1%;
   border-bottom: 2px ridge #ccc;
+  white-space: nowrap;
   cursor: move;
 }
 .bee-cal .appointment .body {
@@ -217,6 +217,7 @@
 .bee-cal .appointment-small .header {
   height: 30%;
   padding-left: 1%;
+  white-space: nowrap;
   cursor: move;
   line-height: 11px;
 }
@@ -260,6 +261,7 @@
 
 .bee-cal-MonthView .canvas {
   position: absolute;
+  overflow: hidden;
   top: 0;
   bottom: 0;
   left: 0;
@@ -682,3 +684,26 @@
 .bee-cal-today {
   background-color: #f1f1f1;
 }
+
+.bee-cal .drag {
+  z-index: 1;
+  opacity: 0.5;
+}
+.bee-cal .positioner {
+  z-index: 2;
+  outline: #aaa dashed 2px;
+  word-wrap: break-word;
+  overflow: hidden;
+  color: #777;
+  font-size: 12px;  
+  font-weight: bold;
+}
+
+.bee-cal-MonthView .drag {
+  z-index: 1;
+  outline: #555 dotted 1px;
+}
+.bee-cal-MonthView .positioner {
+  background-color: rgba(255, 238, 238, 0.5) !important;
+}
+

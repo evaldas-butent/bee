@@ -1110,7 +1110,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   private void onTripResize(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaX();
 
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);
@@ -1141,7 +1141,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   private void onVehicleResize(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaX();
 
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);

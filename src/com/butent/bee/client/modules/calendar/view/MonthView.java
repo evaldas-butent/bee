@@ -15,7 +15,6 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarFormat;
@@ -25,8 +24,7 @@ import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
-import com.butent.bee.client.modules.calendar.dnd.MonthDropController;
-import com.butent.bee.client.modules.calendar.dnd.MonthDragController;
+import com.butent.bee.client.modules.calendar.dnd.MonthMoveController;
 import com.butent.bee.client.modules.calendar.layout.AppointmentLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.AppointmentStackingManager;
 import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
@@ -70,13 +68,12 @@ public class MonthView extends CalendarView {
   private static final int PERCENT_SCALE = 3;
 
   private final HtmlTable grid = new HtmlTable();
-  private final Absolute canvas = new Absolute();
+  private final Flow canvas = new Flow();
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
   private final Map<String, List<Appointment>> moreLabels = Maps.newHashMap();
 
-  private MonthDragController dragController = null;
-  private MonthDropController dropController = null;
+  private MonthMoveController moveController = null;
 
   private JustDate firstDate;
   private int requiredRows;
@@ -103,14 +100,8 @@ public class MonthView extends CalendarView {
     addWidget(grid);
     addWidget(canvas);
 
-    if (dragController == null) {
-      dragController = new MonthDragController(canvas, true);
-      dragController.addDefaultHandler(this);
-    }
-
-    if (dropController == null) {
-      dropController = new MonthDropController(canvas);
-      dragController.registerDropController(dropController);
+    if (moveController == null) {
+      moveController = new MonthMoveController(this);
     }
   }
 
@@ -129,9 +120,7 @@ public class MonthView extends CalendarView {
 
     this.maxCellAppointments = cellHeight / (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP) - 1;
 
-    dropController.setRowCount(requiredRows);
-    dropController.setColumnCount(DAYS_IN_A_WEEK);
-    dropController.setHeaderHeight(weekDayHeaderHeight);
+    moveController.setHeaderHeight(weekDayHeaderHeight);
     
     List<Long> attendees = getCalendarWidget().getAttendees();
     boolean separate = getSettings().separateAttendees();
@@ -167,8 +156,31 @@ public class MonthView extends CalendarView {
     return appointmentWidgets;
   }
 
+  public JustDate getCellDate(int row, int col) {
+    return TimeUtils.nextDay(firstDate, row * DAYS_IN_A_WEEK + col);
+  }
+
+  public int getColumn(int x) {
+    double columnWidth = getColumnWidth();
+    if (x > 0 && columnWidth > 0) {
+      return BeeUtils.clamp(BeeUtils.floor(x / columnWidth), 0, DAYS_IN_A_WEEK - 1);
+    } else {
+      return 0;
+    }
+  }
+
   public JustDate getFirstDate() {
     return firstDate;
+  }
+
+  public int getRow(int y) {
+    double rowHeight = getRowHeight();
+    if (y > weekDayHeaderHeight && rowHeight > 0) {
+      return BeeUtils.clamp(BeeUtils.floor((y - weekDayHeaderHeight) / rowHeight),
+          0, requiredRows - 1);
+    } else {
+      return 0;
+    }
   }
 
   @Override
@@ -209,6 +221,10 @@ public class MonthView extends CalendarView {
 
   @Override
   public void onClock() {
+  }
+
+  public void setCellStyle(int row, int col, String styleName, boolean add) {
+    grid.getCellFormatter().setStyleName(row + 1, col, styleName, add);
   }
 
   private void buildCell(int row, int col, String text, boolean isToday, boolean currentMonth) {
@@ -296,28 +312,31 @@ public class MonthView extends CalendarView {
     }
     return rows;
   }
-
-  private JustDate cellDate(int row, int col) {
-    return TimeUtils.nextDay(firstDate, row * DAYS_IN_A_WEEK + col);
-  }
-
+  
   private void dayClicked(Event event) {
+    int row = getRow(event.getClientY() - canvas.getElement().getAbsoluteTop());
+  
     int x = event.getClientX() - canvas.getElement().getAbsoluteLeft();
-    int y = event.getClientY() - canvas.getElement().getAbsoluteTop();
-
-    int colWidth = canvas.getOffsetWidth() / DAYS_IN_A_WEEK;
-    int col = x / colWidth;
-    int row = y / ((canvas.getOffsetHeight() - weekDayHeaderHeight) / requiredRows);
+    int col = getColumn(x);
     
-    DateTime start = cellDate(row, col).getDateTime();
-
-    double h = BeeUtils.rescale(x % colWidth, 0, colWidth, 0, 24);
-    int hour = BeeUtils.clamp((int) Math.round(h), 0, 23);
+    DateTime start = getCellDate(row, col).getDateTime();
+    
+    double colWidth = getColumnWidth();
+    double h = BeeUtils.rescale(x - col * colWidth, 0, colWidth, 0, 24);
+    int hour = BeeUtils.clamp(BeeUtils.round(h), 0, 23);
     if (hour > 0) {
       start.setHour(hour);
     }
 
     createAppointment(start, null);
+  }
+
+  private double getColumnWidth() {
+    return (double) canvas.getElement().getClientWidth() / DAYS_IN_A_WEEK;
+  }
+  
+  private double getRowHeight() {
+    return (canvas.getElement().getClientHeight() - weekDayHeaderHeight) / (double) requiredRows;    
   }
 
   private void layOnAppointment(long calendarId, Appointment appointment, boolean multi,
@@ -327,8 +346,7 @@ public class MonthView extends CalendarView {
     String bg = (separate && attColors != null) 
         ?  attColors.get(appointment.getSeparatedAttendee()) : null;
     
-    AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF,
-        BeeConst.UNDEF);
+    AppointmentWidget widget = new AppointmentWidget(appointment, multi);
     if (multi) {
       widget.render(calendarId, bg);
     } else {
@@ -338,7 +356,7 @@ public class MonthView extends CalendarView {
     placeItemInGrid(widget, appointment, multi, colStart, colEnd, row, cellPosition);
 
     if (!multi) {
-      dragController.makeDraggable(widget, widget.getCompactBar());
+      widget.getCompactBar().addMoveHandler(moveController);
     }
 
     appointmentWidgets.add(widget);
@@ -435,10 +453,10 @@ public class MonthView extends CalendarView {
       int endMinutes = TimeUtils.minutesSinceDayStarted(end);
 
       if (multi) {
-        if (TimeUtils.sameDate(start, cellDate(row, colStart)) && startMinutes > 0) {
+        if (TimeUtils.sameDate(start, getCellDate(row, colStart)) && startMinutes > 0) {
           marginLeft = startMinutes * colWidth / TimeUtils.MINUTES_PER_DAY;
         }
-        if (TimeUtils.sameDate(end, cellDate(row, colEnd)) && endMinutes > 0) {
+        if (TimeUtils.sameDate(end, getCellDate(row, colEnd)) && endMinutes > 0) {
           marginRight =
               (TimeUtils.MINUTES_PER_DAY - endMinutes) * colWidth / TimeUtils.MINUTES_PER_DAY;
         }
@@ -484,9 +502,7 @@ public class MonthView extends CalendarView {
     panel.add(caption);
 
     for (Appointment appointment : appointments) {
-      boolean multi = appointment.isMultiDay();
-      AppointmentWidget widget = new AppointmentWidget(appointment, multi,
-          BeeConst.UNDEF, BeeConst.UNDEF);
+      AppointmentWidget widget = new AppointmentWidget(appointment, appointment.isMultiDay());
       widget.render(calendarId, null);
       
       panel.add(widget);

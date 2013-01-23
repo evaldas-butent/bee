@@ -266,7 +266,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return;
     }
 
-    int delta = event.getDelta();
+    int delta = event.getDeltaX();
     Element source = ((Mover) event.getSource()).getElement();
 
     RangeMover sourceType = null;
@@ -750,7 +750,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void onFooterSplitterMove(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaY();
 
     Element splitter = ((Mover) event.getSource()).getElement();
     int oldBottom = StyleUtils.getBottom(splitter);
@@ -770,7 +770,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void onHeaderSplitterMove(MoveEvent event) {
-    int delta = event.getDelta();
+    int delta = event.getDeltaY();
 
     Element splitter = ((Mover) event.getSource()).getElement();
     int oldTop = StyleUtils.getTop(splitter);
@@ -1081,7 +1081,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     rangeMovers.clear();
 
     if (getSliderWidth() > 0) {
-      Mover startSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_START_SLIDER);
+      Mover startSlider = new Mover(STYLE_SELECTOR_START_SLIDER, Orientation.HORIZONTAL);
       StyleUtils.setLeft(startSlider, startPos);
       StyleUtils.setWidth(startSlider, getSliderWidth());
 
@@ -1096,7 +1096,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
       panel.add(startSlider);
 
-      Mover endSlider = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_END_SLIDER);
+      Mover endSlider = new Mover(STYLE_SELECTOR_END_SLIDER, Orientation.HORIZONTAL);
       StyleUtils.setLeft(endSlider, endPos + getSliderWidth());
       StyleUtils.setWidth(endSlider, getSliderWidth());
 
@@ -1112,7 +1112,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       panel.add(endSlider);
 
       if (getBarHeight() > 0) {
-        Mover bar = new Mover(Orientation.HORIZONTAL, STYLE_SELECTOR_BAR);
+        Mover bar = new Mover(STYLE_SELECTOR_BAR, Orientation.HORIZONTAL);
         StyleUtils.setLeft(bar, startPos);
         StyleUtils.setWidth(bar, endPos - startPos + getSliderWidth() * 2);
 

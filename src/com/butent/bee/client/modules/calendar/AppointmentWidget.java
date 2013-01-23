@@ -5,9 +5,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentWidget extends Flow {
@@ -21,19 +23,21 @@ public class AppointmentWidget extends Flow {
   private double width;
   private double height;
 
-  private final Widget headerPanel = new Html();
-  private final Widget bodyPanel = new Html();
-  private final Widget footerPanel = new Html();
-  
-  private int dropRowIndex = BeeConst.UNDEF;
-  private int dropColumnIndex = BeeConst.UNDEF;
-  private int dropMinutes = BeeConst.UNDEF;
+  private final Mover headerPanel;
+  private final Widget bodyPanel;
+  private final Mover footerPanel;
 
-  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex, double height) {
+  public AppointmentWidget(Appointment appointment, boolean multi) {
+    this(appointment, multi, BeeConst.UNDEF, BeeConst.UNDEF, null);
+  }
+  
+  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex, double height,
+      Orientation footerOrientation) {
+
     this.appointment = appointment;
     this.multi = multi;
     this.columnIndex = columnIndex;
-    
+
     String styleName;
     if (multi) {
       styleName = CalendarStyleManager.APPOINTMENT_MULTIDAY;
@@ -44,18 +48,18 @@ public class AppointmentWidget extends Flow {
     } else {
       styleName = CalendarStyleManager.APPOINTMENT;
     }
-    
+
     addStyleName(styleName);
 
-    headerPanel.addStyleName(CalendarStyleManager.HEADER);
-    bodyPanel.addStyleName(CalendarStyleManager.BODY);
-    footerPanel.addStyleName(CalendarStyleManager.FOOTER);
+    this.headerPanel = new Mover(CalendarStyleManager.HEADER);
+    this.bodyPanel = new CustomDiv(CalendarStyleManager.BODY);
+    this.footerPanel = new Mover(CalendarStyleManager.FOOTER, footerOrientation);
 
     add(headerPanel);
     add(bodyPanel);
     add(footerPanel);
   }
-  
+
   public boolean canClick(Element element) {
     if (element == null) {
       return false;
@@ -73,25 +77,13 @@ public class AppointmentWidget extends Flow {
   public Widget getBodyPanel() {
     return bodyPanel;
   }
-  
+
   public int getColumnIndex() {
     return columnIndex;
   }
 
-  public Widget getCompactBar() {
+  public Mover getCompactBar() {
     return footerPanel;
-  }
-
-  public int getDropColumnIndex() {
-    return dropColumnIndex;
-  }
-
-  public int getDropMinutes() {
-    return dropMinutes;
-  }
-
-  public int getDropRowIndex() {
-    return dropRowIndex;
   }
 
   public Widget getFooterPanel() {
@@ -101,7 +93,7 @@ public class AppointmentWidget extends Flow {
   public Widget getHeaderPanel() {
     return headerPanel;
   }
-  
+
   public double getHeight() {
     return height;
   }
@@ -110,11 +102,11 @@ public class AppointmentWidget extends Flow {
     return left;
   }
 
-  public Widget getMoveHandle() {
+  public Mover getMoveHandle() {
     return headerPanel;
   }
 
-  public Widget getResizeHandle() {
+  public Mover getResizeHandle() {
     return footerPanel;
   }
 
@@ -150,18 +142,6 @@ public class AppointmentWidget extends Flow {
     if (!BeeUtils.isEmpty(html)) {
       bodyPanel.getElement().setInnerHTML(BeeUtils.trim(html));
     }
-  }
-
-  public void setDropColumnIndex(int dropColumnIndex) {
-    this.dropColumnIndex = dropColumnIndex;
-  }
-
-  public void setDropMinutes(int dropMinutes) {
-    this.dropMinutes = dropMinutes;
-  }
-
-  public void setDropRowIndex(int dropRowIndex) {
-    this.dropRowIndex = dropRowIndex;
   }
 
   public void setHeaderHtml(String html) {
