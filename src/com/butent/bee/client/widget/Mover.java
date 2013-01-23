@@ -110,7 +110,7 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
           event.preventDefault();
           event.stopPropagation();
 
-          if (shoudFire(dx, dy)) {
+          if (shouldFire(dx, dy)) {
             MoveEvent.fireMove(this, dx, dy);
           }
         }
@@ -142,7 +142,7 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
     this.startY = startY;
   }
 
-  private boolean shoudFire(int dx, int dy) {
+  private boolean shouldFire(int dx, int dy) {
     if (orientation == null) {
       return dx != 0 || dy != 0;
     } else if (Orientation.HORIZONTAL.equals(orientation)) {
