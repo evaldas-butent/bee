@@ -28,14 +28,14 @@ public class LogbackLogger implements BeeLogger {
 
   @Override
   public void debug(Object... messages) {
-    if (logger.isDebugEnabled()) {
+    if (isDebugEnabled()) {
       logInternal(LocationAwareLogger.DEBUG_INT, null, messages);
     }
   }
 
   @Override
   public void error(Throwable ex, Object... messages) {
-    if (logger.isErrorEnabled()) {
+    if (isErrorEnabled()) {
       if (ArrayUtils.length(messages) > 0) {
         severe(messages);
       }
@@ -69,9 +69,29 @@ public class LogbackLogger implements BeeLogger {
 
   @Override
   public void info(Object... messages) {
-    if (logger.isInfoEnabled()) {
+    if (isInfoEnabled()) {
       logInternal(LocationAwareLogger.INFO_INT, null, messages);
     }
+  }
+
+  @Override
+  public boolean isDebugEnabled() {
+    return logger.isDebugEnabled();
+  }
+
+  @Override
+  public boolean isErrorEnabled() {
+    return logger.isErrorEnabled();
+  }
+
+  @Override
+  public boolean isInfoEnabled() {
+    return logger.isInfoEnabled();
+  }
+
+  @Override
+  public boolean isWarningEnabled() {
+    return logger.isWarnEnabled();
   }
 
   @Override
@@ -94,14 +114,14 @@ public class LogbackLogger implements BeeLogger {
 
   @Override
   public void severe(Object... messages) {
-    if (logger.isErrorEnabled()) {
+    if (isErrorEnabled()) {
       logInternal(LocationAwareLogger.ERROR_INT, null, messages);
     }
   }
 
   @Override
   public void warning(Object... messages) {
-    if (logger.isWarnEnabled()) {
+    if (isWarningEnabled()) {
       logInternal(LocationAwareLogger.WARN_INT, null, messages);
     }
   }

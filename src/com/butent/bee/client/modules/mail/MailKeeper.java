@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 import java.util.Set;
@@ -109,6 +110,31 @@ public class MailKeeper {
     }
   }
 
+  static void copyMessage(final Long folderFrom, final Long folderTo, Long placeId,
+      final boolean move) {
+    final MailPanel panel = activePanel;
+    ParameterList params = createArgs(SVC_COPY_MESSAGES);
+    params.addDataItem(COL_ADDRESS, panel.getCurrentAccount().getAddress());
+    params.addDataItem(COL_FOLDER_PARENT, folderFrom);
+    params.addDataItem(COL_FOLDER, folderTo);
+    params.addDataItem(COL_PLACE, Codec.beeSerialize(new Long[] {placeId}));
+    params.addDataItem("move", move ? 1 : 0);
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(panel.getFormView());
+
+        if (!response.hasErrors() && Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+          panel.getFormView().notifyInfo(move ? "Perkelta" : "Nukopijuota",
+              (String) response.getResponse(), "laiškų į aplanką",
+              BeeUtils.bracket(panel.getCurrentAccount().getFolder(folderTo).getName()));
+          panel.refresh(null);
+        }
+      }
+    });
+  }
+
   static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(MAIL_MODULE);
     args.addQueryItem(MAIL_METHOD, name);
@@ -164,6 +190,10 @@ public class MailKeeper {
         }
       }
     });
+  }
+
+  static Long getActiveSystemFolderId(SystemFolder sysFolder) {
+    return activePanel.getCurrentAccount().getSystemFolderId(sysFolder);
   }
 
   static void rebuildController() {

@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientLogger implements BeeLogger {
-  
+
   private final Logger logger;
 
   public ClientLogger(String name) {
@@ -19,7 +19,7 @@ public class ClientLogger implements BeeLogger {
   public void addHandler(Handler handler) {
     logger.addHandler(handler);
   }
-  
+
   @Override
   public void addSeparator() {
     logger.log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
@@ -27,18 +27,18 @@ public class ClientLogger implements BeeLogger {
 
   @Override
   public void debug(Object... messages) {
-    if (logger.isLoggable(Level.CONFIG)) {
+    if (isDebugEnabled()) {
       logger.config(ArrayUtils.joinWords(messages));
     }
   }
 
   @Override
   public void error(Throwable ex, Object... messages) {
-    if (logger.isLoggable(Level.SEVERE)) {
+    if (isErrorEnabled()) {
       logger.log(Level.SEVERE, ArrayUtils.joinWords(messages), ex);
     }
   }
-  
+
   public PanelHandler getPanelHandler() {
     for (Handler handler : logger.getHandlers()) {
       if (handler instanceof PanelHandler) {
@@ -50,9 +50,29 @@ public class ClientLogger implements BeeLogger {
 
   @Override
   public void info(Object... messages) {
-    if (logger.isLoggable(Level.INFO)) {
+    if (isInfoEnabled()) {
       logger.info(ArrayUtils.joinWords(messages));
     }
+  }
+
+  @Override
+  public boolean isDebugEnabled() {
+    return logger.isLoggable(Level.CONFIG);
+  }
+
+  @Override
+  public boolean isErrorEnabled() {
+    return logger.isLoggable(Level.SEVERE);
+  }
+
+  @Override
+  public boolean isInfoEnabled() {
+    return logger.isLoggable(Level.INFO);
+  }
+
+  @Override
+  public boolean isWarningEnabled() {
+    return logger.isLoggable(Level.WARNING);
   }
 
   @Override
@@ -79,14 +99,14 @@ public class ClientLogger implements BeeLogger {
 
   @Override
   public void severe(Object... messages) {
-    if (logger.isLoggable(Level.SEVERE)) {
+    if (isErrorEnabled()) {
       logger.severe(ArrayUtils.joinWords(messages));
     }
   }
-  
+
   @Override
   public void warning(Object... messages) {
-    if (logger.isLoggable(Level.WARNING)) {
+    if (isWarningEnabled()) {
       logger.warning(ArrayUtils.joinWords(messages));
     }
   }

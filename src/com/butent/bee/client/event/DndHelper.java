@@ -38,6 +38,17 @@ public class DndHelper {
 
   private static MotionEvent motionEvent = null;
 
+  public static void fillContent(String contentType,
+      Long contentId, Long relId, String contentDescription) {
+
+    setDataType(contentType);
+
+    setDataId(contentId);
+    setRelatedId(relId);
+
+    setDataDescription(contentDescription);
+  }
+
   public static String getDataDescription() {
     return dataDescription;
   }
@@ -52,6 +63,10 @@ public class DndHelper {
 
   public static Long getRelatedId() {
     return relatedId;
+  }
+
+  public static boolean isTarget(String contentType) {
+    return isTarget(contentType, alwaysTarget);
   }
 
   public static void makeSource(final DndSource widget, final String contentType,
@@ -74,12 +89,7 @@ public class DndHelper {
         EventUtils.allowMove(event);
         EventUtils.setDndData(event, contentId);
 
-        setDataType(contentType);
-
-        setDataId(contentId);
-        setRelatedId(relId);
-
-        setDataDescription(contentDescription);
+        fillContent(contentType, contentId, relId, contentDescription);
 
         if (fireMotion) {
           setMotionEvent(new MotionEvent(contentType, widget, event.getNativeEvent().getClientX(),
@@ -176,23 +186,17 @@ public class DndHelper {
     });
   }
 
+  public static void reset() {
+    fillContent(null, null, null, null);
+    setMotionEvent(null);
+  }
+
   private static MotionEvent getMotionEvent() {
     return motionEvent;
   }
 
   private static boolean isTarget(String contentType, Predicate<Long> targetPredicate) {
     return BeeUtils.same(getDataType(), contentType) && targetPredicate.apply(getDataId());
-  }
-
-  private static void reset() {
-    setDataType(null);
-
-    setDataId(null);
-    setRelatedId(null);
-
-    setDataDescription(null);
-
-    setMotionEvent(null);
   }
 
   private static void setDataDescription(String dataDescription) {

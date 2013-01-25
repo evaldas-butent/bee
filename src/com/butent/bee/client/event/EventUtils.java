@@ -180,6 +180,7 @@ public class EventUtils {
   public static final String PROPERTY_DROP_EFFECT = "dropEffect";
   public static final String PROPERTY_EFFECT_ALLOWED = "effectAllowed";
 
+  public static final String EFFECT_NONE = "none";
   public static final String EFFECT_COPY = "copy";
   public static final String EFFECT_MOVE = "move";
   public static final String EFFECT_COPY_MOVE = "copyMove";
@@ -663,7 +664,7 @@ public class EventUtils {
       return getTargetId(target);
     }
   }
-  
+
   public static String getDndData(DragDropEventBase<?> event) {
     Assert.notNull(event);
     return event.getData(DEFAULT_DND_DATA_FORMAT);
@@ -914,7 +915,7 @@ public class EventUtils {
   public static boolean isTargetId(HasNativeEvent ev, String id) {
     return (ev == null) ? false : isTargetId(ev.getNativeEvent().getEventTarget(), id);
   }
-  
+
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -1016,6 +1017,10 @@ public class EventUtils {
 
   public static void selectDropMove(DragOverEvent event) {
     setDropEffect(event, EFFECT_MOVE);
+  }
+
+  public static void selectDropNone(DragOverEvent event) {
+    setDropEffect(event, EFFECT_NONE);
   }
 
   public static void setDndData(DragStartEvent event, Long id) {

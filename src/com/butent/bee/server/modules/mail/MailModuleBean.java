@@ -15,6 +15,7 @@ import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
@@ -109,6 +110,9 @@ public class MailModuleBean implements BeeModule {
       response = proxy.initServer();
       response.log(logger);
 
+    } else if (BeeUtils.same(svc, SVC_GET_ACCOUNTS)) {
+      response = getAccounts(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER)));
+
     } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
       response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)),
@@ -126,8 +130,22 @@ public class MailModuleBean implements BeeModule {
         response = ResponseObject.error(e);
       }
 
-    } else if (BeeUtils.same(svc, SVC_GET_ACCOUNTS)) {
-      response = getAccounts(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER)));
+    } else if (BeeUtils.same(svc, SVC_COPY_MESSAGES)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+
+      response = processMessages(account,
+          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER_PARENT))),
+          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)),
+          BeeUtils.toBoolean(reqInfo.getParameter("move")));
+
+    } else if (BeeUtils.same(svc, SVC_REMOVE_MESSAGES)) {
+      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+
+      response = processMessages(account,
+          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
+          BeeUtils.toBoolean(reqInfo.getParameter("Purge")) ? null : mail.getTrashFolder(account),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)), true);
 
     } else if (BeeUtils.same(svc, SVC_GET_FOLDERS)) {
       Object resp = mail.getRootFolder(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT)));
@@ -242,7 +260,7 @@ public class MailModuleBean implements BeeModule {
 
       if (draftId != null) {
         account = getAccount(sender);
-        removeMessages(account, mail.getDraftsFolder(account), new String[] {draftId}, true);
+        processMessages(account, mail.getDraftsFolder(account), null, new String[] {draftId}, true);
       }
       if (!save) {
         try {
@@ -274,14 +292,6 @@ public class MailModuleBean implements BeeModule {
           response.addError(e);
         }
       }
-    } else if (BeeUtils.same(svc, SVC_REMOVE_MESSAGES)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
-
-      response = removeMessages(account,
-          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
-          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)),
-          BeeUtils.toBoolean(reqInfo.getParameter("Purge")));
-
     } else {
       String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
       logger.warning(msg);
@@ -596,7 +606,7 @@ public class MailModuleBean implements BeeModule {
     int c = 0;
 
     try {
-      store = account.connectToStore(true);
+      store = account.connectToStore();
       c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, sync);
 
     } catch (MessagingException e) {
@@ -722,39 +732,86 @@ public class MailModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject removeMessages(MailAccount account, MailFolder folder, String[] messages,
-      boolean purge) {
-    Assert.state(!ArrayUtils.isEmpty(messages), "Empty message list");
+  private ResponseObject processMessages(MailAccount account, MailFolder source, MailFolder target,
+      String[] places, boolean move) {
+    Assert.state(!ArrayUtils.isEmpty(places), "Empty message list");
 
     HasConditions wh = SqlUtils.or();
 
-    for (String id : messages) {
+    for (String id : places) {
       wh.add(sys.idEquals(TBL_PLACES, BeeUtils.toLong(id)));
     }
-    String[] data = qs.getColumn(new SqlSelect()
-        .addFields(TBL_PLACES, COL_MESSAGE_UID)
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_PLACES, COL_MESSAGE, COL_FLAGS, COL_MESSAGE_UID)
         .addFrom(TBL_PLACES)
         .setWhere(wh));
-    long uids[] = new long[data.length];
 
-    for (int i = 0; i < data.length; i++) {
-      uids[i] = BeeUtils.toLong(data[i]);
+    List<Long> lst = Lists.newArrayList();
+
+    for (SimpleRow row : data) {
+      Long id = row.getLong(COL_MESSAGE_UID);
+
+      if (id != null) {
+        lst.add(id);
+      }
+    }
+    long[] uids = new long[lst.size()];
+
+    for (int i = 0; i < lst.size(); i++) {
+      uids[i] = lst.get(i);
     }
     ResponseObject response = null;
+    boolean delete = move;
 
     try {
-      if (purge) {
-        account.deleteMessagesFromRemoteFolder(folder, uids);
-      } else {
-        MailFolder trash = mail.getTrashFolder(account);
+      account.processMessages(uids, source, target, move);
 
-        if (!account.moveMessagesToRemoteFolder(folder, uids, trash)) {
-          response = qs.updateDataWithResponse(new SqlUpdate(TBL_PLACES)
-              .addConstant(COL_FOLDER, trash.getId())
-              .setWhere(wh));
+      if (target != null) {
+        if (target.isConnected() && account.getStoreProtocol() != Protocol.POP3) {
+          if (!source.isConnected()) {
+            SimpleRowSet msgs = qs.getData(new SqlSelect()
+                .addFields(TBL_HEADERS, COL_HEADER, COL_RAW_CONTENT)
+                .addFrom(TBL_HEADERS)
+                .addFromInner(TBL_PLACES,
+                    SqlUtils.joinUsing(TBL_HEADERS, TBL_PLACES, COL_MESSAGE))
+                .setWhere(wh));
+
+            for (SimpleRow msg : msgs) {
+              StringBuilder message = new StringBuilder(msg.getValue(COL_HEADER))
+                  .append("\r\n")
+                  .append(msg.getValue(COL_RAW_CONTENT));
+
+              try {
+                account.addMessageToRemoteFolder(new MimeMessage(null,
+                    new ByteArrayInputStream(message.toString().getBytes(BeeConst.CHARSET_UTF8))),
+                    target);
+              } catch (UnsupportedEncodingException e) {
+                throw new MessagingException(e.getMessage());
+              }
+            }
+          }
+          if (!delete) {
+            response = ResponseObject.response(uids.length);
+          }
+        } else {
+          if (move) {
+            response = qs.updateDataWithResponse(new SqlUpdate(TBL_PLACES)
+                .addConstant(COL_FOLDER, target.getId())
+                .addConstant(COL_MESSAGE_UID, null)
+                .setWhere(wh));
+          } else {
+            for (SimpleRow row : data) {
+              qs.insertData(new SqlInsert(TBL_PLACES)
+                  .addConstant(COL_FOLDER, target.getId())
+                  .addConstant(COL_MESSAGE, row.getLong(COL_MESSAGE))
+                  .addConstant(COL_FLAGS, row.getInt(COL_FLAGS)));
+            }
+            response = ResponseObject.response(data.getNumberOfRows());
+          }
+          delete = false;
         }
       }
-      if (response == null) {
+      if (delete) {
         response = qs.updateDataWithResponse(new SqlDelete(TBL_PLACES).setWhere(wh));
       }
     } catch (MessagingException e) {

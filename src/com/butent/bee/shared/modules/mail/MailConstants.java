@@ -60,9 +60,10 @@ public class MailConstants {
   public static final String SVC_DROP_FOLDER = "drop_folder";
   public static final String SVC_GET_MESSAGE = "get_message";
   public static final String SVC_FLAG_MESSAGE = "flag_message";
+  public static final String SVC_COPY_MESSAGES = "copy_messages";
+  public static final String SVC_REMOVE_MESSAGES = "remove_messages";
   public static final String SVC_CHECK_MAIL = "check_mail";
   public static final String SVC_SEND_MAIL = "send_mail";
-  public static final String SVC_REMOVE_MESSAGES = "remove_messages";
 
   public static final String TBL_ACCOUNTS = "Accounts";
   public static final String TBL_FOLDERS = "Folders";
@@ -77,6 +78,7 @@ public class MailConstants {
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_HEADER = "Header";
+  public static final String COL_RAW_CONTENT = "RawContent";
   public static final String COL_FILE = "File";
   public static final String COL_ATTACHMENT_NAME = "FileName";
   public static final String COL_ADDRESS = "Address";
@@ -109,6 +111,8 @@ public class MailConstants {
   public static final String COL_FOLDER = "Folder";
   public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
+
+  public static final String DATA_TYPE_MESSAGE = "Message";
 
   private MailConstants() {
   }

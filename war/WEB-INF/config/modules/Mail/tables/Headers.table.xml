@@ -3,9 +3,11 @@
 
   name="Headers"
   idName="HeaderID"
+  audit="false"
   >
   <Fields>
     <Relation name="Message" relation="Messages" unique="true" notNull="true" cascade="DELETE" />
     <Text name="Header" />
+    <Text name="RawContent" />
   </Fields>
 </Table>

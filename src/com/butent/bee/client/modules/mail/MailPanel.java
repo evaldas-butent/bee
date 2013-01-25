@@ -15,6 +15,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -39,6 +41,7 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
@@ -378,8 +381,20 @@ public class MailPanel extends AbstractFormInterceptor {
           if (rowIdx == null || !BeeUtils.isIndex(gridView.getGrid().getRowData(), rowIdx)) {
             return;
           }
+          Long placeId = gridView.getGrid().getRowData().get(rowIdx).getId();
+
           EventUtils.allowCopyMove(event);
-          EventUtils.setDndData(event, gridView.getGrid().getRowData().get(rowIdx).getId());
+          EventUtils.setDndData(event, placeId);
+          // event.getDataTransfer().setDragImage(new BeeLabel("Laiškas").getElement(), 0, 0);
+
+          DndHelper.fillContent(DATA_TYPE_MESSAGE, placeId, getCurrentFolderId(), null);
+        }
+      });
+
+      Binder.addDragEndHandler(gridView.getGrid(), new DragEndHandler() {
+        @Override
+        public void onDragEnd(DragEndEvent event) {
+          DndHelper.reset();
         }
       });
     }
@@ -875,6 +890,8 @@ public class MailPanel extends AbstractFormInterceptor {
                     response.notify(getFormView());
 
                     if (!response.hasErrors() && Objects.equal(folderId, getCurrentFolderId())) {
+                      getFormView().notifyInfo(purge ? "Pašalinta" : "Perkelta į šiukšlinę",
+                          (String) response.getResponse(), "laiškų");
                       refresh(null);
                     }
                   }

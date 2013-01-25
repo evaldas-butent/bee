@@ -38,6 +38,38 @@ public class BeeLoggerWrapper implements BeeLogger {
   }
 
   @Override
+  public boolean isDebugEnabled() {
+    if (initLogger()) {
+      return logger.isDebugEnabled();
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isErrorEnabled() {
+    if (initLogger()) {
+      return logger.isErrorEnabled();
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isInfoEnabled() {
+    if (initLogger()) {
+      return logger.isInfoEnabled();
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isWarningEnabled() {
+    if (initLogger()) {
+      return logger.isWarningEnabled();
+    }
+    return false;
+  }
+
+  @Override
   public void log(LogLevel level, Object... messages) {
     if (initLogger()) {
       logger.log(level, messages);

@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -17,6 +18,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -31,6 +33,7 @@ import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -239,9 +242,18 @@ public class MailStorageBean {
           .addConstant(COL_SENDER, sender)
           .addConstant(COL_SUBJECT, envelope.getSubject()));
 
+      String raw = null;
+
+      try {
+        raw = CharStreams.toString(new InputStreamReader(message.getInputStream(),
+            BeeConst.CHARSET_UTF8));
+      } catch (UnsupportedEncodingException e) {
+      } catch (IOException e) {
+      }
       qs.insertData(new SqlInsert(TBL_HEADERS)
           .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_HEADER, envelope.getHeader()));
+          .addConstant(COL_HEADER, envelope.getHeader())
+          .addConstant(COL_RAW_CONTENT, raw));
 
       Set<Long> allAddresses = Sets.newHashSet();
 

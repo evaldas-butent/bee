@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.mail;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -15,11 +17,11 @@ import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -27,10 +29,13 @@ import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,6 +46,7 @@ import java.util.Map.Entry;
 public class MailController extends Flow implements HasDomain, HandlesStateChange {
 
   private static final String STYLE_SELECTED = "selected";
+  private static final String STYLE_DND_TARGET = "dragOver";
 
   private final Map<SystemFolder, Widget> sysFolders = Maps.newHashMap();
   private final Map<Long, Widget> folders = Maps.newHashMap();
@@ -77,6 +83,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
       });
       label.setStyleName("bee-mail-SysFolder");
+      setDndTarget(label, sysFolder, null);
       panel.add(label);
       sysFolders.put(sysFolder, label);
     }
@@ -172,45 +179,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         } else {
           label.addStyleDependentName("branch");
         }
-
-        Binder.addDragEnterHandler(label, new DragEnterHandler() {
-          @Override
-          public void onDragEnter(DragEnterEvent event) {
-            label.addStyleDependentName("dragOver");
-          }
-        });
-        Binder.addDragOverHandler(label, new DragOverHandler() {
-          @Override
-          public void onDragOver(DragOverEvent event) {
-            event.preventDefault();
-
-            if (event.getNativeEvent().getCtrlKey() || event.getNativeEvent().getShiftKey()
-                || event.getNativeEvent().getAltKey()) {
-              EventUtils.selectDropCopy(event);
-            } else {
-              EventUtils.selectDropMove(event);
-            }
-          }
-        });
-        Binder.addDragLeaveHandler(label, new DragLeaveHandler() {
-          @Override
-          public void onDragLeave(DragLeaveEvent event) {
-            label.removeStyleDependentName("dragOver");
-          }
-        });
-        Binder.addDropHandler(label, new DropHandler() {
-          @Override
-          public void onDrop(DropEvent event) {
-            label.removeStyleDependentName("dragOver");
-            event.stopPropagation();
-
-            BeeKeeper.getScreen().notifyInfo((event.getNativeEvent().getCtrlKey()
-                || event.getNativeEvent().getShiftKey()
-                || event.getNativeEvent().getAltKey() ? "Copy" : "Move:")
-                + EventUtils.getDndData(event));
-          }
-        });
-
+        setDndTarget(label, null, folderId);
         row.add(label);
 
         if (subFolder.isConnected()) {
@@ -261,14 +230,15 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            Global.confirm(BeeUtils.joinWords(delete.getTitle(), subFolder.isConnected()
-                ? "(APLANKO TURINYS BUS PAŠALINAS IR IŠ PAŠTO SERVERIO !)" : null),
+            Global.getMsgBoxen().confirm(null, Lists.newArrayList(delete.getTitle(),
+                subFolder.isConnected()
+                    ? "(Aplanko turinys bus pašalintas ir iš pašto serverio!)" : null),
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {
                     MailKeeper.removeFolder(account, folderId);
                   }
-                });
+                }, StyleUtils.NAME_SUPER_SCARY, null);
           }
         });
         row.add(delete);
@@ -278,5 +248,62 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         buildTree(account, subFolder, margin + 10);
       }
     }
+  }
+
+  private void setDndTarget(final Widget label, final SystemFolder sysFolder, final Long folderId) {
+    Binder.addDragEnterHandler(label, new DragEnterHandler() {
+      @Override
+      public void onDragEnter(DragEnterEvent event) {
+        if (BeeUtils.same(DndHelper.getDataType(), MailConstants.DATA_TYPE_MESSAGE)) {
+          label.addStyleDependentName(STYLE_DND_TARGET);
+        }
+      }
+    });
+    Binder.addDragOverHandler(label, new DragOverHandler() {
+      @Override
+      public void onDragOver(DragOverEvent event) {
+        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+          Long id = folderId;
+
+          if (!DataUtils.isId(id)) {
+            id = MailKeeper.getActiveSystemFolderId(sysFolder);
+          }
+          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+            EventUtils.selectDropCopy(event);
+          } else if (!Objects.equal(DndHelper.getRelatedId(), id)) {
+            EventUtils.selectDropMove(event);
+          } else {
+            EventUtils.selectDropNone(event);
+          }
+        } else {
+          EventUtils.selectDropNone(event);
+        }
+      }
+    });
+    Binder.addDragLeaveHandler(label, new DragLeaveHandler() {
+      @Override
+      public void onDragLeave(DragLeaveEvent event) {
+        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+          label.removeStyleDependentName(STYLE_DND_TARGET);
+        }
+      }
+    });
+    Binder.addDropHandler(label, new DropHandler() {
+      @Override
+      public void onDrop(DropEvent event) {
+        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+          label.removeStyleDependentName(STYLE_DND_TARGET);
+          Long id = folderId;
+
+          if (!DataUtils.isId(id)) {
+            id = MailKeeper.getActiveSystemFolderId(sysFolder);
+          }
+          MailKeeper.copyMessage(DndHelper.getRelatedId(), id, DndHelper.getDataId(),
+              !EventUtils.hasModifierKey(event.getNativeEvent()));
+
+          event.stopPropagation();
+        }
+      }
+    });
   }
 }
