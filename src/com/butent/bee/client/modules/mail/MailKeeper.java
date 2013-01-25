@@ -60,7 +60,7 @@ public class MailKeeper {
         MailPanel panel = new MailPanel();
 
         if (panel.getCurrentAccount() != null) {
-          mailPanels.add(new MailPanel());
+          mailPanels.add(panel);
         }
       }
     });

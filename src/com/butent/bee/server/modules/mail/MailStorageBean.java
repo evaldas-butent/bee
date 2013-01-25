@@ -222,12 +222,13 @@ public class MailStorageBean {
 
     SimpleRow data = qs.getRow(new SqlSelect()
         .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
-        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
+        .addMax(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
         .addFrom(TBL_MESSAGES)
         .addFromLeft(TBL_PLACES,
             SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
                 SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId, COL_MESSAGE_UID, messageUID)))
-        .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId())));
+        .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))
+        .addGroup(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES)));
 
     if (data != null) {
       messageId = data.getLong(COL_MESSAGE);

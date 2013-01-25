@@ -540,52 +540,55 @@ public class MailModuleBean implements BeeModule {
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
       boolean sync) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
-    int c = 0;
-    boolean uidMode = (remoteFolder instanceof UIDFolder);
-    Long uidValidity = uidMode ? ((UIDFolder) remoteFolder).getUIDValidity() : null;
 
-    if (localFolder.isConnected()) {
+    int c = 0;
+
+    if (localFolder.isConnected() && account.holdsMessages(remoteFolder)) {
+      boolean uidMode = (remoteFolder instanceof UIDFolder);
+      Long uidValidity = uidMode ? ((UIDFolder) remoteFolder).getUIDValidity() : null;
+
       mail.validateFolder(localFolder, uidValidity);
 
-      if ((remoteFolder.getType() & Folder.HOLDS_MESSAGES) != 0) {
-        try {
-          remoteFolder.open(Folder.READ_ONLY);
-          Message[] newMessages;
+      try {
+        remoteFolder.open(Folder.READ_ONLY);
+        Message[] newMessages;
 
-          if (uidMode) {
-            long lastUid = mail.syncFolder(localFolder, remoteFolder, sync);
-            newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1,
-                UIDFolder.LASTUID);
-          } else {
-            newMessages = remoteFolder.getMessages();
-          }
-          for (Message message : newMessages) {
-            if (mail.storeMail(message, localFolder.getId(),
-                uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null)) {
+        if (uidMode) {
+          long lastUid = mail.syncFolder(localFolder, remoteFolder, sync);
+          newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1,
+              UIDFolder.LASTUID);
+        } else {
+          newMessages = remoteFolder.getMessages();
+        }
+        for (Message message : newMessages) {
+          if (mail.storeMail(message, localFolder.getId(),
+              uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null)) {
 
-              if (localFolder.getParent() == null) { // INBOX
-                // TODO applyRules(message);
-              }
-              c++;
+            if (localFolder.getParent() == null) { // INBOX
+              // TODO applyRules(message);
             }
+            c++;
           }
-        } finally {
-          if (remoteFolder.isOpen()) {
-            try {
-              remoteFolder.close(false);
-            } catch (MessagingException e) {
-            }
+        }
+      } finally {
+        if (remoteFolder.isOpen()) {
+          try {
+            remoteFolder.close(false);
+          } catch (MessagingException e) {
           }
         }
       }
     }
     Set<String> visitedFolders = Sets.newHashSet();
 
-    if ((remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0) {
+    if (account.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {
         visitedFolders.add(subFolder.getName());
         MailFolder localSubFolder = mail.createFolder(account, localFolder, subFolder.getName());
 
+        if (localSubFolder.isConnected() && !subFolder.isSubscribed()) {
+          subFolder.setSubscribed(true);
+        }
         c += checkFolder(account, subFolder, localSubFolder, false);
       }
     }
@@ -605,17 +608,19 @@ public class MailModuleBean implements BeeModule {
     Store store = null;
     int c = 0;
 
-    try {
-      store = account.connectToStore();
-      c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, sync);
+    if (localFolder.isConnected()) {
+      try {
+        store = account.connectToStore();
+        c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, sync);
 
-    } catch (MessagingException e) {
-      ctx.setRollbackOnly();
-      logger.error(e);
-      return ResponseObject.error(e);
+      } catch (MessagingException e) {
+        ctx.setRollbackOnly();
+        logger.error(e);
+        return ResponseObject.error(e);
 
-    } finally {
-      account.disconnectFromStore(store);
+      } finally {
+        account.disconnectFromStore(store);
+      }
     }
     return ResponseObject.response(c);
   }

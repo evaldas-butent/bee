@@ -669,18 +669,9 @@ public class MailPanel extends AbstractFormInterceptor {
 
   void refresh(final Long folderId) {
     if (folderId != null) {
-      final AccountInfo account = getCurrentAccount();
-      if (account == null) {
-        return;
-      }
       if (Objects.equal(folderId, getCurrentFolderId())) {
-        MailFolder folder = account.getFolder(folderId);
-
-        if (folder != null && !folder.isConnected()) {
-          return;
-        }
         ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
-        params.addDataItem(COL_ADDRESS, account.getAddress());
+        params.addDataItem(COL_ADDRESS, getCurrentAccount().getAddress());
         params.addDataItem(COL_FOLDER, folderId);
 
         BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {

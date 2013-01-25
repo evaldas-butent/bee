@@ -220,7 +220,9 @@ public class SqlUtils {
   public static IsCondition equals(IsExpression expr, Object value) {
     IsSql v;
 
-    if (value instanceof IsSql) {
+    if (value == null) {
+      return isNull(expr);
+    } else if (value instanceof IsSql) {
       v = (IsSql) value;
     } else {
       v = constant(value);
@@ -532,7 +534,9 @@ public class SqlUtils {
   public static IsCondition notEqual(IsExpression expr, Object value) {
     IsSql v;
 
-    if (value instanceof IsSql) {
+    if (value == null) {
+      return notNull(expr);
+    } else if (value instanceof IsSql) {
       v = (IsSql) value;
     } else {
       v = constant(value);

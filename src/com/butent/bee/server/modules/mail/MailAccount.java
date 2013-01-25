@@ -233,12 +233,14 @@ public class MailAccount {
       folder = getRemoteFolder(store, parent, true);
       Folder newFolder = folder.getFolder(name);
 
-      if (newFolder.exists()) {
-        throw new MessagingException("Folder already exists: " + name);
-      }
+      checkNewFolderName(newFolder, name);
+
       logger.debug("Creating folder", name);
       ok = newFolder.create(Folder.HOLDS_MESSAGES);
 
+      if (ok) {
+        newFolder.setSubscribed(true);
+      }
     } finally {
       disconnectFromStore(store);
     }
@@ -269,7 +271,7 @@ public class MailAccount {
       folder = getRemoteFolder(store, source);
 
       logger.debug("Removing folder", folder.getName());
-      ok = folder.delete(true);
+      ok = folder.delete(true) || !folder.exists();
 
     } finally {
       disconnectFromStore(store);
@@ -279,6 +281,14 @@ public class MailAccount {
 
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
     return getRemoteFolder(remoteStore, localFolder, false);
+  }
+
+  boolean holdsFolders(Folder remoteFolder) throws MessagingException {
+    return (remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0;
+  }
+
+  boolean holdsMessages(Folder remoteFolder) throws MessagingException {
+    return (remoteFolder.getType() & Folder.HOLDS_MESSAGES) != 0;
   }
 
   void processMessages(long[] uids, MailFolder source, MailFolder target, boolean move)
@@ -293,39 +303,45 @@ public class MailAccount {
       return;
     }
     Store store = null;
-    Folder folder = null;
+    Folder remoteSource = null;
 
     try {
       store = connectToStore();
-      folder = getRemoteFolder(store, source);
+      remoteSource = getRemoteFolder(store, source);
 
-      logger.debug("Checking folder", folder.getName(), "UIDValidity with",
+      logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with",
           source.getUidValidity());
 
-      if (!Objects.equal(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
+      if (!Objects.equal(((UIDFolder) remoteSource).getUIDValidity(), source.getUidValidity())) {
         throw new MessagingException("Folder out of sync: " + source.getName());
       }
-      logger.debug("Opening folder", folder.getName());
-      folder.open(Folder.READ_WRITE);
+      logger.debug("Opening folder", remoteSource.getName());
+      remoteSource.open(Folder.READ_WRITE);
 
-      logger.debug("Getting messages from folder", folder.getName(), "by UIDs:", uids);
-      Message[] msgs = ((UIDFolder) folder).getMessagesByUID(uids);
+      logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
+      Message[] msgs = ((UIDFolder) remoteSource).getMessagesByUID(uids);
 
       if (isTarget) {
+        Folder remoteTarget = getRemoteFolder(store, target);
+
+        if (!holdsMessages(remoteTarget)) {
+          throw new MessagingException(BeeUtils.joinWords("Folder",
+              BeeUtils.bracket(target.getName()), "cannot hold messages"));
+        }
         logger.debug("Copying messages to folder:", target.getName());
-        folder.copyMessages(msgs, getRemoteFolder(store, target));
+        remoteSource.copyMessages(msgs, remoteTarget);
       }
       if (move) {
-        logger.debug("Deleting seleted messages from folder:", folder.getName());
-        folder.setFlags(msgs, new Flags(Flag.DELETED), true);
+        logger.debug("Deleting seleted messages from folder:", remoteSource.getName());
+        remoteSource.setFlags(msgs, new Flags(Flag.DELETED), true);
       }
-      logger.debug("Closing folder:", folder.getName());
-      folder.close(move);
+      logger.debug("Closing folder:", remoteSource.getName());
+      remoteSource.close(move);
 
     } finally {
-      if (folder != null && folder.isOpen()) {
+      if (remoteSource != null && remoteSource.isOpen()) {
         try {
-          folder.close(false);
+          remoteSource.close(false);
         } catch (MessagingException e) {
         }
       }
@@ -347,9 +363,8 @@ public class MailAccount {
       folder = getRemoteFolder(store, source);
       Folder newFolder = folder.getParent().getFolder(name);
 
-      if (newFolder.exists()) {
-        throw new MessagingException("Folder with new name already exists: " + name);
-      }
+      checkNewFolderName(newFolder, name);
+
       logger.debug("Renamng folder", folder.getName(), "to", name);
       ok = folder.renameTo(newFolder);
 
@@ -402,6 +417,15 @@ public class MailAccount {
     this.rootFolder = folder;
   }
 
+  private void checkNewFolderName(Folder newFolder, String name) throws MessagingException {
+    if (name.indexOf(newFolder.getSeparator()) >= 0) {
+      throw new MessagingException("Invalid folder name: " + name);
+    }
+    if (newFolder.exists()) {
+      throw new MessagingException("Folder with new name already exists: " + name);
+    }
+  }
+
   private Folder getRemoteFolder(Store remoteStore, MailFolder localFolder, boolean createParents)
       throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
@@ -421,8 +445,12 @@ public class MailAccount {
       if (createParents) {
         logger.debug("Creating parent folder", name);
 
+        checkNewFolderName(remote, name);
+
         if (!remote.create(Folder.HOLDS_MESSAGES)) {
           throw new MessagingException("Can't create parent folder: " + name);
+        } else {
+          remote.setSubscribed(true);
         }
       } else {
         throw new MessagingException("Remote folder does not exist: " + name);
