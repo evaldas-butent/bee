@@ -211,10 +211,6 @@ public class StyleUtils {
   public static final String DND_OVER = "bee-dndOver";
   public static final String DROP_AREA = "bee-dropArea";
 
-  public static final String WINDOW_CAPTION = "bee-WindowCaption";
-  public static final String WINDOW_HEADER = "bee-WindowHeader";
-  public static final String WINDOW_FOOTER = "bee-WindowFooter";
-
   public static final String STYLE_WIDTH = "width";
   public static final String STYLE_MIN_WIDTH = "minWidth";
   public static final String STYLE_MAX_WIDTH = "maxWidth";

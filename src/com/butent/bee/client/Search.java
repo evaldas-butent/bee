@@ -1,7 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -22,16 +21,24 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.LocaleUtils;
-import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomWidget;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -48,35 +55,31 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class Search {
 
-  private static class ResultPanel extends Complex implements HandlesDeleteEvents,
-      HandlesUpdateEvents, HasCaption {
+  private static class ResultPanel extends Flow implements HandlesDeleteEvents,
+      HandlesUpdateEvents, Presenter, View, Printable {
 
     private static final String STYLE_RESULT_CONTAINER = "bee-SearchResultContainer";
-
-    private static final String STYLE_RESULT_HEADER = "bee-SearchResultHeader";
-    private static final String STYLE_RESULT_CAPTION = "bee-SearchResultCaption";
-    private static final String STYLE_RESULT_MESSAGE = "bee-SearchResultMessage";
-    private static final String STYLE_RESULT_CLOSE = "bee-SearchResultClose";
 
     private static final String STYLE_RESULT_CONTENT = "bee-SearchResultContent";
     private static final String STYLE_RESULT_VIEW = "bee-SearchResultView";
 
     private final String query;
 
-    private final String messageWidgetId;
+    private final HeaderView header;
     private int size;
 
     private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
-    private ScheduledCommand onClose = null;
+    private boolean enabled = true;
 
     private ResultPanel(String query, List<SearchResult> results) {
       super();
@@ -85,30 +88,12 @@ public class Search {
 
       this.addStyleName(STYLE_RESULT_CONTAINER);
 
-      Flow header = new Flow();
-      header.addStyleName(STYLE_RESULT_HEADER);
+      this.header = new HeaderSilverImpl();
+      header.create(query, false, true, EnumSet.of(UiOption.ROOT),
+          EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS);
 
-      InlineLabel caption = new InlineLabel(query);
-      caption.addStyleName(STYLE_RESULT_CAPTION);
-      header.add(caption);
-
-      InlineLabel message = new InlineLabel(getMessage());
-      message.addStyleName(STYLE_RESULT_MESSAGE);
-      header.add(message);
-
-      this.messageWidgetId = message.getId();
-
-      BeeImage close = new BeeImage(Global.getImages().silverClose());
-      close.addStyleName(STYLE_RESULT_CLOSE);
-      close.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (getOnClose() != null) {
-            getOnClose().execute();
-          }
-        }
-      });
-      header.add(close);
+      header.setViewPresenter(this);
+      header.setMessage(getMessage());
 
       this.add(header);
 
@@ -142,12 +127,68 @@ public class Search {
 
     @Override
     public String getCaption() {
-      return query;
+      return header.getCaption();
+    }
+
+    @Override
+    public String getEventSource() {
+      return null;
+    }
+
+    @Override
+    public HeaderView getHeader() {
+      return header;
     }
 
     @Override
     public String getIdPrefix() {
       return "search-results";
+    }
+
+    @Override
+    public View getMainView() {
+      return this;
+    }
+
+    @Override
+    public Element getPrintElement() {
+      return getElement();
+    }
+    
+    @Override
+    public Presenter getViewPresenter() {
+      return this;
+    }
+
+    @Override
+    public IdentifiableWidget getWidget() {
+      return this;
+    }
+
+    @Override
+    public String getWidgetId() {
+      return getId();
+    }
+
+    @Override
+    public void handleAction(Action action) {
+      switch (action) {
+        case CLOSE:
+          BeeKeeper.getScreen().closeWidget(this);
+          break;
+
+        case PRINT:
+          Printer.print(this);
+          break;
+
+        default:
+          Assert.untouchable(action.getCaption() + " not implemented");
+      }
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return enabled;
     }
 
     @Override
@@ -180,6 +221,24 @@ public class Search {
     }
 
     @Override
+    public boolean onPrint(Element source, Element target) {
+      if (getId().equals(source.getId())) {
+        int height = 0;
+        for (Widget child : this) {
+          height += child.getElement().getScrollHeight();
+        }
+        StyleUtils.setHeight(target, height);
+        return true;
+
+      } else if (header.asWidget().getElement().isOrHasChild(source)) {
+        return header.onPrint(source, target);
+      
+      } else {
+        return true;
+      }
+    }
+    
+    @Override
     public void onRowDelete(RowDeleteEvent event) {
       ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
       if (widget != null && removeResultWidget(widget)) {
@@ -200,6 +259,23 @@ public class Search {
           widget.render(query, dataInfo);
         }
       }
+    }
+
+    @Override
+    public void onViewUnload() {
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    @Override
+    public void setEventSource(String eventSource) {
+    }
+
+    @Override
+    public void setViewPresenter(Presenter viewPresenter) {
     }
 
     @Override
@@ -234,10 +310,6 @@ public class Search {
       return BeeUtils.bracket(getSize());
     }
 
-    private ScheduledCommand getOnClose() {
-      return onClose;
-    }
-
     private int getSize() {
       return size;
     }
@@ -251,16 +323,12 @@ public class Search {
       }
     }
 
-    private void setOnClose(ScheduledCommand onClose) {
-      this.onClose = onClose;
-    }
-
     private void setSize(int size) {
       this.size = size;
     }
 
     private void updateMessage() {
-      DomUtils.getElement(messageWidgetId).setInnerText(getMessage());
+      header.setMessage(getMessage());
     }
   }
 
@@ -456,15 +524,7 @@ public class Search {
   }
 
   private void showResults(String query, List<SearchResult> results) {
-    final ResultPanel resultPanel = new ResultPanel(query, results);
-
-    resultPanel.setOnClose(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        BeeKeeper.getScreen().closeWidget(resultPanel);
-      }
-    });
-
+    ResultPanel resultPanel = new ResultPanel(query, results);
     BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
 

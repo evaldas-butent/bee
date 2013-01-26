@@ -340,14 +340,9 @@
   cursor: pointer;
 }
 
-.bee-cal-morePopup {
-  border: 1px solid #ccc;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-.bee-cal-morePopup .moreCaption, .bee-cal-morePopup .bee-Dialog-caption {
-  margin: 1ex 45px 1ex 1em;
-  font-size: large;
+.bee-cal-morePopup .moreCaption {
+  margin: 2ex 1em;
+  font-size: medium;
 }
 .bee-cal-morePopup .appointment, .bee-cal-morePopup .appointment-multiday {
   margin: 5px 8px;
@@ -372,17 +367,9 @@
   outline: none; 
 }
 
-.bee-cal-Panel .bee-WindowHeader {
-  position: absolute;
-  top: 0;
-  height: 32px;
-  left: 0;
-  right: 0;
-}
-
 .bee-cal-Panel-controls {
   position: absolute;
-  top: 33px;
+  top: 30px;
   height: 40px;
   left: 0;
   right: 0;
@@ -447,7 +434,7 @@
 
 .bee-cal-Panel-calendar {
   position: absolute;
-  top: 75px;
+  top: 70px;
   bottom: 1px;
   left: 1px;
   right: 1px;

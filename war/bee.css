@@ -140,6 +140,7 @@ body, select {
   float: left;
   overflow: hidden;
   position: relative;
+  display: none;
 }
 .bee-MainSearchOptions {
   position: absolute;
@@ -252,27 +253,6 @@ body, select {
   overflow: auto;
 }
 
-.bee-MenuRoot ol {
-  border: 4px groove LimeGreen;
-  margin: 0;
-  list-style-type: upper-roman;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-right: 5px;
-}
-
-.bee-MenuRoot ul {
-  border: 4px ridge LimeGreen;
-  margin: 0;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-right: 5px;
-}
-
-.bee-MenuRoot dl {
-  margin: 0;
-}
-
 .bee-MenuRoot-flow .bee-MenuItem-label {
   display: inline-block;
   margin: 2px;
@@ -311,16 +291,6 @@ body, select {
   background-color: #f2f2f2;
 }
 
-.bee-MenuItem-dt {
-  padding-left: 0.5em;
-}
-
-.bee-MenuItem-dt:first-letter {
-  color: green;
-  font-size: medium;
-  font-weight: bold;
-}
-
 .bee-MenuBar-horizontal table {
   border-collapse: collapse;
 }
@@ -335,22 +305,6 @@ body, select {
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
   height: 1px;
   background-color: #e7e7e7;
-}
-
-.bee-MenuBar-level-1 ul {
-  list-style-type: circle;
-}
-
-.bee-MenuBar-level-2 ul {
-  list-style-type: square;
-}
-
-.bee-MenuBar-level-1 ol {
-  list-style-type: upper-alpha;
-}
-
-.bee-MenuBar-level-2 ol {
-  list-style-type: lower-greek;
 }
 
 .bee-LogSeparator {
@@ -472,38 +426,34 @@ body, select {
   cursor: default;
 }
 
-.bee-Popup {
-  border: 2px solid #b4b4b4;
-  border-radius: 6px;
-  padding: 5px;
-  background-color: #eee;
-  outline-style: none;
-}
-
-.bee-Popup-glass {
-  background-color: #000;
-  opacity: 0.3;
-}
-
-.bee-WindowHeader {
-  background-color: #eee;
-}
-
-.bee-WindowFooter {
-  background-color: #eee;
-}
-
-.bee-WindowCaption {
-  font-size: medium;
-}
-
-.bee-Header-message {
-  margin-left: 1em;
-}
-.bee-Header-commandPanel {
+.bee-Header-container {
   position: absolute;
-  top: 2px;
-  padding-right: 20px;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30px;
+  background-color: #eee;
+  display: -webkit-flex;
+  -webkit-align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.bee-Header-container::-webkit-scrollbar {
+  height: 3px;
+}
+
+.bee-Header-caption {
+  font-size: 15px;
+  padding-left: 8px;
+}
+.bee-Header-message {
+  padding-left: 8px;
+}
+
+.bee-Header-commandPanel {
+  margin-left: auto;
+  margin-right: 8px;
+  border-collapse: collapse;
 }
 .bee-Header-commandPanel button {
   background-color: #fafafa;
@@ -518,10 +468,13 @@ body, select {
   border-color: #5897fb;
 }
 
+.bee-Header-control {
+  margin-right: 2px;
+}
+
 .bee-HeaderCellCaption {
   text-align: center;
   overflow: hidden;
-  text-overflow: ellipsis;
   font-weight: bold;
 }
 
@@ -536,7 +489,6 @@ body, select {
   opacity: 0.4;
   font-size: small;
 }
-
 .bee-HeaderCellSortable:before {
   content: "\0025B3";
 }
@@ -544,7 +496,6 @@ body, select {
 .bee-HeaderCellAscending {
   font-size: small;
 }
-
 .bee-HeaderCellAscending:after {
   content: "\0025B2";
 }
@@ -552,7 +503,6 @@ body, select {
 .bee-HeaderCellDescending {
   font-size: small;
 }
-
 .bee-HeaderCellDescending:after {
   content: "\0025BC";
 }
@@ -664,13 +614,10 @@ body, select {
 }
 
 .bee-afraid {
-  background-color: yellow !important;
   font-size: large;
 }
 
 .bee-very-afraid {
-  background-color: red !important;
-  color: white;
   font-size: xx-large;
 }
 
@@ -678,41 +625,47 @@ body, select {
   color: red;
 }
 
-.bee-DialogBox {
-  background-color: WhiteSmoke;
-  border: 1px solid #b4b4b4;
-  border-radius: 2px;
+.bee-Popup {
+  border: 2px solid #b4b4b4;
+  border-radius: 6px;
+  padding: 5px;
+  background-color: #eee;
+}
+.bee-Popup-glass {
+  background-color: #fff;
+  opacity: 0.7;
 }
 
-.bee-Dialog-layout {
-  border-collapse: collapse;
+.bee-DialogBox, .bee-ModalForm {
+  border: 1px solid #b4b4b4;
+  border-radius: 2px;
+  background-color: WhiteSmoke;
 }
-.bee-Dialog-layer {
-  padding: 0;
+
+.bee-Dialog-header {
+  height: 30px;
+  background-color: #eee;
+  border-bottom: 1px solid #ddd;
+  cursor: move;
+  display: -webkit-flex;
+  -webkit-align-items: center;
 }
 
 .bee-Dialog-caption {
+  padding-left: 8px;
+  -webkit-flex: 1;
+}
+
+.bee-Dialog-action {
+  margin-right: 2px;
+}
+
+.bee-Dialog-content {
+  margin: 1ex 1em;
+}
+
+.bee-ModalForm-content > .bee-Header-container {
   cursor: move;
-  height: 30px;
-}
-
-.bee-DialogBox .bee-Dialog-caption {
-  background-color: #e8e8e8;
-  padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #eee;
-  font-size: medium;
-  line-height: 27px;
-}
-
-.bee-Dialog-close, .bee-InputClose {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  z-index: 1;
-}
-
-.bee-DialogBox .bee-Dialog-content {
-  padding: 1ex 1em 4px;
 }
 
 .bee-NotificationContainer {
@@ -893,6 +846,7 @@ body, select {
   border: 1px solid #aaa;
   padding-left: 1px;
   padding-right: 1px;
+  background-color: white;
 }
 .bee-DataSelector-editable-active {
   border: 1px solid #5897fb;
@@ -925,24 +879,8 @@ body, select {
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow, .bee-NewRowContainer, .bee-NewRow .bee-Dialog-content {
-  background-color: white;
-}
-
-.bee-GridFormContainer-edit, .bee-RowContainer, .bee-EditRow .bee-Dialog-content {
-  background-color: white;
-}
-
 .bee-GridFormCaption-newRow, .bee-NewRowCaption, .bee-NewRow .bee-Dialog-caption {
-  font-size: medium;
   color: green;
-}
-
-.bee-GridFormCaption-edit, .bee-RowCaption, .bee-EditRow .bee-Dialog-caption {
-  font-size: medium;
-}
-.bee-ModalForm .bee-GridFormCaption-edit, .bee-EditRow .bee-Dialog-caption {
-  font-weight: bolder;
 }
 
 .bee-GridFormContainer-newRow .bee-hasDefaults:after {
@@ -1017,20 +955,6 @@ body, select {
   margin-left: 1em;
 }
 
-.bee-InputSave {
-  position: absolute;
-  top: 2px;
-  right: 45px;
-  z-index: 1;
-}
-
-.bee-InputPrint {
-  position: absolute;
-  top: 2px;
-  right: 88px;
-  z-index: 1;
-}
-
 .bee-Tree {
   overflow: auto;
 }
@@ -1101,6 +1025,7 @@ body, select {
   vertical-align: middle;
   white-space: nowrap;
   color: #15c;
+  font-family: 'Times New Roman';
   font-weight: bold;
 }
 
@@ -1179,20 +1104,6 @@ body, select {
   color: #999;
 }
 
-.bee-ModalForm, .bee-NewRow, .bee-EditRow, .bee-ReportOptions {
-  border: 1px solid #b4b4b4;
-  border-radius: 2px;
-}
-
-.bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass, .bee-DialogBox-glass, .bee-ReportOptions-glass {
-  background-color: white;
-  opacity: 0.7;
-}
-
-.bee-ModalForm-content > .bee-WindowHeader {
-  cursor: move;
-}
-
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
@@ -1229,17 +1140,6 @@ body, select {
   background-color: #f2f2f2;
 }
 
-.bee-ChoiceDialog {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  background-color: white;
-  border: 1px solid #ccc;
-}
-
-.bee-ChoiceDialog .bee-Dialog-caption {
-  padding: 1ex 2em;
-  font-weight: bolder;
-}
-
 .bee-ChoicePanel {
   margin: 1ex 2em;
 }
@@ -1270,13 +1170,10 @@ body, select {
 
 .bee-ChoiceGroup-item {
   height: 25px;
-  color: #4d4d4d;
   font: 13px/25px Arial;
-  background-color: #f2f2f2;
   padding: 0 10px;
-  border: 1px solid #E4E4E4;
-  border-radius: 2px;
   cursor: pointer;
+  -webkit-appearance: button;
 }
 
 .bee-ChoiceGroup-item-horizontal {
@@ -1289,10 +1186,6 @@ body, select {
 .bee-ChoiceGroup-item-vertical {
   margin-right: 4px;
   margin-bottom: 1ex;
-}
-
-.bee-ChoiceGroup-item:hover {
-  border: 1px solid #BEBEBE;
 }
 
 .bee-ChoiceGroup-panel-vertical .bee-ChoiceCancel {
@@ -1324,13 +1217,6 @@ body, select {
   visibility: visible;
 }
 
-.bee-NewRow .bee-Dialog-caption, .bee-EditRow .bee-Dialog-caption {
-  background-color: #eee;
-  padding: 1px 90px 1px 8px;
-  border-bottom: 1px solid #ddd;
-  line-height: 27px;
-}
-
 .bee-NewRow-table {
   margin: 1ex 1em;
 }
@@ -1347,25 +1233,6 @@ body, select {
 }
 .bee-Image:hover {
   -webkit-filter: contrast(150%);
-}
-
-.bee-SearchResultHeader {
-  height: 32px;
-  background-color: #eee;
-  position: relative; 
-}
-.bee-SearchResultCaption {
-  font-size: medium;
-  line-height: 27px;
-  margin-left: 1em;
-}
-.bee-SearchResultMessage {
-  margin-left: 1em;
-}
-.bee-SearchResultClose {
-  position: absolute;
-  right: 2px;
-  top: 2px;
 }
 
 .bee-SearchResultContent {
@@ -1420,20 +1287,6 @@ body, select {
   text-decoration: underline;
   color: #00e;
   cursor: pointer;
-}
-
-.bee-ReportOptions {
-  background-color: #cfc;
-}
-.bee-ReportOptions .bee-Dialog-caption {
-  background-color: #eee;
-  padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #ddd;
-  font-size: medium;
-  line-height: 27px;
-}
-.bee-ReportOptions .bee-Dialog-content {
-  margin: 2ex 1em 1ex 1em;
 }
 
 ::-webkit-scrollbar {
@@ -1580,40 +1433,19 @@ body, select {
   cursor: e-resize !important;
 }
 
-.bee-ConfirmContainer {
-  border-spacing: 10px;
-}
-.bee-ConfirmMessage {
-  max-width: 400px;
-}
-
-.bee-DecisionDialog {
-  border: 1px solid #b4b4b4;
-  border-radius: 2px;
-}  
-.bee-DecisionDialog .bee-Dialog-caption {
-  background-color: #e8e8e8;
-  padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #ddd;
-  line-height: 27px;
-}
-.bee-DecisionPanel {
-  background-color: WhiteSmoke;
-  padding: 10px 4px 6px 4px;
-}
-.bee-DecisionMessage-cell {
+.bee-MessageBox-message-cell {
   padding-bottom: 12px;
 }
-.bee-DecisionMessage {
+.bee-MessageBox-message {
   max-width: 360px;
   margin-left: 10px;
   white-space: pre-wrap;
 }
-.bee-DecisionGroup {
+.bee-MessageBox-buttonGroup {
   margin-left: 100px;
   margin-top: 20px;
 }
-.bee-DecisionOption {
+.bee-MessageBox-button {
   min-width: 90px;
 }
 
@@ -1676,6 +1508,7 @@ body, select {
 }
 
 .bee-FooterContainer {
+  background-color: #eee;
   display: -webkit-flex;
   -webkit-align-items: center;
 }
@@ -1856,6 +1689,7 @@ body, select {
 
 .bee-FooterCell-filter {
   color: #00c;
+  font-family: 'Times New Roman';
   font-weight: bold;
   padding-right: 15px;
   overflow: hidden;
@@ -1882,32 +1716,6 @@ body, select {
 
 .bee-disabled {
   background-color: #ebebe4;
-}
-
-.bee-ErrorDialog {
-  border: 1px solid #b4b4b4;
-  border-radius: 2px;
-}  
-.bee-ErrorDialog .bee-Dialog-caption {
-  background-color: #e8e8e8;
-  padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #ddd;
-  line-height: 27px;
-}
-.bee-ErrorPanel {
-  background-color: WhiteSmoke;
-  padding: 10px;
-}
-.bee-ErrorMessage {
-  max-width: 360px;
-  margin-left: 20px;
-}
-.bee-ErrorClose-cell {
-  padding-top: 40px;
-  text-align: right;
-}
-.bee-ErrorClose {
-  min-width: 100px;
 }
 
 .bee-FavoritesDisplay tr:hover {
@@ -1989,8 +1797,4 @@ body, select {
   background-color: transparent;
   padding-top: 3px;
   padding-left: 5px;
-}
-
-.bee-MainSearchOptionsContainer {
-  display: none;
 }

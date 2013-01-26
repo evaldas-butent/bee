@@ -26,6 +26,9 @@ public class Images {
     @Source("add.png")
     ImageResource add();
 
+    @Source("alarm.png")
+    ImageResource alarm();
+    
     @Source("arrow_down.png")
     ImageResource arrowDown();
 
@@ -233,6 +236,9 @@ public class Images {
     @Source("undo.png")
     ImageResource undo();
 
+    @Source("warning.png")
+    ImageResource warning();
+    
     @Source("yellow.gif")
     ImageResource yellow();
 
@@ -279,6 +285,8 @@ public class Images {
     map.put(key("accept"), resources.accept());
 
     map.put(key("add"), resources.add());
+
+    map.put(key("alarm"), resources.alarm());
 
     map.put(key("arrowDown"), resources.arrowDown());
     map.put(key("arrowIn"), resources.arrowIn());
@@ -375,6 +383,8 @@ public class Images {
     map.put(key("sliderSliding"), resources.sliderSliding());
 
     map.put(key("undo"), resources.undo());
+
+    map.put(key("warning"), resources.warning());
 
     map.put(key("yellow"), resources.yellow());
     map.put(key("yellowSmall"), resources.yellowSmall());

@@ -31,10 +31,6 @@
     <when-property-is name='screen' value='tablet'/> 
   </replace-with>
 
-  <replace-with class='com.butent.bee.client.view.HeaderSilverImpl'> 
-    <when-type-is class='com.butent.bee.client.view.HeaderImpl'/>   
-  </replace-with>
-
   <replace-with class="com.google.gwt.logging.impl.LoggerImplRegular">
     <when-type-is class="com.google.gwt.logging.impl.LoggerImplNull"/>
   </replace-with>

@@ -15,7 +15,7 @@
   disabledActions="add delete" enabledActions="save" 
   options="Company, Vehicle, ServiceType, RepairType, Resources">
 
-  <FlowPanel style="&relative; margin: 2ex 1em; min-width: 760px;">
+  <FlowPanel style="&relative; min-width: 760px;">
     <FlowPanel style="&relative; height: 30px;">
       <Label html="Klientas:" style="&header;" />
       &separator;

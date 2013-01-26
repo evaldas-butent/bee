@@ -87,6 +87,7 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Flag;
+import com.butent.bee.client.widget.Heading;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.InlineHtml;
@@ -184,6 +185,7 @@ public enum FormWidget {
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
+  HEADING("Heading", null),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HR("hr", null),
   HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
@@ -665,6 +667,13 @@ public enum FormWidget {
 
       case HEADER_CONTENT_FOOTER:
         widget = new HeaderContentFooter();
+        break;
+        
+      case HEADING:
+        String rank = attributes.get(Heading.ATTR_RANK);
+        if (BeeUtils.isPositiveInt(rank)) {
+          widget = new Heading(BeeUtils.toInt(rank), html);
+        }
         break;
 
       case HORIZONTAL_PANEL:

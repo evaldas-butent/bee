@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -18,8 +17,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
@@ -27,7 +26,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.FooterView;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
@@ -207,7 +205,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         || mode == GridInterceptor.DeleteMode.DEFAULT && !confirm) {
       deleteCallback.onConfirm();
     } else {
-      Global.getMsgBoxen().confirm(null, messages, deleteCallback, StyleUtils.NAME_SCARY, null);
+      Global.getMsgBoxen().confirm(null, Icon.WARNING, messages, deleteCallback, null,
+          StyleUtils.NAME_SCARY);
     }
   }
 
@@ -598,6 +597,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
     List<String> options = Lists.newArrayList();
+
     Pair<String, String> defMsg = AbstractGridInterceptor.deleteRowsMessage(size);
     Pair<String, String> message =
         (getGridInterceptor() != null) ? getGridInterceptor().getDeleteRowsMessage(size) : defMsg;
@@ -606,12 +606,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
       options.add(BeeUtils.notEmpty(message.getB(), defMsg.getB()));
     }
+    
     if (options.isEmpty()) {
       DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
       deleteCallback.onConfirm();
 
     } else {
-      Global.choice("Išmesti", null, options, new ChoiceCallback() {
+      options.add(Global.CONSTANTS.cancel());
+
+      Global.getMsgBoxen().display("Išmesti", Icon.ALARM, null, options, 2, new ChoiceCallback() {
         @Override
         public void onSuccess(int value) {
           if (value == 0) {
@@ -622,15 +625,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             deleteCallback.onConfirm();
           }
         }
-      }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
-        @Override
-        public Widget initialize(Widget widget, String name) {
-          if (BeeUtils.same(name, DialogConstants.WIDGET_DIALOG)) {
-            widget.addStyleName(StyleUtils.NAME_SUPER_SCARY);
-          }
-          return widget;
-        }
-      });
+      }, BeeConst.UNDEF, StyleUtils.NAME_SCARY, null, null);
     }
   }
 

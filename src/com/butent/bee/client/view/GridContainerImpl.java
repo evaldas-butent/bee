@@ -2,7 +2,6 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -129,7 +128,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     HeaderView header;
     if (gridDescription.hasGridHeader()) {
-      header = GWT.create(HeaderImpl.class);
+      header = new HeaderSilverImpl();
 
       String caption = (gridInterceptor == null) ? null : gridInterceptor.getCaption();
       if (caption == null) {

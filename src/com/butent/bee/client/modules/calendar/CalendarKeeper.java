@@ -48,10 +48,12 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -279,7 +281,8 @@ public class CalendarKeeper {
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
 
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, true);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null,
+                  EnumSet.of(Action.PRINT));
             }
           }
         });
@@ -485,7 +488,7 @@ public class CalendarKeeper {
               }
 
               Global.inputWidget(result.getCaption(), result, builder.getModalCallback(), glass,
-                  RowEditor.DIALOG_STYLE, true);
+                  RowEditor.DIALOG_STYLE, null, EnumSet.of(Action.DELETE, Action.PRINT));
             }
           }
         });

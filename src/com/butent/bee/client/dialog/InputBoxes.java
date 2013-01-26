@@ -51,10 +51,12 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input
@@ -140,6 +142,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
 
+  private static final String STYLE_INPUT_DELETE = "bee-InputDelete";
   private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
   private static final String STYLE_INPUT_SAVE = "bee-InputSave";
   private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
@@ -338,9 +341,9 @@ public class InputBoxes {
 
     DialogBox dialog = DialogBox.create(caption);
 
-    BeeButton confirm = new BeeButton(DialogConstants.OK,
+    BeeButton confirm = new BeeButton(Global.CONSTANTS.ok(),
         DialogCallback.getConfirmCommand(dialog, callback));
-    BeeButton cancel = new BeeButton(DialogConstants.CANCEL,
+    BeeButton cancel = new BeeButton(Global.CONSTANTS.cancel(),
         DialogCallback.getCancelCommand(dialog, callback));
 
     table.setWidget(r, 0, confirm);
@@ -361,7 +364,7 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
+      boolean enableGlass, String dialogStyle, UIObject target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -387,17 +390,32 @@ public class InputBoxes {
       UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
     }
 
-    if (enablePrint) {
-      BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
-        @Override
-        public void execute() {
-          Printer.print(dialog);
-        }
-      });
+    if (enabledActions != null) {
+      if (enabledActions.contains(Action.DELETE)) {
+        BeeImage delete = new BeeImage(Global.getImages().silverDelete(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            callback.onDelete();
+          }
+        });
 
-      print.addStyleName(STYLE_INPUT_PRINT);
-      UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
-      dialog.addChild(print);
+        delete.addStyleName(STYLE_INPUT_DELETE);
+        UiHelper.initialize(delete, initializer, DialogConstants.WIDGET_DELETE);
+        dialog.addAction(delete);
+      }
+
+      if (enabledActions.contains(Action.PRINT)) {
+        BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            Printer.print(dialog);
+          }
+        });
+
+        print.addStyleName(STYLE_INPUT_PRINT);
+        UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
+        dialog.addAction(print);
+      }
     }
 
     final ScheduledCommand onSave = new ScheduledCommand() {
@@ -416,7 +434,7 @@ public class InputBoxes {
     BeeImage save = new BeeImage(Global.getImages().silverSave(), onSave);
     save.addStyleName(STYLE_INPUT_SAVE);
     UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
-    dialog.addChild(save);
+    dialog.addAction(save);
 
     final ScheduledCommand onClose = new ScheduledCommand() {
       @Override
@@ -439,7 +457,7 @@ public class InputBoxes {
     BeeImage close = new BeeImage(Global.getImages().silverClose(), onClose);
     close.addStyleName(STYLE_INPUT_CLOSE);
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
-    dialog.addChild(close);
+    dialog.addAction(close);
 
     dialog.setOnSave(onSave);
     dialog.setOnEscape(onClose);

@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
@@ -190,7 +191,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private final List<Long> ucaIds = Lists.newArrayList();
 
   private final InputColor colorPicker = new InputColor();
-  
+
   private final DataSelector attSelector;
 
   private Long activeRowId = null;
@@ -208,12 +209,12 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     if (!initialized) {
       initialize(ucAttendees);
     }
-    
+
     this.attSelector = createSelector();
-    
+
     createUi();
     setDatePickerOpen(true);
-    
+
     setExclusions();
   }
 
@@ -226,7 +227,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   public Domain getDomain() {
     return Domain.CALENDAR;
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "cc";
@@ -256,7 +257,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     }
     return colors;
   }
-  
+
   List<Long> getAttendees() {
     List<Long> result = Lists.newArrayList();
     if (ucAttendees.isEmpty()) {
@@ -281,24 +282,24 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private void addAttendee(BeeRow attRow) {
     BeeRow newRow = DataUtils.createEmptyRow(ucAttendees.getNumberOfColumns());
-    
+
     newRow.setValue(ucIndex, ucId);
     newRow.setValue(attIndex, attRow.getId());
 
     newRow.setValue(enabledIndex, true);
-    
+
     int ord = -1;
     for (BeeRow row : ucAttendees.getRows()) {
       ord = Math.max(ord, row.getInteger(ordinalIndex));
     }
     newRow.setValue(ordinalIndex, ord + 1);
-    
+
     Queries.insert(ucAttendees.getViewName(), ucAttendees.getColumns(), newRow, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         ucAttendees.addRow(result);
         addRow(result);
-        
+
         setExclusions();
         postUpdate();
       }
@@ -430,13 +431,13 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private DataSelector createSelector() {
-    Relation relation = Relation.create(VIEW_ATTENDEES, 
+    Relation relation = Relation.create(VIEW_ATTENDEES,
         Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
 
     DataSelector dataSelector = new DataSelector(relation, true);
     dataSelector.setEditing(true);
     DomUtils.setPlaceholder(dataSelector, "papildyti");
-    
+
     return dataSelector;
   }
 
@@ -490,7 +491,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       }
     });
     add(attSelector);
-    
+
     colorPicker.addStyleName(STYLE_COLOR_PICKER);
     colorPicker.addInputHandler(new InputHandler() {
       @Override
@@ -507,7 +508,9 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    Global.getMsgBoxen().confirm(null, BeeUtils.joinWords("Išmesti", getCaption(row), "?"),
+    String message = BeeUtils.joinWords("Išmesti", getCaption(row), "?");
+
+    Global.getMsgBoxen().confirm(null, Icon.WARNING, Lists.newArrayList(message),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -521,11 +524,11 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
               table.removeRow(index);
 
               setExclusions();
-              
+
               postUpdate();
             }
           }
-        }, StyleUtils.NAME_SCARY, null);
+        }, null, StyleUtils.NAME_SCARY);
   }
 
   private Long getActiveRowId() {
@@ -596,7 +599,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     for (int i = Math.max(srcIdx, dstIdx) + 1; i < rows.size(); i++) {
       ucAttendees.addRow(rows.get(i));
     }
-    
+
     ucaIds.clear();
 
     table.clear();
@@ -643,7 +646,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     }
     attSelector.getOracle().setExclusions(attIds);
   }
-  
+
   private void updateCell(long rowId, String columnId, Value value) {
     Queries.update(VIEW_USER_CAL_ATTENDEES, ComparisonFilter.compareId(rowId), columnId, value,
         null);

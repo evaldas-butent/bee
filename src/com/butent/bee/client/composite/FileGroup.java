@@ -576,7 +576,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
           refresh(index, changedColumns);
         }
       }
-    }, false, null, getWidget(index, columns.indexOf(Column.EDIT)), false);
+    }, false, null, getWidget(index, columns.indexOf(Column.EDIT)));
   }
 
   private int getIndex(long fileId) {

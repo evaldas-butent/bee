@@ -197,7 +197,7 @@ class ReportManager {
     });
 
     Global.inputWidget("Pasirinkite resursus", widget, callback, false,
-        RowFactory.DIALOG_STYLE, listBox, false);
+        RowFactory.DIALOG_STYLE, listBox);
   }
 
   private void addAttendeeTypes(final BeeListBox listBox) {
@@ -262,7 +262,7 @@ class ReportManager {
     });
 
     Global.inputWidget("Pasirinkite resursų tipus", widget, callback, false,
-        RowFactory.DIALOG_STYLE, listBox, false);
+        RowFactory.DIALOG_STYLE, listBox);
   }
 
   private void addStyle(Widget widget, String styleName) {

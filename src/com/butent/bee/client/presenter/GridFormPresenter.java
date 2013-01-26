@@ -1,6 +1,5 @@
 package com.butent.bee.client.presenter;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -14,7 +13,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -217,11 +216,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
-    HeaderView formHeader = GWT.create(HeaderImpl.class);
+    HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 
-    formHeader.create(caption, false, false, null, actions, null);
+    formHeader.create(caption, false, false, null, actions, Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
     formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
 

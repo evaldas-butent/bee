@@ -7,11 +7,13 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Dimensions;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModalForm extends Popup {
   
@@ -88,7 +90,9 @@ public class ModalForm extends Popup {
 
     EventTarget target = event.getEventTarget();
     if (Element.is(target)) {
-      return header.asWidget().getElement().isOrHasChild(Element.as(target));
+      Element el = Element.as(target);
+      return header.asWidget().getElement().isOrHasChild(el)
+          && BeeUtils.inListSame(el.getTagName(), DomUtils.TAG_DIV, DomUtils.TAG_SPAN);
     } else {
       return false;
     }

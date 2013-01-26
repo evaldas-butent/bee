@@ -7,7 +7,7 @@
   xmlns:d="http://www.butent.com/decorator" name="SimpleAppointment" viewName="Appointments"
   caption="=appointment" disabledActions="add delete" enabledActions="save">
 
-  <FlowPanel style="&relative; margin: 2ex 1em; width: 760px; height: 360px;">
+  <FlowPanel style="&relative; width: 760px; height: 360px;">
     <InputText source="Summary" required="true" caption="Santrauka:" style="width: 236px;"
       d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
 

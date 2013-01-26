@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -38,7 +37,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeLabel;
@@ -161,10 +160,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     super();
     addStyleName(STYLE_CONTAINER);
 
-    this.headerView = GWT.create(HeaderImpl.class);
-
+    this.headerView = new HeaderSilverImpl();
     headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), getEnabledActions(),
-        null);
+        Action.NO_ACTIONS);
 
     headerView.setViewPresenter(this);
     add(headerView);

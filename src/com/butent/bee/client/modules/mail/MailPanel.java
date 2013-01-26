@@ -37,6 +37,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -51,7 +52,6 @@ import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
@@ -60,7 +60,6 @@ import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -73,7 +72,6 @@ import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -316,7 +314,7 @@ public class MailPanel extends AbstractFormInterceptor {
       Assert.notNull(closeCallback);
 
       if (newMessageHandler.hasChanges()) {
-        Global.getMsgBoxen().decide(null,
+        Global.decide(null,
             Lists.newArrayList("Laiškas nebuvo išsiųstas",
                 "Ar norite išsaugoti laišką juodraščiuose"),
             new DecisionCallback() {
@@ -828,7 +826,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
                   Global.inputWidget(result.getCaption(), result,
                       new MailDialogCallback(newMessageHandler),
-                      true, RowFactory.DIALOG_STYLE, false);
+                      true, RowFactory.DIALOG_STYLE);
                 }
               }
             });
@@ -854,8 +852,11 @@ public class MailPanel extends AbstractFormInterceptor {
         final Long folderId = getCurrentFolderId();
         final boolean purge = (account.getSystemFolder(folderId) == SystemFolder.Trash);
 
-        Global.choice(purge ? "Pašalinti" : "Perkelti į šiukšlinę", null, options,
-            new ChoiceCallback() {
+        options.add(Global.CONSTANTS.cancel());
+        Icon icon = purge ? Icon.ALARM : Icon.WARNING;
+        
+        Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,
+            options.size() - 1, new ChoiceCallback() {
               @Override
               public void onSuccess(int value) {
                 List<Long> ids = null;
@@ -887,14 +888,6 @@ public class MailPanel extends AbstractFormInterceptor {
                     }
                   }
                 });
-              }
-            }, options.size(), BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
-              @Override
-              public Widget initialize(Widget w, String nm) {
-                if (BeeUtils.same(nm, DialogConstants.WIDGET_DIALOG)) {
-                  w.addStyleName(purge ? StyleUtils.NAME_SUPER_SCARY : StyleUtils.NAME_SCARY);
-                }
-                return w;
               }
             });
       }

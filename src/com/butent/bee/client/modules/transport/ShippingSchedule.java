@@ -25,7 +25,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -993,29 +994,25 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
     messages.add("Priskirti krovinį reisui ?");
 
-    Global.getMsgBoxen().decide("Krovinio priskyrimas reisui", messages, new DecisionCallback() {
-      @Override
-      public void onCancel() {
-        reset();
-      }
+    Global.confirm("Krovinio priskyrimas reisui", Icon.QUESTION, messages,
+        new ConfirmationCallback() {
+          @Override
+          public void onCancel() {
+            reset();
+          }
 
-      @Override
-      public void onConfirm() {
-        reset();
-        assignCargoToTrip(cargoId, sourceTrip, targetTrip);
-      }
+          @Override
+          public void onConfirm() {
+            reset();
+            assignCargoToTrip(cargoId, sourceTrip, targetTrip);
+          }
 
-      @Override
-      public void onDeny() {
-        reset();
-      }
-
-      private void reset() {
-        if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
-          targetWidget.removeStyleName(targetStyle);
-        }
-      }
-    });
+          private void reset() {
+            if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
+              targetWidget.removeStyleName(targetStyle);
+            }
+          }
+        });
   }
 
   private void dropCargoOnVehicle(final Long cargoId, final Long vehicleId,
@@ -1031,7 +1028,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "VILKIKAS:",
         vehicleNumber, "Sukurti kroviniui naują reisą ?");
 
-    Global.getMsgBoxen().decide("Naujo reiso sukūrimas", messages, new DecisionCallback() {
+    Global.confirm("Naujo reiso sukūrimas", Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
       public void onCancel() {
         reset();
@@ -1057,11 +1054,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
                 "Nr. " + result.getString(dataInfo.getColumnIndex(COL_TRIP_NO)));
           }
         });
-      }
-
-      @Override
-      public void onDeny() {
-        reset();
       }
 
       private void reset() {

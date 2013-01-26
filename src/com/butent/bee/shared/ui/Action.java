@@ -14,16 +14,18 @@ import java.util.Set;
  */
 
 public enum Action implements BeeSerializable, HasCaption {
-  ADD("naujas"),
-  BOOKMARK("bookmark"),
-  CLOSE("uždaryti"),
-  CONFIGURE("nustatymai"),
-  DELETE("išmesti"),
-  EDIT("koreguoti"),
-  PRINT("spausdinti"),
-  REFRESH("atnaujinti"),
-  SAVE("išsaugoti"),
-  REMOVE_FILTER("išvalyti filtrą");
+  ADD("naujas", "add"),
+  BOOKMARK("bookmark", "bookmark"),
+  CLOSE("uždaryti", "close"),
+  CONFIGURE("nustatymai", "configure"),
+  DELETE("išmesti", "delete"),
+  EDIT("koreguoti", "edit"),
+  PRINT("spausdinti", "print"),
+  REFRESH("atnaujinti", "refresh"),
+  SAVE("išsaugoti", "save"),
+  REMOVE_FILTER("išvalyti filtrą", "removeFilter");
+  
+  public static final Set<Action> NO_ACTIONS = Sets.newHashSet(); 
   
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
@@ -50,9 +52,11 @@ public enum Action implements BeeSerializable, HasCaption {
   }
   
   private final String caption;
+  private final String styleSuffix;
 
-  private Action(String caption) {
+  private Action(String caption, String styleSuffix) {
     this.caption = caption;
+    this.styleSuffix = styleSuffix;
   }
 
   @Override
@@ -65,6 +69,10 @@ public enum Action implements BeeSerializable, HasCaption {
     return caption;
   }
 
+  public String getStyleName() {
+    return "bee-Action-" + styleSuffix;
+  }
+  
   @Override
   public String serialize() {
     return this.name();

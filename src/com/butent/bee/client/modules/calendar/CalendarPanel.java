@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -52,7 +51,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
@@ -154,9 +153,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.suspendLayout();
 
-    this.header = GWT.create(HeaderImpl.class);
+    this.header = new HeaderSilverImpl();
     header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
-        EnumSet.of(Action.REFRESH, Action.CONFIGURE), null);
+        EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
     this.dateBox = new Html();
@@ -369,7 +368,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       ok = true;
 
     } else if (dateBox.getId().equals(id)) {
-      ok = Type.MONTH.equals(calendar.getType());
+      ok = true;
 
     } else if (viewTabs.getId().equals(id)) {
       ok = false;

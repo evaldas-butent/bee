@@ -225,7 +225,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
       String cap = isNew ?
           CalendarKeeper.getAppointmentViewInfo().getNewRowCaption() : getFormView().getCaption();
-      Global.getMsgBoxen().decide(cap, messages, callback, DialogConstants.DECISION_YES);
+      Global.decide(cap, messages, callback, DialogConstants.DECISION_YES);
     }
 
     @Override
@@ -769,7 +769,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     });
 
     Global.inputWidget("Pasirinkite resursus", widget, callback, false,
-        RowFactory.DIALOG_STYLE, false);
+        RowFactory.DIALOG_STYLE);
   }
 
   private void onEndDateFocus(InputDate widget) {

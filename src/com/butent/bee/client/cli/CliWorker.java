@@ -54,7 +54,6 @@ import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.DialogCallback;
-import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -1620,7 +1619,7 @@ public class CliWorker {
       }
     }
 
-    Global.choice(caption, prompt, options, new ChoiceCallback() {
+    Global.getMsgBoxen().choice(caption, prompt, options, new ChoiceCallback() {
       @Override
       public void onCancel() {
         logger.info("cancel");
@@ -2174,8 +2173,8 @@ public class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = DialogConstants.OK;
-    String cancelHtml = DialogConstants.CANCEL;
+    String confirmHtml = Global.CONSTANTS.ok();
+    String cancelHtml = Global.CONSTANTS.cancel();
 
     boolean required = true;
 

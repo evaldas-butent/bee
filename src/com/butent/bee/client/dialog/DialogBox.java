@@ -4,17 +4,16 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.LocaleUtils;
-import com.butent.bee.client.layout.Complex;
-import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -22,17 +21,18 @@ public class DialogBox extends Popup implements Printable {
 
   private static final String STYLE_DIALOG = "bee-DialogBox";
 
-  private static final String STYLE_LAYOUT = "bee-Dialog-layout";
-  private static final String STYLE_LAYER = "bee-Dialog-layer";
-
+  private static final String STYLE_HEADER = "bee-Dialog-header";
   private static final String STYLE_CAPTION = "bee-Dialog-caption";
-  private static final String STYLE_CONTENT = "bee-Dialog-content";
+
+  private static final String STYLE_ACTION = "bee-Dialog-action";
   private static final String STYLE_CLOSE = "bee-Dialog-close";
 
+  private static final String STYLE_CONTENT = "bee-Dialog-content";
+
   public static DialogBox create(String caption) {
-    return create(caption, STYLE_DIALOG);
+    return create(caption, null);
   }
-  
+
   public static DialogBox create(String caption, String styleName) {
     DialogBox dialog = new DialogBox(caption, styleName);
     dialog.addDefaultCloseBox();
@@ -42,43 +42,51 @@ public class DialogBox extends Popup implements Printable {
   public static DialogBox withoutCloseBox(String caption, String styleName) {
     return new DialogBox(caption, styleName);
   }
-  
-  private final Complex container = new Complex(Position.RELATIVE);
-  private final Vertical layout = new Vertical();
-  private final Widget header;
+
+  private final Flow container = new Flow();
+  private final Flow header = new Flow();
 
   protected DialogBox(String caption) {
-    this(caption, STYLE_DIALOG);
+    this(caption, null);
   }
 
   protected DialogBox(String caption, String styleName) {
-    super(OutsideClick.IGNORE, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
+    super(OutsideClick.IGNORE, STYLE_DIALOG);
+    if (!BeeUtils.isEmpty(styleName) && !BeeUtils.same(styleName, STYLE_DIALOG)) {
+      addStyleName(styleName);
+    }
 
-    this.header = new Html(LocaleUtils.maybeLocalize(caption));
-    header.addStyleName(STYLE_CAPTION);
+    header.addStyleName(STYLE_HEADER);
 
-    layout.addStyleName(STYLE_LAYOUT);
-    layout.setDefaultCellClasses(STYLE_LAYER);
+    CustomDiv captionWidget = new CustomDiv(STYLE_CAPTION);
+    String text = LocaleUtils.maybeLocalize(caption);
+    if (!BeeUtils.isEmpty(text)) {
+      captionWidget.getElement().setInnerText(text);
+    }
 
-    layout.add(header);
-    container.add(layout);
-    
+    header.add(captionWidget);
+
+    container.add(header);
+
     enableDragging();
   }
 
-  public void addChild(Widget widget) {
-    container.add(widget);
+  public void addAction(Widget widget) {
+    if (widget != null) {
+      widget.addStyleName(STYLE_ACTION);
+      header.add(widget);
+    }
   }
-  
+
   @Override
   public Widget getContent() {
-    if (layout.getWidgetCount() > 1) {
-      return layout.getWidget(1);
+    if (container.getWidgetCount() > 1) {
+      return container.getWidget(container.getWidgetCount() - 1);
     } else {
       return null;
     }
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "dialog";
@@ -86,29 +94,33 @@ public class DialogBox extends Popup implements Printable {
 
   @Override
   public Element getPrintElement() {
-    return layout.getElement();
+    return container.getElement();
   }
 
   @Override
   public boolean onPrint(Element source, Element target) {
-    return true;
+    if (header.getElement().isOrHasChild(source) && StyleUtils.hasClassName(source, STYLE_ACTION)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @Override
   public void setWidget(Widget w) {
     Assert.notNull(w);
-    
+
     Widget content = getContent();
     if (content != null) {
-      layout.remove(content);
+      container.remove(content);
     }
-    
+
     w.addStyleName(STYLE_CONTENT);
-    layout.add(w);
+    container.add(w);
 
     super.setWidget(container);
   }
-  
+
   protected void addCloseBox(ImageResource imageResource) {
     BeeImage close = new BeeImage(imageResource, new ScheduledCommand() {
       @Override
@@ -116,9 +128,9 @@ public class DialogBox extends Popup implements Printable {
         close();
       }
     });
-    
+
     close.addStyleName(STYLE_CLOSE);
-    addChild(close);
+    addAction(close);
   }
 
   protected void addDefaultCloseBox() {
@@ -128,9 +140,12 @@ public class DialogBox extends Popup implements Printable {
   @Override
   protected boolean isCaptionEvent(NativeEvent event) {
     EventTarget target = event.getEventTarget();
+
     if (Element.is(target)) {
-      return header.asWidget().getElement().getParentElement().isOrHasChild(Element.as(target));
+      Element el = Element.as(target);
+      return header.getElement().isOrHasChild(el) && !StyleUtils.hasClassName(el, STYLE_ACTION);
+    } else {
+      return false;
     }
-    return false;
   }
 }

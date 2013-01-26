@@ -1,7 +1,6 @@
 package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -12,7 +11,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
@@ -179,7 +178,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   private HeaderView createHeader(String caption) {
-    HeaderView formHeader = GWT.create(HeaderImpl.class);
+    HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
     formHeader.create(caption, false, false, null, EnumSet.of(Action.SAVE, Action.CLOSE),

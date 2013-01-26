@@ -1,6 +1,5 @@
 package com.butent.bee.client.presenter;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -10,7 +9,7 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.FormView;
@@ -151,10 +150,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   }
 
   private HeaderView createHeader(String caption) {
-    HeaderView formHeader = GWT.create(HeaderImpl.class);
+    HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, EnumSet.of(Action.SAVE, Action.CLOSE), null);
+    formHeader.create(caption, false, false, null, EnumSet.of(Action.SAVE, Action.CLOSE),
+        Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
     
     return formHeader; 

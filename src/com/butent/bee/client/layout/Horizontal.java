@@ -26,10 +26,12 @@ public class Horizontal extends CellVector {
     add(w, td);
   }
   
+  @Override
   public String getIdPrefix() {
     return "hor";
   }
 
+  @Override
   public void insert(Widget w, int beforeIndex) {
     checkIndexBoundsForInsertion(beforeIndex);
 

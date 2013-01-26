@@ -3,19 +3,18 @@ package com.butent.bee.client.datepicker;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 class Model {
 
   private static final int WEEKEND_START;
   private static final int WEEKEND_END;
   
-  private static DateTimeFormat yearMonthFormat;
-
   private static final String[] DAY_OF_WEEK_NAMES;
   private static final String[] DAY_OF_MONTH_NAMES;
 
@@ -35,8 +34,6 @@ class Model {
     for (int i = 0; i < DAY_OF_MONTH_NAMES.length; ++i) {
       DAY_OF_MONTH_NAMES[i] = Integer.toString(i + 1);
     }
-    
-    yearMonthFormat = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH_ABBR);
   }
   
   static String formatDayOfMonth(JustDate date) {
@@ -58,7 +55,7 @@ class Model {
   }
 
   String format(YearMonth ym) {
-    return yearMonthFormat.format(ym.getDate());
+    return BeeUtils.joinWords(ym.getYear(), Format.renderMonthFullStandalone(ym).toLowerCase());
   }
 
   YearMonth getCurrentMonth() {

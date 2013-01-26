@@ -15,5 +15,8 @@ public abstract class InputCallback {
     closeCallback.onClose();
   }
 
+  public void onDelete() {
+  }
+  
   public abstract void onSuccess();
 }

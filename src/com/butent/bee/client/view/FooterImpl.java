@@ -49,7 +49,6 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
 
   public FooterImpl() {
     super();
-    addStyleName(StyleUtils.WINDOW_FOOTER);
     addStyleName(STYLE_CONTAINER);
   }
 

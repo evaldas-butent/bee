@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.DndHelper;
@@ -230,7 +231,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            Global.getMsgBoxen().confirm(null, Lists.newArrayList(delete.getTitle(),
+            Global.getMsgBoxen().confirm(null, Icon.ALARM, Lists.newArrayList(delete.getTitle(),
                 subFolder.isConnected()
                     ? "(Aplanko turinys bus pašalintas ir iš pašto serverio!)" : null),
                 new ConfirmationCallback() {

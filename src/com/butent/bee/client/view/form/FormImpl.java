@@ -788,7 +788,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     };
 
     String cap = (getViewPresenter() == null) ? getCaption() : getViewPresenter().getCaption();
-    Global.getMsgBoxen().decide(cap, messages, callback, DialogConstants.DECISION_YES);
+    Global.decide(cap, messages, callback, DialogConstants.DECISION_YES);
   }
 
   @Override

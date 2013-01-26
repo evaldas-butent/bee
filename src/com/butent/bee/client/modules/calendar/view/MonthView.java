@@ -508,7 +508,8 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final Popup popup = new Popup(OutsideClick.CLOSE, CalendarStyleManager.MORE_POPUP);
+    final Popup popup = new Popup(OutsideClick.CLOSE);
+    popup.addStyleName(CalendarStyleManager.MORE_POPUP);
 
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {
       @Override

@@ -18,10 +18,10 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -377,8 +377,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void deleteRow(long rowId, long version) {
-    Global.getMsgBoxen().confirm(null, "Delete Record ?", new DeleteCallback(rowId, version),
-        StyleUtils.NAME_SCARY, null);
+    Global.confirm(null, Icon.WARNING, Lists.newArrayList("Delete Record ?"),
+        new DeleteCallback(rowId, version));
   }
 
   private FormInterceptor getFormInterceptor() {

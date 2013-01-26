@@ -24,10 +24,12 @@ public class Vertical extends CellVector  {
     add(w, td);
   }
 
+  @Override
   public String getIdPrefix() {
     return "vert";
   }
 
+  @Override
   public void insert(Widget w, int beforeIndex) {
     checkIndexBoundsForInsertion(beforeIndex);
 

@@ -173,6 +173,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="accept" />
       <xs:enumeration value="add" />
+      <xs:enumeration value="alarm" />
       <xs:enumeration value="arrowDown" />
       <xs:enumeration value="arrowIn" />
       <xs:enumeration value="arrowLeft" />
@@ -226,6 +227,7 @@
       <xs:enumeration value="search" />
       <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
+      <xs:enumeration value="warning" />
       <xs:enumeration value="yellow" />
       <xs:enumeration value="yellowSmall" />
 

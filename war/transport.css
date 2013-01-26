@@ -1,14 +1,6 @@
-.bee-tr-chart-Container .bee-WindowHeader {
-  top: 0;
-  height: 31px;
-  left: 0;
-  right: 0;
-  border-bottom: 1px solid #ccc;
-}
-
 .bee-tr-chart-Canvas {
   position: absolute;
-  top: 32px;
+  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;

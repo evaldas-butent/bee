@@ -56,14 +56,13 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   private class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
-    private int dragStartX, dragStartY;
+    private int clientLeft;
+    private int clientTop;
 
-    private final int clientLeft;
-    private final int clientTop;
+    private int dragStartX;
+    private int dragStartY;
 
     private MouseHandler() {
-      this.clientLeft = Document.get().getBodyOffsetLeft();
-      this.clientTop = Document.get().getBodyOffsetTop();
     }
 
     @Override
@@ -73,6 +72,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         DOM.setCapture(getElement());
 
         setDragging(true);
+
+        clientLeft = Document.get().getBodyOffsetLeft();
+        clientTop = Document.get().getBodyOffsetTop();
+        
         dragStartX = event.getX();
         dragStartY = event.getY();
       }
@@ -251,6 +254,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   private static final String STYLE_POPUP = "bee-Popup";
+  private static final String STYLE_GLASS = STYLE_POPUP + "-glass";
 
   private static final int ANIMATION_DURATION = 250;
 
@@ -288,8 +292,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
 
-  private final String popupStyleName;
-
   private boolean dragging = false;
   private MouseHandler mouseHandler = null;
 
@@ -307,7 +309,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
 
-    this.popupStyleName = styleName;
     setStyleName(styleName);
   }
 
@@ -529,7 +530,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (enabled && getGlass() == null) {
       Element elem = Document.get().createDivElement();
 
-      elem.addClassName(popupStyleName + "-glass");
+      elem.addClassName(STYLE_GLASS);
       StyleUtils.occupy(elem);
 
       setGlass(elem);

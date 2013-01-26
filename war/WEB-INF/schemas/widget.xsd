@@ -933,4 +933,20 @@
 
   <xs:element name="ColorEditor" type="inputWidget" substitutionGroup="widget" />
 
+  <xs:element name="Heading" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:attribute name="rank" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:positiveInteger">
+                <xs:maxInclusive value="6" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
 </xs:schema>

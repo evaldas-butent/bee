@@ -12,6 +12,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.HasYearMonth;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -444,12 +445,12 @@ public class Format {
     return (date == null) ? null : weekdayFullFormat.format(date);
   }
 
-  public static String renderMonthFull(HasDateValue date) {
+  public static String renderMonthFull(HasYearMonth date) {
     return (date == null) 
         ? null : LocaleUtils.monthsFull(LocaleInfo.getCurrentLocale())[date.getMonth() - 1];
   }
 
-  public static String renderMonthFullStandalone(HasDateValue date) {
+  public static String renderMonthFullStandalone(HasYearMonth date) {
     return (date == null) ? null : LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
         .monthsFullStandalone()[date.getMonth() - 1];
   }

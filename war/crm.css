@@ -20,21 +20,6 @@
   white-space: pre-wrap;
 }
 
-.bee-crm-taskDialog {
-  background-color: WhiteSmoke;
-  border: 1px solid #b4b4b4;
-  border-radius: 2px;
-}
-.bee-crm-taskDialog .bee-Dialog-caption {
-  background-color: #e8e8e8;
-  padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #ddd;
-  line-height: 27px;
-}
-
-.bee-crm-taskDialog-container {
-  margin: 10px;
-}
 .bee-crm-taskDialog-container td {
   padding: 8px;
 }

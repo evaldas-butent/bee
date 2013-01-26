@@ -12,9 +12,9 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
@@ -332,7 +332,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
-      Global.getMsgBoxen().confirm(null, message, new ConfirmationCallback() {
+      Global.confirm(null, Icon.WARNING, Lists.newArrayList(message), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),
@@ -344,7 +344,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
                 }
               });
         }
-      }, StyleUtils.NAME_SCARY, null);
+      });
     }
   }
 
