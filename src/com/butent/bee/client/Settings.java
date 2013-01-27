@@ -25,6 +25,10 @@ public class Settings {
     return getPropertyInt("actionSensitivityMillis");
   }
 
+  public static String getAppName() {
+    return getProperty("appName");
+  }
+  
   public static List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     if (checkSettings()) {

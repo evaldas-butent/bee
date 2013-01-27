@@ -69,6 +69,7 @@ public class CrmConstants {
     SCHEDULED("Suplanuota"),
     SUSPENDED("Sustabdyta"),
     COMPLETED("Įvykdyta"),
+    APPROVED("Baigta"),
     CANCELED("Nutraukta");
     
     public static boolean in(int status, TaskStatus... statuses) {
@@ -79,7 +80,7 @@ public class CrmConstants {
       }
       return false;
     }
-
+    
     private final String caption;
 
     private TaskStatus(String caption) {
@@ -89,6 +90,10 @@ public class CrmConstants {
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
     }
   }
   

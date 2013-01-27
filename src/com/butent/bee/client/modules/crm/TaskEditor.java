@@ -164,7 +164,7 @@ class TaskEditor extends AbstractFormInterceptor {
       if (def != null) {
         input.setDateTime(def);
       }
-      
+
       SimpleEditorHandler.observe(caption, input);
 
       table.setWidget(row, col, input);
@@ -262,7 +262,7 @@ class TaskEditor extends AbstractFormInterceptor {
       input.addStyleName(styleName);
 
       SimpleEditorHandler.observe(caption, input);
-      
+
       table.setWidget(row, col, input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
@@ -274,6 +274,11 @@ class TaskEditor extends AbstractFormInterceptor {
       UiHelper.focus(getContent());
     }
 
+    private void display(String focusId) {
+      center();
+      UiHelper.focus(getChild(focusId));
+    }
+    
     private Widget getChild(String id) {
       return DomUtils.getChildQuietly(getContent(), id);
     }
@@ -439,11 +444,11 @@ class TaskEditor extends AbstractFormInterceptor {
 
     TaskStatus oldStatus = NameUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
-    
+
     DateTime start = row.getDateTime(form.getDataIndex(COL_START_TIME));
 
     form.setEnabled(Objects.equal(owner, userId));
-    
+
     TaskStatus newStatus = null;
 
     if (TaskStatus.NOT_VISITED.equals(oldStatus)) {
@@ -451,7 +456,7 @@ class TaskEditor extends AbstractFormInterceptor {
         newStatus = TaskStatus.ACTIVE;
       }
     } else if (TaskStatus.SCHEDULED.equals(oldStatus) && !CrmUtils.isScheduled(start)) {
-      newStatus = Objects.equal(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;  
+      newStatus = Objects.equal(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
     }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
@@ -462,7 +467,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     BeeRowSet rowSet = new BeeRowSet(form.getViewName(), form.getDataColumns());
     rowSet.addRow(visitedRow);
-    
+
     ParameterList params = CrmKeeper.createTaskRequestParameters(TaskEvent.VISIT);
     params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
     params.addDataItem(VAR_TASK_USERS, getTaskUsers(form, row));
@@ -663,8 +668,8 @@ class TaskEditor extends AbstractFormInterceptor {
           showError("Įveskite patvirtinimo datą");
           return;
         }
-        
-        BeeRow newRow = getNewRow();
+
+        BeeRow newRow = getNewRow(TaskStatus.APPROVED);
         newRow.setValue(getFormView().getDataIndex(COL_APPROVED), approved);
 
         ParameterList params = createParams(TaskEvent.APPROVE, newRow, dialog.getComment(cid));
@@ -784,7 +789,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         BeeRow newRow = getNewRow(TaskStatus.COMPLETED);
         newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
-        
+
         ParameterList params = createParams(TaskEvent.COMPLETE, newRow, comment);
 
         if (setDurationParams(dialog, durIds, params)) {
@@ -849,41 +854,55 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doExtend() {
     final TaskDialog dialog = new TaskDialog("Užduoties termino keitimas");
 
-    final String did = dialog.addDateTime("Naujas terminas:", true, null);
+    final String startId = dialog.addDateTime("Pradžios data:", false, getDateTime(COL_START_TIME));
+    final String endId = dialog.addDateTime("Pabaigos data:", true, null);
+
     final String cid = dialog.addComment(false);
 
     dialog.addAction("Keisti terminą", new ScheduledCommand() {
       @Override
       public void execute() {
 
-        DateTime newTerm = dialog.getDateTime(did);
-        if (newTerm == null) {
-          showError("Įveskite terminą");
+        DateTime newStart = dialog.getDateTime(startId);
+        DateTime newEnd = dialog.getDateTime(endId);
+
+        if (newEnd == null) {
+          showError("Įveskite pabaigos datą");
           return;
         }
 
-        DateTime oldTerm = getDateTime(COL_FINISH_TIME);
-        if (Objects.equal(newTerm, oldTerm)) {
+        DateTime oldStart = getDateTime(COL_START_TIME);
+        DateTime oldEnd = getDateTime(COL_FINISH_TIME);
+
+        if (Objects.equal(newStart, oldStart) && Objects.equal(newEnd, oldEnd)) {
           showError("Terminas nepakeistas");
           return;
         }
 
-        DateTime start = getDateTime(COL_START_TIME);
-        if (start != null && TimeUtils.isLeq(newTerm, start)) {
-          showError("Terminas turi būti didesnis už pradžios datą");
+        if (newStart != null && TimeUtils.isLeq(newEnd, newStart)) {
+          showError("Pabaigos data turi būti didesnė už pradžios datą");
           return;
         }
 
         DateTime now = TimeUtils.nowMinutes();
-        if (TimeUtils.isLess(newTerm, TimeUtils.nowMinutes())) {
+        if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Lists.newArrayList("Terminas turi būti didesnis už " + now.toCompactString()));
+              Lists.newArrayList("Pabaigos data turi būti didesnė už " + now.toCompactString()));
           return;
         }
 
         BeeRow newRow = getNewRow();
-        newRow.setValue(getFormView().getDataIndex(COL_FINISH_TIME), newTerm);
-        
+        if (CrmUtils.isScheduled(newStart) && !TaskStatus.SCHEDULED.is(getStatus())) {
+          newRow.setValue(getFormView().getDataIndex(COL_STATUS), TaskStatus.SCHEDULED.ordinal());
+        }
+
+        if (!Objects.equal(newStart, oldStart)) {
+          newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
+        }
+        if (!Objects.equal(newEnd, oldEnd)) {
+          newRow.setValue(getFormView().getDataIndex(COL_FINISH_TIME), newEnd);
+        }
+
         ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.EXTEND);
@@ -891,7 +910,7 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     });
 
-    dialog.display();
+    dialog.display(endId);
   }
 
   private void doForward() {
@@ -913,7 +932,7 @@ class TaskEditor extends AbstractFormInterceptor {
       public void execute() {
 
         DataSelector selector = dialog.getSelector(sid);
-        
+
         Long newUser = selector.getRelatedId();
         if (newUser == null) {
           showError("Įveskite vykdytoją");
@@ -932,7 +951,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         BeeRow newRow = getNewRow();
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
-            Data.getDataInfo(CommonsConstants.VIEW_USERS), selector.getRelatedRow(), true);        
+            Data.getDataInfo(CommonsConstants.VIEW_USERS), selector.getRelatedRow(), true);
 
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
 
@@ -958,7 +977,7 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow newRow = getNewRow(newStatus);
         newRow.clearCell(getFormView().getDataIndex(COL_COMPLETED));
         newRow.clearCell(getFormView().getDataIndex(COL_APPROVED));
-        
+
         ParameterList params = createParams(TaskEvent.RENEW, newRow, dialog.getComment(cid));
 
         sendRequest(params, TaskEvent.RENEW);
@@ -1100,7 +1119,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       case RENEW:
         return TaskStatus.in(status, TaskStatus.SUSPENDED, TaskStatus.CANCELED,
-            TaskStatus.COMPLETED);
+            TaskStatus.COMPLETED, TaskStatus.APPROVED);
 
       case FORWARD:
         return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
@@ -1150,7 +1169,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     form.updateRow(data, true);
   }
-  
+
   private String renderDuration(long millis) {
     return TimeUtils.renderTime(millis, false);
   }
@@ -1413,7 +1432,7 @@ class TaskEditor extends AbstractFormInterceptor {
       container.add(col2);
 
       Long millis = TimeUtils.parseTime(duration);
-      if (BeeUtils.isPositive(millis) && !BeeUtils.isEmpty(publisher) 
+      if (BeeUtils.isPositive(millis) && !BeeUtils.isEmpty(publisher)
           && !BeeUtils.isEmpty(durType)) {
         Long value = durations.get(publisher, durType);
         durations.put(publisher, durType, millis + BeeUtils.unbox(value));
@@ -1433,7 +1452,7 @@ class TaskEditor extends AbstractFormInterceptor {
       panel.add(fileContainer);
     }
   }
-  
+
   private void showEventsAndDuration(FormView form, BeeRowSet rowSet, List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {

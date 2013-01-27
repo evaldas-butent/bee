@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -13,6 +14,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer;
@@ -45,7 +47,7 @@ public class ScreenImpl implements Screen {
 
   private LayoutPanel rootPanel;
   private Split screenPanel = null;
-  
+
   private CentralScrutinizer centralScrutinizer = null;
 
   private Workspace workspace = null;
@@ -136,7 +138,7 @@ public class ScreenImpl implements Screen {
       DoubleLabel percent = new DoubleLabel(Format.getDefaultPercentFormat(), true);
       item.addStyleName("bee-ProgressPercent");
       item.add(percent);
-      
+
       getProgressPanel().add(item);
       return item.getId();
     } else {
@@ -260,12 +262,12 @@ public class ScreenImpl implements Screen {
   @Override
   public void start() {
     createUi();
-    
+
     if (getWorkspace() != null) {
       if (getCentralScrutinizer() != null && getWorkspace() != null) {
         getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
       }
-      
+
       Previewer.registermouseDownPriorHandler(getWorkspace());
     }
   }
@@ -377,7 +379,7 @@ public class ScreenImpl implements Screen {
   protected IdentifiableWidget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
-    
+
     panel.add(createLogo());
 
     panel.add(Global.getSearchWidget());
@@ -402,18 +404,21 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
+
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.confirm(Global.CONSTANTS.logout(), new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            Bee.exit();
-          }
-        });
+        Global.confirm(Settings.getAppName(), Icon.QUESTION,
+            Lists.newArrayList(Global.CONSTANTS.logout()), new ConfirmationCallback() {
+              @Override
+              public void onConfirm() {
+                Bee.exit();
+              }
+            });
       }
     });
     exit.addStyleName("bee-UserExit");
+
     exitContainer.setWidget(exit);
     userContainer.add(exitContainer);
 
