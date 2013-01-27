@@ -8,6 +8,7 @@
     <SimpleColumn name="Expires" />
     <SimpleColumn name="Number" />
     <SimpleColumn name="RegistrationNumber" />
+
     <SimpleColumn name="Type" />
     <SimpleJoin joinType="LEFT" name="Type">
       <SimpleColumn alias="TypeName" name="Name" />
@@ -24,21 +25,28 @@
     <SimpleJoin joinType="LEFT" name="Place">
       <SimpleColumn alias="PlaceName" name="Name" />
     </SimpleJoin>
+
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName" />
     </SimpleJoin>
+
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
     </SimpleJoin>
+
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="PersonFirstName" name="FirstName" />
         <SimpleColumn alias="PersonLastName" name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="PersonCompanyName" name="Name" />
+      </SimpleJoin>
     </SimpleJoin>
+
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
   </Columns>

@@ -143,6 +143,10 @@ public class RendererFactory {
       case STAR:
         renderer = new StarRenderer(source);
         break;
+        
+      case FILE_ICON:
+        renderer = new FileIconRenderer(source);
+        break;
 
       default:
         logger.severe("renderer", type.name(), "not supported");

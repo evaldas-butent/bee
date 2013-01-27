@@ -32,6 +32,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
     return ColType.ACTION;
   }
 
+  @Override
   public AbstractCellRenderer getRenderer() {
     return renderer;
   }
@@ -68,6 +69,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
     getCell().render(context, getValue(rowValue), sb);
   }
 
+  @Override
   public void setRenderer(AbstractCellRenderer renderer) {
     this.renderer = renderer;
   }

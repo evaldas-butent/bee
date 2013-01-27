@@ -342,6 +342,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     }
   }
 
+  public static final List<Column> ALL_COLUMNS = Lists.newArrayList(Column.values());
+
   private static final String STYLE_PREFIX = "bee-FileCollector-";
 
   private static final String STYLE_FACE = "face";
@@ -362,7 +364,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   private static final List<Column> DEFAULT_VISIBLE_COLUMNS = Lists.newArrayList(Column.NAME,
       Column.SIZE, Column.EDIT, Column.DELETE);
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
-
+  
   public static IdentifiableWidget getDefaultFace() {
     return new BeeButton("Pasirinkite bylas");
   }
@@ -748,5 +750,4 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       getDropArea().addClassName(StyleUtils.DROP_AREA);
     }
   }
-
 }

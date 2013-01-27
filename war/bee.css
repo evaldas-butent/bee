@@ -355,7 +355,6 @@ body, select {
   top: 5%;
   bottom : 5%;
   padding-left: -webkit-calc(45% - 70px);
-  padding-top: 24%;
   border: 2px dashed #aaa;
   border-radius: 50%;
 }

@@ -143,6 +143,8 @@ public class CrmConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+
+  public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
   
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
@@ -236,6 +238,8 @@ public class CrmConstants {
   public static final String PROP_LAST_PUBLISH = "LastPublish";
 
   public static final String PROP_LAST_EVENT_ID = "LastEventId";
+
+  public static final String PROP_ICON = "Icon";
   
   public static final String GRID_TASKS = "Tasks";
 

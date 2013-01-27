@@ -33,7 +33,8 @@
     <Label html="Grupė:" class="bee-required" />
     <DataSelector source="Group" />
     <Label html="Asmuo:" horizontalAlignment="right" />
-    <DataSelector source="CompanyPerson" />
+    <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
+      choiceColumns="FirstName LastName CompanyName" />
   </row>
 
   <row>

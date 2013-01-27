@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,6 +22,11 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   }
   
   public static final String ICON_DIR = "fileicons";
+  
+  public static String getIconUrl(String icon) {
+    Assert.notEmpty(icon);
+    return CommUtils.buildPath(CommUtils.PATH_IMAGES, ICON_DIR, icon);
+  }
   
   public static StoredFile restore(String s) {
     if (BeeUtils.isEmpty(s)) {

@@ -10,7 +10,8 @@ public enum RendererType {
   JOIN("join", false),
   TOKEN("token", false),
   FLAG("flag", true),
-  STAR("star", true);
+  STAR("star", true),
+  FILE_ICON("fileIcon", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

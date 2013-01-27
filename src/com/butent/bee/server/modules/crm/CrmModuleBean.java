@@ -128,7 +128,7 @@ public class CrmModuleBean implements BeeModule {
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
-      public void getTaskChildProperties(ViewQueryEvent event) {
+      public void setRowProperties(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
 
@@ -193,6 +193,20 @@ public class CrmModuleBean implements BeeModule {
 
               if (teRow.getValue(publishIndex) != null) {
                 row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
+              }
+            }
+          }
+
+        } else if (BeeUtils.same(event.getViewName(), VIEW_DOCUMENT_FILES)) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (!rowSet.isEmpty()) {
+            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
+
+            for (BeeRow row : rowSet.getRows()) {
+              String icon = FileNameUtils.getExtensionIcon(row.getString(fnIndex));
+              if (!BeeUtils.isEmpty(icon)) {
+                row.setProperty(PROP_ICON, icon);
               }
             }
           }

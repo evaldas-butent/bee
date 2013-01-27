@@ -16,7 +16,6 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
@@ -24,16 +23,18 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.State;
 
 /**
  * Implements a panel, which positions all of its children absolutely, allowing them to overlap.
  */
 
-public class Absolute extends AbsolutePanel implements IdentifiableWidget,
-    HasAllDragAndDropHandlers, ProvidesResize, RequiresResize {
+public class Absolute extends AbsolutePanel implements DndWidget, ProvidesResize, RequiresResize {
 
+  private State targetState = null;
+  
   public Absolute() {
     this(Position.ABSOLUTE);
   }
@@ -104,6 +105,11 @@ public class Absolute extends AbsolutePanel implements IdentifiableWidget,
   }
 
   @Override
+  public State getTargetState() {
+    return targetState;
+  }
+  
+  @Override
   public void onResize() {
     for (Widget child : getChildren()) {
       if (child instanceof RequiresResize) {
@@ -111,10 +117,15 @@ public class Absolute extends AbsolutePanel implements IdentifiableWidget,
       }
     }
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setTargetState(State targetState) {
+    this.targetState = targetState;
   }
 
   private void init(Position position, Overflow overflow) {

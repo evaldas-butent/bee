@@ -347,6 +347,7 @@
       <xs:enumeration value="join" />
       <xs:enumeration value="flag" />
       <xs:enumeration value="star" />
+      <xs:enumeration value="fileIcon" />
     </xs:restriction>
   </xs:simpleType>
   

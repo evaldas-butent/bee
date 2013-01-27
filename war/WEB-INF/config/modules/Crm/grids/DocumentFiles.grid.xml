@@ -3,15 +3,27 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="DocumentFiles" viewName="DocumentFiles" caption="Bylos"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="FileDate" caption="Data" required="true" />
+    <DataColumn name="File" caption="Atidaryti" readOnly="true" cellType="html" sortable="false"
+      minWidth="100" />
+
+    <DataColumn name="FileDate" caption="Data" required="true" width="128" />
     <DataColumn name="FileVersion" caption="Versija" />
-    <DataColumn name="Caption" caption="Pavadinimas" required="true" />
-    <DataColumn name="Description" caption="Aprašymas" width="100" />
-    <DataColumn name="FileName" caption="Originalus pavadinimas" readOnly="true" />
-    <DataColumn name="FileSize" caption="Dydis" readOnly="true" />
-    <DataColumn name="FileType" caption="Tipas" />
+    <DataColumn name="Caption" caption="Pavadinimas" required="true" updateMode="row" />
+    <DataColumn name="Description" caption="Aprašymas" />
+
+    <DataColumn name="FileName" caption="Originalus pavad." readOnly="true" />
+    <DataColumn name="FileSize" caption="Dydis" readOnly="true" horizontalAlignment="right"
+      width="60" />
+
+    <DataColumn name="FileType" caption="Tipas" readOnly="true" />
+    <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
+      width="20">
+      <renderer type="fileIcon" />
+    </PropColumn>
+
     <RelColumn name="Owner" caption="Registratorius" renderColumns="OwnerFirstName OwnerLastName" />
   </columns>
 </Grid>

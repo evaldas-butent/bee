@@ -1,4 +1,6 @@
 package com.butent.bee.client.event;
 
-public interface DndWidget extends DndSource, DndTarget {
+import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
+
+public interface DndWidget extends DndSource, DndTarget, HasAllDragAndDropHandlers {
 }

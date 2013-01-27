@@ -22,7 +22,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -52,8 +51,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof BeeImage && !BeeUtils.isEmpty(sf.getIcon())) {
-          String url = CommUtils.buildPath(CommUtils.PATH_IMAGES, StoredFile.ICON_DIR,
-              sf.getIcon());
+          String url = StoredFile.getIconUrl(sf.getIcon());
           ((BeeImage) widget).setUrl(url);
         }
       }
