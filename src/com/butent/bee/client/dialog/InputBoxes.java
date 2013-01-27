@@ -395,7 +395,7 @@ public class InputBoxes {
         BeeImage delete = new BeeImage(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override
           public void execute() {
-            callback.onDelete();
+            callback.onDelete(dialog);
           }
         });
 

@@ -40,9 +40,11 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
@@ -51,6 +53,7 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -74,6 +77,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -226,6 +230,41 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       String cap = isNew ?
           CalendarKeeper.getAppointmentViewInfo().getNewRowCaption() : getFormView().getCaption();
       Global.decide(cap, messages, callback, DialogConstants.DECISION_YES);
+    }
+
+    @Override
+    public void onDelete(final DialogBox dialog) {
+      IsRow row = getFormView().getActiveRow();
+      if (row == null) {
+        return;
+      }
+
+      final long id = row.getId();
+      final long version = row.getVersion();
+
+      if (!DataUtils.isId(id)) {
+        return;
+      }
+
+      Global.getMsgBoxen().confirm(null, Icon.WARNING,
+          Lists.newArrayList(Global.CONSTANTS.deleteAppointment()), new ConfirmationCallback() {
+            @Override
+            public void onConfirm() {
+              dialog.close();
+
+              Queries.deleteRow(VIEW_APPOINTMENTS, id, version, new Queries.IntCallback() {
+                @Override
+                public void onFailure(String... reason) {
+                  BeeKeeper.getScreen().notifySevere(reason);
+                }
+
+                @Override
+                public void onSuccess(Integer result) {
+                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(VIEW_APPOINTMENTS, id));
+                }
+              });
+            }
+          }, null, StyleUtils.NAME_SCARY);
     }
 
     @Override
@@ -776,11 +815,11 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     if (widget == null) {
       return;
     }
-    
+
     JustDate start = getInputDate(getStartDateWidgetId()).getDate();
     widget.setMinDate(BeeUtils.nvl(start, MIN_DATE));
   }
-  
+
   private void onEndTimeFocus(InputTime widget) {
     if (widget == null) {
       return;
@@ -1071,7 +1110,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     }
 
     for (BeeRow row : themeColors.getRows()) {
-      if (DataUtils.isId(theme) && !theme.equals(Data.getLong(viewName, row, 
+      if (DataUtils.isId(theme) && !theme.equals(Data.getLong(viewName, row,
           CommonsConstants.COL_THEME))) {
         continue;
       }

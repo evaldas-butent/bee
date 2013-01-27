@@ -653,6 +653,7 @@ body, select {
 
 .bee-Dialog-caption {
   padding-left: 8px;
+  padding-right: 8px;
   -webkit-flex: 1;
 }
 

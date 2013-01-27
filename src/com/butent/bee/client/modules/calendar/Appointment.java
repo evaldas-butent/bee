@@ -75,6 +75,10 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_COMPANY_NAME);
   }
   
+  public Long getCreator() {
+    return Data.getLong(VIEW_APPOINTMENTS, row, COL_CREATOR);
+  }
+
   public String getDescription() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
   }

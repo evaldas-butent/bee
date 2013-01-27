@@ -486,9 +486,12 @@ public class CalendarKeeper {
                   builder.setUcAttendees(controller.getAttendees());
                 }
               }
+              
+              Set<Action> enabledActions = BeeKeeper.getUser().is(appointment.getCreator())
+                  ? EnumSet.of(Action.DELETE, Action.PRINT) : EnumSet.of(Action.PRINT);
 
               Global.inputWidget(result.getCaption(), result, builder.getModalCallback(), glass,
-                  RowEditor.DIALOG_STYLE, null, EnumSet.of(Action.DELETE, Action.PRINT));
+                  RowEditor.DIALOG_STYLE, null, enabledActions);
             }
           }
         });

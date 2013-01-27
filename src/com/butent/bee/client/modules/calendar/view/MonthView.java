@@ -10,8 +10,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -497,10 +496,6 @@ public class MonthView extends CalendarView {
     final Flow panel = new Flow();
     panel.addStyleName(CalendarStyleManager.MORE_PANEL);
     
-    BeeLabel caption = new BeeLabel(Global.CONSTANTS.selectAppointment());
-    caption.addStyleName(CalendarStyleManager.MORE_CAPTION);
-    panel.add(caption);
-
     for (Appointment appointment : appointments) {
       AppointmentWidget widget = new AppointmentWidget(appointment, appointment.isMultiDay());
       widget.render(calendarId, null);
@@ -508,9 +503,9 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final Popup popup = new Popup(OutsideClick.CLOSE);
-    popup.addStyleName(CalendarStyleManager.MORE_POPUP);
-
+    final DialogBox dialog = DialogBox.create(Global.CONSTANTS.selectAppointment(),
+        CalendarStyleManager.MORE_POPUP);
+    
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {
       @Override
       public void onMouseDown(MouseDownEvent event) {
@@ -521,7 +516,7 @@ public class MonthView extends CalendarView {
           for (int i = 0; i < panel.getWidgetCount(); i++) {
             if (panel.getWidget(i).getElement().isOrHasChild(element)) {
               appointment = ((AppointmentWidget) panel.getWidget(i)).getAppointment();
-              popup.close();
+              dialog.close();
               break;
             }
           }
@@ -534,9 +529,9 @@ public class MonthView extends CalendarView {
       }
     });
     
-    popup.setAnimationEnabled(true);
+    dialog.setAnimationEnabled(true);
 
-    popup.setWidget(panel);
-    popup.center();
+    dialog.setWidget(panel);
+    dialog.center();
   }
 }

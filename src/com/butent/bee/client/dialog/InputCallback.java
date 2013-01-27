@@ -15,7 +15,8 @@ public abstract class InputCallback {
     closeCallback.onClose();
   }
 
-  public void onDelete() {
+  public void onDelete(DialogBox dialog) {
+    dialog.close();
   }
   
   public abstract void onSuccess();

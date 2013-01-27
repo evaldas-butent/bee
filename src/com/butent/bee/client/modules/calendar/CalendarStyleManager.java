@@ -66,7 +66,6 @@ public class CalendarStyleManager {
   public static final String MORE_LABEL = "moreAppointments";
   public static final String MORE_POPUP = "bee-cal-morePopup";
   public static final String MORE_PANEL = "morePanel";
-  public static final String MORE_CAPTION = "moreCaption";
 
   public static final String DISABLED = "disabled";
 

@@ -8,6 +8,7 @@ public interface LocalizableConstants extends Constants {
   String changePassword();
   String createNewAppointment();
   String createNewRow();
+  String deleteAppointment();
   String logout();
   String newPassword();
   String newPasswordIsRequired();

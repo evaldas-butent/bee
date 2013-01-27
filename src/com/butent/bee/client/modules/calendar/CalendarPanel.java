@@ -62,10 +62,14 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -80,7 +84,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
-    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain {
+    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
+    HandlesDeleteEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
@@ -243,6 +248,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     registry.add(AppointmentEvent.register(this));
     registry.add(VisibilityChangeEvent.register(this));
+    registry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
 
     updateUcAttendees(ucAttendees, false);
     loadAppointments();
@@ -345,6 +351,20 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (VIEW_APPOINTMENTS.equals(event.getViewName())) {
+      boolean removed = false;
+      for (RowInfo rowInfo : event.getRows()) {
+        removed |= calendar.removeAppointment(rowInfo.getId(), false);
+      }
+      
+      if (removed) {
+        refreshCalendar(false);
+      }
+    }
+  }
+
+  @Override
   public boolean onPrint(Element source, Element target) {
     boolean ok;
     String id = source.getId();
@@ -384,6 +404,17 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
 
     return ok;
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (VIEW_APPOINTMENTS.equals(event.getViewName())) {
+      boolean removed = calendar.removeAppointment(event.getRowId(), false);
+      
+      if (removed) {
+        refreshCalendar(false);
+      }
+    }
   }
 
   @Override
@@ -616,6 +647,13 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     loadAppointments();
   }
 
+  private void refreshCalendar(boolean scroll) {
+    if (!DomUtils.isVisible(getElement())) {
+      calendar.suspendLayout();
+    }
+    calendar.refresh(scroll);
+  }
+
   private void refreshDateBox() {
     Type type = calendar.getType();
 
@@ -729,7 +767,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     return true;
   }
-
+  
   private int updateViews(CalendarSettings settings) {
     if (!views.isEmpty()) {
       viewTabs.clear();

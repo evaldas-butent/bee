@@ -29,12 +29,11 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
   public Mover(String styleName, Orientation orientation) {
     super(styleName);
     this.orientation = orientation;
-
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE);
   }
 
   @Override
   public HandlerRegistration addMoveHandler(MoveEvent.Handler handler) {
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE);
     return addHandler(handler, MoveEvent.getType());
   }
 

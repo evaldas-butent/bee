@@ -154,6 +154,10 @@ public class UserInfo implements Module, HasInfo {
   @Override
   public void init() {
   }
+  
+  public boolean is(Long id) {
+    return id != null && id.equals(getUserId());
+  }
 
   public boolean isLoggedIn() {
     return userData != null;
