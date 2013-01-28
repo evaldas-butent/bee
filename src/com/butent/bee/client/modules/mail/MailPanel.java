@@ -433,6 +433,13 @@ public class MailPanel extends AbstractFormInterceptor {
     public void onShow(GridPresenter presenter) {
       presenter.getGridView().getGrid()
           .addActiveRowChangeHandler(new ContentHandler(presenter.getDataColumns()));
+
+      initFolders(false, new ScheduledCommand() {
+        @Override
+        public void execute() {
+          refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
+        }
+      });
     }
   }
 
@@ -577,12 +584,6 @@ public class MailPanel extends AbstractFormInterceptor {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 
-    initFolders(false, new ScheduledCommand() {
-      @Override
-      public void execute() {
-        refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
-      }
-    });
     messageHandler.setFormView(getFormView());
   }
 
@@ -854,7 +855,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
         options.add(Global.CONSTANTS.cancel());
         Icon icon = purge ? Icon.ALARM : Icon.WARNING;
-        
+
         Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,
             options.size() - 1, new ChoiceCallback() {
               @Override

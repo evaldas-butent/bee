@@ -37,6 +37,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -145,28 +146,6 @@ public class TransportModuleBean implements BeeModule {
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
-      public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES)) {
-          BeeRowSet rowset = event.getRowset();
-
-          if (!rowset.isEmpty()) {
-            int colIndex = rowset.getColumnIndex("Consumption");
-            SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(event.getQuery()
-                .resetFields().resetOrder()
-                .addFields(VIEW_TRIP_ROUTES, sys.getIdName(VIEW_TRIP_ROUTES)), true));
-            int idIndex = rs.getColumnIndex(sys.getIdName(VIEW_TRIP_ROUTES));
-            int qtyIndex = rs.getColumnIndex("Quantity");
-
-            for (int i = 0; i < rs.getNumberOfRows(); i++) {
-              rowset.updateCell(rs.getLong(i, idIndex), colIndex, rs.getValue(i, qtyIndex));
-            }
-          }
-        }
-      }
-    });
-
-    sys.registerViewEventHandler(new ViewEventHandler() {
-      @Subscribe
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), VIEW_CARGO)) {
           BeeRowSet rowset = event.getRowset();
@@ -188,9 +167,27 @@ public class TransportModuleBean implements BeeModule {
           }
         }
       }
-    });
 
-    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void fillFuelConsumptions(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES)) {
+          BeeRowSet rowset = event.getRowset();
+
+          if (!rowset.isEmpty()) {
+            int colIndex = rowset.getColumnIndex("Consumption");
+            SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(event.getQuery()
+                .resetFields().resetOrder()
+                .addFields(VIEW_TRIP_ROUTES, sys.getIdName(VIEW_TRIP_ROUTES)), true));
+            int idIndex = rs.getColumnIndex(sys.getIdName(VIEW_TRIP_ROUTES));
+            int qtyIndex = rs.getColumnIndex("Quantity");
+
+            for (int i = 0; i < rs.getNumberOfRows(); i++) {
+              rowset.updateCell(rs.getLong(i, idIndex), colIndex, rs.getValue(i, qtyIndex));
+            }
+          }
+        }
+      }
+
       @Subscribe
       public void fillTripCargoIncomes(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), VIEW_TRIP_CARGO)) {
@@ -358,13 +355,13 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(CommonsConstants.TBL_PERSONS,
             sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
                 CommonsConstants.COL_PERSON));
-    
+
     query.addFields(TBL_TRIP_DRIVERS, COL_TRIP);
     query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
         CommonsConstants.COL_LAST_NAME);
 
     query.addOrder(TBL_TRIP_DRIVERS, COL_TRIP);
-    
+
     if (condition != null) {
       query.setWhere(condition);
     }
@@ -373,10 +370,10 @@ public class TransportModuleBean implements BeeModule {
     if (data == null || data.getNumberOfRows() == 0) {
       return result;
     }
-    
+
     List<String> drivers = Lists.newArrayList();
     String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
-    
+
     Long lastTrip = null;
     for (SimpleRow row : data) {
       Long trip = row.getLong(COL_TRIP);
@@ -388,11 +385,11 @@ public class TransportModuleBean implements BeeModule {
         }
         lastTrip = trip;
       }
-      
+
       drivers.add(BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
           row.getValue(CommonsConstants.COL_LAST_NAME)));
     }
-    
+
     if (!drivers.isEmpty()) {
       result.put(lastTrip, BeeUtils.join(separator, drivers));
     }
@@ -533,7 +530,7 @@ public class TransportModuleBean implements BeeModule {
     settings.setTableProperty(PROP_DATA, data.serialize());
     return ResponseObject.response(settings);
   }
-  
+
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
@@ -573,7 +570,7 @@ public class TransportModuleBean implements BeeModule {
     if (!drivers.isEmpty()) {
       settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
     }
-    
+
     SimpleRowSet vehicleServices = getVehicleServices(null);
     if (!DataUtils.isEmpty(vehicleServices)) {
       settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
@@ -587,7 +584,7 @@ public class TransportModuleBean implements BeeModule {
 
     String defLoadAlias = "defl_" + SqlUtils.uniqueName();
     String defUnlAlias = "defu_" + SqlUtils.uniqueName();
-    
+
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
 
     SqlSelect query = new SqlSelect()
@@ -642,7 +639,7 @@ public class TransportModuleBean implements BeeModule {
     query.addField(defUnlAlias, COL_COUNTRY, defaultUnloadingColumnAlias(COL_COUNTRY));
     query.addField(defUnlAlias, COL_PLACE, defaultUnloadingColumnAlias(COL_PLACE_NAME));
     query.addField(defUnlAlias, COL_TERMINAL, defaultUnloadingColumnAlias(COL_TERMINAL));
-    
+
     query.addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE);
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_NO, COL_CUSTOMER);
     query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
@@ -681,11 +678,11 @@ public class TransportModuleBean implements BeeModule {
 
     int bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
     int fgIndex = rowSet.getColumnIndex(CommonsConstants.COL_FOREGROUND);
-    
+
     for (BeeRow row : rowSet.getRows()) {
       String bg = row.getString(bgIndex);
       String fg = row.getString(fgIndex);
-      
+
       if (!BeeUtils.isEmpty(bg)) {
         result.add(new Color(bg.trim(), BeeUtils.trim(fg)));
       }
@@ -1057,7 +1054,7 @@ public class TransportModuleBean implements BeeModule {
     query.addFields(TBL_SERVICE_TYPES, COL_SERVICE_NAME);
 
     query.addOrder(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE);
-    
+
     if (condition != null) {
       query.setWhere(condition);
     }

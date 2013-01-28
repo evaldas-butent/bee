@@ -36,6 +36,14 @@
       <AggregateColumn aggregate="MIN" name="Description" alias="MinCargo" />
       <AggregateColumn aggregate="MAX" name="Description" alias="MaxCargo" />
       <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
+      
+      <AggregateColumn aggregate="MAX" name="Partial" />
+      
+      <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <AggregateJoin name="Trip" joinType="LEFT">
+          <AggregateColumn name="Expedition" aggregate="MAX" />
+        </AggregateJoin>
+      </ExternalJoin>
     </ExternalJoin>
   </Columns>
   <Order>

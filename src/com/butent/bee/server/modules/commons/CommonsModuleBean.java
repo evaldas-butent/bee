@@ -135,21 +135,19 @@ public class CommonsModuleBean implements BeeModule {
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
-      public void refreshUserCache(ViewModifyEvent event) {
-        if (usr.isUserTable(event.getViewName()) && event.isAfter()) {
-          usr.initUsers();
-        }
-      }
-    });
-    sys.registerViewEventHandler(new ViewEventHandler() {
-      @Subscribe
       public void refreshRightsCache(ViewModifyEvent event) {
         if (usr.isRightsTable(event.getViewName()) && event.isAfter()) {
           usr.initRights();
         }
       }
-    });
-    sys.registerViewEventHandler(new ViewEventHandler() {
+
+      @Subscribe
+      public void refreshUserCache(ViewModifyEvent event) {
+        if (usr.isUserTable(event.getViewName()) && event.isAfter()) {
+          usr.initUsers();
+        }
+      }
+
       @Subscribe
       public void storeEmail(ViewModifyEvent event) {
         if (BeeUtils.same(event.getViewName(), TBL_EMAILS) && event.isBefore()
@@ -307,7 +305,7 @@ public class CommonsModuleBean implements BeeModule {
     }
     return response;
   }
-  
+
   private Collection<? extends BeeParameter> getSqlEngineParameters() {
     List<BeeParameter> params = Lists.newArrayList();
 

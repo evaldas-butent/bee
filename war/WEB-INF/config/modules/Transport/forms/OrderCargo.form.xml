@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
-  height="70" heightUnit="%" width="80" widthUnit="%"
+  height="75" heightUnit="%" width="80" widthUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
@@ -22,7 +22,11 @@
     </FlowPanel>
     &separator;
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <xi:include href="widgets/CargoPlaces.widget.xml" />
+      <FlowPanel class="flexBox-vertical">
+        <InputText source="ShippingTerms" caption="Pristatymo sąlygos" decorator="flex-left"
+          d:size="120" d:unit="px" />
+        <xi:include href="widgets/CargoPlaces.widget.xml" />
+      </FlowPanel>
       <ChildGrid class="flexible" name="CargoServices" relColumn="Cargo" caption="Papildomos paslaugos" />
     </FlowPanel>
     &separator;
@@ -34,7 +38,8 @@
         <InputDecimal source="Weight" format="#.000" />
         <Label html="Ilgis" horizontalAlignment="right" />
         <InputDecimal source="Length" format="#.00" />
-        <Button name="profit" html="Pelnas" style="float: right" />
+        <InputInteger source="Value" caption="Vertė EUR" d:rootStyle="float:right" />
+        <CheckBox source="Partial" html="Dalinis krovinys" style="float:right"/>
       </row>
       <row>
         <Label html="Numeris" horizontalAlignment="right" />
@@ -44,6 +49,7 @@
         <Label html="Plotis" horizontalAlignment="right" />
         <InputDecimal source="Width" format="#.00" />
         <Label html="Pastabos" />
+        <Button name="profit" html="Pelnas" style="float: right" />
       </row>
       <row>
         <Label html="Pakrauti km" horizontalAlignment="right" />
@@ -58,11 +64,12 @@
       </row>
       <row>
         <Label html="Tušti km" horizontalAlignment="right" />
-        <InputDecimal source="LoadedKilometers" />
+        <InputDecimal source="EmptyKilometers" />
         <Label html="Kiekis" horizontalAlignment="right" />
         <InputInteger source="Quantity" />
-        <Label html="Vertė" horizontalAlignment="right" />
-        <InputInteger source="Value" />
+        <Label html="Paletės" horizontalAlignment="right" />
+        <InputInteger source="Palettes" />
+        <InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:40px; float:right" />
       </row>
     </Table>
 

@@ -21,6 +21,12 @@
       minWidth="80" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas"
       minWidth="80" flexBasis="120" />
+
+    <DataColumn name="Partial" caption="Dalinis" />
+    <CalcColumn name="Expedition" type="boolean" caption="Ekspedicija">
+      <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
+    </CalcColumn>
+
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="Notes" caption="Pastabos">

@@ -35,12 +35,23 @@
     <SimpleColumn name="Width" />
     <SimpleColumn name="Height" />
     <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Palettes" />
     <SimpleColumn name="Value" />
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
+    <SimpleColumn name="ShippingTerms" />
+    <SimpleColumn name="Partial" />
+    <SimpleColumn name="ExchangeOfPalettes" />
+
+    <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+      <AggregateJoin name="Trip" joinType="LEFT">
+        <AggregateColumn name="Expedition" aggregate="MAX" />
+      </AggregateJoin>
+    </ExternalJoin>
+    
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />

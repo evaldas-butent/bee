@@ -18,15 +18,19 @@
     <Numeric name="Width" precision="6" scale="2" />
     <Numeric name="Height" precision="6" scale="2" />
     <Integer name="Quantity" />
+    <Integer name="Palettes" />
     <Integer name="Value" />
 
     <String name="Number" precision="20" />
     <String name="Cmr" precision="20" />
     <Integer name="LoadedKilometers" />
     <Integer name="EmptyKilometers" />
+    <Boolean name="Partial" />
+    <Numeric name="ExchangeOfPalettes" precision="2" />
 
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <String name="ShippingTerms"  precision="100" />
     <Text name="Notes" />
   </Fields>
 </Table>
