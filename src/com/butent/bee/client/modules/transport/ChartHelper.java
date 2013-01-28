@@ -379,6 +379,10 @@ class ChartHelper {
     return end - start;
   }
 
+  static Range<JustDate> getSpan(Collection<? extends HasDateRange> items) {
+    return getSpan(items, null, null);
+  }
+  
   static Range<JustDate> getSpan(Collection<? extends HasDateRange> items,
       JustDate defMin, JustDate defMax) {
 

@@ -5,8 +5,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.HasNativeEvent;
@@ -18,11 +21,13 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -40,6 +45,8 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
@@ -114,6 +121,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_START_SLIDER_LABEL = STYLE_SELECTOR_START_SLIDER + "-label";
   private static final String STYLE_END_SLIDER_LABEL = STYLE_SELECTOR_END_SLIDER + "-label";
 
+  private static final String STYLE_ACTION_FILTER = STYLE_PREFIX + "actionFilter";
+  private static final String STYLE_FILTER_LABEL = STYLE_PREFIX + "filterLabel";
+  private static final String STYLE_ACTION_REMOVE_FILTER = STYLE_PREFIX + "actionRemoveFilter";
+
   private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
   private final HeaderView headerView;
@@ -156,13 +167,51 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private final Set<String> relevantDataViews = Sets.newHashSet();
 
+  private final List<ChartData> filterData = Lists.newArrayList();
+  private final List<Integer> filteredIndexes = Lists.newArrayList();
+
+  private final CustomDiv filterLabel;
+  private final BeeImage removeFilter;
+
   protected ChartBase() {
     super();
     addStyleName(STYLE_CONTAINER);
 
+    Set<Action> enabledActions = getEnabledActions();
+
     this.headerView = new HeaderSilverImpl();
-    headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), getEnabledActions(),
+    headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), enabledActions,
         Action.NO_ACTIONS);
+
+    if (BeeUtils.contains(enabledActions, Action.FILTER)) {
+      BeeButton filter = new BeeButton("Filtras", new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          handleAction(Action.FILTER);
+        }
+      });
+      filter.addStyleName(STYLE_ACTION_FILTER);
+
+      headerView.addCommandItem(filter);
+
+      this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);
+      headerView.addCommandItem(filterLabel);
+
+      this.removeFilter = new BeeImage(Global.getImages().closeSmall(), new ScheduledCommand() {
+        @Override
+        public void execute() {
+          handleAction(Action.REMOVE_FILTER);
+        }
+      });
+      removeFilter.addStyleName(STYLE_ACTION_REMOVE_FILTER);
+      removeFilter.setVisible(false);
+
+      headerView.addCommandItem(removeFilter);
+      
+    } else {
+      this.filterLabel = null;
+      this.removeFilter = null;
+    }
 
     headerView.setViewPresenter(this);
     add(headerView);
@@ -239,6 +288,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
       case PRINT:
         Printer.print(this);
+        break;
+
+      case FILTER:
+        FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
+          @Override
+          public void onSuccess(DialogBox result) {
+            boolean ok = filter(result);
+            if (ok) {
+              refreshFilterInfo();
+            } else {
+              BeeKeeper.getScreen().notifyWarning("Nieko nerasta");
+            }
+          }
+        });
+        break;
+        
+      case REMOVE_FILTER:
+        clearFilter();
         break;
 
       default:
@@ -553,6 +620,22 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return BeeUtils.clamp(height, 1, BeeUtils.clamp(canvasHeight / 5, 1, 100));
   }
 
+  protected void clearFilter() {
+    if (isFiltered()) {
+      filteredIndexes.clear();
+      
+      updateMaxRange();
+      render(true);
+    }
+
+    filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
+    removeFilter.setVisible(false);
+
+    for (ChartData data : filterData) {
+      data.setSelected(false);
+    }
+  }
+
   protected void editSettings() {
     if (BeeUtils.isEmpty(getSettingsFormName()) || DataUtils.isEmpty(getSettings())) {
       return;
@@ -583,6 +666,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
             }
           }
         });
+  }
+
+  protected boolean filter(DialogBox dialog) {
+    dialog.close();
+    return false;
   }
 
   protected int getBarHeight() {
@@ -644,6 +732,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected Widget getEndSliderLabel() {
     return endSliderLabel;
+  }
+
+  protected List<ChartData> getFilterData() {
+    return filterData;
+  }
+
+  protected List<Integer> getFilteredIndexes() {
+    return filteredIndexes;
   }
 
   protected int getFooterHeight() {
@@ -737,10 +833,18 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void initData(BeeRowSet rowSet) {
   }
 
+  protected List<ChartData> initFilter() {
+    return Lists.newArrayList();
+  }
+
   protected abstract Collection<? extends ChartItem> initItems(SimpleRowSet data);
 
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
+  }
+
+  protected boolean isFiltered() {
+    return !filteredIndexes.isEmpty();
   }
 
   protected void onDoubleClickChart(int row, JustDate date) {
@@ -786,7 +890,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       render(false);
     }
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -854,13 +958,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     result.add(VisibilityChangeEvent.register(this));
     result.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
-    
+
     return result;
   }
 
   protected void render(boolean updateRange) {
     canvas.clear();
-    if (getChartItems().isEmpty() || getMaxRange() == null) {
+    Collection<? extends ChartItem> chartItems = getChartItems();
+    if (chartItems.isEmpty() || getMaxRange() == null) {
       return;
     }
 
@@ -870,7 +975,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       setRenderPending(true);
       return;
     }
-    
+
     Size canvasSize = new Size(width, height);
 
     prepareDefaults(canvasSize);
@@ -907,7 +1012,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     renderFooterSplitter();
 
     prepareFooter();
-    renderFooter();
+    renderFooter(chartItems);
 
     setRenderPending(false);
   }
@@ -919,7 +1024,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         getHeaderHeight());
   }
 
-  protected void renderFooter() {
+  protected void renderFooter(Collection<? extends ChartItem> chartItems) {
     if (getFooterHeight() <= 0) {
       return;
     }
@@ -929,7 +1034,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     StyleUtils.setHeight(footer, getFooterHeight());
 
     renderMaxRange(footer);
-    renderRangeSelector(footer);
+    renderRangeSelector(footer, chartItems);
 
     canvas.add(footer);
 
@@ -990,14 +1095,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         getFooterHeight());
   }
 
-  protected void renderRangeSelector(HasWidgets panel) {
+  protected void renderRangeSelector(HasWidgets panel, Collection<? extends ChartItem> chartItems) {
     Flow selector = new Flow();
     selector.addStyleName(STYLE_SELECTOR_PANEL);
 
     StyleUtils.setLeft(selector, getChartLeft() - getSliderWidth());
     StyleUtils.setWidth(selector, getChartWidth() + getSliderWidth() * 2);
 
-    renderSelector(selector, getChartItems());
+    renderSelector(selector, chartItems);
     panel.add(selector);
   }
 
@@ -1196,6 +1301,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     initData(rowSet);
 
+    updateFilterData(initFilter());
+
     return true;
   }
 
@@ -1252,9 +1359,27 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void setStartSliderLabel(Widget startSliderLabel) {
     this.startSliderLabel = startSliderLabel;
   }
-
+  
   protected void setVisibleRange(Range<JustDate> visibleRange) {
     this.visibleRange = visibleRange;
+  }
+
+  protected void updateFilteredIndexes(List<Integer> indexes) {
+    if (!BeeUtils.sameElements(indexes, filteredIndexes)) {
+      filteredIndexes.clear();
+      filteredIndexes.addAll(indexes);
+      
+      updateMaxRange();
+      render(true);
+    }
+  }
+
+  protected void updateMaxRange() {
+    if (isFiltered()) {
+      setMaxRange(ChartHelper.getSpan(getChartItems()));
+    } else {
+      setMaxRange(ChartHelper.getSpan(getChartItems(), TimeUtils.today(), TimeUtils.today(1)));
+    }
   }
 
   protected boolean updateSetting(String colName, int value) {
@@ -1396,6 +1521,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return renderPending;
   }
 
+  private void refreshFilterInfo() {
+    List<String> selection = Lists.newArrayList();
+    for (ChartData data : filterData) {
+      Collection<String> selectedNames = data.getSelectedNames();
+      if (!selectedNames.isEmpty() && selectedNames.size() < data.size()) {
+        selection.addAll(selectedNames);
+      }
+    }
+    
+    if (selection.isEmpty()) {
+      filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
+      removeFilter.setVisible(false);
+    } else {
+      filterLabel.getElement().setInnerText(BeeUtils.join(BeeConst.STRING_COMMA, selection));
+      removeFilter.setVisible(true);
+    }
+  }
+
   private void restoreColors(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (arr != null && arr.length > 0) {
@@ -1429,11 +1572,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setScrollAreaId(String scrollAreaId) {
     this.scrollAreaId = scrollAreaId;
   }
-
+  
   private void setSettings(BeeRowSet settings) {
     this.settings = settings;
   }
-
+  
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
@@ -1447,5 +1590,36 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         render(false);
       }
     });
+  }
+
+  private void updateFilterData(List<ChartData> newData) {
+    if (BeeUtils.isEmpty(newData)) {
+      filterData.clear();
+
+    } else if (filterData.isEmpty()) {
+      filterData.addAll(newData);
+
+    } else {
+      for (ChartData ocd : filterData) {
+        Collection<String> selectedNames = ocd.getSelectedNames();
+        if (selectedNames.isEmpty()) {
+          break;
+        }
+
+        for (ChartData ncd : newData) {
+          if (ncd.getType().equals(ocd.getType())) {
+            if (!ncd.isEmpty()) {
+              for (String name : selectedNames) {
+                ncd.setSelected(name, true);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      filterData.clear();
+      filterData.addAll(newData);
+    }
   }
 }

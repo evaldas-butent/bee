@@ -50,7 +50,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     ALL("Visi"),
     CLEAR("Išvalyti"),
     COMMIT("Filtruoti"),
-    CANCEL("Atsisikyti");
+    CANCEL("Atsisakyti");
 
     private final String caption;
 

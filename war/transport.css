@@ -319,3 +319,66 @@
   font-weight: bold;
   padding-right: 3px;
 }
+
+.bee-tr-chart-filterLabel {
+  color: #00a;
+  padding-right: 10px;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bee-tr-chart-filter-container {
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  -webkit-align-items: center;
+}
+
+.bee-tr-chart-filter-dataWrapper {
+  display: -webkit-flex;
+  -webkit-flex-wrap: wrap;
+  max-width: 600px;  
+}
+
+.bee-tr-chart-filter-panel {
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  -webkit-align-items: center;
+  margin: 3px 10px;
+}
+
+.bee-tr-chart-filter-caption {
+  padding-bottom: 3px;
+  font-weight: bold; 
+}
+.bee-tr-chart-filter-caption:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+
+.bee-tr-chart-filter-tableWrapper {
+  overflow: auto;
+  max-height: 200px;
+}
+.bee-tr-chart-filter-table {
+  background-color: white;
+  border-collapse: collapse;
+  cursor: pointer;
+}
+
+.bee-tr-chart-filter-table tr:hover {
+  background-color: #eee;
+}
+.bee-tr-chart-filter-selected {
+  background-image: -webkit-linear-gradient(top, #4D90FE, #357AE8);
+  color: white;
+}
+
+.bee-tr-chart-filter-commandGroup {
+  margin-top: 1ex;
+}
+.bee-tr-chart-filter-commandFilter {
+  margin-left: 2em;
+}

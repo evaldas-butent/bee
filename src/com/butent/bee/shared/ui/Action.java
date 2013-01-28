@@ -23,6 +23,7 @@ public enum Action implements BeeSerializable, HasCaption {
   PRINT("spausdinti", "print"),
   REFRESH("atnaujinti", "refresh"),
   SAVE("išsaugoti", "save"),
+  FILTER("filtras", "filter"),
   REMOVE_FILTER("išvalyti filtrą", "removeFilter");
   
   public static final Set<Action> NO_ACTIONS = Sets.newHashSet(); 

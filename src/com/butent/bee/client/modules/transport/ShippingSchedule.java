@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
@@ -26,6 +27,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -35,6 +37,7 @@ import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.transport.ChartData.Type;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
@@ -339,13 +342,48 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   @Override
+  protected boolean filter(DialogBox dialog) {
+    Predicate<Freight> predicate = getPredicate();
+    
+    List<Integer> match = Lists.newArrayList();
+    if (predicate != null) {
+      for (int i = 0; i < items.size(); i++) {
+        if (predicate.apply(items.get(i))) {
+          match.add(i);
+        }
+      }
+      
+      if (match.isEmpty()) {
+        return false;
+      }
+      if (match.size() >= items.size()) {
+        match.clear();
+      }
+    }
+    
+    dialog.close();
+    
+    updateFilteredIndexes(match);
+    return true;
+  }
+
+  @Override
   protected String getBarHeightColumnName() {
     return COL_SS_BAR_HEIGHT;
   }
 
   @Override
   protected Collection<? extends ChartItem> getChartItems() {
-    return items;
+    if (isFiltered()) {
+      List<Freight> result = Lists.newArrayList();
+      for (int index : getFilteredIndexes()) {
+        result.add(items.get(index));
+      }
+      return result;
+      
+    } else {
+      return items;
+    }
   }
 
   @Override
@@ -355,7 +393,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
   }
 
   @Override
@@ -434,6 +472,95 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
         services.put(lastVehicle, Lists.newArrayList(vs));
       }
     }
+  }
+  
+  @Override
+  protected List<ChartData> initFilter() {
+    if (items.isEmpty()) {
+      return super.initFilter();
+    }
+    
+    ChartData vehicleData = new ChartData(Type.VEHICLE);
+    ChartData trailerData = new ChartData(Type.TRAILER);
+    ChartData driverData = new ChartData(Type.DRIVER);
+
+    ChartData customerData = new ChartData(Type.CUSTOMER);
+    ChartData orderData = new ChartData(Type.ORDER);
+
+    ChartData loadData = new ChartData(Type.LOADING);
+    ChartData unloadData = new ChartData(Type.UNLOADING);
+    ChartData cargoData = new ChartData(Type.CARGO);
+    
+    for (Freight item : items) {
+      if (!BeeUtils.isEmpty(item.vehicleNumber)) {
+        vehicleData.add(item.vehicleNumber, item.vehicleId);
+      }
+
+      if (!BeeUtils.isEmpty(item.trailerNumber)) {
+        trailerData.add(item.trailerNumber, item.trailerId);
+      }
+      
+      if (item.tripId != null) {
+        String drv = drivers.get(item.tripId);
+        if (!BeeUtils.isEmpty(drv)) {
+          driverData.add(drv);
+        }
+      }
+      
+      if (!BeeUtils.isEmpty(item.customerName)) {
+        customerData.add(item.customerName);
+      }
+      if (!BeeUtils.isEmpty(item.orderNo)) {
+        orderData.add(item.orderNo);
+      }
+
+      String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+      if (!BeeUtils.isEmpty(loading)) {
+        loadData.add(loading);
+      }
+
+      String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+          item.unloadingTerminal);
+      if (!BeeUtils.isEmpty(unloading)) {
+        unloadData.add(unloading);
+      }
+      
+      if (!BeeUtils.isEmpty(item.cargoDescription)) {
+        cargoData.add(item.cargoDescription);
+      }
+    }
+    
+    List<ChartData> result = Lists.newArrayList();
+
+    if (!vehicleData.isEmpty()) {
+      result.add(vehicleData);
+    }
+    if (!trailerData.isEmpty()) {
+      result.add(trailerData);
+    }
+    if (!driverData.isEmpty()) {
+      result.add(driverData);
+    }
+    
+    if (!customerData.isEmpty()) {
+      result.add(customerData);
+    }
+    if (!orderData.isEmpty()) {
+      result.add(orderData);
+    }
+
+    if (!loadData.isEmpty()) {
+      result.add(loadData);
+    }
+    if (!unloadData.isEmpty()) {
+      result.add(unloadData);
+    }
+
+    if (!cargoData.isEmpty()) {
+      result.add(cargoData);
+    }
+    
+    return result;
   }
 
   @Override
@@ -927,7 +1054,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     Long lastId = null;
     List<Freight> rowItems = Lists.newArrayList();
 
-    for (Freight item : items) {
+    for (int i = 0; i < items.size(); i++) {
+      if (isFiltered() && !getFilteredIndexes().contains(i)) {
+        continue;
+      }
+      Freight item = items.get(i);
+
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
         Long id = separateTrips() ? item.tripId : item.vehicleId;
@@ -1093,6 +1225,118 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     return null;
   }
 
+  private Predicate<Freight> getPredicate() {
+    List<Predicate<Freight>> predicates = Lists.newArrayList();
+
+    for (ChartData data : getFilterData()) {
+      if (data.size() <= 1) {
+        continue;
+      }
+      
+      final Collection<String> selectedNames = data.getSelectedNames();
+      if (selectedNames.isEmpty() || selectedNames.size() >= data.size()) {
+        continue;
+      }
+      
+      Predicate<Freight> predicate;
+      switch (data.getType()) {
+        case VEHICLE:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(input.vehicleNumber);
+            }
+          };
+          break;
+
+        case TRAILER:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(input.trailerNumber);
+            }
+          };
+          break;
+
+        case DRIVER:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              if (input.tripId == null) {
+                return false;
+              } else {
+                return selectedNames.contains(drivers.get(input.tripId));
+              }
+            }
+          };
+          break;
+          
+        case CUSTOMER:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(input.customerName);
+            }
+          };
+          break;
+
+        case ORDER:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(input.orderNo);
+            }
+          };
+          break;
+          
+        case LOADING:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(getPlaceLabel(input.loadingCountry, input.loadingPlace,
+                  input.loadingTerminal));
+            }
+          };
+          break;
+
+        case UNLOADING:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(getPlaceLabel(input.unloadingCountry,
+                  input.unloadingPlace, input.unloadingTerminal));
+            }
+          };
+          break;
+          
+        case CARGO:
+          predicate = new Predicate<Freight>() {
+            @Override
+            public boolean apply(Freight input) {
+              return selectedNames.contains(input.cargoDescription);
+            }
+          };
+          break;
+          
+        default:
+          Assert.untouchable();
+          predicate = null;
+      }
+      
+      if (predicate != null) {
+        predicates.add(predicate);
+      }
+    }
+
+    if (predicates.isEmpty()) {
+      return null;
+    } else if (predicates.size() == 1) {
+      return predicates.get(0);
+    } else {
+      return Predicates.and(predicates);
+    }
+  }
+
   private int getTripWidth() {
     return tripWidth;
   }
@@ -1224,11 +1468,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   private void setSeparateTrips(boolean separateTrips) {
     this.separateTrips = separateTrips;
   }
-
+  
   private void setTripWidth(int tripWidth) {
     this.tripWidth = tripWidth;
   }
-
+  
   private void setVehicleWidth(int vehicleWidth) {
     this.vehicleWidth = vehicleWidth;
   }
