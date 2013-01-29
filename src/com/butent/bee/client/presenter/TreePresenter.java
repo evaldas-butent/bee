@@ -72,7 +72,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(TreePresenter.class);
-  
+
   private final TreeView treeView;
   private final String source;
   private final String parentName;
@@ -115,7 +115,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
   @Override
   public String getCaption() {
-    return null;
+    return treeView.getCaption();
   }
 
   public List<BeeColumn> getDataColumns() {
@@ -126,7 +126,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   public HeaderView getHeader() {
     return null;
   }
-  
+
   @Override
   public View getMainView() {
     return getView();
@@ -332,19 +332,20 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
-      Global.confirm(null, Icon.WARNING, Lists.newArrayList(message), new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          Queries.deleteRow(source, data.getId(), data.getVersion(),
-              new IntCallback() {
-                @Override
-                public void onSuccess(Integer result) {
-                  getView().removeItem(data);
-                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(source, data.getId()));
-                }
-              });
-        }
-      });
+      Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
+          new ConfirmationCallback() {
+            @Override
+            public void onConfirm() {
+              Queries.deleteRow(source, data.getId(), data.getVersion(),
+                  new IntCallback() {
+                    @Override
+                    public void onSuccess(Integer result) {
+                      getView().removeItem(data);
+                      BeeKeeper.getBus().fireEvent(new RowDeleteEvent(source, data.getId()));
+                    }
+                  });
+            }
+          });
     }
   }
 

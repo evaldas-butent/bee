@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
@@ -30,7 +31,6 @@ import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.State;
@@ -231,15 +231,16 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            Global.getMsgBoxen().confirm(null, Icon.ALARM, Lists.newArrayList(delete.getTitle(),
-                subFolder.isConnected()
-                    ? "(Aplanko turinys bus pašalintas ir iš pašto serverio!)" : null),
+            Global.confirmDelete(Settings.getAppName(), Icon.ALARM,
+                Lists.newArrayList(delete.getTitle(),
+                    subFolder.isConnected()
+                        ? "(Aplanko turinys bus pašalintas ir iš pašto serverio!)" : null),
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {
                     MailKeeper.removeFolder(account, folderId);
                   }
-                }, StyleUtils.NAME_SUPER_SCARY, null);
+                });
           }
         });
         row.add(delete);

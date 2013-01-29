@@ -24,6 +24,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
@@ -408,13 +409,13 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.confirm(Settings.getAppName(), Icon.QUESTION,
+        Global.getMsgBoxen().confirm(Settings.getAppName(), Icon.QUESTION,
             Lists.newArrayList(Global.CONSTANTS.logout()), new ConfirmationCallback() {
               @Override
               public void onConfirm() {
                 Bee.exit();
               }
-            });
+            }, null, StyleUtils.FontSize.MEDIUM.getClassName(), null);
       }
     });
     exit.addStyleName("bee-UserExit");

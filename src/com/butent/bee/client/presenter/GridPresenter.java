@@ -196,17 +196,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         ? getGridInterceptor().getDeleteRowMessage(row)
         : AbstractGridInterceptor.DELETE_ROW_MESSAGE;
 
-        GridInterceptor.DeleteMode mode = BeeUtils.isEmpty(messages) 
+    GridInterceptor.DeleteMode mode = BeeUtils.isEmpty(messages)
         ? GridInterceptor.DeleteMode.SILENT : GridInterceptor.DeleteMode.DEFAULT;
 
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
 
-    if (mode == GridInterceptor.DeleteMode.SILENT 
+    if (mode == GridInterceptor.DeleteMode.SILENT
         || mode == GridInterceptor.DeleteMode.DEFAULT && !confirm) {
       deleteCallback.onConfirm();
     } else {
-      Global.getMsgBoxen().confirm(null, Icon.WARNING, messages, deleteCallback, null,
-          StyleUtils.NAME_SCARY);
+      Global.confirmDelete(getCaption(), Icon.WARNING, messages, deleteCallback);
     }
   }
 
@@ -300,8 +299,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           if (row != null && getGridView().isRowEditable(row, true)) {
             Collection<RowInfo> selectedRows = getGridView().getSelectedRows();
 
-            GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows); 
-            
+            GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
+
             if (GridInterceptor.DeleteMode.SINGLE.equals(mode)) {
               deleteRow(row, true);
             } else if (GridInterceptor.DeleteMode.MULTI.equals(mode)) {
@@ -325,13 +324,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Printer.print(gridContainer);
         }
         break;
-        
+
       case REMOVE_FILTER:
         Collection<SearchView> searchers = getSearchers();
         for (SearchView searcher : searchers) {
           searcher.clearFilter();
         }
-        
+
         updateFilter(null);
         break;
 
@@ -374,8 +373,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     final String newValue = event.getNewValue();
 
     final CellSource source = CellSource.forColumn(event.getColumn(),
-        getDataProvider().getColumnIndex(columnId));          
-    
+        getDataProvider().getColumnIndex(columnId));
+
     if (BeeUtils.isEmpty(getViewName())) {
       getDataProvider().onCellUpdate(new CellUpdateEvent(getViewName(), rowId, version,
           source, newValue));
@@ -512,8 +511,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         public void onFilterChange(Procedure<Boolean> callback) {
           GridPresenter.this.updateFilter(callback);
         }
-      }; 
-      
+      };
+
       for (SearchView search : searchers) {
         search.setFilterHandler(handler);
       }
@@ -606,7 +605,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
       options.add(BeeUtils.notEmpty(message.getB(), defMsg.getB()));
     }
-    
+
     if (options.isEmpty()) {
       DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
       deleteCallback.onConfirm();
@@ -614,26 +613,28 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       options.add(Global.CONSTANTS.cancel());
 
-      Global.getMsgBoxen().display("Išmesti", Icon.ALARM, null, options, 2, new ChoiceCallback() {
-        @Override
-        public void onSuccess(int value) {
-          if (value == 0) {
-            deleteRow(activeRow, false);
+      Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
+          options, 2, new ChoiceCallback() {
+            @Override
+            public void onSuccess(int value) {
+              if (value == 0) {
+                deleteRow(activeRow, false);
 
-          } else if (value == 1) {
-            DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-            deleteCallback.onConfirm();
-          }
-        }
-      }, BeeConst.UNDEF, StyleUtils.NAME_SCARY, null, null);
+              } else if (value == 1) {
+                DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+                deleteCallback.onConfirm();
+              }
+            }
+          }, BeeConst.UNDEF, null, StyleUtils.FontSize.XX_LARGE.getClassName(),
+          StyleUtils.FontSize.MEDIUM.getClassName(), null);
     }
   }
 
   private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {
-    GridInterceptor.DeleteMode mode = 
+    GridInterceptor.DeleteMode mode =
         selected.isEmpty() || selected.size() == 1 && getGridView().isRowSelected(row.getId())
-        ? GridInterceptor.DeleteMode.SINGLE : GridInterceptor.DeleteMode.MULTI;
-    
+            ? GridInterceptor.DeleteMode.SINGLE : GridInterceptor.DeleteMode.MULTI;
+
     if (getGridInterceptor() == null) {
       return mode;
     } else {
@@ -644,7 +645,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private FooterView getFooter() {
     return gridContainer.getFooter();
   }
-  
+
   private GridInterceptor getGridInterceptor() {
     return getGridView().getGridInterceptor();
   }
@@ -668,14 +669,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void showInfo(String... messages) {
     getGridView().notifyInfo(messages);
   }
-  
+
   private void updateFilter(Procedure<Boolean> callback) {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
 
     if (!Objects.equal(filter, getLastFilter())) {
       setLastFilter(filter);
       getDataProvider().onFilterChange(filter, true, callback);
-      
+
       FooterView footer = getFooter();
       if (footer != null) {
         footer.showFilterDelete(filter != null);

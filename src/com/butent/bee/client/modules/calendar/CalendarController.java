@@ -30,7 +30,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -510,7 +509,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     String message = BeeUtils.joinWords("Išmesti", getCaption(row), "?");
 
-    Global.getMsgBoxen().confirm(null, Icon.WARNING, Lists.newArrayList(message),
+    Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -528,7 +527,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
               postUpdate();
             }
           }
-        }, null, StyleUtils.NAME_SCARY);
+        });
   }
 
   private Long getActiveRowId() {

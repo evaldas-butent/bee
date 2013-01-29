@@ -50,12 +50,15 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private boolean enabled = true;
   private final Tree tree;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
+
+  private final String caption;
   private final boolean hasActions;
 
   public TreeContainer(String caption, boolean hideActions) {
     super();
-
     addStyleName(STYLE_NAME);
+    
+    this.caption = caption;
     this.hasActions = !hideActions;
 
     if (hasActions) {
@@ -125,6 +128,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<IsRow> handler) {
     return addHandler(handler, SelectionEvent.getType());
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   @Override

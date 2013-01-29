@@ -612,14 +612,6 @@ body, select {
   outline-offset: -1px;
 }
 
-.bee-afraid {
-  font-size: large;
-}
-
-.bee-very-afraid {
-  font-size: xx-large;
-}
-
 .bee-error {
   color: red;
 }
@@ -1798,3 +1790,40 @@ body, select {
   padding-top: 3px;
   padding-left: 5px;
 }
+
+.bee-font-xx-small {
+  font-size: xx-small;
+}
+.bee-font-x-small {
+  font-size: x-small;
+}
+.bee-font-smaller {
+  font-size: smaller;
+}
+.bee-font-small {
+  font-size: small;
+}
+.bee-font-medium {
+  font-size: medium;
+}
+.bee-font-large {
+  font-size: large;
+}
+.bee-font-larger {
+  font-size: larger;
+}
+.bee-font-x-large {
+  font-size: x-large;
+}
+.bee-font-xx-large {
+  font-size: xx-large;
+}
+
+.bee-font-bold {
+  font-weight: bolder;
+}
+.bee-font-italic {
+  font-style: italic;
+}
+
+

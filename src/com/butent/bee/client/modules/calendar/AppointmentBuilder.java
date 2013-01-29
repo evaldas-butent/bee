@@ -53,7 +53,6 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -246,7 +245,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
         return;
       }
 
-      Global.getMsgBoxen().confirm(null, Icon.WARNING,
+      Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
           Lists.newArrayList(Global.CONSTANTS.deleteAppointment()), new ConfirmationCallback() {
             @Override
             public void onConfirm() {
@@ -264,7 +263,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
                 }
               });
             }
-          }, null, StyleUtils.NAME_SCARY);
+          });
     }
 
     @Override

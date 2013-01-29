@@ -22,6 +22,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -131,7 +132,13 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    MSG_BOXEN.confirm(caption, icon, messages, callback, null, null);
+    MSG_BOXEN.confirm(caption, icon, messages, callback, null, null, null);
+  }
+
+  public static void confirmDelete(String caption, Icon icon, List<String> messages,
+      ConfirmationCallback callback) {
+    MSG_BOXEN.confirm(caption, icon, messages, callback, null,
+        StyleUtils.FontSize.LARGE.getClassName(), StyleUtils.FontSize.MEDIUM.getClassName());
   }
   
   public static void createVar(String name, String caption) {
@@ -159,7 +166,7 @@ public class Global implements Module {
 
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
-    MSG_BOXEN.decide(caption, messages, callback, defaultValue, null, null);
+    MSG_BOXEN.decide(caption, messages, callback, defaultValue, null, null, null);
   }
   
   public static CacheManager getCache() {
@@ -318,7 +325,7 @@ public class Global implements Module {
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     MSG_BOXEN.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
-        null, null, null);
+        null, null, null, null);
   }
   
   public static boolean nativeConfirm(String... lines) {

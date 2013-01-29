@@ -55,50 +55,63 @@ public class StyleUtils {
 
   public enum FontSize implements HasCssName {
     XX_SMALL {
+      @Override
       public String getCssName() {
         return FONT_SIZE_XX_SMALL;
       }
     },
     X_SMALL {
+      @Override
       public String getCssName() {
         return FONT_SIZE_X_SMALL;
       }
     },
     SMALL {
+      @Override
       public String getCssName() {
         return FONT_SIZE_SMALL;
       }
     },
     MEDIUM {
+      @Override
       public String getCssName() {
         return FONT_SIZE_MEDIUM;
       }
     },
     LARGE {
+      @Override
       public String getCssName() {
         return FONT_SIZE_LARGE;
       }
     },
     X_LARGE {
+      @Override
       public String getCssName() {
         return FONT_SIZE_X_LARGE;
       }
     },
     XX_LARGE {
+      @Override
       public String getCssName() {
         return FONT_SIZE_XX_LARGE;
       }
     },
 
     SMALLER {
+      @Override
       public String getCssName() {
         return FONT_SIZE_SMALLER;
       }
     },
     LARGER {
+      @Override
       public String getCssName() {
         return FONT_SIZE_LARGER;
       }
+    };
+    
+    public String getClassName() {
+      return "bee-font-" + getCssName();
     }
   }
 
@@ -108,11 +121,13 @@ public class StyleUtils {
 
   public enum FontVariant implements HasCssName {
     NORMAL {
+      @Override
       public String getCssName() {
         return FONT_VARIANT_NORMAL;
       }
     },
     SMALL_CAPS {
+      @Override
       public String getCssName() {
         return FONT_VARIANT_SMALL_CAPS;
       }
@@ -121,46 +136,55 @@ public class StyleUtils {
 
   public enum OutlineStyle implements HasCssName {
     NONE {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_NONE;
       }
     },
     DOTTED {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_DOTTED;
       }
     },
     DASHED {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_DASHED;
       }
     },
     SOLID {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_SOLID;
       }
     },
     DOUBLE {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_DOUBLE;
       }
     },
     GROOVE {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_GROOVE;
       }
     },
     RIDGE {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_RIDGE;
       }
     },
     INSET {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_INSET;
       }
     },
     OUTSET {
+      @Override
       public String getCssName() {
         return BORDER_STYLE_OUTSET;
       }
@@ -312,14 +336,14 @@ public class StyleUtils {
   public static final String NAME_FLEXIBLE = "flexible";
   public static final String NAME_OCCUPY = "occupy";
 
-  public static final String NAME_SCARY = "bee-afraid";
-  public static final String NAME_SUPER_SCARY = "bee-very-afraid";
-
   public static final String NAME_ERROR = "bee-error";
   public static final String NAME_REQUIRED = "bee-required";
   public static final String NAME_HAS_DEFAULTS = "bee-hasDefaults";
   public static final String NAME_RESIZABLE = "bee-resizable";
 
+  public static final String NAME_BOLD = "bee-font-bold";
+  public static final String NAME_ITALIC = "bee-font-italic";
+  
   public static final String FONT_SIZE_XX_SMALL = "xx-small";
   public static final String FONT_SIZE_X_SMALL = "x-small";
   public static final String FONT_SIZE_SMALL = "small";
