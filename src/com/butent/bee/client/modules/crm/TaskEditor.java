@@ -853,8 +853,11 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doExtend() {
     final TaskDialog dialog = new TaskDialog("Užduoties termino keitimas");
+    
+    final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
-    final String startId = dialog.addDateTime("Pradžios data:", false, getDateTime(COL_START_TIME));
+    final String startId = isScheduled 
+        ? dialog.addDateTime("Pradžios data:", false, getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime("Pabaigos data:", true, null);
 
     final String cid = dialog.addComment(false);
@@ -863,16 +866,16 @@ class TaskEditor extends AbstractFormInterceptor {
       @Override
       public void execute() {
 
-        DateTime newStart = dialog.getDateTime(startId);
+        DateTime oldStart = getDateTime(COL_START_TIME);
+        DateTime oldEnd = getDateTime(COL_FINISH_TIME);
+        
+        DateTime newStart = (startId == null) ? oldStart : dialog.getDateTime(startId);
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
           showError("Įveskite pabaigos datą");
           return;
         }
-
-        DateTime oldStart = getDateTime(COL_START_TIME);
-        DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
         if (Objects.equal(newStart, oldStart) && Objects.equal(newEnd, oldEnd)) {
           showError("Terminas nepakeistas");

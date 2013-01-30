@@ -8,6 +8,6 @@
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/DocumentFields.widget.xml" />
     
-    <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin: 2ex 10px;" />
+    <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin-top: 1ex;" />
   </FlowPanel>
 </f:Form>  

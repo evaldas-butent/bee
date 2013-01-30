@@ -150,6 +150,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private static final BeeLogger logger = LogUtils.getLogger(CellGridImpl.class);
 
+  private static final String STYLE_NAME = "bee-GridView";
+  
   private final String gridName;
   private final DataInfo dataInfo;
 
@@ -205,6 +207,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   public CellGridImpl(String gridName, String viewName, String relColumn) {
     super();
+    addStyleName(STYLE_NAME);
+
     this.gridName = gridName;
     this.dataInfo = BeeUtils.isEmpty(viewName) ? null : Data.getDataInfo(viewName);
     this.relColumn = relColumn;

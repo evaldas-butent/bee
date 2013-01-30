@@ -33,6 +33,6 @@
 
     <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 180px;" />
     <InputArea source="Description" visibleLines="3"
-       style="width: 500px; position: absolute; left: 120px; top: 180px;" />
+       style="width: 500px; position: absolute; left: 122px; top: 180px;" />
   </FlowPanel>
 </f:Form>  

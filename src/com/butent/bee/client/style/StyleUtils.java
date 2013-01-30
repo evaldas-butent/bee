@@ -329,7 +329,6 @@ public class StyleUtils {
 
   public static final String NAME_UNSELECTABLE = "unselectable";
 
-  public static final String NAME_CONTENT_BOX = "contentBox";
   public static final String NAME_FLEX_BOX_HORIZONTAL = "flexBox-horizontal";
   public static final String NAME_FLEX_BOX_VERTICAL = "flexBox-vertical";
   public static final String NAME_FLEX_BOX_CENTER = "flexBox-center";

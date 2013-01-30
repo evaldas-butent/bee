@@ -14,7 +14,7 @@
   <!ENTITY inp4 "&inline;">
 
   <!ENTITY dateStyle "&inline; width: 90px;">
-  <!ENTITY timeStyle "&inline; width: 50px; margin-left: 6px;">
+  <!ENTITY timeStyle "&inline; width: 50px; margin-left: 9px;">
   <!ENTITY timeStep "30">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"

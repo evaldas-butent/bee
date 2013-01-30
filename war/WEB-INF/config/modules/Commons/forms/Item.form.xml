@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY row "display: -webkit-flex;">
+  <!ENTITY separator "<br/>">
+  <!ENTITY lbl "width: 100px; margin-right: 1em;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
   name="Item" width="700" height="300"
   >
-  <Table style="border-spacing: 10px;">
-    <row>
-      <Label html="Pavadinimas:" class="bee-required" />
-      <cell colSpan="3">
-        <InputText source="Name" style="width: 500px;" />
-      </cell>
-    </row>
+  <FlowPanel style="margin: 2ex 1em 0 1em;">
+    <FlowPanel style="&row;">
+      <Label html="Pavadinimas:" class="bee-required" style="&lbl;" />
+      <InputText source="Name" style="width: 500px;" />
+    </FlowPanel>
+    &separator;
 
-    <row>
-      <Label html="Artikulas:" />
+    <FlowPanel style="&row;">
+      <Label html="Artikulas:" style="&lbl;" />
       <InputText source="Article" />
-      <Label html="Mato v.:" horizontalAlignment="right" class="bee-required" />
+      <Label html="Mato vien.:" horizontalAlignment="right" class="bee-required" style="&lbl;" />
       <DataSelector source="UnitName" style="width: 100px;" />
-    </row>
+    </FlowPanel>
+    &separator;
 
-    <row>
-      <Label html="Barkodas:" />
+    <FlowPanel style="&row;">
+      <Label html="Barkodas:" style="&lbl;" />
       <InputText source="Barcode" />
-      <Label html="Pard. kaina.:" horizontalAlignment="right" />
-      <HorizontalPanel>
-        <InputCurrency source="Price" />
-        <DataSelector renderColumns="CurrencyName" style="width: 80px;" />
-      </HorizontalPanel>
-    </row>
+      <Label html="Pard. kaina.:" horizontalAlignment="right" style="&lbl;" />
+      <InputCurrency source="Price" style="width: 100px;" />
+      <DataSelector renderColumns="CurrencyName" style="width: 60px; margin-left: 1em;" />
+    </FlowPanel>
+    &separator;
 
-    <row>
-      <Label html="Kategorijos:" />
-      <cell colSpan="3">
-        <MultiSelector viewName="CategoryTree" property="CategList"
-          renderColumns="ParentName Name" style="width: 500px;" />
-      </cell>
-    </row>
-  </Table>
+    <FlowPanel style="&row;">
+      <Label html="Kategorijos:" style="&lbl;" />
+      <MultiSelector viewName="CategoryTree" property="CategList" renderColumns="ParentName Name"
+        style="width: 500px;" />
+    </FlowPanel>
+  </FlowPanel>
 </f:Form>  

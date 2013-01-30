@@ -25,7 +25,7 @@
       <FlowPanel style="&section;">
         <Label html="Būsena:" style="&lbl1;" />
         <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
-        <Label html="Prioritetas:" style="&inline; padding-top: 2px; margin-left: 20px;" />
+        <Label html="Prioritetas:" style="&inline; padding-top: 2px; margin-left: 16px;" />
         <Radio source="Priority" itemKey="TaskPriority"
            style="&inline; margin-left: 10px: font-size: 12px;" disablable="true" />
       </FlowPanel>
@@ -70,9 +70,10 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Priminimas:" style="&lbl1;" />
+        <FlowPanel name="TaskExtensions" style="&inp2; margin: 1px 1px 1px 101px;" />
+        <Label html="Priminimas:" style="&lbl3;" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" disablable="true" />
+          style="&inp4;" disablable="true" />
       </FlowPanel>
 
       &separator;

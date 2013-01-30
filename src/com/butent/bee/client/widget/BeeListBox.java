@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.ListBox;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -46,8 +45,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   private boolean nullable = true;
 
   private boolean editing = false;
-
-  private boolean editorInitialized = false;
 
   private boolean valueNumeric = false;
   private int valueStartIndex = 0;
@@ -379,11 +376,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
-    if (!isEditorInitialized()) {
-      initEditor();
-      setEditorInitialized(true);
-    }
-
     if (charCode > BeeConst.CHAR_SPACE) {
       for (int i = 0; i < getItemCount(); i++) {
         if (BeeUtils.startsWith(getValue(i), charCode)) {
@@ -451,10 +443,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
   }
 
-  private void initEditor() {
-    getElement().addClassName(StyleUtils.NAME_CONTENT_BOX);
-  }
-
   private void initVar(Variable var) {
     addItems(var.getItems());
 
@@ -468,15 +456,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return changePending;
   }
 
-  private boolean isEditorInitialized() {
-    return editorInitialized;
-  }
-
   private void setChangePending(boolean changePending) {
     this.changePending = changePending;
-  }
-
-  private void setEditorInitialized(boolean editorInitialized) {
-    this.editorInitialized = editorInitialized;
   }
 }

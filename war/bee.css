@@ -1,4 +1,4 @@
-body, select {
+body, select, textarea {
   font-family: Arial, sans-serif;
   font-size: small;
 }
@@ -13,10 +13,6 @@ body, select {
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
-}
-
-.contentBox {
-  box-sizing: content-box;
 }
 
 .flexBox-horizontal {
@@ -610,6 +606,7 @@ body, select {
   color: darkblue;
   outline: red solid 2px;
   outline-offset: -1px;
+  box-sizing: content-box !important;
 }
 
 .bee-error {
@@ -834,7 +831,8 @@ body, select {
 
 .bee-DataSelector-editableContainer {
   display: inline-block;
-  width: 149px;
+  width: 153px;
+  height: 22px;
   border: 1px solid #aaa;
   padding-left: 1px;
   padding-right: 1px;
@@ -1096,6 +1094,10 @@ body, select {
   color: #999;
 }
 
+.bee-TabbedPages-horizontal {
+  min-height: 100px;
+}
+
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
@@ -1106,7 +1108,6 @@ body, select {
   padding: 0 10px;
   cursor: pointer;
 }
-
 .bee-TabbedPages-tabSelected {
   background-color: #f2f2f2;
   border-bottom-color: #f2f2f2;
@@ -1205,7 +1206,8 @@ body, select {
 .bee-FavoritesEdit, .bee-FavoritesDelete {
   visibility: hidden;
 }
-.bee-FavoritesDisplay tr:hover .bee-FavoritesEdit, .bee-FavoritesDisplay tr:hover .bee-FavoritesDelete {
+.bee-FavoritesDisplay tr:hover .bee-FavoritesEdit,
+.bee-FavoritesDisplay tr:hover .bee-FavoritesDelete {
   visibility: visible;
 }
 
@@ -1255,6 +1257,7 @@ body, select {
 
 .bee-ChildGrid, .bee-GridPanel {
   position: relative;
+  min-height: 80px;
 }
 
 .bee-ChildGrid > .bee-GridContainer, .bee-GridPanel > .bee-GridContainer {
@@ -1443,6 +1446,7 @@ body, select {
 
 .bee-MultiSelector-container {
   width: 300px;
+  min-height: 22px;
   background-color: #fff;
   background-image: -webkit-linear-gradient(top, #eee 1%, #fff 15%);
   border: 1px solid #aaa;
@@ -1478,8 +1482,7 @@ body, select {
 }
 
 .bee-MultiSelector-input {
-  margin-left: 5px;
-  margin-top: 3px;
+  margin-left: 3px !important;
   background: transparent;
   border: none;
   outline: none;
@@ -1632,7 +1635,7 @@ body, select {
 .bee-GridContainer > .bee-FooterContainer {
   overflow: hidden;
 }
-.bee-GridContainer-scrollable .bee-CellGrid {
+.bee-GridContainer-scrollable > .bee-GridView > .bee-CellGrid {
   overflow-y: hidden;
 }
 
@@ -1826,4 +1829,8 @@ body, select {
   font-style: italic;
 }
 
-
+.bee-InputArea, .bee-TextBox, .bee-DataSelector-editableContainer, .bee-MultiSelector-container,
+.bee-ListBox {
+  box-sizing: border-box;
+  margin: 1px;
+}
