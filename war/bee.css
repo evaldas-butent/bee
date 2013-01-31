@@ -221,10 +221,6 @@ body, select, textarea {
   top: 0px;
 }
 
-.bee-RadioButton input:checked+label {
-  text-transform: uppercase;
-}
-
 .bee-RadioButton-vertical {
   display: block;
 }
@@ -1832,5 +1828,5 @@ body, select, textarea {
 .bee-InputArea, .bee-TextBox, .bee-DataSelector-editableContainer, .bee-MultiSelector-container,
 .bee-ListBox {
   box-sizing: border-box;
-  margin: 1px;
+  margin: 0;
 }

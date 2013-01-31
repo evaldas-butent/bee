@@ -20,10 +20,11 @@
             <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
           </TextLabel>
           <br/>  
+
           <InputText source="Summary" caption="Santrauka:"
-            style="width: 220px;" decorator="caption-top" />
+            style="width: 222px;" decorator="caption-top" />
           <InputArea source="Description" caption="Aprašymas:" visibleLines="5"
-            style="width: 220px;" decorator="caption-top" />
+            style="width: 222px;" decorator="caption-top" />
         </FlowPanel>
       </layer>
 
@@ -31,46 +32,55 @@
         <FlowPanel>
           <InputDate source="StartDate" caption="Planuojama pradžios data:"
             style="width: 80px;" d:size="180" d:unit="px" />
+          <div style="height: 2px;" />
           <InputDate source="EndDate" caption="Planuojama pabaigos data:"
             style="width: 80px;" d:size="180" d:unit="px" />
           <br/>  
 
           <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
+          <div style="height: 2px;" />
           <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
 
           <InputDateTime source="EffectiveStart" caption="Pradėta:" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
+          <div style="height: 2px;" />
           <InputDateTime source="EffectiveEnd" caption="Baigta:" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
+
           <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
             style="width: 120px;" d:size="180" d:unit="px" />
         </FlowPanel>
       </layer>
 
-      <layer top="0" bottom="0" width="240" right="0">
+      <layer top="0" bottom="0" width="260" right="0">
         <FlowPanel>
           <DataSelector source="AppointmentType" caption="Tipas:" 
-            style="width: 140px;" d:size="80" d:unit="px" />
+            style="width: 140px;" d:size="100" d:unit="px" />
+          <div style="height: 2px;" />
           <DataSelector source="ColorName" caption="Spalva:"
-            style="width: 140px;" d:size="80" d:unit="px" />
+            style="width: 140px;" d:size="100" d:unit="px" />
+          <div style="height: 2px;" />
           <DataSelector source="Style" caption="Stilius:"
-            style="width: 140px;" d:size="80" d:unit="px" />
+            style="width: 140px;" d:size="100" d:unit="px" />
+
           <br/>  
           <DataSelector source="Organizer" caption="Atsakingas darbuotojas:"
-            style="width: 220px;" decorator="caption-top">
+            style="width: 242px;" decorator="caption-top">
             <renderToken source="OrganizerFirstName" />
             <renderToken source="OrganizerLastName" />
             <renderToken source="OrganizerCompanyName" prefix=", " />
           </DataSelector>
+
           <br/>  
           <InputDateTime source="Created" caption="Registruotas:"
-            style="width: 140px;" d:size="80" d:unit="px" />
+            style="width: 140px;" d:size="100" d:unit="px" />
+          <div style="height: 2px;" />
           <DataSelector source="Creator" caption="Registravo:" editEnabled="true"
-            style="width: 140px;" d:size="80" d:unit="px"/>
+            style="width: 140px;" d:size="100" d:unit="px"/>
         </FlowPanel>
       </layer>
     </AbsolutePanel>

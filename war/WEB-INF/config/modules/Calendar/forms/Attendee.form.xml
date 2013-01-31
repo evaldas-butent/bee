@@ -24,7 +24,7 @@
     </DataSelector>   
 
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
-       style="position: absolute; left: 360px; top: 100px" />
+       style="position: absolute; left: 356px; top: 100px" />
 
     <DataSelector source="Color" renderColumns="ColorName" caption="Spalva:" style="width: 180px;"
        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 140px;" />

@@ -948,5 +948,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  
+  <xs:element name="div" type="widgetType" substitutionGroup="widget" />
 
 </xs:schema>

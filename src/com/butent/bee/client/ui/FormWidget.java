@@ -81,6 +81,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.Canvas;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -177,6 +178,7 @@ public enum FormWidget {
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
   DECORATOR("decorator", EnumSet.of(Type.IS_DECORATOR)),
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
+  DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
@@ -601,6 +603,10 @@ public enum FormWidget {
         if (BeeConst.isTrue(attributes.get(ATTR_OPEN))) {
           ((Disclosure) widget).setOpen(true);
         }
+        break;
+        
+      case DIV:
+        widget = new CustomDiv();
         break;
 
       case DOUBLE_LABEL:

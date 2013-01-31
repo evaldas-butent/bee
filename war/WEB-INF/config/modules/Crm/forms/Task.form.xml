@@ -6,11 +6,11 @@
   <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<br/>">
 
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 2px;">
-  <!ENTITY top1 "float: left; width: 100px; padding-top: 2px;">
+  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
+  <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
   <!ENTITY inp2 "&inline; width: 140px;">
-  <!ENTITY inp2x "&inline; width: 440px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 16px;">
+  <!ENTITY inp2x "&inline; width: 424px;">
+  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
   <!ENTITY inp4 "&inline; width: 140px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
@@ -25,9 +25,9 @@
       <FlowPanel style="&section;">
         <Label html="Būsena:" style="&lbl1;" />
         <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
-        <Label html="Prioritetas:" style="&inline; padding-top: 2px; margin-left: 16px;" />
+        <Label html="Prioritetas:" style="&inline; margin-left: 16px;" />
         <Radio source="Priority" itemKey="TaskPriority"
-           style="&inline; margin-left: 10px: font-size: 12px;" disablable="true" />
+          style="&inline; font-size: 12px; margin-left: 8px;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -70,7 +70,7 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <FlowPanel name="TaskExtensions" style="&inp2; margin: 1px 1px 1px 101px;" />
+        <FlowPanel name="TaskExtensions" style="&inp2; margin-left: 100px;" />
         <Label html="Priminimas:" style="&lbl3;" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp4;" disablable="true" />
@@ -84,7 +84,7 @@
 
       <FlowPanel style="&section;">
         <Label html="Aprašymas:" style="&top1;" />
-        <InputArea source="Description" style="width: 440px; height: 60px;" readOnly="true" />
+        <InputArea source="Description" style="width: 424px; height: 60px;" readOnly="true" />
       </FlowPanel>
 
       <FileGroup name="Files" />
@@ -126,7 +126,7 @@
       </FlowPanel>
 
       &separator;
-      <FlowPanel name="TaskDurations" style="overflow: auto; width: 540px;" />
+      <FlowPanel name="TaskDurations" style="overflow: auto; width: 524px;" />
     </FlowPanel>
 
     <FlowPanel name="TaskEvents" class="flexible bee-crm-taskEvent-container" 

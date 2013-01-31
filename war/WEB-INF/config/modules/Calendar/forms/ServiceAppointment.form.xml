@@ -100,7 +100,7 @@
       <InputText source="Summary" caption="Santrauka:" style="width: 300px;"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
       <InputArea source="Description" placeholder="Remonto aprašymas" visibleLines="5" 
-        style="&absolute; left: 360px; top: 30px; width: 380px;" />
+        style="&absolute; left: 360px; top: 30px; width: 382px;" />
 
       <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
         style="width: 80px;" d:size="188" d:unit="px"
