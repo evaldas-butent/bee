@@ -12,6 +12,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
@@ -278,7 +279,7 @@ class TaskEditor extends AbstractFormInterceptor {
       center();
       UiHelper.focus(getChild(focusId));
     }
-    
+
     private Widget getChild(String id) {
       return DomUtils.getChildQuietly(getContent(), id);
     }
@@ -340,6 +341,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
+
+  private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_APPOINTMENTS, PROP_TASKS);
@@ -853,10 +856,10 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doExtend() {
     final TaskDialog dialog = new TaskDialog("Užduoties termino keitimas");
-    
+
     final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
-    final String startId = isScheduled 
+    final String startId = isScheduled
         ? dialog.addDateTime("Pradžios data:", false, getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime("Pabaigos data:", true, null);
 
@@ -868,7 +871,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         DateTime oldStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
-        
+
         DateTime newStart = (startId == null) ? oldStart : dialog.getDateTime(startId);
         DateTime newEnd = dialog.getDateTime(endId);
 
@@ -907,6 +910,9 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
+        if (oldEnd != null && !Objects.equal(newEnd, oldEnd)) {
+          params.addDataItem(VAR_TASK_FINISH_TIME, oldEnd.getTime());
+        }
 
         sendRequest(params, TaskEvent.EXTEND);
         dialog.close();
@@ -1470,7 +1476,8 @@ class TaskEditor extends AbstractFormInterceptor {
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations);
     }
-
+    
+    showExtensions(form, rowSet);
     showDurations(form, durations);
 
     if (panel.getWidgetCount() > 1 && form.asWidget().isVisible()) {
@@ -1481,6 +1488,41 @@ class TaskEditor extends AbstractFormInterceptor {
           last.getElement().scrollIntoView();
         }
       });
+    }
+  }
+
+  private void showExtensions(FormView form, BeeRowSet rowSet) {
+    if (DataUtils.isEmpty(rowSet)) {
+      return;
+    }
+    int index = rowSet.getColumnIndex(COL_FINISH_TIME);
+    if (BeeConst.isUndef(index)) {
+      return;
+    }
+
+    Widget widget = form.getWidgetByName("TaskExtensions");
+    if (!(widget instanceof HasWidgets)) {
+      return;
+    }
+
+    HasWidgets panel = (HasWidgets) widget;
+    panel.clear();
+
+    List<DateTime> extensions = Lists.newArrayList();
+
+    for (BeeRow row : rowSet.getRows()) {
+      DateTime dt = row.getDateTime(index);
+      if (dt != null) {
+        extensions.add(dt);
+      }
+    }
+
+    if (!extensions.isEmpty()) {
+      for (int i = extensions.size() - 1; i >= 0; i--) {
+        BeeLabel label = new BeeLabel(extensions.get(i).toCompactString());
+        label.addStyleName(STYLE_EXTENSION);
+        panel.add(label);
+      }
     }
   }
 }

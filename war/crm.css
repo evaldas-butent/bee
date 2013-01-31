@@ -8,15 +8,18 @@
   padding: 2px 5px 2px;
 }
 
-.bee-crm-taskEvent-col-1, .bee-crm-taskEvent-col-2 {
+.bee-crm-taskEvent-col-1,
+.bee-crm-taskEvent-col-2 {
   margin-left: 1em;
 }
 
-.bee-crm-taskEvent-Event, .bee-crm-taskEvent-Duration {
+.bee-crm-taskEvent-Event,
+.bee-crm-taskEvent-Duration {
   font-weight: bolder;
 }
 
-.bee-crm-taskEvent-EventNote, .bee-crm-taskEvent-Comment {
+.bee-crm-taskEvent-EventNote,
+.bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
 }
 
@@ -42,7 +45,9 @@
   width: 120px;
 }
 
-.bee-crm-taskEdit-form .bee-disabled, .bee-crm-taskEdit-form .bee-disabled input, .bee-crm-taskEvent-container {
+.bee-crm-taskEdit-form .bee-disabled,
+.bee-crm-taskEdit-form .bee-disabled input,
+.bee-crm-taskEvent-container {
   background-color: #f3f3eb;
 }
 .bee-crm-taskEdit-form .bee-disabled {
@@ -82,11 +87,24 @@
 .bee-crm-taskDuration-caption {
   padding-right: 20px;
 }
-.bee-crm-taskDuration-valueCell, .bee-crm-taskDuration-rowTotalCell, .bee-crm-taskDuration-colTotalCell, .bee-crm-taskDuration-totalCell {
+.bee-crm-taskDuration-valueCell,
+.bee-crm-taskDuration-rowTotalCell,
+.bee-crm-taskDuration-colTotalCell,
+.bee-crm-taskDuration-totalCell {
   text-align: right;
 }
-.bee-crm-taskDuration-rowLabel, .bee-crm-taskDuration-colLabel, .bee-crm-taskDuration-rowTotal, .bee-crm-taskDuration-colTotal, .bee-crm-taskDuration-total {
+.bee-crm-taskDuration-rowLabel,
+.bee-crm-taskDuration-colLabel,
+.bee-crm-taskDuration-rowTotal,
+.bee-crm-taskDuration-colTotal,
+.bee-crm-taskDuration-total {
   font-weight: bold;
+}
+
+.bee-crm-taskExtension {
+  text-decoration: line-through;
+  font-size: 12px;
+  color: #444;  
 }
 
 .bee-crm-SlackLate-bar {
@@ -118,13 +136,15 @@
   background-color: white;
 }
 
-.bee-crm-FilterSupplier-Slack-dialog, .bee-crm-FilterSupplier-Mode-dialog {
+.bee-crm-FilterSupplier-Slack-dialog,
+.bee-crm-FilterSupplier-Mode-dialog {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 2px;
 }
-.bee-crm-FilterSupplier-Slack-late, .bee-crm-FilterSupplier-Slack-scheduled {
+.bee-crm-FilterSupplier-Slack-late,
+.bee-crm-FilterSupplier-Slack-scheduled {
   display: block;
   color: white;
   font-weight: bolder;

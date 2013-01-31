@@ -25,6 +25,7 @@
         <SimpleColumn alias="DurationType" name="Name" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="FinishTime" />
   </Columns>
 </View>
  

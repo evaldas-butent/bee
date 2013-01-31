@@ -111,6 +111,7 @@ public class CrmConstants {
 
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
   public static final String VAR_TASK_NOTES = Service.RPC_VAR_PREFIX + "task_notes";
+  public static final String VAR_TASK_FINISH_TIME = Service.RPC_VAR_PREFIX + "task_finish_time";
 
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";

@@ -484,7 +484,10 @@ public class CrmModuleBean implements BeeModule {
       case RENEW:
       case ACTIVATE:
 
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, now);
+        Long finishTime = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_FINISH_TIME));
+        
+        response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
+            now);
         if (response.hasResponse(Long.class)) {
           eventId = (Long) response.getResponse();
         }
@@ -680,11 +683,11 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event, long millis) {
-    return registerTaskEvent(taskId, userId, event, null, null, null, millis);
+    return registerTaskEvent(taskId, userId, event, null, null, null, null, millis);
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event,
-      RequestInfo reqInfo, String note, long millis) {
+      RequestInfo reqInfo, String note, Long finishTime, long millis) {
     String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
 
     Long durationId = null;
@@ -699,11 +702,11 @@ public class CrmModuleBean implements BeeModule {
       }
     }
 
-    return registerTaskEvent(taskId, userId, event, comment, note, durationId, millis);
+    return registerTaskEvent(taskId, userId, event, comment, note, finishTime, durationId, millis);
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event,
-      String comment, String note, Long durationId, long millis) {
+      String comment, String note, Long finishTime, Long durationId, long millis) {
 
     SqlInsert si = new SqlInsert(TBL_TASK_EVENTS)
         .addConstant(COL_TASK, taskId)
@@ -716,6 +719,10 @@ public class CrmModuleBean implements BeeModule {
     }
     if (!BeeUtils.isEmpty(note)) {
       si.addConstant(COL_EVENT_NOTE, note);
+    }
+    
+    if (BeeUtils.isPositive(finishTime)) {
+      si.addConstant(COL_FINISH_TIME, finishTime);
     }
 
     if (DataUtils.isId(durationId)) {

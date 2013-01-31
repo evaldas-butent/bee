@@ -12,10 +12,6 @@
     <Integer name="Event" notNull="true" />
     <Text name="EventNote" />
     <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" />
+    <DateTime name="FinishTime" label="Pabaigos data" />
   </Fields>
-  <Keys>
-    <Key>
-      <KeyField>Event</KeyField>
-    </Key>
-  </Keys>
 </Table>
