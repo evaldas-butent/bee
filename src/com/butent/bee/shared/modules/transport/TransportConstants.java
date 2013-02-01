@@ -35,19 +35,19 @@ public class TransportConstants {
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
-  public static final String VAR_ORDER_ID = Service.RPC_VAR_PREFIX + "order_id";
   public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
 
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
   public static final String TBL_SERVICE_TYPES = "ServiceTypes";
+  public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
 
   public static final String TBL_TRIPS = "Trips";
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
-  
+
   public static final String TBL_ORDERS = "TransportationOrders";
   public static final String TBL_ORDER_CARGO = "OrderCargo";
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
@@ -58,6 +58,7 @@ public class TransportConstants {
   public static final String VIEW_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_SERVICES = "CargoServices";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
+  public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXP_TRIPS = "ExpeditionTrips";
@@ -78,7 +79,7 @@ public class TransportConstants {
   public static final String VIEW_SPARE_PARTS = "SpareParts";
 
   public static final String VIEW_TRANSPORT_SETTINGS = "TransportSettings";
-  
+
   public static final String COL_TRIP = "Trip";
   public static final String COL_TRIP_ID = "TripID";
   public static final String COL_TRIP_NO = "TripNo";
@@ -86,6 +87,11 @@ public class TransportConstants {
   public static final String COL_TRIP_DATE_FROM = "DateFrom";
   public static final String COL_TRIP_DATE_TO = "DateTo";
   public static final String COL_TRIP_PERCENT = "TripPercent";
+
+  public static final String COL_EXPEDITION = "Expedition";
+  public static final String COL_EXPEDITION_TYPE = "Name";
+  public static final String COL_FORWARDER = "Forwarder";
+  public static final String COL_FORWARDER_VEHICLE = "ForwarderVehicle";
 
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_ID = "CargoID";
@@ -125,8 +131,6 @@ public class TransportConstants {
 
   public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
   public static final String COL_TRAILER_NUMBER = "TrailerNumber";
-  
-  public static final String COL_EXPEDITION = "Expedition";
 
   public static final String COL_DRIVER = "Driver";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
@@ -135,7 +139,7 @@ public class TransportConstants {
   public static final String COL_SERVICE_TYPE = "Type";
   public static final String COL_SERVICE_NAME = "Name";
   public static final String COL_SERVICE_NOTES = "Notes";
-  
+
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
@@ -143,10 +147,10 @@ public class TransportConstants {
 
   public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
   public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
-  
+
   public static final String COL_FX_SLIDER_WIDTH = "FxSliderWidth";
   public static final String COL_FX_BAR_HEIGHT = "FxBarHeight";
-  
+
   public static final String COL_FX_THEME = "FxTheme";
 
   public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
@@ -161,15 +165,15 @@ public class TransportConstants {
 
   public static final String COL_SS_HEADER_HEIGHT = "SsHeaderHeight";
   public static final String COL_SS_FOOTER_HEIGHT = "SsFooterHeight";
-  
+
   public static final String COL_SS_SLIDER_WIDTH = "SsSliderWidth";
   public static final String COL_SS_BAR_HEIGHT = "SsBarHeight";
-  
+
   public static final String COL_SS_THEME = "SsTheme";
 
   public static final String COL_SS_ITEM_OPACITY = "SsItemOpacity";
   public static final String COL_SS_STRIP_OPACITY = "SsStripOpacity";
-  
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -193,7 +197,7 @@ public class TransportConstants {
   public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVer";
 
   public static final String DATA_TYPE_CARGO = "Cargo";
-  
+
   public static final String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;
   }
@@ -201,7 +205,7 @@ public class TransportConstants {
   public static final String defaultUnloadingColumnAlias(String colName) {
     return "DefUnload" + colName;
   }
-  
+
   public static final String loadingColumnAlias(String colName) {
     return "Loading" + colName;
   }
@@ -209,7 +213,7 @@ public class TransportConstants {
   public static final String unloadingColumnAlias(String colName) {
     return "Unloading" + colName;
   }
-  
+
   private TransportConstants() {
   }
 }

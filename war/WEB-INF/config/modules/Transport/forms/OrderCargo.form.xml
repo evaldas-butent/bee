@@ -22,11 +22,21 @@
     </FlowPanel>
     &separator;
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <FlowPanel class="flexBox-vertical">
-        <InputText source="ShippingTerms" caption="Pristatymo sąlygos" decorator="flex-left"
-          d:size="120" d:unit="px" />
-        <xi:include href="widgets/CargoPlaces.widget.xml" />
-      </FlowPanel>
+      <TabbedPages style="height: 190px; width: 420px">
+        <page>
+          <text>Krovos informacija</text>
+          <FlowPanel>
+            <InputText source="ShippingTerms" caption="Pristatymo sąlygos" decorator="flex-left"
+              d:size="120" d:unit="px" d:rootStyle="&section;" />
+            <xi:include href="widgets/CargoPlaces.widget.xml" />
+          </FlowPanel>
+        </page>
+        <page>
+          <text>Tarpiniai krovos taškai</text>
+          <ChildGrid class="flexdible" name="CargoHandling" relColumn="Cargo" />
+        </page>
+      </TabbedPages>
+      
       <ChildGrid class="flexible" name="CargoServices" relColumn="Cargo" caption="Papildomos paslaugos" />
     </FlowPanel>
     &separator;

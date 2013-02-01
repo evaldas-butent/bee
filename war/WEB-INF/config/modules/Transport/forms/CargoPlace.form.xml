@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="CargoPlace" caption="Vieta"
+  name="CargoPlace" caption="Krovos taškas"
   width="600" widthUnit="px" height="200" heightUnit="px"
   >
   <SimplePanel class="flexBox-vertical-center">

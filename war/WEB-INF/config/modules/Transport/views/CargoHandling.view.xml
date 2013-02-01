@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CargoHandling"
+  source="CargoHandling"
+  >
+  <Columns>
+    <SimpleColumn name="Cargo"/>
+    <SimpleColumn name="Notes" />
+
+    <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleJoin joinType="LEFT" name="Country">
+        <SimpleColumn name="Name" alias="LoadingCountryName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Country" alias="LoadingCountry" />
+      <SimpleColumn name="Place" alias="LoadingPlace" />
+      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+    </SimpleJoin>
+
+    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleJoin joinType="LEFT" name="Country">
+        <SimpleColumn name="Name" alias="UnloadingCountryName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Country" alias="UnloadingCountry" />
+      <SimpleColumn name="Place" alias="UnloadingPlace" />
+      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+    </SimpleJoin>
+  </Columns>
+</View>

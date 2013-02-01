@@ -15,7 +15,7 @@
   <footer borderWidth="0" />
 
   <columns>
-    <RelColumn name="OrderNo"  caption="Užsakymo Nr." minWidth="100" />
+    <RelColumn name="OrderNo"  caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
     <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
       minWidth="100" />
     <DataColumn name="Weight" caption="Svoris" />

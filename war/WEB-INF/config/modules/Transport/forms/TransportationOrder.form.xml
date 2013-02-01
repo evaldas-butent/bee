@@ -5,33 +5,37 @@
   name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-spacing: 10px;">
-      <row>
-        <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
-        <InputDateTime source="Date" />
-        <Label html="Būsena:" horizontalAlignment="right" />
-        <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
-      </row>
-      <row>
-        <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
-        <InputText source="OrderNo" />
-        <Button name="profit" html="Pelnas" />
-      </row>
-      <row>
-        <Label html="Užsakovas:" horizontalAlignment="right" class="bee-required" />
-        <DataSelector source="Customer" />
-        <Label html="Mokėtojas:" horizontalAlignment="right" />
-        <cell colSpan="3">
-          <DataSelector source="Payer" />
-        </cell>
-      </row>
-      <row>
-        <Label html="Kontaktas:" horizontalAlignment="right" />
-        <DataSelector source="CustomerPerson" />
-        <Label html="Vadybininkas:" horizontalAlignment="right" />
-        <DataSelector source="Manager" />
-      </row>
-    </Table>
+    <FlowPanel class="flexBox-horizontal">
+      <Table style="border-spacing: 10px;">
+        <row>
+          <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
+          <InputDateTime source="Date" />
+          <Label html="Būsena:" horizontalAlignment="right" />
+          <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
+        </row>
+        <row>
+          <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
+          <InputText source="OrderNo" />
+          <Button name="profit" html="Pelnas" />
+        </row>
+        <row>
+          <Label html="Užsakovas:" horizontalAlignment="right" class="bee-required" />
+          <DataSelector source="Customer" />
+          <Label html="Mokėtojas:" horizontalAlignment="right" />
+          <cell colSpan="3">
+            <DataSelector source="Payer" />
+          </cell>
+        </row>
+        <row>
+          <Label html="Kontaktas:" horizontalAlignment="right" />
+          <DataSelector source="CustomerPerson" />
+          <Label html="Vadybininkas:" horizontalAlignment="right" />
+          <DataSelector source="Manager" />
+        </row>
+      </Table>
+      
+      <FlowPanel name="TripInfo" class="flexible" style="margin-top: 10px;" />
+    </FlowPanel>
 
     <ChildGrid class="flexible" name="OrderCargo" relColumn="Order" />
   </FlowPanel>

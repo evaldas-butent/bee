@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="CargoHandling" viewName="CargoHandling"
+  newRowForm="CargoPlace" newRowCaption="Naujas krovos taškas" editForm="CargoPlace"
+  editInPlace="Notes"
+  flexGrow="1" flexShrink="1"
+  >
+  <header borderWidth="1 0" />
+  <body height="68" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" flexBasis="120" />
+    <DataColumn name="Notes" caption="Pastabos">
+      <style>
+        <bodyStyle>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+  </columns>
+</Grid>

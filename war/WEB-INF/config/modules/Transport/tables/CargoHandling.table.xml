@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CargoHandling"
+  idName="HandlingID"
+  x="0" y="0"
+  >
+  <Fields>
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <Text name="Notes" />
+  </Fields>
+</Table>
