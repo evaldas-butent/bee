@@ -20,14 +20,6 @@
     </w:DataTree>
   </west>
   
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
-
   <columns>
     <RelColumn name="Type" caption="Tipas" />
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />

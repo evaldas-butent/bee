@@ -7,13 +7,8 @@
   editInPlace="Notes"
   flexGrow="1" flexShrink="1"
   >
-  <header borderWidth="1 0" />
-  <body height="68" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
+
+  <body height="68" />
 
   <columns>
     <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" flexBasis="120" />

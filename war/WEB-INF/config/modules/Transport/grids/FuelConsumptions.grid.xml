@@ -4,13 +4,6 @@
 
   name="FuelConsumptions" viewName="FuelConsumptions" caption="Kuro sąnaudos"
   >
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
 
   <columns>
     <DataColumn name="DateFrom" caption="Nuo" />

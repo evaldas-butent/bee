@@ -5,7 +5,7 @@
   headerMode="grid" hasFooters="false"
   >
   <columns>
-    <DataColumn name="GroupName" caption="Grupė" minWidth="80" />
-    <RelColumn name="PropertyName" caption="Pavadinimas" minWidth="100" newRowEnabled="false" />
+    <DataColumn name="GroupName" caption="Grupė" width="100" />
+    <RelColumn name="PropertyName" caption="Pavadinimas" width="180" newRowEnabled="false" />
   </columns>
 </Grid>

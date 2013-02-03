@@ -1,7 +1,7 @@
 package com.butent.bee.client.event.logical;
 
 import com.google.gwt.event.shared.EventHandler;
-import com.google.web.bindery.event.shared.Event;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class SelectorEvent extends Event<SelectorEvent.Handler> implements Consumable {
+public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
 
   public interface Handler extends EventHandler {
     void onDataSelector(SelectorEvent event);
@@ -23,19 +23,19 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> implements Consu
   private static final Type<Handler> TYPE = new Type<Handler>();
 
   public static void fire(DataSelector selector, State state) {
-    BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(state), selector);
+    fireEvent(selector, new SelectorEvent(state));
   }
 
   public static SelectorEvent fireExclusions(DataSelector selector, Collection<Long> exclusions) {
     SelectorEvent event = new SelectorEvent(State.UPDATING);
     event.setExclusions(exclusions);
-    BeeKeeper.getBus().fireEventFromSource(event, selector);
+    fireEvent(selector, event);
     return event;
   }
 
   public static SelectorEvent fireNewRow(DataSelector selector, IsRow row) {
     SelectorEvent event = new SelectorEvent(State.NEW, row);
-    BeeKeeper.getBus().fireEventFromSource(event, selector);
+    fireEvent(selector, event);
     return event;
   }
   
@@ -51,6 +51,13 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> implements Consu
     return BeeKeeper.getBus().addHandler(getType(), handler, false);
   }
 
+  private static void fireEvent(DataSelector selector, SelectorEvent event) {
+    selector.fireEvent(event);
+    if (!event.isConsumed()) {
+      BeeKeeper.getBus().fireEventFromSource(event, selector);
+    }
+  }
+  
   private final State state;
   private final IsRow newRow;
   
@@ -58,11 +65,11 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> implements Consu
 
   private boolean consumed = false;
 
-  public SelectorEvent(State state) {
+  private SelectorEvent(State state) {
     this(state, null);
   }
 
-  public SelectorEvent(State state, IsRow newRow) {
+  private SelectorEvent(State state, IsRow newRow) {
     super();
     this.state = state;
     this.newRow = newRow;

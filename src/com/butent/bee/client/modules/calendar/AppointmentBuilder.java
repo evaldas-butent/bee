@@ -11,8 +11,6 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -35,6 +33,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -47,8 +47,8 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
@@ -79,6 +79,8 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -95,7 +97,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Set;
 
-class AppointmentBuilder extends AbstractFormInterceptor {
+class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   private class DateOrTimeWidgetHandler implements BlurHandler {
     @Override
@@ -164,7 +166,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       }
 
       if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_ATTENDEES),
-          resources)) {
+          newRow.getProperty(VIEW_APPOINTMENT_ATTENDEES))) {
         changes.add("Resursai");
       }
 
@@ -280,31 +282,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     }
   }
 
-  private class ResourceWidgetHandler implements KeyDownHandler, DoubleClickHandler {
-    @Override
-    public void onDoubleClick(DoubleClickEvent event) {
-      event.preventDefault();
-      addResources();
-    }
-
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
-        event.preventDefault();
-        if (event.getSource() instanceof BeeListBox) {
-          int index = ((BeeListBox) event.getSource()).getSelectedIndex();
-          if (BeeUtils.isIndex(resources, index)) {
-            resources.remove(index);
-            refreshResourceWidget();
-            if (isOverlapVisible()) {
-              checkOverlap(false);
-            }
-          }
-        }
-      }
-    }
-  }
-
   private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
 
   private static final KeyDownHandler LIST_BOX_CLEANER = new KeyDownHandler() {
@@ -319,9 +296,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
   private static final String NAME_SERVICE_TYPE = "ServiceType";
   private static final String NAME_REPAIR_TYPE = "RepairType";
-
-  private static final String NAME_ADD_RESOURCE = "AddResource";
-  private static final String NAME_REMOVE_RESOURCE = "RemoveResource";
 
   private static final String NAME_RESOURCES = "Resources";
   private static final String NAME_OVERLAP = "Overlap";
@@ -363,7 +337,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
   private final DateOrTimeWidgetHandler dateOrTimeWidgetHandler = new DateOrTimeWidgetHandler();
   private final PropWidgetHandler propWidgetHandler = new PropWidgetHandler();
-  private final ResourceWidgetHandler resourceWidgetHandler = new ResourceWidgetHandler();
 
   private final List<Long> serviceTypes = Lists.newArrayList();
   private Long defaultServiceType = null;
@@ -377,8 +350,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
   private final SetMultimap<Long, Long> repairResources = HashMultimap.create();
 
   private final List<Long> reminderTypes = Lists.newArrayList();
-
-  private final List<Long> resources = Lists.newArrayList();
 
   private String serviceTypeWidgetId = null;
   private String repairTypeWidgetId = null;
@@ -444,30 +415,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
-    } else if (BeeUtils.same(name, NAME_ADD_RESOURCE)) {
-      if (widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            addResources();
-          }
-        });
-      }
-    } else if (BeeUtils.same(name, NAME_REMOVE_RESOURCE)) {
-      if (widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            removeResource();
-          }
-        });
-      }
-
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
       setResourceWidgetId(widget.getId());
-      if (widget instanceof BeeListBox) {
-        ((BeeListBox) widget).addDoubleClickHandler(resourceWidgetHandler);
-        ((BeeListBox) widget).addKeyDownHandler(resourceWidgetHandler);
+      if (widget instanceof DataSelector) {
+        ((DataSelector) widget).addSelectorHandler(this);
       }
 
     } else if (BeeUtils.same(name, NAME_OVERLAP)) {
@@ -620,6 +571,50 @@ class AppointmentBuilder extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.isOpened()) {
+      Set<Long> include = Sets.newHashSet(ucAttendees);
+      Set<Long> exclude = Sets.newHashSet();
+      
+      if (!serviceResources.isEmpty() && !BeeUtils.isEmpty(getServiceTypeWidgetId())) {
+        Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
+        if (serviceType != null) {
+          for (Long resource : serviceResources.keySet()) {
+            if (!serviceResources.containsEntry(resource, serviceType)) {
+              exclude.add(resource);
+            }
+          }
+        }
+      }
+
+      if (!repairResources.isEmpty() && !BeeUtils.isEmpty(getRepairTypeWidgetId())) {
+        Long repairType = getSelectedId(getRepairTypeWidgetId(), repairTypes);
+        if (repairType != null) {
+          for (Long resource : repairResources.keySet()) {
+            if (!repairResources.containsEntry(resource, repairType)) {
+              exclude.add(resource);
+            }
+          }
+        }
+      }
+      
+      Filter filter;
+      if (include.isEmpty()) {
+        filter = exclude.isEmpty() ? null : Filter.idNotIn(exclude);
+
+      } else if (exclude.isEmpty()) {
+        filter = Filter.idIn(include);
+
+      } else {
+        include.removeAll(exclude);
+        filter = include.isEmpty() ? ComparisonFilter.isFalse() : Filter.idIn(include); 
+      }
+      
+      event.getSelector().setAdditionalFilter(filter);
+    }
+  }
+
+  @Override
   public void onStart(FormView form) {
     form.setEditing(true);
   }
@@ -654,12 +649,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
   boolean isRequired(String name) {
     return requiredFields.contains(name);
-  }
-
-  void setAttendees(List<Long> attendees) {
-    BeeUtils.overwrite(resources, attendees);
-    refreshResourceWidget();
-    checkOverlap(false);
   }
 
   void setColor(Long color) {
@@ -724,126 +713,6 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     });
   }
 
-  private void addResources() {
-    BeeRowSet attendees = CalendarKeeper.getAttendees();
-    if (attendees == null || attendees.isEmpty()) {
-      getFormView().notifyWarning("Attendees not available");
-      return;
-    }
-
-    Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
-    Long repairType = getSelectedId(getRepairTypeWidgetId(), repairTypes);
-
-    final List<Long> attIds = Lists.newArrayList();
-    final BeeListBox widget = new BeeListBox(true);
-
-    String viewName = attendees.getViewName();
-    for (BeeRow row : attendees.getRows()) {
-      long id = row.getId();
-      if (resources.contains(id)) {
-        continue;
-      }
-
-      if (!ucAttendees.isEmpty() && !ucAttendees.contains(id)) {
-        continue;
-      }
-
-      if (serviceType != null && serviceResources.containsKey(id)
-          && !serviceResources.containsEntry(id, serviceType)) {
-        continue;
-      }
-      if (repairType != null && repairResources.containsKey(id)
-          && !repairResources.containsEntry(id, repairType)) {
-        continue;
-      }
-
-      String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
-          Data.getString(viewName, row, COL_TYPE_NAME));
-      widget.addItem(item);
-      attIds.add(id);
-    }
-
-    if (attIds.isEmpty()) {
-      getFormView().notifyWarning("Nerasta resursų, kuriuos galima pridėti");
-      return;
-    }
-
-    if (BeeUtils.betweenInclusive(attIds.size(), 2, 20)) {
-      widget.setAllVisible();
-    } else if (attIds.size() > 20) {
-      widget.setVisibleItemCount(20);
-    }
-
-    widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
-
-    final InputCallback callback = new InputCallback() {
-      @Override
-      public void onSuccess() {
-        int cnt = 0;
-        for (int index = 0; index < widget.getItemCount(); index++) {
-          if (widget.isItemSelected(index)) {
-            resources.add(attIds.get(index));
-            cnt++;
-          }
-        }
-        if (cnt > 0) {
-          refreshResourceWidget();
-          if (!isOverlapVisible()) {
-            checkOverlap(false);
-          }
-        }
-      }
-    };
-
-    widget.addDoubleClickHandler(new DoubleClickHandler() {
-      @Override
-      public void onDoubleClick(DoubleClickEvent event) {
-        Popup popup = DomUtils.getParentPopup(widget);
-        if (popup != null) {
-          popup.close();
-          callback.onSuccess();
-        }
-      }
-    });
-
-    Global.inputWidget("Pasirinkite resursus", widget, callback, false,
-        RowFactory.DIALOG_STYLE);
-  }
-
-  private void onEndDateFocus(InputDate widget) {
-    if (widget == null) {
-      return;
-    }
-
-    JustDate start = getInputDate(getStartDateWidgetId()).getDate();
-    widget.setMinDate(BeeUtils.nvl(start, MIN_DATE));
-  }
-
-  private void onEndTimeFocus(InputTime widget) {
-    if (widget == null) {
-      return;
-    }
-
-    DateTime start = getStart();
-    if (start == null) {
-      widget.setMinValue(null);
-      return;
-    }
-
-    HasDateValue endDate = BeeUtils.isEmpty(getEndDateWidgetId())
-        ? null : getInputDate(getEndDateWidgetId()).getDate();
-
-    int min = 0;
-    if (endDate == null || TimeUtils.sameDate(start, endDate)) {
-      min = TimeUtils.minutesSinceDayStarted(start) + widget.getNormalizedStep();
-      if (min >= TimeUtils.MINUTES_PER_DAY) {
-        min = 0;
-      }
-    }
-
-    widget.setMinMinutes(min);
-  }
-
   private void buildIncrementally() {
     if (isSaving() || !validate()) {
       return;
@@ -858,6 +727,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
   }
 
   private void checkOverlap(boolean whenPeriodChanged) {
+    List<Long> resources = getResources(getFormView().getActiveRow());
     if (resources.isEmpty()) {
       hideOverlap();
       return;
@@ -1018,6 +888,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
   private String getRepairTypeWidgetId() {
     return repairTypeWidgetId;
+  }
+
+  private List<Long> getResources(IsRow row) {
+    return DataUtils.parseIdList(row.getProperty(VIEW_APPOINTMENT_ATTENDEES));
   }
 
   private String getResourceWidgetId() {
@@ -1269,8 +1143,8 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
     String viewName = rowSet.getViewName();
     for (BeeRow row : rowSet.getRows()) {
-      Long resource = Data.getLong(viewName, row, COL_ATTENDEE);
       Long property = Data.getLong(viewName, row, COL_PROPERTY);
+      Long resource = Data.getLong(viewName, row, COL_ATTENDEE);
 
       if (serviceTypes.contains(property)) {
         serviceResources.put(resource, property);
@@ -1280,46 +1154,44 @@ class AppointmentBuilder extends AbstractFormInterceptor {
     }
   }
 
-  private void refreshResourceWidget() {
-    BeeListBox listBox = getListBox(getResourceWidgetId());
-    BeeRowSet attendees = CalendarKeeper.getAttendees();
-
-    if (listBox != null && attendees != null) {
-      if (listBox.getItemCount() > 0) {
-        listBox.clear();
-      }
-
-      String viewName = attendees.getViewName();
-      for (long id : resources) {
-        BeeRow row = attendees.getRowById(id);
-        String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
-            Data.getString(viewName, row, COL_TYPE_NAME));
-        listBox.addItem(item);
-      }
-    }
-  }
-
-  private void removeResource() {
-    if (resources.isEmpty()) {
-      getFormView().notifyWarning("Nothing to remove");
+  private void onEndDateFocus(InputDate widget) {
+    if (widget == null) {
       return;
     }
 
-    BeeListBox listBox = getListBox(getResourceWidgetId());
-    if (listBox != null) {
-      int index = listBox.getSelectedIndex();
-      if (!BeeUtils.isIndex(resources, index)) {
-        index = resources.size() - 1;
-      }
+    JustDate start = getInputDate(getStartDateWidgetId()).getDate();
+    widget.setMinDate(BeeUtils.nvl(start, MIN_DATE));
+  }
 
-      resources.remove(index);
-      refreshResourceWidget();
-      if (isOverlapVisible()) {
-        checkOverlap(false);
-      }
+  private void onEndTimeFocus(InputTime widget) {
+    if (widget == null) {
+      return;
+    }
 
-    } else {
-      getFormView().notifySevere("Resource widget not found");
+    DateTime start = getStart();
+    if (start == null) {
+      widget.setMinValue(null);
+      return;
+    }
+
+    HasDateValue endDate = BeeUtils.isEmpty(getEndDateWidgetId())
+        ? null : getInputDate(getEndDateWidgetId()).getDate();
+
+    int min = 0;
+    if (endDate == null || TimeUtils.sameDate(start, endDate)) {
+      min = TimeUtils.minutesSinceDayStarted(start) + widget.getNormalizedStep();
+      if (min >= TimeUtils.MINUTES_PER_DAY) {
+        min = 0;
+      }
+    }
+
+    widget.setMinMinutes(min);
+  }
+
+  private void refreshResourceWidget(IsRow row) {
+    Widget selector = getWidget(getResourceWidgetId());
+    if (selector instanceof MultiSelector) {
+      ((MultiSelector) selector).render(row);
     }
   }
 
@@ -1349,6 +1221,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
 
     boolean wasOpaque = false;
 
+    List<Long> resources = getResources(row);
     if (!resources.isEmpty()) {
       BeeRowSet attendees = CalendarKeeper.getAttendees();
       for (long attId : resources) {
@@ -1358,11 +1231,10 @@ class AppointmentBuilder extends AbstractFormInterceptor {
         }
       }
 
-      resources.clear();
-      refreshResourceWidget();
-      hideOverlap();
-
       row.clearProperty(VIEW_APPOINTMENT_ATTENDEES);
+      refreshResourceWidget(row);
+
+      hideOverlap();
     }
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
@@ -1451,7 +1323,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       rowSet.setTableProperty(COL_PROPERTY, propList);
     }
 
-    final String attList = DataUtils.buildIdList(resources);
+    final String attList = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
     if (!BeeUtils.isEmpty(attList)) {
       rowSet.setTableProperty(COL_ATTENDEE, attList);
     }
@@ -1710,7 +1582,7 @@ class AppointmentBuilder extends AbstractFormInterceptor {
       return false;
     }
 
-    if (isRequired(NAME_RESOURCES) && resources.isEmpty()) {
+    if (isRequired(NAME_RESOURCES) && getResources(row).isEmpty()) {
       getFormView().notifySevere("Nurodykite resursus");
       return false;
     }

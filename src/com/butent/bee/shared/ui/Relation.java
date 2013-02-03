@@ -190,10 +190,14 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
   }
 
+  public void disableNewRow() {
+    getAttributes().put(UiConstants.ATTR_NEW_ROW_ENABLED, BeeConst.STRING_FALSE);
+  }
+  
   public Map<String, String> getAttributes() {
     return attributes;
   }
-  
+
   public Caching getCaching() {
     return caching;
   }
@@ -205,7 +209,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public String getEditForm() {
     return getAttribute(UiConstants.ATTR_EDIT_FORM);
   }
-
+  
   public Integer getEditKey() {
     return BeeUtils.toIntOrNull(getAttribute(UiConstants.ATTR_EDIT_KEY));
   }
@@ -213,7 +217,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public Filter getFilter() {
     return filter;
   }
-  
+
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(getAttributes());
@@ -482,7 +486,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public boolean isEditEnabled() {
     return BeeConst.isTrue(getAttribute(UiConstants.ATTR_EDIT_ENABLED));
   }
-
+  
   public Boolean isEditModal() {
     return BeeUtils.toBooleanOrNull(getAttribute(UiConstants.ATTR_EDIT_POPUP));
   }

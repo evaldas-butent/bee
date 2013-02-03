@@ -160,4 +160,12 @@ public class Appointment implements Comparable<Appointment> {
   public void setStart(DateTime start) {
     Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
   }
+  
+  public void updateAttendees(List<Long> ids) {
+    attendees.clear();
+    if (!BeeUtils.isEmpty(ids)) {
+      attendees.addAll(ids);
+    }
+    row.setProperty(VIEW_APPOINTMENT_ATTENDEES, DataUtils.buildIdList(ids));
+  }
 }

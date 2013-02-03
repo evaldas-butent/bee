@@ -15,13 +15,12 @@
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
 
     <Label html="Resursai:" style="&absolute; left: 0; top: 40px;" />
-    <Image name="AddResource" resource="add" style="&absolute; left: 0px; top: 68px;" />
-    <Image name="RemoveResource" resource="delete" style="&absolute; left: 36px; top: 68px;" />
 
     <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
 
-    <ListBox name="Resources" minSize="5" maxSize="5"
-      style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px;" />
+    <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
+      renderColumns="Name" choiceColumns="Name TypeName" editEnabled="true" newRowEnabled="false"
+      style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
 
     <InputArea source="Description" placeholder="Aprašymas" visibleLines="5"
       style="&absolute; left: 360px; top: 40px; width: 382px;" />

@@ -782,6 +782,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().addDomHandler(handler, KeyDownEvent.getType());
   }
 
+  public HandlerRegistration addSelectorHandler(SelectorEvent.Handler handler) {
+    return addHandler(handler, SelectorEvent.getType());
+  }
+  
   public Collection<HandlerRegistration> addSimpleHandler(AbstractCellRenderer renderer) {
     return addSimpleHandler(new SimpleHandler(renderer));
   }

@@ -2,11 +2,6 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -16,23 +11,19 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
@@ -48,70 +39,19 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 
 class ReportManager {
 
-  private class AttendeeTypeWidgetHandler implements KeyDownHandler, DoubleClickHandler {
-    @Override
-    public void onDoubleClick(DoubleClickEvent event) {
-      event.preventDefault();
-      addAttendeeTypes((BeeListBox) event.getSource());
-    }
-
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
-        event.preventDefault();
-
-        BeeListBox listBox = (BeeListBox) event.getSource();
-        int index = listBox.getSelectedIndex();
-        if (BeeUtils.isIndex(attendeeTypes, index)) {
-          attendeeTypes.remove(index);
-          refreshAttendeeTypeWidget(listBox);
-        }
-      }
-    }
-  }
-
-  private class AttendeeWidgetHandler implements KeyDownHandler, DoubleClickHandler {
-    @Override
-    public void onDoubleClick(DoubleClickEvent event) {
-      event.preventDefault();
-      addAttendees((BeeListBox) event.getSource());
-    }
-
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
-        event.preventDefault();
-
-        BeeListBox listBox = (BeeListBox) event.getSource();
-        int index = listBox.getSelectedIndex();
-        if (BeeUtils.isIndex(attendees, index)) {
-          attendees.remove(index);
-          refreshAttendeeWidget(listBox);
-        }
-      }
-    }
-  }
-
   private static final String STYLE_PREFIX = "bee-cal-ReportOptions-";
 
   private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();
-
-  private final List<Long> attendees = Lists.newArrayList();
-  private final List<Long> attendeeTypes = Lists.newArrayList();
-
-  private final AttendeeWidgetHandler attendeeWidgetHandler = new AttendeeWidgetHandler();
-  private final AttendeeTypeWidgetHandler attendeeTypeWidgetHandler =
-      new AttendeeTypeWidgetHandler();
 
   ReportManager() {
     super();
@@ -122,153 +62,16 @@ class ReportManager {
       Global.addReport(report.getCaption(), new Command() {
         @Override
         public void execute() {
-          CalendarKeeper.getData(Lists.newArrayList(VIEW_ATTENDEE_TYPES, VIEW_ATTENDEES),
-              new Command() {
-                @Override
-                public void execute() {
-                  onSelectReport(report);
-                }
-              });
+          onSelectReport(report);
         }
       });
     }
   }
 
-  private void addAttendees(final BeeListBox listBox) {
-    BeeRowSet rowSet = CalendarKeeper.getAttendees();
-    if (rowSet == null || rowSet.isEmpty()) {
-      return;
-    }
-
-    final List<Long> attIds = Lists.newArrayList();
-    final BeeListBox widget = new BeeListBox(true);
-
-    String viewName = rowSet.getViewName();
-    for (BeeRow row : rowSet.getRows()) {
-      long id = row.getId();
-      if (attendees.contains(id)) {
-        continue;
-      }
-
-      String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
-          Data.getString(viewName, row, COL_TYPE_NAME));
-      widget.addItem(item);
-      attIds.add(id);
-    }
-
-    if (attIds.isEmpty()) {
-      Global.showError("Nerasta resursų, kuriuos galima pridėti");
-      return;
-    }
-
-    if (BeeUtils.betweenInclusive(attIds.size(), 2, 20)) {
-      widget.setAllVisible();
-    } else if (attIds.size() > 20) {
-      widget.setVisibleItemCount(20);
-    }
-
-    widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
-
-    final InputCallback callback = new InputCallback() {
-      @Override
-      public void onSuccess() {
-        int cnt = 0;
-        for (int index = 0; index < widget.getItemCount(); index++) {
-          if (widget.isItemSelected(index)) {
-            attendees.add(attIds.get(index));
-            cnt++;
-          }
-        }
-        if (cnt > 0) {
-          refreshAttendeeWidget(listBox);
-        }
-      }
-    };
-
-    widget.addDoubleClickHandler(new DoubleClickHandler() {
-      @Override
-      public void onDoubleClick(DoubleClickEvent event) {
-        Popup popup = DomUtils.getParentPopup(widget);
-        if (popup != null) {
-          popup.close();
-          callback.onSuccess();
-        }
-      }
-    });
-
-    Global.inputWidget("Pasirinkite resursus", widget, callback, false,
-        RowFactory.DIALOG_STYLE, listBox);
-  }
-
-  private void addAttendeeTypes(final BeeListBox listBox) {
-    BeeRowSet rowSet = CalendarKeeper.getAttendeeTypes();
-    if (rowSet == null || rowSet.isEmpty()) {
-      return;
-    }
-
-    final List<Long> atpIds = Lists.newArrayList();
-    final BeeListBox widget = new BeeListBox(true);
-
-    String viewName = rowSet.getViewName();
-    for (BeeRow row : rowSet.getRows()) {
-      long id = row.getId();
-      if (attendeeTypes.contains(id)) {
-        continue;
-      }
-
-      String item = Data.getString(viewName, row, COL_NAME);
-      widget.addItem(item);
-      atpIds.add(id);
-    }
-
-    if (atpIds.isEmpty()) {
-      Global.showError("Nerasta resursų tipų, kuriuos galima pridėti");
-      return;
-    }
-
-    if (BeeUtils.betweenInclusive(atpIds.size(), 2, 20)) {
-      widget.setAllVisible();
-    } else if (atpIds.size() > 20) {
-      widget.setVisibleItemCount(20);
-    }
-
-    widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
-
-    final InputCallback callback = new InputCallback() {
-      @Override
-      public void onSuccess() {
-        int cnt = 0;
-        for (int index = 0; index < widget.getItemCount(); index++) {
-          if (widget.isItemSelected(index)) {
-            attendeeTypes.add(atpIds.get(index));
-            cnt++;
-          }
-        }
-        if (cnt > 0) {
-          refreshAttendeeTypeWidget(listBox);
-        }
-      }
-    };
-
-    widget.addDoubleClickHandler(new DoubleClickHandler() {
-      @Override
-      public void onDoubleClick(DoubleClickEvent event) {
-        Popup popup = DomUtils.getParentPopup(widget);
-        if (popup != null) {
-          popup.close();
-          callback.onSuccess();
-        }
-      }
-    });
-
-    Global.inputWidget("Pasirinkite resursų tipus", widget, callback, false,
-        RowFactory.DIALOG_STYLE, listBox);
-  }
-
   private void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);
   }
-  
+
   private Editor createDateEditor(ValueType type) {
     if (ValueType.DATE.equals(type)) {
       return new InputDate();
@@ -283,7 +86,7 @@ class ReportManager {
 
     BeeRowSet rowSet = new BeeRowSet(VIEW_REPORT_OPTIONS, Data.getColumns(VIEW_REPORT_OPTIONS));
     rowSet.addRow(row);
-    
+
     BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       public void onResponse(ResponseObject response) {
         BeeRowSet rs = null;
@@ -299,16 +102,16 @@ class ReportManager {
       }
     });
   }
-  
+
   private String getReportCaption(Report report, BeeRow row) {
     String caption = Data.getString(VIEW_REPORT_OPTIONS, row, COL_CAPTION);
     if (!BeeUtils.isEmpty(caption)) {
       return caption.trim();
     }
-    
+
     StringBuilder sb = new StringBuilder(report.getCaption());
     String separator = BeeUtils.space(2);
-    
+
     JustDate lower = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_LOWER_DATE);
     if (lower != null) {
       sb.append(separator).append("nuo").append(separator).append(lower.toString());
@@ -318,7 +121,7 @@ class ReportManager {
     if (upper != null) {
       sb.append(separator).append("iki").append(separator).append(upper.toString());
     }
-    
+
     return sb.toString();
   }
 
@@ -385,10 +188,10 @@ class ReportManager {
     upperDate.setValue(Data.getString(viewName, options, COL_UPPER_DATE));
     addStyle(upperDate.asWidget(), "upperDate");
     container.add(upperDate);
-    
+
     final InputSpinner lowerHour;
     final InputSpinner upperHour;
-    
+
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
       BeeLabel lhLabel = new BeeLabel("Valanda nuo:");
       addStyle(lhLabel, "lhLabel");
@@ -417,190 +220,81 @@ class ReportManager {
     addStyle(atpLabel, "atpLabel");
     container.add(atpLabel);
 
-    final BeeListBox atpList = new BeeListBox();
-    atpList.setMinSize(3);
-    atpList.setMaxSize(5);
-    addStyle(atpList, "attendeeTypes");
-    atpList.addDoubleClickHandler(attendeeTypeWidgetHandler);
-    atpList.addKeyDownHandler(attendeeTypeWidgetHandler);
-    container.add(atpList);
+    Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME));
+    atpRel.disableNewRow();
+    final MultiSelector atpSelector = MultiSelector.createAutonomous(atpRel,
+        RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME)));
 
-    BeeImage atpAdd = new BeeImage(Global.getImages().add(), new Command() {
-      @Override
-      public void execute() {
-        addAttendeeTypes(atpList);
-      }
-    });
-    addStyle(atpAdd, "atpAdd");
-    container.add(atpAdd);
-
-    BeeImage atpDel = new BeeImage(Global.getImages().delete(), new Command() {
-      @Override
-      public void execute() {
-        removeAttendeeType(atpList);
-      }
-    });
-    addStyle(atpDel, "atpDel");
-    container.add(atpDel);
+    atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
+    addStyle(atpSelector, "attendeeTypes");
+    container.add(atpSelector);
 
     BeeLabel attLabel = new BeeLabel("Resursai:");
     addStyle(attLabel, "attLabel");
     container.add(attLabel);
 
-    final BeeListBox attList = new BeeListBox();
-    attList.setMinSize(3);
-    attList.setMaxSize(5);
-    addStyle(attList, "attendees");
-    attList.addDoubleClickHandler(attendeeWidgetHandler);
-    attList.addKeyDownHandler(attendeeWidgetHandler);
-    container.add(attList);
+    Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
+    attRel.disableNewRow();
+    final MultiSelector attSelector = MultiSelector.createAutonomous(attRel,
+        RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME)));
 
-    BeeImage attAdd = new BeeImage(Global.getImages().add(), new Command() {
-      @Override
-      public void execute() {
-        addAttendees(attList);
-      }
-    });
-    addStyle(attAdd, "attAdd");
-    container.add(attAdd);
-
-    BeeImage attDel = new BeeImage(Global.getImages().delete(), new Command() {
-      @Override
-      public void execute() {
-        removeAttendee(attList);
-      }
-    });
-    addStyle(attDel, "attDel");
-    container.add(attDel);
+    attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));
+    addStyle(attSelector, "attendees");
+    container.add(attSelector);
 
     final BeeButton tableCommand = new BeeButton("Lentelė", new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();
-        
+
         JustDate vLd = TimeUtils.parseDate(lowerDate.getValue());
         JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
-        
+
         if (vLd != null && vUd != null && TimeUtils.isMeq(vLd, vUd)) {
           Global.showError("Neteisingas datų intervalas");
           return;
         }
-        
+
         int vLh = (lowerHour == null) ? 0 : lowerHour.getIntValue();
         int vUh = (upperHour == null) ? 0 : upperHour.getIntValue();
         if (vUh > 0 && vUh <= vLh) {
           Global.showError("Neteisingas valandų intervalas");
           return;
         }
-        
+
         BeeRow newRow = DataUtils.cloneRow(options);
         Data.setValue(viewName, newRow, COL_CAPTION, vCap);
         Data.setValue(viewName, newRow, COL_LOWER_DATE, vLd);
         Data.setValue(viewName, newRow, COL_UPPER_DATE, vUd);
-        
+
         if (lowerHour != null) {
           Data.setValue(viewName, newRow, COL_LOWER_HOUR, vLh);
         }
         if (upperHour != null) {
           Data.setValue(viewName, newRow, COL_UPPER_HOUR, vUh);
         }
-        
-        Data.setValue(viewName, newRow, COL_ATTENDEE_TYPES, DataUtils.buildIdList(attendeeTypes));
-        Data.setValue(viewName, newRow, COL_ATTENDEES, DataUtils.buildIdList(attendees));
-        
+
+        Data.setValue(viewName, newRow, COL_ATTENDEE_TYPES, atpSelector.getValue());
+        Data.setValue(viewName, newRow, COL_ATTENDEES, attSelector.getValue());
+
         reportOptions.put(report, newRow);
         doReport(report, newRow);
-        
+
         Global.closeDialog(container);
       }
     });
     addStyle(tableCommand, "tableCommand");
     container.add(tableCommand);
 
-    attendeeTypes.clear();
-    String idList = Data.getString(viewName, options, COL_ATTENDEE_TYPES);
-    if (!BeeUtils.isEmpty(idList)) {
-      attendeeTypes.addAll(DataUtils.parseIdList(idList));
-      refreshAttendeeTypeWidget(atpList);
-    }
-
-    attendees.clear();
-    idList = Data.getString(viewName, options, COL_ATTENDEES);
-    if (!BeeUtils.isEmpty(idList)) {
-      attendees.addAll(DataUtils.parseIdList(idList));
-      refreshAttendeeWidget(attList);
-    }
-    
-    DialogBox dialog = DialogBox.create(report.getCaption(),
-        DialogConstants.STYLE_REPORT_OPTIONS);
+    DialogBox dialog = DialogBox.create(report.getCaption(), DialogConstants.STYLE_REPORT_OPTIONS);
     dialog.setWidget(container);
-    
+
     dialog.setAnimationEnabled(true);
     dialog.center();
-    
+
     caption.setFocus(true);
   }
 
-  private void refreshAttendeeTypeWidget(BeeListBox listBox) {
-    if (listBox.getItemCount() > 0) {
-      listBox.clear();
-    }
-
-    BeeRowSet rowSet = CalendarKeeper.getAttendeeTypes();
-    if (rowSet != null && !attendeeTypes.isEmpty()) {
-      String viewName = rowSet.getViewName();
-      for (long id : attendeeTypes) {
-        BeeRow row = rowSet.getRowById(id);
-        listBox.addItem(Data.getString(viewName, row, COL_NAME));
-      }
-    }
-  }
-
-  private void refreshAttendeeWidget(BeeListBox listBox) {
-    if (listBox.getItemCount() > 0) {
-      listBox.clear();
-    }
-
-    BeeRowSet rowSet = CalendarKeeper.getAttendees();
-    if (rowSet != null && !attendees.isEmpty()) {
-      String viewName = rowSet.getViewName();
-      for (long id : attendees) {
-        BeeRow row = rowSet.getRowById(id);
-        String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
-            Data.getString(viewName, row, COL_TYPE_NAME));
-        listBox.addItem(item);
-      }
-    }
-  }
-
-  private void removeAttendee(BeeListBox listBox) {
-    if (attendees.isEmpty()) {
-      return;
-    }
-
-    int index = listBox.getSelectedIndex();
-    if (!BeeUtils.isIndex(attendees, index)) {
-      index = attendees.size() - 1;
-    }
-
-    attendees.remove(index);
-    refreshAttendeeWidget(listBox);
-  }
-
-  private void removeAttendeeType(BeeListBox listBox) {
-    if (attendeeTypes.isEmpty()) {
-      return;
-    }
-
-    int index = listBox.getSelectedIndex();
-    if (!BeeUtils.isIndex(attendeeTypes, index)) {
-      index = attendeeTypes.size() - 1;
-    }
-
-    attendeeTypes.remove(index);
-    refreshAttendeeTypeWidget(listBox);
-  }
-  
   private void showReport(Report report, String caption, BeeRowSet rowSet) {
     String gridName = "CalendarReport" + report.name();
     GridDescription gridDescription = new GridDescription(gridName);

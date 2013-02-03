@@ -898,10 +898,6 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         BeeRow newRow = getNewRow();
-        if (CrmUtils.isScheduled(newStart) && !TaskStatus.SCHEDULED.is(getStatus())) {
-          newRow.setValue(getFormView().getDataIndex(COL_STATUS), TaskStatus.SCHEDULED.ordinal());
-        }
-
         if (!Objects.equal(newStart, oldStart)) {
           newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
         }

@@ -127,6 +127,27 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private static final int MIN_INPUT_WIDTH = 25;
   private static final int MAX_INPUT_LENGTH = 30;
   
+  public static MultiSelector createAutonomous(Relation relation, AbstractCellRenderer renderer) {
+    final MultiSelector selector = new MultiSelector(relation, true, null);
+    selector.setRenderer(renderer);
+    
+    selector.addFocusHandler(new FocusHandler() {
+      @Override
+      public void onFocus(FocusEvent event) {
+        selector.setEditing(true);
+      }
+    });
+    
+    selector.addBlurHandler(new BlurHandler() {
+      @Override
+      public void onBlur(BlurEvent event) {
+        selector.setEditing(false);
+      }
+    });
+    
+    return selector;
+  }
+  
   private final String rowProperty;
   
   private AbstractCellRenderer renderer;

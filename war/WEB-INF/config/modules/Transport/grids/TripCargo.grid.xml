@@ -6,16 +6,11 @@
   editForm="CargoPlace" editPopup="true" editInPlace="CargoPercent" disabledActions="add"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
-  <header borderWidth="1 0" />
-  <body height="68" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
+
+  <body height="68" />
 
   <columns>
-    <RelColumn name="OrderNo"  caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
+    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
     <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
       minWidth="100" />
     <DataColumn name="Weight" caption="Svoris" />

@@ -509,18 +509,9 @@
   position: absolute;
   left: 0;
   top: 140px;
-  width: 200px;
-  height: 100px;
-}
-.bee-cal-ReportOptions-atpAdd {
-  position: absolute;
-  left: 80px;
-  top: 250px;
-}
-.bee-cal-ReportOptions-atpDel {
-  position: absolute;
-  left: 120px;
-  top: 250px;
+  width: 220px;
+  max-height: 160px;
+  overflow: auto;
 }
 
 .bee-cal-ReportOptions-attLabel {
@@ -532,18 +523,9 @@
   position: absolute;
   left: 260px;
   top: 140px;
-  width: 200px;
-  height: 100px;
-}
-.bee-cal-ReportOptions-attAdd {
-  position: absolute;
-  left: 340px;
-  top: 250px;
-}
-.bee-cal-ReportOptions-attDel {
-  position: absolute;
-  left: 380px;
-  top: 250px;
+  width: 220px;
+  max-height: 160px;
+  overflow: auto;
 }
 
 .bee-cal-ReportOptions-tableCommand {

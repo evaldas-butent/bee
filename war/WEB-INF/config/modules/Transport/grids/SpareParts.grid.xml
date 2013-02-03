@@ -25,14 +25,6 @@
     <w:ChildGrid name="SparePartUsage" relColumn="Part" />
   </south>
   
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
-
   <columns>
     <RelColumn name="Type" searchableColumns="ParentName Name" caption="Tipas" />
     <DataColumn name="Number" caption="Numeris" />

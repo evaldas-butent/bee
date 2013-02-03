@@ -713,13 +713,17 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
       long oldAttendee = calendar.getAttendees().get(oldColumnIndex);
       long newAttendee = calendar.getAttendees().get(newColumnIndex);
+      
+      List<Long> attendees = Lists.newArrayList(appointment.getAttendees());
 
-      boolean add = !appointment.getAttendees().contains(newAttendee);
+      boolean add = !attendees.contains(newAttendee);
 
-      appointment.getAttendees().remove(oldAttendee);
+      attendees.remove(oldAttendee);
       if (add) {
-        appointment.getAttendees().add(newAttendee);
+        attendees.add(newAttendee);
       }
+      
+      appointment.updateAttendees(attendees);
 
       String viewName = VIEW_APPOINTMENT_ATTENDEES;
       long appId = appointment.getId();

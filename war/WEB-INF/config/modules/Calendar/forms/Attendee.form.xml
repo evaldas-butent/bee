@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Attendee" viewName="Attendees" caption="Resursas">
+  name="Attendee" viewName="Attendees" caption="Resursas" width="640" height="300">
 
   <FlowPanel>
     <InputText source="Name" caption="Pavadinimas:" style="width: 340px;" d:size="100" d:unit="px"

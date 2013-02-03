@@ -24,14 +24,6 @@
     </w:FlowPanel>
   </north>  
   
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
-
   <columns>
     <CalcColumn name="Mode" type="string" caption="-" cellType="html"
       horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />

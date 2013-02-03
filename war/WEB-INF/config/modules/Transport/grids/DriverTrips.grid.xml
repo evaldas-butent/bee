@@ -4,13 +4,6 @@
 
   name="DriverTrips" viewName="DriverTrips" readOnly="true"
   >
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
 
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />

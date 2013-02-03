@@ -256,21 +256,28 @@ public class CalendarKeeper {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
-              result.updateRow(AppointmentBuilder.createEmptyRow(typeRow, start), false);
-
+              
+              Long att = null;
               if (DataUtils.isId(attendeeId)) {
-                builder.setAttendees(Lists.newArrayList(attendeeId));
+                att = attendeeId;
 
               } else if (DataUtils.isId(calendarId)) {
                 CalendarController controller = getController(calendarId);
                 if (controller != null) {
                   List<Long> attendees = controller.getAttendees();
                   if (!attendees.isEmpty()) {
-                    builder.setAttendees(Lists.newArrayList(attendees.get(0)));
+                    att = attendees.get(0);
                     builder.setUcAttendees(attendees);
                   }
                 }
               }
+
+              BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start);
+              if (att != null) {
+                row.setProperty(VIEW_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
+              }
+
+              result.updateRow(row, false);
 
               builder.setRequiredFields(formDescription.getOptions());
               builder.initPeriod(start);
@@ -467,7 +474,6 @@ public class CalendarKeeper {
               result.start(null);
               result.updateRow(DataUtils.cloneRow(appointment.getRow()), false);
 
-              builder.setAttendees(appointment.getAttendees());
               builder.setProperties(appointment.getProperties());
               builder.setReminders(appointment.getReminders());
 
