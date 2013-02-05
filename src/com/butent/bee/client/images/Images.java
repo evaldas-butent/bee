@@ -197,33 +197,48 @@ public class Images {
     @Source("settings.png")
     ImageResource settings();
 
-    @Source("silver/edit_add_small.png")
+    @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
 
-    @Source("silver/bookmark_add_small.png")
+    @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
 
-    @Source("silver/close_small.png")
+    @Source("silver/close_17x18.png")
     ImageResource silverClose();
 
-    @Source("silver/configure_small.png")
+    @Source("silver/configure_17x18.png")
     ImageResource silverConfigure();
 
-    @Source("silver/edit_delete_small.png")
+    @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
 
-    @Source("silver/edit_small.png")
+    @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
 
-    @Source("silver/print_small.png")
+    @Source("silver/filter_remove_25x14.png")
+    ImageResource silverFilterRemove();
+    
+    @Source("silver/minus_button_17x18.png")
+    ImageResource silverMinus();
+    
+    @Source("silver/plus_button_17x18.png")
+    ImageResource silverPlus();
+    
+    @Source("silver/print_17x18.png")
     ImageResource silverPrint();
 
-    @Source("silver/reload_small.png")
+    @Source("silver/reload_17x18.png")
     ImageResource silverReload();
 
-    @Source("silver/save_small.png")
+    @Source("silver/save_17x18.png")
     ImageResource silverSave();
 
+    @Source("silver/tringle_down_11x9.png")
+    ImageResource silverTringleDown();
+
+    @Source("silver/tringle_up_11x9.png")
+    ImageResource silverTringleUp();
+    
     @Source("slider.gif")
     ImageResource slider();
 
@@ -395,9 +410,14 @@ public class Images {
     map.put(key("silverConfigure"), resources.silverConfigure());
     map.put(key("silverDelete"), resources.silverDelete());
     map.put(key("silverEdit"), resources.silverEdit());
+    map.put(key("silverFilterRemove"), resources.silverFilterRemove());
+    map.put(key("silverMinus"), resources.silverMinus());
+    map.put(key("silverPlus"), resources.silverPlus());
     map.put(key("silverPrint"), resources.silverPrint());
     map.put(key("silverReload"), resources.silverReload());
     map.put(key("silverSave"), resources.silverSave());
+    map.put(key("silverTringleDown"), resources.silverTringleDown());
+    map.put(key("silverTringleUp"), resources.silverTringleUp());
   }
 
   private static String key(String name) {

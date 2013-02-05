@@ -85,14 +85,14 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     UP("up") {
       @Override
       Widget create(BeeRow row) {
-        return new BeeImage(Global.getImages().arrowUp());
+        return new BeeImage(Global.getImages().silverTringleUp());
       }
     },
 
     DOWN("down") {
       @Override
       Widget create(BeeRow row) {
-        return new BeeImage(Global.getImages().arrowDown());
+        return new BeeImage(Global.getImages().silverTringleDown());
       }
     },
 
@@ -106,7 +106,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     REMOVE("remove") {
       @Override
       Widget create(final BeeRow row) {
-        return new BeeImage(Global.getImages().delete());
+        return new BeeImage(Global.getImages().silverMinus());
       }
     };
 

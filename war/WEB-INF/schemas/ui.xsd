@@ -237,9 +237,14 @@
       <xs:enumeration value="silverConfigure" />
       <xs:enumeration value="silverDelete" />
       <xs:enumeration value="silverEdit" />
+      <xs:enumeration value="silverFilterRemove" />
+      <xs:enumeration value="silverMinus" />
+      <xs:enumeration value="silverPlus" />
       <xs:enumeration value="silverPrint" />
       <xs:enumeration value="silverReload" />
       <xs:enumeration value="silverSave" />
+      <xs:enumeration value="silverTringleDown" />
+      <xs:enumeration value="silverTringleUp" />
     </xs:restriction>
   </xs:simpleType>
   

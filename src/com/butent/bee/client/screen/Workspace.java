@@ -47,7 +47,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
-    CREATE(new BeeImage(Global.getImages().add()), null, null, "Naujas skirtukas"),
+    CREATE(new BeeImage(Global.getImages().silverPlus()), null, null, "Naujas skirtukas"),
 
     NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, "Nauja sritis viršuje"),
     SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, "Nauja sritis apačioje"),
@@ -66,7 +66,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     RIGHT(new BeeImage(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
         "Didinti į dešinę"),
 
-    CLOSE(new BeeImage(Global.getImages().noes()), null, null, "Uždaryti");
+    CLOSE(new BeeImage(Global.getImages().silverMinus()), null, null, "Uždaryti");
 
     private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 

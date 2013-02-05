@@ -23,13 +23,15 @@
   font-size: 12px;
   text-align: center;
 }
-.bee-cal .calendar-header .day-cell-container, .bee-cal .calendar-header .caption-container {
+.bee-cal .calendar-header .day-cell-container,
+.bee-cal .calendar-header .caption-container {
   height: 20px;
   position: relative;
   overflow: hidden;
 }
 
-.bee-cal .calendar-header .day-cell, .bee-cal .calendar-header .caption-cell {
+.bee-cal .calendar-header .day-cell,
+.bee-cal .calendar-header .caption-cell {
   border-left: 1px solid #ddd;
   position: absolute;
   top: 0;
@@ -118,7 +120,8 @@
 .bee-cal .minor-time-interval {
   border-top: 1px dotted #ddd;
 }
-.bee-cal .major-time-interval, .bee-cal .minor-time-interval {
+.bee-cal .major-time-interval,
+.bee-cal .minor-time-interval {
   position: absolute;
   left: 0;
   right: 0;
@@ -145,7 +148,9 @@
   width: 50px;
 }
 
-.bee-cal .appointment, .bee-cal .appointment-small, .bee-cal .appointment-big {
+.bee-cal .appointment,
+.bee-cal .appointment-small,
+.bee-cal .appointment-big {
   position: absolute;
   overflow: hidden;
   border: 1px solid #444;
@@ -340,7 +345,8 @@
   cursor: pointer;
 }
 
-.bee-cal-morePopup .appointment, .bee-cal-morePopup .appointment-multiday {
+.bee-cal-morePopup .appointment,
+.bee-cal-morePopup .appointment-multiday {
   margin-top: 5px;
   border: 1px solid #444;
   padding-left: 2px;
@@ -377,7 +383,6 @@
 }
 
 .bee-cal-Panel-today {
-  border: 1px solid #ccc;
   border-radius: 3px;
 }
 
@@ -388,7 +393,6 @@
   padding: 0;
 }
 .bee-cal-Panel-navItem {
-  border: 1px solid #ccc;
   font-weight: bold;
 }
 .bee-cal-Panel-navPrev {
@@ -400,25 +404,34 @@
   border-bottom-right-radius: 3px;
 }
 
+.bee-cal-Panel-view-item,
+.bee-cal-Panel-today,
+.bee-cal-Panel-navItem,
 .bee-cal-Panel-date {
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-}
-
-.bee-cal-Panel-view-panel {
-}
-
-.bee-cal-Panel-view-item, .bee-cal-Panel-today, .bee-cal-Panel-navItem, .bee-cal-Panel-date {
   padding: 4px 8px 4px 8px;
   cursor: pointer;
   background-color: whiteSmoke;
-  color: #444;
+  color: #43494F;
   text-align: center;
   outline: none;
+  border: 1px solid #ccc;
+}
+
+.bee-cal-Panel-view-item:active,
+.bee-cal-Panel-today:active,
+.bee-cal-Panel-navItem:active,
+.bee-cal-Panel-date:active {
+  border-style: inset !important;
+}
+
+.bee-cal-Panel-view-item:hover,
+.bee-cal-Panel-today:hover,
+.bee-cal-Panel-navItem:hover,
+.bee-cal-Panel-date:hover {
+  border-style: outset;
 }
 
 .bee-cal-Panel-view-item {
-  border: 1px solid #ccc;
   border-radius: 3px;
 }
 .bee-cal-Panel-view-item-selected {
@@ -671,4 +684,3 @@
 .bee-cal-MonthView .positioner {
   background-color: rgba(255, 238, 238, 0.5) !important;
 }
-

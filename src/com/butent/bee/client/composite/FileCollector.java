@@ -264,7 +264,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().edit());
+        return new BeeImage(Global.getImages().silverEdit());
       }
 
       @Override
@@ -285,7 +285,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     DELETE("delete", "Išmesti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().delete());
+        return new BeeImage(Global.getImages().silverMinus());
       }
 
       @Override

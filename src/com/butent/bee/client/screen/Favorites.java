@@ -337,7 +337,7 @@ public class Favorites implements HandlesDeleteEvents {
     Widget widget = group.createItemWidget(key, item);
     display.setWidget(row, ITEM_COLUMN, widget);
 
-    BeeImage edit = new BeeImage(Global.getImages().edit());
+    BeeImage edit = new BeeImage(Global.getImages().silverEdit());
     edit.addStyleName(EDIT_STYLE);
     edit.addClickHandler(new ClickHandler() {
       @Override
@@ -353,7 +353,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     display.setWidget(row, EDIT_COLUMN, edit);
 
-    BeeImage delete = new BeeImage(Global.getImages().delete());
+    BeeImage delete = new BeeImage(Global.getImages().silverMinus());
     delete.addStyleName(DELETE_STYLE);
     delete.addClickHandler(new ClickHandler() {
       @Override

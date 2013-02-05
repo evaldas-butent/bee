@@ -97,7 +97,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
-    final BeeImage create = new BeeImage(Global.getImages().add());
+    final BeeImage create = new BeeImage(Global.getImages().silverPlus());
     create.addStyleName("bee-mail-FolderAction");
     create.setTitle("Sukurti naują aplanką");
 
@@ -206,7 +206,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         } else {
           label.addStyleDependentName("disconnected");
         }
-        final BeeImage edit = new BeeImage(Global.getImages().edit());
+        final BeeImage edit = new BeeImage(Global.getImages().silverEdit());
         edit.addStyleName("bee-mail-FolderAction");
         edit.setTitle((BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
             "pavadinimą")));
@@ -226,7 +226,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         });
         row.add(edit);
 
-        final BeeImage delete = new BeeImage(Global.getImages().delete());
+        final BeeImage delete = new BeeImage(Global.getImages().silverMinus());
         delete.addStyleName("bee-mail-FolderAction");
         delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()));
 

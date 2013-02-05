@@ -67,7 +67,7 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
       add(search);
       setSearchId(search.getWidgetId());
       
-      BeeImage removeFilter = new BeeImage(Global.getImages().filterDelete());
+      BeeImage removeFilter = new BeeImage(Global.getImages().silverFilterRemove());
       removeFilter.addStyleName(STYLE_REMOVE_FILTER);
       removeFilter.setTitle(Action.REMOVE_FILTER.getCaption());
       

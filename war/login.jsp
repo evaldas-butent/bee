@@ -20,85 +20,72 @@ body {
   left: 50%;
   top: 50%;
   width: 400px;
-  height: 320px;
-  margin-top: -160px;
+  height: 400px;
+  margin-top: -240px;
   margin-left: -200px;
 }
 
-.bee-Error-Caption {
-  color: red;
+.bee-SignIn-Logo-container {
   position: absolute;
-  left: 100px;
-  bottom: 31%
+  left: 160px;
+  top: 0;
 }
 
-.bee-SignIn-Caption {
-  position: absolute;
-  bottom: 20%;
-  left: 119px;
+.bee-SignIn-Logo {
+  width: 55px;
+  height: 76px;  
 }
 
 .bee-SignIn-Label {
-  top: 10px;
+  position: absolute;
+  left: 100px;
 }
 
 .bee-SignIn-Input {
+  position: absolute;
+  left: 100px;
+  width: 175px;
   height: 32px;
   padding-left: 8px;
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;
-  top: 30px;
-  width: 175px;
   box-shadow: inset 3px 3px 10px silver;
   color: #43494F;
 }
 
-.bee-SignIn-User {
-  left: 100px;
-  position: absolute;
+.bee-SignIn-Input:focus {
+  background-color: whitesmoke;
 }
 
-.bee-SignIn-Password {
-  left: 100px;
-  position: absolute;
+.bee-SignIn-Label-user {
+  top: 90px;
+}
+
+.bee-SignIn-Input-user {
+  top: 110px;
+}
+
+.bee-SignIn-Label-password {
+  top: 148px;
+}
+
+.bee-SignIn-Input-password {
+  top: 168px;
 }
 
 .bee-SignIn-Button {
+  position: absolute;
+  left: 130px;
+  top: 220px;
   height: 40px;
   width: 125px;
   padding-left: 8px;
   padding-right: 8px;
-  position: absolute;
-  left: 130px;
-  top: 140px;
   background-color: #43494F;
   color: white;
   font-weight: bold;
   border: 2px solid #43494F;
   border-radius: 3px;
-}
-
-.bee-SignIn-Password-Label {
-  top: 68px;
-}
-
-.bee-SignIn-Password-Input {
-  height: 32px;
-  padding-left: 8px;
-  border: 1px solid #d9d9d9;
-  border-top: 1px solid silver;
-  top: 88px;
-  width: 175px;
-  box-shadow: inset 3px 3px 10px silver;
-  color: #43494F
-}
-
-.bee-SignIn-Password-Input:focus {
-  background-color: whitesmoke;
-}
-
-.bee-SignIn-Input:focus {
-  background-color: whitesmoke;
 }
 
 .bee-SignIn-Button:hover {
@@ -109,6 +96,20 @@ body {
 .bee-SignIn-Button:active {
   border-style: inset !important;
 }
+
+.bee-SignIn-Error {
+  position: absolute;
+  left: 100px;
+  bottom: 100px;
+  color: red;
+}
+
+.bee-SignIn-Caption {
+  position: absolute;
+  left: 119px;
+  bottom: 64px;
+}
+
 </style>
 
 <script type="text/javascript">
@@ -128,25 +129,25 @@ body {
 <body>
   <div class="bee-SignIn-Panel">
     <form method="post" action="j_security_check" accept-charset="UTF-8">
-      <div style="position: absolute; left: 160px; top: -80px;">
-        <img src="images/logo.gif" style="width: 55px; height: 76px;" border="0" />
+      <div class="bee-SignIn-Logo-container">
+        <img src="images/logo.gif" class="bee-SignIn-Logo" />
       </div>
 
-      <div class="bee-SignIn-Caption">
-        UAB "Būtenta" &copy; 2010 - <%= TimeUtils.today().getYear() %>
-      </div>
-      
-      <%  if (request.getParameter("fail") != null) { %>
-        <div class="bee-Error-Caption">Bandykite dar kartą</div>
-      <% } %>
-      
-      <div class="bee-SignIn-Label bee-SignIn-User">Prisijungimo vardas</div>
-      <input type="text" class="bee-SignIn-Input bee-SignIn-User" name="j_username" id="user"
+      <div class="bee-SignIn-Label bee-SignIn-Label-user">Prisijungimo vardas</div>
+      <input type="text" class="bee-SignIn-Input bee-SignIn-Input-user" name="j_username" id="user"
         onkeydown="return goPswd(event)" autofocus>
 
-      <div class="bee-SignIn-Password-Label bee-SignIn-Password">Slaptažodis</div>
-      <input type="password" class="bee-SignIn-Password-Input bee-SignIn-Password" name="j_password"
-        id="pswd"> <input type="submit" class="bee-SignIn-Button" value="Prisijungti" />
+      <div class="bee-SignIn-Label bee-SignIn-Label-password">Slaptažodis</div>
+      <input type="password" class="bee-SignIn-Input bee-SignIn-Input-password" name="j_password"
+        id="pswd">
+
+      <input type="submit" class="bee-SignIn-Button" value="Prisijungti" />
+
+      <%  if (request.getParameter("fail") != null) { %>
+        <div class="bee-SignIn-Error">Bandykite dar kartą</div>
+      <% } %>
+
+      <div class="bee-SignIn-Caption">UAB "Būtenta" &copy; 2010 - <%= TimeUtils.today().getYear() %></div>
     </form>
   </div>
 </body>

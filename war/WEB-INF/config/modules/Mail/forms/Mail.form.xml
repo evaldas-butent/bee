@@ -11,11 +11,11 @@
       <ListBox name="Accounts" />
       
       <HorizontalPanel cellStyle="padding: 5px">
-        <Image name="create" resource="edit" />
+        <Image name="create" resource="silverEdit" />
         <Image name="reply" resource="replyTo" />
         <Image name="replyAll" resource="replyToAll" />
         <Image name="forward" resource="forwardTo" />
-        <Image name="delete" resource="delete" />
+        <Image name="delete" resource="silverMinus" />
       </HorizontalPanel>
       
     </HorizontalPanel>

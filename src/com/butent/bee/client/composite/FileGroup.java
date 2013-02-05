@@ -263,7 +263,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().edit());
+        return new BeeImage(Global.getImages().silverEdit());
       }
 
       @Override
@@ -284,7 +284,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     DELETE("delete", "Išmesti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().delete());
+        return new BeeImage(Global.getImages().silverMinus());
       }
 
       @Override
