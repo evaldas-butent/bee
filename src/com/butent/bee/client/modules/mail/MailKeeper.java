@@ -110,14 +110,14 @@ public class MailKeeper {
     }
   }
 
-  static void copyMessage(final Long folderFrom, final Long folderTo, Long placeId,
+  static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
       final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
     params.addDataItem(COL_ADDRESS, panel.getCurrentAccount().getAddress());
     params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
-    params.addDataItem(COL_PLACE, Codec.beeSerialize(new Long[] {placeId}));
+    params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
     params.addDataItem("move", move ? 1 : 0);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {

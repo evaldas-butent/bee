@@ -34,7 +34,7 @@
         </row>
       </Table>
       
-      <FlowPanel name="TripInfo" class="flexible" style="margin-top: 10px;" />
+      <FlowPanel name="TripInfo" class="flexible" style="margin: 10px; margin-left: 0; overflow: auto;" />
     </FlowPanel>
 
     <ChildGrid class="flexible" name="OrderCargo" relColumn="Order" />

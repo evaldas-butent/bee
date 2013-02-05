@@ -11,6 +11,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -24,6 +25,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -48,6 +50,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -68,6 +71,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.TextLabel;
@@ -345,6 +349,8 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   private class MessagesGrid extends AbstractGridInterceptor {
+    private final Horizontal w = new Horizontal();
+
     @Override
     public Map<String, Filter> getInitialFilters() {
       return ImmutableMap.of(MESSAGES_FILTER,
@@ -383,15 +389,44 @@ public class MailPanel extends AbstractFormInterceptor {
 
           EventUtils.allowCopyMove(event);
           EventUtils.setDndData(event, placeId);
-          // event.getDataTransfer().setDragImage(new BeeLabel("Laiškas").getElement(), 0, 0);
 
-          DndHelper.fillContent(DATA_TYPE_MESSAGE, placeId, getCurrentFolderId(), null);
+          Collection<RowInfo> rows = getGridPresenter().getGridView().getSelectedRows();
+          Set<Long> ids = Sets.newHashSet();
+
+          if (!BeeUtils.isEmpty(rows)) {
+            for (RowInfo info : rows) {
+              ids.add(info.getId());
+            }
+          }
+          BeeLabel dragLabel = new BeeLabel();
+
+          if (ids.contains(placeId)) {
+            int cnt = ids.size();
+            String ending = ((cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
+                ? "ų" : (cnt % 10 == 1 ? "as" : "ai"));
+            dragLabel = new BeeLabel(BeeUtils.joinWords(cnt, "pažymėt" + ending, "laišk" + ending));
+          } else {
+            dragLabel = new BeeLabel("1 laiškas");
+            ids.clear();
+          }
+          w.add(dragLabel);
+          RootPanel.get().add(w);
+          dragLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+          dragLabel.getElement().getStyle().setBackgroundColor("whiteSmoke");
+
+          event.getDataTransfer().setDragImage(dragLabel.getElement(), 0,
+              w.getElement().getOffsetHeight());
+
+          DndHelper.fillContent(DATA_TYPE_MESSAGE, placeId, getCurrentFolderId(),
+              Codec.beeSerialize(ids));
         }
       });
 
       Binder.addDragEndHandler(gridView.getGrid(), new DragEndHandler() {
         @Override
         public void onDragEnd(DragEndEvent event) {
+          w.clear();
+          RootPanel.get().remove(w);
           DndHelper.reset();
         }
       });

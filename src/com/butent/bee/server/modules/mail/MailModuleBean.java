@@ -367,7 +367,7 @@ public class MailModuleBean implements BeeModule {
       throw new MessagingException(account.getTransportErrorMessage());
     }
     Session session = Session.getInstance(new Properties(), null);
-    session.setDebug(false);
+    session.setDebug(logger.isDebugEnabled());
     Transport transport = null;
 
     try {

@@ -138,7 +138,7 @@ public class BeeUtils {
   public static String bracket(long x) {
     return bracket(toString(x));
   }
-  
+
   /**
    * Surrounds the String value {@code s} in brackets.
    * 
@@ -175,7 +175,7 @@ public class BeeUtils {
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
   }
-  
+
   public static <T> boolean check(Predicate<T> predicate, T input) {
     return (predicate == null) ? true : predicate.apply(input);
   }
@@ -811,7 +811,7 @@ public class BeeUtils {
     if (col == null || range == null) {
       return false;
     }
-    
+
     for (Range<C> item : col) {
       if (intersects(item, range)) {
         return true;
@@ -819,7 +819,7 @@ public class BeeUtils {
     }
     return false;
   }
-  
+
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -977,7 +977,7 @@ public class BeeUtils {
   public static boolean isEmpty(Collection<?> col) {
     return col == null || col.isEmpty();
   }
-  
+
   public static boolean isEmpty(Map<?, ?> map) {
     return map == null || map.isEmpty();
   }
@@ -1024,7 +1024,7 @@ public class BeeUtils {
   public static boolean isIndex(Collection<?> col, int idx) {
     return col != null && idx >= 0 && idx < col.size();
   }
-  
+
   public static boolean isInt(long x) {
     return x >= Integer.MIN_VALUE && x <= Integer.MAX_VALUE;
   }
@@ -1102,7 +1102,7 @@ public class BeeUtils {
   public static boolean isNonNegative(Integer x) {
     return (x == null) ? false : x >= 0;
   }
-  
+
   public static boolean isNonNegativeDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }
@@ -1130,7 +1130,7 @@ public class BeeUtils {
   public static boolean isPositive(Integer x) {
     return (x == null) ? false : x > 0;
   }
-  
+
   public static boolean isPositive(Long x) {
     return (x == null) ? false : x > 0L;
   }
@@ -1277,7 +1277,7 @@ public class BeeUtils {
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
   }
-  
+
   public static String joinItems(Object first, Object second, Object... rest) {
     return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
   }
@@ -1338,7 +1338,7 @@ public class BeeUtils {
     if (col == null) {
       return result;
     }
-    
+
     for (Integer item : col) {
       if (item != null) {
         if (result == null) {
@@ -1412,7 +1412,7 @@ public class BeeUtils {
   public static <T> T nvl(T o1, T o2) {
     return (o1 == null) ? o2 : o1;
   }
-  
+
   public static <T> T nvl(T o1, T o2, T o3) {
     return nvl(nvl(o1, o2), o3);
   }
@@ -1472,7 +1472,7 @@ public class BeeUtils {
       return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).retainFrom(input);
     }
   }
-  
+
   public static <T> T peek(Iterable<T> container) {
     if (container == null) {
       return null;
@@ -1838,7 +1838,7 @@ public class BeeUtils {
 
     return sb.toString();
   }
-  
+
   /**
    * Fills a String with value {@code z} for the length of {@code n}.
    * 
@@ -1881,7 +1881,7 @@ public class BeeUtils {
   public static int rotateBackwardInclusive(int x, int min, int max) {
     return (x <= min || x > max) ? max : x - 1;
   }
-  
+
   public static int rotateForwardExclusive(int x, int min, int max) {
     return rotateForwardInclusive(x, min, max - 1);
   }
@@ -1889,7 +1889,7 @@ public class BeeUtils {
   public static int rotateForwardInclusive(int x, int min, int max) {
     return (x < min || x >= max) ? min : x + 1;
   }
-  
+
   public static int round(double x) {
     return toInt(Math.round(x));
   }
@@ -1931,7 +1931,7 @@ public class BeeUtils {
     }
     return BeeConst.DOUBLE_ZERO;
   }
-  
+
   public static String round(String s, int dec) {
     if (!isDouble(s)) {
       return null;
@@ -1943,7 +1943,7 @@ public class BeeUtils {
       } else {
         return toString(d);
       }
-    
+
     } else {
       long scale = 1;
       for (int i = 0; i < dec; i++) {
@@ -1958,7 +1958,7 @@ public class BeeUtils {
         if (x < 0) {
           sb.append(BeeConst.CHAR_MINUS);
         }
-        sb.append(Math.abs(x) / scale).append(BeeConst.STRING_POINT); 
+        sb.append(Math.abs(x) / scale).append(BeeConst.STRING_POINT);
         sb.append(padLeft(Long.toString(Math.abs(x) % scale), dec, BeeConst.CHAR_ZERO));
         return sb.toString();
 
@@ -1991,7 +1991,7 @@ public class BeeUtils {
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
-  
+
   public static <T> boolean sameElements(Collection<T> c1, Collection<T> c2) {
     if (isEmpty(c1)) {
       return isEmpty(c2);
@@ -2076,7 +2076,7 @@ public class BeeUtils {
 
     return ArrayUtils.toArray(lst);
   }
-  
+
   /**
    * Checks if {@code s1} and {@code s2} starts the same. The shorter String is compared with the
    * start of the longer String.
@@ -2104,7 +2104,7 @@ public class BeeUtils {
     }
     return same(s.trim().charAt(0), c);
   }
-  
+
   public static boolean startsWith(String str, String pfx) {
     if (isEmpty(str) || isEmpty(pfx)) {
       return false;
@@ -2123,7 +2123,7 @@ public class BeeUtils {
     if (col == null) {
       return result;
     }
-    
+
     for (Integer item : col) {
       if (item != null) {
         result += item;
@@ -2131,7 +2131,7 @@ public class BeeUtils {
     }
     return result;
   }
-  
+
   /**
    * Checks if {@code x} is a Boolean value.
    * 
@@ -2260,7 +2260,7 @@ public class BeeUtils {
     }
     return d.intValue();
   }
-  
+
   public static int toInt(long x) {
     if (x <= Integer.MIN_VALUE) {
       return Integer.MIN_VALUE;
@@ -2556,7 +2556,7 @@ public class BeeUtils {
     }
 
     int start = 0;
-    
+
     if (extract) {
       while (start < len) {
         if (isDigit(s.charAt(start))) {
@@ -2566,11 +2566,11 @@ public class BeeUtils {
             break;
           }
         }
-        
+
         start++;
       }
 
-    } else {  
+    } else {
       while (start < len && s.charAt(start) <= BeeConst.CHAR_SPACE) {
         start++;
       }
@@ -2645,7 +2645,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   private BeeUtils() {
   }
 }

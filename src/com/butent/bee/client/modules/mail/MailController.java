@@ -39,7 +39,9 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -295,12 +297,18 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
       public void onDrop(DropEvent event) {
         if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
           label.removeStyleDependentName(STYLE_DND_TARGET);
-          Long id = folderId;
+          Long folderTo = folderId;
 
-          if (!DataUtils.isId(id)) {
-            id = MailKeeper.getActiveSystemFolderId(sysFolder);
+          if (!DataUtils.isId(folderTo)) {
+            folderTo = MailKeeper.getActiveSystemFolderId(sysFolder);
           }
-          MailKeeper.copyMessage(DndHelper.getRelatedId(), id, DndHelper.getDataId(),
+          String[] places = Codec.beeDeserializeCollection(DndHelper.getDataDescription());
+
+          if (ArrayUtils.isEmpty(places)) {
+            places = new String[] {BeeUtils.toString(DndHelper.getDataId())};
+          }
+
+          MailKeeper.copyMessage(DndHelper.getRelatedId(), folderTo, places,
               !EventUtils.hasModifierKey(event.getNativeEvent()));
 
           event.stopPropagation();
