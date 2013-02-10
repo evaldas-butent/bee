@@ -98,7 +98,7 @@ public class MailKeeper {
     }
   }
 
-  static void clickFolder(Long folderId) {
+  static void clickFolder(long folderId) {
     if (activePanel != null) {
       activePanel.refresh(folderId);
     }
@@ -192,7 +192,7 @@ public class MailKeeper {
     });
   }
 
-  static Long getActiveSystemFolderId(SystemFolder sysFolder) {
+  static Long getCurrentSystemFolderId(SystemFolder sysFolder) {
     return activePanel.getCurrentAccount().getSystemFolderId(sysFolder);
   }
 

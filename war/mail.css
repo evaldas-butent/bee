@@ -52,6 +52,7 @@
 .bee-mail-HeaderSubject {
   color: black;
   margin-top: 5px;
+  white-space: nowrap;
 }
 
 .bee-mail-Subject {

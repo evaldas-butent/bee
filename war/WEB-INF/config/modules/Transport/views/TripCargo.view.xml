@@ -7,6 +7,7 @@
   >
   <Columns>
     <SimpleColumn name="Trip"/>
+    <SimpleColumn name="CargoOrder" />
     <SimpleColumn name="CargoPercent" />
     
     <SimpleColumn name="Cargo"/>    
@@ -23,6 +24,10 @@
       <SimpleColumn name="Number" />
       <SimpleColumn name="Cmr" />
       <SimpleColumn name="Notes" />
+
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="PlannedLoadingDate" />
+      </SimpleJoin>
     </SimpleJoin>
     
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
@@ -51,4 +56,8 @@
       <x:number>0</x:number>
     </SimpleColumn>
   </Columns>
+  <Order>
+    <OrderBy column="CargoOrder" />
+    <OrderBy column="PlannedLoadingDate" />
+  </Order>
 </View>

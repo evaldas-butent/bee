@@ -97,6 +97,19 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
+    final BeeImage refresh = new BeeImage(Global.getImages().refresh());
+    refresh.addStyleName("bee-mail-FolderAction");
+    refresh.setTitle("Tikrinti paštą");
+
+    refresh.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        MailKeeper.clickFolder(0);
+      }
+    });
+    caption.add(refresh);
+    panel.add(caption);
+
     final BeeImage create = new BeeImage(Global.getImages().silverPlus());
     create.addStyleName("bee-mail-FolderAction");
     create.setTitle("Sukurti naują aplanką");
@@ -161,7 +174,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
   private void buildTree(final AccountInfo account, MailFolder folder, int margin) {
     for (final MailFolder subFolder : folder.getSubFolders()) {
-      final Long folderId = subFolder.getId();
+      final long folderId = subFolder.getId();
+      int mrg = margin;
 
       if (account.getSystemFolder(folderId) == null) {
         Horizontal row = new Horizontal();
@@ -189,17 +203,21 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           final BeeImage disconnect = new BeeImage(Global.getImages().disconnect());
           disconnect.addStyleName("bee-mail-FolderAction");
           disconnect.setTitle(BeeUtils.joinWords("Nutraukti aplanko",
-              BeeUtils.bracket(label.getText()), "sinchronizaciją su pašto serveriu"));
+              BeeUtils.bracket(label.getText()), "sinchronizaciją su pašto serveriu?"));
 
           disconnect.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              Global.confirm(disconnect.getTitle(), new ConfirmationCallback() {
-                @Override
-                public void onConfirm() {
-                  MailKeeper.disconnectFolder(account, folderId);
-                }
-              });
+              Global.confirmDelete(Settings.getAppName(), Icon.WARNING,
+                  Lists.newArrayList(disconnect.getTitle(),
+                      subFolder.isConnected()
+                          ? "(Aplanko turinys bus pašalintas iš pašto serverio)" : null),
+                  new ConfirmationCallback() {
+                    @Override
+                    public void onConfirm() {
+                      MailKeeper.disconnectFolder(account, folderId);
+                    }
+                  });
             }
           });
           row.add(disconnect);
@@ -228,7 +246,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
         final BeeImage delete = new BeeImage(Global.getImages().silverMinus());
         delete.addStyleName("bee-mail-FolderAction");
-        delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()));
+        delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()) + "?");
 
         delete.addClickHandler(new ClickHandler() {
           @Override
@@ -249,8 +267,9 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
         foldersPanel.add(row);
         folders.put(folderId, label);
-        buildTree(account, subFolder, margin + 10);
+        mrg += 10;
       }
+      buildTree(account, subFolder, mrg);
     }
   }
 
@@ -270,7 +289,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           Long id = folderId;
 
           if (!DataUtils.isId(id)) {
-            id = MailKeeper.getActiveSystemFolderId(sysFolder);
+            id = MailKeeper.getCurrentSystemFolderId(sysFolder);
           }
           if (EventUtils.hasModifierKey(event.getNativeEvent())) {
             EventUtils.selectDropCopy(event);
@@ -300,7 +319,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           Long folderTo = folderId;
 
           if (!DataUtils.isId(folderTo)) {
-            folderTo = MailKeeper.getActiveSystemFolderId(sysFolder);
+            folderTo = MailKeeper.getCurrentSystemFolderId(sysFolder);
           }
           String[] places = Codec.beeDeserializeCollection(DndHelper.getDataDescription());
 

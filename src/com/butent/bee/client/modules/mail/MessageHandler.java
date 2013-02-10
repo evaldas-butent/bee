@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -272,6 +273,7 @@ public class MessageHandler extends AbstractFormInterceptor {
 
           if (txt == null && part.getValue(COL_CONTENT) != null) {
             Element pre = Document.get().createPreElement();
+            pre.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
             pre.setInnerHTML(part.getValue(COL_CONTENT));
             txt = pre.getString();
           }

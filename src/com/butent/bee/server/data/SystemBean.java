@@ -991,7 +991,9 @@ public class SystemBean {
         HashMultimap<String, String> fields = HashMultimap.create();
 
         for (BeeField field : table.getFields()) {
-          fields.put(field.getStorageTable(), field.getName());
+          if (field.isAuditable()) {
+            fields.put(field.getStorageTable(), field.getName());
+          }
         }
         for (String tblName : fields.keySet()) {
           table.addTrigger(tblName, SqlTriggerType.AUDIT,

@@ -1,6 +1,6 @@
 package com.butent.bee.server.modules.mail.proxy;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_MODULE;
+import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
@@ -43,7 +43,7 @@ public class MailProxy {
   public ResponseObject initServer() {
     teardownServer();
     ResponseObject response = new ResponseObject();
-  
+
     if (initParameters(Protocol.POP3)) {
       pop3Proxy = new POP3ProtocolServer(this);
       response.addInfo("POP3 proxy started");
@@ -64,12 +64,15 @@ public class MailProxy {
 
     switch (protocol) {
       case POP3:
+      case POP3S:
         bindPort = pop3BindPort;
         break;
       case IMAP:
+      case IMAPS:
         Assert.notImplemented();
         break;
       case SMTP:
+      case SMTPS:
         bindPort = smtpBindPort;
         break;
     }
@@ -81,12 +84,15 @@ public class MailProxy {
 
     switch (protocol) {
       case POP3:
+      case POP3S:
         serverName = pop3ServerName;
         break;
       case IMAP:
+      case IMAPS:
         Assert.notImplemented();
         break;
       case SMTP:
+      case SMTPS:
         serverName = smtpServerName;
         break;
     }
@@ -98,12 +104,15 @@ public class MailProxy {
 
     switch (protocol) {
       case POP3:
+      case POP3S:
         serverPort = pop3ServerPort;
         break;
       case IMAP:
+      case IMAPS:
         Assert.notImplemented();
         break;
       case SMTP:
+      case SMTPS:
         serverPort = smtpServerPort;
         break;
     }
@@ -130,6 +139,7 @@ public class MailProxy {
 
     switch (protocol) {
       case POP3:
+      case POP3S:
         if (ok) {
           pop3ServerName = server;
           pop3ServerPort = serverPort.intValue();
@@ -138,10 +148,12 @@ public class MailProxy {
         break;
 
       case IMAP:
+      case IMAPS:
         Assert.notImplemented();
         break;
 
       case SMTP:
+      case SMTPS:
         if (ok) {
           smtpServerName = server;
           smtpServerPort = serverPort.intValue();
@@ -155,6 +167,7 @@ public class MailProxy {
   private void resetParameters(Protocol protocol) {
     switch (protocol) {
       case POP3:
+      case POP3S:
         pop3ServerName = null;
         pop3ServerPort = 0;
         pop3BindPort = 0;
@@ -162,10 +175,12 @@ public class MailProxy {
         break;
 
       case IMAP:
+      case IMAPS:
         Assert.notImplemented();
         break;
 
       case SMTP:
+      case SMTPS:
         smtpServerName = null;
         smtpServerPort = 0;
         smtpBindPort = 0;

@@ -23,7 +23,7 @@ public class MailConstants {
   }
 
   public enum Protocol {
-    POP3, IMAP, SMTP
+    POP3, POP3S, IMAP, IMAPS, SMTP, SMTPS
   }
 
   public enum MessageFlag {
@@ -69,7 +69,7 @@ public class MailConstants {
   public static final String TBL_FOLDERS = "Folders";
 
   public static final String TBL_MESSAGES = "Messages";
-  public static final String TBL_HEADERS = "Headers";
+  public static final String TBL_RAW_CONTENTS = "RawContents";
   public static final String TBL_PARTS = "Parts";
   public static final String TBL_ATTACHMENTS = "Attachments";
 
@@ -77,7 +77,6 @@ public class MailConstants {
   public static final String TBL_PLACES = "Places";
 
   public static final String COL_MESSAGE = "Message";
-  public static final String COL_HEADER = "Header";
   public static final String COL_RAW_CONTENT = "RawContent";
   public static final String COL_FILE = "File";
   public static final String COL_ATTACHMENT_NAME = "FileName";
@@ -101,6 +100,9 @@ public class MailConstants {
   public static final String COL_STORE_PASSWORD = "StorePassword";
   public static final String COL_TRANSPORT_SERVER = "TransportServer";
   public static final String COL_TRANSPORT_PORT = "TransportPort";
+  public static final String COL_TRANSPORT_SSL = "TransportSSL";
+  public static final String COL_TRANSPORT_LOGIN = "TransportLogin";
+  public static final String COL_TRANSPORT_PASSWORD = "TransportPassword";
 
   public static final String COL_ACCOUNT = "Account";
   public static final String COL_FOLDER_PARENT = "Parent";

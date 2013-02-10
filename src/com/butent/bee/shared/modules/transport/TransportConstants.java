@@ -59,6 +59,7 @@ public class TransportConstants {
   public static final String VIEW_CARGO_SERVICES = "CargoServices";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
+  public static final String VIEW_CARGO_LIST = "CargoList";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXP_TRIPS = "ExpeditionTrips";
@@ -177,6 +178,7 @@ public class TransportConstants {
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
+  public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";

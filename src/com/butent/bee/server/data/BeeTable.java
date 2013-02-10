@@ -68,6 +68,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final boolean extended;
     private final boolean translatable;
     private final String label;
+    private final boolean auditable;
 
     private BeeField(XmlField xmlField, boolean extended) {
       this.name = xmlField.name;
@@ -84,6 +85,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.extended = extended;
       this.translatable = xmlField.translatable;
       this.defExpr = xmlField.defExpr;
+      this.auditable = xmlField.audit;
 
       switch (this.type) {
         case DATE:
@@ -150,6 +152,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     public SqlDataType getType() {
       return type;
+    }
+
+    public boolean isAuditable() {
+      return auditable;
     }
 
     public boolean isExtended() {
@@ -1159,7 +1165,6 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   void addField(XmlField xmlField, boolean extended) {
-
     BeeField field = (xmlField instanceof XmlRelation)
         ? new BeeRelation((XmlRelation) xmlField, extended)
         : new BeeField(xmlField, extended);

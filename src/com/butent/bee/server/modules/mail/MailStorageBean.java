@@ -5,7 +5,6 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -27,13 +26,13 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -53,6 +52,7 @@ import javax.mail.UIDFolder;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
@@ -83,7 +83,7 @@ public class MailStorageBean {
     }
     MailFolder folder = createFolder(parent.getAccountId(), parent, name, null);
 
-    if (account.getStoreProtocol() == Protocol.POP3) {
+    if (!account.isStoredRemotedly(parent)) {
       disconnectFolder(folder);
     }
     return folder;
@@ -113,7 +113,12 @@ public class MailStorageBean {
   }
 
   public MailFolder findFolder(MailAccount account, Long folderId) {
-    return getInboxFolder(account).findFolder(folderId);
+    return getRootFolder(account).findFolder(folderId);
+  }
+
+  public MailAccount getAccount(Long addressId) {
+    Assert.state(DataUtils.isId(addressId));
+    return getAccount(null, addressId);
   }
 
   public MailFolder getDraftsFolder(MailAccount account) {
@@ -121,6 +126,10 @@ public class MailStorageBean {
   }
 
   public MailFolder getInboxFolder(MailAccount account) {
+    return getSysFolder(account, account.getInboxFolderId(), SystemFolder.Inbox);
+  }
+
+  public MailFolder getRootFolder(MailAccount account) {
     Assert.notNull(account);
 
     if (account.getRootFolder() == null) {
@@ -140,34 +149,22 @@ public class MailStorageBean {
         .addOrder(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME));
 
     Multimap<Long, SimpleRow> folders = LinkedListMultimap.create();
-    MailFolder inbox = null;
 
     for (SimpleRow row : data) {
-      Long parent = row.getLong(COL_FOLDER_PARENT);
-
-      if (parent == null) {
-        Assert.isNull(inbox, "Account allows only single INBOX folder");
-
-        inbox = new MailFolder(accountId, null, row.getLong(COL_FOLDER),
-            row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
-      } else {
-        folders.put(parent, row);
-      }
+      folders.put(row.getLong(COL_FOLDER_PARENT), row);
     }
-    if (inbox == null) {
-      MailAccount account = getAccount(accountId);
-      inbox = createFolder(accountId, null, SystemFolder.Inbox.getFullName(), null);
-      account.setRootFolder(inbox);
+    MailFolder root = new MailFolder(accountId, null, null, null, null);
+    createTree(root, folders);
+
+    if (BeeUtils.isEmpty(root.getSubFolders())) {
+      MailAccount account = getAccount(accountId, null);
+      account.setRootFolder(root);
 
       for (SystemFolder sysFolder : SystemFolder.values()) {
-        if (sysFolder != SystemFolder.Inbox) {
-          createSysFolder(account, sysFolder);
-        }
+        createSysFolder(account, sysFolder);
       }
-    } else {
-      createTree(inbox, folders);
     }
-    return inbox;
+    return root;
   }
 
   public MailFolder getSentFolder(MailAccount account) {
@@ -243,19 +240,18 @@ public class MailStorageBean {
           .addConstant(COL_SENDER, sender)
           .addConstant(COL_SUBJECT, envelope.getSubject()));
 
-      String raw = null;
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
       try {
-        raw = CharStreams.toString(new InputStreamReader(message.getInputStream(),
-            BeeConst.CHARSET_UTF8));
-      } catch (UnsupportedEncodingException e) {
-      } catch (IOException e) {
-      }
-      qs.insertData(new SqlInsert(TBL_HEADERS)
-          .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_HEADER, envelope.getHeader())
-          .addConstant(COL_RAW_CONTENT, raw));
+        message.writeTo(bos);
+        bos.close();
 
+        qs.insertData(new SqlInsert(TBL_RAW_CONTENTS).addConstant(COL_MESSAGE, messageId)
+            .addConstant(COL_RAW_CONTENT, bos.toString(BeeConst.CHARSET_UTF8)));
+
+      } catch (IOException e) {
+        throw new MessagingException(e.toString());
+      }
       Set<Long> allAddresses = Sets.newHashSet();
 
       for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
@@ -269,7 +265,12 @@ public class MailStorageBean {
         }
       }
       try {
-        storePart(messageId, message, null);
+        try {
+          storePart(messageId, message, null);
+        } catch (MessagingException ex) {
+          storePart(messageId, new MimeMessage(null, new ByteArrayInputStream(bos.toByteArray())),
+              null);
+        }
       } catch (IOException e) {
         throw new MessagingException(e.toString());
       }
@@ -386,12 +387,15 @@ public class MailStorageBean {
   }
 
   private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder) {
-    MailFolder inbox = getInboxFolder(account);
-    MailFolder folder = createFolder(account, inbox, sysFolder.getFullName());
+    MailFolder root = getRootFolder(account);
+    MailFolder folder = createFolder(account, root, sysFolder.getFullName());
 
+    if (sysFolder == SystemFolder.Inbox && !folder.isConnected()) {
+      connectFolder(folder);
+    }
     qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
-        .addConstant(sysFolder.name() + "Folder", folder.getId())
-        .setWhere(sys.idEquals(TBL_ACCOUNTS, inbox.getAccountId())));
+        .addConstant(sysFolder.name() + COL_FOLDER, folder.getId())
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, root.getAccountId())));
 
     return folder;
   }
@@ -406,9 +410,7 @@ public class MailStorageBean {
     }
   }
 
-  private MailAccount getAccount(Long accountId) {
-    Assert.state(DataUtils.isId(accountId));
-
+  private MailAccount getAccount(Long accountId, Long addressId) {
     return new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
@@ -416,7 +418,9 @@ public class MailStorageBean {
         .addFrom(TBL_ACCOUNTS)
         .addFromInner(CommonsConstants.TBL_EMAILS,
             sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_ACCOUNTS, COL_ADDRESS))
-        .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId))));
+        .setWhere(DataUtils.isId(addressId)
+            ? SqlUtils.equals(TBL_ACCOUNTS, COL_ADDRESS, addressId)
+            : sys.idEquals(TBL_ACCOUNTS, accountId))));
   }
 
   private MailFolder getSysFolder(MailAccount account, Long folderId, SystemFolder sysFolder) {

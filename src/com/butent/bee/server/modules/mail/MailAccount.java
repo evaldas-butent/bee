@@ -10,6 +10,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -23,6 +24,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.Transport;
 import javax.mail.UIDFolder;
 import javax.mail.internet.MimeMessage;
 
@@ -38,13 +40,16 @@ public class MailAccount {
   private final String storeLogin;
   private final String storePassword;
 
-  private final Protocol transportProtocol = Protocol.SMTP;
+  private final Protocol transportProtocol;
   private final String transportHost;
   private final Integer transportPort;
+  private final String transportLogin;
+  private final String transportPassword;
 
   private final Long accountId;
   private final Long addressId;
 
+  private final Long inboxFolderId;
   private final Long draftsFolderId;
   private final Long sentFolderId;
   private final Long trashFolderId;
@@ -60,12 +65,16 @@ public class MailAccount {
       storeLogin = null;
       storePassword = null;
 
+      transportProtocol = null;
       transportHost = null;
       transportPort = null;
+      transportLogin = null;
+      transportPassword = null;
 
       accountId = null;
       addressId = null;
 
+      inboxFolderId = null;
       draftsFolderId = null;
       sentFolderId = null;
       trashFolderId = null;
@@ -77,15 +86,21 @@ public class MailAccount {
           data.getValue(CommonsConstants.COL_EMAIL));
       storePassword = data.getValue(COL_STORE_PASSWORD);
 
+      transportProtocol = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL))
+          ? Protocol.SMTPS : Protocol.SMTP;
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
+      transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
+          data.getValue(CommonsConstants.COL_EMAIL));
+      transportPassword = data.getValue(COL_TRANSPORT_PASSWORD);
 
       accountId = data.getLong(COL_ACCOUNT);
       addressId = data.getLong(CommonsConstants.COL_ADDRESS);
 
-      draftsFolderId = data.getLong("DraftsFolder");
-      sentFolderId = data.getLong("SentFolder");
-      trashFolderId = data.getLong("TrashFolder");
+      inboxFolderId = data.getLong(SystemFolder.Inbox.name() + COL_FOLDER);
+      draftsFolderId = data.getLong(SystemFolder.Drafts.name() + COL_FOLDER);
+      sentFolderId = data.getLong(SystemFolder.Sent.name() + COL_FOLDER);
+      trashFolderId = data.getLong(SystemFolder.Trash.name() + COL_FOLDER);
     }
   }
 
@@ -101,8 +116,8 @@ public class MailAccount {
     return draftsFolderId;
   }
 
-  public MailFolder getRootFolder() {
-    return rootFolder;
+  public Long getInboxFolderId() {
+    return inboxFolderId;
   }
 
   public Long getSentFolderId() {
@@ -164,6 +179,14 @@ public class MailAccount {
     return transportHost;
   }
 
+  public String getTransportLogin() {
+    return transportLogin;
+  }
+
+  public String getTransportPassword() {
+    return transportPassword;
+  }
+
   public Integer getTransportPort() {
     return BeeUtils.isPositive(transportPort) ? transportPort : -1;
   }
@@ -174,6 +197,13 @@ public class MailAccount {
 
   public Long getTrashFolderId() {
     return trashFolderId;
+  }
+
+  public boolean isStoredRemotedly(MailFolder folder) {
+    Assert.notNull(folder);
+
+    return (getStoreProtocol() == Protocol.IMAP || getStoreProtocol() == Protocol.IMAPS)
+        && folder.isConnected();
   }
 
   public boolean isValidStoreAccount() {
@@ -189,7 +219,7 @@ public class MailAccount {
     Assert.state(Objects.equal(localFolder.getAccountId(), getAccountId()),
         BeeUtils.joinWords("Folder", localFolder.getName(), "Doesn't belong to this account"));
 
-    if (getStoreProtocol() == Protocol.POP3 || !localFolder.isConnected()) {
+    if (!isStoredRemotedly(localFolder)) {
       return false;
     }
     Store store = null;
@@ -219,10 +249,35 @@ public class MailAccount {
     return store;
   }
 
+  Transport connectToTransport() throws MessagingException {
+    if (!isValidTransportAccount()) {
+      throw new MessagingException(getTransportErrorMessage());
+    }
+    logger.debug("Connecting to transport...");
+
+    String protocol = getTransportProtocol().name().toLowerCase();
+    Properties props = new Properties();
+
+    if (!BeeUtils.isEmpty(getTransportPassword())) {
+      props.put("mail." + protocol + ".auth", "true");
+
+      if (getTransportProtocol() == Protocol.SMTP) {
+        props.put("mail." + protocol + ".starttls.enable", "true");
+      }
+    }
+    Session session = Session.getInstance(props, null);
+    session.setDebug(logger.isDebugEnabled());
+
+    Transport transport = session.getTransport(protocol);
+    transport.connect(getTransportHost(), getTransportPort(), getTransportLogin(),
+        getTransportPassword());
+    return transport;
+  }
+
   boolean createRemoteFolder(MailFolder parent, String name) throws MessagingException {
     boolean ok = true;
 
-    if (getStoreProtocol() == Protocol.POP3) {
+    if (!isStoredRemotedly(parent)) {
       return ok;
     }
     Store store = null;
@@ -260,7 +315,7 @@ public class MailAccount {
   boolean dropRemoteFolder(MailFolder source) throws MessagingException {
     boolean ok = true;
 
-    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+    if (!isStoredRemotedly(source)) {
       return ok;
     }
     Store store = null;
@@ -283,6 +338,10 @@ public class MailAccount {
     return getRemoteFolder(remoteStore, localFolder, false);
   }
 
+  MailFolder getRootFolder() {
+    return rootFolder;
+  }
+
   boolean holdsFolders(Folder remoteFolder) throws MessagingException {
     return (remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0;
   }
@@ -294,7 +353,7 @@ public class MailAccount {
   void processMessages(long[] uids, MailFolder source, MailFolder target, boolean move)
       throws MessagingException {
 
-    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+    if (!isStoredRemotedly(source)) {
       return;
     }
     boolean isTarget = (target != null && target.isConnected());
@@ -352,7 +411,7 @@ public class MailAccount {
   boolean renameRemoteFolder(MailFolder source, String name) throws MessagingException {
     boolean ok = true;
 
-    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+    if (!isStoredRemotedly(source)) {
       return ok;
     }
     Store store = null;
@@ -375,7 +434,7 @@ public class MailAccount {
   }
 
   boolean setFlag(MailFolder source, long[] uids, Flag flag, boolean on) throws MessagingException {
-    if (getStoreProtocol() == Protocol.POP3 || !source.isConnected()) {
+    if (!isStoredRemotedly(source)) {
       return false;
     }
     Store store = null;
@@ -429,13 +488,12 @@ public class MailAccount {
   private Folder getRemoteFolder(Store remoteStore, MailFolder localFolder, boolean createParents)
       throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
-    Folder remoteParent;
 
-    if (localFolder.getParent() != null) {
-      remoteParent = getRemoteFolder(remoteStore, localFolder.getParent());
-    } else {
-      remoteParent = remoteStore.getDefaultFolder();
+    if (localFolder.getParent() == null) {
+      return remoteStore.getDefaultFolder();
     }
+    Folder remoteParent = getRemoteFolder(remoteStore, localFolder.getParent(), createParents);
+
     String name = localFolder.getName();
     logger.debug("Looking for remote folder", BeeUtils.join(" in ", name, remoteParent.getName()));
 

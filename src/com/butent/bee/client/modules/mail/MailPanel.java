@@ -151,13 +151,12 @@ public class MailPanel extends AbstractFormInterceptor {
       return sysFolders.inverse().get(folderId);
     }
 
-    public Long getSystemFolderId(SystemFolder sysFolder) {
+    public long getSystemFolderId(SystemFolder sysFolder) {
       return sysFolders.get(sysFolder);
     }
 
     private void setRootFolder(MailFolder folder) {
       this.rootFolder = folder;
-      setSystemFolderId(SystemFolder.Inbox, folder.getId());
     }
 
     private void setSystemFolderId(SystemFolder sysFolder, Long folderId) {
@@ -541,7 +540,7 @@ public class MailPanel extends AbstractFormInterceptor {
               row.getLong(COL_ADDRESS), row.getValue(COL_ACCOUNT_DESCRIPTION));
 
           for (SystemFolder sysFolder : SystemFolder.values()) {
-            account.setSystemFolderId(sysFolder, row.getLong(sysFolder.name() + "Folder"));
+            account.setSystemFolderId(sysFolder, row.getLong(sysFolder.name() + COL_FOLDER));
           }
           accounts.add(account);
         }
@@ -672,14 +671,11 @@ public class MailPanel extends AbstractFormInterceptor {
               for (int i = 0; i < data.length; i += 2) {
                 info.put(data[i], data[i + 1]);
               }
-              for (SystemFolder sysFolder : SystemFolder.values()) {
-                String s = info.get(sysFolder.name());
+              account.setRootFolder(MailFolder.restore(info.get(COL_FOLDER)));
 
-                if (sysFolder == SystemFolder.Inbox) {
-                  account.setRootFolder(MailFolder.restore(s));
-                } else {
-                  account.setSystemFolderId(sysFolder, BeeUtils.toLongOrNull(s));
-                }
+              for (SystemFolder sysFolder : SystemFolder.values()) {
+                account.setSystemFolderId(sysFolder,
+                    BeeUtils.toLongOrNull(info.get(sysFolder.name())));
               }
             }
           }
@@ -703,11 +699,13 @@ public class MailPanel extends AbstractFormInterceptor {
 
   void refresh(final Long folderId) {
     if (folderId != null) {
-      if (Objects.equal(folderId, getCurrentFolderId())) {
+      if (Objects.equal(folderId, getCurrentFolderId()) || folderId == 0) {
         ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
         params.addDataItem(COL_ADDRESS, getCurrentAccount().getAddress());
-        params.addDataItem(COL_FOLDER, folderId);
 
+        if (folderId != 0) {
+          params.addDataItem(COL_FOLDER, folderId);
+        }
         BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -717,7 +715,7 @@ public class MailPanel extends AbstractFormInterceptor {
               initFolders(true, new ScheduledCommand() {
                 @Override
                 public void execute() {
-                  if (Objects.equal(folderId, getCurrentFolderId())) {
+                  if (Objects.equal(folderId, getCurrentFolderId()) || folderId == 0) {
                     refresh(null);
                   }
                 }

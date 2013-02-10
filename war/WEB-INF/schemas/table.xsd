@@ -68,6 +68,7 @@
     <xs:attribute name="defValue" type="type:notEmptyString" />          
     <xs:attribute name="translatable" type="xs:boolean" />
     <xs:attribute name="label" type="xs:string" />
+    <xs:attribute name="audit" type="xs:boolean" default="true" />
   </xs:complexType>
 
   <xs:complexType name="booleanType">

@@ -2,13 +2,22 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
 
-  name="OrderCargo"
+  name="CargoList"
   source="OrderCargo"
   editForm="OrderCargo"
   >
   <Columns>
     <SimpleColumn name="Order" />
-    
+    <SimpleJoin name="Order" joinType="INNER">
+      <SimpleColumn name="Status" />
+      <SimpleColumn name="Manager" />
+      <SimpleColumn name="OrderNo" />
+      <SimpleColumn name="Customer" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" />
       <SimpleColumn name="Country" alias="LoadingCountry" />
@@ -27,7 +36,7 @@
       <SimpleColumn name="Place" alias="UnloadingPlace" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Weight" />
@@ -60,9 +69,6 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    <SimpleColumn name="Income">
-      <xpr:number>0</xpr:number>
-    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

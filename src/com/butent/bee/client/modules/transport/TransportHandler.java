@@ -387,7 +387,7 @@ public class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return new TripFormHandler();
+      return null;
     }
   }
 
@@ -591,9 +591,11 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoGridHandler());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
+    FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);

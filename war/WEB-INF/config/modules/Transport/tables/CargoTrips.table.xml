@@ -10,8 +10,9 @@
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Numeric name="CargoPercent" precision="3" scale="0" />
     <Numeric name="TripPercent" precision="3" scale="0" />
+    <Numeric name="CargoPercent" precision="3" scale="0" />
+    <Numeric name="CargoOrder" precision="2" scale="0" />
   </Fields>
   <Keys>
     <Key unique="true">

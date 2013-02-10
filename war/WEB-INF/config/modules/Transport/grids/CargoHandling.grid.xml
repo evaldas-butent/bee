@@ -11,8 +11,8 @@
   <body height="68" />
 
   <columns>
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas" flexBasis="120" />
     <DataColumn name="Notes" caption="Pastabos">
       <style>
         <bodyStyle>

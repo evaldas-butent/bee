@@ -50,7 +50,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -122,7 +121,7 @@ public class MailModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
       try {
-        response = ResponseObject.response(setMessageFlag(getAccount(BeeUtils
+        response = ResponseObject.response(setMessageFlag(mail.getAccount(BeeUtils
             .toLongOrNull(reqInfo.getParameter(COL_ADDRESS))),
             BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)), MessageFlag.FLAGGED,
             BeeUtils.toBoolean(reqInfo.getParameter("toggle"))));
@@ -131,16 +130,22 @@ public class MailModuleBean implements BeeModule {
       }
 
     } else if (BeeUtils.same(svc, SVC_COPY_MESSAGES)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      Long targetId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+      MailFolder target = mail.findFolder(account, targetId);
 
-      response = processMessages(account,
-          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER_PARENT))),
-          mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
-          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)),
-          BeeUtils.toBoolean(reqInfo.getParameter("move")));
-
+      if (target == null) {
+        response = ResponseObject.error("Folder does not exist: ID =", targetId);
+      } else {
+        response = processMessages(account, mail.findFolder(account,
+            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER_PARENT))), target,
+            Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)),
+            BeeUtils.toBoolean(reqInfo.getParameter("move")));
+      }
     } else if (BeeUtils.same(svc, SVC_REMOVE_MESSAGES)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
 
       response = processMessages(account,
           mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
@@ -152,8 +157,9 @@ public class MailModuleBean implements BeeModule {
       Long addressId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS));
 
       if (DataUtils.isId(addressId)) {
-        MailAccount account = getAccount(addressId);
-        resp = ImmutableMap.of(SystemFolder.Inbox, resp,
+        MailAccount account = mail.getAccount(addressId);
+        resp = ImmutableMap.of(COL_FOLDER, resp,
+            SystemFolder.Inbox, account.getInboxFolderId(),
             SystemFolder.Sent, account.getSentFolderId(),
             SystemFolder.Drafts, account.getDraftsFolderId(),
             SystemFolder.Trash, account.getTrashFolderId());
@@ -161,9 +167,10 @@ public class MailModuleBean implements BeeModule {
       response = ResponseObject.response(resp);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_FOLDER)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
-      MailFolder parent = mail.getInboxFolder(account);
+      MailFolder parent = mail.getRootFolder(account);
 
       if (folderId != null) {
         parent = parent.findFolder(folderId);
@@ -185,18 +192,20 @@ public class MailModuleBean implements BeeModule {
         }
       }
     } else if (BeeUtils.same(svc, SVC_DISCONNECT_FOLDER)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
       MailFolder folder = mail.findFolder(account, folderId);
 
       if (folder == null) {
         response = ResponseObject.error("Folder does not exist: ID =", folderId);
       } else {
-        mail.disconnectFolder(folder);
+        disconnectFolder(account, folder);
         response = ResponseObject.info("Folder disconnected: " + folder.getName());
       }
     } else if (BeeUtils.same(svc, SVC_RENAME_FOLDER)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
       MailFolder folder = mail.findFolder(account, folderId);
       String name = reqInfo.getParameter(COL_FOLDER_NAME);
@@ -216,7 +225,8 @@ public class MailModuleBean implements BeeModule {
         }
       }
     } else if (BeeUtils.same(svc, SVC_DROP_FOLDER)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
       Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
       MailFolder folder = mail.findFolder(account, folderId);
 
@@ -235,10 +245,15 @@ public class MailModuleBean implements BeeModule {
         }
       }
     } else if (BeeUtils.same(svc, SVC_CHECK_MAIL)) {
-      MailAccount account = getAccount(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
-      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
-      MailFolder folder = mail.findFolder(account, folderId);
+      MailAccount account = mail.getAccount(BeeUtils
+          .toLongOrNull(reqInfo.getParameter(COL_ADDRESS)));
+      MailFolder folder = mail.getRootFolder(account);
 
+      Long folderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER));
+
+      if (folderId != null) {
+        folder = mail.findFolder(account, folderId);
+      }
       if (folder == null) {
         response = ResponseObject.error("Folder does not exist: ID =", folderId);
       } else {
@@ -259,7 +274,7 @@ public class MailModuleBean implements BeeModule {
       MailAccount account = null;
 
       if (draftId != null) {
-        account = getAccount(sender);
+        account = mail.getAccount(sender);
         processMessages(account, mail.getDraftsFolder(account), null, new String[] {draftId}, true);
       }
       if (!save) {
@@ -276,11 +291,11 @@ public class MailModuleBean implements BeeModule {
       if (save) {
         try {
           if (account == null) {
-            account = getAccount(sender);
+            account = mail.getAccount(sender);
           }
           MailFolder folder = mail.getDraftsFolder(account);
-          MimeMessage message = buildMessage(null, account.getAddressId(), to, cc, bcc, subject,
-              content, attachments);
+          MimeMessage message = buildMessage(account.getAddressId(), to, cc, bcc, subject, content,
+              attachments);
 
           if (!account.addMessageToRemoteFolder(message, folder)) {
             mail.storeMail(message, folder.getId(), null);
@@ -361,21 +376,14 @@ public class MailModuleBean implements BeeModule {
       Set<Long> bcc, String subject, String content, Set<Long> attachments)
       throws MessagingException {
 
-    MailAccount account = getAccount(from);
-
-    if (!account.isValidTransportAccount()) {
-      throw new MessagingException(account.getTransportErrorMessage());
-    }
-    Session session = Session.getInstance(new Properties(), null);
-    session.setDebug(logger.isDebugEnabled());
+    MailAccount account = mail.getAccount(from);
     Transport transport = null;
 
     try {
-      MimeMessage message = buildMessage(session, account.getAddressId(), to, cc, bcc, subject,
+      MimeMessage message = buildMessage(account.getAddressId(), to, cc, bcc, subject,
           content, attachments);
 
-      transport = session.getTransport(account.getTransportProtocol().name().toLowerCase());
-      transport.connect(account.getTransportHost(), account.getTransportPort(), null, null);
+      transport = account.connectToTransport();
       transport.sendMessage(message, message.getAllRecipients());
 
       MailFolder folder = mail.getSentFolder(account);
@@ -511,11 +519,11 @@ public class MailModuleBean implements BeeModule {
     message.saveChanges();
   }
 
-  private MimeMessage buildMessage(Session session, Long from, Set<Long> to, Set<Long> cc,
+  private MimeMessage buildMessage(Long from, Set<Long> to, Set<Long> cc,
       Set<Long> bcc, String subject, String content, Set<Long> attachments)
       throws MessagingException {
 
-    MimeMessage message = new MimeMessage(session);
+    MimeMessage message = new MimeMessage((Session) null);
 
     if (!BeeUtils.isEmpty(to)) {
       message.setRecipients(RecipientType.TO, getAddresses(to));
@@ -625,17 +633,16 @@ public class MailModuleBean implements BeeModule {
     return ResponseObject.response(c);
   }
 
-  private MailAccount getAccount(Long addressId) {
-    Assert.state(DataUtils.isId(addressId));
-
-    return new MailAccount(qs.getRow(new SqlSelect()
-        .addAllFields(TBL_ACCOUNTS)
-        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL_ADDRESS)
-        .addFrom(TBL_ACCOUNTS)
-        .addFromInner(CommonsConstants.TBL_EMAILS,
-            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_ACCOUNTS, COL_ADDRESS))
-        .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_ADDRESS, addressId))));
+  private void disconnectFolder(MailAccount account, MailFolder folder) {
+    for (MailFolder subFolder : folder.getSubFolders()) {
+      disconnectFolder(account, subFolder);
+    }
+    try {
+      account.dropRemoteFolder(folder);
+    } catch (MessagingException e) {
+      logger.error(e);
+    }
+    mail.disconnectFolder(folder);
   }
 
   private ResponseObject getAccounts(Long user) {
@@ -644,12 +651,11 @@ public class MailModuleBean implements BeeModule {
     return ResponseObject.response(qs.getData(new SqlSelect()
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
         .addFields(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION, COL_ADDRESS, COL_ACCOUNT_DEFAULT,
-            "SentFolder", "DraftsFolder", "TrashFolder")
-        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), "InboxFolder")
+            SystemFolder.Inbox.name() + COL_FOLDER,
+            SystemFolder.Drafts.name() + COL_FOLDER,
+            SystemFolder.Sent.name() + COL_FOLDER,
+            SystemFolder.Trash.name() + COL_FOLDER)
         .addFrom(TBL_ACCOUNTS)
-        .addFromLeft(TBL_FOLDERS,
-            SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT),
-                SqlUtils.isNull(TBL_FOLDERS, COL_FOLDER_PARENT)))
         .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, user))
         .addOrder(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION)));
   }
@@ -729,7 +735,7 @@ public class MailModuleBean implements BeeModule {
 
     if (markAsRead) {
       try {
-        setMessageFlag(getAccount(addressId), placeId, MessageFlag.SEEN, true);
+        setMessageFlag(mail.getAccount(addressId), placeId, MessageFlag.SEEN, true);
       } catch (MessagingException e) {
         response.addError(e);
       }
@@ -772,24 +778,19 @@ public class MailModuleBean implements BeeModule {
       account.processMessages(uids, source, target, move);
 
       if (target != null) {
-        if (target.isConnected() && account.getStoreProtocol() != Protocol.POP3) {
+        if (account.isStoredRemotedly(target)) {
           if (!source.isConnected()) {
-            SimpleRowSet msgs = qs.getData(new SqlSelect()
-                .addFields(TBL_HEADERS, COL_HEADER, COL_RAW_CONTENT)
-                .addFrom(TBL_HEADERS)
+            String[] messages = qs.getColumn(new SqlSelect()
+                .addFields(TBL_RAW_CONTENTS, COL_RAW_CONTENT)
+                .addFrom(TBL_RAW_CONTENTS)
                 .addFromInner(TBL_PLACES,
-                    SqlUtils.joinUsing(TBL_HEADERS, TBL_PLACES, COL_MESSAGE))
+                    SqlUtils.joinUsing(TBL_RAW_CONTENTS, TBL_PLACES, COL_MESSAGE))
                 .setWhere(wh));
 
-            for (SimpleRow msg : msgs) {
-              StringBuilder message = new StringBuilder(msg.getValue(COL_HEADER))
-                  .append("\r\n")
-                  .append(msg.getValue(COL_RAW_CONTENT));
-
+            for (String message : messages) {
               try {
                 account.addMessageToRemoteFolder(new MimeMessage(null,
-                    new ByteArrayInputStream(message.toString().getBytes(BeeConst.CHARSET_UTF8))),
-                    target);
+                    new ByteArrayInputStream(message.getBytes(BeeConst.CHARSET_UTF8))), target);
               } catch (UnsupportedEncodingException e) {
                 throw new MessagingException(e.getMessage());
               }

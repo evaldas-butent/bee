@@ -20,7 +20,7 @@ public class MailFolder implements BeeSerializable {
   public static MailFolder restore(String s) {
     MailFolder folder = new MailFolder();
     folder.deserialize(s);
-    folder.validate();
+    Assert.state(DataUtils.isId(folder.getAccountId()));
     return folder;
   }
 
@@ -30,19 +30,20 @@ public class MailFolder implements BeeSerializable {
 
   private long accountId;
   private MailFolder parent;
-  private long id;
+  private Long id;
   private String name;
   private Long uidValidity;
 
   private final Map<String, MailFolder> childs = Maps.newLinkedHashMap();
 
-  public MailFolder(long accountId, MailFolder parent, long id, String name, Long uidValidity) {
+  public MailFolder(long accountId, MailFolder parent, Long id, String name, Long uidValidity) {
+    Assert.state(DataUtils.isId(accountId));
+
     this.accountId = accountId;
     this.parent = parent;
     this.id = id;
     this.name = name;
     this.uidValidity = uidValidity;
-    validate();
   }
 
   private MailFolder() {
@@ -78,7 +79,7 @@ public class MailFolder implements BeeSerializable {
           }
           break;
         case ID:
-          id = BeeUtils.toLong(value);
+          id = BeeUtils.toLongOrNull(value);
           break;
         case NAME:
           name = value;
@@ -95,8 +96,6 @@ public class MailFolder implements BeeSerializable {
   }
 
   public MailFolder findFolder(Long folderId) {
-    Assert.state(DataUtils.isId(folderId));
-
     if (Objects.equal(getId(), folderId)) {
       return this;
     }
@@ -114,7 +113,7 @@ public class MailFolder implements BeeSerializable {
     return accountId;
   }
 
-  public long getId() {
+  public Long getId() {
     return id;
   }
 
@@ -172,11 +171,5 @@ public class MailFolder implements BeeSerializable {
 
   public void setUidValidity(Long uidValidity) {
     this.uidValidity = uidValidity;
-  }
-
-  private void validate() {
-    Assert.state(DataUtils.isId(getAccountId()));
-    Assert.state(DataUtils.isId(getId()));
-    Assert.notEmpty(getName());
   }
 }

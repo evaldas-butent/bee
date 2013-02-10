@@ -4,6 +4,7 @@
 name="Transport" label="Transportas" order="60"
 >
   <Item name="Orders" label="Užsakymai" service="grid" parameters="TransportationOrders" />
+  <Item name="Cargo" label="Kroviniai" service="grid" parameters="CargoList" />
   <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
 
   <Item name="Trips" label="Reisai" service="grid" parameters="Trips" separator="true" />

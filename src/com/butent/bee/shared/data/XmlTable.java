@@ -50,6 +50,8 @@ public class XmlTable {
     public boolean translatable;
     @XmlAttribute
     public String label;
+    @XmlAttribute
+    public boolean audit;
 
     private boolean safe = false;
 

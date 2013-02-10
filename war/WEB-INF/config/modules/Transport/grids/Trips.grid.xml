@@ -7,8 +7,8 @@
   >
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
+    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas" flexGrow="1" flexShrink="1">
       <render>
         <ui:function>
@@ -21,6 +21,7 @@
         </ui:function>
       </render>
     </CalcColumn>
+    <DataColumn name="Driver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />
     <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" />
     <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" />
   </columns>

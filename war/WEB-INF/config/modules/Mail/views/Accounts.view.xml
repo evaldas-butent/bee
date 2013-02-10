@@ -20,8 +20,11 @@
     <SimpleColumn name="StoreLogin" />
     <SimpleColumn name="StorePassword" />
 
+    <SimpleColumn name="TransportSSL" />
     <SimpleColumn name="TransportServer" />
     <SimpleColumn name="TransportPort" />
+    <SimpleColumn name="TransportLogin" />
+    <SimpleColumn name="TransportPassword" />
   </Columns>
   <Order>
     <OrderBy column="Description" />

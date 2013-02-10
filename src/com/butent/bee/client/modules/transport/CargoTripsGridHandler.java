@@ -67,7 +67,8 @@ class CargoTripsGridHandler extends AbstractGridInterceptor {
       container.setText(0, 0, "Pasirinkite reisą");
 
       Relation relation = Relation.create(VIEW_ALL_TRIPS,
-          Lists.newArrayList("TripNo", "VehicleNumber", "ExpeditionType", "ForwarderName"));
+          Lists.newArrayList("TripNo", "VehicleNumber", "Driver", "ExpeditionType",
+              "ForwarderName"));
       relation.setAttributes(ImmutableMap.of(UiConstants.ATTR_NEW_ROW_ENABLED, "0"));
 
       CompoundFilter filter = Filter.and();

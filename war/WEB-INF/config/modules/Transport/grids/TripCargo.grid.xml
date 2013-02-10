@@ -3,13 +3,14 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="TripCargo" viewName="TripCargo"
-  editForm="CargoPlace" editPopup="true" editInPlace="CargoPercent" disabledActions="add"
+  editForm="CargoPlace" editPopup="true" editInPlace="CargoOrder CargoPercent" disabledActions="add"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
 
   <body height="68" />
 
   <columns>
+    <DataColumn name="CargoOrder" caption="Eil.Nr." />
     <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
     <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
       minWidth="100" />
