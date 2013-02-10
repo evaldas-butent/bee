@@ -263,7 +263,9 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().silverEdit());
+        BeeImage widget = new BeeImage(Global.getImages().silverEdit());
+        widget.setTitle(getCaption().toLowerCase());
+        return widget;
       }
 
       @Override
@@ -281,10 +283,12 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    DELETE("delete", "Išmesti", false, true) {
+    DELETE("delete", "Pašalinti", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage(Global.getImages().silverMinus());
+        BeeImage widget = new BeeImage(Global.getImages().silverMinus());
+        widget.setTitle(getCaption().toLowerCase());
+        return widget;
       }
 
       @Override
@@ -574,7 +578,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
           refresh(index, changedColumns);
         }
       }
-    }, false, null, getWidget(index, columns.indexOf(Column.EDIT)));
+    }, null, getWidget(index, columns.indexOf(Column.EDIT)));
   }
 
   private int getIndex(long fileId) {

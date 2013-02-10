@@ -39,8 +39,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_POPUP,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
-    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
-    SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
+    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
@@ -110,7 +109,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Calculation rowEditable = null;
   private Calculation rowValidation = null;
 
-  private Boolean showColumnWidths = null;
   private Integer minColumnWidth = null;
   private Integer maxColumnWidth = null;
   private String autoFit = null;
@@ -259,9 +257,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
         case SEARCH_THRESHOLD:
           setSearchThreshold(BeeUtils.toIntOrNull(value));
-          break;
-        case SHOW_COLUMN_WIDTHS:
-          setShowColumnWidths(BeeUtils.toBooleanOrNull(value));
           break;
         case NEW_ROW_FORM:
           setNewRowForm(value);
@@ -492,7 +487,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Edit Popup", getEditPopup(),
         "Enabled Actions", getEnabledActions(),
         "Disabled Actions", getDisabledActions(),
-        "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth(),
         "Auto Fit", getAutoFit(),
@@ -820,9 +814,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case SEARCH_THRESHOLD:
           arr[i++] = getSearchThreshold();
           break;
-        case SHOW_COLUMN_WIDTHS:
-          arr[i++] = showColumnWidths();
-          break;
         case NEW_ROW_FORM:
           arr[i++] = getNewRowForm();
           break;
@@ -1094,20 +1085,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.searchThreshold = searchThreshold;
   }
   
-  public void setShowColumnWidths(Boolean showColumnWidths) {
-    this.showColumnWidths = showColumnWidths;
-  }
-
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }
 
   public void setWidgets(List<String> widgets) {
     this.widgets = widgets;
-  }
-
-  public Boolean showColumnWidths() {
-    return showColumnWidths;
   }
 
   private String getHeaderMode() {

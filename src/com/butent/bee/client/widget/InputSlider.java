@@ -64,4 +64,9 @@ public class InputSlider extends InputInteger {
   protected String getDefaultStyleName() {
     return "bee-InputSlider";
   }
+
+  @Override
+  protected boolean isTextBox() {
+    return false;
+  }
 }

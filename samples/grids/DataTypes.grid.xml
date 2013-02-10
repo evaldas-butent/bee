@@ -17,7 +17,7 @@
   <footer height="30" />
 
   <columns>
-    <IdColumn name="Id" caption="ID" showWidth="false" horizontalAlignment="left">
+    <IdColumn name="Id" caption="ID" horizontalAlignment="left">
       <style>
         <headerStyle>
           <ui:class>bee-Button</ui:class>
@@ -74,7 +74,7 @@
       </editor>
     </DataColumn>
 
-    <DataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
+    <DataColumn name="Lll" source="Long" minWidth="40">
       <dynStyle>
         <ui:inline>color: red</ui:inline>
         <ui:expression>row.Long &lt; 0</ui:expression>

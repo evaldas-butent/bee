@@ -36,6 +36,9 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   protected static final JustDate DEFAULT_MIN_DATE = new JustDate(2000, 1, 1);
   protected static final JustDate DEFAULT_MAX_DATE = TimeUtils.endOfYear(TimeUtils.year(), 10);
 
+  private static final String STYLE_INPUT = "bee-InputDate";
+  private static final String STYLE_ACTIVE = STYLE_INPUT + "-active";
+  
   private static final String STYLE_POPUP = "bee-DateBox-popup";
 
   private DateTimeFormat format = null;
@@ -290,7 +293,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputDate";
+    return STYLE_INPUT;
   }
 
   protected HasDateValue getMaxBound() {
@@ -498,10 +501,13 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
         } else {
           setPickerState(State.CLOSED);
         }
+        
+        InputDate.this.removeStyleName(STYLE_ACTIVE);
       }
     });
 
     setPickerState(State.OPEN);
+    addStyleName(STYLE_ACTIVE);
 
     popup.setWidget(picker);
     popup.showRelativeTo(getElement());

@@ -69,7 +69,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE,
@@ -108,7 +108,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private String horAlign = null;
 
   private Boolean hasFooter = null;
-  private Boolean showWidth = null;
 
   private Calculation validation = null;
   private Calculation editable = null;
@@ -257,9 +256,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case MIN_WIDTH:
           setMinWidth(BeeUtils.toIntOrNull(value));
-          break;
-        case SHOW_WIDTH:
-          setShowWidth(BeeUtils.toBooleanOrNull(value));
           break;
         case SORTABLE:
           setSortable(BeeUtils.toBooleanOrNull(value));
@@ -426,7 +422,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
         "Has Footer", hasFooter(),
-        "Show Width", showWidth(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", isRequired(),
@@ -708,9 +703,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case MIN_WIDTH:
           arr[i++] = getMinWidth();
           break;
-        case SHOW_WIDTH:
-          arr[i++] = showWidth();
-          break;
         case SORTABLE:
           arr[i++] = isSortable();
           break;
@@ -920,10 +912,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.searchBy = searchBy;
   }
 
-  public void setShowWidth(Boolean showWidth) {
-    this.showWidth = showWidth;
-  }
-
   public void setSortable(Boolean sortable) {
     this.sortable = sortable;
   }
@@ -954,10 +942,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setWidth(Integer width) {
     this.width = width;
-  }
-
-  public Boolean showWidth() {
-    return showWidth;
   }
 
   private void setColType(ColType colType) {

@@ -468,6 +468,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     addStyleName("bee-TilePanel");
 
     Tile tile = createTile(workspace);
+    tile.setActiveStyle(true);
     add(tile);
 
     setActiveTileId(tile.getId());

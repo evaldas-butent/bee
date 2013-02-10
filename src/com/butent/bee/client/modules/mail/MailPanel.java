@@ -862,7 +862,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
                   Global.inputWidget(result.getCaption(), result,
                       new MailDialogCallback(newMessageHandler),
-                      true, RowFactory.DIALOG_STYLE);
+                      RowFactory.DIALOG_STYLE);
                 }
               }
             });

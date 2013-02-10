@@ -7,7 +7,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -29,7 +28,6 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
-import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -44,7 +42,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -304,6 +302,10 @@ class TaskList {
     protected String getStylePrefix() {
       return "bee-crm-FilterSupplier-Mode-";
     }
+    
+    private Widget createMode(String styleName) {
+      return new CustomDiv(styleName);
+    }
 
     private Widget createWidget() {
       HtmlTable container = new HtmlTable();
@@ -325,8 +327,8 @@ class TaskList {
 
         container.setWidget(row, 0, bNew);
 
-        Widget imgNew = createImage(TaskList.modeNew);
-        container.setWidget(row, 1, imgNew);
+        Widget modeNew = createMode(TaskList.STYLE_MODE_NEW);
+        container.setWidget(row, 1, modeNew);
 
         container.setText(row, 2, BeeUtils.toString(newTasks.size()));
 
@@ -347,8 +349,8 @@ class TaskList {
 
         container.setWidget(row, 0, bUpd);
 
-        Widget imgUpd = createImage(TaskList.modeUpd);
-        container.setWidget(row, 1, imgUpd);
+        Widget modeUpd = createMode(TaskList.STYLE_MODE_UPD);
+        container.setWidget(row, 1, modeUpd);
 
         container.setText(row, 2, BeeUtils.toString(updTasks.size()));
 
@@ -369,11 +371,11 @@ class TaskList {
 
         container.setWidget(row, 0, both);
 
-        Flow imgBoth = new Flow();
-        imgBoth.add(createImage(TaskList.modeNew));
-        imgBoth.add(createImage(TaskList.modeUpd));
+        Flow modeBoth = new Flow();
+        modeBoth.add(createMode(TaskList.STYLE_MODE_NEW));
+        modeBoth.add(createMode(TaskList.STYLE_MODE_UPD));
 
-        container.setWidget(row, 1, imgBoth);
+        container.setWidget(row, 1, modeBoth);
 
         container.setText(row, 2, BeeUtils.toString(newTasks.size() + updTasks.size()));
         
@@ -443,14 +445,18 @@ class TaskList {
 
       Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
       if (access == null) {
-        return Images.asString(TaskList.modeNew);
+        return renderMode(TaskList.STYLE_MODE_NEW);
       }
 
       Long publish = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_PUBLISH));
       if (publish != null && access < publish) {
-        return Images.asString(TaskList.modeUpd);
+        return renderMode(TaskList.STYLE_MODE_UPD);
       }
       return BeeConst.STRING_EMPTY;
+    }
+    
+    private String renderMode(String styleName) {
+      return "<div class=\"" + styleName + "\"></div>";
     }
   }
 
@@ -747,8 +753,8 @@ class TaskList {
     abstract Filter getFilter(LongValue userValue);
   }
 
-  private static final ImageResource modeNew = Global.getImages().greenSmall();
-  private static final ImageResource modeUpd = Global.getImages().yellowSmall();
+  private static final String STYLE_MODE_NEW = "bee-crm-Mode-new";
+  private static final String STYLE_MODE_UPD = "bee-crm-Mode-upd";
 
   public static void open(String args) {
     Type type = null;
@@ -765,10 +771,6 @@ class TaskList {
     } else {
       GridFactory.openGrid(GRID_TASKS, new GridHandler(type));
     }
-  }
-
-  private static Widget createImage(ImageResource imageResource) {
-    return new BeeImage(imageResource);
   }
 
   private TaskList() {

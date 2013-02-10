@@ -135,14 +135,13 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
-        CalendarKeeper.openAppointment(event.getTarget(), false, getCalendarId());
+        CalendarKeeper.openAppointment(event.getTarget(), getCalendarId());
       }
     });
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
       public void onTimeBlockClick(TimeBlockClickEvent event) {
-        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId(),
-            false);
+        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId());
       }
     });
 

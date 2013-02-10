@@ -78,7 +78,7 @@ public class CalendarKeeper {
           ensureData(new Command() {
             @Override
             public void execute() {
-              openAppointment(new Appointment((BeeRow) event.getRow()), false, null);
+              openAppointment(new Appointment((BeeRow) event.getRow()), null);
             }
           });
         }
@@ -221,8 +221,8 @@ public class CalendarKeeper {
     CalendarKeeper.dataLoaded = dataLoaded;
   }
 
-  static void createAppointment(final Long calendarId, final DateTime start, final Long attendeeId,
-      final boolean glass) {
+  static void createAppointment(final Long calendarId, final DateTime start,
+      final Long attendeeId) {
 
     Long type = null;
     if (calendarId != null) {
@@ -288,7 +288,7 @@ public class CalendarKeeper {
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
 
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null,
+                  builder.getModalCallback(), RowFactory.DIALOG_STYLE, null,
                   EnumSet.of(Action.PRINT));
             }
           }
@@ -453,8 +453,7 @@ public class CalendarKeeper {
     }
   }
 
-  static void openAppointment(final Appointment appointment, final boolean glass,
-      final Long calendarId) {
+  static void openAppointment(final Appointment appointment, final Long calendarId) {
     Assert.notNull(appointment);
 
     BeeRow typeRow = getAppointmentTypeRow(appointment);
@@ -496,7 +495,7 @@ public class CalendarKeeper {
               Set<Action> enabledActions = BeeKeeper.getUser().is(appointment.getCreator())
                   ? EnumSet.of(Action.DELETE, Action.PRINT) : EnumSet.of(Action.PRINT);
 
-              Global.inputWidget(result.getCaption(), result, builder.getModalCallback(), glass,
+              Global.inputWidget(result.getCaption(), result, builder.getModalCallback(),
                   RowEditor.DIALOG_STYLE, null, enabledActions);
             }
           }

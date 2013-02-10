@@ -89,7 +89,6 @@ public class GridLoaderBean {
   private static final String ATTR_FILTER = "filter";
   private static final String ATTR_ORDER = "order";
 
-  private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
   private static final String ATTR_MIN_COLUMN_WIDTH = "minColumnWidth";
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
@@ -123,7 +122,6 @@ public class GridLoaderBean {
   private static final String ATTR_VISIBLE = "visible";
 
   private static final String ATTR_HAS_FOOTER = "hasFooter";
-  private static final String ATTR_SHOW_WIDTH = "showWidth";
 
   private static final String ATTR_REQUIRED = "required";
 
@@ -556,8 +554,6 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_HAS_FOOTER)) {
           dst.setHasFooter(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_SHOW_WIDTH)) {
-          dst.setShowWidth(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
           dst.setSource(value.trim());
@@ -745,11 +741,6 @@ public class GridLoaderBean {
     Boolean hasFooters = XmlUtils.getAttributeBoolean(src, ATTR_HAS_FOOTERS);
     if (hasFooters != null) {
       dst.setHasFooters(hasFooters);
-    }
-
-    Boolean showColumnWidths = XmlUtils.getAttributeBoolean(src, ATTR_SHOW_COLUMN_WIDTHS);
-    if (showColumnWidths != null) {
-      dst.setShowColumnWidths(showColumnWidths);
     }
 
     Boolean cacheData = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DATA);

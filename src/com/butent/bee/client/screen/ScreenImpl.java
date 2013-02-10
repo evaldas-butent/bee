@@ -409,8 +409,9 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.getMsgBoxen().confirm(Settings.getAppName(), Icon.QUESTION,
-            Lists.newArrayList(Global.CONSTANTS.logout()), new ConfirmationCallback() {
+        Global.getMsgBoxen().confirm(Global.MESSAGES.endSession(Settings.getAppName()),
+            Icon.QUESTION, Lists.newArrayList(Global.CONSTANTS.questionLogout()),
+            new ConfirmationCallback() {
               @Override
               public void onConfirm() {
                 Bee.exit();

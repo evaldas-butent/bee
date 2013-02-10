@@ -32,6 +32,9 @@ import java.util.List;
 
 public class InputTime extends InputText implements HasBounds, HasIntStep {
 
+  private static final String STYLE_INPUT = "bee-InputTime";
+  private static final String STYLE_ACTIVE = STYLE_INPUT + "-active";
+
   private static final String STYLE_POPUP = "bee-TimeBox-popup";
   private static final String STYLE_TIME_PICKER = "bee-TimePicker";
 
@@ -262,7 +265,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputTime";
+    return STYLE_INPUT;
   }
 
   protected boolean handleChar(int charCode) {
@@ -394,10 +397,13 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
         } else {
           setPickerState(State.CLOSED);
         }
+        
+        InputTime.this.removeStyleName(STYLE_ACTIVE);
       }
     });
 
     setPickerState(State.OPEN);
+    addStyleName(STYLE_ACTIVE);
     
     popup.setWidget(widget);
     popup.showRelativeTo(getElement());

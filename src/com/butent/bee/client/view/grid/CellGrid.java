@@ -49,6 +49,7 @@ import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.layout.FlexLayout;
@@ -1322,10 +1323,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (width > 0) {
       if (addMargins) {
         if (columnInfo.getColumn().isSortable()) {
-          width += ColumnHeader.defaultSortInfoHorizontalSize;
-        }
-        if (header.hasWidthInfo()) {
-          width += ColumnHeader.defaultWidthInfoHorizontalSize;
+          width += HeaderCell.SORT_INFO_WIDTH;
         }
       }
       columnInfo.ensureHeaderWidth(width);

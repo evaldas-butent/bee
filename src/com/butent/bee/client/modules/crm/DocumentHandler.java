@@ -269,7 +269,7 @@ public class DocumentHandler {
               }
             });
           }
-        }, false, STYLE_PREFIX + "dialog");
+        }, STYLE_PREFIX + "dialog");
 
         return false;
 

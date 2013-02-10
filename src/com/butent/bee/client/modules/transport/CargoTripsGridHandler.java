@@ -60,7 +60,6 @@ class CargoTripsGridHandler extends AbstractGridInterceptor {
 
       this.dialog = DialogBox.create("Priskirti reisą");
       dialog.setHideOnEscape(true);
-      dialog.enableGlass();
 
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);

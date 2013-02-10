@@ -38,10 +38,9 @@ public class HeaderCell extends AbstractCell<String> {
 
     @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
     SafeHtml sorted(String id, String classes, String sortInfo);
-
-    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthInfo\">{1}</div>")
-    SafeHtml widthInfo(String id, int width);
   }
+  
+  public static final int SORT_INFO_WIDTH = 15;
 
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
   private static final String STYLE_SORTABLE = "bee-HeaderCellSortable";
@@ -52,15 +51,12 @@ public class HeaderCell extends AbstractCell<String> {
 
   private final String sortInfoId;
   private final String captionId;
-  private final String widthInfoId;
   
   private final String caption;
-  private final boolean showWidth;
 
-  public HeaderCell(String caption, boolean showWidth) {
+  public HeaderCell(String caption) {
     super(EventUtils.EVENT_TYPE_CLICK);
     this.caption = caption;
-    this.showWidth = showWidth;
 
     if (template == null) {
       template = GWT.create(Template.class);
@@ -68,7 +64,6 @@ public class HeaderCell extends AbstractCell<String> {
 
     sortInfoId = DomUtils.createUniqueId("sort-info");
     captionId = DomUtils.createUniqueId("caption");
-    widthInfoId = DomUtils.createUniqueId("width-info");
   }
 
   @Override
@@ -100,18 +95,11 @@ public class HeaderCell extends AbstractCell<String> {
           headerWidth += leftElement.getOffsetLeft() + leftElement.getOffsetWidth();
         }
         
-        if (showWidth) {
-          Element rightElement = DomUtils.getChildById(parent, widthInfoId);
-          if (rightElement != null) {
-            headerWidth += parent.getOffsetWidth() - rightElement.getOffsetLeft();
-          }
-        }
-        
         if (headerWidth > grid.getColumnWidth(col)) {
           grid.resizeColumn(col, headerWidth);
         }
         
-      } else if (!showWidth || EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
+      } else {
         event.preventDefault();
         grid.autoFitColumn(col);
       }
@@ -150,10 +138,6 @@ public class HeaderCell extends AbstractCell<String> {
           sb.append(template.sortable(sortInfoId,
               StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
         }
-      }
-      
-      if (showWidth) {
-        sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(columnId)));
       }
     }
   }

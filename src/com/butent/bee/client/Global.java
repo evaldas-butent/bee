@@ -295,23 +295,22 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
-    inputWidget(caption, input, callback, false, null, null, Action.NO_ACTIONS);
+    inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
   }
 
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
-      boolean enableGlass, String dialogStyle) {
-    inputWidget(caption, input, callback, enableGlass, dialogStyle, null, Action.NO_ACTIONS);
+      String dialogStyle) {
+    inputWidget(caption, input, callback, dialogStyle, null, Action.NO_ACTIONS);
   }
   
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target) {
-    inputWidget(caption, input, callback, enableGlass, dialogStyle, target, Action.NO_ACTIONS);
+      String dialogStyle, UIObject target) {
+    inputWidget(caption, input, callback, dialogStyle, target, Action.NO_ACTIONS);
   }
 
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target, Set<Action> enabledActions) {
-    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target,
-        enabledActions, null);
+      String dialogStyle, UIObject target, Set<Action> enabledActions) {
+    INP_BOXEN.inputWidget(caption, input, callback, dialogStyle, target, enabledActions, null);
   }
 
   public static boolean isDebug() {

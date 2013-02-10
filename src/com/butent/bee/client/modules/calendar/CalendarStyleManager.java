@@ -75,8 +75,6 @@ public class CalendarStyleManager {
   public static final String NOW_POINTER = "nowPointer";
   public static final String NOW_MARKER = "nowMarker";
 
-  public static final String ADD_RESOURCES = "bee-cal-AddResources";
-
   public static final String TODAY = "bee-cal-today";
   public static final String TODAY_MARKER = "bee-cal-todayMarker";
 

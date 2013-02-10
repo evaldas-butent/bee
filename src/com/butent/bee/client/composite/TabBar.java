@@ -12,6 +12,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -204,7 +205,13 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   public void focusTab(int index) {
     checkTabIndex(index, 0);
-    DomUtils.setFocus(getWrapper(index), true);
+    Tab tab = getWrapper(index);
+
+    if (tab.getWidget() instanceof Focusable) {
+      ((Focusable) tab.getWidget()).setFocus(true);
+    } else {
+      DomUtils.setFocus(tab, true);
+    }
   }
 
   @Override

@@ -35,7 +35,6 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -121,7 +120,7 @@ public class MessageBoxes {
         vertical ? Orientation.VERTICAL : Orientation.HORIZONTAL);
 
     for (int i = 0; i < size; i++) {
-      Widget widget = UiHelper.initialize(new Html(options.get(i)), initializer,
+      Widget widget = UiHelper.initialize(new BeeButton(options.get(i)), initializer,
           DialogConstants.WIDGET_COMMAND_ITEM);
       group.addItem(widget);
     }
@@ -129,7 +128,7 @@ public class MessageBoxes {
     final Holder<Integer> cancelIndex = Holder.absent();
 
     if (!BeeUtils.isEmpty(cancelHtml)) {
-      Widget widget = UiHelper.initialize(new Html(cancelHtml), initializer,
+      Widget widget = UiHelper.initialize(new BeeButton(cancelHtml), initializer,
           DialogConstants.WIDGET_CANCEL);
       if (widget != null) {
         widget.addStyleName(STYLE_CHOICE_CANCEL);

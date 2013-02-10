@@ -55,6 +55,7 @@ body {
 
 .bee-SignIn-Input:focus {
   background-color: whitesmoke;
+  outline: #058cf5 auto 5px;
 }
 
 .bee-SignIn-Label-user {
@@ -86,15 +87,11 @@ body {
   font-weight: bold;
   border: 2px solid #43494F;
   border-radius: 3px;
-}
-
-.bee-SignIn-Button:hover {
   cursor: pointer;
-  border-style: outset;
 }
 
-.bee-SignIn-Button:active {
-  border-style: inset !important;
+.bee-SignIn-Button:focus {
+  outline: #058cf5 auto 5px;
 }
 
 .bee-SignIn-Error {

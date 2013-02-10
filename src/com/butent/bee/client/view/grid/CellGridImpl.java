@@ -492,7 +492,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       hasFooters = false;
     }
 
-    boolean showColumnWidths = false;
     List<ColumnDescription> columnDescriptions = null;
 
     if (gridDescr.getStyleSheets() != null) {
@@ -518,10 +517,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
     if (gridDescr.getMaxColumnWidth() != null) {
       getGrid().setMaxCellWidth(gridDescr.getMaxColumnWidth());
-    }
-
-    if (BeeUtils.isTrue(gridDescr.showColumnWidths())) {
-      showColumnWidths = true;
     }
 
     if (gridDescr.getRowStyles() != null) {
@@ -788,12 +783,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           headerCaption = caption;
         }
 
-        boolean showWidth = showColumnWidths;
-        if (columnDescr.showWidth() != null) {
-          showWidth = columnDescr.showWidth();
-        }
-
-        header = new ColumnHeader(columnName, headerCaption, showWidth);
+        header = new ColumnHeader(columnName, headerCaption);
       }
 
       footer = null;
@@ -1658,7 +1648,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     Widget container = gfp.getWidget().asWidget();
 
     if (asPopup) {
-      ModalForm popup = new ModalForm(container, formView, true, true);
+      ModalForm popup = new ModalForm(container, formView, true);
 
       popup.setOnSave(new ScheduledCommand() {
         @Override

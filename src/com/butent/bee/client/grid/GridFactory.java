@@ -417,7 +417,7 @@ public class GridFactory {
 
       String label = table.getColumnLabel(i);
 
-      grid.addColumn(label, source, column, new ColumnHeader(label, label, false));
+      grid.addColumn(label, source, column, new ColumnHeader(label, label));
     }
 
     grid.setReadOnly(true);

@@ -1,6 +1,7 @@
-body, select, textarea {
+body {
   font-family: Arial, sans-serif;
   font-size: small;
+  color: #43494F;
 }
 
 [draggable] {
@@ -106,7 +107,7 @@ body, select, textarea {
 }
 
 .bee-Screen {
-  background-color: white;  
+  background-color: #fbfbfb;  
 }
 
 .bee-NorthContainer > div {
@@ -114,7 +115,7 @@ body, select, textarea {
 }
 
 .bee-MainSearchContainer {
-  left: 125px;
+  left: 120px;
   top: 20px;
   width: 300px;
 }
@@ -122,11 +123,8 @@ body, select, textarea {
 .bee-MainSearchBox {
   width: 225px;
   height: 27px;
-  color: #444;
-  font: 12px Verdana;
   border: 1px solid #BAB9B9;
   padding: 6px;
-  outline-style: none;
   float: left;
 }
 
@@ -172,8 +170,6 @@ body, select, textarea {
   display: inline-block;
   margin-left: 5%;
   height: 25px;
-  color: #4d4d4d;
-  font: 13px/25px Arial;
   background-color: #f2f2f2;
   padding: 0 10px;
   border: 1px solid #E4E4E4;
@@ -185,19 +181,18 @@ body, select, textarea {
 }  
 
 .bee-MainMenu {
-  left: 150px;
+  left: 115px;
   top: 60px;
 }
 
 .bee-UserContainer {
-  right: 25px;
+  right: 10px;
   top: 35px;
   width: 200px;
   position: relative;
 }
 .bee-UserSignature {
-  color: #7F7F7F;
-  font: 13px/20px Arial;
+  font-size: 13px;
   position: absolute;
   right: 27px;
 }  
@@ -248,8 +243,7 @@ body, select, textarea {
 .bee-MenuRoot-flow .bee-MenuItem-label {
   display: inline-block;
   margin: 2px;
-  color: #4d4d4d;
-  font: 13px/21px Arial;
+  font-size: 14px;
 }
 
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
@@ -265,33 +259,17 @@ body, select, textarea {
 }
 
 .bee-MenuItem-label {
-  padding-left: 1em;
-  padding-right: 1em;
+  padding-left: 5px;
+  padding-right: 5px;
   cursor: pointer;
 }
 
 .bee-MenuPopup .bee-MenuItem-label {
-  color: #7d7d7d;
-  font: 13px/1.4 Arial;
-}
-
-.bee-MenuPopup .bee-MenuItem-label.bee-MenuItem-selected {
-  color: black;
+  font-size: 13px;
 }
 
 .bee-MenuPopup td:hover {
   background-color: #f2f2f2;
-}
-
-.bee-MenuBar-horizontal table {
-  border-collapse: collapse;
-}
-
-.bee-MenuBar-horizontal td {
-  border: 1px solid silver;
-  text-align: center;
-  vertical-align: middle;
-  padding: 1px;
 }
 
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
@@ -304,9 +282,6 @@ body, select, textarea {
   background-color: MidnightBlue;
 }
 
-.bee-LogRecord-info {
-  color: #333;
-}
 .bee-LogRecord-severe {
   color: red;
 }
@@ -322,12 +297,10 @@ body, select, textarea {
 }
 
 .bee-dndSource {
-  color: white;
-  background-color: purple;
+  background-color: yellow;
 }
 
 .bee-dndOver {
-  color: blue;
   background-color: pink;
 }
 
@@ -369,9 +342,6 @@ body, select, textarea {
 }
 .bee-ProgressBar-bar {
   background-color: SpringGreen;
-}
-.bee-ProgressBar-text {
-  color: blue;
 }
 
 .bee-SliderBar-shell {
@@ -423,7 +393,7 @@ body, select, textarea {
   right: 0;
   top: 0;
   height: 30px;
-  background-color: #eee;
+  background-color: #F0EEEF;  
   display: -webkit-flex;
   -webkit-align-items: center;
   overflow-x: auto;
@@ -434,7 +404,8 @@ body, select, textarea {
 }
 
 .bee-Header-caption {
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: bold;
   padding-left: 8px;
 }
 .bee-Header-message {
@@ -446,64 +417,27 @@ body, select, textarea {
   margin-right: 8px;
   border-collapse: collapse;
 }
-.bee-Header-commandPanel button {
+.bee-Header-commandPanel .bee-Button {
+  padding: 2px 6px;
   background-color: #fafafa;
-  color: #555;
   border: 1px solid #ccc;
   border-radius: 2px;
 }
-.bee-Header-commandPanel button:hover {
+.bee-Header-commandPanel .bee-Button:hover {
   cursor: pointer;
-  background-color: #fff;
+  background-color: white;
   color: black;
   border-color: #5897fb;
 }
 
 .bee-Header-control {
-  margin-right: 2px;
+  margin-right: 1em;
 }
-
-.bee-HeaderCellCaption {
-  text-align: center;
-  overflow: hidden;
-  font-weight: bold;
+.bee-Header-control:hover {
+  -webkit-filter: contrast(10) invert(1) !important;
 }
-
-.bee-HeaderCellSortInfo {
-  position: absolute;
-  right: 1px;
-  top: 0px;
-  font-weight: normal;
-}
-
-.bee-HeaderCellSortable {
-  opacity: 0.4;
-  font-size: small;
-}
-.bee-HeaderCellSortable:before {
-  content: "\0025B3";
-}
-
-.bee-HeaderCellAscending {
-  font-size: small;
-}
-.bee-HeaderCellAscending:after {
-  content: "\0025B2";
-}
-
-.bee-HeaderCellDescending {
-  font-size: small;
-}
-.bee-HeaderCellDescending:after {
-  content: "\0025BC";
-}
-
-.bee-HeaderCellWidthInfo {
-  position: absolute;
-  left: 4px;
-  top: 2px;
-  font-size: small;
-  -webkit-transform: rotate(-90deg);
+.bee-Header-control:active {
+  -webkit-filter: contrast(1) invert(1) !important;
 }
 
 .bee-CellGrid {
@@ -513,6 +447,7 @@ body, select, textarea {
   top: 0;
   bottom: 0;
   overflow: auto;
+  border-left: 1px solid #d9d7d8;  
 }
 
 .bee-CellGridCell {
@@ -521,13 +456,39 @@ body, select, textarea {
 }
 
 .bee-CellGridHeader {
-  background-color: #f0f0f0;
+  background-color: #f5f5f5;
+  display: -webkit-flex;
+}
+
+.bee-HeaderCellCaption {
+  -webkit-flex: 1;
+  -webkit-align-self: center;
+  text-align: center;
+  font-weight: bold;
+  line-height: 10px;
+  cursor: pointer;
+}
+
+.bee-HeaderCellSortInfo {
+  -webkit-align-self: flex-end;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.bee-HeaderCellSortable:before {
+  content: "\0025B3";
+}
+
+.bee-HeaderCellAscending:after {
+  content: "\0025B2";
+}
+.bee-HeaderCellDescending:after {
+  content: "\0025BC";
 }
 
 .bee-CellGridBody {
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #4d4d4d;
 }
 
 .bee-CellGridFooter {
@@ -535,29 +496,28 @@ body, select, textarea {
 }
 
 .bee-CellGridEvenRow {
-  background-color: #ffffff;
+  background-color: #f5f5f5;
 }
 
 .bee-CellGridOddRow {
-  background-color: #fcfcfc;
+  background-color: #fbfbfb;
 }
 
 .bee-CellGridBody:hover {
-  background-color: Cornsilk;
+  background-color: #e1e1e1 !important;
 }
 
 .bee-CellGridSelectedRow {
-  background-color: #aff !important;
+  background-color: #E2F2FF !important;
 }
 
 .bee-CellGridActiveRow {
-  background-color: #cfc;
-  color: black;
+  background-color: #cfc !important;
 }
 
 .bee-CellGridActiveCell {
-  background-color: #e0ffe0 !important;
-  outline: goldenrod solid 2px !important;
+  background-color: #c7e3f9 !important;
+  outline: #c7e3f9 solid 2px !important;
   outline-offset: -1px;
 }
 
@@ -587,9 +547,6 @@ body, select, textarea {
 .bee-CellGridEmpty {
   text-align: center;
   margin-top: 3ex;
-  font-family: Georgia;
-  font-size: larger;
-  color: teal;
 }
 
 .bee-CellGridEmpty:before {
@@ -598,10 +555,7 @@ body, select, textarea {
 
 .bee-CellGridEditor {
   position: absolute;
-  background-color: #ffc;
-  color: darkblue;
-  outline: red solid 2px;
-  outline-offset: -1px;
+  background-color: white;
   box-sizing: content-box !important;
 }
 
@@ -615,10 +569,6 @@ body, select, textarea {
   padding: 5px;
   background-color: #eee;
 }
-.bee-Popup-glass {
-  background-color: #fff;
-  opacity: 0.7;
-}
 
 .bee-DialogBox, .bee-ModalForm {
   border: 1px solid #b4b4b4;
@@ -628,7 +578,7 @@ body, select, textarea {
 
 .bee-Dialog-header {
   height: 30px;
-  background-color: #eee;
+  background-color: #e8e8e8;
   border-bottom: 1px solid #ddd;
   cursor: move;
   display: -webkit-flex;
@@ -639,10 +589,14 @@ body, select, textarea {
   padding-left: 8px;
   padding-right: 8px;
   -webkit-flex: 1;
+  font-weight: bold;
 }
 
 .bee-Dialog-action {
-  margin-right: 2px;
+  margin-right: 1em;
+}
+.bee-Dialog-action:hover {
+  -webkit-filter: contrast(10) invert(1) !important;
 }
 
 .bee-Dialog-content {
@@ -667,25 +621,17 @@ body, select, textarea {
 
 .bee-NotificationMessages {
   padding: 5px;
-  font-family: Verdana;
-}
-
-.bee-Notification-info {
-  font-size: 1em;
 }
 
 .bee-Notification-error {
   background-color: #ffcccc;
-  font-size: 1.2em;
 }
 
 .bee-Notification-warning {
   background-color: yellow;
-  font-size: 1.1em;
 }
 
 .bee-Toggle {
-  font-size: large;
   text-align: center;
 }
 
@@ -703,10 +649,8 @@ body, select, textarea {
 
 .bee-StringPicker-item {
   margin-bottom: 2px;
-  outline: none;
   cursor: pointer;
 }
-
 .bee-StringPicker-item:hover {
   background-color: LightCyan;
 }
@@ -747,8 +691,6 @@ body, select, textarea {
 
 .bee-RichTextEditor {
   position: relative;
-}
-.bee-RichTextEditor-embedded {
   border: 1px solid #b4b4b4;  
 }
 
@@ -779,16 +721,11 @@ body, select, textarea {
   width: 100%;
   height: 100%;
   border: none;
-  background-color: #fff;
-}
-
-.bee-DataSelector-embedded {
-  color: #060;
+  background-color: white;
 }
 
 .bee-DataSelector-waiting {
   cursor: wait;
-  background-color: rgba(255, 255, 0, 0.15);
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .bee-DataSelector-notFound {
@@ -805,11 +742,7 @@ body, select, textarea {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.bee-DataSelector-item {
-  color: #333;
-}
 .bee-DataSelector-menu .bee-MenuItem-selected {
-  color: #DD4B39;
   font-weight: bolder;
 }
 .bee-DataSelector-item:hover {
@@ -827,23 +760,15 @@ body, select, textarea {
 
 .bee-DataSelector-editableContainer {
   display: inline-block;
-  width: 153px;
-  height: 22px;
-  border: 1px solid #aaa;
-  padding-left: 1px;
-  padding-right: 1px;
-  background-color: white;
-}
-.bee-DataSelector-editable-active {
-  border: 1px solid #5897fb;
-  box-shadow : 0 0 3px rgba(0, 0, 0, 0.3);
+  width: 155px;
 }
 
 .bee-DataSelector-editableInput {
   width: -webkit-calc(100% - 16px);
-  border: none;
-  outline: none; 
-  padding-right: 2px;
+  border: none !important;
+}
+.bee-DataSelector-editableInput:focus {
+  outline: none !important; 
 }
 
 .bee-DataSelector-drill {
@@ -865,14 +790,8 @@ body, select, textarea {
   bottom: 0;
 }
 
-.bee-GridFormCaption-newRow, .bee-NewRowCaption, .bee-NewRow .bee-Dialog-caption {
-  color: green;
-}
-
 .bee-GridFormContainer-newRow .bee-hasDefaults:after {
   content: "*";
-  color: blue;
-  font-size: 13px;
   font-weight: bold;
 }
 
@@ -892,15 +811,12 @@ body, select, textarea {
 
 .bee-required:after {
   content: "*";
-  color: red;
-  font-size: 13px;
   font-weight: bold;
 }
 
 .bee-display {
   outline: #aaa solid 1px;
   outline-offset: 2px;
-  font-size: 14px;
 }
 
 .bee-Disclosure-header {
@@ -933,7 +849,6 @@ body, select, textarea {
 }
 
 .bee-InputCommand {
-  font-family: Tahoma;
   width: 80px;
 }
 
@@ -978,11 +893,6 @@ body, select, textarea {
 
 .bee-TreeItem-selected {
   background-color: #cfc;
-  color: black;
-}
-
-.bee-TreeView {
-  background-color: white;
 }
 
 .bee-TreeView-actions {
@@ -990,71 +900,64 @@ body, select, textarea {
 }
 
 .bee-DatePicker {
-  border: 1px solid #ccc;
   background-color: white;
   border-collapse: collapse;
-}
-
-.bee-DatePicker td, .bee-DatePicker-monthSelector td:focus {
-  outline: none;
+  border: 1px solid silver;
 }
 
 .bee-DatePicker-monthSelector {
-  width: 100%;
-  padding: 1px 0 5px 0;
+  border-collapse: collapse;
+}
+.bee-DatePicker-monthSelector td {
+  text-align: center;
+  padding: 2px 0 3px 0;
+}
+
+.bee-DatePicker-monthNavigation {
+  width: 18px;
 }
 .bee-DatePicker-monthNavigation-disabled {
   visibility: hidden;
 }
 .bee-DatePicker-month {
-  text-align: center;
-  vertical-align: middle;
-  white-space: nowrap;
-  color: #15c;
-  font-family: 'Times New Roman';
-  font-weight: bold;
+  width: 96px;
 }
 
 .bee-DatePicker-days {
-  width: 100%;
   border-collapse: collapse;
+}
+.bee-DatePicker-days:focus {
   outline: none;
 }
 
-.bee-DatePicker-day {
-  padding: 4px;
-  cursor: pointer;
-  color: #333;
-  font-size: 12px;
+.bee-DatePicker-days td {
+  width: 24px;
+  height: 21px;
   text-align: center;
-}
-
-.bee-DatePicker-dayIsWeekend {
-  color: #888;
-}
-
-.bee-DatePicker-dayIsFiller {
-  opacity: 0.3;
+  padding: 0;
 }
 
 .bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
-  padding: 0px 4px 2px;
   cursor: default;
-  color: #222;
-  font-size: 11px;
-  border-bottom: 1px solid #ccc;
-  text-align: center;
+}
+
+.bee-DatePicker-day {
+  cursor: pointer;
 }
 
 .bee-DatePicker-dayIsActive {
-  background-color: cornsilk !important;
+  outline: #5897fb solid 1px;
 }
 .bee-DatePicker-dayIsValue {
-  background-color: #f1f1f1;
-  border: 1px solid #ccc;
+  background-color: silver !important;
+  color: white;
 }
 .bee-DatePicker-dayIsToday {
-  background-color: #eee;
+  background-color: #f1f1f1;
+}
+
+.bee-DatePicker-dayIsFiller {
+  opacity: 0.4;
 }
 .bee-DatePicker-dayIsDisabled {
   visibility: hidden;
@@ -1064,14 +967,15 @@ body, select, textarea {
   padding-left: 6px;
   padding-right: 6px;
 }
+.bee-TimePicker:focus {
+  outline: none !important;
+}
 
 .bee-TabBar-item {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
   background-color: WhiteSmoke;
-  color: #444;
-  font-weight: normal;
   text-align: center;
   border: 1px solid #ccc;
   border-radius: 3px 3px 0px 0px;
@@ -1080,7 +984,6 @@ body, select, textarea {
 .bee-TabBar-item-selected {
   cursor: default;
   background-color: #eee;
-  color: #333;
   font-weight: bold;
   border: 1px solid #ccc;
 }
@@ -1094,25 +997,35 @@ body, select, textarea {
   min-height: 100px;
 }
 
+.bee-TabbedPages-tabPanel {
+  font-size: 13px;
+  line-height: 25px;
+}
+
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
-  color: #4d4d4d;
-  font: 13px/25px Arial;
   background-color: white;
   border: 1px solid #e4e4e4;
   padding: 0 10px;
   cursor: pointer;
+  margin-left: 3px;
 }
+.bee-TabbedPages-tab:hover {
+  background-color : WhiteSmoke;
+}
+
 .bee-TabbedPages-tabSelected {
   background-color: #f2f2f2;
-  border-bottom-color: #f2f2f2;
+  border-bottom-color: transparent;
   z-index: 1;
   cursor: default;
+  padding-bottom: 3px;  
 }
 
 .bee-TabbedPages-content {
   overflow: auto;
+  border-right: 1px solid #D9D7D8;  
 }
 
 .bee-StackContainer {
@@ -1121,9 +1034,7 @@ body, select, textarea {
 
 .bee-StackHeader {
   cursor: pointer;
-  color: #4d4d4d;
   background-color: white;
-  font: 13px Arial;
 }
 .bee-StackHeader:hover {
   background-color: #f2f2f2;
@@ -1157,14 +1068,6 @@ body, select, textarea {
   margin-right: auto;
 }
 
-.bee-ChoiceGroup-item {
-  height: 25px;
-  font: 13px/25px Arial;
-  padding: 0 10px;
-  cursor: pointer;
-  -webkit-appearance: button;
-}
-
 .bee-ChoiceGroup-item-horizontal {
   margin-right: 2em;
 }
@@ -1182,18 +1085,13 @@ body, select, textarea {
 }
 
 .bee-FavoritesDisplay {
-  width: 100%;
   border-collapse: collapse;
-  margin-top: 2ex;
 }
 .bee-FavoritesDisplay tr td:first-child {
   padding-left: 20px;
 }
-.bee-FavoritesDisplay td {
-  padding: 5px;
-}
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
-  width: 16px;
+  width: 20px;
 }
 
 .bee-FavoritesDisplay tr:hover {
@@ -1214,15 +1112,12 @@ body, select, textarea {
   vertical-align: top;
 }
 .bee-NewRow-label {
-  padding-top: 2px;
+  padding-top: 1px;
   padding-right: 1em;
 }
 
 .bee-Image {
   cursor: pointer;
-}
-.bee-Image:hover {
-  -webkit-filter: contrast(150%);
 }
 
 .bee-SearchResultContent {
@@ -1234,17 +1129,14 @@ body, select, textarea {
   overflow: auto;
 }
 .bee-SearchResultView {
-  color: #a50336;
   font-weight: bolder;
   margin-top: 4px;
 }
 .bee-SearchResultRow {
-  color: #666;
   margin-left: 1em;
 }
 .bee-SearchResultRow:hover {
   text-decoration: underline;
-  color: #00e;
   cursor: pointer;
 }
 .bee-SearchResultMatch {
@@ -1267,7 +1159,6 @@ body, select, textarea {
 }
 
 .bee-ReportsItem {
-  color: #666;
   margin-left: 1em;
   margin-top: 1.5ex;
 }
@@ -1276,7 +1167,6 @@ body, select, textarea {
 }
 .bee-ReportsItem:hover {
   text-decoration: underline;
-  color: #00e;
   cursor: pointer;
 }
 
@@ -1337,23 +1227,21 @@ body, select, textarea {
 .bee-Workspace-tab {
   display: inline-block;
   height: 25px;
-  color: #4d4d4d;
-  font: 13px/25px Arial;
+  line-height: 25px;
   background-color: white;
   border: 1px solid #E4E4E4;
   padding: 0 10px;
   cursor: pointer;
 }
+.bee-Workspace-tab:hover {
+  background-color: #FBFBFB;
+}
 .bee-Workspace-tabSelected {
   color: #222;
   background-color: #f2f2f2;
-  border-bottom-color: #f2f2f2;
+  border-bottom-color: transparent;
   z-index: 1;
   cursor: default;
-}
-.bee-Workspace-one {
-  border-color: transparent !important;
-  background-color: transparent !important;
 }
 .bee-Workspace-one .bee-Workspace-caption {
   display: none;
@@ -1362,10 +1250,7 @@ body, select, textarea {
 .bee-Workspace-dropDown {
   padding-left: 3px;
   cursor: pointer;
-  color: #999;
-}
-.bee-Workspace-dropDown:hover {
-  color: #222;
+  color: #a1bff5;
 }
 
 .bee-Workspace-actionPopup {
@@ -1442,60 +1327,39 @@ body, select, textarea {
 
 .bee-MultiSelector-container {
   width: 300px;
-  min-height: 22px;
-  background-color: #fff;
-  background-image: -webkit-linear-gradient(top, #eee 1%, #fff 15%);
-  border: 1px solid #aaa;
-}
-.bee-MultiSelector-container-active {
-  border: 1px solid #5897fb;
-  box-shadow : 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .bee-MultiSelector-choice {
   display: inline-block;
-  background-color: #e4e4e4;
-  background-image: -webkit-linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
-  background-clip : padding-box;
-  border: 1px solid #aaa;
-  border-radius : 3px;
-  box-shadow : 0 0 2px #fff inset, 0 1px 0 rgba(0, 0, 0, 0.05);
-  padding: 3px 20px 3px 5px;
-  margin: 3px 0 3px 5px;
+  padding-right: 15px;
+  margin-left: 2px;
   position: relative;
 }
 .bee-MultiSelector-label {
-  color: #333;
   line-height: 13px;
 }
 .bee-MultiSelector-close {
   position: absolute;
-  right: 5px;
-  top: 7px;
+  right: 3px;
+  top: 1px;
 }
 .bee-MultiSelector-container.bee-disabled .bee-MultiSelector-close {
   display: none;
 }
 
 .bee-MultiSelector-input {
-  margin-left: 3px !important;
   background: transparent;
-  border: none;
-  outline: none;
+  border: none !important;
+}
+.bee-MultiSelector-input:focus {
+  outline: none !important;
 }
 
 .bee-SimplePager-container {
-  background-color: Snow;
-  border: 1px solid SkyBlue;
-  border-radius: 7px;
   border-spacing: 1px;
-  padding-top: 1px;
 }
 .bee-SimplePager-disabledButton {
-  opacity: 0.4;
-}
-.bee-SimplePager-info {
-  color: MediumBlue;
+  visibility: hidden;
 }
 
 .bee-FooterContainer {
@@ -1512,9 +1376,14 @@ body, select, textarea {
   margin-left: 5px;
   visibility: hidden;
 }
+
 .bee-RemoveFilter {
   margin-right: 20px;
 }
+.bee-RemoveFilter:hover {
+  -webkit-filter:  blur(1px) !important;
+}
+
 .bee-SelectionCounter {
   color: #00f;
   font-size: large;
@@ -1576,20 +1445,30 @@ body, select, textarea {
 }
 
 .bee-EditableRelation:hover {
-  text-decoration: underline;
-  color: #00e;
   cursor: pointer;
+  background-color: #FCCED0;  
 }
 .bee-CellGridActiveCell.bee-EditableRelation {
   text-decoration: underline;
 }
 
 .bee-CentralScrutinizer > .bee-StackHeader {
+  width: -webkit-calc(100% - 15px);
+  border: 1px solid WhiteSmoke;
   border-left: 5px solid white;
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
   border-left: 5px solid #FD6268;
   color: #222;
+}
+
+.bee-CentralScrutinizer > .bee-StackContent {
+  background-color: white;
+  width: -webkit-calc(100% - 11px);
+  border: 1px solid WhiteSmoke;
+}
+.bee-CentralScrutinizer > .bee-FavoritesDisplay {
+  width: -webkit-calc(100% - 9px) !important;
 }
 
 .bee-Appliance-icon {
@@ -1612,9 +1491,14 @@ body, select, textarea {
   -webkit-filter: grayscale(50%);
 }
 
+.bee-Tile {
+  outline: WhiteSmoke solid 1px;
+}
 .bee-Tile-active {
+  background-color: white;
   outline: #5897fb solid 2px;
 }
+
 .bee-Tile > div {
   position: absolute;
   left: 0;
@@ -1640,9 +1524,6 @@ body, select, textarea {
   border-radius: 6px;
   padding: 3px;
   background-color: #eee;
-}
-.bee-StarCluster-item {
-  outline: none;
 }
 .bee-StarCluster-item:focus {
   outline: #555 solid 1px;
@@ -1707,11 +1588,6 @@ body, select, textarea {
 
 .bee-disabled {
   background-color: #ebebe4;
-}
-
-.bee-FavoritesDisplay tr:hover {
-  background-color: #f2f2f2;
-  cursor: pointer;
 }
 
 .bee-FilterSupplier-dialog {
@@ -1783,11 +1659,58 @@ body, select, textarea {
 }
 
 .bee-CellGridEditor .bee-ColorEditor-textBox {
-  border: none;
-  outline: none;
+  border: none !important;
+  outline: none !important;
   background-color: transparent;
   padding-top: 3px;
   padding-left: 5px;
+}
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  background-image: url('images/silver/checkbox17.png');
+  background-repeat: no-repeat;
+  width: 17px;
+  height: 18px;
+  cursor: pointer;
+}
+input[type="checkbox"]:checked { 
+  background-position: left bottom;
+}
+
+.bee-CheckBox > input[type="checkbox"] {
+  margin-bottom: -5px;
+}
+
+.bee-Button {
+  background-color: WhiteSmoke;
+  padding: 4px 8px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  color: inherit;
+}
+
+.bee-Button:hover {
+  border-style: outset;
+}
+.bee-Button:active {
+  border-style: inset;
+}
+
+.bee-InternalLink {
+  color : #4d90fe;
+}
+.bee-ActionCellLink {
+  color : #4d90fe;
+}
+
+.bee-TreeView-actions img {
+  margin-top: 2px;
+  margin-right: 5px;
+}
+.bee-TreeView-actions img:hover {
+  -webkit-filter: contrast(10) invert(1) !important;
 }
 
 .bee-font-xx-small {
@@ -1825,8 +1748,47 @@ body, select, textarea {
   font-style: italic;
 }
 
-.bee-InputArea, .bee-TextBox, .bee-DataSelector-editableContainer, .bee-MultiSelector-container,
-.bee-ListBox {
+.bee-TextBox,
+.bee-ListBox,
+.bee-InputArea,
+.bee-DataSelector-editableContainer,
+.bee-MultiSelector-container {
   box-sizing: border-box;
   margin: 0;
+  background-color: white;
+  color: inherit;
+  border: 1px solid silver;
+}
+
+.bee-TextBox,
+.bee-InputArea {
+  padding: 1px 2px;
+}
+
+.bee-ListBox[size="1"] {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.bee-InputArea {
+  font-family: inherit;
+}
+.bee-InputSlider {
+  margin: 0;
+}
+
+div:focus,
+.bee-TextBox:focus,
+.bee-ListBox:focus,
+.bee-InputArea:focus,
+.bee-Button:focus,
+.bee-DataSelector-editable-active,
+.bee-MultiSelector-container-active,
+.bee-InputDate-active,
+.bee-InputTime-active {
+  outline: #058cf5 auto 5px;
+}
+
+.bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
+  border-top : 1px solid #edede1;
 }

@@ -48,7 +48,6 @@
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
-    <xs:attribute name="showWidth" type="xs:boolean" />
     <xs:attribute name="cellType" type="ui:cellType" />
     <xs:attribute name="cellResizable" type="xs:boolean" />
     <xs:attribute name="renderColumns" type="type:nameList" />

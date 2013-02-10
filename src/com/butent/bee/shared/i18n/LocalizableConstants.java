@@ -9,7 +9,6 @@ public interface LocalizableConstants extends Constants {
   String createNewAppointment();
   String createNewRow();
   String deleteAppointment();
-  String logout();
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
@@ -21,6 +20,7 @@ public interface LocalizableConstants extends Constants {
   String oldPasswordIsInvalid();
   String oldPasswordIsRequired();
   String overlappingAppointments();
+  String questionLogout();  
   String repeatNewPassword();
   String saveChanges();
   String selectAppointment();

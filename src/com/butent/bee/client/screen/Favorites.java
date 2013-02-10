@@ -339,6 +339,8 @@ public class Favorites implements HandlesDeleteEvents {
 
     BeeImage edit = new BeeImage(Global.getImages().silverEdit());
     edit.addStyleName(EDIT_STYLE);
+    edit.setTitle("keisti pavadinimą");
+
     edit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -355,6 +357,8 @@ public class Favorites implements HandlesDeleteEvents {
 
     BeeImage delete = new BeeImage(Global.getImages().silverMinus());
     delete.addStyleName(DELETE_STYLE);
+    delete.setTitle("pašalinti");
+    
     delete.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {

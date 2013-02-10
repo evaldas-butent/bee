@@ -46,35 +46,12 @@
 }
 
 .bee-crm-taskEdit-form .bee-disabled,
-.bee-crm-taskEdit-form .bee-disabled input,
-.bee-crm-taskEvent-container {
+.bee-crm-taskEdit-form .bee-disabled input {
   background-color: #f3f3eb;
 }
-.bee-crm-taskEdit-form .bee-disabled {
-  border: 1px solid #aaa;
-  padding-left: 2px;
-}
-
-.bee-crm-taskEdit-form .bee-MultiSelector-container {
-  background-image: none;
-  border: 1px solid #aaa;
-}
-.bee-crm-taskEdit-form .bee-MultiSelector-choice {
-  background-color: transparent;
-  background-image: none;
-  border: none;
-  box-shadow : none;
-  padding: 2px 15px 2px 3px;
-  margin: 2px 0 2px 3px;
-}
-.bee-crm-taskEdit-form .bee-MultiSelector-label {
-  color: #222;
-  line-height: 13px;
-}
-.bee-crm-taskEdit-form .bee-MultiSelector-close {
-  position: absolute;
-  right: 2px;
-  top: 2px;
+.bee-crm-taskEdit-form .bee-RadioGroup.bee-disabled {
+  border: 1px solid silver;
+  padding-right: 2px;
 }
 
 .bee-crm-taskDuration-display {
@@ -104,7 +81,6 @@
 .bee-crm-taskExtension {
   text-decoration: line-through;
   font-size: 12px;
-  color: #444;  
 }
 
 .bee-crm-SlackLate-bar {
@@ -160,6 +136,32 @@
 }
 .bee-crm-FilterSupplier-Slack-scheduled {
   background-image: -webkit-linear-gradient(top, #4D90FE, #4787ED);  
+}
+
+.bee-crm-Mode-new,
+.bee-crm-Mode-upd {
+  width: 13px;
+  height: 13px;
+  border: 1px solid silver;
+  border-radius: 50%;
+  display: inline-block;
+}
+.bee-crm-Mode-new {
+  background-color: lightgreen;
+}
+.bee-crm-Mode-upd {
+  background-color: yellow;
+}
+
+@-webkit-keyframes spinMode {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
+
+.bee-CellGridActiveRow .bee-crm-Mode-new,
+.bee-CellGridActiveRow .bee-crm-Mode-upd {
+  border: 2px dashed blue;
+  -webkit-animation: spinMode 2s linear infinite;
 }
 
 .bee-crm-DocumentAddFiles-panel {

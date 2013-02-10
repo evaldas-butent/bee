@@ -1308,7 +1308,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       rowCallback = null;
     }
 
-    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), true, rowCallback);
+    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
   }
 
   private void exit(boolean hideSelector, State state) {

@@ -106,7 +106,9 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     REMOVE("remove") {
       @Override
       Widget create(final BeeRow row) {
-        return new BeeImage(Global.getImages().silverMinus());
+        BeeImage widget = new BeeImage(Global.getImages().silverMinus());
+        widget.setTitle("pašalinti");
+        return widget;
       }
     };
 
@@ -507,7 +509,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    String message = BeeUtils.joinWords("Išmesti", getCaption(row), "?");
+    String message = BeeUtils.joinWords("Pašalinti", getCaption(row), "?");
 
     Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
         new ConfirmationCallback() {

@@ -644,7 +644,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     BeeRow oldSettings = getSettings().getRow(0);
     final Long oldTheme = getColorTheme(oldSettings);
 
-    RowEditor.openRow(getSettingsFormName(), getSettings().getViewName(), oldSettings, true, false,
+    RowEditor.openRow(getSettingsFormName(), getSettings().getViewName(), oldSettings, true,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
@@ -909,8 +909,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void openDataRow(HasNativeEvent event, String viewName, Long rowId) {
-    RowEditor.openRow(viewName, rowId, !EventUtils.hasModifierKey(event.getNativeEvent()),
-        true, null);
+    RowEditor.openRow(viewName, rowId, !EventUtils.hasModifierKey(event.getNativeEvent()), null);
   }
 
   protected abstract void prepareChart(Size canvasSize);

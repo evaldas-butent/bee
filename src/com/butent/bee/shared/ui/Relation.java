@@ -193,6 +193,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public void disableNewRow() {
     getAttributes().put(UiConstants.ATTR_NEW_ROW_ENABLED, BeeConst.STRING_FALSE);
   }
+
+  public void enableEdit() {
+    getAttributes().put(UiConstants.ATTR_EDIT_ENABLED, BeeConst.STRING_TRUE);
+  }
   
   public Map<String, String> getAttributes() {
     return attributes;

@@ -108,14 +108,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     private boolean show = false;
     private boolean isUnloading = false;
-    private int level = BeeConst.UNDEF;
 
     private int offsetHeight = BeeConst.UNDEF;
     private int offsetWidth = BeeConst.UNDEF;
 
     private Timer showTimer = null;
-
-    private boolean glassShowing = false;
 
     private ResizeAnimation(Popup panel) {
       this.curPanel = panel;
@@ -124,7 +121,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     @Override
     protected void onComplete() {
       if (!show) {
-        maybeShowGlass();
         if (!isUnloading) {
           RootPanel.get().remove(curPanel);
         }
@@ -174,24 +170,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       StyleUtils.setClip(curPanel, top, right, bottom, left);
     }
 
-    private void maybeShowGlass() {
-      if (show) {
-        if (curPanel.isGlassEnabled()) {
-          if (level > 0) {
-            curPanel.getGlass().getStyle().setZIndex(level);
-          }
-          Document.get().getBody().appendChild(curPanel.getGlass());
-          glassShowing = true;
-        }
-
-      } else if (glassShowing) {
-        Document.get().getBody().removeChild(curPanel.getGlass());
-        glassShowing = false;
-      }
-    }
-
     private void onInstantaneousRun() {
-      maybeShowGlass();
       if (show) {
         curPanel.getElement().getStyle().setPosition(Position.ABSOLUTE);
         if (!BeeConst.isUndef(curPanel.getTopPosition())) {
@@ -206,9 +185,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
     }
 
-    private void setState(boolean show, boolean isUnloading, int level) {
+    private void setState(boolean show, boolean isUnloading) {
       this.isUnloading = isUnloading;
-      this.level = level;
 
       cancel();
 
@@ -228,7 +206,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       this.show = show;
       if (animate) {
         if (show) {
-          maybeShowGlass();
           curPanel.getElement().getStyle().setPosition(Position.ABSOLUTE);
           if (!BeeConst.isUndef(curPanel.getTopPosition())) {
             curPanel.setPopupPosition(curPanel.getLeftPosition(), curPanel.getTopPosition());
@@ -254,7 +231,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   private static final String STYLE_POPUP = "bee-Popup";
-  private static final String STYLE_GLASS = STYLE_POPUP + "-glass";
 
   private static final int ANIMATION_DURATION = 250;
 
@@ -277,9 +253,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private String desiredHeight = null;
   private String desiredWidth = null;
-
-  private Element glass = null;
-  private boolean isGlassEnabled = false;
 
   private int leftPosition = BeeConst.UNDEF;
   private int topPosition = BeeConst.UNDEF;
@@ -377,10 +350,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     hide(true);
   }
 
-  public void enableGlass() {
-    setGlassEnabled(true);
-  }
-
   public AnimationType getAnimationType() {
     return animationType;
   }
@@ -425,10 +394,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   @Override
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
-  }
-
-  public boolean isGlassEnabled() {
-    return isGlassEnabled;
   }
 
   @Override
@@ -524,19 +489,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     this.animationType = animationType;
   }
 
-  public void setGlassEnabled(boolean enabled) {
-    this.isGlassEnabled = enabled;
-
-    if (enabled && getGlass() == null) {
-      Element elem = Document.get().createDivElement();
-
-      elem.addClassName(STYLE_GLASS);
-      StyleUtils.occupy(elem);
-
-      setGlass(elem);
-    }
-  }
-
   @Override
   public void setHeight(String height) {
     setDesiredHeight(height);
@@ -587,9 +539,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   @Override
   public void setVisible(boolean visible) {
     getElement().getStyle().setVisibility(visible ? Visibility.VISIBLE : Visibility.HIDDEN);
-    if (getGlass() != null) {
-      getGlass().getStyle().setVisibility(visible ? Visibility.VISIBLE : Visibility.HIDDEN);
-    }
   }
 
   @Override
@@ -680,7 +629,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     Previewer.ensureUnregistered(this);
     if (isShowing()) {
-      resizeAnimation.setState(false, true, BeeConst.UNDEF);
+      resizeAnimation.setState(false, true);
     }
   }
 
@@ -704,10 +653,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private String getDesiredWidth() {
     return desiredWidth;
-  }
-
-  private Element getGlass() {
-    return glass;
   }
 
   private int getLeftPosition() {
@@ -755,7 +700,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
     Stacking.removeContext(this);
 
-    resizeAnimation.setState(false, false, BeeConst.UNDEF);
+    resizeAnimation.setState(false, false);
     if (fireEvent) {
       CloseEvent.fire(this, cause, eventTarget);
     }
@@ -829,10 +774,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     this.dragging = dragging;
   }
 
-  private void setGlass(Element glass) {
-    this.glass = glass;
-  }
-
   private void setLeftPosition(int leftPosition) {
     this.leftPosition = leftPosition;
   }
@@ -857,7 +798,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       this.removeFromParent();
     }
 
-    int level = Stacking.addContext(this);
-    resizeAnimation.setState(true, false, level);
+    Stacking.addContext(this);
+    resizeAnimation.setState(true, false);
   }
 }

@@ -317,6 +317,10 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       }
     }
   }
+  
+  protected boolean isTextBox() {
+    return true;
+  }
 
   private InputElement getInputElement() {
     return getElement().cast();
@@ -324,7 +328,9 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
 
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-TextBox");
+    if (isTextBox()) {
+      setStyleName("bee-TextBox");
+    }
     addStyleName(getDefaultStyleName());
 
     setCharMatcher(getDefaultCharMatcher());

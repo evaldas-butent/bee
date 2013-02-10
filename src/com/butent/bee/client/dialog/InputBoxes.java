@@ -364,7 +364,7 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target, Set<Action> enabledActions,
+      String dialogStyle, UIObject target, Set<Action> enabledActions, 
       WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -464,9 +464,6 @@ public class InputBoxes {
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
-    if (enableGlass) {
-      dialog.enableGlass();
-    }
     dialog.setAnimationEnabled(true);
 
     if (target == null) {
