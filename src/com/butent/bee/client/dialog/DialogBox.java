@@ -15,6 +15,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class DialogBox extends Popup implements Printable {
@@ -71,9 +72,13 @@ public class DialogBox extends Popup implements Printable {
     enableDragging();
   }
 
-  public void addAction(Widget widget) {
+  public void addAction(Action action, Widget widget) {
     if (widget != null) {
       widget.addStyleName(STYLE_ACTION);
+      if (action != null && BeeUtils.isEmpty(widget.getTitle())) {
+        widget.setTitle(action.getCaption());
+      }
+
       header.add(widget);
     }
   }
@@ -130,7 +135,7 @@ public class DialogBox extends Popup implements Printable {
     });
 
     close.addStyleName(STYLE_CLOSE);
-    addAction(close);
+    addAction(Action.CLOSE, close);
   }
 
   protected void addDefaultCloseBox() {

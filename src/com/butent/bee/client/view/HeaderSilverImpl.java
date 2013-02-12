@@ -139,10 +139,6 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverDelete(), Action.DELETE));
     }
     
-    if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverPrint(), Action.PRINT));
-    }
-    
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK));
     }
@@ -158,6 +154,10 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE));
     }
     
+    if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
+      add(createControl(Global.getImages().silverPrint(), Action.PRINT));
+    }
+
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverClose(), Action.CLOSE));
     }

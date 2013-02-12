@@ -390,34 +390,6 @@ public class InputBoxes {
       UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
     }
 
-    if (enabledActions != null) {
-      if (enabledActions.contains(Action.DELETE)) {
-        BeeImage delete = new BeeImage(Global.getImages().silverDelete(), new ScheduledCommand() {
-          @Override
-          public void execute() {
-            callback.onDelete(dialog);
-          }
-        });
-
-        delete.addStyleName(STYLE_INPUT_DELETE);
-        UiHelper.initialize(delete, initializer, DialogConstants.WIDGET_DELETE);
-        dialog.addAction(delete);
-      }
-
-      if (enabledActions.contains(Action.PRINT)) {
-        BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
-          @Override
-          public void execute() {
-            Printer.print(dialog);
-          }
-        });
-
-        print.addStyleName(STYLE_INPUT_PRINT);
-        UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
-        dialog.addAction(print);
-      }
-    }
-
     final ScheduledCommand onSave = new ScheduledCommand() {
       @Override
       public void execute() {
@@ -434,7 +406,35 @@ public class InputBoxes {
     BeeImage save = new BeeImage(Global.getImages().silverSave(), onSave);
     save.addStyleName(STYLE_INPUT_SAVE);
     UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
-    dialog.addAction(save);
+    dialog.addAction(Action.SAVE, save);
+    
+    if (enabledActions != null) {
+      if (enabledActions.contains(Action.DELETE)) {
+        BeeImage delete = new BeeImage(Global.getImages().silverDelete(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            callback.onDelete(dialog);
+          }
+        });
+
+        delete.addStyleName(STYLE_INPUT_DELETE);
+        UiHelper.initialize(delete, initializer, DialogConstants.WIDGET_DELETE);
+        dialog.addAction(Action.DELETE, delete);
+      }
+
+      if (enabledActions.contains(Action.PRINT)) {
+        BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            Printer.print(dialog);
+          }
+        });
+
+        print.addStyleName(STYLE_INPUT_PRINT);
+        UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
+        dialog.addAction(Action.PRINT, print);
+      }
+    }
 
     final ScheduledCommand onClose = new ScheduledCommand() {
       @Override
@@ -457,7 +457,7 @@ public class InputBoxes {
     BeeImage close = new BeeImage(Global.getImages().silverClose(), onClose);
     close.addStyleName(STYLE_INPUT_CLOSE);
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
-    dialog.addAction(close);
+    dialog.addAction(Action.CLOSE, close);
 
     dialog.setOnSave(onSave);
     dialog.setOnEscape(onClose);

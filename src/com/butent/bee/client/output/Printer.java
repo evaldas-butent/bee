@@ -12,7 +12,6 @@ import com.google.gwt.dom.client.TextAreaElement;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -145,17 +144,8 @@ public class Printer {
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        long start = System.currentTimeMillis();
         frame.print();
-        long end = System.currentTimeMillis();
-
         frame.clear();
-
-        if (end == start && BrowsingContext.isChrome()) {
-          logger.warning("google is evil");
-          // http://code.google.com/p/chromium/issues/detail?id=50186
-          // waiting for chrome 24
-        }
       }
     });
   }
