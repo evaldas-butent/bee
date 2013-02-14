@@ -21,7 +21,7 @@ public class TransportActionHandler implements Handler {
       if (DataUtils.isId(tripId)) {
         DataInfo data = Data.getDataInfo(BeeUtils
             .isEmpty(Data.getString(VIEW_CARGO_TRIPS, event.getRow(), "ExpeditionType"))
-            ? VIEW_TRIPS : VIEW_EXP_TRIPS);
+            ? VIEW_TRIPS : VIEW_EXPEDITION_TRIPS);
 
         RowEditor.openRow(data.getEditForm(), data, tripId);
       }

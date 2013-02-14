@@ -22,7 +22,8 @@
       </render>
     </CalcColumn>
     <DataColumn name="Driver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" />
-    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" />
+    <DataColumn name="DateFrom" caption="Išvyko" />
+    <DataColumn name="DateTo" caption="Sugrįžo" />
+    <DataColumn name="PlannedEndDate" caption="Planuojama pabaiga" />
   </columns>
 </Grid>

@@ -27,6 +27,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="ForwarderVehicle" />
+    <SimpleColumn name="ForwarderDriver" />
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
     <SimpleColumn name="Notes" />

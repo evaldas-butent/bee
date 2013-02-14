@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="TripCargo" viewName="TripCargo"
-  editForm="CargoPlace" editPopup="true" editInPlace="CargoOrder CargoPercent" disabledActions="add"
+  editForm="CargoPlace" editPopup="true" editInPlace="CargoOrder CargoPercent"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
 

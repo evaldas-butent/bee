@@ -32,6 +32,8 @@ public class TransportConstants {
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_COLORS = "GetColors";
+  public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
+  public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
@@ -62,7 +64,7 @@ public class TransportConstants {
   public static final String VIEW_CARGO_LIST = "CargoList";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
-  public static final String VIEW_EXP_TRIPS = "ExpeditionTrips";
+  public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
   public static final String VIEW_ALL_TRIPS = "AllTrips";
 
   public static final String VIEW_TRIP_CARGO = "TripCargo";

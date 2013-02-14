@@ -58,6 +58,8 @@
     <SimpleColumn name="ExchangeOfPalettes" />
 
     <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+      <AggregateColumn name="Trip" aggregate="MAX" />
+
       <AggregateJoin name="Trip" joinType="LEFT">
         <AggregateColumn name="Expedition" aggregate="MAX" />
       </AggregateJoin>

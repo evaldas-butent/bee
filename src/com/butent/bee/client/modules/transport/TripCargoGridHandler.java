@@ -2,27 +2,23 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -32,14 +28,13 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class CargoTripsGridHandler extends CargoPlaceRenderer {
+class TripCargoGridHandler extends CargoPlaceRenderer {
 
   private static class Action {
 
@@ -54,65 +49,54 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
       this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
 
-      this.dialog = DialogBox.create("Priskirti reisą");
+      this.dialog = DialogBox.create("Priskirti krovinį");
       dialog.setHideOnEscape(true);
 
-      HtmlTable container = new HtmlTable();
+      Horizontal container = new Horizontal();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, "Pasirinkite reisą");
+      container.add(new BeeLabel("Pasirinkite krovinį"));
 
-      Relation relation = Relation.create(VIEW_ALL_TRIPS,
-          Lists.newArrayList("TripNo", "VehicleNumber", "Driver", "ExpeditionType",
-              "ForwarderName"));
+      Relation relation = Relation.create(VIEW_CARGO_LIST,
+          Lists.newArrayList("OrderNo", "CustomerName", "Description"));
       relation.setAttributes(ImmutableMap.of(UiConstants.ATTR_NEW_ROW_ENABLED, "0"));
 
       CompoundFilter filter = Filter.and();
-      filter.add(Filter.isEmpty("DateTo"));
+      filter.add(Filter.isEmpty(COL_TRIP));
 
       for (IsRow row : grd.getRowData()) {
-        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(tripIndex)));
+        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
       }
       relation.setFilter(filter);
       final DataSelector selector = new DataSelector(relation, true);
 
-      selector.addSimpleHandler(RendererFactory.createRenderer(VIEW_ALL_TRIPS,
-          Lists.newArrayList("TripNo")));
+      selector.addSimpleHandler(RendererFactory
+          .createRenderer(VIEW_CARGO_LIST, Lists.newArrayList("OrderNo", "Description")));
+
       selector.addEditStopHandler(new EditStopEvent.Handler() {
         @Override
         public void onEditStop(EditStopEvent event) {
           if (event.isChanged()) {
-            addTrip(BeeUtils.toLong(selector.getValue()));
+            addCargo(BeeUtils.toLong(selector.getValue()));
           }
         }
       });
-      container.setWidget(0, 1, selector);
-      container.setWidget(1, 0, new BeeButton("Naujas reisas", new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createNewTrip(VIEW_TRIPS);
-        }
-      }));
-      container.setWidget(1, 1, new BeeButton("Nauja ekspedicija", new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createNewTrip(VIEW_EXPEDITION_TRIPS);
-        }
-      }));
+      container.add(selector);
       dialog.setWidget(container);
       dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
     }
 
-    private void addTrip(long tripId) {
-      if (!DataUtils.isId(tripId)) {
+    private void addCargo(long cargoId) {
+      if (!DataUtils.isId(cargoId)) {
         return;
       }
       dialog.close();
 
-      List<BeeColumn> columns =
-          DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);
+      List<BeeColumn> columns = DataUtils.getColumns(gridView.getDataColumns(), tripIndex,
+          cargoIndex);
+
       List<String> values = Lists.newArrayList(BeeUtils.toString(gridView.getRelId()),
-          BeeUtils.toString(tripId));
+          BeeUtils.toString(cargoId));
 
       Queries.insert(gridView.getViewName(), columns, values, new RowCallback() {
         @Override
@@ -121,18 +105,6 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
           gridView.getGrid().insertRow(row, false);
         }
       });
-    }
-
-    private void createNewTrip(String viewName) {
-      DataInfo dataInfo = Data.getDataInfo(viewName);
-
-      RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
-          dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow row) {
-              addTrip(row.getId());
-            }
-          });
     }
   }
 

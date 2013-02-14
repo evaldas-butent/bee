@@ -74,6 +74,8 @@
                 <InputDecimal source="FuelAfter" style="width: 4em;" />
               </SimplePanel>
             </FlowPanel>
+
+            <InputDate source="PlannedEndDate" caption="Planuojama pabaigos data" style="width: 7em;" />
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">

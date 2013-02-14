@@ -95,16 +95,16 @@ public class TransportModuleBean implements BeeModule {
       } else if (reqInfo.hasParameter(VAR_CARGO_ID)) {
         Long cargoId = BeeUtils.toLong(reqInfo.getParameter(VAR_CARGO_ID));
 
-        response = getCargoProfit(new SqlSelect().addConstant(cargoId, "Cargo"));
+        response = getCargoProfit(new SqlSelect().addConstant(cargoId, COL_CARGO));
 
       } else if (reqInfo.hasParameter(COL_ORDER)) {
         Long orderId = BeeUtils.toLong(reqInfo.getParameter(COL_ORDER));
         String cargo = VIEW_CARGO;
 
         response = getCargoProfit(new SqlSelect()
-            .addField(cargo, sys.getIdName(cargo), "Cargo")
+            .addField(cargo, sys.getIdName(cargo), COL_CARGO)
             .addFrom(cargo)
-            .setWhere(SqlUtils.equals(cargo, "Order", orderId)));
+            .setWhere(SqlUtils.equals(cargo, COL_ORDER, orderId)));
 
       } else {
         response = ResponseObject.error("Profit of WHAT?");
@@ -119,8 +119,12 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
 
-    } else if (BeeUtils.same(svc, "GetOrderTrips")) {
+    } else if (BeeUtils.same(svc, SVC_GET_ORDER_TRIPS)) {
       response = getOrderTripData(BeeUtils.toLong(reqInfo.getParameter(COL_ORDER)));
+
+    } else if (BeeUtils.same(svc, SVC_GET_CARGO_USAGE)) {
+      response = getCargoUsage(reqInfo.getParameter("ViewName"),
+          Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -336,6 +340,29 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(new String[] {"CargoIncome:", res.getValue("CargoIncome"),
         "TripCost:", res.getValue("TripCost"), "ServicesIncome:", res.getValue("ServicesIncome"),
         "ServicesCost:", res.getValue("ServicesCost")});
+  }
+
+  private ResponseObject getCargoUsage(String viewName, String[] ids) {
+    String source = sys.getViewSource(viewName);
+    IsExpression ref;
+    SqlSelect ss = new SqlSelect().addFrom(TBL_CARGO_TRIPS);
+
+    if (BeeUtils.same(source, TBL_TRIPS)) {
+      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP);
+
+    } else if (BeeUtils.same(source, TBL_ORDER_CARGO)) {
+      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_CARGO);
+
+    } else if (BeeUtils.same(source, TBL_ORDERS)) {
+      ss.addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO));
+      ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
+
+    } else {
+      return ResponseObject.error("Table not supported:", source);
+    }
+    int cnt = qs.sqlCount(ss.setWhere(SqlUtils.inList(ref, (Object[]) ids)));
+
+    return ResponseObject.response(cnt);
   }
 
   private ResponseObject getColors(RequestInfo reqInfo) {

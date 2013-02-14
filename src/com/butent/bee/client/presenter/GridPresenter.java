@@ -18,8 +18,8 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
@@ -206,6 +206,43 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.onConfirm();
     } else {
       Global.confirmDelete(getCaption(), Icon.WARNING, messages, deleteCallback);
+    }
+  }
+
+  public void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
+    int size = selectedRows.size();
+    List<String> options = Lists.newArrayList();
+
+    Pair<String, String> defMsg = AbstractGridInterceptor.deleteRowsMessage(size);
+    Pair<String, String> message =
+        (getGridInterceptor() != null) ? getGridInterceptor().getDeleteRowsMessage(size) : defMsg;
+
+    if (message != null) {
+      options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
+      options.add(BeeUtils.notEmpty(message.getB(), defMsg.getB()));
+    }
+
+    if (options.isEmpty()) {
+      DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+      deleteCallback.onConfirm();
+
+    } else {
+      options.add(Global.CONSTANTS.cancel());
+
+      Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
+          options, 2, new ChoiceCallback() {
+            @Override
+            public void onSuccess(int value) {
+              if (value == 0) {
+                deleteRow(activeRow, false);
+
+              } else if (value == 1) {
+                DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+                deleteCallback.onConfirm();
+              }
+            }
+          }, BeeConst.UNDEF, null, StyleUtils.FontSize.XX_LARGE.getClassName(),
+          StyleUtils.FontSize.MEDIUM.getClassName(), null);
     }
   }
 
@@ -591,43 +628,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         uiOptions, gridOptions);
 
     return view;
-  }
-
-  private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
-    int size = selectedRows.size();
-    List<String> options = Lists.newArrayList();
-
-    Pair<String, String> defMsg = AbstractGridInterceptor.deleteRowsMessage(size);
-    Pair<String, String> message =
-        (getGridInterceptor() != null) ? getGridInterceptor().getDeleteRowsMessage(size) : defMsg;
-
-    if (message != null) {
-      options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
-      options.add(BeeUtils.notEmpty(message.getB(), defMsg.getB()));
-    }
-
-    if (options.isEmpty()) {
-      DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-      deleteCallback.onConfirm();
-
-    } else {
-      options.add(Global.CONSTANTS.cancel());
-
-      Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
-          options, 2, new ChoiceCallback() {
-            @Override
-            public void onSuccess(int value) {
-              if (value == 0) {
-                deleteRow(activeRow, false);
-
-              } else if (value == 1) {
-                DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-                deleteCallback.onConfirm();
-              }
-            }
-          }, BeeConst.UNDEF, null, StyleUtils.FontSize.XX_LARGE.getClassName(),
-          StyleUtils.FontSize.MEDIUM.getClassName(), null);
-    }
   }
 
   private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {

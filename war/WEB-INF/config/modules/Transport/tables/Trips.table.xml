@@ -13,6 +13,7 @@
     <Relation name="Trailer" relation="Vehicles" />
     <Date name="DateFrom" />
     <Date name="DateTo" />
+    <Date name="PlannedEndDate" />
     <Double name="SpeedometerBefore" />
     <Double name="SpeedometerAfter" />
     <Numeric name="FuelBefore" precision="7" scale="2" />
@@ -20,6 +21,7 @@
     <Relation name="Expedition" relation="ExpeditionTypes" />
     <Relation name="Forwarder" relation="Companies" />
     <String name="ForwarderVehicle" precision="50" />
+    <String name="ForwarderDriver" precision="50" />
     <Text name="Notes" />
   </Fields>
 </Table>

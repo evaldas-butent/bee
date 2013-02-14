@@ -22,6 +22,7 @@
     </SimpleJoin>
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
+    <SimpleColumn name="PlannedEndDate" />
     <SimpleColumn name="SpeedometerBefore" />
     <SimpleColumn name="SpeedometerAfter" />
     <SimpleColumn name="FuelBefore" />

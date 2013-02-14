@@ -40,6 +40,7 @@
           <FlowPanel class="flexBox-vertical flexible">
             <DataSelector source="Forwarder" caption="Vežėjas" decorator="flex-left" d:size="115" required="true" />
             <InputText source="ForwarderVehicle" caption="Vežėjo transportas" decorator="flex-left" d:size="115" />
+            <InputText source="ForwarderDriver" caption="Vairuotojas" decorator="flex-left" d:size="115" />
           </FlowPanel>
         </FlowPanel>
       </FlowPanel>

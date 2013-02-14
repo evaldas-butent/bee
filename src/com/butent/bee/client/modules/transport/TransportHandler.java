@@ -28,8 +28,8 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -62,14 +62,15 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.ui.Captions;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 public class TransportHandler {
@@ -136,16 +137,12 @@ public class TransportHandler {
     }
   }
 
-  private static class CargoGridHandler extends AbstractGridInterceptor {
+  private static class CargoGridHandler extends CargoPlaceRenderer {
     @Override
-    public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
-        ColumnDescription columnDescription) {
+    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+        Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
-      if (BeeUtils.inListSame(columnId, "Loading", "Unloading")) {
-        return new CargoPlaceRenderer(dataColumns, columnId);
-      } else {
-        return null;
-      }
+      return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
     }
   }
 
@@ -182,7 +179,7 @@ public class TransportHandler {
       final Flow panel = (Flow) widget;
       panel.clear();
 
-      ParameterList args = createArgs("GetOrderTrips");
+      ParameterList args = createArgs(SVC_GET_ORDER_TRIPS);
       args.addDataItem(COL_ORDER, orderId);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -588,10 +585,14 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGridHandler());
 
+    GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
+    GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
+    GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
+
     GridFactory.registerGridInterceptor(VIEW_CARGO, new CargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new CargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
