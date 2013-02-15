@@ -11,7 +11,8 @@
 
   <columns>
     <DataColumn name="CargoOrder" caption="Eil.Nr." />
-    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
+    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true"
+      editPopup="true" editSource="Order" />
     <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
       minWidth="100" />
     <DataColumn name="Weight" caption="Svoris" />

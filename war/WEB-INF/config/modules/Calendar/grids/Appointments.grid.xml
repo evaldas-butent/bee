@@ -22,11 +22,12 @@
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
 
-    <DataColumn name="Organizer" caption="Atsakingas darbuotojas">
+    <RelColumn name="Organizer" caption="Atsakingas darbuotojas" editEnabled="true"
+      editSource="OrganizerPerson">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />
-    </DataColumn>
+    </RelColumn>
 
     <DataColumn name="ColorName" caption="Spalva">
       <dynStyle>

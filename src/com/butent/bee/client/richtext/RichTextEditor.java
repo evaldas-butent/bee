@@ -262,11 +262,6 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
     getArea().setHTML(value);
   }
 

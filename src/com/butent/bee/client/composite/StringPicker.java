@@ -367,11 +367,6 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
     if (BeeUtils.equalsTrimRight(value, getValue())) {
       return;
     }
@@ -379,10 +374,6 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     setSelected(false);
     this.value = value;
     setSelected(true);
-
-    if (fireEvents) {
-      ValueChangeEvent.fire(this, value);
-    }
   }
 
   @Override

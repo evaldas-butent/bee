@@ -4,9 +4,10 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.HasValue;
 
 import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.ui.FormWidget;
@@ -20,9 +21,9 @@ import java.util.List;
  * Contains requirements for user interface components which are able to edit data values.
  */
 
-public interface Editor extends IdentifiableWidget, HasValue<String>, Focusable,
+public interface Editor extends IdentifiableWidget, TakesValue<String>, Focusable,
     HasAllFocusHandlers, HasKeyDownHandlers, HasEditState, HasEditStopHandlers,
-    HasEnabled, HasOptions, TabulationHandler {
+    HasEnabled, HasOptions, TabulationHandler, HasValueChangeHandlers<String> {
 
   void clearValue();
 

@@ -251,11 +251,6 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   }
 
   @Override
-  public void setValue(String value, boolean fireEvents) {
-    getArea().setValue(value, fireEvents);
-  }
-
-  @Override
   public void setVisibleLines(int lines) {
     getArea().setVisibleLines(lines);
   }

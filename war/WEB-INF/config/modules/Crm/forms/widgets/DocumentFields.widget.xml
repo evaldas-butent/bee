@@ -34,7 +34,7 @@
     <DataSelector source="Group" />
     <Label html="Asmuo:" horizontalAlignment="right" />
     <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
-      choiceColumns="FirstName LastName CompanyName" />
+      choiceColumns="FirstName LastName CompanyName" editEnabled="true" editSource="Person" />
   </row>
 
   <row>

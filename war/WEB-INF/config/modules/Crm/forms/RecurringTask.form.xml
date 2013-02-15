@@ -38,6 +38,7 @@
         <DataSelector source="Executor" editEnabled="true" style="&inp2;" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
         <DataSelector source="Contact" style="&inp4; width: 140px;"
+          editEnabled="true" editSource="ContactPerson"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" />
       </FlowPanel>

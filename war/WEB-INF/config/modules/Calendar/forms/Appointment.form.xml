@@ -68,8 +68,8 @@
             style="width: 140px;" d:size="100" d:unit="px" />
 
           <br/>  
-          <DataSelector source="Organizer" caption="Atsakingas darbuotojas:"
-            style="width: 242px;" decorator="caption-top">
+          <DataSelector source="Organizer" caption="Atsakingas darbuotojas:" style="width: 242px;" 
+            decorator="caption-top" editEnabled="true" editSource="OrganizerPerson">
             <renderToken source="OrganizerFirstName" />
             <renderToken source="OrganizerLastName" />
             <renderToken source="OrganizerCompanyName" prefix=", " />

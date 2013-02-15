@@ -453,16 +453,16 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
   }
 
-  public String getRelationView(String colName) {
+  public String getRelationView(String colName, boolean root) {
     ViewColumn viewColumn = getViewColumn(colName);
     if (viewColumn == null) {
       return null;
     }
 
-    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())) {
+    if ((!root || viewColumn.getLevel() <= 0) && !BeeUtils.isEmpty(viewColumn.getRelation())) {
       return viewColumn.getRelation();
     } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
-      return getRelationView(viewColumn.getParent());
+      return getRelationView(viewColumn.getParent(), root);
     } else {
       return null;
     }

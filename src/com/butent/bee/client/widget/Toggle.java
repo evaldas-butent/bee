@@ -241,18 +241,7 @@ public class Toggle extends CustomButton implements Editor {
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
-    boolean oldValue = isDown();
-    boolean newValue = BeeUtils.toBoolean(value);
-    setDown(newValue);
-
-    if (fireEvents && oldValue != newValue) {
-      ValueChangeEvent.fire(this, value);
-    }
+    setDown(BeeUtils.toBoolean(value));
   }
 
   @Override

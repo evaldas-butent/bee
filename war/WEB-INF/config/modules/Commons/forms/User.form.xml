@@ -18,7 +18,8 @@
       <row>
         <Label html="Vardas, pavardė" />
         <DataSelector source="CompanyPerson" style="width:150px"
-          renderColumns="FirstName Lastname" searchableColumns="FirstName Lastname CompanyName" />
+          renderColumns="FirstName Lastname" searchableColumns="FirstName Lastname CompanyName"
+          editEnabled="true" editSource="Person" />
         <Label html="Įmonė" horizontalAlignment="right" />
         <TextLabel source="CompanyName" style="width:150px" />
         <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>

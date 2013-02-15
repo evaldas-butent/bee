@@ -5,16 +5,16 @@
   idName="AttendeeID"
   >
   <Fields>
-    <Relation name="AttendeeType" notNull="true" relation="AttendeeTypes" />
+    <Relation name="AttendeeType" notNull="true" relation="AttendeeTypes" label="Tipas" />
 
-    <String name="Name" precision="100" notNull="true" unique="true" />
-    <String name="Location" precision="100" />
-    <Text name="Description" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="Pavadinimas" />
+    <String name="Location" precision="100" label="Vieta" />
+    <Text name="Description" label="Aprašymas" />
 
-    <Relation name="CompanyPerson" relation="CompanyPersons" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" label="Atsakingas" />
 
-    <Integer name="Transparency" />
-    <Integer name="Ordinal" />
+    <Integer name="Transparency" label="Persidengiamumas" />
+    <Integer name="Ordinal" label="Eil. Nr." />
     
     <Relation name="Color" relation="Colors" label="Spalva" />
     <Relation name="Style" relation="AppointmentStyles" label="Stilius" />

@@ -250,6 +250,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public Filter getAdditionalFilter() {
     return additionalFilter;
   }
+  
+  public BeeRow getCachedRow(long rowId) {
+    if (getViewData() == null) {
+      return null;
+    } else {
+      return getViewData().getRowById(rowId);
+    }
+  }
 
   public DataInfo getDataInfo() {
     return dataInfo;

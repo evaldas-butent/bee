@@ -380,11 +380,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
     int oldIndex = getSelectedIndex();
     int newIndex = BeeConst.UNDEF;
 
@@ -400,9 +395,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
         getOption(newIndex).setValue(true);
       } else if (isIndex(oldIndex)) {
         getOption(oldIndex).setValue(false);
-      }
-      if (fireEvents) {
-        ValueChangeEvent.fire(this, isIndex(newIndex) ? BeeUtils.toString(newIndex) : null);
       }
     }
   }

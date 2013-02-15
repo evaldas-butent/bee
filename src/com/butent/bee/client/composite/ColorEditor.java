@@ -296,13 +296,8 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
   }
 
   @Override
-  public void setValue(String newValue) {
-    setValue(newValue, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
-    getTextBox().setValue(value, fireEvents);
+  public void setValue(String value) {
+    getTextBox().setValue(value);
     picker.setColor(value);
   }
 

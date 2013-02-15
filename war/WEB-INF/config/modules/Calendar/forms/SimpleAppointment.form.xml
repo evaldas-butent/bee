@@ -55,7 +55,8 @@
        choiceColumns="Name Phone Email" editEnabled="true" />
 
     <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
-      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;">
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;"
+      editEnabled="true" editSource="OrganizerPerson">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />

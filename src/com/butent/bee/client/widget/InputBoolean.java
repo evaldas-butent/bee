@@ -220,19 +220,11 @@ public class InputBoolean extends Composite implements Editor {
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
     boolean oldValue = getCheckBox().getValue();
     boolean newValue = BeeUtils.toBoolean(value);
 
     if (oldValue != newValue) {
       getCheckBox().setValue(newValue);
-      if (fireEvents) {
-        ValueChangeEvent.fire(this, value);
-      }
     }
   }
 

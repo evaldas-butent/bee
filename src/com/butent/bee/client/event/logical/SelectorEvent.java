@@ -54,6 +54,7 @@ public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Co
   private static void fireEvent(DataSelector selector, SelectorEvent event) {
     selector.fireEvent(event);
     if (!event.isConsumed()) {
+      event.revive();
       BeeKeeper.getBus().fireEventFromSource(event, selector);
     }
   }

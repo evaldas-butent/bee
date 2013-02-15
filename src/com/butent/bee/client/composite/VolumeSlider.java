@@ -324,12 +324,7 @@ public class VolumeSlider extends Absolute implements Editor {
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
-    spinner.setValue(BeeUtils.toLong(value), fireEvents);
+    spinner.setValue(BeeUtils.toLong(value), false);
   }
 
   @Override

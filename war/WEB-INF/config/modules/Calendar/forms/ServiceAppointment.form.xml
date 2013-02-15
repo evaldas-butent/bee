@@ -133,7 +133,8 @@
         d:size="140" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
 
       <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
-        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 192px;">
+        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 192px;"
+        editEnabled="true" editSource="OrganizerPerson">
         <renderToken source="OrganizerFirstName" />
         <renderToken source="OrganizerLastName" />
         <renderToken source="OrganizerCompanyName" prefix=", " />

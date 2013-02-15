@@ -38,6 +38,7 @@
 
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="PersonFirstName" name="FirstName" />
         <SimpleColumn alias="PersonLastName" name="LastName" />

@@ -14,7 +14,6 @@
     <DataColumn name="Description" />
 
     <RelColumn name="Company" editEnabled="true" />
-    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />

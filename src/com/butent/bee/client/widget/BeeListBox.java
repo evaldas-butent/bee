@@ -352,16 +352,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
-    String oldValue = getValue();
     setSelectedIndex(getIndex(value));
-    if (fireEvents) {
-      ValueChangeEvent.fireIfNotEqual(this, oldValue, value);
-    }
   }
 
   public void setValueNumeric(boolean valueNumeric) {

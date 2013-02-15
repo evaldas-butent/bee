@@ -21,9 +21,6 @@
     <DataColumn name="Summary" flexGrow="1" />
 
     <RelColumn name="Company" editEnabled="true" flexGrow="1" />
-    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-      sortBy="ContactLastName ContactFirstName"
-      filterOptions="ContactFirstName ContactLastName ContactCompanyName" />
 
     <DataColumn name="Status" itemKey="TaskStatus" />
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />

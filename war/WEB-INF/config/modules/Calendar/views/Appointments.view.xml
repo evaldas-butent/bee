@@ -45,6 +45,7 @@
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="OrganizerCompanyName" name="Name" />
       </SimpleJoin>
+      <SimpleColumn alias="OrganizerPerson" name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="OrganizerFirstName" name="FirstName" />
         <SimpleColumn alias="OrganizerLastName" name="LastName" />

@@ -151,7 +151,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private static final BeeLogger logger = LogUtils.getLogger(CellGridImpl.class);
 
   private static final String STYLE_NAME = "bee-GridView";
-  
+
   private final String gridName;
   private final DataInfo dataInfo;
 
@@ -520,8 +520,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     if (gridDescr.getRowStyles() != null) {
-      ConditionalStyle rowStyles = ConditionalStyle.create(gridDescr.getRowStyles(), null,
-          dataCols);
+      ConditionalStyle rowStyles =
+          ConditionalStyle.create(gridDescr.getRowStyles(), null, dataCols);
       if (rowStyles != null) {
         getGrid().setRowStyles(rowStyles);
       }
@@ -2039,8 +2039,39 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return false;
     }
 
-    Long id = row.getLong(editableColumn.getColIndex());
+    final String editSource;
+    String editViewName = editableColumn.getRelation().getEditViewName();
+
+    String es = editableColumn.getRelation().getEditSource();
+
+    if (BeeUtils.isEmpty(es)) {
+      editSource = editableColumn.getColumnId();
+      if (BeeUtils.isEmpty(editViewName)) {
+        editViewName = editableColumn.getRelation().getViewName();
+      }
+    } else {
+      editSource = es;
+      if (BeeUtils.isEmpty(editViewName)) {
+        editViewName = getDataInfo().getRelationView(editSource, false);
+      }
+    }
+    if (BeeUtils.isEmpty(editViewName)) {
+      return false;
+    }
+
+    Long id = row.getLong(getDataInfo().getColumnIndex(editSource));
     if (!DataUtils.isId(id)) {
+      return false;
+    }
+
+    final DataInfo editDataInfo = Data.getDataInfo(editViewName);
+    if (editDataInfo == null) {
+      return false;
+    }
+
+    String formName = RowEditor.getFormName(editableColumn.getRelation().getEditForm(),
+        editDataInfo);
+    if (BeeUtils.isEmpty(formName)) {
       return false;
     }
 
@@ -2057,8 +2088,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
         @Override
         public void onSuccess(BeeRow result) {
-          int updated = RelationUtils.updateRow(getDataInfo(), editableColumn.getColumnId(), row,
-              Data.getDataInfo(editableColumn.getRelation().getViewName()), result, false);
+          int updated = RelationUtils.updateRow(getDataInfo(), editSource, row,
+              editDataInfo, result, false);
           if (updated > 0) {
             getGrid().refreshCellContent(row.getId(), editableColumn.getColumnId());
           }
@@ -2071,7 +2102,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       rowCallback = null;
     }
 
-    return RowEditor.openRelatedRow(editableColumn.getRelation(), id, modal, rowCallback);
+    RowEditor.openRow(formName, editDataInfo, id, modal, null, rowCallback);
+    return true;
   }
 
   private void maybeResizeGrid() {

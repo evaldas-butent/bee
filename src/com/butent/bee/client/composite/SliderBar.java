@@ -486,13 +486,8 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
 
   @Override
   public void setValue(String value) {
-    setValue(value, false);
-  }
-
-  @Override
-  public void setValue(String value, boolean fireEvents) {
     if (BeeUtils.toDouble(value) != getCurrentValue()) {
-      setCurrentValue(BeeUtils.toDouble(value), fireEvents);
+      setCurrentValue(BeeUtils.toDouble(value), false);
     }
   }
 

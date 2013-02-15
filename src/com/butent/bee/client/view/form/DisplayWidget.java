@@ -133,6 +133,7 @@ public class DisplayWidget {
       case DATA_SELECTOR:
         if (widget instanceof DataSelector) {
           ((DataSelector) widget).setDisplayValue(BeeUtils.trim(value));
+          ((DataSelector) widget).onRefresh(row);
         }
         break;
 

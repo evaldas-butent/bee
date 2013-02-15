@@ -37,7 +37,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
@@ -75,24 +74,6 @@ public class RowEditor {
   public static String getSupplierKey(String viewName, long rowId) {
     Assert.notEmpty(viewName);
     return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
-  }
-
-  public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
-      RowCallback rowCallback) {
-    if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
-      return false;
-    }
-
-    String viewName = relation.getViewName();
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-
-    String formName = getFormName(relation.getEditForm(), dataInfo);
-    if (BeeUtils.isEmpty(formName)) {
-      return false;
-    }
-
-    getRow(formName, dataInfo, rowId, modal, null, rowCallback);
-    return true;
   }
 
   public static void openRow(String viewName, BeeRow row, boolean modal) {

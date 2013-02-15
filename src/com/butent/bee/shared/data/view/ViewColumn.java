@@ -103,6 +103,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   private ViewColumn() {
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -173,6 +174,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return field;
   }
 
+  @Override
   public List<Property> getInfo() {
     return PropertyUtils.createProperties("Name", getName(), "Parent", getParent(),
         "Table", getTable(), "Field", getField(),
@@ -218,6 +220,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return readOnly;
   }
 
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
