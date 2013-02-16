@@ -8,6 +8,8 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+import elemental.js.html.JsPerformance;
+
 import elemental.dom.Element;
 
 import elemental.dom.Document;
@@ -27,8 +29,6 @@ import elemental.html.DOMMimeTypeArray;
 import elemental.html.Screen;
 
 import elemental.html.MemoryInfo;
-
-import elemental.html.Performance;
 
 import elemental.html.Navigator;
 
@@ -89,7 +89,7 @@ public class BrowsingContext {
         "Has Focus", document.hasFocus(),
         "Webkit Fullscreen Enabled", document.isWebkitFullscreenEnabled(),
         "Webkit Full Screen Keyboard Input Allowed",
-            document.isWebkitFullScreenKeyboardInputAllowed(),
+        document.isWebkitFullScreenKeyboardInputAllowed(),
         "Webkit Hidden", document.isWebkitHidden(),
         "Webkit Is Full Screen", document.isWebkitIsFullScreen(),
         "Xml Standalone", document.isXmlStandalone());
@@ -132,7 +132,7 @@ public class BrowsingContext {
   public static List<Property> getPerformanceInfo() {
     List<Property> result = Lists.newArrayList();
 
-    Performance performance = JsBrowser.getWindow().getPerformance();
+    JsPerformance performance = JsBrowser.getWindow().getPerformance();
     if (performance == null) {
       return null;
     }
@@ -177,8 +177,10 @@ public class BrowsingContext {
           "Unload Event Start", timing.getUnloadEventStart(),
           "Unload Event End", timing.getUnloadEventEnd());
     }
-
-    result.add(new Property("Webkit Now", BeeUtils.toString(performance.webkitNow())));
+    
+    if (JsUtils.isFunction(performance, "now")) {
+      result.add(new Property("Now", JsUtils.doMethod(performance, "now")));
+    }
 
     return result;
   }

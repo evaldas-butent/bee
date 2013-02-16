@@ -34,8 +34,6 @@ public class DayView extends CalendarView {
   private final MultiDayPanel multiDayPanel = new MultiDayPanel();
   private final AppointmentPanel appointmentPanel = new AppointmentPanel();
 
-  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
-
   private DayMoveController moveController = null;
   private ResizeController resizeController = null;
 
@@ -76,13 +74,13 @@ public class DayView extends CalendarView {
 
     resizeController.setSettings(getSettings());
 
-    appointmentWidgets.clear();
+    getAppointmentWidgets().clear();
     
     boolean separate = getSettings().separateAttendees();
     Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
     JustDate tmpDate = JustDate.copyOf(date);
-
+    
     for (int i = 0; i < days; i++) {
       List<Appointment> simple = CalendarUtils.filterSimple(getAppointments(), tmpDate,
           attendees, separate);
@@ -98,6 +96,7 @@ public class DayView extends CalendarView {
 
     List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, days,
         attendees, separate);
+    
     if (!multi.isEmpty()) {
       List<AppointmentAdapter> adapters = Lists.newArrayList();
       for (Appointment appointment : multi) {
@@ -115,7 +114,7 @@ public class DayView extends CalendarView {
 
   @Override
   public void doScroll() {
-    appointmentPanel.doScroll(getSettings(), appointmentWidgets);
+    appointmentPanel.doScroll(getSettings(), getAppointmentWidgets());
   }
 
   @Override
@@ -124,11 +123,6 @@ public class DayView extends CalendarView {
       StyleUtils.setHeight(appointmentPanel, getCalendarWidget().getOffsetHeight()
           - 2 - dayViewHeader.getOffsetHeight() - multiDayPanel.getOffsetHeight());
     }
-  }
-
-  @Override
-  public List<AppointmentWidget> getAppointmentWidgets() {
-    return appointmentWidgets;
   }
 
   @Override
@@ -148,7 +142,7 @@ public class DayView extends CalendarView {
 
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
-    AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
+    AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
 
     if (widget != null) {
       if (widget.canClick(element)) {
@@ -191,7 +185,7 @@ public class DayView extends CalendarView {
 
       widget.render(calendarId, bg);
 
-      appointmentWidgets.add(widget);
+      getAppointmentWidgets().add(widget);
 
       if (multi) {
         multiDayPanel.getGrid().add(widget);

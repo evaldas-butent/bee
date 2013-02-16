@@ -1,29 +1,22 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.google.common.collect.Range;
-
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription.WidgetPart;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class MonthLayoutDescription {
 
   private final JustDate firstDate;
-  private final Range<DateTime> layoutRange;
 
   private final WeekLayoutDescription[] weeks;
 
   public MonthLayoutDescription(JustDate firstDate, int weekCount,
       List<Appointment> appointments, int maxLayer) {
     this.firstDate = firstDate;
-    this.layoutRange = Range.closedOpen(firstDate.getDateTime(),
-        TimeUtils.nextDay(firstDate, weekCount * 7).getDateTime());
-
     this.weeks = new WeekLayoutDescription[weekCount];
 
     placeAppointments(appointments, maxLayer);
@@ -40,7 +33,7 @@ public class MonthLayoutDescription {
     }
 
     if (diff > 0) {
-      return Math.min(diff / 7, weeks.length - 1);
+      return Math.min(diff / TimeUtils.DAYS_PER_WEEK, weeks.length - 1);
     } else {
       return 0;
     }
@@ -65,17 +58,13 @@ public class MonthLayoutDescription {
 
   private void initWeek(int weekIndex, int maxLayer) {
     if (weeks[weekIndex] == null) {
-      JustDate date = TimeUtils.nextDay(firstDate, weekIndex * 7);
+      JustDate date = TimeUtils.nextDay(firstDate, weekIndex * TimeUtils.DAYS_PER_WEEK);
       weeks[weekIndex] = new WeekLayoutDescription(date, maxLayer);
     }
   }
 
   private void placeAppointments(List<Appointment> appointments, int maxLayer) {
     for (Appointment appointment : appointments) {
-      if (!BeeUtils.intersects(appointment.getRange(), layoutRange)) {
-        continue;
-      }
-
       int startWeek = calculateWeekFor(appointment.getStart(), false);
 
       if (appointment.isMultiDay()) {

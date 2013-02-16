@@ -56,8 +56,6 @@ public class MonthView extends CalendarView {
         }
       };
 
-  private static final int DAYS_IN_A_WEEK = 7;
-
   private static final int APPOINTMENT_HEIGHT = 17;
   private static final int APPOINTMENT_MARGIN_TOP = 3;
 
@@ -69,7 +67,6 @@ public class MonthView extends CalendarView {
   private final HtmlTable grid = new HtmlTable();
   private final Flow canvas = new Flow();
 
-  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
   private final Map<String, List<Appointment>> moreLabels = Maps.newHashMap();
 
   private MonthMoveController moveController = null;
@@ -110,7 +107,7 @@ public class MonthView extends CalendarView {
 
     canvas.clear();
 
-    appointmentWidgets.clear();
+    getAppointmentWidgets().clear();
     moreLabels.clear();
 
     buildGrid();
@@ -125,8 +122,9 @@ public class MonthView extends CalendarView {
     boolean separate = getSettings().separateAttendees();
     Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
-    List<Appointment> filtered = CalendarUtils.filterByAttendees(getAppointments(), attendees,
-        separate);
+    List<Appointment> byRange = CalendarUtils.filterByRange(getAppointments(), firstDate,
+        requiredRows * TimeUtils.DAYS_PER_WEEK);
+    List<Appointment> filtered = CalendarUtils.filterByAttendees(byRange, attendees, separate);
 
     Collections.sort(filtered, APPOINTMENT_COMPARATOR);
     MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDate,
@@ -150,19 +148,14 @@ public class MonthView extends CalendarView {
   public void doSizing() {
   }
 
-  @Override
-  public List<AppointmentWidget> getAppointmentWidgets() {
-    return appointmentWidgets;
-  }
-
   public JustDate getCellDate(int row, int col) {
-    return TimeUtils.nextDay(firstDate, row * DAYS_IN_A_WEEK + col);
+    return TimeUtils.nextDay(firstDate, row * TimeUtils.DAYS_PER_WEEK + col);
   }
 
   public int getColumn(int x) {
     double columnWidth = getColumnWidth();
     if (x > 0 && columnWidth > 0) {
-      return BeeUtils.clamp(BeeUtils.floor(x / columnWidth), 0, DAYS_IN_A_WEEK - 1);
+      return BeeUtils.clamp(BeeUtils.floor(x / columnWidth), 0, TimeUtils.DAYS_PER_WEEK - 1);
     } else {
       return 0;
     }
@@ -208,7 +201,7 @@ public class MonthView extends CalendarView {
       return true;
 
     } else {
-      AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
+      AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
       if (widget != null 
           && (widget.isMulti() || !widget.getCompactBar().getElement().isOrHasChild(element))) {
         openAppointment(widget.getAppointment());
@@ -246,14 +239,14 @@ public class MonthView extends CalendarView {
       case 0:
         grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.FIRST_COLUMN);
         break;
-      case DAYS_IN_A_WEEK - 1:
+      case TimeUtils.DAYS_PER_WEEK - 1:
         grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.LAST_COLUMN);
         break;
     }
   }
 
   private void buildGrid() {
-    for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
+    for (int i = 0; i < TimeUtils.DAYS_PER_WEEK; i++) {
       grid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       grid.getCellFormatter().setStyleName(0, i, CalendarStyleManager.WEEKDAY_LABEL);
     }
@@ -268,7 +261,7 @@ public class MonthView extends CalendarView {
     JustDate tmpDate = JustDate.copyOf(firstDate);
 
     for (int i = 1; i <= requiredRows; i++) {
-      for (int j = 0; j < DAYS_IN_A_WEEK; j++) {
+      for (int j = 0; j < TimeUtils.DAYS_PER_WEEK; j++) {
         buildCell(i, j, BeeUtils.toString(tmpDate.getDom()), tmpDate.equals(today),
             tmpDate.getMonth() == month);
         TimeUtils.moveOneDayForward(tmpDate);
@@ -331,7 +324,7 @@ public class MonthView extends CalendarView {
   }
 
   private double getColumnWidth() {
-    return (double) canvas.getElement().getClientWidth() / DAYS_IN_A_WEEK;
+    return (double) canvas.getElement().getClientWidth() / TimeUtils.DAYS_PER_WEEK;
   }
   
   private double getRowHeight() {
@@ -358,7 +351,7 @@ public class MonthView extends CalendarView {
       widget.getCompactBar().addMoveHandler(moveController);
     }
 
-    appointmentWidgets.add(widget);
+    getAppointmentWidgets().add(widget);
     canvas.add(widget);
   }
 
@@ -395,7 +388,7 @@ public class MonthView extends CalendarView {
 
     AppointmentStackingManager manager = week.getTopAppointmentsManager();
 
-    for (int dayOfWeek = 0; dayOfWeek < DAYS_IN_A_WEEK; dayOfWeek++) {
+    for (int dayOfWeek = 0; dayOfWeek < TimeUtils.DAYS_PER_WEEK; dayOfWeek++) {
       DayLayoutDescription dayAppointments = week.getDayLayoutDescription(dayOfWeek);
       int layer = manager.lowestLayerIndex(dayOfWeek);
 
@@ -436,7 +429,7 @@ public class MonthView extends CalendarView {
   private void placeItemInGrid(Widget widget, Appointment appointment, boolean multi,
       int colStart, int colEnd, int row, int cellPosition) {
 
-    double colWidth = 100d / DAYS_IN_A_WEEK;
+    double colWidth = 100d / TimeUtils.DAYS_PER_WEEK;
 
     double left = colStart * colWidth;
     double width = (colEnd - colStart + 1) * colWidth;

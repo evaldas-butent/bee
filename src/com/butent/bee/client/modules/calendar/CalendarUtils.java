@@ -34,11 +34,8 @@ public class CalendarUtils {
   public static List<Appointment> filterByAttendee(Collection<Appointment> input, long id) {
     List<Appointment> result = Lists.newArrayList();
     for (Appointment appointment : input) {
-      for (Long attendeeId : appointment.getAttendees()) {
-        if (attendeeId == id) {
-          result.add(appointment);
-          break;
-        }
+      if (appointment.getAttendees().contains(id)) {
+        result.add(appointment);
       }
     }
     return result;
@@ -65,14 +62,28 @@ public class CalendarUtils {
     return result;
   }
 
+  public static List<Appointment> filterByRange(Collection<Appointment> input, JustDate date,
+      int days) {
+    List<Appointment> result = Lists.newArrayList();
+    long min = TimeUtils.startOfDay(date).getTime();
+    long max = TimeUtils.startOfDay(date, days).getTime();
+
+    for (Appointment appointment : input) {
+      if (intersects(appointment, min, max)) {
+        result.add(appointment);
+      }
+    }
+    return result;
+  }
+  
   public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
       int days) {
     List<Appointment> result = Lists.newArrayList();
-    DateTime min = TimeUtils.startOfDay(date);
-    DateTime max = TimeUtils.startOfDay(date, days);
+    long min = TimeUtils.startOfDay(date).getTime();
+    long max = TimeUtils.startOfDay(date, days).getTime();
 
     for (Appointment appointment : input) {
-      if (appointment.isMultiDay() && rangeContains(appointment, min, max)) {
+      if (intersects(appointment, min, max) && appointment.isMultiDay()) {
         result.add(appointment);
       }
     }
@@ -100,17 +111,12 @@ public class CalendarUtils {
   public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date) {
     List<Appointment> result = Lists.newArrayList();
 
-    DateTime min = TimeUtils.startOfDay(date);
-    DateTime max = TimeUtils.startOfDay(date, 1);
+    long min = TimeUtils.startOfDay(date).getTime();
+    long max = TimeUtils.startOfDay(date, 1).getTime();
 
     for (Appointment appointment : input) {
-      if (!appointment.isMultiDay()) {
-        DateTime start = appointment.getStart();
-        DateTime end = appointment.getEnd();
-
-        if (BeeUtils.isMeq(start, min) && BeeUtils.isLeq(end, max)) {
-          result.add(appointment);
-        }
+      if (appointment.getStartMillis() >= min && appointment.getEndMillis() <= max) {
+        result.add(appointment);
       }
     }
     return result;
@@ -275,13 +281,6 @@ public class CalendarUtils {
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
-  public static boolean rangeContains(Appointment appointment, DateTime min, DateTime max) {
-    DateTime start = appointment.getStart();
-    DateTime end = appointment.getEnd();
-
-    return TimeUtils.isLess(start, max) && TimeUtils.isMore(end, min);
-  }
-  
   public static String renderDateTime(DateTime dateTime) {
     if (dateTime.getYear() == TimeUtils.today().getYear()) {
       if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
@@ -298,7 +297,7 @@ public class CalendarUtils {
       }
     }
   }
-
+  
   public static String renderPeriod(DateTime start, DateTime end) {
     if (start == null) {
       if (end == null) {
@@ -317,9 +316,13 @@ public class CalendarUtils {
       return renderDateTime(start) + PERIOD_SEPARATOR + renderDateTime(end);
     }
   }
-  
+
   public static String renderRange(Range<DateTime> range) {
     return (range == null) ? BeeConst.STRING_EMPTY 
         : renderPeriod(range.lowerEndpoint(), range.upperEndpoint()); 
+  }
+  
+  private static boolean intersects(Appointment appointment, long min, long max) {
+    return appointment.getStartMillis() < max && appointment.getEndMillis() > min;
   }
 }

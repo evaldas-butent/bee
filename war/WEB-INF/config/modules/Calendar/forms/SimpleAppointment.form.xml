@@ -40,7 +40,7 @@
     <InputTimeOfDay name="EndTime" step="30"
       style="&absolute; left: 280px; top: 192px; width: 40px;" options="60" />
 
-    <FlowPanel name="Colors" style="&absolute; left: 360px; top: 194px; width: 380px;" />
+    <FlowPanel name="Colors" style="&absolute; left: 360px; top: 192px; width: 380px;" />
 
     <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />

@@ -123,7 +123,7 @@
       <InputTimeOfDay name="EndTime" step="30"
         style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
-      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 192px;" />
+      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 156px; width: 192px;" />
 
       <DataSelector source="Style" caption="Stilius:"
         style="width: 120px;" d:size="60" d:unit="px"

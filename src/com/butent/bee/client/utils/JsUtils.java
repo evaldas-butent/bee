@@ -44,6 +44,23 @@ public class JsUtils {
     return (new Date()).getTime();
   }-*/;
 
+  public static native String doMethod(JavaScriptObject obj, String p) /*-{
+    var s;
+
+    try {
+      var x = obj[p]();
+      if (x == undefined || x == null) {
+        s == null;
+      } else {
+        s = String(x);
+      }
+    } catch (err) {
+      s = null;
+    }
+
+    return s;
+  }-*/;
+
   public static native JavaScriptObject eval(String xpr) /*-{
     try {
       return eval(xpr);
@@ -109,8 +126,7 @@ public class JsUtils {
       if (tp != "function") {
         continue;
       }
-      if (pattern != null && pattern.length > 0
-          && p.search(new RegExp(pattern, "i")) < 0) {
+      if (pattern != null && pattern.length > 0 && p.search(new RegExp(pattern, "i")) < 0) {
         continue;
       }
 
@@ -164,8 +180,7 @@ public class JsUtils {
         continue;
       }
 
-      if (pattern != null && pattern.length > 0
-          && p.search(new RegExp(pattern, "i")) < 0) {
+      if (pattern != null && pattern.length > 0 && p.search(new RegExp(pattern, "i")) < 0) {
         continue;
       }
 
@@ -313,8 +328,7 @@ public class JsUtils {
   public static native String toTime(double millis) /*-{
     if (millis > 0) {
       var d = new Date(millis);
-      return d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "."
-          + (d.getMilliseconds() + 1000).toString().substr(1);
+      return d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + "." + (d.getMilliseconds() + 1000).toString().substr(1);
     }
     return "";
   }-*/;

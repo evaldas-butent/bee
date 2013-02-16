@@ -2506,7 +2506,7 @@ public class BeeUtils {
    * @return unboxed long value or 0 if {@code box} is null
    */
   public static long unbox(Long box) {
-    return (box == null) ? 0 : box;
+    return (box == null) ? 0L : box;
   }
 
   /**

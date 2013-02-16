@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.user.client.Event;
@@ -21,6 +22,8 @@ public abstract class CalendarView {
     DAY, MONTH, RESOURCE
   }
   
+  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
+  
   private CalendarWidget calendarWidget = null;
 
   public void attach(CalendarWidget widget) {
@@ -39,7 +42,9 @@ public abstract class CalendarView {
 
   public abstract void doSizing();
   
-  public abstract List<AppointmentWidget> getAppointmentWidgets();
+  public List<AppointmentWidget> getAppointmentWidgets() {
+    return appointmentWidgets;
+  }
   
   public CalendarWidget getCalendarWidget() {
     return calendarWidget;

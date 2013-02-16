@@ -28,9 +28,12 @@ import com.butent.bee.client.modules.calendar.view.MonthView;
 import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +42,8 @@ import java.util.Map;
 public class CalendarWidget extends Composite implements HasOpenHandlers<Appointment>,
     HasTimeBlockClickHandlers, HasUpdateHandlers, RequiresResize, ProvidesResize {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CalendarWidget.class);
+  
   private final FlowPanel rootPanel = new FlowPanel();
 
   private final long calendarId;
@@ -55,8 +60,8 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   private final Timer resizeTimer = new Timer() {
     @Override
     public void run() {
-      doSizing();
       doLayout();
+      doSizing();
     }
   };
 
@@ -122,7 +127,10 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public void doLayout() {
     if (view != null) {
+      long startMillis = System.currentTimeMillis();
       view.doLayout(calendarId);
+      logger.debug(view.getType(), view.getAppointmentWidgets().size(),
+          BeeUtils.bracket(System.currentTimeMillis() - startMillis));
     }
   }
 

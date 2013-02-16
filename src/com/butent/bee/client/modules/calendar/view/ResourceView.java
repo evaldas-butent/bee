@@ -34,8 +34,6 @@ public class ResourceView extends CalendarView {
   private final MultiDayPanel viewMulti = new MultiDayPanel();
   private final AppointmentPanel viewBody = new AppointmentPanel();
 
-  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
-
   private DayMoveController moveController = null;
   private ResizeController resizeController = null;
 
@@ -78,7 +76,7 @@ public class ResourceView extends CalendarView {
 
     resizeController.setSettings(getSettings());
 
-    appointmentWidgets.clear();
+    getAppointmentWidgets().clear();
     
     int multiHeight = BeeConst.UNDEF;
     
@@ -117,7 +115,7 @@ public class ResourceView extends CalendarView {
   
   @Override
   public void doScroll() {
-    viewBody.doScroll(getSettings(), appointmentWidgets);
+    viewBody.doScroll(getSettings(), getAppointmentWidgets());
   }
 
   @Override
@@ -128,11 +126,6 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  @Override
-  public List<AppointmentWidget> getAppointmentWidgets() {
-    return appointmentWidgets;
-  }
-  
   @Override
   public Widget getScrollArea() {
     return viewBody.getScrollArea();
@@ -150,7 +143,7 @@ public class ResourceView extends CalendarView {
 
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
-    AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
+    AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
 
     if (widget != null) {
       if (widget.canClick(element)) {
@@ -190,7 +183,7 @@ public class ResourceView extends CalendarView {
 
       widget.render(calendarId, bg);
 
-      appointmentWidgets.add(widget);
+      getAppointmentWidgets().add(widget);
 
       if (multi) {
         viewMulti.getGrid().add(widget);
