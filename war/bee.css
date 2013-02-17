@@ -814,11 +814,6 @@ body {
   font-weight: bold;
 }
 
-.bee-display {
-  outline: #aaa solid 1px;
-  outline-offset: 2px;
-}
-
 .bee-Disclosure-header {
   cursor: pointer;
   border-spacing: 3px;

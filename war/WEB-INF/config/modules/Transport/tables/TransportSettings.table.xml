@@ -41,5 +41,19 @@
     <Integer name="SsStripOpacity" />
 
     <Relation name="SsTheme" relation="Themes" />
+    
+    <Integer name="DtbPixelsPerDriver" />
+
+    <Integer name="DtbPixelsPerDay" />
+    <Integer name="DtbPixelsPerRow" />
+
+    <Integer name="DtbHeaderHeight" />
+    <Integer name="DtbFooterHeight" />
+
+    <Integer name="DtbSliderWidth" />
+    <Integer name="DtbBarHeight" />
+
+    <Integer name="DtbItemOpacity" />
+    <Integer name="DtbStripOpacity" />
   </Fields>
 </Table>

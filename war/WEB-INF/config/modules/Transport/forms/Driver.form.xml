@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
-  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; width: 9em; text-align: right">
-  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+  <!ENTITY row "display: -webkit-flex; -webkit-align-items: flex-start;">
+  <!ENTITY separator "<br/>">
+  <!ENTITY lbl "width: 120px; margin-right: 1em; text-align: right;">
+  <!ENTITY w2 "width: 160px;">
+  <!ENTITY inpdt "width: 7em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -10,53 +12,57 @@
   name="Driver" viewName="Drivers" caption="Vairuotojas"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexBox-vertical flexible">
-        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <InlineLabel html="Vardas, pavardė" class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
-          <SimplePanel class="flexible" style="position: relative; height: 23px;">
-            <DataSelector source="CompanyPerson" renderColumns="FirstName LastName"
-              choiceColumns="FirstName LastName CompanyName" class="occupy" />
-          </SimplePanel>
-        </FlowPanel>
+    <FlowPanel style="margin-top: 1ex;">
+      <FlowPanel style="&row;">
+        <Label html="Vardas, pavardė:" class="bee-required" style="&lbl;" />
+        <DataSelector source="CompanyPerson" style="&w2;" renderColumns="FirstName LastName"
+          choiceColumns="FirstName LastName CompanyName" editEnabled="true" editSource="Person" />
 
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <FlowPanel>
-            <InlineLabel  html="Įmonė" style="&LEFT_LABEL_STYLE;" />
-            <TextLabel source="CompanyName" class="bee-display" style="display: inline-block" />
-          </FlowPanel>
-          <FlowPanel>
-            <InlineLabel html="Pareigos" style="&LABEL_STYLE;" />
-            <TextLabel source="Position" class="bee-display" style="display: inline-block" />
-          </FlowPanel>
-        </FlowPanel>
+        <Label html="Įmonė:" style="&lbl;" />
+        <TextLabel source="CompanyName" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel style="&row;">
+        <Label html="Pareigos:" style="&lbl;" />
+        <TextLabel source="Position" style="&w2;" />
+
+        <Label html="Stažas nuo:" style="&lbl;" />
+        <InputDate source="Experience" style="&inpdt;" minValue="1960" />
+      </FlowPanel>
+      &separator;
         
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <FlowPanel>
-            <InlineLabel html="Telefonai" style="&LEFT_LABEL_STYLE;" />
-            <TextLabel source="Phone" class="bee-display" style="display: inline-block" />
-          </FlowPanel>
-          <FlowPanel>
-            <InlineLabel html="El.paštas" style="&LABEL_STYLE;" />
-            <TextLabel class="bee-display" style="display: inline-block">
-              <renderToken source="Label" suffix=" " />
-              <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
-            </TextLabel>
-          </FlowPanel>
-          <InlineLabel html="Stažas nuo" style="&LABEL_STYLE;" />
-          <InputDate source="Experience" style="width: 7em"  minValue="1960" />
-        </FlowPanel>
+      <FlowPanel style="&row;">
+        <Label html="Telefonai:" style="&lbl;" />
+        <TextLabel source="Phone" style="&w2;" />
+
+        <Label html="El.paštas:" style="&lbl;" />
+        <TextLabel>
+          <renderToken source="Label" suffix=" " />
+          <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+        </TextLabel>
       </FlowPanel>
-      
-      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-        <Label html="Pastabos" />
-        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-          <InputArea source="Notes" class="occupy" />
+      &separator;
+
+      <FlowPanel style="&row;">
+        <Label html="Dirba nuo:" style="&lbl;" />
+        <SimplePanel style="&w2;">
+          <InputDate source="StartDate" style="&inpdt;" />
         </SimplePanel>
+
+        <Label html="Atleistas:" style="&lbl;" />
+        <InputDate source="EndDate" style="&inpdt; color: red;" />
       </FlowPanel>
+      &separator;
+      
+      <FlowPanel style="&row;">
+        <Label html="Pastabos:" style="&lbl;" />
+        <InputArea source="Notes" style="width: 400px; height: 40px;" />
+      </FlowPanel>
+      &separator;
     </FlowPanel>
 
-    <TabbedPages class="flexible" style="margin-top: 1ex;">
+    <TabbedPages class="flexible">
       <page>
         <text>Dokumentai</text>
         <ChildGrid name="DriverDocuments" relColumn="Driver" />
@@ -64,6 +70,10 @@
       <page>
         <text>Reisai</text>
         <ChildGrid name="DriverTrips" relColumn="Driver" />
+      </page>
+      <page>
+        <text>Nebuvimas darbe</text>
+        <ChildGrid name="DriverAbsence" relColumn="Driver" />
       </page>
     </TabbedPages>
   </FlowPanel>

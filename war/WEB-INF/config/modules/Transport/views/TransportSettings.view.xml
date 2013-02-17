@@ -47,6 +47,20 @@
 
     <SimpleColumn name="SsItemOpacity" />
     <SimpleColumn name="SsStripOpacity" />
+
+    <SimpleColumn name="DtbPixelsPerDriver" />
+
+    <SimpleColumn name="DtbPixelsPerDay" />
+    <SimpleColumn name="DtbPixelsPerRow" />
+
+    <SimpleColumn name="DtbHeaderHeight" />
+    <SimpleColumn name="DtbFooterHeight" />
+
+    <SimpleColumn name="DtbSliderWidth" />
+    <SimpleColumn name="DtbBarHeight" />
+    
+    <SimpleColumn name="DtbItemOpacity" />
+    <SimpleColumn name="DtbStripOpacity" />
     
   </Columns>
 </View>

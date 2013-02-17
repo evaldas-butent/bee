@@ -637,6 +637,21 @@ public class TransportHandler {
         ShippingSchedule.open(callback);
       }
     });
+
+    BeeKeeper.getMenu().registerMenuCallback(DriverTimeBoard.SUPPLIER_KEY,
+        new MenuManager.MenuCallback() {
+          @Override
+          public void onSelection(String parameters) {
+            DriverTimeBoard.open(showInNewTab);
+          }
+        });
+    
+    WidgetFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        DriverTimeBoard.open(callback);
+      }
+    });
   }
 
   static ParameterList createArgs(String name) {

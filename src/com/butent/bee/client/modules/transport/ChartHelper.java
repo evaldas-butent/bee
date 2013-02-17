@@ -361,6 +361,14 @@ class ChartHelper {
     }
   }
 
+  static String getRangeLabel(Range<JustDate> range) {
+    if (range == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return getRangeLabel(range.lowerEndpoint(), range.upperEndpoint());
+    }
+  }
+  
   static int getSize(Range<JustDate> range) {
     if (range == null) {
       return BeeConst.UNDEF;

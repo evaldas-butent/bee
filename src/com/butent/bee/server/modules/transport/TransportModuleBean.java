@@ -116,6 +116,9 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_SS_DATA)) {
       response = getSsData();
 
+    } else if (BeeUtils.same(svc, SVC_GET_DTB_DATA)) {
+      response = getDtbData();
+      
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
 
@@ -376,57 +379,101 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(getThemeColors(theme));
   }
 
-  private Map<Long, String> getDrivers(IsCondition condition) {
-    Map<Long, String> result = Maps.newHashMap();
+  private ResponseObject getDtbData() {
+    BeeRowSet settings = getSettings();
+    if (settings == null) {
+      return ResponseObject.error("user settings not available");
+    }
 
-    SqlSelect query = new SqlSelect()
+    BeeRowSet drivers = qs.getViewData(VIEW_DRIVERS);
+    if (DataUtils.isEmpty(drivers)) {
+      String msg = BeeUtils.joinWords(SVC_GET_DTB_DATA, "drivers not available");
+      logger.warning(msg);
+      return ResponseObject.error(msg);
+    }
+    settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
+    
+    BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE);
+    if (!DataUtils.isEmpty(absence)) {
+      settings.setTableProperty(PROP_ABSENCE, absence.serialize());
+    }
+
+    String vehicleJoinAlias = "veh_" + SqlUtils.uniqueName();
+    String trailerJoinAlias = "trail_" + SqlUtils.uniqueName();
+
+    String loadAlias = "load_" + SqlUtils.uniqueName();
+    String unlAlias = "unl_" + SqlUtils.uniqueName();
+
+    String defLoadAlias = "defl_" + SqlUtils.uniqueName();
+    String defUnlAlias = "defu_" + SqlUtils.uniqueName();
+
+    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
+    
+    String colLoadDate = loadingColumnAlias(COL_PLACE_DATE);
+    String colUnloadDate = unloadingColumnAlias(COL_PLACE_DATE);
+    
+    String colDefLoadDate = defaultLoadingColumnAlias(COL_PLACE_DATE);
+    String colDefUnloadDate = defaultUnloadingColumnAlias(COL_PLACE_DATE);
+
+    SqlSelect inner = new SqlSelect()
         .addFrom(TBL_TRIP_DRIVERS)
         .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
-        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_DRIVER_PERSON))
-        .addFromLeft(CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON));
+        .addFromLeft(TBL_VEHICLES, vehicleJoinAlias,
+            SqlUtils.join(vehicleJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_VEHICLES, trailerJoinAlias,
+            SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_CARGO_TRIPS,
+            SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+        .addFromLeft(TBL_CARGO_PLACES, loadAlias,
+            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_TRIPS, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, unlAlias,
+            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .addFromLeft(TBL_CARGO_PLACES, defLoadAlias,
+            SqlUtils.join(defLoadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, defUnlAlias,
+            SqlUtils.join(defUnlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE));
 
-    query.addFields(TBL_TRIP_DRIVERS, COL_TRIP);
-    query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-        CommonsConstants.COL_LAST_NAME);
+    inner.addFields(TBL_TRIP_DRIVERS, COL_DRIVER, COL_TRIP);
+    inner.addField(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, ALS_TRIP_DRIVER_FROM);
+    inner.addField(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, ALS_TRIP_DRIVER_TO);
+    
+    inner.addFields(TBL_TRIPS, COL_TRIP_NO, COL_TRIP_PLANNED_END_DATE);
+    inner.addField(TBL_TRIPS, COL_TRIP_DATE, ALS_TRIP_DATE);
+    inner.addField(TBL_TRIPS, COL_TRIP_DATE_FROM, ALS_TRIP_DATE_FROM);
+    inner.addField(TBL_TRIPS, COL_TRIP_DATE_TO, ALS_TRIP_DATE_TO);
 
-    query.addOrder(TBL_TRIP_DRIVERS, COL_TRIP);
-
-    if (condition != null) {
-      query.setWhere(condition);
-    }
+    inner.addField(vehicleJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER);
+    inner.addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER);
+    
+    inner.addField(loadAlias, COL_PLACE_DATE, colLoadDate);
+    inner.addField(unlAlias, COL_PLACE_DATE, colUnloadDate);
+    
+    inner.addField(defLoadAlias, COL_PLACE_DATE, colDefLoadDate);
+    inner.addField(defUnlAlias, COL_PLACE_DATE, colDefUnloadDate);
+    
+    String alias = "inner_" + SqlUtils.uniqueName();
+    
+    String[] group = new String[] {COL_DRIVER, COL_TRIP, ALS_TRIP_DRIVER_FROM, ALS_TRIP_DRIVER_TO,
+        COL_TRIP_NO, COL_TRIP_PLANNED_END_DATE, ALS_TRIP_DATE, ALS_TRIP_DATE_FROM, ALS_TRIP_DATE_TO,
+        ALS_VEHICLE_NUMBER, ALS_TRAILER_NUMBER};
+    
+    SqlSelect query = new SqlSelect()
+        .addFrom(inner, alias)
+        .addFields(alias, group)
+        .addMin(alias, colLoadDate)
+        .addMax(alias, colUnloadDate)
+        .addMin(alias, colDefLoadDate)
+        .addMax(alias, colDefUnloadDate)
+        .addGroup(alias, group)
+        .addOrder(alias, COL_DRIVER, ALS_TRIP_DATE, COL_TRIP_NO, COL_TRIP);
 
     SimpleRowSet data = qs.getData(query);
-    if (data == null || data.getNumberOfRows() == 0) {
-      return result;
+    if (data != null) {
+      settings.setTableProperty(PROP_DATA, data.serialize());
     }
 
-    List<String> drivers = Lists.newArrayList();
-    String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
-
-    Long lastTrip = null;
-    for (SimpleRow row : data) {
-      Long trip = row.getLong(COL_TRIP);
-
-      if (!trip.equals(lastTrip)) {
-        if (!drivers.isEmpty()) {
-          result.put(lastTrip, BeeUtils.join(separator, drivers));
-          drivers.clear();
-        }
-        lastTrip = trip;
-      }
-
-      drivers.add(BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
-          row.getValue(CommonsConstants.COL_LAST_NAME)));
-    }
-
-    if (!drivers.isEmpty()) {
-      result.put(lastTrip, BeeUtils.join(separator, drivers));
-    }
-    return result;
+    return ResponseObject.response(settings);
   }
 
   /**
@@ -494,7 +541,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-
+  
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -624,7 +671,7 @@ public class TransportModuleBean implements BeeModule {
 
     IsCondition where = SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION);
 
-    Map<Long, String> drivers = getDrivers(where);
+    Map<Long, String> drivers = getTripDrivers(where);
     if (!drivers.isEmpty()) {
       settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
     }
@@ -1008,6 +1055,59 @@ public class TransportModuleBean implements BeeModule {
     qs.sqlDropTemp(tmpFuels);
 
     return tmpCosts;
+  }
+
+  private Map<Long, String> getTripDrivers(IsCondition condition) {
+    Map<Long, String> result = Maps.newHashMap();
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TRIP_DRIVERS)
+        .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_DRIVER_PERSON))
+        .addFromLeft(CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON));
+
+    query.addFields(TBL_TRIP_DRIVERS, COL_TRIP);
+    query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+        CommonsConstants.COL_LAST_NAME);
+
+    query.addOrder(TBL_TRIP_DRIVERS, COL_TRIP);
+
+    if (condition != null) {
+      query.setWhere(condition);
+    }
+
+    SimpleRowSet data = qs.getData(query);
+    if (data == null || data.getNumberOfRows() == 0) {
+      return result;
+    }
+
+    List<String> drivers = Lists.newArrayList();
+    String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
+
+    Long lastTrip = null;
+    for (SimpleRow row : data) {
+      Long trip = row.getLong(COL_TRIP);
+
+      if (!trip.equals(lastTrip)) {
+        if (!drivers.isEmpty()) {
+          result.put(lastTrip, BeeUtils.join(separator, drivers));
+          drivers.clear();
+        }
+        lastTrip = trip;
+      }
+
+      drivers.add(BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
+          row.getValue(CommonsConstants.COL_LAST_NAME)));
+    }
+
+    if (!drivers.isEmpty()) {
+      result.put(lastTrip, BeeUtils.join(separator, drivers));
+    }
+    return result;
   }
 
   /**

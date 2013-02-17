@@ -2,9 +2,8 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
 
-  name="Drivers"
-  source="Drivers"
-  newRowForm="Driver" newRowCaption="Naujas vairuotojas"
+  name="Drivers" source="Drivers"
+  editForm="Driver" newRowForm="Driver" newRowCaption="Naujas vairuotojas"
   >
   <Columns>
     <SimpleColumn name="CompanyPerson" />
@@ -12,6 +11,7 @@
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
       </SimpleJoin>
+      <SimpleColumn name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
@@ -26,6 +26,9 @@
       </SimpleJoin>
       <SimpleColumn name="Position" />
     </SimpleJoin>
+
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
     <SimpleColumn name="Experience" />
     <SimpleColumn name="Notes" />
   </Columns>

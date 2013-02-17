@@ -668,6 +668,25 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         });
   }
 
+  protected void extendMaxRange(JustDate start, JustDate end) {
+    if (start == null && end == null) {
+      return;
+    }
+    
+    JustDate lower;
+    JustDate upper;
+    
+    if (getMaxRange() == null) {
+      lower = BeeUtils.min(start, end);
+      upper = BeeUtils.max(start, end);
+    } else {
+      lower = BeeUtils.min(getMaxRange().lowerEndpoint(), start);
+      upper = BeeUtils.max(getMaxRange().upperEndpoint(), end);
+    }
+
+    setMaxRange(Range.closed(lower, upper));
+  }
+  
   protected boolean filter(DialogBox dialog) {
     dialog.close();
     return false;
@@ -710,6 +729,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected Color getColor(Long id) {
+    if (id == null) {
+      return null;
+    }
+
     int index = ChartHelper.getColorIndex(id, colors.size());
     if (BeeUtils.isIndex(colors, index)) {
       return colors.get(index);
@@ -847,8 +870,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return !filteredIndexes.isEmpty();
   }
 
+  /**
+   * @param row  
+   * @param date 
+   */
   protected void onDoubleClickChart(int row, JustDate date) {
-    logger.debug(row, date);
   }
 
   protected void onFooterSplitterMove(MoveEvent event) {
@@ -963,8 +989,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void render(boolean updateRange) {
     canvas.clear();
-    Collection<? extends ChartItem> chartItems = getChartItems();
-    if (chartItems.isEmpty() || getMaxRange() == null) {
+    if (getMaxRange() == null) {
       return;
     }
 
@@ -1011,7 +1036,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     renderFooterSplitter();
 
     prepareFooter();
-    renderFooter(chartItems);
+    renderFooter(getChartItems());
 
     setRenderPending(false);
   }
@@ -1294,7 +1319,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       logger.debug(getCaption(), "loaded", items.size(), "items");
 
       if (!items.isEmpty()) {
-        setMaxRange(ChartHelper.getSpan(items, TimeUtils.today(), TimeUtils.today(1)));
+        setMaxRange(ChartHelper.getSpan(items, TimeUtils.today(),
+            TimeUtils.today(TimeUtils.DAYS_PER_WEEK)));
       }
     }
 

@@ -11,7 +11,7 @@
           <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputDateTime source="Date" />
           <Label html="Būsena:" horizontalAlignment="right" />
-          <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
+          <TextLabel source="Status" itemKey="OrderStatus" />
         </row>
         <row>
           <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />

@@ -3,7 +3,6 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="DriverDocuments" viewName="DriverDocuments"
-  caption="Vairuotojo dokumentai"
   >
 
   <columns>

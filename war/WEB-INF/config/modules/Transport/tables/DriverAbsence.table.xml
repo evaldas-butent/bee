@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DriverAbsence"
+  idName="DriverAbsenceID"
+  >
+  <Fields>
+    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" label="Vairuotojas" />
+    <Date name="DateFrom" label="Data nuo" notNull="true" />
+    <Date name="DateTo" label="Data iki" notNull="true" />
+    <Relation name="Absence" relation="AbsenceTypes" notNull="true" label="Priežastis" />
+    <Text name="Notes" label="Pastabos" />
+  </Fields>
+</Table>

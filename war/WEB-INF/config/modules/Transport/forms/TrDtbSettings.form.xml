@@ -13,65 +13,55 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
-  name="TrFxSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="440" height="420"
+  name="TrDtbSettings" viewName="TransportSettings" caption="Nustatymai"
+  width="440" height="360"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
 
     <FlowPanel style="&row; margin-top: 2ex;">
-      <Label html="Kliento stulpelio plotis px:" style="&lbl;" />
-      <InputSpinner source="FxPixelsPerCustomer" minValue="4" maxValue="300" style="&spin;" />
-    </FlowPanel>
-    <FlowPanel style="&row;">
-      <Label html="Užsakymo stulpelio plotis px:" style="&lbl;" />
-      <InputSpinner source="FxPixelsPerOrder" minValue="4" maxValue="300" style="&spin;" />
+      <Label html="Vairuotojo stulpelio plotis px:" style="&lbl;" />
+      <InputSpinner source="DtbPixelsPerDriver" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
       <Label html="Dienos stulpelio plotis px:" style="&lbl;" />
-      <InputSpinner source="FxPixelsPerDay" minValue="1" maxValue="100" style="&spin;" />
+      <InputSpinner source="DtbPixelsPerDay" minValue="1" maxValue="100" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
       <Label html="Dienos stulpelio aukštis px:" style="&lbl;" />
-      <InputSpinner source="FxPixelsPerRow" minValue="2" maxValue="100" style="&spin;" />
+      <InputSpinner source="DtbPixelsPerRow" minValue="1" maxValue="100" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
       <Label html="Kalendoriaus srities aukštis px:" style="&lbl;" />
-      <InputSpinner source="FxHeaderHeight" minValue="1" maxValue="100" style="&spin;" />
+      <InputSpinner source="DtbHeaderHeight" minValue="1" maxValue="100" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
       <Label html="Laikotarpio pasirinkimo srities aukštis px:" style="&lbl;" />
-      <InputSpinner source="FxFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
+      <InputSpinner source="DtbFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
       <Label html="Range selector slider width px:" style="&lbl;" />
-      <InputSpinner source="FxSliderWidth" minValue="1" maxValue="20" style="&spin;" />
+      <InputSpinner source="DtbSliderWidth" minValue="1" maxValue="20" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
       <Label html="Range selector bar height px:" style="&lbl;" />
-      <InputSpinner source="FxBarHeight" minValue="1" maxValue="20" style="&spin;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&row;">
-      <Label html="Spalvų tema:" style="&lbl;" />
-      <DataSelector source="FxTheme" style="&inline; width: 100px;" />
+      <InputSpinner source="DtbBarHeight" minValue="1" maxValue="20" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&slider_row;">
       <Label html="Item opacity:" style="&lbl;" />
-      <InputSlider source="FxItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+      <InputSlider source="DtbItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
     <FlowPanel style="&slider_row;">
       <Label html="Strip opacity:" style="&lbl;" />
-      <InputSlider source="FxStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+      <InputSlider source="DtbStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
 
   </FlowPanel>

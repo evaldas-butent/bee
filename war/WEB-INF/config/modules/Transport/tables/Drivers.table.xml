@@ -3,12 +3,13 @@
 
   name="Drivers"
   idName="DriverID"
-  x="0" y="0"
   >
   <Fields>
-    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" />
-    <Date name="Experience" />
-    <Text name="Notes" />
+    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" label="Vardas, pavardė"/>
+    <Date name="StartDate" label="Dirba nuo" />
+    <Date name="EndDate" label="Atleistas" />
+    <Date name="Experience" label="Stažas nuo" />
+    <Text name="Notes" label="Pastabos" />
   </Fields>
   <Keys>
     <Key unique="true">

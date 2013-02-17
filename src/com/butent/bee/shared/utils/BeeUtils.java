@@ -1350,6 +1350,30 @@ public class BeeUtils {
     }
     return result;
   }
+  
+  public static <T extends Comparable<T>> T max(T x1, T x2) {
+    if (x1 == null) {
+      return x2; 
+    } else if (x2 == null) {
+      return x1;
+    } else if (isMore(x1, x2)) {
+      return x1;
+    } else {
+      return x2;
+    }
+  }
+
+  public static <T extends Comparable<T>> T min(T x1, T x2) {
+    if (x1 == null) {
+      return x2; 
+    } else if (x2 == null) {
+      return x1;
+    } else if (isLess(x1, x2)) {
+      return x1;
+    } else {
+      return x2;
+    }
+  }
 
   public static String nextString(String value) {
     String expression = trim(value);
@@ -1415,6 +1439,10 @@ public class BeeUtils {
 
   public static <T> T nvl(T o1, T o2, T o3) {
     return nvl(nvl(o1, o2), o3);
+  }
+
+  public static <T> T nvl(T o1, T o2, T o3, T o4) {
+    return nvl(nvl(o1, o2), nvl(o3, o4));
   }
 
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {

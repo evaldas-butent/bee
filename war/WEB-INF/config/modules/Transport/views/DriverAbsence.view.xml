@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DriverAbsence" source="DriverAbsence"
+  caption="Nebuvimas darbe" newRowCaption="Naujas nebuvimas darbe"
+  >
+  <Columns>
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+
+    <SimpleColumn name="Absence" />
+    <SimpleJoin name="Absence" joinType="LEFT">
+      <SimpleColumn alias="AbsenceName" name="Name" />
+      <SimpleColumn alias="AbsenceLabel" name="Label" />
+    
+      <SimpleJoin name="Color" joinType="LEFT">
+        <SimpleColumn name="Background" />
+        <SimpleColumn name="Foreground" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" />
+  </Order>
+</View>
+ 

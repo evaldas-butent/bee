@@ -16,7 +16,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrSsSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="440" height="470"
+  width="440" height="440"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
