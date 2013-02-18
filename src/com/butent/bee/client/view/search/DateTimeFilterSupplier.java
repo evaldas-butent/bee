@@ -129,7 +129,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList(SupplierAction.CLEAR, SupplierAction.COMMIT);
+    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
   }
   
   private Widget createWidget() {
