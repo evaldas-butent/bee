@@ -200,7 +200,7 @@ public class MailPanel extends AbstractFormInterceptor {
         dateWidget.setValue(row.getDateTime(date));
         subjectWidget.setText(row.getString(subject));
 
-        messageHandler.requery(row.getLong(message), getCurrentAccount().getAddress(),
+        messageHandler.requery(row.getLong(message), getCurrentAccount().getId(),
             row.getId(), Objects.equal(row.getLong(sender), getCurrentAccount().getAddress()),
             MessageFlag.isSeen(row.getInteger(flags)));
 
@@ -443,7 +443,7 @@ public class MailPanel extends AbstractFormInterceptor {
         boolean toggle = !MessageFlag.isFlagged(Data.getInteger(viewName, row, COL_FLAGS));
 
         ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
-        params.addDataItem(COL_ADDRESS, getCurrentAccount().getAddress());
+        params.addDataItem(COL_ACCOUNT, getCurrentAccount().getId());
         params.addDataItem(COL_PLACE, row.getId());
         params.addDataItem("toggle", toggle ? 1 : 0);
 
@@ -652,8 +652,11 @@ public class MailPanel extends AbstractFormInterceptor {
       ParameterList params = MailKeeper.createArgs(SVC_GET_FOLDERS);
       params.addDataItem(COL_ACCOUNT, account.getId());
 
-      if (!DataUtils.isId(account.getSystemFolderId(SystemFolder.Inbox))) {
-        params.addDataItem(COL_ADDRESS, account.getAddress());
+      for (SystemFolder sysFolder : SystemFolder.values()) {
+        if (!DataUtils.isId(account.getSystemFolderId(sysFolder))) {
+          params.addDataItem("refreshAccount", 1);
+          break;
+        }
       }
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
         @Override
@@ -699,11 +702,13 @@ public class MailPanel extends AbstractFormInterceptor {
 
   void refresh(final Long folderId) {
     if (folderId != null) {
-      if (Objects.equal(folderId, getCurrentFolderId()) || folderId == 0) {
-        ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
-        params.addDataItem(COL_ADDRESS, getCurrentAccount().getAddress());
+      if (Objects.equal(folderId, getCurrentFolderId())
+          || Objects.equal(folderId, MailKeeper.CHECK_ALL_FOLDERS)) {
 
-        if (folderId != 0) {
+        ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
+        params.addDataItem(COL_ACCOUNT, getCurrentAccount().getId());
+
+        if (!Objects.equal(folderId, MailKeeper.CHECK_ALL_FOLDERS)) {
           params.addDataItem(COL_FOLDER, folderId);
         }
         BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -875,7 +880,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (currentMessage == null) {
           return;
         }
-        List<String> options = Lists.newArrayList("Aktyvų laišką");
+        final List<String> options = Lists.newArrayList("Aktyvų laišką");
         final Collection<RowInfo> rows = messagesHandler.getGridPresenter().getGridView()
             .getSelectedRows();
 
@@ -893,6 +898,9 @@ public class MailPanel extends AbstractFormInterceptor {
             options.size() - 1, new ChoiceCallback() {
               @Override
               public void onSuccess(int value) {
+                if (value == options.size() - 1) {
+                  return;
+                }
                 List<Long> ids = null;
 
                 if (value == 0) {
@@ -905,7 +913,7 @@ public class MailPanel extends AbstractFormInterceptor {
                   }
                 }
                 ParameterList params = MailKeeper.createArgs(SVC_REMOVE_MESSAGES);
-                params.addDataItem(COL_ADDRESS, getCurrentAccount().getAddress());
+                params.addDataItem(COL_ACCOUNT, getCurrentAccount().getId());
                 params.addDataItem(COL_FOLDER, getCurrentFolderId());
                 params.addDataItem(COL_PLACE, Codec.beeSerialize(ids));
                 params.addDataItem("Purge", purge ? 1 : 0);

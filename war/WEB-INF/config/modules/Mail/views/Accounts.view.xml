@@ -19,12 +19,42 @@
     <SimpleColumn name="StorePort" />
     <SimpleColumn name="StoreLogin" />
     <SimpleColumn name="StorePassword" />
+    <SimpleColumn name="StoreSSL" />
 
-    <SimpleColumn name="TransportSSL" />
     <SimpleColumn name="TransportServer" />
     <SimpleColumn name="TransportPort" />
     <SimpleColumn name="TransportLogin" />
     <SimpleColumn name="TransportPassword" />
+    <SimpleColumn name="TransportSSL" />
+
+    <SimpleColumn name="InboxFolder" />
+
+    <SimpleColumn name="SentFolder" />
+    <SimpleJoin name="SentFolder" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SentName" />
+
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <SimpleColumn name="Name" alias="SentParent" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="DraftsFolder" />
+    <SimpleJoin name="DraftsFolder" joinType="LEFT">
+      <SimpleColumn name="Name" alias="DraftsName" />
+
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <SimpleColumn name="Name" alias="DraftsParent" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TrashFolder" />
+    <SimpleJoin name="TrashFolder" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TrashName" />
+
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TrashParent" />
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Description" />

@@ -15,12 +15,13 @@
     <Integer name="StorePort" />
     <String name="StoreLogin" precision="50" />
     <String name="StorePassword" precision="50" audit="false"  />
+    <Boolean name="StoreSSL" />
 
-    <Boolean name="TransportSSL" />
     <String name="TransportServer" precision="50" />
     <Integer name="TransportPort" />
     <String name="TransportLogin" precision="50" />
     <String name="TransportPassword" precision="50" audit="false" />
+    <Boolean name="TransportSSL" />
 
     <Relation name="InboxFolder" relation="Folders" cascade="SET_NULL" />
     <Relation name="SentFolder" relation="Folders" cascade="SET_NULL" />

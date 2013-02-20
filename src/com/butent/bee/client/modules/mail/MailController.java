@@ -99,12 +99,12 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
     final BeeImage refresh = new BeeImage(Global.getImages().refresh());
     refresh.addStyleName("bee-mail-FolderAction");
-    refresh.setTitle("Tikrinti paštą");
+    refresh.setTitle("Sinchronizuoti aplankus");
 
     refresh.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        MailKeeper.clickFolder(0);
+        MailKeeper.clickFolder(MailKeeper.CHECK_ALL_FOLDERS);
       }
     });
     caption.add(refresh);

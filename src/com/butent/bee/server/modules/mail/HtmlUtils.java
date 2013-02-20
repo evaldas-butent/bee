@@ -21,10 +21,7 @@ public class HtmlUtils {
   }
 
   public static String stripHtml(String content) {
-    if (hasHtml(content)) {
-      return new HtmlToPlainText().getPlainText(Jsoup.parse(content));
-    }
-    return content;
+    return new HtmlToPlainText().getPlainText(Jsoup.parse(content));
   }
 
   private HtmlUtils() {

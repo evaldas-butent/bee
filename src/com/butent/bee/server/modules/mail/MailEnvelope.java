@@ -15,8 +15,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Enumeration;
-
 import javax.mail.Address;
 import javax.mail.Flags.Flag;
 import javax.mail.Message;
@@ -57,7 +55,6 @@ public class MailEnvelope {
   private final Address sender;
   private final String subject;
   private final Multimap<AddressType, Address> recipients = HashMultimap.create();
-  private final String header;
   private final Integer flagMask;
 
   private final String uniqueId;
@@ -83,16 +80,6 @@ public class MailEnvelope {
         }
       }
     }
-    StringBuilder hdr = new StringBuilder();
-
-    Enumeration<?> aa = msg.getAllHeaderLines();
-
-    if (aa != null) {
-      while (aa.hasMoreElements()) {
-        hdr.append(aa.nextElement()).append("\r\n");
-      }
-    }
-    header = hdr.toString();
     flagMask = getFlagMask(message);
     uniqueId = Codec.md5(BeeUtils.joinWords(messageId, date, sender, subject));
   }
@@ -103,10 +90,6 @@ public class MailEnvelope {
 
   public Integer getFlagMask() {
     return flagMask;
-  }
-
-  public String getHeader() {
-    return header;
   }
 
   public String getMessageId() {

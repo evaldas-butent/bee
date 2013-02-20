@@ -18,6 +18,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -35,6 +36,8 @@ import java.util.Set;
 
 public class MailKeeper {
 
+  public static final Long CHECK_ALL_FOLDERS = -42L;
+
   private static MailController controller = null;
   private static MailPanel activePanel;
   private static final Set<MailPanel> mailPanels = Sets.newHashSet();
@@ -46,6 +49,7 @@ public class MailKeeper {
         GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
       }
     });
+
     BeeKeeper.getMenu().registerMenuCallback(SVC_RESTART_PROXY,
         new MenuManager.MenuCallback() {
           @Override
@@ -79,6 +83,9 @@ public class MailKeeper {
         return true;
       }
     });
+
+    FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
+    FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
   }
 
   static void activateController(MailPanel mailPanel) {
@@ -114,7 +121,7 @@ public class MailKeeper {
       final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
-    params.addDataItem(COL_ADDRESS, panel.getCurrentAccount().getAddress());
+    params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getId());
     params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
     params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
@@ -154,7 +161,7 @@ public class MailKeeper {
       @Override
       public void onSuccess(String value) {
         ParameterList params = createArgs(SVC_CREATE_FOLDER);
-        params.addDataItem(COL_ADDRESS, account.getAddress());
+        params.addDataItem(COL_ACCOUNT, account.getId());
         params.addDataItem(COL_FOLDER_NAME, value);
 
         if (account.getSystemFolder(parentId) == null) {
@@ -177,7 +184,7 @@ public class MailKeeper {
   static void disconnectFolder(final AccountInfo account, final Long folderId) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_DISCONNECT_FOLDER);
-    params.addDataItem(COL_ADDRESS, account.getAddress());
+    params.addDataItem(COL_ACCOUNT, account.getId());
     params.addDataItem(COL_FOLDER, folderId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -219,7 +226,7 @@ public class MailKeeper {
   static void removeFolder(final AccountInfo account, final Long folderId) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_DROP_FOLDER);
-    params.addDataItem(COL_ADDRESS, account.getAddress());
+    params.addDataItem(COL_ACCOUNT, account.getId());
     params.addDataItem(COL_FOLDER, folderId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -268,7 +275,7 @@ public class MailKeeper {
   static void renameFolder(AccountInfo account, final Long folderId, String name) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_RENAME_FOLDER);
-    params.addDataItem(COL_ADDRESS, account.getAddress());
+    params.addDataItem(COL_ACCOUNT, account.getId());
     params.addDataItem(COL_FOLDER, folderId);
     params.addDataItem(COL_FOLDER_NAME, name);
 

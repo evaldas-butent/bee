@@ -3,6 +3,8 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="Accounts" viewName="Accounts" caption="Paskyros"
+  newRowForm="NewAccount" newRowPopup="true"
+  editForm="Account" editPopup="true"
   >
 
   <columns>
@@ -12,23 +14,6 @@
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
-    <DataColumn name="StoreLogin" caption="Prisijungimo vardas" />
-    <DataColumn name="StorePassword" caption="Slaptažodis" />
-    <DataColumn name="StoreType" caption="Serverio tipas">
-      <editor type="list">
-        <ui:item>POP3</ui:item>
-        <ui:item>POP3S</ui:item>
-        <ui:item>IMAP</ui:item>
-        <ui:item>IMAPS</ui:item>
-      </editor>
-    </DataColumn>
-    <DataColumn name="StoreServer" caption="Serveris" />
-    <DataColumn name="StorePort" caption="Prievadas" />
-
-    <DataColumn name="TransportSSL" caption="SMTP SSL" />
-    <DataColumn name="TransportServer" caption="SMTP serveris" />
-    <DataColumn name="TransportPort" caption="SMTP prievadas" />
-    <DataColumn name="TransportLogin" caption="SMTP prisijungimo vardas" />
-    <DataColumn name="TransportPassword" caption="SMTP slaptažodis" />
+    <DataColumn name="StoreType" caption="Tipas" />
   </columns>
 </Grid>

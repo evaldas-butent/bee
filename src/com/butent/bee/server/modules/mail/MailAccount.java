@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.mail;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -13,8 +15,12 @@ import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -39,20 +45,19 @@ public class MailAccount {
   private final Integer storePort;
   private final String storeLogin;
   private final String storePassword;
+  private final boolean storeSSL;
 
-  private final Protocol transportProtocol;
+  private final Protocol transportProtocol = Protocol.SMTP;
   private final String transportHost;
   private final Integer transportPort;
   private final String transportLogin;
   private final String transportPassword;
+  private final boolean transportSSL;
 
   private final Long accountId;
   private final Long addressId;
 
-  private final Long inboxFolderId;
-  private final Long draftsFolderId;
-  private final Long sentFolderId;
-  private final Long trashFolderId;
+  private final Map<SystemFolder, Long> sysFolders = Maps.newHashMap();
 
   private MailFolder rootFolder;
 
@@ -64,43 +69,40 @@ public class MailAccount {
       storePort = null;
       storeLogin = null;
       storePassword = null;
+      storeSSL = false;
 
-      transportProtocol = null;
       transportHost = null;
       transportPort = null;
       transportLogin = null;
       transportPassword = null;
+      transportSSL = false;
 
       accountId = null;
       addressId = null;
-
-      inboxFolderId = null;
-      draftsFolderId = null;
-      sentFolderId = null;
-      trashFolderId = null;
     } else {
       storeProtocol = NameUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
       storeHost = data.getValue(COL_STORE_SERVER);
       storePort = data.getInt(COL_STORE_SPORT);
       storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      storePassword = data.getValue(COL_STORE_PASSWORD);
+      storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD)) ? null :
+          Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
+      storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
 
-      transportProtocol = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL))
-          ? Protocol.SMTPS : Protocol.SMTP;
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
       transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      transportPassword = data.getValue(COL_TRANSPORT_PASSWORD);
+      transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD)) ? null :
+          Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
+      transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
 
       accountId = data.getLong(COL_ACCOUNT);
       addressId = data.getLong(CommonsConstants.COL_ADDRESS);
 
-      inboxFolderId = data.getLong(SystemFolder.Inbox.name() + COL_FOLDER);
-      draftsFolderId = data.getLong(SystemFolder.Drafts.name() + COL_FOLDER);
-      sentFolderId = data.getLong(SystemFolder.Sent.name() + COL_FOLDER);
-      trashFolderId = data.getLong(SystemFolder.Trash.name() + COL_FOLDER);
+      for (SystemFolder sysFolder : SystemFolder.values()) {
+        sysFolders.put(sysFolder, data.getLong(sysFolder.name() + COL_FOLDER));
+      }
     }
   }
 
@@ -110,18 +112,6 @@ public class MailAccount {
 
   public Long getAddressId() {
     return addressId;
-  }
-
-  public Long getDraftsFolderId() {
-    return draftsFolderId;
-  }
-
-  public Long getInboxFolderId() {
-    return inboxFolderId;
-  }
-
-  public Long getSentFolderId() {
-    return sentFolderId;
   }
 
   public String getStoreErrorMessage() {
@@ -161,6 +151,10 @@ public class MailAccount {
     return storeProtocol;
   }
 
+  public Long getSysFolderId(SystemFolder sysFolder) {
+    return sysFolders.get(sysFolder);
+  }
+
   public String getTransportErrorMessage() {
     String err = error;
 
@@ -195,15 +189,19 @@ public class MailAccount {
     return transportProtocol;
   }
 
-  public Long getTrashFolderId() {
-    return trashFolderId;
-  }
-
   public boolean isStoredRemotedly(MailFolder folder) {
     Assert.notNull(folder);
 
-    return (getStoreProtocol() == Protocol.IMAP || getStoreProtocol() == Protocol.IMAPS)
+    return (getStoreProtocol() == Protocol.IMAP)
         && folder.isConnected();
+  }
+
+  public boolean isStoreSSL() {
+    return storeSSL;
+  }
+
+  public boolean isTransportSSL() {
+    return transportSSL;
   }
 
   public boolean isValidStoreAccount() {
@@ -241,10 +239,17 @@ public class MailAccount {
       throw new MessagingException(getStoreErrorMessage());
     }
     logger.debug("Connecting to store...");
-    Session session = Session.getInstance(new Properties(), null);
+
+    String protocol = getStoreProtocol().name().toLowerCase();
+    Properties props = new Properties();
+
+    if (isStoreSSL()) {
+      props.put("mail." + protocol + ".ssl.enable", "true");
+    }
+    Session session = Session.getInstance(props, null);
     session.setDebug(logger.isDebugEnabled());
 
-    Store store = session.getStore(getStoreProtocol().name().toLowerCase());
+    Store store = session.getStore(protocol);
     store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
     return store;
   }
@@ -261,7 +266,9 @@ public class MailAccount {
     if (!BeeUtils.isEmpty(getTransportPassword())) {
       props.put("mail." + protocol + ".auth", "true");
 
-      if (getTransportProtocol() == Protocol.SMTP) {
+      if (isTransportSSL()) {
+        props.put("mail." + protocol + ".ssl.enable", "true");
+      } else {
         props.put("mail." + protocol + ".starttls.enable", "true");
       }
     }
@@ -274,7 +281,8 @@ public class MailAccount {
     return transport;
   }
 
-  boolean createRemoteFolder(MailFolder parent, String name) throws MessagingException {
+  boolean createRemoteFolder(MailFolder parent, String name, boolean acceptExisting)
+      throws MessagingException {
     boolean ok = true;
 
     if (!isStoredRemotedly(parent)) {
@@ -285,14 +293,13 @@ public class MailAccount {
 
     try {
       store = connectToStore();
-      folder = getRemoteFolder(store, parent, true);
+      folder = getRemoteFolder(store, parent);
       Folder newFolder = folder.getFolder(name);
 
-      checkNewFolderName(newFolder, name);
-
-      logger.debug("Creating folder", name);
-      ok = newFolder.create(Folder.HOLDS_MESSAGES);
-
+      if (checkNewFolderName(newFolder, name, acceptExisting)) {
+        logger.debug("Creating folder:", name);
+        ok = newFolder.create(Folder.HOLDS_MESSAGES);
+      }
       if (ok) {
         newFolder.setSubscribed(true);
       }
@@ -325,7 +332,7 @@ public class MailAccount {
       store = connectToStore();
       folder = getRemoteFolder(store, source);
 
-      logger.debug("Removing folder", folder.getName());
+      logger.debug("Removing folder:", folder.getName());
       ok = folder.delete(true) || !folder.exists();
 
     } finally {
@@ -335,7 +342,23 @@ public class MailAccount {
   }
 
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
-    return getRemoteFolder(remoteStore, localFolder, false);
+    Assert.noNulls(remoteStore, localFolder);
+
+    if (localFolder.getParent() == null) {
+      logger.debug("Looking for root folder");
+      return remoteStore.getDefaultFolder();
+    }
+    Folder remoteParent = getRemoteFolder(remoteStore, localFolder.getParent());
+
+    String name = localFolder.getName();
+    logger.debug("Looking for remote folder", BeeUtils.join(" in ", name, remoteParent.getName()));
+
+    Folder remote = remoteParent.getFolder(name);
+
+    if (!remote.exists()) {
+      throw new MessagingException("Remote folder does not exist: " + name);
+    }
+    return remote;
   }
 
   MailFolder getRootFolder() {
@@ -374,11 +397,10 @@ public class MailAccount {
       if (!Objects.equal(((UIDFolder) remoteSource).getUIDValidity(), source.getUidValidity())) {
         throw new MessagingException("Folder out of sync: " + source.getName());
       }
-      logger.debug("Opening folder", remoteSource.getName());
+      logger.debug("Opening folder:", remoteSource.getName());
       remoteSource.open(Folder.READ_WRITE);
 
-      logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
-      Message[] msgs = ((UIDFolder) remoteSource).getMessagesByUID(uids);
+      List<Message> messages = getMessageReferences(remoteSource, uids);
 
       if (isTarget) {
         Folder remoteTarget = getRemoteFolder(store, target);
@@ -388,11 +410,22 @@ public class MailAccount {
               BeeUtils.bracket(target.getName()), "cannot hold messages"));
         }
         logger.debug("Copying messages to folder:", target.getName());
-        remoteSource.copyMessages(msgs, remoteTarget);
+        remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        logger.debug("Deleting seleted messages from folder:", remoteSource.getName());
-        remoteSource.setFlags(msgs, new Flags(Flag.DELETED), true);
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext();) {
+          Message message = iterator.next();
+
+          if (message.isExpunged()) {
+            iterator.remove();
+          }
+        }
+        if (!BeeUtils.isEmpty(messages)) {
+          logger.debug("Deleting selected messages from folder:", remoteSource.getName());
+          remoteSource.setFlags(messages.toArray(new Message[0]), new Flags(Flag.DELETED), true);
+        } else {
+          logger.debug("All messages already expunged, no delete required");
+        }
       }
       logger.debug("Closing folder:", remoteSource.getName());
       remoteSource.close(move);
@@ -422,9 +455,9 @@ public class MailAccount {
       folder = getRemoteFolder(store, source);
       Folder newFolder = folder.getParent().getFolder(name);
 
-      checkNewFolderName(newFolder, name);
+      checkNewFolderName(newFolder, name, false);
 
-      logger.debug("Renamng folder", folder.getName(), "to", name);
+      logger.debug("Renamng folder:", folder.getName(), "->", name);
       ok = folder.renameTo(newFolder);
 
     } finally {
@@ -450,14 +483,13 @@ public class MailAccount {
       if (!Objects.equal(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
         throw new MessagingException("Folder out of sync: " + source.getName());
       }
-      logger.debug("Opening folder", folder.getName());
+      logger.debug("Opening folder:", folder.getName());
       folder.open(Folder.READ_WRITE);
 
-      logger.debug("Getting messages from folder", folder.getName(), "by UIDs:", uids);
-      Message[] msgs = ((UIDFolder) folder).getMessagesByUID(uids);
+      List<Message> messages = getMessageReferences(folder, uids);
 
-      logger.debug("Setting flag for selected messages");
-      folder.setFlags(msgs, new Flags(flag), on);
+      logger.debug(on ? "Setting" : "Clearing", "flag for selected messages");
+      folder.setFlags(messages.toArray(new Message[0]), new Flags(flag), on);
 
     } finally {
       if (folder != null && folder.isOpen()) {
@@ -476,44 +508,38 @@ public class MailAccount {
     this.rootFolder = folder;
   }
 
-  private void checkNewFolderName(Folder newFolder, String name) throws MessagingException {
+  void setSysFolderId(SystemFolder sysFolder, Long id) {
+    sysFolders.put(sysFolder, id);
+  }
+
+  private boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
+      throws MessagingException {
     if (name.indexOf(newFolder.getSeparator()) >= 0) {
       throw new MessagingException("Invalid folder name: " + name);
     }
+    logger.debug("Checking, if folder exists:", name);
+
     if (newFolder.exists()) {
+      if (acceptExisting) {
+        return false;
+      }
       throw new MessagingException("Folder with new name already exists: " + name);
     }
+    return true;
   }
 
-  private Folder getRemoteFolder(Store remoteStore, MailFolder localFolder, boolean createParents)
+  private List<Message> getMessageReferences(Folder remoteSource, long[] uids)
       throws MessagingException {
-    Assert.noNulls(remoteStore, localFolder);
 
-    if (localFolder.getParent() == null) {
-      return remoteStore.getDefaultFolder();
-    }
-    Folder remoteParent = getRemoteFolder(remoteStore, localFolder.getParent(), createParents);
+    logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
+    Message[] msgs = ((UIDFolder) remoteSource).getMessagesByUID(uids);
 
-    String name = localFolder.getName();
-    logger.debug("Looking for remote folder", BeeUtils.join(" in ", name, remoteParent.getName()));
-
-    Folder remote = remoteParent.getFolder(name);
-
-    if (!remote.exists()) {
-      if (createParents) {
-        logger.debug("Creating parent folder", name);
-
-        checkNewFolderName(remote, name);
-
-        if (!remote.create(Folder.HOLDS_MESSAGES)) {
-          throw new MessagingException("Can't create parent folder: " + name);
-        } else {
-          remote.setSubscribed(true);
-        }
-      } else {
-        throw new MessagingException("Remote folder does not exist: " + name);
+    for (Message message : msgs) {
+      if (message == null) {
+        throw new MessagingException("Not all messages where returned by UIDs. " +
+            "Folder resynchronization required.");
       }
     }
-    return remote;
+    return Lists.newArrayList(msgs);
   }
 }

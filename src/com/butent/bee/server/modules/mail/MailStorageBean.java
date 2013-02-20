@@ -112,24 +112,29 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  public MailFolder findFolder(MailAccount account, Long folderId) {
+  public MailFolder findFolder(MailAccount account, Long folderId) throws MessagingException {
     return getRootFolder(account).findFolder(folderId);
   }
 
-  public MailAccount getAccount(Long addressId) {
+  public MailAccount getAccount(Long accountId) {
+    Assert.state(DataUtils.isId(accountId));
+    return getAccount(accountId, null);
+  }
+
+  public MailAccount getAccountByAddressId(Long addressId) {
     Assert.state(DataUtils.isId(addressId));
     return getAccount(null, addressId);
   }
 
-  public MailFolder getDraftsFolder(MailAccount account) {
-    return getSysFolder(account, account.getDraftsFolderId(), SystemFolder.Drafts);
+  public MailFolder getDraftsFolder(MailAccount account) throws MessagingException {
+    return getSysFolder(account, account.getSysFolderId(SystemFolder.Drafts), SystemFolder.Drafts);
   }
 
-  public MailFolder getInboxFolder(MailAccount account) {
-    return getSysFolder(account, account.getInboxFolderId(), SystemFolder.Inbox);
+  public MailFolder getInboxFolder(MailAccount account) throws MessagingException {
+    return getSysFolder(account, account.getSysFolderId(SystemFolder.Inbox), SystemFolder.Inbox);
   }
 
-  public MailFolder getRootFolder(MailAccount account) {
+  public MailFolder getRootFolder(MailAccount account) throws MessagingException {
     Assert.notNull(account);
 
     if (account.getRootFolder() == null) {
@@ -138,7 +143,7 @@ public class MailStorageBean {
     return account.getRootFolder();
   }
 
-  public MailFolder getRootFolder(Long accountId) {
+  public MailFolder getRootFolder(Long accountId) throws MessagingException {
     Assert.state(DataUtils.isId(accountId));
 
     SimpleRowSet data = qs.getData(new SqlSelect()
@@ -157,7 +162,7 @@ public class MailStorageBean {
     createTree(root, folders);
 
     if (BeeUtils.isEmpty(root.getSubFolders())) {
-      MailAccount account = getAccount(accountId, null);
+      MailAccount account = getAccount(accountId);
       account.setRootFolder(root);
 
       for (SystemFolder sysFolder : SystemFolder.values()) {
@@ -167,12 +172,12 @@ public class MailStorageBean {
     return root;
   }
 
-  public MailFolder getSentFolder(MailAccount account) {
-    return getSysFolder(account, account.getSentFolderId(), SystemFolder.Sent);
+  public MailFolder getSentFolder(MailAccount account) throws MessagingException {
+    return getSysFolder(account, account.getSysFolderId(SystemFolder.Sent), SystemFolder.Sent);
   }
 
-  public MailFolder getTrashFolder(MailAccount account) {
-    return getSysFolder(account, account.getTrashFolderId(), SystemFolder.Trash);
+  public MailFolder getTrashFolder(MailAccount account) throws MessagingException {
+    return getSysFolder(account, account.getSysFolderId(SystemFolder.Trash), SystemFolder.Trash);
   }
 
   public void renameFolder(MailFolder folder, String name) {
@@ -265,12 +270,8 @@ public class MailStorageBean {
         }
       }
       try {
-        try {
-          storePart(messageId, message, null);
-        } catch (MessagingException ex) {
-          storePart(messageId, new MimeMessage(null, new ByteArrayInputStream(bos.toByteArray())),
-              null);
-        }
+        storePart(messageId, new MimeMessage(null, new ByteArrayInputStream(bos.toByteArray())),
+            null);
       } catch (IOException e) {
         throw new MessagingException(e.toString());
       }
@@ -386,9 +387,20 @@ public class MailStorageBean {
     return folder;
   }
 
-  private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder) {
+  private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder)
+      throws MessagingException {
     MailFolder root = getRootFolder(account);
-    MailFolder folder = createFolder(account, root, sysFolder.getFullName());
+    String folderName = sysFolder.getFullName();
+    boolean ok = account.createRemoteFolder(root, folderName, true);
+
+    if (!ok && sysFolder != SystemFolder.Inbox) {
+      root = getInboxFolder(account);
+      ok = account.createRemoteFolder(root, folderName, true);
+    }
+    if (!ok) {
+      throw new MessagingException("Error creating system folder: " + folderName);
+    }
+    MailFolder folder = createFolder(account, root, folderName);
 
     if (sysFolder == SystemFolder.Inbox && !folder.isConnected()) {
       connectFolder(folder);
@@ -396,6 +408,8 @@ public class MailStorageBean {
     qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
         .addConstant(sysFolder.name() + COL_FOLDER, folder.getId())
         .setWhere(sys.idEquals(TBL_ACCOUNTS, root.getAccountId())));
+
+    account.setSysFolderId(sysFolder, folder.getId());
 
     return folder;
   }
@@ -423,7 +437,8 @@ public class MailStorageBean {
             : sys.idEquals(TBL_ACCOUNTS, accountId))));
   }
 
-  private MailFolder getSysFolder(MailAccount account, Long folderId, SystemFolder sysFolder) {
+  private MailFolder getSysFolder(MailAccount account, Long folderId, SystemFolder sysFolder)
+      throws MessagingException {
     MailFolder folder = null;
 
     if (DataUtils.isId(folderId)) {
@@ -500,11 +515,12 @@ public class MailStorageBean {
 
         if (part.isMimeType("text/html")) {
           htmlContent = content;
+          content = HtmlUtils.stripHtml(content);
         }
         qs.insertData(new SqlInsert(TBL_PARTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant(COL_CONTENT_TYPE, contentType)
-            .addConstant(COL_CONTENT, HtmlUtils.stripHtml(content))
+            .addConstant(COL_CONTENT, content)
             .addConstant(COL_HTML_CONTENT, htmlContent));
       }
     }

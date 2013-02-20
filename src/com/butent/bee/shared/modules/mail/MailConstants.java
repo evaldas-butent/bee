@@ -23,7 +23,7 @@ public class MailConstants {
   }
 
   public enum Protocol {
-    POP3, POP3S, IMAP, IMAPS, SMTP, SMTPS
+    POP3, IMAP, SMTP
   }
 
   public enum MessageFlag {
@@ -98,6 +98,7 @@ public class MailConstants {
   public static final String COL_STORE_SPORT = "StorePort";
   public static final String COL_STORE_LOGIN = "StoreLogin";
   public static final String COL_STORE_PASSWORD = "StorePassword";
+  public static final String COL_STORE_SSL = "StoreSSL";
   public static final String COL_TRANSPORT_SERVER = "TransportServer";
   public static final String COL_TRANSPORT_PORT = "TransportPort";
   public static final String COL_TRANSPORT_SSL = "TransportSSL";
@@ -113,6 +114,9 @@ public class MailConstants {
   public static final String COL_FOLDER = "Folder";
   public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
+
+  public static final String FORM_ACCOUNT = "Account";
+  public static final String FORM_NEW_ACCOUNT = "NewAccount";
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 

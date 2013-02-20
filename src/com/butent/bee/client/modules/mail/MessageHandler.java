@@ -203,13 +203,13 @@ public class MessageHandler extends AbstractFormInterceptor {
     return getRecipients(AddressType.TO.name());
   }
 
-  void requery(Long messageId, Long addressId, Long placeId, boolean showBcc, boolean isSeen) {
+  void requery(Long messageId, Long accountId, Long placeId, boolean showBcc, boolean isSeen) {
     Assert.state(DataUtils.isId(messageId));
     deactivate();
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
     params.addDataItem(COL_MESSAGE, messageId);
-    params.addDataItem(COL_ADDRESS, addressId);
+    params.addDataItem(COL_ACCOUNT, accountId);
     params.addDataItem(COL_PLACE, placeId);
     params.addDataItem("showBcc", showBcc ? 1 : 0);
     params.addDataItem("markAsRead", isSeen ? 0 : 1);

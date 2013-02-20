@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="Account" viewName="Accounts" caption="Paskyra" height="300"
+  >
+  <FlowPanel>
+    <FlowPanel class="flexBox-vertical-center">
+      <Table>
+        <row>
+          <Label html="Pavadinimas" horizontalAlignment="right" />
+          <InputText source="Description" style="width:200px" />
+
+          <cell rowSpan="2" verticalAlignment="middle">
+            <CheckBox source="Main" html="Pagrindinis" />
+          </cell>
+        </row>
+        <row>
+          <Label html="El.paštas" horizontalAlignment="right" />
+          <DataSelector source="Address" style="width:200px">
+            <renderToken source="Label" suffix=" " />
+            <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+          </DataSelector>
+        </row>
+      </Table>
+    </FlowPanel>
+    
+    <hr />
+    
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-vertical-center flexible">
+        <Table>
+          <row>
+            <cell colSpan="2">
+              <HtmlLabel style="font-weight:bold; text-align:center;">
+                <render><ui:expression>row.StoreType + ' serverio parametrai'</ui:expression></render>
+              </HtmlLabel>
+            </cell>
+          </row>
+          <row>
+            <Label html="Adresas" horizontalAlignment="right" />
+            <InputText source="StoreServer" />
+          </row>
+          <row>
+            <Label html="Prievadas" horizontalAlignment="right" />
+            <InputInteger source="StorePort" style="width:50px;" />
+          </row>
+          <row>
+            <Label html="Prisijungimo vardas" horizontalAlignment="right" />
+            <InputText source="StoreLogin" />
+          </row>
+          <row>
+            <CheckBox source="StoreSSL" html="SSL" style="float:right" />
+            <Button html="Slaptažodis" name="StorePassword" style="float:right" />
+          </row>
+          <row>
+            <cell colSpan="2">
+              <Label html="Sisteminiai aplankai" style="font-weight:bold; text-align:center;" />
+            </cell>
+          </row>
+          <row>
+            <Label html="Siųstieji" horizontalAlignment="right" />
+            <DataSelector name="SentFolder" source="SentFolder" newRowEnabled="false">
+              <renderToken source="SentParent" suffix="/" />
+              <renderToken source="SentName" />
+            </DataSelector>
+          </row>
+          <row>
+            <Label html="Juodraščiai" horizontalAlignment="right" />
+            <DataSelector name="DraftsFolder" source="DraftsFolder" newRowEnabled="false">
+              <renderToken source="DraftsParent" suffix="/" />
+              <renderToken source="DraftsName" />
+            </DataSelector>
+          </row>
+          <row>
+            <Label html="Šiukšlinė" horizontalAlignment="right" />
+            <DataSelector name="TrashFolder" source="TrashFolder" newRowEnabled="false">
+              <renderToken source="TrashParent" suffix="/" />
+              <renderToken source="TrashName" />
+            </DataSelector>
+          </row>
+        </Table>
+      </FlowPanel>
+
+      <FlowPanel class="flexBox-vertical-center flexible">
+        <Table>
+          <row>
+            <cell colSpan="2">
+              <Label html="SMTP serverio parametrai" style="font-weight:bold; text-align:center;" />
+            </cell>
+          </row>
+          <row>
+            <Label html="Adresas" horizontalAlignment="right" />
+            <InputText source="TransportServer" />
+          </row>
+          <row>
+            <Label html="Prievadas" horizontalAlignment="right" />
+            <InputInteger source="TransportPort" style="width:50px;" />
+          </row>
+          <row>
+            <Label html="Prisijungimo vardas" horizontalAlignment="right" />
+            <InputText source="TransportLogin" />
+          </row>
+          <row>
+            <CheckBox source="TransportSSL" html="SSL" style="float:right" />
+            <Button html="Slaptažodis" name="TransportPassword" style="float:right" />
+          </row>
+        </Table>
+      </FlowPanel>
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>  
