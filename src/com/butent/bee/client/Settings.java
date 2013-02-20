@@ -57,6 +57,10 @@ public class Settings {
     }
   }
 
+  public static boolean getPropertyBoolean(String name) {
+    return BeeConst.isTrue(getProperty(name));
+  }
+  
   public static int getPropertyInt(String name) {
     String value = getProperty(name);
     if (BeeUtils.isInt(value)) {
@@ -99,6 +103,10 @@ public class Settings {
     return getProperty("version");
   }
 
+  public static boolean minimizeNumberOfConcurrentRequests() {
+    return getPropertyBoolean("minimizeNumberOfConcurrentRequests");
+  }
+
   private static boolean checkSettings() {
     if (!initialized) {
       readSettings();
@@ -106,7 +114,7 @@ public class Settings {
     }
     return settings != null;
   }
-
+  
   private static String getQuietly(String name) {
     String value;
     try {

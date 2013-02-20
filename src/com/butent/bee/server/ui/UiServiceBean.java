@@ -131,6 +131,8 @@ public class UiServiceBean {
       response = doSql(reqInfo);
     } else if (BeeUtils.same(svc, Service.QUERY)) {
       response = getViewData(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_DATA)) {
+      response = getData(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_DATA_INFO)) {
       response = getDataInfo(reqInfo);
@@ -373,6 +375,22 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject getData(RequestInfo reqInfo) {
+    String viewList = reqInfo.getParameter(Service.VAR_VIEW_LIST);
+    if (BeeUtils.isEmpty(viewList)) {
+      return ResponseObject.error("parameter not found:", Service.VAR_VIEW_LIST);
+    }
+    
+    List<String> viewNames = NameUtils.toList(viewList);
+    List<BeeRowSet> result = Lists.newArrayList();
+    
+    for (String viewName : viewNames) {
+      BeeRowSet rs = qs.getViewData(viewName);
+      result.add(rs);
+    }
+    return ResponseObject.response(result);
+  }
+  
   private ResponseObject getDataInfo(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(viewName)) {

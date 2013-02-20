@@ -40,9 +40,9 @@ import java.util.List;
 
 public class Queries {
 
-  /**
-   * Requires implementing classes to have {@code onResponse) method. 
-   */
+  public abstract static class DataCallback extends Callback<Collection<BeeRowSet>> {
+  }
+
   public abstract static class IntCallback extends Callback<Integer> {
   }
 
@@ -186,6 +186,67 @@ public class Queries {
             }
           }
         });
+  }
+
+  public static void getData(Collection<String> viewNames, final CachingPolicy cachingPolicy,
+      final DataCallback callback) {
+    Assert.notEmpty(viewNames);
+    Assert.notNull(callback);
+
+    final List<BeeRowSet> result = Lists.newArrayList();
+    final String viewList;
+
+    if (cachingPolicy != null && cachingPolicy.doRead()) {
+      List<String> notCached = Lists.newArrayList();
+
+      for (String viewName : viewNames) {
+        BeeRowSet rowSet = Global.getCache().getRowSet(viewName);
+        if (rowSet != null) {
+          result.add(rowSet);
+        } else {
+          notCached.add(viewName);
+        }
+      }
+
+      if (notCached.isEmpty()) {
+        callback.onSuccess(result);
+        return;
+      }
+      viewList = NameUtils.join(notCached);
+
+    } else {
+      viewList = NameUtils.join(viewNames);
+    }
+
+    Assert.notEmpty(viewList);
+
+    final String service = Service.GET_DATA;
+    ParameterList parameters = new ParameterList(service);
+    parameters.addDataItem(Service.VAR_VIEW_LIST, viewList);
+
+    BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(service, viewList, response, null, callback)) {
+          String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+          if (ArrayUtils.isEmpty(arr)) {
+            error(callback, Lists.newArrayList(service, viewList, "response type:",
+                response.getType()));
+            return;
+          }
+
+          for (String s : arr) {
+            BeeRowSet rs = BeeRowSet.restore(s);
+            result.add(rs);
+
+            if (cachingPolicy != null && cachingPolicy.doWrite()) {
+              Global.getCache().add(Data.getDataInfo(rs.getViewName()), rs);
+            }
+          }
+          callback.onSuccess(result);
+        }
+      }
+    });
   }
 
   public static void getRow(final String viewName, final long rowId, List<String> columns,
@@ -411,7 +472,7 @@ public class Queries {
       }
     });
   }
-  
+
   public static int update(String viewName, List<BeeColumn> columns, IsRow oldRow, IsRow newRow,
       RowCallback callback) {
     Assert.notEmpty(viewName);

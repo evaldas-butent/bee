@@ -313,6 +313,10 @@ public class CacheManager implements HandlesAllDataEvents {
     super();
   }
 
+  public void add(DataInfo dataInfo, BeeRowSet rowSet) {
+    add(dataInfo, rowSet, null, null, BeeConst.UNDEF, BeeConst.UNDEF);
+  }
+  
   public void add(DataInfo dataInfo, BeeRowSet rowSet, Filter filter, Order order, int offset,
       int limit) {
     if (dataInfo == null || rowSet == null) {
@@ -386,6 +390,10 @@ public class CacheManager implements HandlesAllDataEvents {
     return info;
   }
 
+  public BeeRowSet getRowSet(String viewName) {
+    return getRowSet(viewName, null, null, BeeConst.UNDEF, BeeConst.UNDEF);
+  }
+  
   public BeeRowSet getRowSet(String viewName, Filter filter, Order order, int offset, int limit) {
     Assert.notEmpty(viewName);
     Entry entry = get(viewName);

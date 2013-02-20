@@ -33,7 +33,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -130,7 +129,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
       long startMillis = System.currentTimeMillis();
       view.doLayout(calendarId);
       logger.debug(view.getType(), view.getAppointmentWidgets().size(),
-          BeeUtils.bracket(System.currentTimeMillis() - startMillis));
+          TimeUtils.elapsedMillis(startMillis));
     }
   }
 

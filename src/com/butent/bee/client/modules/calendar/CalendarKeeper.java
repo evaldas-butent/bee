@@ -48,6 +48,7 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -127,11 +128,15 @@ public class CalendarKeeper {
   public static void ensureData(final Command command) {
     if (isDataLoaded()) {
       command.execute();
+
     } else {
+      final long startMillis = System.currentTimeMillis();
+
       CACHE.getData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
         @Override
         public void onSuccess(Integer result) {
           setDataLoaded(true);
+          logger.debug("calendar cache loaded", result, TimeUtils.elapsedMillis(startMillis));
           command.execute();
         }
       });

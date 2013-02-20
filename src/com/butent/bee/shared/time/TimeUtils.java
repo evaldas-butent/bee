@@ -237,6 +237,10 @@ public class TimeUtils {
     return today().getDom();
   }
 
+  public static String elapsedMillis(long start) {
+    return BeeUtils.bracket(System.currentTimeMillis() - start);
+  }
+  
   /**
    * Returns the elapsed time in seconds.
    * 

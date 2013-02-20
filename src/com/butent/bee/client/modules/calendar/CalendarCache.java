@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -143,6 +145,28 @@ class CalendarCache implements HandlesAllDataEvents {
       for (String viewName : viewNames) {
         ensureData(viewName);
       }
+      
+    } else if (Settings.minimizeNumberOfConcurrentRequests()) {
+      List<String> notCached = Lists.newArrayList();
+      for (String viewName : viewNames) {
+        if (!isLoaded(viewName)) {
+          notCached.add(viewName);
+        }
+      }
+      
+      if (notCached.isEmpty()) {
+        multiCallback.onSuccess(viewNames.size());
+      } else {
+        Queries.getData(notCached, CachingPolicy.NONE, new Queries.DataCallback() {
+          @Override
+          public void onSuccess(Collection<BeeRowSet> result) {
+            for (BeeRowSet rowSet : result) {
+              put(rowSet.getViewName(), rowSet);
+            }
+            multiCallback.onSuccess(viewNames.size());
+          }
+        });
+      }
 
     } else {
       Callback callback = new Callback() {
@@ -247,8 +271,7 @@ class CalendarCache implements HandlesAllDataEvents {
     Queries.getRowSet(viewName, null, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        data.put(viewName, result.copy());
-        states.put(viewName, State.LOADED);
+        put(viewName, result.copy());
 
         List<Callback> cbs = callbacks.get(viewName);
         if (cbs != null) {
@@ -259,5 +282,10 @@ class CalendarCache implements HandlesAllDataEvents {
         }
       }
     });
+  }
+  
+  private void put(String viewName, BeeRowSet rowSet) {
+    data.put(viewName, rowSet);
+    states.put(viewName, State.LOADED);
   }
 }
