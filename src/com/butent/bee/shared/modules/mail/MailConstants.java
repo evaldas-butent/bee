@@ -29,14 +29,6 @@ public class MailConstants {
   public enum MessageFlag {
     ANSWERED(1), DELETED(2), FLAGGED(4), SEEN(8), USER(16);
 
-    public static boolean isFlagged(Integer bits) {
-      return (BeeUtils.unbox(bits) & FLAGGED.getMask()) != 0;
-    }
-
-    public static boolean isSeen(Integer bits) {
-      return (BeeUtils.unbox(bits) & SEEN.getMask()) != 0;
-    }
-
     final int mask;
 
     private MessageFlag(int mask) {
@@ -45,6 +37,10 @@ public class MailConstants {
 
     public int getMask() {
       return mask;
+    }
+
+    public boolean isSet(Integer bits) {
+      return (BeeUtils.unbox(bits) & getMask()) != 0;
     }
   }
 

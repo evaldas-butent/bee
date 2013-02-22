@@ -41,6 +41,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.mail.Address;
+import javax.mail.FetchProfile;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
@@ -114,16 +116,14 @@ public class MailModuleBean implements BeeModule {
 
       } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
         response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)),
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ACCOUNT)),
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
-            BeeUtils.toBoolean(reqInfo.getParameter("showBcc")),
-            BeeUtils.toBoolean(reqInfo.getParameter("markAsRead")));
+            Codec.unpack(reqInfo.getParameter("showBcc")));
 
       } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
         response = ResponseObject.response(setMessageFlag(mail
             .getAccount(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT))),
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)), MessageFlag.FLAGGED,
-            BeeUtils.toBoolean(reqInfo.getParameter("toggle"))));
+            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
+            NameUtils.getEnumByName(MessageFlag.class, reqInfo.getParameter(COL_FLAGS)),
+            Codec.unpack(reqInfo.getParameter("on"))));
 
       } else if (BeeUtils.same(svc, SVC_COPY_MESSAGES)) {
         MailAccount account = mail.getAccount(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT)));
@@ -143,7 +143,7 @@ public class MailModuleBean implements BeeModule {
 
         response = processMessages(account,
             mail.findFolder(account, BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FOLDER))),
-            BeeUtils.toBoolean(reqInfo.getParameter("Purge")) ? null : mail
+            Codec.unpack(reqInfo.getParameter("Purge")) ? null : mail
                 .getTrashFolder(account),
             Codec.beeDeserializeCollection(reqInfo.getParameter(COL_PLACE)), true);
 
@@ -552,8 +552,12 @@ public class MailModuleBean implements BeeModule {
         } else {
           newMessages = remoteFolder.getMessages();
         }
-        for (Message message : newMessages) {
+        FetchProfile fp = new FetchProfile();
+        fp.add(FetchProfile.Item.ENVELOPE);
+        fp.add(FetchProfile.Item.FLAGS);
+        remoteFolder.fetch(newMessages, fp);
 
+        for (Message message : newMessages) {
           if (mail.storeMail(message, localFolder.getId(),
               uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null)) {
 
@@ -665,12 +669,11 @@ public class MailModuleBean implements BeeModule {
     return addresses.toArray(new Address[0]);
   }
 
-  private ResponseObject getMessage(Long id, Long accountId, Long placeId, boolean showBcc,
-      boolean markAsRead) {
-    Assert.notNull(id);
+  private ResponseObject getMessage(Long messageId, boolean showBcc) {
+    Assert.notNull(messageId);
 
     Map<String, SimpleRowSet> packet = Maps.newHashMap();
-    IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, id);
+    IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, messageId);
 
     if (!showBcc) {
       wh = SqlUtils.and(wh,
@@ -690,7 +693,7 @@ public class MailModuleBean implements BeeModule {
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_PARTS, cols)
         .addFrom(TBL_PARTS)
-        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, id)));
+        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, messageId)));
 
     SimpleRowSet newRs = new SimpleRowSet(cols);
 
@@ -706,18 +709,9 @@ public class MailModuleBean implements BeeModule {
         .addFrom(TBL_ATTACHMENTS)
         .addFromInner(CommonsConstants.TBL_FILES,
             sys.joinTables(CommonsConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
-        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, id))));
+        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
 
-    ResponseObject response = ResponseObject.response(packet);
-
-    if (markAsRead) {
-      try {
-        setMessageFlag(mail.getAccount(accountId), placeId, MessageFlag.SEEN, true);
-      } catch (MessagingException e) {
-        response.addError(e);
-      }
-    }
-    return response;
+    return ResponseObject.response(packet);
   }
 
   private ResponseObject processMessages(MailAccount account, MailFolder source, MailFolder target,

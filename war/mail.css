@@ -1,4 +1,3 @@
-
 .bee-mail-Headers {
   margin-top: 5px;
   margin-right: 5px;
@@ -27,8 +26,14 @@
   display: inline-block;
 }
 
-.bee-mail-UnreadImage {
+.bee-mail-Unread {
+  width: 10px;
+  height: 10px;
+  border: 1px solid silver;
+  border-radius: 50%;
+  background-color: green;
   margin-right: 5px;
+  display: inline-block;
 }
 
 .bee-mail-AttachmentImage {

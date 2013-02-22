@@ -51,6 +51,7 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -185,7 +186,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public void onActiveRowChange(ActiveRowChangeEvent event) {
-      IsRow row = event.getRowValue();
+      final IsRow row = event.getRowValue();
 
       messageWidget.setVisible(false);
       emptySelectionWidget.setVisible(row == null);
@@ -200,11 +201,14 @@ public class MailPanel extends AbstractFormInterceptor {
         dateWidget.setValue(row.getDateTime(date));
         subjectWidget.setText(row.getString(subject));
 
-        messageHandler.requery(row.getLong(message), getCurrentAccount().getId(),
-            row.getId(), Objects.equal(row.getLong(sender), getCurrentAccount().getAddress()),
-            MessageFlag.isSeen(row.getInteger(flags)));
+        messageHandler.requery(row.getLong(message),
+            Objects.equal(row.getLong(sender), getCurrentAccount().getAddress()));
 
         messageWidget.setVisible(true);
+
+        if (!MessageFlag.SEEN.isSet(row.getInteger(flags))) {
+          flagMessage(getCurrentAccount().getId(), row, flags, MessageFlag.SEEN, null);
+        }
       }
     }
   }
@@ -255,11 +259,10 @@ public class MailPanel extends AbstractFormInterceptor {
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
-      if (!MessageFlag.isSeen(row.getInteger(flagsIdx))) {
-        fp.addStyleName("bee-mail-HeaderUnread");
-        Widget image = new BeeImage(Global.getImages().greenSmall());
-        image.setStyleName("bee-mail-UnreadImage");
-        fp.add(image);
+      if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
+        Widget unread = new Simple();
+        unread.setStyleName("bee-mail-Unread");
+        fp.add(unread);
       }
       sender.setText(address);
       fp.add(sender);
@@ -439,27 +442,16 @@ public class MailPanel extends AbstractFormInterceptor {
         if (row == null) {
           return;
         }
-        final String viewName = getGridPresenter().getViewName();
-        boolean toggle = !MessageFlag.isFlagged(Data.getInteger(viewName, row, COL_FLAGS));
+        final int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
 
-        ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
-        params.addDataItem(COL_ACCOUNT, getCurrentAccount().getId());
-        params.addDataItem(COL_PLACE, row.getId());
-        params.addDataItem("toggle", toggle ? 1 : 0);
-
-        BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getFormView());
-
-            if (!response.hasErrors()) {
-              Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
-              Data.setValue(viewName, row, COL_FLAGS, flags);
-              event.getSourceElement()
-                  .setInnerHTML(StarRenderer.render(MessageFlag.isFlagged(flags)));
-            }
-          }
-        });
+        flagMessage(getCurrentAccount().getId(), row, flagIdx, MessageFlag.FLAGGED,
+            new ScheduledCommand() {
+              @Override
+              public void execute() {
+                event.getSourceElement().setInnerHTML(StarRenderer.render(MessageFlag
+                    .FLAGGED.isSet(row.getInteger(flagIdx))));
+              }
+            });
       }
     }
 
@@ -492,7 +484,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public String render(IsRow row) {
-      return render(MessageFlag.isFlagged(row.getInteger(flags)));
+      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)));
     }
   }
 
@@ -750,6 +742,32 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
+  private void flagMessage(long accountId, final IsRow row, final int flagIdx, MessageFlag flag,
+      final ScheduledCommand command) {
+
+    ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
+    params.addDataItem(COL_ACCOUNT, accountId);
+    params.addDataItem(COL_PLACE, row.getId());
+    params.addDataItem(COL_FLAGS, flag.name());
+    params.addDataItem("on", Codec.pack(!flag.isSet(row.getInteger(flagIdx))));
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
+
+        if (!response.hasErrors()) {
+          Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
+          row.setValue(flagIdx, flags);
+
+          if (command != null) {
+            command.execute();
+          }
+        }
+      }
+    });
+  }
+
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
@@ -916,7 +934,7 @@ public class MailPanel extends AbstractFormInterceptor {
                 params.addDataItem(COL_ACCOUNT, getCurrentAccount().getId());
                 params.addDataItem(COL_FOLDER, getCurrentFolderId());
                 params.addDataItem(COL_PLACE, Codec.beeSerialize(ids));
-                params.addDataItem("Purge", purge ? 1 : 0);
+                params.addDataItem("Purge", Codec.pack(purge));
 
                 BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
                   @Override

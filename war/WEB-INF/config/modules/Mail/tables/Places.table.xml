@@ -15,4 +15,27 @@
       <KeyField>MessageUID</KeyField>
     </Key>
   </Keys>
+  <Triggers>
+    <Trigger events="DELETE" scope="ROW" timing="AFTER">
+      <PostgreSql>
+        <![CDATA[
+DECLARE _id BIGINT;
+        _tmp BIGINT;
+BEGIN
+  _id:=OLD."Message";
+
+  SELECT "Message" INTO _tmp FROM "Places" WHERE "Message"=_id LIMIT 1;
+
+  IF NOT FOUND THEN
+    DELETE FROM "Messages" WHERE "MessageID"=_id;
+  END IF;
+
+  RETURN NULL;
+END;
+        ]]>
+      </PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Trigger>
+  </Triggers>
 </Table>

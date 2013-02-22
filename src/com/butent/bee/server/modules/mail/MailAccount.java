@@ -191,9 +191,7 @@ public class MailAccount {
 
   public boolean isStoredRemotedly(MailFolder folder) {
     Assert.notNull(folder);
-
-    return (getStoreProtocol() == Protocol.IMAP)
-        && folder.isConnected();
+    return (getStoreProtocol() == Protocol.IMAP) && folder.isConnected();
   }
 
   public boolean isStoreSSL() {
