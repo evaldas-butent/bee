@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar.view;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -44,10 +45,12 @@ public class ResourceView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
+    
+    widget.clear();
 
-    addWidget(viewHeader);
-    addWidget(viewMulti);
-    addWidget(viewBody);
+    widget.add(viewHeader);
+    widget.add(viewMulti);
+    widget.add(viewBody);
 
     createMoveController();
     createResizeController();
@@ -141,6 +144,16 @@ public class ResourceView extends CalendarView {
     return Type.RESOURCE;
   }
 
+  @Override
+  public Range<DateTime> getVisibleRange() {
+    JustDate date = getDate();
+    if (date == null) {
+      return null;
+    } else {
+      return Range.closedOpen(date.getDateTime(), TimeUtils.nextDay(date).getDateTime());
+    }
+  }
+  
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
     AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);

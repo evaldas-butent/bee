@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar.view;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -44,10 +45,12 @@ public class DayView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
+    
+    widget.clear();
 
-    addWidget(dayViewHeader);
-    addWidget(multiDayPanel);
-    addWidget(appointmentPanel);
+    widget.add(dayViewHeader);
+    widget.add(multiDayPanel);
+    widget.add(appointmentPanel);
 
     createMoveController();
     createResizeController();
@@ -138,6 +141,17 @@ public class DayView extends CalendarView {
   @Override
   public Type getType() {
     return Type.DAY;
+  }
+
+  @Override
+  public Range<DateTime> getVisibleRange() {
+    JustDate date = getDate();
+    if (date == null) {
+      return null;
+    }
+
+    int days = Math.max(getDisplayedDays(), 1);
+    return Range.closedOpen(date.getDateTime(), TimeUtils.nextDay(date, days).getDateTime());
   }
 
   @Override

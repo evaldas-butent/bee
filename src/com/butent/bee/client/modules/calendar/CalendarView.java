@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.user.client.Event;
@@ -59,6 +60,8 @@ public abstract class CalendarView {
   public abstract String getStyleName();
 
   public abstract Type getType();
+  
+  public abstract Range<DateTime> getVisibleRange();
 
   public abstract boolean onClick(long calendarId, Element element, Event event);
   
@@ -80,10 +83,6 @@ public abstract class CalendarView {
     }
   }
 
-  protected void addWidget(Widget widget) {
-    getCalendarWidget().addToRootPanel(widget);
-  }
-  
   protected List<Appointment> getAppointments() {
     return getCalendarWidget().getAppointments();
   }

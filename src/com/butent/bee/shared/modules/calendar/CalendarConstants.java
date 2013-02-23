@@ -152,6 +152,8 @@ public class CalendarConstants {
   public static final String PARAM_APPOINTMENT_SEPARATED = "appointment_separated";
   public static final String PARAM_ATTENDEES = "attendees";
   public static final String PARAM_REPORT = "report";
+  public static final String PARAM_START_TIME = "start_time";
+  public static final String PARAM_END_TIME = "end_time";
 
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_USER_CAL_ATTENDEES = "UserCalAttendees";

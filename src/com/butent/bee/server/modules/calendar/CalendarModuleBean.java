@@ -788,6 +788,16 @@ public class CalendarModuleBean implements BeeModule {
     appFilter.add(VALID_APPOINTMENT);
     appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
+    
+    Long startTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_START_TIME));
+    Long endTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_END_TIME));
+    
+    if (startTime != null) {
+      appFilter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(startTime)));
+    }
+    if (endTime != null) {
+      appFilter.add(ComparisonFilter.isLess(COL_START_DATE_TIME, new LongValue(endTime)));
+    }
 
     if (!calAppTypes.isEmpty()) {
       appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
@@ -800,8 +810,10 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet appointments = getAppointments(appFilter, null);
 
-    logger.info(SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
-        appointments.getViewName());
+    logger.info(SVC_GET_CALENDAR_APPOINTMENTS, calendarId,
+        (startTime == null) ? BeeConst.STRING_EMPTY : new DateTime(startTime).toCompactString(),
+        (endTime == null) ? BeeConst.STRING_EMPTY : new DateTime(endTime).toCompactString(),
+        BeeConst.STRING_EQ, appointments.getNumberOfRows());
 
     return ResponseObject.response(appointments);
   }

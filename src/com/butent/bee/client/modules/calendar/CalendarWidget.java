@@ -2,22 +2,20 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.HasOpenHandlers;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.modules.calendar.event.HasUpdateHandlers;
@@ -31,6 +29,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 
@@ -38,16 +37,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class CalendarWidget extends Composite implements HasOpenHandlers<Appointment>,
+public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appointment>,
     HasTimeBlockClickHandlers, HasUpdateHandlers, RequiresResize, ProvidesResize {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarWidget.class);
-  
-  private final FlowPanel rootPanel = new FlowPanel();
 
   private final long calendarId;
-
-  private final JustDate date;
 
   private final CalendarSettings settings;
 
@@ -65,6 +60,8 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   };
 
   private CalendarView view = null;
+
+  private JustDate date;
   private int displayedDays = BeeConst.UNDEF;
 
   private boolean layoutSuspended = false;
@@ -72,24 +69,19 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   private boolean scrollPending = false;
 
   public CalendarWidget(long calendarId, CalendarSettings settings) {
-    this(calendarId, TimeUtils.today(), settings);
-  }
-
-  public CalendarWidget(long calendarId, JustDate date, CalendarSettings settings) {
     super();
 
     this.calendarId = calendarId;
     this.settings = settings;
     this.appointmentManager = new AppointmentManager();
-    this.date = date;
 
-    initWidget(rootPanel);
+    this.date = TimeUtils.today();
 
     sinkEvents(Event.ONMOUSEDOWN | Event.ONDBLCLICK);
   }
 
   public void addAppointment(Appointment appointment, boolean refresh) {
-    Assert.notNull(appointment, "Added appointment cannot be null.");
+    Assert.notNull(appointment);
     appointmentManager.addAppointment(appointment);
     if (refresh) {
       refresh(false);
@@ -101,48 +93,14 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     return addHandler(handler, OpenEvent.getType());
   }
 
-  public HandlerRegistration addSelectionHandler(SelectionHandler<Appointment> handler) {
-    return addHandler(handler, SelectionEvent.getType());
-  }
-
   @Override
   public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickEvent.Handler handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
   }
 
-  public void addToRootPanel(Widget widget) {
-    rootPanel.add(widget);
-  }
-
   @Override
   public HandlerRegistration addUpdateHandler(UpdateEvent.Handler handler) {
     return addHandler(handler, UpdateEvent.getType());
-  }
-
-  public void clearAppointments() {
-    appointmentManager.clearAppointments();
-    refresh(true);
-  }
-
-  public void doLayout() {
-    if (view != null) {
-      long startMillis = System.currentTimeMillis();
-      view.doLayout(calendarId);
-      logger.debug(view.getType(), view.getAppointmentWidgets().size(),
-          TimeUtils.elapsedMillis(startMillis));
-    }
-  }
-
-  public void doScroll() {
-    if (view != null) {
-      view.doScroll();
-    }
-  }
-
-  public void doSizing() {
-    if (view != null) {
-      view.doSizing();
-    }
   }
 
   public List<Appointment> getAppointments() {
@@ -154,15 +112,11 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   }
 
   public JustDate getDate() {
-    return JustDate.copyOf(date);
+    return date;
   }
 
   public int getDisplayedDays() {
     return displayedDays;
-  }
-
-  public String getId() {
-    return getElement().getId();
   }
 
   public CalendarSettings getSettings() {
@@ -179,6 +133,22 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public CalendarView getView() {
     return view;
+  }
+
+  public void loadAppointments(boolean force) {
+    if (getView() != null) {
+      final long startMillis = System.currentTimeMillis();
+      final Range<DateTime> range = getView().getVisibleRange();
+
+      appointmentManager.loadAppointments(calendarId, range, force, new IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          logger.debug("load", CalendarUtils.renderRange(range), result,
+              TimeUtils.elapsedMillis(startMillis));
+          refresh(true);
+        }
+      });
+    }
   }
 
   @Override
@@ -211,24 +181,8 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   }
 
   public void onClock() {
-    if (view != null) {
-      view.onClock();
-    }
-  }
-
-  public boolean onDoubleClick(Element element, Event event) {
-    if (view != null && settings.isDoubleClick()) {
-      return view.onClick(calendarId, element, event);
-    } else {
-      return false;
-    }
-  }
-
-  public boolean onMouseDown(Element element, Event event) {
-    if (view != null && settings.isSingleClick()) {
-      return view.onClick(calendarId, element, event);
-    } else {
-      return false;
+    if (getView() != null) {
+      getView().onClock();
     }
   }
 
@@ -269,12 +223,6 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
-  public void setAppointments(Collection<Appointment> appointments) {
-    appointmentManager.clearAppointments();
-    appointmentManager.addAppointments(appointments);
-    refresh(true);
-  }
-
   public void setAttendees(Collection<Long> attendees, boolean refresh) {
     this.attendees.clear();
     this.attendees.addAll(attendees);
@@ -284,94 +232,118 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
-  public void setDate(JustDate newDate) {
-    setDate(newDate, getDisplayedDays());
+  public void suspendLayout() {
+    layoutSuspended = true;
   }
 
-  public void setDate(JustDate newDate, int days) {
-    Assert.notNull(newDate);
-
-    if (newDate.equals(date) && days == getDisplayedDays()) {
-      return;
+  public boolean update(CalendarView.Type viewType, JustDate newDate, int days) {
+    boolean changed = false;
+    
+    if (viewType != null && !viewType.equals(getType())) {
+      setType(viewType);
+      changed = true;
     }
-
-    date.setDate(newDate);
-    setDisplayedDays(days);
-
-    refresh(true);
-  }
-
-  public void setDays(int days) {
-    Assert.isPositive(days);
-
-    if (getDisplayedDays() != days) {
+    
+    if (newDate != null && !newDate.equals(getDate())) {
+      setDate(newDate);
+      changed = true;
+    }
+    
+    if (days != getDisplayedDays()) {
       setDisplayedDays(days);
-      refresh(true);
+      changed = true;
+    }
+    
+    if (changed) {
+      loadAppointments(false);
+    }
+    
+    return changed;
+  }
+  
+  private void doLayout() {
+    if (getView() != null) {
+      long startMillis = System.currentTimeMillis();
+
+      getView().doLayout(calendarId);
+      
+      logger.debug("layout", getView().getAppointmentWidgets().size(),
+          TimeUtils.elapsedMillis(startMillis));
     }
   }
 
-  public void setDisplayedDays(int displayedDays) {
+  private void doScroll() {
+    if (getView() != null) {
+      getView().doScroll();
+    }
+  }
+
+  private void doSizing() {
+    if (getView() != null) {
+      getView().doSizing();
+    }
+  }
+
+  private boolean onDoubleClick(Element element, Event event) {
+    if (getView() != null && settings.isDoubleClick()) {
+      return getView().onClick(calendarId, element, event);
+    } else {
+      return false;
+    }
+  }
+
+  private boolean onMouseDown(Element element, Event event) {
+    if (getView() != null && settings.isSingleClick()) {
+      return getView().onClick(calendarId, element, event);
+    } else {
+      return false;
+    }
+  }
+
+  private void setDate(JustDate date) {
+    this.date = date;
+  }
+
+  private void setDisplayedDays(int displayedDays) {
     this.displayedDays = displayedDays;
   }
 
-  public void setType(CalendarView.Type viewType) {
-    setType(viewType, getDisplayedDays());
-  }
-
-  public void setType(CalendarView.Type viewType, int days) {
-    Assert.notNull(viewType);
+  private void setType(CalendarView.Type viewType) {
     CalendarView cached = viewCache.get(viewType);
+    if (cached != null) {
+      setView(cached);
+      return;
+    }
+    
+    CalendarView cv;
 
     switch (viewType) {
       case DAY:
-        DayView dayView = (cached instanceof DayView) ? (DayView) cached : new DayView();
-        if (!(cached instanceof DayView)) {
-          viewCache.put(viewType, dayView);
-        }
-
-        if (days > 0) {
-          setDisplayedDays(days);
-        }
-        setView(dayView);
+        cv = new DayView();
         break;
 
       case MONTH:
-        MonthView monthView = (cached instanceof MonthView) ? (MonthView) cached : new MonthView();
-        if (!(cached instanceof MonthView)) {
-          viewCache.put(viewType, monthView);
-        }
-
-        setView(monthView);
+        cv = new MonthView();
         break;
 
       case RESOURCE:
-        ResourceView resourceView =
-            (cached instanceof ResourceView) ? (ResourceView) cached : new ResourceView();
-        if (!(cached instanceof ResourceView)) {
-          viewCache.put(viewType, resourceView);
-        }
-
-        if (days > 0) {
-          setDisplayedDays(days);
-        }
-        setView(resourceView);
+        cv = new ResourceView();
         break;
+
+      default:
+        Assert.untouchable();
+        cv = null;
     }
+
+    viewCache.put(viewType, cv);
+    setView(cv);
   }
 
-  public void setView(CalendarView view) {
-    Assert.notNull(view);
-
-    rootPanel.clear();
-
+  private void setView(CalendarView view) {
     this.view = view;
-    this.view.attach(this);
 
-    setStyleName(this.view.getStyleName());
-    refresh(true);
-  }
+    view.attach(this);
 
-  public void suspendLayout() {
-    layoutSuspended = true;
+    setStyleName(view.getStyleName());
   }
 }

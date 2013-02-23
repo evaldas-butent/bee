@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.calendar.view;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -92,9 +93,11 @@ public class MonthView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
+    
+    widget.clear();
 
-    addWidget(grid);
-    addWidget(canvas);
+    widget.add(grid);
+    widget.add(canvas);
 
     if (moveController == null) {
       moveController = new MonthMoveController(this);
@@ -190,6 +193,20 @@ public class MonthView extends CalendarView {
     return Type.MONTH;
   }
 
+  @Override
+  public Range<DateTime> getVisibleRange() {
+    JustDate date = getDate();
+    if (date == null) {
+      return null;
+    }
+
+    JustDate start = calculateFirstDate(date);
+    int rows = calculateRequiredRows(date);
+    
+    return Range.closedOpen(start.getDateTime(),
+        TimeUtils.nextDay(start, rows * TimeUtils.DAYS_PER_WEEK).getDateTime());
+  }
+  
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
     if (element.equals(canvas.getElement())) {
