@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.Set;
 
 class ChartHelper {
 
@@ -268,10 +270,10 @@ class ChartHelper {
 
     JustDate start = JustDate.copyOf(span.lowerEndpoint());
     JustDate end = TimeUtils.nextDay(start, days - 1);
-    
+
     JustDate preferred = TimeUtils.today((days > 2) ? -1 : 0);
     int diff = TimeUtils.dayDiff(start, preferred);
-    
+
     if (diff > 0) {
       int shift = Math.min(diff, spanSize - days);
       TimeUtils.addDay(start, shift);
@@ -279,26 +281,6 @@ class ChartHelper {
     }
 
     return Range.closed(start, end);
-  }
-
-  static Rectangle getLegendRectangle(int left, int width, int firstRow, int lastRow,
-      int rowHeight) {
-
-    Rectangle rectangle = new Rectangle();
-
-    if (left >= 0) {
-      rectangle.setLeft(left);
-    }
-    if (width > 0) {
-      rectangle.setWidth(width);
-    }
-
-    if (firstRow >= 0 && lastRow >= firstRow && rowHeight > 0) {
-      rectangle.setTop(firstRow * rowHeight);
-      rectangle.setHeight((lastRow - firstRow + 1) * rowHeight);
-    }
-
-    return rectangle;
   }
 
   static JustDate getLowerBound(JustDate min, int size, JustDate max) {
@@ -324,6 +306,34 @@ class ChartHelper {
 
     Integer value = settings.getInteger(0, index);
     return (BeeUtils.isPositive(value) && value < 100) ? value / 100.0 : null;
+  }
+
+  static Set<Range<JustDate>> getOverlap(Collection<? extends HasDateRange> items,
+      Range<JustDate> range, Range<JustDate> activeRange) {
+
+    Set<Range<JustDate>> overlap = BeeUtils.intersection(items, range);
+    if (overlap.isEmpty() || activeRange == null) {
+      return overlap;
+    } else {
+      return getOverlap(overlap, activeRange);
+    }
+  }
+
+  static Set<Range<JustDate>> getOverlap(Collection<Range<JustDate>> ranges, Range<JustDate> range) {
+    Set<Range<JustDate>> result = Sets.newHashSet();
+    if (ranges == null || range == null) {
+      return result;
+    }
+
+    for (Range<JustDate> item : ranges) {
+      if (item != null && item.isConnected(range)) {
+        Range<JustDate> section = item.intersection(range);
+        if (!section.isEmpty()) {
+          result.add(section);
+        }
+      }
+    }
+    return result;
   }
 
   static int getPixels(BeeRowSet settings, String colName, int def) {
@@ -368,7 +378,25 @@ class ChartHelper {
       return getRangeLabel(range.lowerEndpoint(), range.upperEndpoint());
     }
   }
-  
+
+  static Rectangle getRectangle(int left, int width, int firstRow, int lastRow, int rowHeight) {
+    Rectangle rectangle = new Rectangle();
+
+    if (left >= 0) {
+      rectangle.setLeft(left);
+    }
+    if (width > 0) {
+      rectangle.setWidth(width);
+    }
+
+    if (firstRow >= 0 && lastRow >= firstRow && rowHeight > 0) {
+      rectangle.setTop(firstRow * rowHeight);
+      rectangle.setHeight((lastRow - firstRow + 1) * rowHeight);
+    }
+
+    return rectangle;
+  }
+
   static int getSize(Range<JustDate> range) {
     if (range == null) {
       return BeeConst.UNDEF;
@@ -390,7 +418,7 @@ class ChartHelper {
   static Range<JustDate> getSpan(Collection<? extends HasDateRange> items) {
     return getSpan(items, null, null);
   }
-  
+
   static Range<JustDate> getSpan(Collection<? extends HasDateRange> items,
       JustDate defMin, JustDate defMax) {
 
@@ -422,19 +450,6 @@ class ChartHelper {
     } else {
       return TimeUtils.min(TimeUtils.nextDay(min, size - 1), max);
     }
-  }
-
-  static boolean intersects(Collection<? extends HasDateRange> items, Range<JustDate> range) {
-    if (items == null || range == null) {
-      return false;
-    }
-
-    for (HasDateRange item : items) {
-      if (BeeUtils.intersects(item.getRange(), range)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
@@ -479,7 +494,7 @@ class ChartHelper {
       left += dayWidth;
     }
   }
-  
+
   static void renderDayLabels(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -523,14 +538,14 @@ class ChartHelper {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_MAX_RANGE_PANEL);
     StyleUtils.setSize(panel, width, height);
-    
+
     Widget startWidget = null;
     Widget endWidget = null;
 
     if (getSize(range) > 1) {
       Pair<Widget, Widget> widgets = renderRange(range.lowerEndpoint(), STYLE_MAX_RANGE_START,
           range.upperEndpoint(), STYLE_MAX_RANGE_END, width, height);
-      
+
       if (widgets != null) {
         startWidget = widgets.getA();
         endWidget = widgets.getB();
@@ -539,7 +554,7 @@ class ChartHelper {
     } else {
       startWidget = renderDate(range.lowerEndpoint(), STYLE_MAX_RANGE_START, width, height);
     }
-    
+
     if (startWidget != null) {
       panel.add(startWidget);
     }
@@ -561,14 +576,14 @@ class ChartHelper {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_VISIBLE_RANGE_PANEL);
     StyleUtils.setSize(panel, width, height);
-    
+
     Widget startWidget = null;
     Widget endWidget = null;
 
     if (getSize(owner.getMaxRange()) > 1) {
       Pair<Widget, Widget> widgets = renderRange(range.lowerEndpoint(), STYLE_VISIBLE_RANGE_START,
           range.upperEndpoint(), STYLE_VISIBLE_RANGE_END, width, height);
-      
+
       if (widgets != null) {
         startWidget = widgets.getA();
         endWidget = widgets.getB();
@@ -577,7 +592,7 @@ class ChartHelper {
     } else {
       startWidget = renderDate(range.lowerEndpoint(), STYLE_VISIBLE_RANGE_START, width, height);
     }
-    
+
     if (startWidget != null) {
       addVisibleRangeDatePicker(owner, startWidget, true);
       panel.add(startWidget);
@@ -589,7 +604,7 @@ class ChartHelper {
 
     container.add(panel);
   }
-  
+
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -821,7 +836,7 @@ class ChartHelper {
     if (range.lowerBoundType() == BoundType.OPEN) {
       end--;
     }
-    
+
     if (start <= end) {
       return Range.closed(new JustDate(start), new JustDate(end));
     } else {
@@ -926,24 +941,24 @@ class ChartHelper {
         return Pair.of(renderLabel(startText, startStyle), renderLabel(endText, endStyle));
       }
     }
-    
+
     if (width >= height) {
       double z = (double) startSize.getWidth() / (startSize.getWidth() + endSize.getWidth());
-      int startWidth = BeeUtils.clamp(BeeUtils.round(z * width), 1, width - 1); 
+      int startWidth = BeeUtils.clamp(BeeUtils.round(z * width), 1, width - 1);
       int endWidth = width - startWidth;
-      
+
       Widget startWidget = renderDate(start, startStyle, startWidth, height);
       Widget endWidget = renderDate(end, endStyle, endWidth, height);
-      
+
       return Pair.of(startWidget, endWidget);
 
     } else {
       int startHeight = height / 2 + 1;
       int endHeight = height - startHeight;
-      
+
       Widget startWidget = renderDate(start, startStyle, width, startHeight);
       Widget endWidget = renderDate(end, endStyle, width, endHeight);
-      
+
       return Pair.of(startWidget, endWidget);
     }
   }

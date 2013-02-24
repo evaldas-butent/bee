@@ -282,6 +282,22 @@
   background-color: palegreen;
 }
 
+.bee-tr-dtb-Inactive {
+  position: absolute;
+  background-image: url("images/checkered_background.png");
+}
+
+.bee-tr-dtb-Driver-overlap {
+  color: red;
+}
+.bee-tr-dtb-Overlap {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid red;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
 .bee-tr-fx-Item-drag,
 .bee-tr-ss-Item-drag {
   background-image: -webkit-linear-gradient(top, white, white);

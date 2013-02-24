@@ -1,7 +1,6 @@
 package com.butent.bee.shared.time;
 
-import com.google.common.collect.Range;
+import com.butent.bee.shared.HasRange;
 
-public interface HasDateRange {
-  Range<JustDate> getRange();
+public interface HasDateRange extends HasRange<JustDate> {
 }

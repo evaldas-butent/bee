@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -59,7 +60,7 @@ import java.util.Set;
 
 class FreightExchange extends ChartBase {
 
-  private static class Freight implements ChartItem {
+  private static class Freight implements HasDateRange, HasColorSource {
     private final Long orderId;
 
     private final OrderStatus orderStatus;
@@ -241,7 +242,7 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected Collection<? extends ChartItem> getChartItems() {
+  protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
       List<Freight> result = Lists.newArrayList();
       for (int index : getFilteredIndexes()) {
@@ -347,7 +348,7 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected Collection<? extends ChartItem> initItems(SimpleRowSet data) {
+  protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
     items.clear();
     for (SimpleRow row : data) {
       items.add(new Freight(row));
@@ -513,8 +514,8 @@ class FreightExchange extends ChartBase {
   private void addCustomerWidget(HasWidgets panel, IdentifiableWidget widget, Long customerId,
       int firstRow, int lastRow) {
 
-    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getCustomerWidth(),
-        firstRow, lastRow, getRowHeight());
+    Rectangle rectangle = ChartHelper.getRectangle(0, getCustomerWidth(), firstRow, lastRow,
+        getRowHeight());
 
     Edges margins = new Edges();
     margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
@@ -532,7 +533,7 @@ class FreightExchange extends ChartBase {
   private void addOrderWidget(HasWidgets panel, IdentifiableWidget widget, Long orderId,
       int firstRow, int lastRow) {
 
-    Rectangle rectangle = ChartHelper.getLegendRectangle(getCustomerWidth(), getOrderWidth(),
+    Rectangle rectangle = ChartHelper.getRectangle(getCustomerWidth(), getOrderWidth(),
         firstRow, lastRow, getRowHeight());
 
     Edges margins = new Edges();
@@ -650,8 +651,8 @@ class FreightExchange extends ChartBase {
 
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
-        if (!Objects.equal(item.orderId, orderId) ||
-            ChartHelper.intersects(rowItems, item.getRange())) {
+        if (!Objects.equal(item.orderId, orderId) 
+            || BeeUtils.intersects(rowItems, item.getRange())) {
 
           if (!rowItems.isEmpty()) {
             rows.add(Lists.newArrayList(rowItems));

@@ -29,6 +29,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
@@ -87,7 +88,7 @@ import java.util.Set;
 abstract class ChartBase extends Flow implements Presenter, View, Printable, HandlesAllDataEvents,
     VisibilityChangeEvent.Handler, HasWidgetSupplier, HasVisibleRange, MoveEvent.Handler {
 
-  protected interface ChartItem extends HasDateRange {
+  protected interface HasColorSource {
     Long getColorSource();
   }
 
@@ -207,7 +208,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       removeFilter.setVisible(false);
 
       headerView.addCommandItem(removeFilter);
-      
+
     } else {
       this.filterLabel = null;
       this.removeFilter = null;
@@ -303,7 +304,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
           }
         });
         break;
-        
+
       case REMOVE_FILTER:
         clearFilter();
         break;
@@ -623,7 +624,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void clearFilter() {
     if (isFiltered()) {
       filteredIndexes.clear();
-      
+
       updateMaxRange();
       render(true);
     }
@@ -672,10 +673,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (start == null && end == null) {
       return;
     }
-    
+
     JustDate lower;
     JustDate upper;
-    
+
     if (getMaxRange() == null) {
       lower = BeeUtils.min(start, end);
       upper = BeeUtils.max(start, end);
@@ -686,7 +687,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     setMaxRange(Range.closed(lower, upper));
   }
-  
+
   protected boolean filter(DialogBox dialog) {
     dialog.close();
     return false;
@@ -714,7 +715,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return canvas.getElement().getClientWidth();
   }
 
-  protected abstract Collection<? extends ChartItem> getChartItems();
+  protected abstract Collection<? extends HasDateRange> getChartItems();
 
   protected int getChartLeft() {
     return chartLeft;
@@ -809,6 +810,23 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return content.getClientHeight() - scrollArea.getClientHeight();
   }
 
+  protected Rectangle getRectangle(Range<JustDate> range, int row) {
+    return getRectangle(range, row, row);
+  }
+
+  protected Rectangle getRectangle(Range<JustDate> range, int firstRow, int lastRow) {
+    JustDate start = TimeUtils.clamp(range.lowerEndpoint(), getVisibleRange().lowerEndpoint(),
+        getVisibleRange().upperEndpoint());
+    JustDate end = TimeUtils.clamp(range.upperEndpoint(), getVisibleRange().lowerEndpoint(),
+        getVisibleRange().upperEndpoint());
+
+    int left = getChartLeft()
+        + TimeUtils.dayDiff(getVisibleRange().lowerEndpoint(), start) * getDayColumnWidth();
+    int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
+
+    return ChartHelper.getRectangle(left, width, firstRow, lastRow, getRowHeight());
+  }
+
   protected int getRowHeight() {
     return rowHeight;
   }
@@ -860,7 +878,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return Lists.newArrayList();
   }
 
-  protected abstract Collection<? extends ChartItem> initItems(SimpleRowSet data);
+  protected abstract Collection<? extends HasDateRange> initItems(SimpleRowSet data);
 
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
@@ -871,8 +889,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   /**
-   * @param row  
-   * @param date 
+   * @param row
+   * @param date
    */
   protected void onDoubleClickChart(int row, JustDate date) {
   }
@@ -1048,7 +1066,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         getHeaderHeight());
   }
 
-  protected void renderFooter(Collection<? extends ChartItem> chartItems) {
+  protected void renderFooter(Collection<? extends HasDateRange> chartItems) {
     if (getFooterHeight() <= 0) {
       return;
     }
@@ -1119,7 +1137,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         getFooterHeight());
   }
 
-  protected void renderRangeSelector(HasWidgets panel, Collection<? extends ChartItem> chartItems) {
+  protected void renderRangeSelector(HasWidgets panel,
+      Collection<? extends HasDateRange> chartItems) {
+
     Flow selector = new Flow();
     selector.addStyleName(STYLE_SELECTOR_PANEL);
 
@@ -1130,7 +1150,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     panel.add(selector);
   }
 
-  protected void renderSelector(HasWidgets panel, Collection<? extends ChartItem> chartItems) {
+  protected void renderSelector(HasWidgets panel, Collection<? extends HasDateRange> chartItems) {
     if (getMaxRange() == null || chartItems.isEmpty()) {
       return;
     }
@@ -1163,7 +1183,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       maxRows = itemAreaHeight / 3;
     }
 
-    List<List<ChartItem>> rows = doStripLayout(chartItems, maxRows);
+    List<List<HasDateRange>> rows = doStripLayout(chartItems, maxRows);
 
     int rowCount = rows.size();
     int itemHeight = itemAreaHeight / rowCount;
@@ -1172,10 +1192,12 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         ? null : ChartHelper.getOpacity(getSettings(), getStripOpacityColumnName());
 
     for (int row = 0; row < rowCount; row++) {
-      for (ChartItem item : rows.get(row)) {
+      for (HasDateRange item : rows.get(row)) {
 
         Widget itemStrip = new CustomDiv(STYLE_SELECTOR_STRIP);
-        setItemWidgetColor(item, itemStrip);
+        if (item instanceof HasColorSource) {
+          setItemWidgetColor((HasColorSource) item, itemStrip);
+        }
         if (stripOpacity != null) {
           StyleUtils.setOpacity(itemStrip, stripOpacity);
         }
@@ -1315,13 +1337,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet data = SimpleRowSet.restore(serialized);
 
-      Collection<? extends ChartItem> items = initItems(data);
+      Collection<? extends HasDateRange> items = initItems(data);
       logger.debug(getCaption(), "loaded", items.size(), "items");
 
-      if (!items.isEmpty()) {
-        setMaxRange(ChartHelper.getSpan(items, TimeUtils.today(),
-            TimeUtils.today(TimeUtils.DAYS_PER_WEEK)));
-      }
+      setMaxRange(items);
     }
 
     initData(rowSet);
@@ -1347,7 +1366,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.headerHeight = headerHeight;
   }
 
-  protected void setItemWidgetColor(ChartItem item, Widget widget) {
+  protected void setItemWidgetColor(HasColorSource item, Widget widget) {
     Color color = getColor(item.getColorSource());
     if (color == null) {
       return;
@@ -1384,7 +1403,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void setStartSliderLabel(Widget startSliderLabel) {
     this.startSliderLabel = startSliderLabel;
   }
-  
+
   protected void setVisibleRange(Range<JustDate> visibleRange) {
     this.visibleRange = visibleRange;
   }
@@ -1393,18 +1412,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (!BeeUtils.sameElements(indexes, filteredIndexes)) {
       filteredIndexes.clear();
       filteredIndexes.addAll(indexes);
-      
+
       updateMaxRange();
       render(true);
     }
   }
 
   protected void updateMaxRange() {
-    if (isFiltered()) {
-      setMaxRange(ChartHelper.getSpan(getChartItems()));
-    } else {
-      setMaxRange(ChartHelper.getSpan(getChartItems(), TimeUtils.today(), TimeUtils.today(1)));
-    }
+    setMaxRange(getChartItems());
   }
 
   protected boolean updateSetting(String colName, int value) {
@@ -1479,15 +1494,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return updateSettings(colNames, values);
   }
 
-  private List<List<ChartItem>> doStripLayout(Collection<? extends ChartItem> chartItems,
+  private List<List<HasDateRange>> doStripLayout(Collection<? extends HasDateRange> chartItems,
       int maxRows) {
+    List<List<HasDateRange>> rows = Lists.newArrayList();
 
-    List<List<ChartItem>> rows = Lists.newArrayList();
-
-    for (ChartItem item : chartItems) {
+    for (HasDateRange item : chartItems) {
       int row = BeeConst.UNDEF;
       for (int i = 0; i < rows.size(); i++) {
-        if (!ChartHelper.intersects(rows.get(i), item.getRange())) {
+        if (!BeeUtils.intersects(rows.get(i), item.getRange())) {
           row = i;
           break;
         }
@@ -1497,7 +1511,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         if (rows.size() < maxRows) {
           row = rows.size();
 
-          List<ChartItem> rowItems = Lists.newArrayList();
+          List<HasDateRange> rowItems = Lists.newArrayList();
           rows.add(rowItems);
 
         } else {
@@ -1554,7 +1568,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         selection.addAll(selectedNames);
       }
     }
-    
+
     if (selection.isEmpty()) {
       filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
       removeFilter.setVisible(false);
@@ -1590,6 +1604,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.maxRange = maxRange;
   }
 
+  private void setMaxRange(Collection<? extends HasDateRange> items) {
+    JustDate min = TimeUtils.today(-1);
+    JustDate max = TimeUtils.startOfNextMonth(min);
+    if (min.getDom() > 1) {
+      TimeUtils.addDay(max, min.getDom() - 1);
+    }
+
+    setMaxRange(ChartHelper.getSpan(items, min, max));
+  }
+
   private void setRenderPending(boolean renderPending) {
     this.renderPending = renderPending;
   }
@@ -1597,11 +1621,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setScrollAreaId(String scrollAreaId) {
     this.scrollAreaId = scrollAreaId;
   }
-  
+
   private void setSettings(BeeRowSet settings) {
     this.settings = settings;
   }
-  
+
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {

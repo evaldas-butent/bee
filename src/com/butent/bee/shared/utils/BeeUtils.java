@@ -5,9 +5,11 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasRange;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -806,14 +808,32 @@ public class BeeUtils {
     return new StringBuilder(src).insert(pos, c).toString();
   }
 
-  public static <C extends Comparable<C>> boolean intersects(Collection<Range<C>> col,
+  public static <C extends Comparable<C>> Set<Range<C>> intersection(
+      Collection<? extends HasRange<C>> col, Range<C> range) {
+    Set<Range<C>> result = Sets.newHashSet();
+    if (col == null || range == null) {
+      return result;
+    }
+
+    for (HasRange<C> item : col) {
+      if (item != null && item.getRange() != null && item.getRange().isConnected(range)) {
+        Range<C> section = item.getRange().intersection(range);
+        if (!section.isEmpty()) {
+          result.add(section);
+        }
+      }
+    }
+    return result;
+  }
+
+  public static <C extends Comparable<C>> boolean intersects(Collection<? extends HasRange<C>> col,
       Range<C> range) {
     if (col == null || range == null) {
       return false;
     }
 
-    for (Range<C> item : col) {
-      if (intersects(item, range)) {
+    for (HasRange<C> item : col) {
+      if (item != null && intersects(item.getRange(), range)) {
         return true;
       }
     }
@@ -1350,10 +1370,10 @@ public class BeeUtils {
     }
     return result;
   }
-  
+
   public static <T extends Comparable<T>> T max(T x1, T x2) {
     if (x1 == null) {
-      return x2; 
+      return x2;
     } else if (x2 == null) {
       return x1;
     } else if (isMore(x1, x2)) {
@@ -1365,7 +1385,7 @@ public class BeeUtils {
 
   public static <T extends Comparable<T>> T min(T x1, T x2) {
     if (x1 == null) {
-      return x2; 
+      return x2;
     } else if (x2 == null) {
       return x1;
     } else if (isLess(x1, x2)) {

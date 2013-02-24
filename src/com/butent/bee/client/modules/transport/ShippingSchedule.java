@@ -74,7 +74,7 @@ import java.util.Set;
 
 class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
-  private static class Freight implements ChartItem {
+  private static class Freight implements HasDateRange, HasColorSource {
 
     private final Long tripId;
     private final DateTime tripDate;
@@ -373,7 +373,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   @Override
-  protected Collection<? extends ChartItem> getChartItems() {
+  protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
       List<Freight> result = Lists.newArrayList();
       for (int index : getFilteredIndexes()) {
@@ -564,7 +564,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   @Override
-  protected Collection<? extends ChartItem> initItems(SimpleRowSet data) {
+  protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
     items.clear();
     for (SimpleRow row : data) {
       items.add(new Freight(row));
@@ -760,7 +760,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   private void addTripWidget(HasWidgets panel, IdentifiableWidget widget, Long tripId,
       int firstRow, int lastRow) {
 
-    Rectangle rectangle = ChartHelper.getLegendRectangle(getVehicleWidth(), getTripWidth(),
+    Rectangle rectangle = ChartHelper.getRectangle(getVehicleWidth(), getTripWidth(),
         firstRow, lastRow, getRowHeight());
 
     Edges margins = new Edges();
@@ -809,8 +809,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   private void addVehicleWidget(HasWidgets panel, IdentifiableWidget widget, Long vehicleId,
       int firstRow, int lastRow) {
 
-    Rectangle rectangle = ChartHelper.getLegendRectangle(0, getVehicleWidth(),
-        firstRow, lastRow, getRowHeight());
+    Rectangle rectangle = ChartHelper.getRectangle(0, getVehicleWidth(), firstRow, lastRow,
+        getRowHeight());
 
     Edges margins = new Edges();
     margins.setRight(ChartHelper.DEFAULT_MOVER_WIDTH);
@@ -1064,9 +1064,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
         Long id = separateTrips() ? item.tripId : item.vehicleId;
 
-        if (!Objects.equal(id, lastId) ||
-            ChartHelper.intersects(rowItems, item.getRange())) {
-
+        if (!Objects.equal(id, lastId) || BeeUtils.intersects(rowItems, item.getRange())) {
           if (!rowItems.isEmpty()) {
             rows.add(Lists.newArrayList(rowItems));
             rowItems.clear();

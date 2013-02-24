@@ -54,12 +54,6 @@
         <InputDate source="EndDate" style="&inpdt; color: red;" />
       </FlowPanel>
       &separator;
-      
-      <FlowPanel style="&row;">
-        <Label html="Pastabos:" style="&lbl;" />
-        <InputArea source="Notes" style="width: 400px; height: 40px;" />
-      </FlowPanel>
-      &separator;
     </FlowPanel>
 
     <TabbedPages class="flexible">
@@ -75,6 +69,10 @@
         <text>Nebuvimas darbe</text>
         <ChildGrid name="DriverAbsence" relColumn="Driver" />
       </page>
+      <page>
+        <text>Pastabos</text>
+        <InputArea source="Notes" />
+      </page>  
     </TabbedPages>
   </FlowPanel>
 </f:Form>  
