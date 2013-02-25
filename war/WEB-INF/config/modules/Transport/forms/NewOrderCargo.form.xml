@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="NewOrderCargo" viewName="OrderCargo" caption="Naujas krovinys" 
+  height="220" width="520"
+  >  
+  <FlowPanel class="flexBox-vertical" style="margin: 10px" >
+    <InputText source="Description" caption="Krovinys"
+      style="font-weight: bold; color: blue; width:300px;"  d:size="60" d:unit="px" />        
+    <CheckBox source="Partial" html="Dalinis krovinys"/>
+    <FlowPanel class="flexBox-vertical">
+    	<xi:include href="widgets/CargoPlaces.widget.xml" />
+    </FlowPanel>
+  </FlowPanel>  
+  
+</f:Form>
