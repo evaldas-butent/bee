@@ -51,6 +51,9 @@
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
     <SimpleColumn name="ShippingTerms" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerms">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
     <SimpleColumn name="Partial" />
     <SimpleColumn name="ExchangeOfPalettes" />
 

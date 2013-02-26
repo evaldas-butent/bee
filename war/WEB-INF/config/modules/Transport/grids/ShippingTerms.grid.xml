@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+ 
+  name="ShippingTerms" viewName="ShippingTerms" caption="Krovinių pristatymo sąlygos"
+  >
+  <columns>
+    <DataColumn name="Name" minWidth="200" />
+  </columns>
+</Grid>

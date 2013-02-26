@@ -31,7 +31,7 @@
 
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <String name="ShippingTerms"  precision="100" />
+    <Relation name="ShippingTerms"  relation="ShippingTerms" />
     <Text name="Notes" />
   </Fields>
 </Table>
