@@ -50,12 +50,21 @@
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Palettes" />
     <SimpleColumn name="Value" />
+    <SimpleColumn name="ValueCurrency" />
+    <SimpleJoin joinType="LEFT" name="ValueCurrency">
+      <SimpleColumn name="Name" alias="ValueCurrencyName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
-    <SimpleColumn name="ShippingTerms" />
+
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Partial" />
     <SimpleColumn name="ExchangeOfPalettes" />
 

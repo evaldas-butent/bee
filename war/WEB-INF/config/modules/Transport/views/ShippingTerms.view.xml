@@ -3,7 +3,7 @@
 
   name="ShippingTerms"
   source="ShippingTerms"
-  newRowCaption="Nauja krovinio pristatymo sąlyga" 
+  newRowCaption="Nauja krovinių pristatymo sąlyga" 
   >
   <Columns>
     <SimpleColumn name="Name" />

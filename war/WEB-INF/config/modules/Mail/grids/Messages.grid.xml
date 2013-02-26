@@ -5,7 +5,7 @@
   asyncThreshold="0" pagingThreshold="0" searchThreshold="0"
   rowChangeSensitivityMillis="500"
   >
-  <body height="40" borderWidth="0 0 1 0" />
+  <body height="35" borderWidth="0 0 1 0" />
 
   <columns>
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20" />

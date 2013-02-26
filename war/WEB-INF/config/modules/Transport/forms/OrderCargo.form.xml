@@ -41,7 +41,7 @@
       <FlowPanel class="flexBox-vertical" style="margin:10px; margin-top:35px;">
       	<Table>
       	  <row>
-      	    <DataSelector source="ShippingTerms" caption="Pristatymo sąlygos"
+      	    <DataSelector source="ShippingTerm" caption="Pristatymo sąlygos"
               d:size="120" d:unit="px" style="width:50px;float:right"/>
             <CheckBox source="Partial" html="Dalinis krovinys" style="margin:3px;"/>
       	  </row>
