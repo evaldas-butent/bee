@@ -39,6 +39,10 @@
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Palettes" />
     <SimpleColumn name="Value" />
+    <SimpleColumn name="ValueCurrency" />
+    <SimpleJoin joinType="LEFT" name="ValueCurrency">
+      <SimpleColumn name="Name" alias="ValueCurrencyName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />

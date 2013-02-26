@@ -17,17 +17,15 @@
         style="font-weight: bold; color: blue;" d:size="60" d:unit="px" />
       <HorizontalPanel>
         <InputCurrency source="Price" caption="Pervežimo kaina" style="width: 70px; font-weight: bold; color: green;" />
-        <DataSelector source="Currency" style="width: 30px; font-weight: bold; display: inline-block;" />
+        <DataSelector source="Currency" style="width: 40px; font-weight: bold; display: inline-block;" />
       </HorizontalPanel>
     </FlowPanel>
     &separator;
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <TabbedPages style="height: 190px; width: 420px">
+      <TabbedPages style="height: 190px; width: 480px">
         <page>
           <text>Krovos informacija</text>
           <FlowPanel>
-            <InputText source="ShippingTerms" caption="Pristatymo sąlygos" decorator="flex-left"
-              d:size="120" d:unit="px" d:rootStyle="&section;" />
             <xi:include href="widgets/CargoPlaces.widget.xml" />
           </FlowPanel>
         </page>
@@ -35,9 +33,27 @@
           <text>Tarpiniai krovos taškai</text>
           <ChildGrid class="flexdible" name="CargoHandling" relColumn="Cargo" />
         </page>
-      </TabbedPages>
-      
-      <ChildGrid class="flexible" name="CargoServices" relColumn="Cargo" caption="Papildomos paslaugos" />
+        <page>
+          <text>Papildomos paslaugos</text>
+          <ChildGrid class="flexible" name="CargoServices" relColumn="Cargo"  />
+        </page>
+      </TabbedPages> 
+      <FlowPanel class="flexBox-vertical" style="margin:10px; margin-top:35px;">
+      	<Table>
+      	  <row>
+      	    <InputText source="ShippingTerms" caption="Pristatymo sąlygos"
+              d:size="120" d:unit="px" style="width:50px;float:right"/>
+            <CheckBox source="Partial" html="Dalinis krovinys" style="margin:3px;"/>
+      	  </row>
+      	  <row>
+      	  	<InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:50px;float:right" />
+      	  </row>
+      	  <row>
+      	    <InputCurrency source="Value" caption="Vertė" style="width:50px;float:right" />
+      	    <DataSelector source="ValueCurrency" style="width: 40px; font-weight: bold; display: inline-block;" />
+      	  </row>
+      	</Table>
+      </FlowPanel>
     </FlowPanel>
     &separator;
     <Table>
@@ -48,8 +64,8 @@
         <InputDecimal source="Weight" format="#.000" />
         <Label html="Ilgis" horizontalAlignment="right" />
         <InputDecimal source="Length" format="#.00" />
-        <InputInteger source="Value" caption="Vertė EUR" d:rootStyle="float:right" />
-        <CheckBox source="Partial" html="Dalinis krovinys" style="float:right"/>
+        <Label html="Pastabos" />
+        <Button name="profit" html="Pelnas" style="float: right" />
       </row>
       <row>
         <Label html="Numeris" horizontalAlignment="right" />
@@ -58,8 +74,9 @@
         <InputDecimal format="#.000" scale="1" source="Volume" />
         <Label html="Plotis" horizontalAlignment="right" />
         <InputDecimal source="Width" format="#.00" />
-        <Label html="Pastabos" />
-        <Button name="profit" html="Pelnas" style="float: right" />
+        <cell rowSpan="3">
+          <InputArea source="Notes" characterWidth="30" style="height: 100%" />
+        </cell>
       </row>
       <row>
         <Label html="Pakrauti km" horizontalAlignment="right" />
@@ -67,10 +84,7 @@
         <Label html="LDM" horizontalAlignment="right" />
         <InputDecimal source="LDM" format="#.00" />
         <Label html="Aukštis" horizontalAlignment="right" />
-        <InputDecimal source="Height" format="#.00" />
-        <cell rowSpan="2">
-          <InputArea source="Notes" characterWidth="30" style="height: 100%" />
-        </cell>
+        <InputDecimal source="Height" format="#.00" />        
       </row>
       <row>
         <Label html="Tušti km" horizontalAlignment="right" />
@@ -78,11 +92,9 @@
         <Label html="Kiekis" horizontalAlignment="right" />
         <InputInteger source="Quantity" />
         <Label html="Paletės" horizontalAlignment="right" />
-        <InputInteger source="Palettes" />
-        <InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:40px; float:right" />
+        <InputInteger source="Palettes" />        
       </row>
     </Table>
-
     <ChildGrid class="flexible" style="&section;" name="CargoTrips" relColumn="Cargo" caption="Reisai" />
   </FlowPanel>
 </f:Form>

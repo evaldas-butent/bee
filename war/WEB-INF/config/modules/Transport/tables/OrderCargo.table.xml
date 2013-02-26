@@ -19,7 +19,8 @@
     <Numeric name="Height" precision="6" scale="2" />
     <Integer name="Quantity" />
     <Integer name="Palettes" />
-    <Integer name="Value" />
+    <Numeric name="Value" precision="12" scale="2" />
+    <Relation name="ValueCurrency" relation="Currencies" />
 
     <String name="Number" precision="20" />
     <String name="Cmr" precision="20" />
