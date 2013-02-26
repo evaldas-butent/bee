@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<HorizontalPanel xmlns="http://www.butent.com/widget">
+<HorizontalPanel xmlns="http://www.butent.com/widget"
+    xmlns:ui="http://www.butent.com/ui"
+  >
   <Table>
     <row>
       <cell colSpan="2">
@@ -12,7 +14,17 @@
     </row>
     <row>
       <Label html="Šalis" horizontalAlignment="right" />
-      <DataSelector source="LoadingCountry" />
+      <FlowPanel>
+        <DataSelector source="LoadingCountry" style="width:105px;" >
+          <renderToken source="LoadingCountryName" />
+          <selectorColumn source="Name" />
+          <selectorColumn source="Code">
+            <ui:renderer type="flag" />
+          </selectorColumn>
+        </DataSelector>
+
+        <Flag source="LoadingCountryCode" style="padding-left:2px;" />
+      </FlowPanel>
     </row>
     <row>
       <Label html="Vieta" horizontalAlignment="right" />
@@ -36,7 +48,17 @@
     </row>
     <row>
       <Label html="Šalis" horizontalAlignment="right" />
-      <DataSelector source="UnloadingCountry" />
+      <FlowPanel>
+        <DataSelector source="UnloadingCountry" style="width:105px;" >
+          <renderToken source="UnloadingCountryName" />
+          <selectorColumn source="Name" />
+          <selectorColumn source="Code">
+            <ui:renderer type="flag" />
+          </selectorColumn>
+        </DataSelector>
+
+        <Flag source="UnloadingCountryCode" style="padding-left:2px;" />
+      </FlowPanel>
     </row>
     <row>
       <Label html="Vieta" horizontalAlignment="right" />

@@ -1,8 +1,10 @@
 package com.butent.bee.client.modules.transport;
 
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.FlagRenderer;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -32,6 +34,8 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
     private final int placeIndex;
     private final int terminalIndex;
 
+    private final FlagRenderer flagRenderer;
+
     public PlaceRenderer(List<? extends IsColumn> columns, String prefix) {
       super(null);
 
@@ -39,6 +43,14 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
       countryIndex = DataUtils.getColumnIndex(prefix + "CountryName", columns);
       placeIndex = DataUtils.getColumnIndex(prefix + "Place", columns);
       terminalIndex = DataUtils.getColumnIndex(prefix + "Terminal", columns);
+
+      int flagIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
+
+      if (flagIndex != BeeConst.UNDEF) {
+        flagRenderer = new FlagRenderer(CellSource.forColumn(columns.get(flagIndex), flagIndex));
+      } else {
+        flagRenderer = null;
+      }
     }
 
     @Override
@@ -49,7 +61,12 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
         sb.append(renderTr("Data", row.getDate(dateIndex).toString()));
       }
       if (!row.isNull(countryIndex)) {
-        sb.append(renderTr("Šalis", row.getString(countryIndex)));
+        String s = row.getString(countryIndex);
+
+        if (flagRenderer != null) {
+          s = BeeUtils.joinWords(flagRenderer.render(row), s);
+        }
+        sb.append(renderTr("Šalis", s));
       }
       if (!row.isNull(placeIndex)) {
         sb.append(renderTr("Vieta", row.getString(placeIndex)));

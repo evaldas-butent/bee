@@ -29,9 +29,9 @@
     </DataColumn>
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
     <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta"
-      minWidth="120" flexBasis="120" />
+      minWidth="115" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta"
-      minWidth="120" flexBasis="120" />
+      minWidth="115" flexBasis="120" />
     <DataColumn name="Income" caption="Pajamos" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>

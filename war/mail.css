@@ -15,7 +15,7 @@
   color: teal;
 }
 
-.bee-mail-HeaderAddress, .bee-mail-SenderLabel, .bee-mail-RecipientLabel {
+.bee-mail-SenderLabel, .bee-mail-RecipientLabel {
   color: black;
   font-weight: bold;
   display: inline-block;
@@ -26,38 +26,59 @@
   display: inline-block;
 }
 
-.bee-mail-Unread {
-  width: 10px;
-  height: 10px;
-  border: 1px solid silver;
-  border-radius: 50%;
-  background-color: green;
-  margin-right: 5px;
-  display: inline-block;
+.bee-mail-Header {
+  position: relative;
+}
+
+.bee-mail-HeaderUnread .bee-mail-HeaderAddress, .bee-mail-HeaderUnread  .bee-mail-HeaderSubject {
+  font-weight: bold;
+}
+
+.bee-mail-HeaderAddress {
+  color: black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 75px;
+  white-space: nowrap;
+  overflow: hidden;
+  resize: none;
 }
 
 .bee-mail-AttachmentImage {
-  margin-left: 5px;
+  position: absolute;
+  top: 20px;
+  right: 0;
 }
 
 .bee-mail-AttachmentCount {
-  display: inline-block;
+  position: absolute;
+  top: 20px;
+  right: 15px;
+  color: gray;
 }
 
 .bee-mail-HeaderDate {
-  float: right;
   color: #0A8DE9;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.bee-mail-HeaderSubject {
+  color: black;  
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  resize: none;
 }
 
 .bee-mail-Date {
   float: right;
   color: gray;
-}
-
-.bee-mail-HeaderSubject {
-  color: black;
-  margin-top: 5px;
-  white-space: nowrap;
 }
 
 .bee-mail-Subject {

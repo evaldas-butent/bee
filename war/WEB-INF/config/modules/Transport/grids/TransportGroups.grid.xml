@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TransportGroups" viewName="TransportGroups" caption="Transporto grupės"
+  newRowCaption="Nauja transporto grupė" editForm="TransportGroup" editPopup="true"
+  >
+  <columns>
+    <DataColumn name="Name" caption="Grupė" />
+  </columns>
+</Grid>

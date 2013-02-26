@@ -23,6 +23,7 @@
       <SimpleColumn name="Country" alias="LoadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="LoadingCountryName" />
+        <SimpleColumn name="Code" alias="LoadingCountryCode" />
       </SimpleJoin>
       <SimpleColumn name="Place" alias="LoadingPlace" />
       <SimpleColumn name="Terminal" alias="LoadingTerminal" />
@@ -32,6 +33,7 @@
       <SimpleColumn name="Country" alias="UnloadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="UnloadingCountryName" />
+        <SimpleColumn name="Code" alias="UnloadingCountryCode" />
       </SimpleJoin>
       <SimpleColumn name="Place" alias="UnloadingPlace" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />

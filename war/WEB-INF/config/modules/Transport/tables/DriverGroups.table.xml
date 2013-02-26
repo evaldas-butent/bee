@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DriverGroups"
+  idName="DriverGroupID"
+  >
+  <Fields>
+    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" />
+    <Relation name="Group" notNull="true" relation="TransportGroups" cascade="DELETE" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Driver</KeyField>
+      <KeyField>Group</KeyField>
+    </Key>
+  </Keys>
+</Table>

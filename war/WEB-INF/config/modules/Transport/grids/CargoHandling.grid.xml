@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoHandling" viewName="CargoHandling"
-  newRowForm="CargoPlace" newRowCaption="Naujas krovos taškas" editForm="CargoPlace"
+  newRowForm="CargoPlace" newRowCaption="Nauji krovos taškai" editForm="CargoPlace"
   editInPlace="Notes"
   flexGrow="1" flexShrink="1"
   >
@@ -11,8 +11,8 @@
   <body height="68" />
 
   <columns>
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas" minWidth="115" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas" minWidth="115" flexBasis="120" />
     <DataColumn name="Notes" caption="Pastabos">
       <style>
         <bodyStyle>

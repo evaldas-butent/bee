@@ -16,9 +16,9 @@
     <DataColumn name="Description" caption="Krovinys" minWidth="100" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas"
-      minWidth="80" flexBasis="120" />
+      minWidth="115" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas"
-      minWidth="80" flexBasis="120" />
+      minWidth="115" flexBasis="120" />
 
     <DataColumn name="Partial" caption="Dalinis" />
     <CalcColumn name="Expedition" type="boolean" caption="Ekspedicija">

@@ -51,7 +51,6 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -245,6 +244,9 @@ public class MailPanel extends AbstractFormInterceptor {
 
       DomUtils.setDraggable(fp);
 
+      if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
+        fp.addStyleName("bee-mail-HeaderUnread");
+      }
       TextLabel sender = new TextLabel(false);
       sender.setStyleName("bee-mail-HeaderAddress");
       String address;
@@ -258,11 +260,6 @@ public class MailPanel extends AbstractFormInterceptor {
         }
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
-      }
-      if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
-        Widget unread = new Simple();
-        unread.setStyleName("bee-mail-Unread");
-        fp.add(unread);
       }
       sender.setText(address);
       fp.add(sender);

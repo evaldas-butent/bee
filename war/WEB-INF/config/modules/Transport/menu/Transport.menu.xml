@@ -17,9 +17,10 @@ name="Transport" label="Transportas" order="60"
   <Item name="Vehicles" label="Transporto priemonės" service="grid" parameters="Vehicles" separator="true" />
   <Item name="SpareParts" label="Keičiamos dalys" service="grid" parameters="SpareParts" />
 
-  <Item name="VehicleTypes" label="Transporto tipai" service="grid" parameters="VehicleTypes" separator="true" />
+  <Item name="VehicleTypes" label="Transporto priemonių tipai" service="grid" parameters="VehicleTypes" separator="true" />
   <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
   <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
+  <Item name="TransportGroups" label="Transporto grupės" service="grid" parameters="TransportGroups" />
   
   <Item name="FreightExchange" label="Užsakymų birža" service="freight_exchange" separator="true" />
   <Item name="ShippingSchedule" label="Reisų kalendorius" service="shipping_schedule" />

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="TransportGroup" viewName="TransportGroups" caption="Transporto grupė"
+  height="50" heightUnit="%" width="600"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <SimplePanel class="flexBox-horizontal">
+      <InputText source="Name" caption="Grupė" decorator="flex-left" d:size="40" d:rootStyle="margin: 10px;" />
+    </SimplePanel>
+
+    <FlowPanel class="flexBox-horizontal flexible">
+      <ChildGrid class="flexible" name="GroupDrivers" relColumn="Group" style="margin:0 5px 10px 10px;" />
+      <ChildGrid class="flexible" name="GroupVehicles" relColumn="Group" style="margin:0 10px 10px 5px;" />
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>

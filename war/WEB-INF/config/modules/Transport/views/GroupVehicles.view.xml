@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="GroupVehicles"
+  source="VehicleGroups"
+  newRowCaption="Nauja transporto priemonė" 
+  >
+  <Columns>
+    <SimpleColumn name="Group" />
+    <SimpleColumn name="Vehicle" />
+
+    <SimpleJoin name="Vehicle" joinType="LEFT">
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TypeName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Number" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="Number" />
+  </Order>
+</View>
+ 
