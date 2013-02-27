@@ -38,6 +38,21 @@
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
       <page>
+        <text>Sąryšio informacija</text>
+        <FlowPanel style="margin:5px;">
+          <Table>
+            <row>
+              <DataSelector source="CompanyRelationType" caption="Sąryšis:" style="width: 75px;"
+               d:size="50" d:unit="px" />
+            </row>
+            <row>
+              <DataSelector source="CompanyRelationTypeState" caption="Būsena:" style="width: 75px;"
+              d:size="50" d:unit="px" />
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+      <page>
         <text>Finansinė informacija</text>
         <FlowPanel>
           <InputDecimal source="CreditLimit1" caption="Kredito limitas:" style="width: 100px;"

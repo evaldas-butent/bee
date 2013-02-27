@@ -49,6 +49,16 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="CompanyRelationType" />
+    <SimpleJoin joinType="LEFT" name="CompanyRelationType">
+      <SimpleColumn alias="RelationTypeName" name="Name" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="CompanyRelationTypeState" />
+    <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
+      <SimpleColumn alias="RelationTypeStateName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="ExchangeCode" />
 
     <SimpleColumn name="CreditLimit1" />

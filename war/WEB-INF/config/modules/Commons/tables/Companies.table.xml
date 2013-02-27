@@ -17,6 +17,9 @@
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
 
+    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="Sąryšis" />
+    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="Sąryšio būsena" />
+
     <String name="ExchangeCode" precision="30" label="Biržos kodas" />
 
     <Numeric name="CreditLimit1" precision="10" label="Kredito limitas 1" />
