@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="CompanyPriorities" viewName="CompanyPriorities" caption="Klientų prioritetai"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <DataColumn name="Name" minWidth="100" maxWidth="200" />
+  </columns>
+</Grid>

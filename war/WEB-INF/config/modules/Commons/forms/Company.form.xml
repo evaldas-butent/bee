@@ -7,18 +7,20 @@
   name="Company"
   viewName="Companies"
   caption="Klientas"
-  width="760"
+  width="800"
   height="500"
   >
   <FlowPanel class="flexBox-vertical">
     <VerticalPanel>
-      <FlowPanel style="position:relative; width: 750px; height: 90px;">
-        <InputText source="Name" caption="Pavadinimas:" style="width: 300px;" d:size="100"
+      <FlowPanel style="position:relative; width: 790px; height: 90px;">
+        <InputText source="Name" caption="Pavadinimas:" style="width: 200px;" d:size="100"
           d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 10px;" />
         <DataSelector source="CompanyType" caption="Tipas:" style="width: 80px;" d:size="50"
-          d:unit="px" d:rootStyle="position:absolute; left: 440px; top: 10px;" />
+          d:unit="px" d:rootStyle="position:absolute; left: 330px; top: 10px;" />
         <DataSelector source="CompanyGroup" caption="Grupė:" style="width: 80px;" d:size="50"
-          d:unit="px" d:rootStyle="position:absolute; left: 600px; top: 10px;" />
+          d:unit="px" d:rootStyle="position:absolute; left: 480px; top: 10px;" />
+        <DataSelector source="CompanyPriority" caption="Prioritetas:" style="width: 80px;" d:size="50"
+          d:unit="px" d:rootStyle="position:absolute; left: 640px; top: 10px;" />
 
         <InputText source="Code" caption="Įmonės kodas:" style="width: 160px;" d:size="100"
           d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 50px;" />

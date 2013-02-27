@@ -13,6 +13,7 @@
 
     <Relation name="CompanyType" relation="CompanyTypes" label="Tipas" />
     <Relation name="CompanyGroup" relation="CompanyGroups" label="Grupė" />
+    <Relation name="CompanyPriority" relation="CompanyPriorities" label="Prioritetas" />
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
 

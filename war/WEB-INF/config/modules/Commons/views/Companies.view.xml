@@ -18,6 +18,11 @@
       <SimpleColumn alias="GroupName" name="Name" />
     </SimpleJoin>
 
+    <SimpleColumn name="CompanyPriority" />
+    <SimpleJoin joinType="LEFT" name="CompanyPriority">
+      <SimpleColumn alias="PriorityName" name="Name" />
+    </SimpleJoin>
+
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />
       <SimpleColumn name="Mobile" />
