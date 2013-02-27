@@ -20,6 +20,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.io.IoConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -153,7 +154,7 @@ public class SystemServiceBean {
   private ResponseObject getFlags() {
     Map<String, String> flags = Maps.newHashMap(); 
 
-    File dir = new File(Config.IMAGES_DIR, "flags");
+    File dir = new File(Config.IMAGES_DIR, IoConstants.FLAG_DIR);
     File[] files = dir.listFiles();
     
     if (files != null) {

@@ -55,7 +55,6 @@ body {
 
 .bee-SignIn-Input:focus {
   background-color: whitesmoke;
-  outline: #058cf5 auto 5px;
 }
 
 .bee-SignIn-Label-user {
@@ -90,8 +89,9 @@ body {
   cursor: pointer;
 }
 
+.bee-SignIn-Input:focus,
 .bee-SignIn-Button:focus {
-  outline: #058cf5 auto 5px;
+  outline: #058cf5 auto 3px;
 }
 
 .bee-SignIn-Error {

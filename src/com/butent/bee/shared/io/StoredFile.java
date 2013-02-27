@@ -21,11 +21,9 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED
   }
   
-  public static final String ICON_DIR = "fileicons";
-  
   public static String getIconUrl(String icon) {
     Assert.notEmpty(icon);
-    return CommUtils.buildPath(CommUtils.PATH_IMAGES, ICON_DIR, icon);
+    return CommUtils.buildPath(IoConstants.PATH_IMAGES, IoConstants.FILE_ICON_DIR, icon);
   }
   
   public static StoredFile restore(String s) {

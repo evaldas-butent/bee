@@ -31,7 +31,6 @@ public class CommUtils {
   public static final String CONTENT_LENGTH_HEADER = "content-length";
 
   public static final String PATH_SEGMENT_SEPARATOR = "/";
-  public static final String PATH_IMAGES = "images";
   
   public static ContentType defaultRequestContentType = ContentType.XML;
   public static ContentType defaultResponseContentType = ContentType.TEXT;

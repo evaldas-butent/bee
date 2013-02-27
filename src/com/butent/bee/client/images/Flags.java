@@ -2,18 +2,17 @@ package com.butent.bee.client.images;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.Scheduler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.io.IoConstants;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -43,7 +42,7 @@ public class Flags {
     switch (state) {
       case NEW:
         load();
-        uri = null;
+        uri = getPath(countryCode);
         break;
         
       case LOADED:
@@ -51,7 +50,7 @@ public class Flags {
         break;
         
       default:
-        uri = null;
+        uri = getPath(countryCode);
     }
 
     return uri;
@@ -66,12 +65,7 @@ public class Flags {
     switch (state) {
       case NEW:
         pendingRequests.add(Pair.of(countryCode, callback));
-        load(new Callback<Integer>() {
-          @Override
-          public void onSuccess(Integer result) {
-            logger.info("loaded", result, "flags");
-          }
-        });
+        load();
         break;
         
       case PENDING:
@@ -93,6 +87,12 @@ public class Flags {
   
   public static Map<String, String> getFlags() {
     return map;
+  }
+  
+  public static String getPath(String countryCode) {
+    Assert.notEmpty(countryCode);
+    return CommUtils.buildPath(IoConstants.PATH_IMAGES, IoConstants.FLAG_DIR,
+        countryCode.trim().toLowerCase() + ".png");
   }
   
   public static boolean isEmpty() {
@@ -149,16 +149,6 @@ public class Flags {
       @Override
       public void onSuccess(Integer result) {
         logger.info("loaded", result, "flags");
-        
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
-            if (widget instanceof HasGridView) {
-              ((HasGridView) widget).getGridView().refresh(false);
-            }
-          }
-        });
       }
     });
   }

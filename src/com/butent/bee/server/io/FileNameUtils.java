@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.IoConstants;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -531,7 +531,7 @@ public class FileNameUtils {
       return;
     }
     
-    File dir = new File(Config.IMAGES_DIR, StoredFile.ICON_DIR);
+    File dir = new File(Config.IMAGES_DIR, IoConstants.FILE_ICON_DIR);
     File[] files = dir.listFiles();
     
     if (files != null) {

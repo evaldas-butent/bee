@@ -1763,6 +1763,8 @@ input[type="checkbox"]:checked {
 .bee-TextBox,
 .bee-InputArea {
   padding: 1px 2px;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .bee-ListBox[size="1"] {
@@ -1770,9 +1772,6 @@ input[type="checkbox"]:checked {
   padding-bottom: 0;
 }
 
-.bee-InputArea {
-  font-family: inherit;
-}
 .bee-InputSlider {
   margin: 0;
 }
@@ -1786,7 +1785,7 @@ div:focus,
 .bee-MultiSelector-container-active,
 .bee-InputDate-active,
 .bee-InputTime-active {
-  outline: #058cf5 auto 5px;
+  outline: #058cf5 auto 3px;
 }
 
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
