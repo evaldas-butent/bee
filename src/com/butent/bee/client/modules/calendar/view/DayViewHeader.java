@@ -1,15 +1,20 @@
 package com.butent.bee.client.modules.calendar.view;
 
+import com.google.common.collect.Range;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.RangeMap;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.CssUnit;
@@ -18,6 +23,23 @@ public class DayViewHeader extends Horizontal {
 
   private static final int DATE_CELL_INDEX = 0;
   private static final int DAY_PANEL_INDEX = 1;
+
+  private static final RangeMap<Integer, DateTimeFormat> labelFormats;
+  
+  static {
+    labelFormats = RangeMap.create();
+    
+    labelFormats.put(Range.lessThan(35), DateTimeFormat.getFormat("d"));
+    labelFormats.put(Range.closedOpen(35, 45),
+        DateTimeFormat.getFormat("M" + JustDate.FIELD_SEPARATOR + "d"));
+    labelFormats.put(Range.closedOpen(45, 60),
+        DateTimeFormat.getFormat("MM" + JustDate.FIELD_SEPARATOR + "dd"));
+    labelFormats.put(Range.closedOpen(60, 120),
+        DateTimeFormat.getFormat("EEE, MM" + JustDate.FIELD_SEPARATOR + "dd"));
+    labelFormats.put(Range.closedOpen(120, 150),
+        DateTimeFormat.getFormat("EEEE, MM" + JustDate.FIELD_SEPARATOR + "dd"));
+    labelFormats.put(Range.atLeast(150), DateTimeFormat.getFormat("EEEE, MMMM d"));
+  }
 
   public DayViewHeader() {
     super();
@@ -37,18 +59,21 @@ public class DayViewHeader extends Horizontal {
   }
 
   public void setDays(JustDate date, int days) {
-    HasWidgets dayPanel = (HasWidgets) getWidget(DAY_PANEL_INDEX); 
-    dayPanel.clear();
+    Widget dayPanel = getWidget(DAY_PANEL_INDEX); 
+    ((HasWidgets) dayPanel).clear();
 
-    int dayWidth = 100 / days;
+    int dayWidthPct = 100 / days;
+    int columnWidthPx = CalendarUtils.getColumnWidth(dayPanel, days);
+    
+    DateTimeFormat format = labelFormats.get(columnWidthPx);
+
     JustDate tmp = JustDate.copyOf(date);
-
     for (int i = 0; i < days; i++) {
-      BeeLabel dayLabel = new BeeLabel(CalendarFormat.format(tmp));
+      BeeLabel dayLabel = new BeeLabel(format == null ? tmp.toString() : format.format(tmp));
       dayLabel.addStyleName(CalendarStyleManager.DAY_CELL);
 
-      StyleUtils.setLeft(dayLabel, dayWidth * i, CssUnit.PCT);
-      StyleUtils.setWidth(dayLabel, dayWidth, CssUnit.PCT);
+      StyleUtils.setLeft(dayLabel, dayWidthPct * i, CssUnit.PCT);
+      StyleUtils.setWidth(dayLabel, dayWidthPct, CssUnit.PCT);
 
       if (TimeUtils.isToday(tmp)) {
         dayLabel.addStyleName(CalendarStyleManager.TODAY);
@@ -57,7 +82,7 @@ public class DayViewHeader extends Horizontal {
         dayLabel.addStyleName(CalendarStyleManager.DAY_CELL_WEEKEND);
       }
 
-      dayPanel.add(dayLabel);
+      ((HasWidgets) dayPanel).add(dayLabel);
       TimeUtils.moveOneDayForward(tmp);
     }
   }

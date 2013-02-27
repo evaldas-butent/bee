@@ -11,7 +11,6 @@
 .bee-cal .calendar-header {
   width: 100%;
   table-layout: fixed;
-  color: #444;
   border-collapse: collapse;
 }
 .bee-cal .calendar-header td {
@@ -39,7 +38,6 @@
   text-align: center;
   font-size: 12px;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .bee-cal .calendar-header .bee-cal-today {
   font-weight: bold;
@@ -75,7 +73,6 @@
 }
 .bee-cal .hour-panel {
   width: 50px;
-  color: #555;
   font-size: 12px;
   display: block;
   position: relative;
@@ -92,7 +89,6 @@
 .bee-cal .hour-label {
   display: inline;
   font-size: 12px;
-  color: #555;
 }
 
 .bee-cal .nowPointer {
@@ -274,8 +270,8 @@
   text-align: center;
   vertical-align: middle;
   font-size: 13px;
-  color: #333;
   border: 1px solid #ddd;
+  overflow: hidden;
 }
 
 .bee-cal-MonthView .dayCell {
@@ -292,7 +288,6 @@
   font-size: 12px;
   text-align: right;
   padding-right: 5px;
-  color: #444;
 }
 .bee-cal-MonthView .dayCellLabel.disabled {
   color: #999;
