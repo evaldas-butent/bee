@@ -38,6 +38,17 @@
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
       <page>
+        <text>Papildoma informacija</text>
+        <FlowPanel style="margin:5px;">
+          <Table>
+          	 <row>
+          	   <DataSelector source="CompanySize" caption="Įmonės dydis:" style="width: 100px;"
+               d:size="75" d:unit="px" />
+          	 </row>
+          </Table>
+        </FlowPanel>
+      </page>
+      <page>
         <text>Sąryšio informacija</text>
         <FlowPanel style="margin:5px;">
           <Table>

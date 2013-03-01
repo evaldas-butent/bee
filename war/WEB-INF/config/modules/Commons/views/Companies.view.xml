@@ -49,6 +49,11 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="CompanySize" />
+    <SimpleJoin joinType="LEFT" name="CompanySize">
+      <SimpleColumn alias="CompanySizeName" name="SizeName" />
+    </SimpleJoin>
+
     <SimpleColumn name="CompanyRelationType" />
     <SimpleJoin joinType="LEFT" name="CompanyRelationType">
       <SimpleColumn alias="RelationTypeName" name="Name" />
