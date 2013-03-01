@@ -1,12 +1,11 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
 
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
@@ -29,8 +28,10 @@ import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
+import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -481,7 +482,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final String stateIdName = getIdName();
     private final String stateVersionName = getVersionName();
     private final int bitCount;
-    private final Multimap<BeeState, String> stateFields = HashMultimap.create();
+    private final Multimap<RightsState, String> stateFields = TreeMultimap.create();
 
     public StateSingleTable(int size) {
       Assert.isPositive(size);
@@ -489,7 +490,21 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
-    public IsCondition checkState(String stateAlias, BeeState state, long... bits) {
+    public boolean activateState(RightsState state, Collection<Long> bits) {
+      Assert.state(hasState(state));
+      Set<String> flds = Sets.newHashSet();
+
+      for (long bit : bits) {
+        if (bit > 0) {
+          flds.add(getStateField(state, bit));
+        }
+      }
+      return stateFields.putAll(state, flds);
+    }
+
+    @Override
+    public IsCondition checkState(String stateAlias, RightsState state, boolean checkedByDefault,
+        long... bits) {
       Assert.state(hasState(state));
       IsCondition wh = null;
       Map<Long, Boolean> bitMap = Maps.newHashMap();
@@ -502,7 +517,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       for (String fld : bitMasks.keySet()) {
         T mask = bitMasks.get(fld);
 
-        if (state.isChecked()) {
+        if (checkedByDefault) {
           wh = SqlUtils.and(wh,
               SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
                   SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
@@ -512,14 +527,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
                   SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
         }
       }
-      if (wh == null) {
-        wh = state.isChecked() ? SqlUtils.sqlTrue() : SqlUtils.sqlFalse();
+      if (wh == null && !checkedByDefault) {
+        wh = SqlUtils.sqlFalse();
       }
       return wh;
     }
 
     @Override
-    public SqlCreate createStateTable(SqlCreate query, BeeState state) {
+    public SqlCreate createStateTable(SqlCreate query, RightsState state) {
       Assert.state(hasState(state));
       SqlCreate sc = query;
 
@@ -534,6 +549,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           addKey(true, tblName, stateIdName);
           addForeignKey(tblName, stateIdName, getName(), SqlKeyword.DELETE);
         }
+        sc.addBoolean(state.name(), false);
+
         for (String col : stateFields.get(state)) {
           if (bitCount <= Integer.SIZE) {
             sc.addInteger(col, false);
@@ -546,13 +563,28 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
-    public String getStateTable(BeeState state) {
+    public String getStateTable(RightsState state) {
       Assert.state(hasState(state));
       return getName() + "_STATE";
     }
 
     @Override
-    public SqlInsert insertState(long id, BeeState state, Map<Long, Boolean> bits) {
+    public void initState(RightsState state, Collection<String> flds) {
+      Assert.state(hasState(state));
+      Set<String> fldList = Sets.newHashSet();
+
+      if (flds != null) {
+        for (String fld : flds) {
+          if (fld.matches(BeeUtils.join("_", state.name(), "[0-9]+", "[0-9]+"))) {
+            fldList.add(fld);
+          }
+        }
+      }
+      stateFields.replaceValues(state, fldList);
+    }
+
+    @Override
+    public SqlInsert insertState(long id, RightsState state, Map<Long, Boolean> bits) {
       Assert.state(hasState(state));
       Map<String, T> bitMasks = getMasks(state, bits);
 
@@ -570,7 +602,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
-    public String joinState(HasFrom<?> query, String tblAlias, BeeState state) {
+    public String joinState(HasFrom<?> query, String tblAlias, RightsState state) {
       Assert.state(hasState(state));
       String stateAlias = null;
 
@@ -596,7 +628,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           }
         }
         if (BeeUtils.isEmpty(stateAlias)) {
-          if (BeeUtils.isEmpty(tblAlias)) {
+          if (BeeUtils.same(alias, tblName)) {
             stateAlias = stateTable;
           } else {
             stateAlias = SqlUtils.uniqueName();
@@ -609,22 +641,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
-    public void setStateActive(BeeState state, String... flds) {
-      Assert.state(hasState(state));
-      Set<String> fldList = Sets.newLinkedHashSet();
-
-      if (flds != null) {
-        for (String fld : flds) {
-          if (fld.matches(BeeUtils.join("_", state.getName(), "[0-9]+", "[0-9]+"))) {
-            fldList.add(fld);
-          }
-        }
-      }
-      stateFields.replaceValues(state, fldList);
-    }
-
-    @Override
-    public SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits) {
+    public SqlUpdate updateState(long id, RightsState state, Map<Long, Boolean> bits) {
       Assert.state(hasState(state));
       Map<String, T> bitMasks = getMasks(state, bits);
 
@@ -644,76 +661,59 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
-    public boolean updateStateActive(BeeState state, long... bits) {
-      Assert.state(hasState(state));
-      Set<String> flds = Sets.newLinkedHashSet();
-
-      for (long bit : bits) {
-        if ((bit < 0 && !state.supportsUsers())
-            || (bit > 0 && !state.supportsRoles())
-            || bit == 0) {
-          continue;
-        }
-        flds.add(getStateField(state, bit));
-      }
-      return stateFields.putAll(state, flds);
-    }
-
-    @Override
-    public SqlSelect verifyState(SqlSelect query, String tblAlias, BeeState state, long... bits) {
+    public SqlSelect verifyState(SqlSelect query, String tblAlias, RightsState state,
+        boolean checkedByDefault, long... bits) {
       Assert.state(hasState(state));
       String stateAlias = joinState(query, tblAlias, state);
       IsCondition wh = null;
 
       if (!BeeUtils.isEmpty(stateAlias)) {
-        wh = checkState(stateAlias, state, bits);
+        wh = checkState(stateAlias, state, checkedByDefault, bits);
 
-      } else if (!state.isChecked()) {
+      } else if (!checkedByDefault) {
         wh = SqlUtils.sqlFalse();
       }
-      return query.setWhere(SqlUtils.and(query.getWhere(), wh));
+      if (wh != null) {
+        query.setWhere(SqlUtils.and(query.getWhere(), wh));
+      }
+      return query;
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, T> getMasks(BeeState state, Map<Long, Boolean> bits) {
+    private Map<String, T> getMasks(RightsState state, Map<Long, Boolean> bits) {
       Map<String, T> bitMasks = Maps.newHashMap();
 
       for (long bit : bits.keySet()) {
-        if ((bit < 0 && !state.supportsUsers())
-            || (bit > 0 && !state.supportsRoles())
-            || bit == 0) {
-          continue;
-        }
         String fld = getStateField(state, bit);
 
         if (isStateActive(state) && stateFields.containsEntry(state, fld)) {
           long pos = (Math.abs(bit) - 1) % bitCount;
           Long mask = 0L;
 
-          if (bitMasks.containsKey(fld)) {
+          if (bitMasks.get(fld) != null) {
             mask = bitMasks.get(fld).longValue();
           }
           if (bits.get(bit)) {
             mask = mask | (1L << pos);
           }
-          bitMasks.put(fld, (T) mask);
+          bitMasks.put(fld, mask == 0 ? null : (T) mask);
         }
       }
       return bitMasks;
     }
 
-    private String getStateField(BeeState state, long bit) {
-      long from = ((long) Math.floor((Math.abs(bit) - 1) / bitCount)) * bitCount + 1;
-      long to = from + bitCount - 1;
+    private String getStateField(RightsState state, long bit) {
+      String fld = state.name();
 
-      if (bit < 0) {
-        return BeeUtils.join("_", state.getName(), to, from); // User field
-      } else {
-        return BeeUtils.join("_", state.getName(), from, to); // Role field
+      if (bit > 0) {
+        long from = ((long) Math.floor((Math.abs(bit) - 1) / bitCount)) * bitCount + 1;
+        long to = from + bitCount - 1;
+        fld = BeeUtils.join("_", fld, from, to);
       }
+      return fld;
     }
 
-    private boolean isStateActive(BeeState state) {
+    private boolean isStateActive(RightsState state) {
       return stateFields.containsKey(state);
     }
   }
@@ -851,12 +851,13 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final String idName;
   private final String versionName;
   private final boolean auditable;
+  private final boolean recordsVisible;
+  private final boolean recordsEditable;
 
   private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
   private final Map<String, BeeKey> keys = Maps.newLinkedHashMap();
   private final Map<String, BeeTrigger> triggers = Maps.newLinkedHashMap();
-  private final Set<BeeState> states = Sets.newHashSet();
 
   private final HasExtFields extSource;
   private final HasStates stateSource;
@@ -864,17 +865,19 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   private boolean active = false;
 
-  BeeTable(String moduleName, String name, String idName, String versionName, boolean auditable) {
-    Assert.notEmpty(name);
-    Assert.notEmpty(idName);
-    Assert.notEmpty(versionName);
-    Assert.state(!BeeUtils.same(idName, versionName));
+  BeeTable(String moduleName, XmlTable xmlTable, boolean noAudit) {
+    Assert.notEmpty(xmlTable.name);
+    Assert.notEmpty(xmlTable.idName);
+    Assert.notEmpty(xmlTable.versionName);
+    Assert.state(!BeeUtils.same(xmlTable.idName, xmlTable.versionName));
 
     this.moduleName = moduleName;
-    this.name = name;
-    this.idName = idName;
-    this.versionName = versionName;
-    this.auditable = auditable;
+    this.name = xmlTable.name;
+    this.idName = xmlTable.idName;
+    this.versionName = xmlTable.versionName;
+    this.auditable = noAudit ? false : xmlTable.audit;
+    this.recordsVisible = xmlTable.recordsVisible;
+    this.recordsEditable = xmlTable.recordsEditable;
 
     this.extSource = new ExtSingleTable();
     this.stateSource = new StateSingleTable<Long>(Long.SIZE);
@@ -885,8 +888,22 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public IsCondition checkState(String stateAlias, BeeState state, long... bits) {
-    return stateSource.checkState(stateAlias, state, bits);
+  public boolean activateState(RightsState state, Collection<Long> bits) {
+    return stateSource.activateState(state, bits);
+  }
+
+  public boolean areRecordsEditable() {
+    return recordsEditable;
+  }
+
+  public boolean areRecordsVisible() {
+    return recordsVisible;
+  }
+
+  @Override
+  public IsCondition checkState(String stateAlias, RightsState state, boolean checkedByDefault,
+      long... bits) {
+    return stateSource.checkState(stateAlias, state, checkedByDefault, bits);
   }
 
   @Override
@@ -895,7 +912,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public SqlCreate createStateTable(SqlCreate query, BeeState state) {
+  public SqlCreate createStateTable(SqlCreate query, RightsState state) {
     return stateSource.createStateTable(query, state);
   }
 
@@ -924,7 +941,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
-        "Id Name", getIdName(), "Version Name", getVersionName(), "active", isActive());
+        "Id Name", getIdName(), "Version Name", getVersionName(), "Active", isActive(),
+        "Auditable", isAuditable());
 
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
     int i = 0;
@@ -937,7 +955,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
           "Defaults", field.getDefaults(),
           "Extended", field.isExtended(), "Translatable", field.isTranslatable(),
-          "Label", field.getLabel());
+          "Label", field.getLabel(), "Auditable", isAuditable() ? field.isAuditable() : null);
 
       if (field instanceof BeeRelation) {
         PropertyUtils.addChildren(info,
@@ -970,16 +988,6 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
         info.add(new ExtendedProperty(key, BeeUtils.joinWords("Key Field",
             BeeUtils.progress(k + 1, cnt)), keyFields[k]));
       }
-    }
-
-    info.add(new ExtendedProperty("States", BeeUtils.toString(states.size())));
-    i = 0;
-    for (BeeState state : states) {
-      String key = BeeUtils.joinWords("State", ++i);
-      PropertyUtils.addChildren(info, key, "Name", state.getName(),
-          "UserMode", state.supportsUsers(),
-          "RoleMode", state.supportsRoles(),
-          "Checked", state.isChecked());
     }
 
     info.add(new ExtendedProperty("Triggers", BeeUtils.toString(triggers.size())));
@@ -1047,12 +1055,12 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return name;
   }
 
-  public Collection<BeeState> getStates() {
-    return ImmutableSet.copyOf(states);
+  public EnumSet<RightsState> getStates() {
+    return EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE);
   }
 
   @Override
-  public String getStateTable(BeeState state) {
+  public String getStateTable(RightsState state) {
     return stateSource.getStateTable(state);
   }
 
@@ -1085,8 +1093,13 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return !BeeUtils.isEmpty(fldName) && fields.containsKey(BeeUtils.normalize(fldName));
   }
 
-  public boolean hasState(BeeState state) {
-    return states.contains(state);
+  public boolean hasState(RightsState state) {
+    return getStates().contains(state);
+  }
+
+  @Override
+  public void initState(RightsState state, Collection<String> flds) {
+    stateSource.initState(state, flds);
   }
 
   @Override
@@ -1095,7 +1108,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public SqlInsert insertState(long id, BeeState state, Map<Long, Boolean> bits) {
+  public SqlInsert insertState(long id, RightsState state, Map<Long, Boolean> bits) {
     return stateSource.insertState(id, state, bits);
   }
 
@@ -1123,7 +1136,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public String joinState(HasFrom<?> query, String tblAlias, BeeState state) {
+  public String joinState(HasFrom<?> query, String tblAlias, RightsState state) {
     return stateSource.joinState(query, tblAlias, state);
   }
 
@@ -1134,23 +1147,13 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public void setStateActive(BeeState state, String... flds) {
-    stateSource.setStateActive(state, flds);
-  }
-
-  @Override
   public SqlUpdate updateExtField(SqlUpdate query, long rootId, BeeField field, Object newValue) {
     return extSource.updateExtField(query, rootId, field, newValue);
   }
 
   @Override
-  public SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits) {
+  public SqlUpdate updateState(long id, RightsState state, Map<Long, Boolean> bits) {
     return stateSource.updateState(id, state, bits);
-  }
-
-  @Override
-  public boolean updateStateActive(BeeState state, long... bits) {
-    return stateSource.updateStateActive(state, bits);
   }
 
   @Override
@@ -1160,8 +1163,9 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public SqlSelect verifyState(SqlSelect query, String tblAlias, BeeState state, long... bits) {
-    return stateSource.verifyState(query, tblAlias, state, bits);
+  public SqlSelect verifyState(SqlSelect query, String tblAlias, RightsState state,
+      boolean checkedByDefault, long... bits) {
+    return stateSource.verifyState(query, tblAlias, state, checkedByDefault, bits);
   }
 
   void addField(XmlField xmlField, boolean extended) {
@@ -1186,10 +1190,6 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   void addKey(boolean unique, String tblName, String... keyFields) {
     BeeKey key = new BeeKey(unique ? KeyTypes.UNIQUE : KeyTypes.INDEX, tblName, keyFields);
     keys.put(BeeUtils.normalize(key.getName()), key);
-  }
-
-  void addState(BeeState state) {
-    states.add(state);
   }
 
   void addTrigger(String tblName, SqlTriggerType type, Map<String, ?> parameters,

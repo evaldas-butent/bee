@@ -7,6 +7,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -118,7 +119,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_DTB_DATA)) {
       response = getDtbData();
-      
+
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
 
@@ -157,7 +158,7 @@ public class TransportModuleBean implements BeeModule {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_CARGO)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_CARGO) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -181,7 +182,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -203,7 +204,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillTripCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_CARGO)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_CARGO) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -225,6 +226,42 @@ public class TransportModuleBean implements BeeModule {
               }
             }
           }
+        }
+      }
+
+      @Subscribe
+      public void getVisibleDrivers(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), TBL_DRIVERS) && event.isBefore()) {
+          BeeView view = sys.getView(event.getViewName());
+
+          SqlSelect query = new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_DRIVER_GROUPS, COL_DRIVER)
+              .addFrom(TBL_DRIVER_GROUPS)
+              .addFromInner(TBL_TRANSPORT_GROUPS,
+                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_DRIVER_GROUPS, COL_GROUP));
+
+          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS, null);
+
+          event.getQuery().addFromInner(query, "subq",
+              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_DRIVER));
+        }
+      }
+
+      @Subscribe
+      public void getVisibleVehicles(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), TBL_VEHICLES) && event.isBefore()) {
+          BeeView view = sys.getView(event.getViewName());
+
+          SqlSelect query = new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
+              .addFrom(TBL_VEHICLE_GROUPS)
+              .addFromInner(TBL_TRANSPORT_GROUPS,
+                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP));
+
+          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS, null);
+
+          event.getQuery().addFromInner(query, "subq",
+              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
       }
     });
@@ -392,7 +429,7 @@ public class TransportModuleBean implements BeeModule {
       return ResponseObject.error(msg);
     }
     settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
-    
+
     BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE);
     if (!DataUtils.isEmpty(absence)) {
       settings.setTableProperty(PROP_ABSENCE, absence.serialize());
@@ -408,10 +445,10 @@ public class TransportModuleBean implements BeeModule {
     String defUnlAlias = "defu_" + SqlUtils.uniqueName();
 
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-    
+
     String colLoadDate = loadingColumnAlias(COL_PLACE_DATE);
     String colUnloadDate = unloadingColumnAlias(COL_PLACE_DATE);
-    
+
     String colDefLoadDate = defaultLoadingColumnAlias(COL_PLACE_DATE);
     String colDefUnloadDate = defaultUnloadingColumnAlias(COL_PLACE_DATE);
 
@@ -437,7 +474,7 @@ public class TransportModuleBean implements BeeModule {
     inner.addFields(TBL_TRIP_DRIVERS, COL_DRIVER, COL_TRIP);
     inner.addField(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, ALS_TRIP_DRIVER_FROM);
     inner.addField(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, ALS_TRIP_DRIVER_TO);
-    
+
     inner.addFields(TBL_TRIPS, COL_TRIP_NO, COL_TRIP_PLANNED_END_DATE);
     inner.addField(TBL_TRIPS, COL_TRIP_DATE, ALS_TRIP_DATE);
     inner.addField(TBL_TRIPS, COL_TRIP_DATE_FROM, ALS_TRIP_DATE_FROM);
@@ -445,19 +482,22 @@ public class TransportModuleBean implements BeeModule {
 
     inner.addField(vehicleJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER);
     inner.addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER);
-    
+
     inner.addField(loadAlias, COL_PLACE_DATE, colLoadDate);
     inner.addField(unlAlias, COL_PLACE_DATE, colUnloadDate);
-    
+
     inner.addField(defLoadAlias, COL_PLACE_DATE, colDefLoadDate);
     inner.addField(defUnlAlias, COL_PLACE_DATE, colDefUnloadDate);
-    
+
     String alias = "inner_" + SqlUtils.uniqueName();
-    
-    String[] group = new String[] {COL_DRIVER, COL_TRIP, ALS_TRIP_DRIVER_FROM, ALS_TRIP_DRIVER_TO,
-        COL_TRIP_NO, COL_TRIP_PLANNED_END_DATE, ALS_TRIP_DATE, ALS_TRIP_DATE_FROM, ALS_TRIP_DATE_TO,
-        ALS_VEHICLE_NUMBER, ALS_TRAILER_NUMBER};
-    
+
+    String[] group =
+        new String[] {
+            COL_DRIVER, COL_TRIP, ALS_TRIP_DRIVER_FROM, ALS_TRIP_DRIVER_TO,
+            COL_TRIP_NO, COL_TRIP_PLANNED_END_DATE, ALS_TRIP_DATE, ALS_TRIP_DATE_FROM,
+            ALS_TRIP_DATE_TO,
+            ALS_VEHICLE_NUMBER, ALS_TRAILER_NUMBER};
+
     SqlSelect query = new SqlSelect()
         .addFrom(inner, alias)
         .addFields(alias, group)
@@ -541,7 +581,7 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.joinMore(fuel, "DateTo", routes, "Date"))))
         .addGroup(routes, routeMode ? routeId : "Trip");
   }
-  
+
   private ResponseObject getFxData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {

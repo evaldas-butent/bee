@@ -40,8 +40,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
+import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -100,7 +101,7 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
-      
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -108,7 +109,7 @@ public class CrmModuleBean implements BeeModule {
     }
     return response;
   }
-  
+
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return null;
@@ -129,6 +130,9 @@ public class CrmModuleBean implements BeeModule {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
       public void setRowProperties(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
         if (BeeUtils.same(event.getViewName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
 
@@ -254,7 +258,7 @@ public class CrmModuleBean implements BeeModule {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
-    
+
     List<Long> newUsers;
     if (checkUsers) {
       newUsers = CrmUtils.getTaskUsers(row, data.getColumns());
@@ -281,7 +285,7 @@ public class CrmModuleBean implements BeeModule {
         oldValues.add(entry.getValue());
         newValues.add(row.getString(entry.getKey()));
       }
-      
+
       BeeRow updRow = new BeeRow(row.getId(), row.getVersion(), oldValues);
       for (int i = 0; i < columns.size(); i++) {
         updRow.preliminaryUpdate(i, newValues.get(i));
@@ -376,7 +380,7 @@ public class CrmModuleBean implements BeeModule {
 
     Long eventId = null;
     String eventNote;
-    
+
     String notes = reqInfo.getParameter(VAR_TASK_NOTES);
     if (BeeUtils.isEmpty(notes)) {
       eventNote = null;
@@ -389,7 +393,7 @@ public class CrmModuleBean implements BeeModule {
 
     switch (event) {
       case CREATE:
-        
+
         Map<String, String> properties = taskRow.getProperties();
 
         List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
@@ -399,7 +403,7 @@ public class CrmModuleBean implements BeeModule {
 
         for (long executor : executors) {
           DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
-          
+
           BeeRow newRow = DataUtils.cloneRow(taskRow);
           newRow.setValue(taskData.getColumnIndex(COL_EXECUTOR), executor);
 
@@ -463,7 +467,7 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case VISIT:
-        
+
         if (oldUsers.contains(currentUser)) {
           response = registerTaskVisit(taskId, currentUser, now);
         }
@@ -485,7 +489,7 @@ public class CrmModuleBean implements BeeModule {
       case ACTIVATE:
 
         Long finishTime = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_FINISH_TIME));
-        
+
         response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
             now);
         if (response.hasResponse(Long.class)) {
@@ -514,12 +518,12 @@ public class CrmModuleBean implements BeeModule {
         .addFrom(TBL_TASK_USERS)
         .addFields(TBL_TASK_USERS, COL_TASK)
         .setWhere(SqlUtils.and(uwh, SqlUtils.isNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
-    
+
     Long[] newTasks = qs.getLongColumn(tNewQuery);
     logger.debug("new tasks", newTasks);
-    
-    String idName = sys.getIdName(TBL_TASKS); 
-    
+
+    String idName = sys.getIdName(TBL_TASKS);
+
     SqlSelect inner = new SqlSelect()
         .addFrom(TBL_TASKS)
         .addFromInner(TBL_TASK_USERS, sys.joinTables(TBL_TASKS, TBL_TASK_USERS, COL_TASK))
@@ -531,17 +535,17 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(uwh, SqlUtils.notNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
 
     String alias = "tupd_" + SqlUtils.uniqueName();
-    
+
     SqlSelect tUpdQuery = new SqlSelect().setDistinctMode(true)
         .addFrom(inner, alias)
         .addFields(alias, idName)
         .setWhere(SqlUtils.more(alias, COL_PUBLISH_TIME, SqlUtils.field(alias, COL_LAST_ACCESS)));
-    
+
     Long[] updTasks = qs.getLongColumn(tUpdQuery);
     logger.debug("upd tasks", updTasks);
-    
+
     List<Long> result = Lists.newArrayList();
-    
+
     long cntNew = (newTasks == null) ? 0 : newTasks.length;
     result.add(cntNew);
     if (cntNew > 0) {
@@ -551,7 +555,7 @@ public class CrmModuleBean implements BeeModule {
     if (updTasks != null && updTasks.length > 0) {
       result.addAll(Lists.newArrayList((updTasks)));
     }
-    
+
     return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
   }
 
@@ -720,7 +724,7 @@ public class CrmModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(note)) {
       si.addConstant(COL_EVENT_NOTE, note);
     }
-    
+
     if (BeeUtils.isPositive(finishTime)) {
       si.addConstant(COL_FINISH_TIME, finishTime);
     }
@@ -753,7 +757,7 @@ public class CrmModuleBean implements BeeModule {
     delete.removeAll(newValues);
 
     String relation = CrmUtils.translateTaskPropertyToRelation(property);
-    
+
     for (Long value : insert) {
       logger.debug("add task relation", taskId, relation, value);
 
@@ -793,7 +797,7 @@ public class CrmModuleBean implements BeeModule {
       updateTaskRelation(taskId, relation, oldValues, newValues);
     }
   }
-  
+
   private void updateTaskUsers(long taskId, Collection<Long> oldUsers, Collection<Long> newUsers) {
     List<Long> insert = Lists.newArrayList(newUsers);
     insert.removeAll(oldUsers);

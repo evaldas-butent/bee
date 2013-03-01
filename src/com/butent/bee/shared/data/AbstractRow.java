@@ -26,6 +26,7 @@ public abstract class AbstractRow implements IsRow {
 
   private long id;
   private long version = 0;
+  private boolean editable = true;
 
   private CustomProperties properties = null;
 
@@ -143,8 +144,18 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public boolean isEditable() {
+    return editable;
+  }
+
+  @Override
   public boolean isNull(int index) {
     return getCell(index).isNull();
+  }
+
+  @Override
+  public void setEditable(boolean editable) {
+    this.editable = editable;
   }
 
   @Override

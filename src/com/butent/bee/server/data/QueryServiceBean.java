@@ -33,6 +33,7 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -96,6 +97,8 @@ public class QueryServiceBean {
 
     public abstract T processUpdateCount(int updateCount);
   }
+
+  private static final String EDITABLE_STATE_COLUMN = RightsState.EDITABLE.name();
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
@@ -348,28 +351,8 @@ public class QueryServiceBean {
     return getSingleValue(query).getValue(0, 0);
   }
 
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
-    Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-    activateTables(query);
-
-    return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
-      @Override
-      public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        BeeRowSet rowset = rsToBeeRowSet(rs, view);
-        sys.postViewEvent(new ViewQueryEvent(view.getName(), query, rowset));
-        return rowset;
-      }
-
-      @Override
-      public BeeRowSet processUpdateCount(int updateCount) {
-        throw new BeeRuntimeException("Query must return a ResultSet");
-      }
-    });
-  }
-
   public BeeRowSet getViewData(String viewName) {
-    return getViewData(viewName, null, null);
+    return getViewData(viewName, null);
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter) {
@@ -543,6 +526,44 @@ public class QueryServiceBean {
     return res;
   }
 
+  private BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+
+    String tableName = view.getSourceName();
+    String tableAlias = view.getSourceAlias();
+
+    sys.filterVisibleState(query, tableName, tableAlias);
+
+    BeeTable table = sys.getTable(tableName);
+    String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
+
+    if (!BeeUtils.isEmpty(stateAlias)) {
+      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
+          table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
+          EDITABLE_STATE_COLUMN);
+    }
+
+    activateTables(query);
+
+    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
+    sys.postViewEvent(event);
+
+    return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
+      @Override
+      public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
+        event.setRowset(rsToBeeRowSet(rs, view));
+        sys.postViewEvent(event);
+        return event.getRowset();
+      }
+
+      @Override
+      public BeeRowSet processUpdateCount(int updateCount) {
+        throw new BeeRuntimeException("Query must return a ResultSet");
+      }
+    });
+  }
+
   private <T> T processSql(String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
     Assert.notNull(callback);
@@ -591,6 +612,7 @@ public class QueryServiceBean {
     List<BeeColumn> columns = Lists.newArrayList();
     int idIndex = -1;
     int versionIndex = -1;
+    int editableIndex = -1;
 
     for (BeeColumn col : rsCols) {
       if (view != null) {
@@ -606,6 +628,10 @@ public class QueryServiceBean {
         } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
           versionIndex = col.getIndex();
           continue;
+
+        } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
+          editableIndex = col.getIndex();
+          continue;
         }
       }
       columns.add(col);
@@ -613,6 +639,8 @@ public class QueryServiceBean {
     int cols = columns.size();
     BeeRowSet result = new BeeRowSet(columns);
     long idx = 0;
+    boolean editable = (view != null)
+        ? sys.getTable(view.getSourceName()).areRecordsEditable() : true;
 
     while (rs.next()) {
       String[] row = new String[cols];
@@ -648,11 +676,18 @@ public class QueryServiceBean {
       } else {
         idx = rs.getLong(idIndex);
       }
+      BeeRow beeRow;
+
       if (versionIndex < 0) {
-        result.addRow(idx, row);
+        beeRow = new BeeRow(idx, row);
       } else {
-        result.addRow(idx, rs.getLong(versionIndex), row);
+        beeRow = new BeeRow(idx, rs.getLong(versionIndex), row);
       }
+      if (editableIndex >= 0) {
+        editable = BeeUtils.toBoolean(rs.getString(editableIndex));
+      }
+      beeRow.setEditable(editable);
+      result.addRow(beeRow);
     }
     if (idIndex >= 0) {
       result.setViewName(view.getName());

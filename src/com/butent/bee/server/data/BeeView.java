@@ -77,7 +77,7 @@ import java.util.Set;
  */
 
 public class BeeView implements BeeObject, HasExtendedInfo {
-  
+
   public interface ViewFinder extends Function<String, BeeView> {
   }
 
@@ -524,7 +524,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
       } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
         return getCondition((ColumnInFilter) flt, viewFinder);
-        
+
       } else {
         Assert.unsupported("Unsupported class name: " + clazz);
       }
@@ -544,7 +544,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
         "Filter", getFilter(), "Read Only", isReadOnly(), "Caption", getCaption(),
-        "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form", getNewRowForm(),
+        "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form",
+        getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(), "Cache Eviction", getCacheEviction(),
         "Query", query.getQuery(), "Columns", columns.size());
@@ -601,6 +602,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public SqlSelect getQuery(Filter flt, Order ord, List<String> cols, ViewFinder viewFinder) {
+
     SqlSelect ss = query.copyOf();
     Collection<String> activeCols = null;
 
@@ -663,15 +665,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     if (!hasId) {
       ss.addOrder(src, idCol);
     }
-    return ss.addFields(src, idCol, verCol);
+    ss.addFields(src, idCol, verCol);
+    return ss;
   }
 
   public SqlSelect getQuery(Filter flt, ViewFinder viewFinder) {
     return getQuery(flt, null, null, viewFinder);
   }
 
-  public SqlSelect getQuery(ViewFinder viewFinder) {
-    return getQuery(null, null, null, viewFinder);
+  public SqlSelect getQuery() {
+    return getQuery(null, null);
   }
 
   public String getRowCaption() {
@@ -917,12 +920,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       logger.warning(flt.getClass().getSimpleName(), "view not found:", flt.getInView());
       return null;
     }
-    
+
     String column = flt.getColumn();
-    
+
     String tbl;
     String fld;
-    
+
     if (BeeUtils.same(column, getSourceIdName())) {
       tbl = getSourceAlias();
       fld = getSourceIdName();
@@ -930,15 +933,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       tbl = getColumnTable(column);
       fld = getColumnField(column);
     }
-    
+
     String inTbl = inView.getColumnTable(flt.getInColumn());
     String inFld = inView.getColumnField(flt.getInColumn());
-    
+
     Filter inFilter = flt.getInFilter();
-    
+
     return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter, viewFinder));
   }
-  
+
   private IsCondition getCondition(ColumnIsEmptyFilter flt) {
     String colName = flt.getColumn();
     SqlDataType type = getColumnType(colName);

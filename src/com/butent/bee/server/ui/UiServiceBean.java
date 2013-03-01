@@ -53,6 +53,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -380,17 +381,17 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(viewList)) {
       return ResponseObject.error("parameter not found:", Service.VAR_VIEW_LIST);
     }
-    
+
     List<String> viewNames = NameUtils.toList(viewList);
     List<BeeRowSet> result = Lists.newArrayList();
-    
+
     for (String viewName : viewNames) {
       BeeRowSet rs = qs.getViewData(viewName);
       result.add(rs);
     }
     return ResponseObject.response(result);
   }
-  
+
   private ResponseObject getDataInfo(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(viewName)) {
@@ -651,9 +652,9 @@ public class UiServiceBean {
       }
     } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] arr = cmd.split(" ", 5);
-      String tbl = arr[1];
-      long id = BeeUtils.toLong(arr[2]);
-      String state = arr[3];
+      RightsState state = NameUtils.getEnumByName(RightsState.class, arr[1]);
+      String tbl = arr[2];
+      long id = BeeUtils.toLong(arr[3]);
       long[] bits = null;
 
       if (arr.length > 4) {
@@ -664,7 +665,7 @@ public class UiServiceBean {
           bits[i] = BeeUtils.toLong(rArr[i]);
         }
       }
-      deb.setState(tbl, id, state, bits);
+      deb.setState(tbl, state, id, bits);
       response.addInfo("Toggle OK");
 
     } else if (BeeUtils.startsSame(cmd, "schema")) {

@@ -3,7 +3,7 @@
 
   name="GroupDrivers"
   source="DriverGroups"
-  newRowCaption="Naujas vairuotojas" 
+  newRowCaption="Priskirti vairuotoją" 
   >
   <Columns>
     <SimpleColumn name="Group" />

@@ -15,7 +15,7 @@
     <row>
       <Label html="Šalis" horizontalAlignment="right" />
       <FlowPanel>
-        <DataSelector source="LoadingCountry" style="width:105px;" >
+        <DataSelector source="LoadingCountry" style="width:135px;" >
           <renderToken source="LoadingCountryName" />
           <selectorColumn source="Name" />
           <selectorColumn source="Code">
@@ -49,7 +49,7 @@
     <row>
       <Label html="Šalis" horizontalAlignment="right" />
       <FlowPanel>
-        <DataSelector source="UnloadingCountry" style="width:105px;" >
+        <DataSelector source="UnloadingCountry" style="width:135px;" >
           <renderToken source="UnloadingCountryName" />
           <selectorColumn source="Name" />
           <selectorColumn source="Code">

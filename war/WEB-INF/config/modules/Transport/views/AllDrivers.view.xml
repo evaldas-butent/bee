@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:xpr="http://www.butent.com/expression"
+
+  name="AllDrivers" source="Drivers"
+  >
+  <Columns>
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+  </Order>
+</View>

@@ -84,16 +84,12 @@ public abstract class ViewEvent {
 
   public static class ViewQueryEvent extends ViewEvent {
     private final SqlSelect query;
-    private final BeeRowSet rowset;
+    private BeeRowSet rowset = null;
 
-    ViewQueryEvent(String viewName, SqlSelect query, BeeRowSet rowset) {
+    ViewQueryEvent(String viewName, SqlSelect query) {
       super(viewName);
-      Assert.noNulls(query, rowset);
-
+      Assert.notNull(query);
       this.query = query;
-      this.rowset = rowset;
-
-      setAfter();
     }
 
     public SqlSelect getQuery() {
@@ -102,6 +98,12 @@ public abstract class ViewEvent {
 
     public BeeRowSet getRowset() {
       return rowset;
+    }
+
+    public void setRowset(BeeRowSet rowset) {
+      Assert.notNull(rowset);
+      this.rowset = rowset;
+      setAfter();
     }
   }
 

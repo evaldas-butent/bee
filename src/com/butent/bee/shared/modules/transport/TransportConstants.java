@@ -40,8 +40,11 @@ public class TransportConstants {
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
 
+  public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
+
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
+  public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
 
@@ -56,9 +59,10 @@ public class TransportConstants {
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
 
   public static final String TBL_DRIVERS = "Drivers";
+  public static final String TBL_DRIVER_GROUPS = "DriverGroups";
   public static final String TBL_DRIVER_ABSENCE = "DriverAbsence";
   public static final String TBL_ABSENCE_TYPES = "AbsenceTypes";
-  
+
   public static final String VIEW_ORDERS = "TransportationOrders";
 
   public static final String VIEW_CARGO = "OrderCargo";
@@ -90,7 +94,9 @@ public class TransportConstants {
   public static final String VIEW_DRIVERS = "Drivers";
   public static final String VIEW_DRIVER_ABSENCE = "DriverAbsence";
   public static final String VIEW_ABSENCE_TYPES = "AbsenceTypes";
-  
+
+  public static final String COL_GROUP = "Group";
+
   public static final String COL_TRIP = "Trip";
   public static final String COL_TRIP_ID = "TripID";
   public static final String COL_TRIP_NO = "TripNo";
@@ -151,7 +157,7 @@ public class TransportConstants {
 
   public static final String COL_TRIP_DRIVER_FROM = "DateFrom";
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
-  
+
   public static final String COL_SERVICE_DATE = "Date";
   public static final String COL_SERVICE_TYPE = "Type";
   public static final String COL_SERVICE_NAME = "Name";
@@ -165,7 +171,7 @@ public class TransportConstants {
   public static final String COL_ABSENCE_FROM = "DateFrom";
   public static final String COL_ABSENCE_TO = "DateTo";
   public static final String COL_ABSENCE_NOTES = "Notes";
-  
+
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
@@ -213,7 +219,7 @@ public class TransportConstants {
 
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
-  
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -247,7 +253,7 @@ public class TransportConstants {
 
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
-  
+
   public static final String DATA_TYPE_CARGO = "Cargo";
 
   public static final String defaultLoadingColumnAlias(String colName) {

@@ -33,11 +33,11 @@ public interface IsRow extends HasCustomProperties {
   DateTime getDateTime(int index);
 
   BigDecimal getDecimal(int index);
-  
+
   Double getDouble(int index);
-  
+
   long getId();
-  
+
   Integer getInteger(int index);
 
   Long getLong(int index);
@@ -51,8 +51,10 @@ public interface IsRow extends HasCustomProperties {
   Value getValue(int index, ValueType type);
 
   long getVersion();
-  
+
   void insertCell(int index, IsCell cell);
+
+  boolean isEditable();
 
   boolean isNull(int index);
 
@@ -62,8 +64,10 @@ public interface IsRow extends HasCustomProperties {
 
   void setCells(List<IsCell> cells);
 
-  void setId(long id);  
-  
+  void setEditable(boolean editable);
+
+  void setId(long id);
+
   void setValue(int index, BigDecimal value);
 
   void setValue(int index, Boolean value);
@@ -75,12 +79,12 @@ public interface IsRow extends HasCustomProperties {
   void setValue(int index, Integer value);
 
   void setValue(int index, JustDate value);
-  
+
   void setValue(int index, Long value);
-  
+
   void setValue(int index, String value);
-  
+
   void setValue(int index, Value value);
-  
-  void setVersion(long version);  
+
+  void setVersion(long version);
 }

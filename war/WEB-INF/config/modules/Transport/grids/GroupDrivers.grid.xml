@@ -5,6 +5,7 @@
   name="GroupDrivers" viewName="GroupDrivers" caption="Vairuotojai"
   >
   <columns>
-    <RelColumn name="Driver" caption="Vardas, Pavardė" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Driver" viewName="AllDrivers" caption="Vardas, Pavardė" newRowEnabled="false" 
+      flexGrow="1" flexShrink="1" />
   </columns>
 </Grid>

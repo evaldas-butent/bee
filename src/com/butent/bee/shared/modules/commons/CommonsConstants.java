@@ -9,9 +9,9 @@ import java.util.Set;
 public class CommonsConstants {
 
   public enum RightsObjectType implements HasCaption {
-    EVENT("Įvykis", EnumSet.of(RightsState.ENABLED)),
-    FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
-    GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
+    EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),
+    FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
+    GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
     MENU("Meniu", EnumSet.of(RightsState.VISIBLE)),
     MODULE("Modulis", EnumSet.of(RightsState.VISIBLE));
 
@@ -35,8 +35,7 @@ public class CommonsConstants {
 
   public enum RightsState implements HasCaption {
     VISIBLE("Matomas", true),
-    ENABLED("Leidžiamas", true),
-    MARKED("Pažymėtas", true);
+    EDITABLE("Redaguojamas", true);
 
     private final String caption;
     private final boolean checked;

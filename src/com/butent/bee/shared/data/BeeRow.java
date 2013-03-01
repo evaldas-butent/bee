@@ -22,7 +22,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
    * Contains a list of parameters for row serialization.
    */
   private enum Serial {
-    ID, VERSION, VALUES, SHADOW, PROPERTIES
+    ID, VERSION, EDITABLE, VALUES, SHADOW, PROPERTIES
   }
 
   public static BeeRow restore(String s) {
@@ -54,10 +54,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
   @Override
   public BeeRow copy() {
     BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));
+    result.setEditable(isEditable());
     copyProperties(result);
     return result;
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -74,6 +76,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
         case VERSION:
           setVersion(BeeUtils.toLong(value));
+          break;
+
+        case EDITABLE:
+          setEditable(Codec.unpack(value));
           break;
 
         case VALUES:
@@ -121,7 +127,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void preliminaryUpdate(int col, String value) {
     String oldValue = getString(col);
-    
+
     if (!BeeUtils.equalsTrimRight(value, oldValue)) {
       if (shadow == null) {
         shadow = new HashMap<Integer, String>();
@@ -144,6 +150,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
     setShadow(null);
   }
 
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
@@ -157,6 +164,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
         case VERSION:
           arr[i++] = getVersion();
+          break;
+
+        case EDITABLE:
+          arr[i++] = Codec.pack(isEditable());
           break;
 
         case VALUES:

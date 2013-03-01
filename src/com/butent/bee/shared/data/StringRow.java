@@ -45,6 +45,7 @@ public class StringRow extends AbstractRow {
   public StringRow copy() {
     StringRow result = new StringRow(getId(), values.copy());
     result.setVersion(getVersion());
+    result.setEditable(isEditable());
     copyProperties(result);
     return result;
   }
@@ -236,7 +237,7 @@ public class StringRow extends AbstractRow {
       setValue(index, value.getString());
     }
   }
-  
+
   public void setValues(Sequence<String> values) {
     this.values = values;
   }

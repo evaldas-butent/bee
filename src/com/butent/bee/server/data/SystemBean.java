@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
-import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -23,7 +22,6 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
@@ -33,7 +31,6 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -55,6 +52,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -168,68 +166,11 @@ public class SystemBean {
     return diff;
   }
 
-  public ResponseObject editStateRoles(String tblName, String stateName) {
-    BeeState state = getState(stateName);
+  public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
+    BeeTable table = getTable(tblName);
 
-    if (!state.supportsRoles()) {
-      return ResponseObject.error("State does not support roles:", stateName);
-    }
-    boolean allMode = BeeUtils.isEmpty(tblName);
-    List<BeeTable> tables = Lists.newArrayList();
-    List<BeeTable> tmpTables =
-        allMode ? Lists.newArrayList(getTables()) : Lists.newArrayList(getTable(tblName));
-
-    for (BeeTable table : tmpTables) {
-      if (table.hasState(state)) {
-        tables.add(table);
-      }
-    }
-    SqlSelect union = null;
-
-    for (BeeTable table : tables) {
-      String tbl = table.getName();
-      SqlSelect ss = null;
-
-      if (allMode) {
-        ss = new SqlSelect()
-            .addConstant(tbl, "Table")
-            .addCount("TotalRows")
-            .addFrom(tbl);
-      } else {
-        ss = getView(tbl).getQuery(null);
-      }
-      String stateAlias = joinState(ss, tbl, null, state.getName());
-
-      for (long roleId : usr.getRoles()) {
-        String colName = state.getName() + roleId + usr.getRoleName(roleId);
-
-        if (BeeUtils.isEmpty(stateAlias)) {
-          if (allMode && state.isChecked()) {
-            ss.addCount(colName);
-          } else {
-            ss.addConstant(BeeUtils.toInt(state.isChecked()), colName);
-          }
-        } else {
-          IsExpression expr =
-              SqlUtils.sqlIf(getTable(tbl).checkState(stateAlias, state, roleId), 1, 0);
-
-          if (allMode) {
-            ss.addSum(expr, colName);
-          } else {
-            ss.addExpr(expr, colName);
-          }
-        }
-      }
-      if (union == null) {
-        union = ss;
-      } else {
-        union.addUnion(ss);
-      }
-    }
-    if (union == null) {
-      return ResponseObject.error("No tables support state: ", stateName);
-    }
-    return ResponseObject.response(qs.getViewData(union, null));
+    table.verifyState(query, tblAlias, RightsState.VISIBLE, table.areRecordsVisible(),
+        usr.getUserRoles(usr.getCurrentUserId()));
   }
 
   public List<DataInfo> getDataInfo() {
@@ -289,11 +230,6 @@ public class SystemBean {
     return getTable(tblName).getIdName();
   }
 
-  @SuppressWarnings("unused")
-  public BeeState getState(String stateName) {
-    return null; // TODO
-  }
-
   public BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
     return tableCache.get(BeeUtils.normalize(tblName));
@@ -318,15 +254,6 @@ public class SystemBean {
       tables.add(table.getName());
     }
     return tables;
-  }
-
-  public Collection<String> getTableStates(String tblName) {
-    Collection<String> states = Lists.newArrayList();
-
-    for (BeeState state : getTable(tblName).getStates()) {
-      states.add(state.getName());
-    }
-    return states;
   }
 
   public String getVersionName(String tblName) {
@@ -479,18 +406,6 @@ public class SystemBean {
     return table.joinExtField(query, tblAlias, field);
   }
 
-  public String joinState(HasFrom<?> query, String tblName, String tblAlias, String stateName) {
-    Assert.notNull(query);
-    BeeTable table = getTable(tblName);
-    BeeState state = getState(stateName);
-
-    if (!table.hasState(state)) {
-      logger.warning("State not registered:", tblName, stateName);
-      return null;
-    }
-    return table.joinState(query, tblAlias, state);
-  }
-
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
     return SqlUtils.join(tblName, getIdName(tblName), dstTable, dstField);
   }
@@ -535,30 +450,6 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void registerViewEventHandler(ViewEventHandler eventHandler) {
     viewEventBus.register(eventHandler);
-  }
-
-  public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
-    Assert.notNull(query);
-
-    long userId = usr.getCurrentUserId();
-    long[] userRoles = usr.getUserRoles(userId);
-
-    if (userRoles == null || userRoles.length == 0) {
-      return query.setWhere(SqlUtils.sqlFalse());
-    }
-    long[] bits = Longs.concat(new long[] {-userId}, userRoles);
-
-    for (String stateName : states) {
-      BeeTable table = getTable(tblName);
-      BeeState state = getState(stateName);
-
-      if (!table.hasState(state)) {
-        logger.warning("State not registered:", tblName, stateName);
-      } else {
-        table.verifyState(query, tblAlias, state, bits);
-      }
-    }
-    return query;
   }
 
   private void createAuditTables(BeeTable table) {
@@ -652,7 +543,7 @@ public class SystemBean {
         }
       }
     }
-    for (BeeState state : table.getStates()) {
+    for (RightsState state : table.getStates()) {
       tblName = table.getStateTable(state);
       SqlCreate sc = table.createStateTable(newTables.get(tblName), state);
 
@@ -950,14 +841,16 @@ public class SystemBean {
 
       Map<String, String[]> tableFields = Maps.newHashMap();
 
-      for (BeeState state : table.getStates()) {
+      for (RightsState state : table.getStates()) {
         tblName = table.getStateTable(state);
 
-        if (names.contains(BeeUtils.normalize(tblName)) && !tableFields.containsKey(tblName)) {
-          tableFields.put(tblName,
-              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
+        if (names.contains(BeeUtils.normalize(tblName))) {
+          if (!tableFields.containsKey(tblName)) {
+            tableFields.put(tblName,
+                qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
+          }
+          table.initState(state, Sets.newHashSet(tableFields.get(tblName)));
         }
-        table.setStateActive(state, tableFields.get(tblName));
       }
     }
   }
@@ -1075,15 +968,13 @@ public class SystemBean {
     Assert.notEmpty(tableName);
     BeeTable table = null;
     XmlTable xmlTable = getXmlTable(moduleName, tableName);
-    boolean noAudit =
-        prm.getBoolean(CommonsConstants.COMMONS_MODULE, CommonsConstants.PRM_AUDIT_OFF);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         logger.warning("Table name doesn't match resource name:", xmlTable.name);
       } else {
-        table = new BeeTable(moduleName,
-            xmlTable.name, xmlTable.idName, xmlTable.versionName, noAudit ? false : xmlTable.audit);
+        table = new BeeTable(moduleName, xmlTable, BeeUtils.isTrue(
+            prm.getBoolean(CommonsConstants.COMMONS_MODULE, CommonsConstants.PRM_AUDIT_OFF)));
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {

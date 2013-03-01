@@ -62,7 +62,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public int addEmptyRow() {
     return addRow(new BeeRow(DataUtils.NEW_ROW_ID, new String[getNumberOfColumns()]));
   }
-  
+
   public int addRow(long id, String[] data) {
     int idx = addRow(id, 0, data);
     return idx;
@@ -75,7 +75,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public int addRow(long id, long version, List<String> data) {
     return addRow(new BeeRow(id, version, data));
   }
-  
+
   @Override
   public BeeRowSet copy() {
     return DataUtils.cloneRowSet(this);
@@ -135,7 +135,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
             }
           }
           break;
-          
+
         case PROPERTIES:
           if (!BeeUtils.isEmpty(value)) {
             setTableProperties(CustomProperties.restore(value));
@@ -168,7 +168,8 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public String getStringByRowId(long rowId, String columnId) {
     return getString(getRowIndex(rowId), getColumnIndex(columnId));
   }
-  
+
+  @Override
   public String getViewName() {
     return viewName;
   }
@@ -225,7 +226,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       return updateCell(rowId, columnIdx, value);
     }
   }
-  
+
   public boolean updateCell(long rowId, int columnIdx, String value) {
     BeeRow row = getRowById(rowId);
     if (row == null) {

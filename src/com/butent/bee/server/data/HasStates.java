@@ -6,7 +6,9 @@ import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -15,21 +17,23 @@ import java.util.Map;
 
 public interface HasStates {
 
-  SqlCreate createStateTable(SqlCreate query, BeeState state);
+  boolean activateState(RightsState state, Collection<Long> bits);
 
-  IsCondition checkState(String stateAlias, BeeState state, long... bits);
+  IsCondition checkState(String stateAlias, RightsState state, boolean checkedByDefault,
+      long... bits);
 
-  String getStateTable(BeeState state);
+  SqlCreate createStateTable(SqlCreate query, RightsState state);
 
-  SqlInsert insertState(long id, BeeState state, Map<Long, Boolean> bits);
+  String getStateTable(RightsState state);
 
-  String joinState(HasFrom<?> query, String tblAlias, BeeState state);
+  void initState(RightsState state, Collection<String> flds);
 
-  void setStateActive(BeeState state, String... flds);
+  SqlInsert insertState(long id, RightsState state, Map<Long, Boolean> bits);
 
-  SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits);
+  String joinState(HasFrom<?> query, String tblAlias, RightsState state);
 
-  boolean updateStateActive(BeeState state, long... bits);
+  SqlUpdate updateState(long id, RightsState state, Map<Long, Boolean> bits);
 
-  SqlSelect verifyState(SqlSelect query, String tblAlias, BeeState state, long... bits);
+  SqlSelect verifyState(SqlSelect query, String tblAlias, RightsState state,
+      boolean checkedByDefault, long... bits);
 }

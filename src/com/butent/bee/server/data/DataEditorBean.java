@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -580,29 +581,21 @@ public class DataEditorBean {
     return response;
   }
 
-  public void setState(String tblName, long id, String stateName, long... bits) {
+  public void setState(String tblName, RightsState state, long id, long... bits) {
     BeeTable table = sys.getTable(tblName);
-    BeeState state = sys.getState(stateName);
 
-    if (!table.hasState(state)) {
-      logger.warning("State not registered:", tblName, stateName);
-    } else {
-      Map<Long, Boolean> bitMap = Maps.newHashMap();
+    Map<Long, Boolean> bitMap = Maps.newHashMap();
 
-      for (long bit : usr.getUsers()) {
-        bitMap.put(-bit, Longs.contains(bits, -bit));
-      }
-      for (long bit : usr.getRoles()) {
-        bitMap.put(bit, Longs.contains(bits, bit));
-      }
-      if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {
-        sys.rebuildTable(table.getName());
-      }
-      SqlUpdate su = table.updateState(id, state, bitMap);
+    for (long bit : usr.getRoles()) {
+      bitMap.put(bit, bits == null || Longs.contains(bits, bit));
+    }
+    if (table.activateState(state, bitMap.keySet())) {
+      sys.rebuildTable(table.getName());
+    }
+    SqlUpdate su = table.updateState(id, state, bitMap);
 
-      if (su != null && qs.updateData(su) == 0) {
-        qs.updateData(table.insertState(id, state, bitMap));
-      }
+    if (su != null && qs.updateData(su) == 0) {
+      qs.updateData(table.insertState(id, state, bitMap));
     }
   }
 
@@ -816,7 +809,7 @@ public class DataEditorBean {
 
   private boolean refreshUpdates(Map<String, TableInfo> updates, BeeView view) {
     long id = 0;
-    SqlSelect ss = view.getQuery(null).resetFields();
+    SqlSelect ss = view.getQuery().resetFields();
 
     for (TableInfo tblInfo : updates.values()) {
       if (id == 0 && BeeUtils.isEmpty(tblInfo.relation)) {
@@ -854,8 +847,8 @@ public class DataEditorBean {
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
           String value = res.getValue(fldInfo.fieldAlias);
-          
-          if (!BeeUtils.isEmpty(value) 
+
+          if (!BeeUtils.isEmpty(value)
               && SqlDataType.DATE.equals(view.getColumnType(fldInfo.fieldAlias))) {
             JustDate date = res.getDate(fldInfo.fieldAlias);
             value = (date == null) ? null : date.serialize();
