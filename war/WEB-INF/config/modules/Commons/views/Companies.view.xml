@@ -74,6 +74,11 @@
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
 
+    <SimpleColumn name="FinancialState" />
+    <SimpleJoin joinType="LEFT" name="FinancialState">
+      <SimpleColumn alias="FinancialStateName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="Notes" />
   </Columns>
   <Order>

@@ -29,6 +29,8 @@
     <Relation name="LimitCurrency" relation="Currencies" label="Limito valiuta" />
     <Integer name="CreditDays" label="Kredito dienos" />
     
+    <Relation name="FinancialState" relation="FinancialStates" label="Mokumas" />
+
     <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>
