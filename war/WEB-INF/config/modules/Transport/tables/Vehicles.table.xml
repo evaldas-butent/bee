@@ -13,6 +13,8 @@
     <String name="EngineNumber" precision="20" unique="true" />
     <Numeric name="EngineVolume" precision="5" />
     <Date name="ProductionDate" />
+    <Date name="StartDate" />
+    <Date name="EndDate" />
     <Relation name="Owner" relation="Companies" />
     <Integer name="Speedometer" />
     <Relation name="Fuel" relation="FuelTypes" />

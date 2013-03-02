@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY separator "<br/>">
+
+  <!ENTITY row "margin-bottom: 3px;">
+  <!ENTITY slider_row "position: relative; height: 25px;">
+  <!ENTITY cb_row "position: relative; height: 20px;">
+
+  <!ENTITY lbl "&inline; width: 260px; padding: 2px 10px 0 10px; text-align: right;">
+  <!ENTITY spin "&inline; width: 50px;">
+  <!ENTITY slider_inp "position: absolute; left: 280px; top: 0; width: 100px;">
+  <!ENTITY cb_inp "position: absolute; left: 280px; top: 3px; margin: 0;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+ 
+  name="TrailerTbSettings" viewName="TransportSettings" caption="Nustatymai"
+  width="440" height="440"
+  >
+
+  <FlowPanel style="background-color: WhiteSmoke;">
+
+    <FlowPanel style="&row; margin-top: 2ex;">
+      <Label html="Numerio stulpelio plotis px:" style="&lbl;" />
+      <InputSpinner source="TrailerPixelsPerNumber" minValue="4" maxValue="100" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label html="Informacinio stulpelio plotis px:" style="&lbl;" />
+      <InputSpinner source="TrailerPixelsPerInfo" minValue="4" maxValue="300" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&cb_row;">
+      <Label html="Krovinius rodyti atskirai:" style="&lbl;" />
+      <CheckBox source="TrailerSeparateCargo" style="&cb_inp;"/>
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label html="Dienos stulpelio plotis px:" style="&lbl;" />
+      <InputSpinner source="TrailerPixelsPerDay" minValue="1" maxValue="100" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label html="Dienos stulpelio aukštis px:" style="&lbl;" />
+      <InputSpinner source="TrailerPixelsPerRow" minValue="1" maxValue="100" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label html="Kalendoriaus srities aukštis px:" style="&lbl;" />
+      <InputSpinner source="TrailerHeaderHeight" minValue="1" maxValue="100" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label html="Laikotarpio pasirinkimo srities aukštis px:" style="&lbl;" />
+      <InputSpinner source="TrailerFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label html="Range selector slider width px:" style="&lbl;" />
+      <InputSpinner source="TrailerSliderWidth" minValue="1" maxValue="20" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label html="Range selector bar height px:" style="&lbl;" />
+      <InputSpinner source="TrailerBarHeight" minValue="1" maxValue="20" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label html="Spalvų tema:" style="&lbl;" />
+      <DataSelector source="TrailerTheme" style="&inline; width: 100px;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&slider_row;">
+      <Label html="Item opacity:" style="&lbl;" />
+      <InputSlider source="TrailerItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+    </FlowPanel>
+    <FlowPanel style="&slider_row;">
+      <Label html="Strip opacity:" style="&lbl;" />
+      <InputSlider source="TrailerStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+    </FlowPanel>
+
+  </FlowPanel>
+</f:Form>

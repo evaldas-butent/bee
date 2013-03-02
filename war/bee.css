@@ -17,69 +17,31 @@ body {
 }
 
 .flexBox-horizontal {
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-orient: horizontal;
-  -moz-box-orient: horizontal;
-  -webkit-box-orient: horizontal;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
 }
 
 .flexBox-vertical, .bee-TreeView, .bee-TabbedPages-container, .bee-Workspace-container {
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-orient: vertical;
-  -moz-box-orient: vertical;
-  -webkit-box-orient: vertical;
-}
-
-.flexBox-center {
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-align: center;
-  -moz-box-align: center;
-  -webkit-box-align: center;
-  box-pack: center;
-  -moz-box-pack: center;
-  -webkit-box-pack: center;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
 }
 
 .flexBox-vertical-center {
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-orient: vertical;
-  -moz-box-orient: vertical;
-  -webkit-box-orient: vertical;
-  box-align: center;
-  -moz-box-align: center;
-  -webkit-box-align: center;
-  box-pack: justify;
-  -moz-box-pack: justify;
-  -webkit-box-pack: justify;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  -webkit-justify-content: space-around;
+  -webkit-align-items: center;
 }
 
 .flexBox-horizontal-center {
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-orient: horizontal;
-  -moz-box-orient: horizontal;
-  -webkit-box-orient: horizontal;
-  box-align: center;
-  -moz-box-align: center;
-  -webkit-box-align: center;
-  box-pack: justify;
-  -moz-box-pack: justify;
-  -webkit-box-pack: justify;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-justify-content: space-around;
+  -webkit-align-items: center;
 }
 
 .flexible, .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
-  box-flex: 1;
-  -moz-box-flex: 1;
-  -webkit-box-flex: 1;
+  -webkit-flex: 1;
 }
 
 .occupy {
@@ -1021,7 +983,6 @@ body {
 
 .bee-TabbedPages-content {
   overflow: auto;
-  border-right: 1px solid #D9D7D8;  
 }
 
 .bee-StackContainer {

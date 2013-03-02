@@ -11,6 +11,7 @@
       <SimpleColumn name="Name" alias="TypeName" />
     </SimpleJoin>
     <SimpleColumn name="Date"/>
+    <SimpleColumn name="DateTo"/>
     <SimpleColumn name="Run" />
     <SimpleColumn name="ValidUntil" />
     <SimpleColumn name="ValidForKilometers" />

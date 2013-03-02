@@ -24,6 +24,8 @@
     <SimpleColumn name="EngineNumber" />
     <SimpleColumn name="EngineVolume" />
     <SimpleColumn name="ProductionDate" />
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
     <SimpleColumn name="Speedometer" />
     <SimpleColumn name="Fuel" />
     <SimpleJoin name="Fuel" joinType="LEFT">

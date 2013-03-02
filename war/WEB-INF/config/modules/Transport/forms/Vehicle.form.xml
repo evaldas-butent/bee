@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+  <!ENTITY separator "<br/>">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -14,19 +14,30 @@
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>Papildoma informacija</text>
-        <FlowPanel class="flexBox-horizontal">
-          <FlowPanel class="flexBox-vertical" style="-webkit-box-align: end; margin-right: 1em;">
-            <DataSelector source="Fuel" caption="Kuro rūšis" style="&ROW_STYLE;" />
-            <InputInteger source="TankCapacity" caption="Kuro bako talpa l" style="width: 2em; &ROW_STYLE;" />
-            <InputInteger source="Speedometer" caption="Spidometro skalė" style="width: 5em; &ROW_STYLE;" />
-          </FlowPanel>
+        <AbsolutePanel>
+          <layer top="1" topUnit="ex" width="240">
+            <FlowPanel class="flexBox-vertical" style="-webkit-align-items: flex-end;">
+              <DataSelector source="Fuel" caption="Kuro rūšis" />
+              &separator;
+            
+              <InputInteger source="TankCapacity" caption="Kuro bako talpa l" style="width: 2em;" />
+              &separator;
+              <InputInteger source="Speedometer" caption="Spidometro skalė" style="width: 5em;" />
+              &separator;
+
+              <InputDate source="StartDate" caption="Eksploatacijos pradžia" style="width: 7em;" />
+              &separator;
+              <InputDate source="EndDate" caption="Eksploatacijos pabaiga" style="width: 7em;" />
+            </FlowPanel>
+          </layer>
           
-          <FlowPanel class="flexBox-vertical flexible">
-             <ChildGrid name="FuelConsumptions" relColumn="Vehicle" style="height: 150px" />
-             <ChildGrid name="FuelTemperatures" parent="FuelConsumptions" relColumn="Consumption" 
-                class="flexible" style="margin-left: 20%" />
-          </FlowPanel>
-        </FlowPanel>
+          <layer left="260" right="0" top="0" height="50" heightUnit="%">
+             <ChildGrid name="FuelConsumptions" relColumn="Vehicle" />
+          </layer>
+          <layer left="300" right="0" top="51" topUnit="%" bottom="0">
+             <ChildGrid name="FuelTemperatures" parent="FuelConsumptions" relColumn="Consumption" />
+          </layer>
+        </AbsolutePanel>
       </page>
       <page>
         <text>Remontai</text>

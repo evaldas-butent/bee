@@ -55,5 +55,41 @@
 
     <Integer name="DtbItemOpacity" />
     <Integer name="DtbStripOpacity" />
+
+    <Integer name="TruckPixelsPerNumber" />
+    <Integer name="TruckPixelsPerInfo" />
+    <Boolean name="TruckSeparateCargo" />
+
+    <Integer name="TruckPixelsPerDay" />
+    <Integer name="TruckPixelsPerRow" />
+
+    <Integer name="TruckHeaderHeight" />
+    <Integer name="TruckFooterHeight" />
+
+    <Integer name="TruckSliderWidth" />
+    <Integer name="TruckBarHeight" />
+
+    <Integer name="TruckItemOpacity" />
+    <Integer name="TruckStripOpacity" />
+
+    <Relation name="TruckTheme" relation="Themes" />
+
+    <Integer name="TrailerPixelsPerNumber" />
+    <Integer name="TrailerPixelsPerInfo" />
+    <Boolean name="TrailerSeparateCargo" />
+
+    <Integer name="TrailerPixelsPerDay" />
+    <Integer name="TrailerPixelsPerRow" />
+
+    <Integer name="TrailerHeaderHeight" />
+    <Integer name="TrailerFooterHeight" />
+
+    <Integer name="TrailerSliderWidth" />
+    <Integer name="TrailerBarHeight" />
+
+    <Integer name="TrailerItemOpacity" />
+    <Integer name="TrailerStripOpacity" />
+
+    <Relation name="TrailerTheme" relation="Themes" />
   </Fields>
 </Table>

@@ -7,7 +7,8 @@
 
   <columns>
     <RelColumn name="Type" caption="Tipas" minWidth="100" />
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="Data" minWidth="80" />
+    <DataColumn name="DateTo" caption="Data iki" minWidth="80" />
     <DataColumn name="Run" caption="Rida" />
     <DataColumn name="ValidUntil" caption="Galioja iki" />
     <DataColumn name="ValidForKilometers" caption="Galioja km" />

@@ -9,6 +9,7 @@
     <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
     <Relation name="Type" notNull="true" relation="ServiceTypes" />
     <Date name="Date" notNull="true" />
+    <Date name="DateTo" />
     <Integer name="Run" />
     <Date name="ValidUntil" />
     <Integer name="ValidForKilometers" />

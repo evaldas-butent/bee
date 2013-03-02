@@ -26,4 +26,6 @@ name="Transport" label="Transportas" order="60"
   <Item name="FreightExchange" label="Užsakymų birža" service="freight_exchange" separator="true" />
   <Item name="ShippingSchedule" label="Reisų kalendorius" service="shipping_schedule" />
   <Item name="DriverTimeBoard" label="Vairuotojų užimtumas" service="driver_time_board" />
+  <Item name="TruckTimeBoard" label="Vilkikų užimtumas" service="truck_time_board" />
+  <Item name="TrailerTimeBoard" label="Puspriekabių užimtumas" service="trailer_time_board" />
 </Entry>

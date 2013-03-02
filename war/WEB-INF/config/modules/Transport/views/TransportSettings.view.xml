@@ -61,6 +61,48 @@
     
     <SimpleColumn name="DtbItemOpacity" />
     <SimpleColumn name="DtbStripOpacity" />
+
+    <SimpleColumn name="TruckPixelsPerNumber" />
+    <SimpleColumn name="TruckPixelsPerInfo" />
+    <SimpleColumn name="TruckSeparateCargo" />
+
+    <SimpleColumn name="TruckPixelsPerDay" />
+    <SimpleColumn name="TruckPixelsPerRow" />
+
+    <SimpleColumn name="TruckHeaderHeight" />
+    <SimpleColumn name="TruckFooterHeight" />
+
+    <SimpleColumn name="TruckSliderWidth" />
+    <SimpleColumn name="TruckBarHeight" />
+    
+    <SimpleColumn name="TruckTheme" />
+    <SimpleJoin name="TruckTheme" joinType="LEFT">
+      <SimpleColumn alias="TruckThemeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TruckItemOpacity" />
+    <SimpleColumn name="TruckStripOpacity" />
+
+    <SimpleColumn name="TrailerPixelsPerNumber" />
+    <SimpleColumn name="TrailerPixelsPerInfo" />
+    <SimpleColumn name="TrailerSeparateCargo" />
+
+    <SimpleColumn name="TrailerPixelsPerDay" />
+    <SimpleColumn name="TrailerPixelsPerRow" />
+
+    <SimpleColumn name="TrailerHeaderHeight" />
+    <SimpleColumn name="TrailerFooterHeight" />
+
+    <SimpleColumn name="TrailerSliderWidth" />
+    <SimpleColumn name="TrailerBarHeight" />
+    
+    <SimpleColumn name="TrailerTheme" />
+    <SimpleJoin name="TrailerTheme" joinType="LEFT">
+      <SimpleColumn alias="TrailerThemeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TrailerItemOpacity" />
+    <SimpleColumn name="TrailerStripOpacity" />
     
   </Columns>
 </View>
