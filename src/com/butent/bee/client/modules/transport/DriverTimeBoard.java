@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,7 +14,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -27,7 +25,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -94,50 +91,12 @@ class DriverTimeBoard extends ChartBase {
       this.id = driverId;
       this.name = BeeUtils.joinWords(firstName, lastName);
 
-      if (startDate == null && endDate == null) {
-        this.range = null;
-      } else if (endDate == null) {
-        this.range = Range.atLeast(startDate);
-      } else if (startDate == null) {
-        this.range = Range.atMost(endDate);
-      } else {
-        this.range = Range.closed(startDate, BeeUtils.max(startDate, endDate));
-      }
+      this.range = ChartHelper.getActivity(startDate, endDate);
     }
 
     @Override
     public Range<JustDate> getRange() {
       return range;
-    }
-
-    private List<Range<JustDate>> getInactivity(Range<JustDate> activeRange) {
-      List<Range<JustDate>> result = Lists.newArrayList();
-      if (activeRange == null || getRange() == null) {
-        return result;
-      }
-
-      if (activeRange.hasLowerBound() && getRange().hasLowerBound()
-          && BeeUtils.isLess(activeRange.lowerEndpoint(), getRange().lowerEndpoint())) {
-        result.add(Range.closed(activeRange.lowerEndpoint(),
-            BeeUtils.min(activeRange.upperEndpoint(),
-                TimeUtils.previousDay(getRange().lowerEndpoint()))));
-      }
-
-      if (activeRange.hasUpperBound() && getRange().hasUpperBound()
-          && BeeUtils.isMore(activeRange.upperEndpoint(), getRange().upperEndpoint())) {
-        result.add(Range.closed(BeeUtils.max(activeRange.lowerEndpoint(),
-            TimeUtils.nextDay(getRange().upperEndpoint())), activeRange.upperEndpoint()));
-      }
-
-      return result;
-    }
-
-    private boolean isActive(Range<JustDate> activeRange) {
-      if (activeRange == null || getRange() == null) {
-        return true;
-      } else {
-        return activeRange.isConnected(getRange());
-      }
     }
   }
 
@@ -194,67 +153,6 @@ class DriverTimeBoard extends ChartBase {
     }
   }
 
-  private static class Layout {
-    private final int driverIndex;
-
-    private final Set<Range<JustDate>> inactivity = Sets.newHashSet();
-
-    private final List<List<HasDateRange>> rows = Lists.newArrayList();
-
-    private final Set<Range<JustDate>> overlap = Sets.newHashSet();
-
-    private Layout(int driverIndex) {
-      this.driverIndex = driverIndex;
-    }
-
-    private void add(Collection<? extends HasDateRange> items, Range<JustDate> range) {
-      for (HasDateRange item : items) {
-        boolean added = false;
-
-        for (List<HasDateRange> row : rows) {
-          Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), range);
-
-          if (over.isEmpty()) {
-            row.add(item);
-            added = true;
-            break;
-          } else {
-            overlap.addAll(over);
-          }
-        }
-
-        if (!added) {
-          rows.add(Lists.newArrayList(item));
-        }
-      }
-    }
-
-    private void setInactivity(Driver driver, Range<JustDate> range) {
-      List<Range<JustDate>> off = driver.getInactivity(range);
-      if (off.isEmpty()) {
-        return;
-      }
-
-      inactivity.addAll(off);
-      if (rows.isEmpty()) {
-        return;
-      }
-
-      for (Range<JustDate> item : off) {
-        for (List<HasDateRange> row : rows) {
-          Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item, range);
-          if (!over.isEmpty()) {
-            overlap.addAll(over);
-          }
-        }
-      }
-    }
-
-    private int size() {
-      return Math.max(rows.size(), 1);
-    }
-  }
-
   static final String SUPPLIER_KEY = "driver_time_board";
   private static final String DATA_SERVICE = SVC_GET_DTB_DATA;
 
@@ -277,19 +175,12 @@ class DriverTimeBoard extends ChartBase {
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
 
   static void open(final Callback<IdentifiableWidget> callback) {
-    Assert.notNull(callback);
-
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
             DriverTimeBoard dtb = new DriverTimeBoard();
-            if (dtb.setData(response)) {
-              callback.onSuccess(dtb);
-            } else {
-              callback.onFailure(dtb.getCaption(), "negavo duomenų iš serverio",
-                  Global.CONSTANTS.sorry());
-            }
+            dtb.onCreate(response, callback);
           }
         });
   }
@@ -306,7 +197,7 @@ class DriverTimeBoard extends ChartBase {
     addStyleName(STYLE_PREFIX + "View");
 
     setRelevantDataViews(VIEW_DRIVERS, VIEW_DRIVER_ABSENCE, VIEW_ABSENCE_TYPES, VIEW_TRIP_DRIVERS,
-        VIEW_TRIPS, VIEW_VEHICLES, VIEW_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+        VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
         CommonsConstants.VIEW_COLORS);
   }
 
@@ -499,13 +390,13 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   protected void renderContent(ComplexPanel panel) {
-    List<Layout> driverLayout = doLayout();
+    List<ChartRowLayout> driverLayout = doLayout();
     if (driverLayout.isEmpty()) {
       return;
     }
 
     int rowCount = 0;
-    for (Layout layout : driverLayout) {
+    for (ChartRowLayout layout : driverLayout) {
       rowCount += layout.size();
     }
 
@@ -528,7 +419,7 @@ class DriverTimeBoard extends ChartBase {
     Widget overlapWidget;
 
     int rowIndex = 0;
-    for (Layout layout : driverLayout) {
+    for (ChartRowLayout layout : driverLayout) {
 
       int size = layout.size();
       int top = rowIndex * getRowHeight();
@@ -538,14 +429,15 @@ class DriverTimeBoard extends ChartBase {
             getDriverWidth() + calendarWidth);
       }
 
-      driverWidget = createDriverWidget(drivers.get(layout.driverIndex), !layout.overlap.isEmpty());
+      driverWidget = createDriverWidget(drivers.get(layout.getDataIndex()),
+          !layout.getOverlap().isEmpty());
       addDriverWidget(panel, driverWidget, rowIndex, rowIndex + size - 1);
 
       for (int i = 1; i < size; i++) {
         ChartHelper.addRowSeparator(panel, top + getRowHeight() * i, getChartLeft(), calendarWidth);
       }
 
-      for (Range<JustDate> range : layout.inactivity) {
+      for (Range<JustDate> range : layout.getInactivity()) {
         offWidget = new CustomDiv(STYLE_INACTIVE);
 
         Rectangle rectangle = getRectangle(range, rowIndex, rowIndex + size - 1);
@@ -554,8 +446,8 @@ class DriverTimeBoard extends ChartBase {
         panel.add(offWidget);
       }
 
-      for (int i = 0; i < layout.rows.size(); i++) {
-        for (HasDateRange item : layout.rows.get(i)) {
+      for (int i = 0; i < layout.getRows().size(); i++) {
+        for (HasDateRange item : layout.getRows().get(i)) {
 
           if (item instanceof DriverTrip) {
             itemWidget = createTripWidget((DriverTrip) item);
@@ -575,7 +467,8 @@ class DriverTimeBoard extends ChartBase {
             panel.add(itemWidget);
           }
           
-          Set<Range<JustDate>> overlap = ChartHelper.getOverlap(layout.overlap, item.getRange());
+          Set<Range<JustDate>> overlap = ChartHelper.getOverlap(layout.getOverlap(),
+              item.getRange());
           
           for (Range<JustDate> over : overlap) {
             overlapWidget = new CustomDiv(STYLE_OVERLAP);
@@ -679,15 +572,15 @@ class DriverTimeBoard extends ChartBase {
     return panel;
   }
 
-  private List<Layout> doLayout() {
-    List<Layout> result = Lists.newArrayList();
+  private List<ChartRowLayout> doLayout() {
+    List<ChartRowLayout> result = Lists.newArrayList();
     Range<JustDate> range = getVisibleRange();
 
     for (int driverIndex = 0; driverIndex < drivers.size(); driverIndex++) {
       Driver driver = drivers.get(driverIndex);
 
-      if (driver.isActive(range)) {
-        Layout layout = new Layout(driverIndex);
+      if (ChartHelper.isActive(driver, range)) {
+        ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
         layout.add(getTrips(driver.id, range), range);
         layout.add(getAbsence(driver.id, range), range);

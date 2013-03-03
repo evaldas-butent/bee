@@ -10,7 +10,10 @@
     <SimpleColumn name="Type" />
     <SimpleJoin name="Type" joinType="LEFT">
       <SimpleColumn name="Name" alias="TypeName" />
+      <SimpleColumn name="IsTruck" />
+      <SimpleColumn name="IsTrailer" />
     </SimpleJoin>
+
     <SimpleColumn name="Model" />
     <SimpleJoin name="Model" joinType="LEFT">
       <SimpleColumn name="Parent" alias="ParentModel" />
@@ -19,6 +22,7 @@
       </SimpleJoin>
       <SimpleColumn name="Name" alias="ModelName" />
     </SimpleJoin>
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="BodyNumber" />
     <SimpleColumn name="EngineNumber" />

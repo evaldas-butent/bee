@@ -172,35 +172,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     }
   }
 
-  private static class VehicleService implements HasDateRange {
-    private final Long vehicleId;
-    private final String vehicleNumber;
-
-    private final JustDate date;
-    private final String name;
-    private final String notes;
-
-    private final Range<JustDate> range;
-
-    private VehicleService(SimpleRow row) {
-      super();
-
-      this.vehicleId = row.getLong(COL_VEHICLE);
-      this.vehicleNumber = row.getValue(COL_NUMBER);
-
-      this.date = row.getDate(COL_SERVICE_DATE);
-      this.name = row.getValue(COL_SERVICE_NAME);
-      this.notes = row.getValue(COL_SERVICE_NOTES);
-
-      this.range = Range.closed(date, date);
-    }
-
-    @Override
-    public Range<JustDate> getRange() {
-      return range;
-    }
-  }
-
   static final String SUPPLIER_KEY = "shipping_schedule";
   private static final String DATA_SERVICE = SVC_GET_SS_DATA;
 
@@ -236,19 +207,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   private static final int SCROLL_STEP = 2;
 
   static void open(final Callback<IdentifiableWidget> callback) {
-    Assert.notNull(callback);
-
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
             ShippingSchedule ss = new ShippingSchedule();
-            if (ss.setData(response)) {
-              callback.onSuccess(ss);
-            } else {
-              callback.onFailure(ss.getCaption(), "negavo duomenų iš serverio",
-                  Global.CONSTANTS.sorry());
-            }
+            ss.onCreate(response, callback);
           }
         });
   }
@@ -273,7 +237,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     super();
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS,
+    setRelevantDataViews(VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDERS, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS,
         VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES, CommonsConstants.VIEW_COLORS,
         CommonsConstants.VIEW_THEME_COLORS);
   }
@@ -457,12 +421,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       for (SimpleRow row : vsData) {
         VehicleService service = new VehicleService(row);
 
-        if (!Objects.equal(service.vehicleId, lastVehicle)) {
+        if (!Objects.equal(service.getVehicleId(), lastVehicle)) {
           if (!vs.isEmpty()) {
             services.put(lastVehicle, Lists.newArrayList(vs));
             vs.clear();
           }
-          lastVehicle = service.vehicleId;
+          lastVehicle = service.getVehicleId();
         }
 
         vs.add(service);
@@ -947,9 +911,10 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_SERVICE_PANEL);
 
-    panel.setTitle(BeeUtils.buildLines(service.vehicleNumber, service.name, service.notes));
+    panel.setTitle(BeeUtils.buildLines(service.getVehicleNumber(),
+        service.getName(), service.getNotes()));
 
-    final Long vehicleId = service.vehicleId;
+    final Long vehicleId = service.getVehicleId();
     panel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -957,7 +922,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       }
     });
 
-    BeeLabel label = new BeeLabel(service.name);
+    BeeLabel label = new BeeLabel(service.getName());
     label.addStyleName(STYLE_SERVICE_LABEL);
 
     panel.add(label);
@@ -1210,7 +1175,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (services.containsKey(vehicleId)) {
       List<VehicleService> vsList = services.get(vehicleId);
       if (!vsList.isEmpty()) {
-        return vsList.get(0).vehicleNumber;
+        return vsList.get(0).getVehicleNumber();
       }
     }
 

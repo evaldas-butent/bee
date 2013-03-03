@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.BoundType;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
@@ -44,6 +45,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 class ChartHelper {
@@ -226,6 +228,18 @@ class ChartHelper {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
+  static Range<JustDate> getActivity(JustDate start, JustDate end) {
+    if (start == null && end == null) {
+      return null;
+    } else if (end == null) {
+      return Range.atLeast(start);
+    } else if (start == null) {
+      return Range.atMost(end);
+    } else {
+      return Range.closed(start, BeeUtils.max(start, end));
+    }
+  }
+
   static boolean getBoolean(BeeRowSet settings, String colName) {
     if (DataUtils.isEmpty(settings)) {
       return false;
@@ -281,6 +295,28 @@ class ChartHelper {
     }
 
     return Range.closed(start, end);
+  }
+
+  static List<Range<JustDate>> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
+    List<Range<JustDate>> result = Lists.newArrayList();
+    if (activeRange == null || item == null || item.getRange() == null) {
+      return result;
+    }
+
+    if (activeRange.hasLowerBound() && item.getRange().hasLowerBound()
+        && BeeUtils.isLess(activeRange.lowerEndpoint(), item.getRange().lowerEndpoint())) {
+      result.add(Range.closed(activeRange.lowerEndpoint(),
+          BeeUtils.min(activeRange.upperEndpoint(),
+              TimeUtils.previousDay(item.getRange().lowerEndpoint()))));
+    }
+
+    if (activeRange.hasUpperBound() && item.getRange().hasUpperBound()
+        && BeeUtils.isMore(activeRange.upperEndpoint(), item.getRange().upperEndpoint())) {
+      result.add(Range.closed(BeeUtils.max(activeRange.lowerEndpoint(),
+          TimeUtils.nextDay(item.getRange().upperEndpoint())), activeRange.upperEndpoint()));
+    }
+
+    return result;
   }
 
   static JustDate getLowerBound(JustDate min, int size, JustDate max) {
@@ -441,7 +477,7 @@ class ChartHelper {
       return Range.closed(min, max);
     }
   }
-
+  
   static JustDate getUpperBound(JustDate min, int size, JustDate max) {
     if (min == null || size <= 0) {
       return max;
@@ -449,6 +485,14 @@ class ChartHelper {
       return TimeUtils.nextDay(min, size - 1);
     } else {
       return TimeUtils.min(TimeUtils.nextDay(min, size - 1), max);
+    }
+  }
+
+  static boolean isActive(HasDateRange item, Range<JustDate> activeRange) {
+    if (activeRange == null || item == null || item.getRange() == null) {
+      return true;
+    } else {
+      return activeRange.isConnected(item.getRange());
     }
   }
 
@@ -914,7 +958,7 @@ class ChartHelper {
 
     return widget;
   }
-
+  
   private static Pair<Widget, Widget> renderRange(JustDate start, String startStyle,
       JustDate end, String endStyle, int width, int height) {
 
@@ -962,7 +1006,7 @@ class ChartHelper {
       return Pair.of(startWidget, endWidget);
     }
   }
-
+  
   private ChartHelper() {
   }
 }

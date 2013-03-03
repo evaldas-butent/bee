@@ -1,0 +1,120 @@
+package com.butent.bee.client.modules.transport;
+
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.communication.ResponseObject;
+
+class TruckTimeBoard extends VehicleTimeBoard {
+
+  static final String SUPPLIER_KEY = "truck_time_board";
+  private static final String DATA_SERVICE = SVC_GET_TRUCK_TB_DATA;
+
+  static void open(final Callback<IdentifiableWidget> callback) {
+    BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            TruckTimeBoard ss = new TruckTimeBoard();
+            ss.onCreate(response, callback);
+          }
+        });
+  }
+  
+  private TruckTimeBoard() {
+    super();
+  }
+
+  @Override
+  public String getCaption() {
+    return "Vilkikų užimtumas";
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "truck-tb";
+  }
+
+  @Override
+  public String getSupplierKey() {
+    return SUPPLIER_KEY;
+  }
+
+  @Override
+  protected String getBarHeightColumnName() {
+    return COL_TRUCK_BAR_HEIGHT;
+  }
+
+  @Override
+  protected String getDataService() {
+    return DATA_SERVICE;
+  }
+
+  @Override
+  protected String getDayWidthColumnName() {
+    return COL_TRUCK_PIXELS_PER_DAY;
+  }
+
+  @Override
+  protected String getFooterHeightColumnName() {
+    return COL_TRUCK_FOOTER_HEIGHT;
+  }
+
+  @Override
+  protected String getHeaderHeightColumnName() {
+    return COL_TRUCK_HEADER_HEIGHT;
+  }
+
+  @Override
+  protected String getInfoWidthColumnName() {
+    return COL_TRUCK_PIXELS_PER_INFO;
+  }
+
+  @Override
+  protected String getItemOpacityColumnName() {
+    return COL_TRUCK_ITEM_OPACITY;
+  }
+  
+  @Override
+  protected String getNumberWidthColumnName() {
+    return COL_TRUCK_PIXELS_PER_NUMBER;
+  }
+
+  @Override
+  protected String getRelatedTripColumnName() {
+    return COL_VEHICLE;
+  }
+  
+  @Override
+  protected String getRowHeightColumnName() {
+    return COL_TRUCK_PIXELS_PER_ROW;
+  }
+
+  @Override
+  protected String getSeparateCargoColumnName() {
+    return COL_TRUCK_SEPARATE_CARGO;
+  }
+
+  @Override
+  protected String getSettingsFormName() {
+    return FORM_TRUCK_SETTINGS;
+  }
+
+  @Override
+  protected String getSliderWidthColumnName() {
+    return COL_TRUCK_SLIDER_WIDTH;
+  }
+
+  @Override
+  protected String getStripOpacityColumnName() {
+    return COL_TRUCK_STRIP_OPACITY;
+  }
+
+  @Override
+  protected String getThemeColumnName() {
+    return COL_TRUCK_THEME;
+  }
+}

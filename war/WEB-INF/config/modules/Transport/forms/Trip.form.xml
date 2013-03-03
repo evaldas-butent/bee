@@ -20,8 +20,9 @@
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
           <FlowPanel>
             <DataSelector source="Vehicle" caption="Vilkikas" renderColumns="VehicleNumber"
-              d:size="75" d:unit="px" d:align="right" required="true" />
-            <DataSelector source="Trailer" caption="Puspriekabė" d:size="75" d:unit="px" d:align="right" />
+              filter="IsTruck" d:size="75" d:unit="px" d:align="right" required="true" />
+            <DataSelector source="Trailer" caption="Puspriekabė" filter="IsTrailer" 
+              d:size="75" d:unit="px" d:align="right" />
           </FlowPanel>
         </FlowPanel>
       </FlowPanel>

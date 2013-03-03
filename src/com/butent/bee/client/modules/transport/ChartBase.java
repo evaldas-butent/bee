@@ -21,6 +21,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -887,6 +888,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected boolean isFiltered() {
     return !filteredIndexes.isEmpty();
   }
+  
+  protected void onCreate(ResponseObject response, Callback<IdentifiableWidget> callback) {
+    if (setData(response)) {
+      callback.onSuccess(this);
+    } else {
+      callback.onFailure(getCaption(), "negavo duomenų iš serverio", Global.CONSTANTS.sorry());
+    }
+  }
 
   /**
    * @param row
@@ -1338,9 +1347,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       SimpleRowSet data = SimpleRowSet.restore(serialized);
 
       Collection<? extends HasDateRange> items = initItems(data);
-      logger.debug(getCaption(), "loaded", items.size(), "items");
-
-      setMaxRange(items);
+      if (items != null) {
+        logger.debug(getCaption(), "loaded", items.size(), "items");
+        setMaxRange(items);
+      }
     }
 
     initData(rowSet);

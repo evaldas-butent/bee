@@ -13,7 +13,7 @@
     <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
       renderColumns="ParentModelName ModelName" decorator="flex-left" d:size="50" d:rootStyle="&MARGIN;"
       filter="parent" />
-    <DataSelector source="Type" caption="Tipas" decorator="flex-left" d:size="40" />
+    <DataSelector source="Type" caption="Tipas" renderColumns="TypeName" decorator="flex-left" d:size="40" />
   </FlowPanel>
     
   <FlowPanel class="flexBox-horizontal">

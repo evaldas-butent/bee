@@ -23,7 +23,7 @@
 
     <FlowPanel style="&row; margin-top: 2ex;">
       <Label html="Numerio stulpelio plotis px:" style="&lbl;" />
-      <InputSpinner source="TrailerPixelsPerNumber" minValue="4" maxValue="100" style="&spin;" />
+      <InputSpinner source="TrailerPixelsPerNumber" minValue="4" maxValue="120" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
       <Label html="Informacinio stulpelio plotis px:" style="&lbl;" />

@@ -32,6 +32,8 @@ public class TransportConstants {
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
+  public static final String SVC_GET_TRUCK_TB_DATA = "GetTruckTbData";
+  public static final String SVC_GET_TRAILER_TB_DATA = "GetTrailerTbData";
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
@@ -57,6 +59,7 @@ public class TransportConstants {
   public static final String TBL_ORDER_CARGO = "OrderCargo";
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
+  public static final String TBL_CARGO_HANDLING = "CargoHandling";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
@@ -65,7 +68,7 @@ public class TransportConstants {
 
   public static final String VIEW_ORDERS = "TransportationOrders";
 
-  public static final String VIEW_CARGO = "OrderCargo";
+  public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_SERVICES = "CargoServices";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
@@ -105,6 +108,7 @@ public class TransportConstants {
   public static final String COL_TRIP_DATE_TO = "DateTo";
   public static final String COL_TRIP_PLANNED_END_DATE = "PlannedEndDate";
   public static final String COL_TRIP_PERCENT = "TripPercent";
+  public static final String COL_TRIP_NOTES = "Notes";
 
   public static final String COL_EXPEDITION = "Expedition";
   public static final String COL_EXPEDITION_TYPE = "Name";
@@ -116,6 +120,8 @@ public class TransportConstants {
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
 
+  public static final String COL_CARGO_HANDLING_NOTES = "Notes";
+  
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
   public static final String COL_OWNER_NAME = "OwnerName";
@@ -150,6 +156,9 @@ public class TransportConstants {
   public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
   public static final String COL_TRAILER_NUMBER = "TrailerNumber";
 
+  public static final String COL_VEHICLE_START_DATE = "StartDate";
+  public static final String COL_VEHICLE_END_DATE = "EndDate";
+  
   public static final String COL_DRIVER = "Driver";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
   public static final String COL_DRIVER_START_DATE = "StartDate";
@@ -159,6 +168,7 @@ public class TransportConstants {
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
 
   public static final String COL_SERVICE_DATE = "Date";
+  public static final String COL_SERVICE_DATE_TO = "DateTo";
   public static final String COL_SERVICE_TYPE = "Type";
   public static final String COL_SERVICE_NAME = "Name";
   public static final String COL_SERVICE_NOTES = "Notes";
@@ -171,6 +181,9 @@ public class TransportConstants {
   public static final String COL_ABSENCE_FROM = "DateFrom";
   public static final String COL_ABSENCE_TO = "DateTo";
   public static final String COL_ABSENCE_NOTES = "Notes";
+
+  public static final String COL_IS_TRUCK = "IsTruck";
+  public static final String COL_IS_TRAILER = "IsTrailer";
 
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
@@ -220,6 +233,42 @@ public class TransportConstants {
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
 
+  public static final String COL_TRUCK_PIXELS_PER_NUMBER = "TruckPixelsPerNumber";
+  public static final String COL_TRUCK_PIXELS_PER_INFO = "TruckPixelsPerInfo";
+  public static final String COL_TRUCK_SEPARATE_CARGO = "TruckSeparateCargo";
+
+  public static final String COL_TRUCK_PIXELS_PER_DAY = "TruckPixelsPerDay";
+  public static final String COL_TRUCK_PIXELS_PER_ROW = "TruckPixelsPerRow";
+
+  public static final String COL_TRUCK_HEADER_HEIGHT = "TruckHeaderHeight";
+  public static final String COL_TRUCK_FOOTER_HEIGHT = "TruckFooterHeight";
+
+  public static final String COL_TRUCK_SLIDER_WIDTH = "TruckSliderWidth";
+  public static final String COL_TRUCK_BAR_HEIGHT = "TruckBarHeight";
+
+  public static final String COL_TRUCK_THEME = "TruckTheme";
+
+  public static final String COL_TRUCK_ITEM_OPACITY = "TruckItemOpacity";
+  public static final String COL_TRUCK_STRIP_OPACITY = "TruckStripOpacity";
+
+  public static final String COL_TRAILER_PIXELS_PER_NUMBER = "TrailerPixelsPerNumber";
+  public static final String COL_TRAILER_PIXELS_PER_INFO = "TrailerPixelsPerInfo";
+  public static final String COL_TRAILER_SEPARATE_CARGO = "TrailerSeparateCargo";
+
+  public static final String COL_TRAILER_PIXELS_PER_DAY = "TrailerPixelsPerDay";
+  public static final String COL_TRAILER_PIXELS_PER_ROW = "TrailerPixelsPerRow";
+
+  public static final String COL_TRAILER_HEADER_HEIGHT = "TrailerHeaderHeight";
+  public static final String COL_TRAILER_FOOTER_HEIGHT = "TrailerFooterHeight";
+
+  public static final String COL_TRAILER_SLIDER_WIDTH = "TrailerSliderWidth";
+  public static final String COL_TRAILER_BAR_HEIGHT = "TrailerBarHeight";
+
+  public static final String COL_TRAILER_THEME = "TrailerTheme";
+
+  public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
+  public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
+  
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -229,13 +278,19 @@ public class TransportConstants {
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";
   public static final String FORM_DTB_SETTINGS = "TrDtbSettings";
+  public static final String FORM_TRUCK_SETTINGS = "TruckTbSettings";
+  public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_DRIVERS = "Drivers";
   public static final String PROP_ABSENCE = "Absence";
+  public static final String PROP_VEHICLES = "Vehicles";
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
   public static final String PROP_DATA = "Data";
+  public static final String PROP_TRIPS = "Trips";
+  public static final String PROP_CARGO = "Cargo";
+  public static final String PROP_CARGO_HANDLING = "CargoHandling";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

@@ -19,7 +19,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
@@ -150,19 +149,12 @@ class FreightExchange extends ChartBase {
   private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
 
   static void open(final Callback<IdentifiableWidget> callback) {
-    Assert.notNull(callback);
-
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
             FreightExchange fx = new FreightExchange();
-            if (fx.setData(response)) {
-              callback.onSuccess(fx);
-            } else {
-              callback.onFailure(fx.getCaption(), "negavo duomenų iš serverio",
-                  Global.CONSTANTS.sorry());
-            }
+            fx.onCreate(response, callback);
           }
         });
   }
@@ -182,7 +174,7 @@ class FreightExchange extends ChartBase {
     super();
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_ORDERS, VIEW_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+    setRelevantDataViews(VIEW_ORDERS, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
         CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
   }
 
@@ -590,7 +582,7 @@ class FreightExchange extends ChartBase {
     ClickHandler opener = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_CARGO, cargoId);
+        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
       }
     };
 

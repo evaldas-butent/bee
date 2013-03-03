@@ -15,7 +15,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -589,7 +589,7 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
     GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
@@ -608,13 +608,12 @@ public class TransportHandler {
       }
     };
 
-    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.SUPPLIER_KEY,
-        new MenuManager.MenuCallback() {
-          @Override
-          public void onSelection(String parameters) {
-            FreightExchange.open(showInNewTab);
-          }
-        });
+    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        FreightExchange.open(showInNewTab);
+      }
+    });
 
     WidgetFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
@@ -623,13 +622,12 @@ public class TransportHandler {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.SUPPLIER_KEY,
-        new MenuManager.MenuCallback() {
-          @Override
-          public void onSelection(String parameters) {
-            ShippingSchedule.open(showInNewTab);
-          }
-        });
+    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        ShippingSchedule.open(showInNewTab);
+      }
+    });
 
     WidgetFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
@@ -638,18 +636,45 @@ public class TransportHandler {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(DriverTimeBoard.SUPPLIER_KEY,
-        new MenuManager.MenuCallback() {
-          @Override
-          public void onSelection(String parameters) {
-            DriverTimeBoard.open(showInNewTab);
-          }
-        });
-    
+    BeeKeeper.getMenu().registerMenuCallback(DriverTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        DriverTimeBoard.open(showInNewTab);
+      }
+    });
+
     WidgetFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
       public void create(Callback<IdentifiableWidget> callback) {
         DriverTimeBoard.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(TruckTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        TruckTimeBoard.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        TruckTimeBoard.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(TrailerTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        TrailerTimeBoard.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        TrailerTimeBoard.open(callback);
       }
     });
   }
