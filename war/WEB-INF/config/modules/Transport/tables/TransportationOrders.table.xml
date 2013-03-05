@@ -14,5 +14,6 @@
     <Relation name="CustomerPerson" relation="CompanyPersons" label="Kontaktas" />
     <Relation name="Payer" relation="Companies" label="Mokėtojas" />
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
+    <Text name="Notes"/>
   </Fields>
 </Table>

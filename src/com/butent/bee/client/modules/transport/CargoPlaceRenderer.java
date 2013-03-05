@@ -31,6 +31,7 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
 
     private final int dateIndex;
     private final int countryIndex;
+    private final int codeIndex;
     private final int placeIndex;
     private final int terminalIndex;
 
@@ -41,13 +42,12 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
 
       dateIndex = DataUtils.getColumnIndex(prefix + "Date", columns);
       countryIndex = DataUtils.getColumnIndex(prefix + "CountryName", columns);
+      codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
       placeIndex = DataUtils.getColumnIndex(prefix + "Place", columns);
       terminalIndex = DataUtils.getColumnIndex(prefix + "Terminal", columns);
 
-      int flagIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
-
-      if (flagIndex != BeeConst.UNDEF) {
-        flagRenderer = new FlagRenderer(CellSource.forColumn(columns.get(flagIndex), flagIndex));
+      if (codeIndex != BeeConst.UNDEF) {
+        flagRenderer = new FlagRenderer(CellSource.forColumn(columns.get(codeIndex), codeIndex));
       } else {
         flagRenderer = null;
       }

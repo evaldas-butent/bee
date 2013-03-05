@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Order" relation="TransportationOrders" notNull="true" cascade="DELETE" />
-    <String name="Description" precision="100" notNull="true" />
+    <Text name="Description" notNull="true" />
     <Numeric name="Price" precision="12" scale="2" />
     <Relation name="Currency" relation="Currencies" />
 
@@ -27,6 +27,8 @@
     <Integer name="LoadedKilometers" />
     <Integer name="EmptyKilometers" />
     <Boolean name="Partial" />
+    <Boolean name="Outsized" />
+    <Boolean name="Dangerous" />
     <Numeric name="ExchangeOfPalettes" precision="2" />
 
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />

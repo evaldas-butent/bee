@@ -11,11 +11,23 @@
     <SimpleJoin name="Order" joinType="INNER">
       <SimpleColumn name="Status" />
       <SimpleColumn name="Manager" />
+      <SimpleColumn name="Date" alias="OrderDate" />
       <SimpleColumn name="OrderNo" />
+      
       <SimpleColumn name="Customer" />
       <SimpleJoin joinType="LEFT" name="Customer">
         <SimpleColumn name="Name" alias="CustomerName" />
       </SimpleJoin>
+      
+      <SimpleColumn name="CustomerPerson" />
+      <SimpleJoin name="CustomerPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PersonFirstName" name="FirstName" />
+          <SimpleColumn alias="PersonLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleColumn name="Notes" alias="OrderNotes" />
     </SimpleJoin>
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
@@ -66,6 +78,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Partial" />
+    <SimpleColumn name="Outsized" />
+    <SimpleColumn name="Dangerous" />
     <SimpleColumn name="ExchangeOfPalettes" />
 
     <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">

@@ -8,6 +8,8 @@ name="Transport" label="Transportas" order="60"
   <Item name="ShippingTerms" label="Krovinių pristatymo sąlygos" service="grid" parameters="ShippingTerms" />
   <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
 
+  <Item name="Requests" label="Užklausimai" service="grid" parameters="OrderRequests" separator="true" />
+
   <Item name="Trips" label="Reisai" service="grid" parameters="Trips" separator="true" />
   <Item name="Drivers" label="Vairuotojai" service="grid" parameters="Drivers" separator="true" />
   <Item name="AbsenceTypes" label="Nebuvimo darbe tipai" service="grid" parameters="AbsenceTypes" />

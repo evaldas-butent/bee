@@ -133,7 +133,7 @@ public class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return new CargoFormHandler();
+      return this;
     }
   }
 
@@ -384,7 +384,7 @@ public class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return null;
+      return this;
     }
   }
 
@@ -598,6 +598,8 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
+
+    FormFactory.registerFormInterceptor("OrderRequest", new OrderRequestHandler());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 
