@@ -20,6 +20,8 @@
     <Relation name="CompanySize" relation="CompanySizes" label="Įmonės dydis" />
     <Relation name="InformationSource" relation="InformationSources" label="Informacijos šaltinis" />
 
+    <String name="Rating" precision="100" label="Reitingas" />
+
     <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="Sąryšis" />
     <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="Sąryšio būsena" />
 

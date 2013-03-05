@@ -59,6 +59,8 @@
       <SimpleColumn alias="InfoSourceName" name="Name" />
     </SimpleJoin>
 
+    <SimpleColumn name="Rating" />
+
     <SimpleColumn name="CompanyRelationType" />
     <SimpleJoin joinType="LEFT" name="CompanyRelationType">
       <SimpleColumn alias="RelationTypeName" name="Name" />

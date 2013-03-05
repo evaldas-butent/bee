@@ -44,10 +44,22 @@
           	 <row>
           	   <Label html="Įmonės dydis:" />
           	   <DataSelector source="CompanySize" style="width: 100px;" />
-          	 </row>
-          	 <row>
           	   <Label html="Informacijos šaltinis:" />
           	   <DataSelector source="InformationSource"  style="width: 100px;"/>
+          	 </row>
+          	 <row>
+          	   <Label html="Įmonės veiklos:" />
+          	   <cell colSpan="3">
+          	     <!--  TODO: MultiSelector require implementation
+          	     <MultiSelector viewName="CompanyActivities" property="Activities" renderColumns="ActivityName"
+       			   editEnabled="true" editPopup="true" style="width: 100%;" />
+       			 -->
+       			  <Label html="TODO: MultiSelector require implementation" />
+          	   </cell>
+          	 </row>
+          	 <row>
+          	   <Label html="Reitingas:" />
+          	   <InputText source="Rating" style="width:100px;" />
           	 </row>
           </Table>
         </FlowPanel>
