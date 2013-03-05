@@ -2,6 +2,7 @@
 <Table xmlns="http://www.butent.com/table"
 
   name="Roles"
+  idChunk="1"
   idName="RoleID"
   x="41" y="121"
   >

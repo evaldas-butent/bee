@@ -848,6 +848,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   private final String moduleName;
   private final String name;
+  private final int idChunk;
   private final String idName;
   private final String versionName;
   private final boolean auditable;
@@ -873,6 +874,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     this.moduleName = moduleName;
     this.name = xmlTable.name;
+    this.idChunk = xmlTable.idChunk;
     this.idName = xmlTable.idName;
     this.versionName = xmlTable.versionName;
     this.auditable = noAudit ? false : xmlTable.audit;
@@ -941,8 +943,9 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
-        "Id Name", getIdName(), "Version Name", getVersionName(), "Active", isActive(),
-        "Auditable", isAuditable());
+        "Id Chunk", getIdChunk(), "Id Name", getIdName(), "Version Name", getVersionName(),
+        "Active", isActive(), "Auditable", isAuditable(),
+        "Records visible", areRecordsVisible(), "Records editable", areRecordsEditable());
 
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
     int i = 0;
@@ -955,7 +958,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
           "Defaults", field.getDefaults(),
           "Extended", field.isExtended(), "Translatable", field.isTranslatable(),
-          "Label", field.getLabel(), "Auditable", isAuditable() ? field.isAuditable() : null);
+          "Label", field.getLabel(), "Auditable", isAuditable() ? field.isAuditable() : false);
 
       if (field instanceof BeeRelation) {
         PropertyUtils.addChildren(info,
@@ -1024,6 +1027,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   public Collection<BeeForeignKey> getForeignKeys() {
     return ImmutableList.copyOf(foreignKeys.values());
+  }
+
+  public int getIdChunk() {
+    return idChunk;
   }
 
   public String getIdName() {

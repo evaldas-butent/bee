@@ -17,6 +17,7 @@
       <FlowPanel>
         <DataSelector source="LoadingCountry" style="width:135px;" >
           <renderToken source="LoadingCountryName" />
+          <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
           <selectorColumn source="Name" />
           <selectorColumn source="Code">
             <ui:renderer type="flag" />
@@ -51,6 +52,7 @@
       <FlowPanel>
         <DataSelector source="UnloadingCountry" style="width:135px;" >
           <renderToken source="UnloadingCountryName" />
+          <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
           <selectorColumn source="Name" />
           <selectorColumn source="Code">
             <ui:renderer type="flag" />

@@ -65,7 +65,6 @@
         <Label html="Ilgis" horizontalAlignment="right" />
         <InputDecimal source="Length" format="#.00" />
         <Label html="Pastabos" />
-        <Button name="profit" html="Pelnas" style="float: right" />
       </row>
       <row>
         <Label html="Numeris" horizontalAlignment="right" />
@@ -76,6 +75,9 @@
         <InputDecimal source="Width" format="#.00" />
         <cell rowSpan="3">
           <InputArea source="Notes" characterWidth="30" style="height: 100%" />
+        </cell>
+        <cell rowSpan="2">
+          <Button name="profit" html="Pelnas" />
         </cell>
       </row>
       <row>

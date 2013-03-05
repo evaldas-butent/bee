@@ -208,6 +208,8 @@ public class XmlTable {
   @XmlAttribute
   public String name;
   @XmlAttribute
+  public int idChunk;
+  @XmlAttribute
   public String idName;
   @XmlAttribute
   public String versionName;

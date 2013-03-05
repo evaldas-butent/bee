@@ -33,6 +33,7 @@
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="type:tableNameType" use="required" />
+    <xs:attribute name="idChunk" type="xs:positiveInteger" default="50" />
     <xs:attribute name="idName" type="type:fieldNameType" default="ID" />
     <xs:attribute name="versionName" type="type:fieldNameType" default="VERSION" />
     <xs:attribute name="audit" type="xs:boolean" default="true" />

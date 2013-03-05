@@ -7,7 +7,6 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -44,7 +43,6 @@ public class IdGeneratorBean {
   @EJB
   SystemBean sys;
 
-  private final int idChunk = 50;
   private final Map<String, long[]> idCache = Maps.newHashMap();
 
   @PreDestroy
@@ -72,28 +70,30 @@ public class IdGeneratorBean {
   }
 
   public long getId(String source) {
-    Assert.state(sys.isTable(source));
+    BeeTable table = sys.getTable(source);
 
-    long[] ids = idCache.get(source);
+    long[] ids = idCache.get(table.getName());
 
     if (ids == null || ids[NEXT_ID_INDEX] >= ids[LAST_ID_INDEX]) {
-      ids = prepareId(source);
+      ids = prepareId(table);
     }
     return ++ids[NEXT_ID_INDEX];
   }
 
-  private long[] prepareId(String source) {
+  private long[] prepareId(BeeTable table) {
+    String source = table.getName();
+    int chunk = table.getIdChunk();
     IsCondition wh = SqlUtils.equals(ID_TABLE, ID_KEY, source);
 
     SqlUpdate su = new SqlUpdate(ID_TABLE)
         .addConstant(sys.getVersionName(ID_TABLE), System.currentTimeMillis())
-        .addExpression(ID_LAST, SqlUtils.plus(SqlUtils.name(ID_LAST), SqlUtils.constant(idChunk)))
+        .addExpression(ID_LAST, SqlUtils.plus(SqlUtils.name(ID_LAST), SqlUtils.constant(chunk)))
         .setWhere(wh);
 
     long lastId;
 
     if (qs.updateData(su) == 0) {
-      String idFld = sys.getIdName(source);
+      String idFld = table.getIdName();
 
       lastId = BeeUtils.unbox(qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source)));
 
@@ -104,14 +104,14 @@ public class IdGeneratorBean {
       } else {
         si.addConstant(sys.getIdName(ID_TABLE), getId(ID_TABLE));
       }
-      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId += idChunk);
+      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId += chunk);
       qs.insertData(si);
     } else {
-      lastId = BeeUtils.unbox(
-          qs.getLong(new SqlSelect().addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh)));
+      lastId = BeeUtils.unbox(qs.getLong(new SqlSelect()
+          .addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh)));
     }
     long[] ids = new long[2];
-    ids[NEXT_ID_INDEX] = lastId - idChunk;
+    ids[NEXT_ID_INDEX] = lastId - chunk;
     ids[LAST_ID_INDEX] = lastId;
 
     idCache.put(source, ids);
