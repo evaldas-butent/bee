@@ -53,6 +53,11 @@
     <SimpleJoin joinType="LEFT" name="CompanySize">
       <SimpleColumn alias="CompanySizeName" name="SizeName" />
     </SimpleJoin>
+    
+    <SimpleColumn name="InformationSource" />
+    <SimpleJoin joinType="LEFT" name="InformationSource">
+      <SimpleColumn alias="InfoSourceName" name="Name" />
+    </SimpleJoin>
 
     <SimpleColumn name="CompanyRelationType" />
     <SimpleJoin joinType="LEFT" name="CompanyRelationType">

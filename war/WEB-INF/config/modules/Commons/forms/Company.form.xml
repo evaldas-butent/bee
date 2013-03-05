@@ -42,8 +42,12 @@
         <FlowPanel style="margin:5px;">
           <Table>
           	 <row>
-          	   <DataSelector source="CompanySize" caption="Įmonės dydis:" style="width: 100px;"
-               d:size="75" d:unit="px" />
+          	   <Label html="Įmonės dydis:" />
+          	   <DataSelector source="CompanySize" style="width: 100px;" />
+          	 </row>
+          	 <row>
+          	   <Label html="Informacijos šaltinis:" />
+          	   <DataSelector source="InformationSource"  style="width: 100px;"/>
           	 </row>
           </Table>
         </FlowPanel>

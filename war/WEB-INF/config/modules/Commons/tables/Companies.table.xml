@@ -18,6 +18,7 @@
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
 
     <Relation name="CompanySize" relation="CompanySizes" label="Įmonės dydis" />
+    <Relation name="InformationSource" relation="InformationSources" label="Informacijos šaltinis" />
 
     <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="Sąryšis" />
     <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="Sąryšio būsena" />
