@@ -12,6 +12,7 @@ import com.butent.bee.shared.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.ejb.Stateless;
 
@@ -78,15 +79,16 @@ public class ResultSetBean {
     Assert.noNulls(rs, buff);
     DateTime start = new DateTime();
 
-    BeeColumn[] cols = null;
+    List<BeeColumn> columns;
     int c;
 
     try {
-      cols = JdbcUtils.getColumns(rs);
-      c = cols.length;
+      columns = JdbcUtils.getColumns(rs);
+      c = columns.size();
     } catch (JdbcException ex) {
       logger.error(ex);
       buff.addError(ex);
+      columns = null;
       c = 0;
     }
 
@@ -95,10 +97,7 @@ public class ResultSetBean {
       return;
     }
 
-    for (int i = 0; i < c; i++) {
-      buff.addColumn(cols[i]);
-    }
-
+    buff.addColumns(columns);
     if (debug) {
       buff.addColumn(new BeeColumn(start.toTimeString()));
     }
@@ -106,7 +105,7 @@ public class ResultSetBean {
     try {
       while (rs.next()) {
         for (int i = 0; i < c; i++) {
-          buff.add(rs.getString(cols[i].getIndex()));
+          buff.add(rs.getString(i + 1));
         }
         if (debug) {
           buff.add(new DateTime().toTimeString());

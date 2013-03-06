@@ -70,6 +70,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
@@ -389,7 +390,8 @@ public class MailPanel extends AbstractFormInterceptor {
           EventUtils.allowCopyMove(event);
           EventUtils.setDndData(event, placeId);
 
-          Collection<RowInfo> rows = getGridPresenter().getGridView().getSelectedRows();
+          Collection<RowInfo> rows =
+              getGridPresenter().getGridView().getSelectedRows(SelectedRows.ALL);
           Set<Long> ids = Sets.newHashSet();
 
           if (!BeeUtils.isEmpty(rows)) {
@@ -897,7 +899,7 @@ public class MailPanel extends AbstractFormInterceptor {
         }
         final List<String> options = Lists.newArrayList("Aktyvų laišką");
         final Collection<RowInfo> rows = messagesHandler.getGridPresenter().getGridView()
-            .getSelectedRows();
+            .getSelectedRows(SelectedRows.ALL);
 
         if (!BeeUtils.isEmpty(rows)) {
           options.add(BeeUtils.joinWords("Pažymėtus", rows.size(), "laiškus"));

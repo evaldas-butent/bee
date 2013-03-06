@@ -59,6 +59,7 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleDescriptor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
@@ -1145,6 +1146,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private final RowChangeScheduler rowChangeScheduler =
       new RowChangeScheduler(defaultRowChangeSensitivityMillis);
 
+  private Evaluator rowEditable = null;
+  
   public CellGrid() {
     setElement(Document.get().createDivElement());
 
@@ -1676,6 +1679,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  public boolean isRowEditable(IsRow rowValue) {
+    boolean ok = (rowValue != null) && rowValue.isEditable();
+    if (ok && getRowEditable() != null) {
+      getRowEditable().update(rowValue);
+      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+    }
+    return ok;
   }
 
   public boolean isRowSelected(long rowId) {
@@ -2404,6 +2416,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (refresh) {
       refresh();
     }
+  }
+
+  public void setRowEditable(Evaluator rowEditable) {
+    this.rowEditable = rowEditable;
   }
 
   public void setRowStyles(ConditionalStyle rowStyles) {
@@ -3324,6 +3340,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private ResizerMode getResizerStatus() {
     return resizerStatus;
+  }
+
+  private Evaluator getRowEditable() {
+    return rowEditable;
   }
 
   private NodeList<Element> getRowElements(int row) {
@@ -4700,7 +4720,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (wasSelected) {
       getSelectedRows().remove(rowId);
     } else {
-      getSelectedRows().put(rowId, new RowInfo(rowValue));
+      getSelectedRows().put(rowId, new RowInfo(rowValue, isRowEditable(rowValue)));
     }
 
     for (int col = 0; col < getColumnCount(); col++) {
@@ -4931,7 +4951,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizerMoveTimer().reset();
     setResizing(true);
   }
-
+  
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
@@ -4984,7 +5004,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       dst.setMargin(Edges.parse(src.getMargin()));
     }
   }
-  
+
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
     ColumnInfo columnInfo = getColumnInfo(columnId);

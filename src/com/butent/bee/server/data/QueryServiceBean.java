@@ -608,109 +608,125 @@ public class QueryServiceBean {
   }
 
   private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
-    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    List<BeeColumn> columns = Lists.newArrayList();
-    int idIndex = -1;
-    int versionIndex = -1;
-    int editableIndex = -1;
+    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
 
-    for (BeeColumn col : rsCols) {
-      if (view != null) {
-        String colName = col.getId();
+    int idIndex = BeeConst.UNDEF;
+    int versionIndex = BeeConst.UNDEF;
+    int editableIndex = BeeConst.UNDEF;
+
+    BeeRowSet result;
+    List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
+
+    if (view == null) {
+      result = new BeeRowSet(rsCols);
+      for (int i = 0; i < rsCols.size(); i++) {
+        indexes.add(i + 1);
+      }
+
+    } else {
+      result = new BeeRowSet();
+
+      for (int i = 0; i < rsCols.size(); i++) {
+        BeeColumn column = rsCols.get(i);
+        String colName = column.getId();
+        int colIndex = i + 1;
 
         if (view.hasColumn(colName)) {
-          view.initColumn(colName, col);
+          view.initColumn(colName, column);
+          result.addColumn(column);
+          indexes.add(colIndex);
 
         } else if (BeeUtils.same(colName, view.getSourceIdName())) {
-          idIndex = col.getIndex();
-          continue;
+          idIndex = colIndex;
 
         } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
-          versionIndex = col.getIndex();
-          continue;
+          versionIndex = colIndex;
 
         } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
-          editableIndex = col.getIndex();
-          continue;
+          editableIndex = colIndex;
         }
       }
-      columns.add(col);
     }
-    int cols = columns.size();
-    BeeRowSet result = new BeeRowSet(columns);
-    long idx = 0;
+
+    long rowId = 0;
     boolean editable = (view != null)
         ? sys.getTable(view.getSourceName()).areRecordsEditable() : true;
+        
+    int cc = result.getNumberOfColumns();
 
     while (rs.next()) {
-      String[] row = new String[cols];
+      String[] values = new String[cc];
 
-      for (int i = 0; i < cols; i++) {
-        BeeColumn column = columns.get(i);
-        int colIndex = column.getIndex();
+      for (int i = 0; i < cc; i++) {
+        BeeColumn column = result.getColumn(i);
+        int colIndex = indexes.get(i);
 
         switch (column.getType()) {
           case BOOLEAN:
-            row[i] = BooleanValue.pack(rs.getBoolean(colIndex));
+            values[i] = BooleanValue.pack(rs.getBoolean(colIndex));
             if (rs.wasNull()) {
-              row[i] = null;
+              values[i] = null;
             }
             break;
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            row[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
             break;
           case NUMBER:
           case DECIMAL:
             if (column.getScale() > 0) {
-              row[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
+              values[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
               break;
             }
             //$FALL-THROUGH$
           default:
-            row[i] = rs.getString(colIndex);
+            values[i] = rs.getString(colIndex);
         }
       }
-      if (idIndex < 0) {
-        idx++;
-      } else {
-        idx = rs.getLong(idIndex);
-      }
-      BeeRow beeRow;
 
-      if (versionIndex < 0) {
-        beeRow = new BeeRow(idx, row);
+      if (idIndex > 0) {
+        rowId = rs.getLong(idIndex);
       } else {
-        beeRow = new BeeRow(idx, rs.getLong(versionIndex), row);
+        rowId++;
       }
-      if (editableIndex >= 0) {
+
+      BeeRow row;
+      if (versionIndex > 0) {
+        row = new BeeRow(rowId, rs.getLong(versionIndex), values);
+      } else {
+        row = new BeeRow(rowId, values);
+      }
+
+      if (editableIndex > 0) {
         editable = BeeUtils.toBoolean(rs.getString(editableIndex));
       }
-      beeRow.setEditable(editable);
-      result.addRow(beeRow);
+      row.setEditable(editable);
+
+      result.addRow(row);
     }
-    if (idIndex >= 0) {
+
+    if (idIndex > 0) {
       result.setViewName(view.getName());
     }
-    logger.debug("cols:", result.getNumberOfColumns(), "rows:", result.getNumberOfRows());
+    logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
     return result;
   }
 
   private SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
-    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    int cols = rsCols.length;
-    String[] columns = new String[cols];
+    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
+    int cc = rsCols.size();
+    String[] columns = new String[cc];
 
-    for (int i = 0; i < cols; i++) {
-      columns[i] = rsCols[i].getId();
+    for (int i = 0; i < cc; i++) {
+      columns[i] = rsCols.get(i).getId();
     }
     SimpleRowSet res = new SimpleRowSet(columns);
 
     while (rs.next()) {
-      String[] row = new String[cols];
+      String[] row = new String[cc];
 
-      for (int i = 0; i < cols; i++) {
-        row[i] = rs.getString(rsCols[i].getIndex());
+      for (int i = 0; i < cc; i++) {
+        row[i] = rs.getString(i + 1);
       }
       res.addRow(row);
     }

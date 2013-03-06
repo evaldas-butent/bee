@@ -32,6 +32,8 @@ public class XmlView {
     public XmlExpression expr;
     @XmlAttribute
     public String label;
+    @XmlAttribute
+    public Boolean editable;
   }
 
   @XmlRootElement(name = "HiddenColumn", namespace = DataUtils.VIEW_NAMESPACE)

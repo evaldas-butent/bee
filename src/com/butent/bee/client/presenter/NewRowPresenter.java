@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -204,7 +205,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
         continue;
       }
 
-      if (column.isWritable()) {
+      if (column.isWritable(WriteMode.INSERT)) {
         columns.add(column);
         values.add(value);
       }

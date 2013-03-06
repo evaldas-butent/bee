@@ -45,7 +45,7 @@
     
     <FlowPanel style="&section;">
       <Label html="Pastabos" style="&labelLeft; vertical-align:top;" />
-      <InputArea source="OrderNotes" style="width:400px;" />
+      <InputArea source="Notes" style="width:400px;" />
     </FlowPanel>
 
     &separator;

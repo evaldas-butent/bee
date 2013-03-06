@@ -93,6 +93,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -159,7 +160,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private final CellGrid grid = new CellGrid();
 
-  private Evaluator rowEditable = null;
   private Evaluator rowValidation = null;
 
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
@@ -528,7 +528,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     if (gridDescr.getRowEditable() != null) {
-      setRowEditable(Evaluator.create(gridDescr.getRowEditable(), null, dataCols));
+      getGrid().setRowEditable(Evaluator.create(gridDescr.getRowEditable(), null, dataCols));
     }
     if (gridDescr.getRowValidation() != null) {
       setRowValidation(Evaluator.create(gridDescr.getRowValidation(), null, dataCols));
@@ -932,7 +932,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return true;
     }
 
-    if (!validateFormData(form, notificationListener, false)) {
+    if (!validateFormData(form, WriteMode.INSERT, notificationListener, false)) {
       return false;
     }
 
@@ -1000,7 +1000,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     IsRow newRow = form.getActiveRow();
     Assert.notNull(newRow, "formConfirm: active row is null");
 
-    if (!validateFormData(form, form, true)) {
+    if (!validateFormData(form, isAdding() ? WriteMode.INSERT : WriteMode.UPDATE, form, true)) {
       return;
     }
 
@@ -1122,8 +1122,18 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Collection<RowInfo> getSelectedRows() {
-    return getGrid().getSelectedRows().values();
+  public Collection<RowInfo> getSelectedRows(SelectedRows mode) {
+    if (getGrid().getSelectedRows().isEmpty() || !SelectedRows.EDITABLE.equals(mode)) {
+      return getGrid().getSelectedRows().values();
+    }
+    
+    Collection<RowInfo> result = Lists.newArrayList();
+    for (RowInfo rowInfo : getGrid().getSelectedRows().values()) {
+      if (rowInfo.isEditable()) {
+        result.add(rowInfo);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -1161,14 +1171,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (rowValue == null) {
       return false;
     }
-    if (getRowEditable() == null) {
-      return true;
-    }
-    getRowEditable().update(rowValue);
-    boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-
+    
+    boolean ok = getGrid().isRowEditable(rowValue);
     if (!ok && warn) {
-      notifyWarning("Row is read only:", getRowEditable().toString());
+      notifyWarning("Row is read only");
     }
     return ok;
   }
@@ -1541,8 +1547,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public boolean validateFormData(FormView form, NotificationListener notificationListener,
-      boolean focusOnError) {
+  public boolean validateFormData(FormView form, WriteMode writeMode, 
+      NotificationListener notificationListener, boolean focusOnError) {
 
     boolean ok = true;
     if (isReadOnly()) {
@@ -1562,7 +1568,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
 
       EditableColumn ec = entry.getValue();
-      if (!ec.isWritable()) {
+      if (!ec.isWritable(writeMode)) {
         continue;
       }
 
@@ -1919,10 +1925,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     return getGridInterceptor().getRowCaption(row, edit);
   }
 
-  private Evaluator getRowEditable() {
-    return rowEditable;
-  }
-
   private Evaluator getRowValidation() {
     return rowValidation;
   }
@@ -2129,7 +2131,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
-      if (dataColumn.isWritable()) {
+      if (dataColumn.isWritable(WriteMode.INSERT)) {
         columns.add(dataColumn);
         values.add(value);
       }
@@ -2255,10 +2257,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private void setNewRowPopup(ModalForm newRowPopup) {
     this.newRowPopup = newRowPopup;
-  }
-
-  private void setRowEditable(Evaluator rowEditable) {
-    this.rowEditable = rowEditable;
   }
 
   private void setRowValidation(Evaluator rowValidation) {

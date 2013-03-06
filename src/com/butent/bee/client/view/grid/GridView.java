@@ -15,6 +15,7 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
@@ -29,6 +30,10 @@ import java.util.List;
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, SearchView {
+  
+  public enum SelectedRows {
+    ALL, EDITABLE
+  }
 
   void applyOptions(String options);
 
@@ -54,7 +59,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   long getRelId();
 
-  Collection<RowInfo> getSelectedRows();
+  Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
   boolean isAdding();
 
@@ -70,6 +75,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void setRelId(long relId);
 
-  boolean validateFormData(FormView form, NotificationListener notificationListener,
-      boolean focusOnError);
+  boolean validateFormData(FormView form, WriteMode writeMode,
+      NotificationListener notificationListener, boolean focusOnError);
 }

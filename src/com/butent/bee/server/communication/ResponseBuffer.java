@@ -72,8 +72,8 @@ public class ResponseBuffer {
     setColumnCount(getColumnCount() + 1);
   }
 
-  public void addColumns(BeeColumn... cols) {
-    Assert.isPositive(cols.length);
+  public void addColumns(Collection<BeeColumn> cols) {
+    Assert.notEmpty(cols);
 
     for (BeeColumn col : cols) {
       addColumn(col);

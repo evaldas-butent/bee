@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -88,7 +89,7 @@ public class Queries {
 
     for (int i = 0; i < columns.size(); i++) {
       BeeColumn column = columns.get(i);
-      if (!column.isWritable()) {
+      if (!column.isWritable(WriteMode.INSERT)) {
         continue;
       }
 
@@ -140,7 +141,7 @@ public class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
-    deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version)), callback);
+    deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version, true)), callback);
   }
 
   public static void deleteRows(String viewName, Collection<RowInfo> rows) {

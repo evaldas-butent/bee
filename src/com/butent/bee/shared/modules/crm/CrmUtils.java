@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -69,7 +70,7 @@ public class CrmUtils {
       String oldValue = oldRow.getString(i);
       String newValue = newRow.getString(i);
 
-      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isWritable()) {
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isWritable(WriteMode.UPDATE)) {
         String label = column.getLabel();
         String note;
         

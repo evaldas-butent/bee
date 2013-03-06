@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
@@ -81,7 +82,8 @@ public class RowFactory {
     if (!event.isConsumed() && !BeeUtils.isEmpty(value)) {
       for (String colName : selector.getChoiceColumns()) {
         BeeColumn column = dataInfo.getColumn(colName);
-        if (column != null && column.isWritable() && ValueType.isString(column.getType())) {
+        if (column != null && column.isWritable(WriteMode.INSERT) 
+            && ValueType.isString(column.getType())) {
           Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
           break;
         }
@@ -278,14 +280,15 @@ public class RowFactory {
     if (!colNames.isEmpty()) {
       for (String colName : colNames) {
         BeeColumn column = dataInfo.getColumn(colName);
-        if (column.isWritable()) {
+        if (column.isWritable(WriteMode.INSERT)) {
           result.add(dataInfo.getColumn(colName));
         }
       }
     }
 
     for (BeeColumn column : dataInfo.getColumns()) {
-      if (column.isWritable() && (colNames.isEmpty() || !colNames.contains(column.getId())
+      if (column.isWritable(WriteMode.INSERT) 
+          && (colNames.isEmpty() || !colNames.contains(column.getId())
           && !column.isNullable() && !column.hasDefaults())) {
         result.add(column);
       }

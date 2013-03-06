@@ -93,10 +93,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     private final XmlExpression xmlExpression;
     private IsExpression expression = null;
     private final String label;
+    private final Boolean editable;
 
     public ColumnInfo(String alias, BeeField field, String colName, String locale,
         SqlFunction aggregate, boolean hidden, String parent, String owner,
-        XmlExpression expression, String label) {
+        XmlExpression expression, String label, Boolean editable) {
       this.colName = colName;
       this.alias = alias;
       this.field = field;
@@ -112,6 +113,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else {
         this.label = label;
       }
+      
+      this.editable = editable;
     }
 
     public SqlFunction getAggregate() {
@@ -129,6 +132,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         defaults = field.getDefaults();
       }
       return defaults;
+    }
+
+    public Boolean getEditable() {
+      return editable;
     }
 
     public IsExpression getExpression() {
@@ -424,6 +431,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnInfo(colName).getDefaults();
   }
 
+  public Boolean getColumnEditable(String colName) {
+    return getColumnInfo(colName).getEditable();
+  }
+  
   public IsExpression getColumnExpression(String colName) {
     return getColumnInfo(colName).getExpression();
   }
@@ -558,7 +569,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
-          "Read Only", isColReadOnly(col), "Level", getColumnLevel(col),
+          "Read Only", isColReadOnly(col), "Editable", getColumnEditable(col),
+          "Level", getColumnLevel(col),
           "Expression", isColCalculated(col) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
@@ -721,15 +733,28 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public void initColumn(String colName, BeeColumn column) {
     ColumnInfo info = getColumnInfo(colName);
-
+    
     column.setId(info.getName());
     column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
+
     column.setType(info.getType().toValueType());
+    column.setNullable(info.isNullable());
+    
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
-    column.setReadOnly(info.isReadOnly());
-    column.setNullable(info.isNullable());
-    column.setLevel(info.getLevel());
+
+    boolean ro = info.isReadOnly();
+    column.setReadOnly(ro);
+
+    int level = info.getLevel();
+    column.setLevel(level);
+
+    Boolean editable = info.getEditable();
+    if (editable == null) {
+      editable = !ro && level <= 0;
+    }
+    column.setEditable(editable);
+
     column.setDefaults(info.getDefaults());
   }
 
@@ -786,7 +811,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void addColumn(String alias, BeeField field, String colName, String locale,
-      String aggregateType, boolean hidden, String parent, XmlExpression expression, String label) {
+      String aggregateType, boolean hidden, String parent, XmlExpression expression, String label,
+      Boolean editable) {
 
     Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
         BeeUtils.joinWords("Reserved column name:", getName(), colName));
@@ -818,7 +844,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
     columns.put(BeeUtils.normalize(colName),
         new ColumnInfo(alias, field, colName, locale, aggregate, hidden, parent, ownerAlias,
-            expression, label));
+            expression, label, editable));
   }
 
   private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
@@ -877,7 +903,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             break;
         }
         String colName = SqlUtils.uniqueName();
-        addColumn(als, field, colName, null, null, true, parent, null, null);
+        addColumn(als, field, colName, null, null, true, parent, null, null, null);
         addColumns(relTable, relAls, col.columns, colName, tables);
 
       } else if (column instanceof XmlSimpleColumn) {
@@ -891,10 +917,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           aggregate = ((XmlAggregateColumn) col).aggregate;
         }
         if (col.expr != null) {
-          addColumn(null, null, colName, null, aggregate, hidden, null, col.expr, col.label);
+          addColumn(null, null, colName, null, aggregate, hidden, null, col.expr, col.label,
+              col.editable);
         } else {
           addColumn(alias, table.getField(col.name), colName, col.locale, aggregate, hidden,
-              parent, null, col.label);
+              parent, null, col.label, col.editable);
         }
       }
     }

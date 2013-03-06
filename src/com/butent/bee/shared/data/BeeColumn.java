@@ -3,7 +3,6 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
@@ -31,7 +30,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
    */
 
   private enum Serial {
-    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, LEVEL, DEFAULTS
+    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, EDITABLE, LEVEL, DEFAULTS
   }
 
   public static BeeColumn restore(String s) {
@@ -40,10 +39,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return c;
   }
 
-  private int index = BeeConst.UNDEF;
-
   private boolean nullable = false;
   private boolean readOnly = false;
+  private boolean editable = true;
 
   private int level = 0;
   private Pair<DefaultExpression, Object> defaults = null;
@@ -78,11 +76,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
       result.setProperties(getProperties().copy());
     }
 
-    result.setIndex(getIndex());
     result.setPrecision(getPrecision());
     result.setScale(getScale());
     result.setNullable(isNullable());
     result.setReadOnly(isReadOnly());
+    result.setEditable(isEditable());
 
     return result;
   }
@@ -119,6 +117,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
         case READ_ONLY:
           setReadOnly(Codec.unpack(value));
           break;
+        case EDITABLE:
+          setEditable(Codec.unpack(value));
+          break;
         case LEVEL:
           setLevel(BeeUtils.toInt(value));
           break;
@@ -142,9 +143,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
   public List<ExtendedProperty> getExtendedInfo() {
     List<Property> lst = getInfo();
 
-    PropertyUtils.addProperties(lst,
-        "Index", valueAsString(getIndex()),
-        "Pattern", getPattern());
+    PropertyUtils.addProperties(lst, "Pattern", getPattern());
 
     if (getProperties() != null) {
       lst.addAll(getProperties().getInfo());
@@ -156,10 +155,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return result;
   }
 
-  public int getIndex() {
-    return index;
-  }
-
   @Override
   public List<Property> getInfo() {
     return PropertyUtils.createProperties("Id", getId(),
@@ -169,6 +164,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
         "Scale", getScale(),
         "Nullable", isNullable(),
         "Read Only", isReadOnly(),
+        "Editable", isEditable(),
         "Level", getLevel(),
         "Defaults", getDefaults());
   }
@@ -189,6 +185,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return ValueType.TEXT.equals(getType()) && getPrecision() > 0;
   }
   
+  public boolean isEditable() {
+    return editable;
+  }
+
   public boolean isForeign() {
     return getLevel() > 0;
   }
@@ -205,8 +205,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
   }
 
-  public boolean isWritable() {
-    return !isReadOnly() && !isForeign();
+  public boolean isWritable(WriteMode mode) {
+    if (mode == WriteMode.UPDATE) {
+      return isEditable();
+    } else {
+      return !isReadOnly() && !isForeign();
+    }
   }
 
   @Override
@@ -238,6 +242,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
         case READ_ONLY:
           arr[i++] = Codec.pack(isReadOnly());
           break;
+        case EDITABLE:
+          arr[i++] = Codec.pack(isEditable());
+          break;
         case LEVEL:
           arr[i++] = getLevel();
           break;
@@ -254,8 +261,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     this.defaults = defaults;
   }
 
-  public void setIndex(int index) {
-    this.index = index;
+  public void setEditable(boolean editable) {
+    this.editable = editable;
   }
 
   public void setLevel(int level) {
@@ -273,13 +280,5 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
   @Override
   public String toString() {
     return getInfo().toString();
-  }
-
-  private String valueAsString(int v) {
-    if (BeeConst.isUndef(v)) {
-      return BeeUtils.joinWords(v, BeeConst.UNKNOWN);
-    } else {
-      return Integer.toString(v);
-    }
   }
 }

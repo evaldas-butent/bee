@@ -74,6 +74,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -916,7 +917,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
 
       BeeColumn column = getDataColumns().get(i);
-      if (column.isWritable()) {
+      if (column.isWritable(WriteMode.INSERT)) {
         columns.add(column);
         values.add(value);
       }
@@ -1442,14 +1443,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (rowValue == null) {
       return false;
     }
-    if (getRowEditable() == null) {
-      return true;
+    
+    boolean ok = rowValue.isEditable();
+    if (ok && getRowEditable() != null) {
+      getRowEditable().update(rowValue);
+      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
     }
-    getRowEditable().update(rowValue);
-    boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
 
     if (!ok && warn) {
-      notifyWarning("Row is read only:", getRowEditable().toString());
+      notifyWarning("Row is read only");
     }
     return ok;
   }

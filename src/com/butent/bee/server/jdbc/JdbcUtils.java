@@ -1,5 +1,7 @@
 package com.butent.bee.server.jdbc;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -203,24 +205,25 @@ public class JdbcUtils {
     return c;
   }
 
-  public static BeeColumn[] getColumns(ResultSet rs) throws JdbcException {
+  public static List<BeeColumn> getColumns(ResultSet rs) throws JdbcException {
     Assert.notNull(rs);
 
     int c = getColumnCount(rs);
     Assert.isPositive(c);
 
-    BeeColumn[] arr = new BeeColumn[c];
+    List<BeeColumn> columns = Lists.newArrayListWithCapacity(c);
 
     try {
       ResultSetMetaData md = rs.getMetaData();
       for (int i = 0; i < c; i++) {
-        arr[i] = new BeeColumn();
-        setColumnInfo(md, i + 1, arr[i]);
+        BeeColumn column = new BeeColumn();
+        setColumnInfo(md, i + 1, column);
+        columns.add(column);
       }
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-    return arr;
+    return columns;
   }
 
   public static Connection getConnection(DataSource src) throws JdbcException {
@@ -593,7 +596,6 @@ public class JdbcUtils {
     boolean ok = false;
 
     try {
-      col.setIndex(idx);
       String label = rsmd.getColumnLabel(idx);
       col.setId(BeeUtils.notEmpty(label, rsmd.getColumnName(idx)));
       col.setLabel(label);

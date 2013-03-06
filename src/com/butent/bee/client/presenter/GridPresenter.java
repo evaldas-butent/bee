@@ -42,6 +42,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -54,6 +55,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -334,7 +336,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           IsRow row = getActiveRow();
 
           if (row != null && getGridView().isRowEditable(row, true)) {
-            Collection<RowInfo> selectedRows = getGridView().getSelectedRows();
+            Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.EDITABLE);
 
             GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
 
@@ -696,7 +698,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (form.getViewPresenter() instanceof HasGridView) {
       GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
-      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
+      if (rootGrid != null && !rootGrid.validateFormData(form, WriteMode.INSERT, form, true)) {
         return false;
       }
     }
