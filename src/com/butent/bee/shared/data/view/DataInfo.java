@@ -339,6 +339,42 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return result;
   }
 
+  public String getEditableRelationSource(String colName) {
+    ViewColumn viewColumn = getViewColumn(colName);
+    if (viewColumn == null) {
+      return null;
+    }
+
+    if (hasEditableRelation(viewColumn)) {
+      if (containsColumn(viewColumn.getName())) {
+        return viewColumn.getName();
+      }
+      if (containsColumn(viewColumn.getField())) {
+        return viewColumn.getField();
+      }
+    }
+
+    if (!BeeUtils.isEmpty(viewColumn.getParent())) {
+      return getEditableRelationSource(viewColumn.getParent());
+    } else {
+      return null;
+    }
+  }
+
+  public String getEditableRelationView(String colName) {
+    ViewColumn viewColumn = getViewColumn(colName);
+
+    if (viewColumn == null) {
+      return null;
+    } else if (hasEditableRelation(viewColumn)) {
+      return viewColumn.getRelation();
+    } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
+      return getEditableRelationView(viewColumn.getParent());
+    } else {
+      return null;
+    }
+  }
+
   public String getEditForm() {
     return editForm;
   }
@@ -431,38 +467,15 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return tables;
   }
 
-  public String getRelationSource(String colName) {
+  public String getRelationView(String colName) {
     ViewColumn viewColumn = getViewColumn(colName);
+
     if (viewColumn == null) {
       return null;
-    }
-
-    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())) {
-      if (containsColumn(viewColumn.getName())) {
-        return viewColumn.getName();
-      }
-      if (containsColumn(viewColumn.getField())) {
-        return viewColumn.getField();
-      }
-    }
-
-    if (!BeeUtils.isEmpty(viewColumn.getParent())) {
-      return getRelationSource(viewColumn.getParent());
-    } else {
-      return null;
-    }
-  }
-
-  public String getRelationView(String colName, boolean root) {
-    ViewColumn viewColumn = getViewColumn(colName);
-    if (viewColumn == null) {
-      return null;
-    }
-
-    if ((!root || viewColumn.getLevel() <= 0) && !BeeUtils.isEmpty(viewColumn.getRelation())) {
+    } else if (!BeeUtils.isEmpty(viewColumn.getRelation())) {
       return viewColumn.getRelation();
     } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
-      return getRelationView(viewColumn.getParent(), root);
+      return getRelationView(viewColumn.getParent());
     } else {
       return null;
     }
@@ -563,6 +576,15 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   
   private String getCacheEviction() {
     return cacheEviction;
+  }
+  
+  private boolean hasEditableRelation(ViewColumn viewColumn) {
+    if (viewColumn == null) {
+      return false;
+    } else {
+      return !BeeUtils.isEmpty(viewColumn.getRelation())
+          && (viewColumn.getLevel() <= 0 || BeeUtils.isTrue(viewColumn.getEditable()));
+    }
   }
 
   private void setCacheEviction(String cacheEviction) {

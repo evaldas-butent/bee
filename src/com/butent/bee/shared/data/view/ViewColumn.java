@@ -7,6 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -47,7 +48,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   }
 
   private enum Serial {
-    NAME, PARENT, TABLE, FIELD, RELATION, LEVEL, LOCALE, AGGREGATE, EXPRESSION, HIDDEN, READ_ONLY
+    NAME, PARENT, TABLE, FIELD, RELATION, LEVEL, HIDDEN, READ_ONLY, EDITABLE
   }
 
   public static Predicate<ViewColumn> VISIBLE = new Predicate<ViewColumn>() {
@@ -76,16 +77,13 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   private String relation;
   private int level;
   
-  private String locale;
-  private String aggregate;
-  private String expression;
-
   private boolean hidden;
   private boolean readOnly;
 
+  private Boolean editable;
+
   public ViewColumn(String name, String parent, String table, String field, String relation,
-      int level, String locale, String aggregate, String expression, boolean hidden,
-      boolean readOnly) {
+      int level, boolean hidden, boolean readOnly, Boolean editable) {
     super();
     this.name = name;
     this.parent = parent;
@@ -93,11 +91,9 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     this.field = field;
     this.relation = relation;
     this.level = level;
-    this.locale = locale;
-    this.aggregate = aggregate;
-    this.expression = expression;
     this.hidden = hidden;
     this.readOnly = readOnly;
+    this.editable = editable;
   }
 
   private ViewColumn() {
@@ -132,20 +128,14 @@ public class ViewColumn implements BeeSerializable, HasInfo {
         case LEVEL:
           setLevel(BeeUtils.toInt(value));
           break;
-        case LOCALE:
-          setLocale(value);
-          break;
-        case AGGREGATE:
-          setAggregate(value);
-          break;
-        case EXPRESSION:
-          setExpression(value);
-          break;
         case HIDDEN:
           setHidden(Codec.unpack(value));
           break;
         case READ_ONLY:
           setReadOnly(Codec.unpack(value));
+          break;
+        case EDITABLE:
+          setEditable(BooleanValue.unpack(value));
           break;
       }
     }
@@ -162,12 +152,8 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return BeeUtils.same(getName(), ((ViewColumn) obj).getName());
   }
   
-  public String getAggregate() {
-    return aggregate;
-  }
-
-  public String getExpression() {
-    return expression;
+  public Boolean getEditable() {
+    return editable;
   }
 
   public String getField() {
@@ -179,16 +165,11 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return PropertyUtils.createProperties("Name", getName(), "Parent", getParent(),
         "Table", getTable(), "Field", getField(),
         "Relation", getRelation(), "Level", getLevel(),
-        "Locale", getLocale(), "Aggregate", getAggregate(), "Expression", getExpression(),
-        "Hidden", isHidden(), "Read Only", isReadOnly());
+        "Hidden", isHidden(), "Read Only", isReadOnly(), "Editable", getEditable());
   }
 
   public int getLevel() {
     return level;
-  }
-
-  public String getLocale() {
-    return locale;
   }
 
   public String getName() {
@@ -206,12 +187,12 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   public String getTable() {
     return table;
   }
-
+  
   @Override
   public int hashCode() {
     return BeeUtils.normalize(getName()).hashCode();
   }
-  
+
   public boolean isHidden() {
     return hidden;
   }
@@ -246,67 +227,53 @@ public class ViewColumn implements BeeSerializable, HasInfo {
         case LEVEL:
           arr[i++] = getLevel();
           break;
-        case LOCALE:
-          arr[i++] = getLocale();
-          break;
-        case AGGREGATE:
-          arr[i++] = getAggregate();
-          break;
-        case EXPRESSION:
-          arr[i++] = getExpression();
-          break;
         case HIDDEN:
           arr[i++] = Codec.pack(isHidden());
           break;
         case READ_ONLY:
           arr[i++] = Codec.pack(isReadOnly());
           break;
+        case EDITABLE:
+          arr[i++] = BooleanValue.pack(getEditable());
+          break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setAggregate(String aggregate) {
-    this.aggregate = aggregate;
+  private void setEditable(Boolean editable) {
+    this.editable = editable;
   }
 
-  public void setExpression(String expression) {
-    this.expression = expression;
-  }
-
-  public void setField(String field) {
+  private void setField(String field) {
     this.field = field;
   }
 
-  public void setHidden(boolean hidden) {
+  private void setHidden(boolean hidden) {
     this.hidden = hidden;
   }
 
-  public void setLevel(int level) {
+  private void setLevel(int level) {
     this.level = level;
   }
 
-  public void setLocale(String locale) {
-    this.locale = locale;
-  }
-
-  public void setName(String name) {
+  private void setName(String name) {
     this.name = name;
   }
 
-  public void setParent(String parent) {
+  private void setParent(String parent) {
     this.parent = parent;
   }
 
-  public void setReadOnly(boolean readOnly) {
+  private void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
   }
 
-  public void setRelation(String relation) {
+  private void setRelation(String relation) {
     this.relation = relation;
   }
 
-  public void setTable(String table) {
+  private void setTable(String table) {
     this.table = table;
   }
 }

@@ -638,7 +638,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   private String deduceViewName(DataInfo dataInfo, String colName) {
-    return dataInfo.getRelationView(colName, true);
+    return dataInfo.getEditableRelationView(colName);
   }
 
   private String deduceViewName(DataInfo.Provider provider, DataInfo targetInfo,
@@ -689,7 +689,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   private List<String> deriveRenderColumns(DataInfo targetInfo, String original, String resolved) {
-    if (targetInfo.containsColumn(original)) {
+    if (!BeeUtils.same(original, resolved) && targetInfo.containsColumn(original)) {
       ViewColumn vc = targetInfo.getViewColumn(original);
       if (vc != null && vc.getLevel() > 0) {
         return Lists.newArrayList(original);
@@ -728,7 +728,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   private String resolveTarget(DataInfo dataInfo, String colName) {
-    return dataInfo.getRelationSource(colName);
+    return dataInfo.getEditableRelationSource(colName);
   }
 
   private String resolveTarget(DataInfo targetInfo, String target, List<String> renderColumns) {

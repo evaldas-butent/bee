@@ -1327,7 +1327,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
               widget = getEditForm().getWidgetBySource(source);
 
               if (widget == null && getDataInfo() != null) {
-                String relSource = getDataInfo().getRelationSource(source);
+                String relSource = getDataInfo().getEditableRelationSource(source);
                 if (!BeeUtils.isEmpty(relSource) && !BeeUtils.same(source, relSource)) {
                   widget = getEditForm().getWidgetBySource(relSource);
                 }
@@ -2054,7 +2054,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     } else {
       editSource = es;
       if (BeeUtils.isEmpty(editViewName)) {
-        editViewName = getDataInfo().getRelationView(editSource, false);
+        editViewName = getDataInfo().getRelationView(editSource);
       }
     }
     if (BeeUtils.isEmpty(editViewName)) {

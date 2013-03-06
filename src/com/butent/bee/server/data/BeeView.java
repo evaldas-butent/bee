@@ -113,7 +113,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else {
         this.label = label;
       }
-      
+
       this.editable = editable;
     }
 
@@ -434,7 +434,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public Boolean getColumnEditable(String colName) {
     return getColumnInfo(colName).getEditable();
   }
-  
+
   public IsExpression getColumnExpression(String colName) {
     return getColumnInfo(colName).getExpression();
   }
@@ -713,16 +713,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     List<ViewColumn> result = Lists.newArrayList();
 
     for (ColumnInfo cInf : columns.values()) {
-      String table = cInf.getTable();
-      String field = cInf.getField();
-      String relation = cInf.getRelation();
-
-      String agg = (cInf.getAggregate() == null) ? null : cInf.getAggregate().name();
-      String expr = (cInf.getExpression() == null) ? null
-          : cInf.getExpression().getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC));
-
-      result.add(new ViewColumn(cInf.getName(), cInf.getParent(), table, field, relation,
-          cInf.getLevel(), cInf.getLocale(), agg, expr, cInf.isHidden(), cInf.isReadOnly()));
+      result.add(new ViewColumn(cInf.getName(), cInf.getParent(), cInf.getTable(), cInf.getField(),
+          cInf.getRelation(), cInf.getLevel(), cInf.isHidden(), cInf.isReadOnly(),
+          cInf.getEditable()));
     }
     return result;
   }
@@ -733,13 +726,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public void initColumn(String colName, BeeColumn column) {
     ColumnInfo info = getColumnInfo(colName);
-    
+
     column.setId(info.getName());
     column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
 
     column.setType(info.getType().toValueType());
     column.setNullable(info.isNullable());
-    
+
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
 
