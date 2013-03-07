@@ -289,7 +289,7 @@ public class FormFactory {
   public static FormWidget getWidgetType(BeeColumn column) {
     Assert.notNull(column);
 
-    if (column.isForeign()) {
+    if (column.isForeign() && !column.isEditable()) {
       return FormWidget.DATA_SELECTOR;
     }
 

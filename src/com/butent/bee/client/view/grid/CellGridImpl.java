@@ -93,7 +93,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -932,7 +931,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return true;
     }
 
-    if (!validateFormData(form, WriteMode.INSERT, notificationListener, false)) {
+    if (!validateFormData(form, notificationListener, false)) {
       return false;
     }
 
@@ -1000,7 +999,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     IsRow newRow = form.getActiveRow();
     Assert.notNull(newRow, "formConfirm: active row is null");
 
-    if (!validateFormData(form, isAdding() ? WriteMode.INSERT : WriteMode.UPDATE, form, true)) {
+    if (!validateFormData(form, form, true)) {
       return;
     }
 
@@ -1547,8 +1546,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public boolean validateFormData(FormView form, WriteMode writeMode, 
-      NotificationListener notificationListener, boolean focusOnError) {
+  public boolean validateFormData(FormView form, NotificationListener notificationListener,
+      boolean focusOnError) {
 
     boolean ok = true;
     if (isReadOnly()) {
@@ -1568,7 +1567,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
 
       EditableColumn ec = entry.getValue();
-      if (!ec.isWritable(writeMode)) {
+      if (!ec.isWritable()) {
         continue;
       }
 
@@ -2131,7 +2130,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
-      if (dataColumn.isWritable(WriteMode.INSERT)) {
+      if (dataColumn.isEditable()) {
         columns.add(dataColumn);
         values.add(value);
       }

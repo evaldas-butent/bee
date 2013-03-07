@@ -74,7 +74,6 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -917,7 +916,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
 
       BeeColumn column = getDataColumns().get(i);
-      if (column.isWritable(WriteMode.INSERT)) {
+      if (column.isEditable()) {
         columns.add(column);
         values.add(value);
       }

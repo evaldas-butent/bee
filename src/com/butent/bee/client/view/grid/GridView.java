@@ -15,7 +15,6 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
@@ -75,6 +74,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void setRelId(long relId);
 
-  boolean validateFormData(FormView form, WriteMode writeMode,
-      NotificationListener notificationListener, boolean focusOnError);
+  boolean validateFormData(FormView form, NotificationListener notificationListener,
+      boolean focusOnError);
 }

@@ -55,7 +55,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -698,7 +697,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (form.getViewPresenter() instanceof HasGridView) {
       GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
-      if (rootGrid != null && !rootGrid.validateFormData(form, WriteMode.INSERT, form, true)) {
+      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
         return false;
       }
     }

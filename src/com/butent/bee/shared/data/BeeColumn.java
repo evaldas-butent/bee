@@ -205,14 +205,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
   }
 
-  public boolean isWritable(WriteMode mode) {
-    if (mode == WriteMode.UPDATE) {
-      return isEditable();
-    } else {
-      return !isReadOnly() && !isForeign();
-    }
-  }
-
   @Override
   public String serialize() {
     Serial[] members = Serial.values();

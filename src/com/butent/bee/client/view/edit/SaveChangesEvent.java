@@ -10,7 +10,6 @@ import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
 
     for (int i = 0; i < dataColumns.size(); i++) {
       BeeColumn dataColumn = dataColumns.get(i);
-      if (!dataColumn.isWritable(WriteMode.UPDATE)) {
+      if (!dataColumn.isEditable()) {
         continue;
       }
 

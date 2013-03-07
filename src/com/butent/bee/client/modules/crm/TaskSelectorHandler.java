@@ -14,7 +14,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -165,7 +164,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
         int index = Data.getColumnIndex(VIEW_TASKS, colName);
         if (index >= 0 && taskRow.isNull(index)) {
           taskRow.setValue(index, value);
-          if (templateColumns.get(i).isWritable(WriteMode.INSERT)) {
+          if (templateColumns.get(i).isEditable()) {
             updatedColumns.add(colName);
           }
         }

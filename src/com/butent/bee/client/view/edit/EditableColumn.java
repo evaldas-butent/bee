@@ -41,7 +41,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.WriteMode;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.JustDate;
@@ -367,8 +366,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return required;
   }
 
-  public boolean isWritable(WriteMode mode) {
-    return getDataColumn().isWritable(mode);
+  public boolean isWritable() {
+    return getDataColumn().isEditable();
   }
 
   @Override

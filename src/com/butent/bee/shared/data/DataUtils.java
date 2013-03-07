@@ -502,7 +502,7 @@ public class DataUtils {
 
     if (colNames.isEmpty()) {
       for (BeeColumn column : dataInfo.getColumns()) {
-        if (column.isCharacter() && column.isWritable(WriteMode.UPDATE) && !column.isNullable()) {
+        if (column.isCharacter() && column.isEditable() && !column.isNullable()) {
           colNames.add(column.getId());
         }
       }
@@ -550,7 +550,7 @@ public class DataUtils {
 
     for (int i = 0; i < columns.size(); i++) {
       BeeColumn column = columns.get(i);
-      if (!column.isWritable(WriteMode.UPDATE)) {
+      if (!column.isEditable()) {
         continue;
       }
 
