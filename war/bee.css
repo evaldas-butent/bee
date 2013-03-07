@@ -754,6 +754,7 @@ body {
 .bee-GridFormContainer-newRow .bee-hasDefaults:after {
   content: "*";
   font-weight: bold;
+  color: #4d90fe;
 }
 
 .bee-Form {

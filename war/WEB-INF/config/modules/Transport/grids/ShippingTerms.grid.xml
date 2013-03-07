@@ -4,6 +4,7 @@
   name="ShippingTerms" viewName="ShippingTerms" caption="Krovinių pristatymo sąlygos"
   >
   <columns>
-    <DataColumn name="Name" minWidth="200" />
+    <DataColumn name="Name" minWidth="50" />
+    <DataColumn name="Description" minWidth="200" />
   </columns>
 </Grid>
