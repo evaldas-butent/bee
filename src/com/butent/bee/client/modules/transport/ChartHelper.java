@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -92,16 +93,11 @@ class ChartHelper {
   private static final String STYLE_DAY_BACKGROUND = STYLE_PREFIX + "dayBackground";
 
   private static final String STYLE_CONTENT_ROW_SEPARATOR = STYLE_PREFIX + "row-sep";
-  private static final String STYLE_CONTENT_BOTTOM_SEPARATOR = STYLE_PREFIX + "bottom-sep";
 
   private static final String STYLE_HORIZONTAL_MOVER = STYLE_PREFIX + "horizontalMover";
   private static final String STYLE_VERTICAL_MOVER = STYLE_PREFIX + "verticalMover";
 
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 10;
-
-  static void addBottomSeparator(HasWidgets panel, int top, int left, int width) {
-    addRowSeparator(panel, STYLE_CONTENT_BOTTOM_SEPARATOR, top, left, width);
-  }
 
   static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
     CustomDiv separator = new CustomDiv(styleName);
@@ -228,6 +224,23 @@ class ChartHelper {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
+  static List<HasDateRange> getActiveItems(Collection<? extends HasDateRange> items,
+      Range<JustDate> activeRange) {
+
+    List<HasDateRange> result = Lists.newArrayList();
+    if (items == null || activeRange == null) {
+      return result;
+    }
+
+    for (HasDateRange item : items) {
+      if (item != null && item.getRange() != null 
+          && BeeUtils.intersects(item.getRange(), activeRange)) {
+        result.add(item);
+      }
+    }
+    return result;
+  }
+  
   static Range<JustDate> getActivity(JustDate start, JustDate end) {
     if (start == null && end == null) {
       return null;
@@ -297,22 +310,22 @@ class ChartHelper {
     return Range.closed(start, end);
   }
 
-  static List<Range<JustDate>> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
-    List<Range<JustDate>> result = Lists.newArrayList();
+  static List<HasDateRange> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
+    List<HasDateRange> result = Lists.newArrayList();
     if (activeRange == null || item == null || item.getRange() == null) {
       return result;
     }
 
     if (activeRange.hasLowerBound() && item.getRange().hasLowerBound()
         && BeeUtils.isLess(activeRange.lowerEndpoint(), item.getRange().lowerEndpoint())) {
-      result.add(Range.closed(activeRange.lowerEndpoint(),
+      result.add(DateRange.closed(activeRange.lowerEndpoint(),
           BeeUtils.min(activeRange.upperEndpoint(),
               TimeUtils.previousDay(item.getRange().lowerEndpoint()))));
     }
 
     if (activeRange.hasUpperBound() && item.getRange().hasUpperBound()
         && BeeUtils.isMore(activeRange.upperEndpoint(), item.getRange().upperEndpoint())) {
-      result.add(Range.closed(BeeUtils.max(activeRange.lowerEndpoint(),
+      result.add(DateRange.closed(BeeUtils.max(activeRange.lowerEndpoint(),
           TimeUtils.nextDay(item.getRange().upperEndpoint())), activeRange.upperEndpoint()));
     }
 

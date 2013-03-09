@@ -347,6 +347,12 @@ public class UiHelper {
     }
   }
 
+  public static void maybeSetTitle(Widget widget, String title) {
+    if (widget != null && !BeeUtils.isEmpty(title)) {
+      widget.setTitle(title);
+    }
+  }
+  
   public static boolean moveFocus(Widget parent, boolean forward) {
     if (parent == null) {
       return false;

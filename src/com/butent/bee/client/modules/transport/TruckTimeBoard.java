@@ -44,11 +44,6 @@ class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
-  protected String getBarHeightColumnName() {
-    return COL_TRUCK_BAR_HEIGHT;
-  }
-
-  @Override
   protected String getDataService() {
     return DATA_SERVICE;
   }
@@ -101,11 +96,6 @@ class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getSettingsFormName() {
     return FORM_TRUCK_SETTINGS;
-  }
-
-  @Override
-  protected String getSliderWidthColumnName() {
-    return COL_TRUCK_SLIDER_WIDTH;
   }
 
   @Override

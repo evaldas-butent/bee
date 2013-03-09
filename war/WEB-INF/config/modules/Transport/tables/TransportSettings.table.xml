@@ -16,9 +16,6 @@
     <Integer name="FxHeaderHeight" />
     <Integer name="FxFooterHeight" />
 
-    <Integer name="FxSliderWidth" />
-    <Integer name="FxBarHeight" />
-
     <Relation name="FxTheme" relation="Themes" />
 
     <Integer name="FxItemOpacity" />
@@ -34,9 +31,6 @@
     <Integer name="SsHeaderHeight" />
     <Integer name="SsFooterHeight" />
 
-    <Integer name="SsSliderWidth" />
-    <Integer name="SsBarHeight" />
-
     <Integer name="SsItemOpacity" />
     <Integer name="SsStripOpacity" />
 
@@ -50,9 +44,6 @@
     <Integer name="DtbHeaderHeight" />
     <Integer name="DtbFooterHeight" />
 
-    <Integer name="DtbSliderWidth" />
-    <Integer name="DtbBarHeight" />
-
     <Integer name="DtbItemOpacity" />
     <Integer name="DtbStripOpacity" />
 
@@ -65,9 +56,6 @@
 
     <Integer name="TruckHeaderHeight" />
     <Integer name="TruckFooterHeight" />
-
-    <Integer name="TruckSliderWidth" />
-    <Integer name="TruckBarHeight" />
 
     <Integer name="TruckItemOpacity" />
     <Integer name="TruckStripOpacity" />
@@ -83,9 +71,6 @@
 
     <Integer name="TrailerHeaderHeight" />
     <Integer name="TrailerFooterHeight" />
-
-    <Integer name="TrailerSliderWidth" />
-    <Integer name="TrailerBarHeight" />
 
     <Integer name="TrailerItemOpacity" />
     <Integer name="TrailerStripOpacity" />

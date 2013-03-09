@@ -332,11 +332,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   @Override
-  protected String getBarHeightColumnName() {
-    return COL_SS_BAR_HEIGHT;
-  }
-
-  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
       List<Freight> result = Lists.newArrayList();
@@ -371,13 +366,13 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   @Override
-  protected String getSettingsFormName() {
-    return FORM_SS_SETTINGS;
+  protected String getRowHeightColumnName() {
+    return COL_SS_PIXELS_PER_ROW;
   }
 
   @Override
-  protected String getSliderWidthColumnName() {
-    return COL_SS_SLIDER_WIDTH;
+  protected String getSettingsFormName() {
+    return FORM_SS_SETTINGS;
   }
 
   @Override
@@ -389,7 +384,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   protected String getThemeColumnName() {
     return COL_SS_THEME;
   }
-
+  
   @Override
   protected void initData(BeeRowSet rowSet) {
     drivers.clear();
@@ -437,7 +432,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       }
     }
   }
-  
+
   @Override
   protected List<ChartData> initFilter() {
     if (items.isEmpty()) {
@@ -586,11 +581,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
-
-    setRowHeight(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_ROW, 20,
-        1, getScrollAreaHeight(canvasSize.getHeight()) / 2));
   }
-
+  
   @Override
   protected List<HandlerRegistration> register() {
     List<HandlerRegistration> list = super.register();
@@ -601,16 +593,18 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   @Override
   protected void renderContent(ComplexPanel panel) {
+    vehiclePanels.clear();
+    tripPanels.clear();
+
+    vehiclesByRow.clear();
+    tripsByRow.clear();
+
     List<List<Freight>> layoutRows = doLayout();
+
+    initContent(panel, layoutRows.size());
     if (layoutRows.isEmpty()) {
       return;
     }
-
-    int height = layoutRows.size() * getRowHeight();
-    StyleUtils.setHeight(panel, height);
-
-    ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
-        height);
 
     JustDate firstDate = getVisibleRange().lowerEndpoint();
     JustDate lastDate = getVisibleRange().upperEndpoint();
@@ -627,12 +621,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     int tripStartRow = 0;
 
     Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_SS_ITEM_OPACITY);
-
-    vehiclePanels.clear();
-    tripPanels.clear();
-
-    vehiclesByRow.clear();
-    tripsByRow.clear();
 
     for (int row = 0; row < layoutRows.size(); row++) {
       List<Freight> rowItems = layoutRows.get(row);
@@ -715,10 +703,37 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (tripWidget != null) {
       addTripWidget(panel, tripWidget, lastTrip, tripStartRow, lastRow);
     }
+  }
 
-    ChartHelper.addBottomSeparator(panel, height, 0, getChartLeft() + calendarWidth);
+  @Override
+  protected void renderMovers(ComplexPanel panel, int height) {
+    Mover vehicleMover = ChartHelper.createHorizontalMover();
+    StyleUtils.setLeft(vehicleMover, getVehicleWidth() - ChartHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(vehicleMover, height);
 
-    renderMovers(panel, height);
+    vehicleMover.addMoveHandler(new MoveEvent.Handler() {
+      @Override
+      public void onMove(MoveEvent event) {
+        onVehicleResize(event);
+      }
+    });
+
+    panel.add(vehicleMover);
+
+    if (separateTrips()) {
+      Mover tripMover = ChartHelper.createHorizontalMover();
+      StyleUtils.setLeft(tripMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
+      StyleUtils.setHeight(tripMover, height);
+
+      tripMover.addMoveHandler(new MoveEvent.Handler() {
+        @Override
+        public void onMove(MoveEvent event) {
+          onTripResize(event);
+        }
+      });
+
+      panel.add(tripMover);
+    }
   }
 
   private void addTripWidget(HasWidgets panel, IdentifiableWidget widget, Long tripId,
@@ -761,7 +776,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           Rectangle rectangle = new Rectangle(left, top, width,
               height - ChartHelper.ROW_SEPARATOR_HEIGHT);
 
-          Widget serviceWidget = createServiceWidget(item);
+          Widget serviceWidget = item.createWidget(this, STYLE_SERVICE_PANEL, STYLE_SERVICE_LABEL);
           rectangle.applyTo(serviceWidget);
 
           panel.add(serviceWidget);
@@ -903,29 +918,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
       panel.add(unloadingLabel);
     }
-
-    return panel;
-  }
-
-  private Widget createServiceWidget(VehicleService service) {
-    Flow panel = new Flow();
-    panel.addStyleName(STYLE_SERVICE_PANEL);
-
-    panel.setTitle(BeeUtils.buildLines(service.getVehicleNumber(),
-        service.getName(), service.getNotes()));
-
-    final Long vehicleId = service.getVehicleId();
-    panel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_VEHICLES, vehicleId);
-      }
-    });
-
-    BeeLabel label = new BeeLabel(service.getName());
-    label.addStyleName(STYLE_SERVICE_LABEL);
-
-    panel.add(label);
 
     return panel;
   }
@@ -1391,36 +1383,6 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           render(false);
         }
       }
-    }
-  }
-
-  private void renderMovers(HasWidgets panel, int height) {
-    Mover vehicleMover = ChartHelper.createHorizontalMover();
-    StyleUtils.setLeft(vehicleMover, getVehicleWidth() - ChartHelper.DEFAULT_MOVER_WIDTH);
-    StyleUtils.setHeight(vehicleMover, height);
-
-    vehicleMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onVehicleResize(event);
-      }
-    });
-
-    panel.add(vehicleMover);
-
-    if (separateTrips()) {
-      Mover tripMover = ChartHelper.createHorizontalMover();
-      StyleUtils.setLeft(tripMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
-      StyleUtils.setHeight(tripMover, height);
-
-      tripMover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onTripResize(event);
-        }
-      });
-
-      panel.add(tripMover);
     }
   }
 

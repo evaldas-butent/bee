@@ -15,7 +15,7 @@ class ChartRowLayout {
 
   private final int dataIndex;
 
-  private final Set<Range<JustDate>> inactivity = Sets.newHashSet();
+  private final Set<HasDateRange> inactivity = Sets.newHashSet();
 
   private final List<List<HasDateRange>> rows = Lists.newArrayList();
 
@@ -25,18 +25,37 @@ class ChartRowLayout {
     this.dataIndex = dataIndex;
   }
 
-  void add(Collection<? extends HasDateRange> items, Range<JustDate> range) {
+  void addInactivity(Collection<? extends HasDateRange> items, Range<JustDate> activeRange) {
+    if (!items.isEmpty()) {
+      inactivity.addAll(items);
+
+      if (!rows.isEmpty()) {
+        for (HasDateRange item : items) {
+          for (List<HasDateRange> row : rows) {
+            Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), activeRange);
+            if (!over.isEmpty()) {
+              overlap.addAll(over);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void addItems(Collection<? extends HasDateRange> items, Range<JustDate> activeRange,
+      boolean addOverlap) {
+
     for (HasDateRange item : items) {
       boolean added = false;
 
       for (List<HasDateRange> row : rows) {
-        Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), range);
+        Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), activeRange);
 
         if (over.isEmpty()) {
           row.add(item);
           added = true;
           break;
-        } else {
+        } else if (addOverlap) {
           overlap.addAll(over);
         }
       }
@@ -51,7 +70,7 @@ class ChartRowLayout {
     return dataIndex;
   }
 
-  Set<Range<JustDate>> getInactivity() {
+  Set<HasDateRange> getInactivity() {
     return inactivity;
   }
 
@@ -61,27 +80,6 @@ class ChartRowLayout {
 
   List<List<HasDateRange>> getRows() {
     return rows;
-  }
-
-  void setInactivity(HasDateRange ttt, Range<JustDate> range) {
-    List<Range<JustDate>> off = ChartHelper.getInactivity(ttt, range);
-    if (off.isEmpty()) {
-      return;
-    }
-
-    inactivity.addAll(off);
-    if (rows.isEmpty()) {
-      return;
-    }
-
-    for (Range<JustDate> item : off) {
-      for (List<HasDateRange> row : rows) {
-        Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item, range);
-        if (!over.isEmpty()) {
-          overlap.addAll(over);
-        }
-      }
-    }
   }
 
   int size() {

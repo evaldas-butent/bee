@@ -217,11 +217,6 @@ class DriverTimeBoard extends ChartBase {
   }
 
   @Override
-  protected String getBarHeightColumnName() {
-    return COL_DTB_BAR_HEIGHT;
-  }
-
-  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     List<DriverTrip> result = Lists.newArrayList();
 
@@ -253,13 +248,13 @@ class DriverTimeBoard extends ChartBase {
   }
 
   @Override
-  protected String getSettingsFormName() {
-    return FORM_DTB_SETTINGS;
+  protected String getRowHeightColumnName() {
+    return COL_DTB_PIXELS_PER_ROW;
   }
 
   @Override
-  protected String getSliderWidthColumnName() {
-    return COL_DTB_SLIDER_WIDTH;
+  protected String getSettingsFormName() {
+    return FORM_DTB_SETTINGS;
   }
 
   @Override
@@ -383,29 +378,22 @@ class DriverTimeBoard extends ChartBase {
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
-
-    setRowHeight(ChartHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_ROW, 20,
-        1, getScrollAreaHeight(canvasSize.getHeight()) / 2));
   }
-
+  
   @Override
   protected void renderContent(ComplexPanel panel) {
     List<ChartRowLayout> driverLayout = doLayout();
+
+    int rc = 0;
+    for (ChartRowLayout layout : driverLayout) {
+      rc += layout.size();
+    }
+    
+    initContent(panel, rc);
     if (driverLayout.isEmpty()) {
       return;
     }
-
-    int rowCount = 0;
-    for (ChartRowLayout layout : driverLayout) {
-      rowCount += layout.size();
-    }
-
-    int height = rowCount * getRowHeight();
-    StyleUtils.setHeight(panel, height);
-
-    ChartHelper.renderDayColumns(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
-        height);
-
+    
     int calendarWidth = getCalendarWidth();
 
     Double opacity = ChartHelper.getOpacity(getSettings(), COL_DTB_ITEM_OPACITY);
@@ -426,7 +414,7 @@ class DriverTimeBoard extends ChartBase {
 
       if (rowIndex > 0) {
         ChartHelper.addRowSeparator(panel, STYLE_DRIVER_ROW_SEPARATOR, top, 0,
-            getDriverWidth() + calendarWidth);
+            getChartLeft() + calendarWidth);
       }
 
       driverWidget = createDriverWidget(drivers.get(layout.getDataIndex()),
@@ -437,10 +425,10 @@ class DriverTimeBoard extends ChartBase {
         ChartHelper.addRowSeparator(panel, top + getRowHeight() * i, getChartLeft(), calendarWidth);
       }
 
-      for (Range<JustDate> range : layout.getInactivity()) {
+      for (HasDateRange item : layout.getInactivity()) {
         offWidget = new CustomDiv(STYLE_INACTIVE);
 
-        Rectangle rectangle = getRectangle(range, rowIndex, rowIndex + size - 1);
+        Rectangle rectangle = getRectangle(item.getRange(), rowIndex, rowIndex + size - 1);
         ChartHelper.apply(offWidget, rectangle, margins);
 
         panel.add(offWidget);
@@ -483,10 +471,22 @@ class DriverTimeBoard extends ChartBase {
 
       rowIndex += size;
     }
+  }
 
-    ChartHelper.addBottomSeparator(panel, height, 0, getChartLeft() + calendarWidth);
+  @Override
+  protected void renderMovers(ComplexPanel panel, int height) {
+    Mover driverMover = ChartHelper.createHorizontalMover();
+    StyleUtils.setLeft(driverMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(driverMover, height);
 
-    renderMovers(panel, height);
+    driverMover.addMoveHandler(new MoveEvent.Handler() {
+      @Override
+      public void onMove(MoveEvent event) {
+        onDriverResize(event);
+      }
+    });
+
+    panel.add(driverMover);
   }
 
   private void addDriverWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
@@ -582,10 +582,10 @@ class DriverTimeBoard extends ChartBase {
       if (ChartHelper.isActive(driver, range)) {
         ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
-        layout.add(getTrips(driver.id, range), range);
-        layout.add(getAbsence(driver.id, range), range);
+        layout.addItems(getTrips(driver.id, range), range, true);
+        layout.addItems(getAbsence(driver.id, range), range, true);
 
-        layout.setInactivity(driver, range);
+        layout.addInactivity(ChartHelper.getInactivity(driver, range), range);
 
         result.add(layout);
       }
@@ -594,17 +594,12 @@ class DriverTimeBoard extends ChartBase {
     return result;
   }
 
-  private List<Absence> getAbsence(long driverId, Range<JustDate> range) {
-    List<Absence> absence = Lists.newArrayList();
+  private List<HasDateRange> getAbsence(long driverId, Range<JustDate> range) {
+    List<HasDateRange> absence = Lists.newArrayList();
 
     if (driverAbsence.containsKey(driverId)) {
-      for (Absence ab : driverAbsence.get(driverId)) {
-        if (BeeUtils.intersects(range, ab.getRange())) {
-          absence.add(ab);
-        }
-      }
+      absence.addAll(ChartHelper.getActiveItems(driverAbsence.get(driverId), range));
     }
-
     return absence;
   }
 
@@ -612,17 +607,12 @@ class DriverTimeBoard extends ChartBase {
     return driverWidth;
   }
 
-  private List<DriverTrip> getTrips(long driverId, Range<JustDate> range) {
-    List<DriverTrip> trips = Lists.newArrayList();
+  private List<HasDateRange> getTrips(long driverId, Range<JustDate> range) {
+    List<HasDateRange> trips = Lists.newArrayList();
 
     if (driverTrips.containsKey(driverId)) {
-      for (DriverTrip trip : driverTrips.get(driverId)) {
-        if (BeeUtils.intersects(range, trip.getRange())) {
-          trips.add(trip);
-        }
-      }
+      trips.addAll(ChartHelper.getActiveItems(driverTrips.get(driverId), range));
     }
-
     return trips;
   }
 
@@ -650,21 +640,6 @@ class DriverTimeBoard extends ChartBase {
         render(false);
       }
     }
-  }
-
-  private void renderMovers(HasWidgets panel, int height) {
-    Mover driverMover = ChartHelper.createHorizontalMover();
-    StyleUtils.setLeft(driverMover, getChartLeft() - ChartHelper.DEFAULT_MOVER_WIDTH);
-    StyleUtils.setHeight(driverMover, height);
-
-    driverMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onDriverResize(event);
-      }
-    });
-
-    panel.add(driverMover);
   }
 
   private void setDriverWidth(int driverWidth) {

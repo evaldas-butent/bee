@@ -33,20 +33,12 @@
 
 .bee-tr-chart-HeaderSplitter,
 .bee-tr-chart-FooterSplitter {
-  position: absolute;
-  left: 0;
   right: 0;
 }
 
-.bee-tr-chart-row-sep,
-.bee-tr-chart-bottom-sep {
+.bee-tr-chart-row-sep {
   position: absolute;
   height: 1px;
-}
-.bee-tr-chart-bottom-sep {
-  background-color: #888;
-}
-.bee-tr-chart-row-sep {
   background-color: #ddd;
 }
 
@@ -73,15 +65,19 @@
 .bee-tr-chart-Selector-endSlider {
   position: absolute;
   top: 0;
+  bottom: 0;
   background-image: -webkit-linear-gradient(left, #888, #ccc, #888);
   cursor: col-resize;
 }
 
-.bee-tr-chart-Selector-bar {
+.bee-tr-chart-Selector-mover {
   position: absolute;
+  top: 0; 
   bottom: 0;
-  background-image: -webkit-linear-gradient(top, #888, #ccc, #888);
   cursor: move;
+}
+.bee-tr-chart-Selector-mover:hover {
+  background-color: rgba(0, 0, 255, 0.1);
 }
 
 .bee-tr-chart-daySeparator,
@@ -194,7 +190,8 @@
 .bee-tr-fx-Customer-panel,
 .bee-tr-fx-Order-panel,
 .bee-tr-ss-Vehicle-panel,
-.bee-tr-dtb-Driver-panel {
+.bee-tr-dtb-Driver-panel,
+.bee-tr-vtb-Number-panel {
   position: absolute;
   display: -webkit-flex;
   -webkit-justify-content: center;
@@ -208,6 +205,10 @@
   -webkit-justify-content: space-between;
   -webkit-align-items: center;
   overflow: hidden;
+}
+.bee-tr-vtb-Info-panel {
+  position: absolute;
+  overflow: auto;
 }
 
 .bee-tr-fx-Customer-label,
@@ -227,7 +228,9 @@
 .bee-tr-ss-Vehicle-label:hover,
 .bee-tr-ss-Trip-label:hover,
 .bee-tr-ss-Trip-trailer:hover,
-.bee-tr-dtb-Driver-label:hover {
+.bee-tr-dtb-Driver-label:hover,
+.bee-tr-vtb-Number-label:hover,
+.bee-tr-vtb-Info-label:hover {
   text-decoration: underline;
   color: #00e;
   cursor: pointer;
@@ -282,12 +285,15 @@
   background-color: palegreen;
 }
 
-.bee-tr-dtb-Inactive {
+.bee-tr-dtb-Inactive,
+.bee-tr-vtb-Inactive {
   position: absolute;
   background-image: url("images/checkered_background.png");
 }
 
-.bee-tr-dtb-Driver-overlap {
+.bee-tr-dtb-Driver-overlap,
+.bee-tr-vtb-Number-overlap,
+.bee-tr-vtb-Info-overlap {
   color: red;
 }
 .bee-tr-dtb-Overlap {
@@ -316,36 +322,38 @@
   border: 2px dashed red;
 }
 
-.bee-tr-ss-Service-panel {
+.bee-tr-ss-Service-panel,
+.bee-tr-vtb-Service-panel {
   position: absolute;
   cursor: pointer;
   background-image: url("images/checkered_background.png");
   overflow: hidden;
 }
-.bee-tr-ss-Service-label {
+.bee-tr-ss-Service-label,
+.bee-tr-vtb-Service-label {
   position: absolute;
   left: 0;
   top: 0;
   font-size: 12px;
-  display: none;
 }
 
 .bee-tr-fx-Customer-row-sep,
 .bee-tr-fx-Order-row-sep,
 .bee-tr-ss-Vehicle-row-sep,
 .bee-tr-ss-Trip-row-sep,
-.bee-tr-dtb-Driver-row-sep {
+.bee-tr-dtb-Driver-row-sep,
+.bee-tr-vtb-Vehicle-row-sep {
   position: absolute;
   height: 1px;
 }
 .bee-tr-fx-Customer-row-sep,
-.bee-tr-ss-Vehicle-row-sep,
-.bee-tr-chart-bottom-sep {
+.bee-tr-ss-Vehicle-row-sep {
   background-color: #888;
 }
 .bee-tr-fx-Order-row-sep,
 .bee-tr-ss-Trip-row-sep,
-.bee-tr-dtb-Driver-row-sep {
+.bee-tr-dtb-Driver-row-sep,
+.bee-tr-vtb-Vehicle-row-sep {
   background-color: #ddd;
 }
 

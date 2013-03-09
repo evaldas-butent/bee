@@ -16,9 +16,6 @@
     <SimpleColumn name="FxHeaderHeight" />
     <SimpleColumn name="FxFooterHeight" />
 
-    <SimpleColumn name="FxSliderWidth" />
-    <SimpleColumn name="FxBarHeight" />
-    
     <SimpleColumn name="FxTheme" />
     <SimpleJoin name="FxTheme" joinType="LEFT">
       <SimpleColumn alias="FxThemeName" name="Name" />
@@ -37,9 +34,6 @@
     <SimpleColumn name="SsHeaderHeight" />
     <SimpleColumn name="SsFooterHeight" />
 
-    <SimpleColumn name="SsSliderWidth" />
-    <SimpleColumn name="SsBarHeight" />
-    
     <SimpleColumn name="SsTheme" />
     <SimpleJoin name="SsTheme" joinType="LEFT">
       <SimpleColumn alias="SsThemeName" name="Name" />
@@ -56,9 +50,6 @@
     <SimpleColumn name="DtbHeaderHeight" />
     <SimpleColumn name="DtbFooterHeight" />
 
-    <SimpleColumn name="DtbSliderWidth" />
-    <SimpleColumn name="DtbBarHeight" />
-    
     <SimpleColumn name="DtbItemOpacity" />
     <SimpleColumn name="DtbStripOpacity" />
 
@@ -72,9 +63,6 @@
     <SimpleColumn name="TruckHeaderHeight" />
     <SimpleColumn name="TruckFooterHeight" />
 
-    <SimpleColumn name="TruckSliderWidth" />
-    <SimpleColumn name="TruckBarHeight" />
-    
     <SimpleColumn name="TruckTheme" />
     <SimpleJoin name="TruckTheme" joinType="LEFT">
       <SimpleColumn alias="TruckThemeName" name="Name" />
@@ -93,9 +81,6 @@
     <SimpleColumn name="TrailerHeaderHeight" />
     <SimpleColumn name="TrailerFooterHeight" />
 
-    <SimpleColumn name="TrailerSliderWidth" />
-    <SimpleColumn name="TrailerBarHeight" />
-    
     <SimpleColumn name="TrailerTheme" />
     <SimpleJoin name="TrailerTheme" joinType="LEFT">
       <SimpleColumn alias="TrailerThemeName" name="Name" />

@@ -54,6 +54,10 @@ public class Data {
     return COLUMN_MAPPER.getIndex(viewName, colName);
   }
 
+  public static String getColumnLabel(String viewName, String colName) {
+    return getDataInfo(viewName).getColumnLabel(colName);
+  }
+
   public static ColumnMapper getColumnMapper() {
     return COLUMN_MAPPER;
   }

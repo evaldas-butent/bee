@@ -1,9 +1,14 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Range;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -37,6 +42,28 @@ class VehicleService implements HasDateRange {
   @Override
   public Range<JustDate> getRange() {
     return range;
+  }
+
+  Widget createWidget(final ChartBase chart, String containerStyle, String labelStyle) {
+    Flow panel = new Flow();
+    panel.addStyleName(containerStyle);
+
+    panel.setTitle(BeeUtils.buildLines(ChartHelper.getRangeLabel(getRange()), getName(),
+        getNotes()));
+
+    panel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        chart.openDataRow(event, VIEW_VEHICLES, getVehicleId());
+      }
+    });
+
+    BeeLabel label = new BeeLabel(getName());
+    label.addStyleName(labelStyle);
+
+    panel.add(label);
+
+    return panel;
   }
 
   String getName() {

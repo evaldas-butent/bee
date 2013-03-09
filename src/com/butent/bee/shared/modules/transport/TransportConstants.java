@@ -158,6 +158,7 @@ public class TransportConstants {
 
   public static final String COL_VEHICLE_START_DATE = "StartDate";
   public static final String COL_VEHICLE_END_DATE = "EndDate";
+  public static final String COL_VEHICLE_NOTES = "Notes";
   
   public static final String COL_DRIVER = "Driver";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
@@ -193,9 +194,6 @@ public class TransportConstants {
   public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
   public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
 
-  public static final String COL_FX_SLIDER_WIDTH = "FxSliderWidth";
-  public static final String COL_FX_BAR_HEIGHT = "FxBarHeight";
-
   public static final String COL_FX_THEME = "FxTheme";
 
   public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
@@ -211,9 +209,6 @@ public class TransportConstants {
   public static final String COL_SS_HEADER_HEIGHT = "SsHeaderHeight";
   public static final String COL_SS_FOOTER_HEIGHT = "SsFooterHeight";
 
-  public static final String COL_SS_SLIDER_WIDTH = "SsSliderWidth";
-  public static final String COL_SS_BAR_HEIGHT = "SsBarHeight";
-
   public static final String COL_SS_THEME = "SsTheme";
 
   public static final String COL_SS_ITEM_OPACITY = "SsItemOpacity";
@@ -227,9 +222,6 @@ public class TransportConstants {
   public static final String COL_DTB_HEADER_HEIGHT = "DtbHeaderHeight";
   public static final String COL_DTB_FOOTER_HEIGHT = "DtbFooterHeight";
 
-  public static final String COL_DTB_SLIDER_WIDTH = "DtbSliderWidth";
-  public static final String COL_DTB_BAR_HEIGHT = "DtbBarHeight";
-
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
 
@@ -242,9 +234,6 @@ public class TransportConstants {
 
   public static final String COL_TRUCK_HEADER_HEIGHT = "TruckHeaderHeight";
   public static final String COL_TRUCK_FOOTER_HEIGHT = "TruckFooterHeight";
-
-  public static final String COL_TRUCK_SLIDER_WIDTH = "TruckSliderWidth";
-  public static final String COL_TRUCK_BAR_HEIGHT = "TruckBarHeight";
 
   public static final String COL_TRUCK_THEME = "TruckTheme";
 
@@ -260,9 +249,6 @@ public class TransportConstants {
 
   public static final String COL_TRAILER_HEADER_HEIGHT = "TrailerHeaderHeight";
   public static final String COL_TRAILER_FOOTER_HEIGHT = "TrailerFooterHeight";
-
-  public static final String COL_TRAILER_SLIDER_WIDTH = "TrailerSliderWidth";
-  public static final String COL_TRAILER_BAR_HEIGHT = "TrailerBarHeight";
 
   public static final String COL_TRAILER_THEME = "TrailerTheme";
 

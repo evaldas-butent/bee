@@ -14,7 +14,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrFxSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="440" height="420"
+  width="440" height="360"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
@@ -35,7 +35,7 @@
     </FlowPanel>
     <FlowPanel style="&row;">
       <Label html="Dienos stulpelio aukštis px:" style="&lbl;" />
-      <InputSpinner source="FxPixelsPerRow" minValue="2" maxValue="100" style="&spin;" />
+      <InputSpinner source="FxPixelsPerRow" minValue="2" maxValue="1000" style="&spin;" />
     </FlowPanel>
 
     &separator;
@@ -46,16 +46,6 @@
     <FlowPanel style="&row;">
       <Label html="Laikotarpio pasirinkimo srities aukštis px:" style="&lbl;" />
       <InputSpinner source="FxFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&row;">
-      <Label html="Range selector slider width px:" style="&lbl;" />
-      <InputSpinner source="FxSliderWidth" minValue="1" maxValue="20" style="&spin;" />
-    </FlowPanel>
-    <FlowPanel style="&row;">
-      <Label html="Range selector bar height px:" style="&lbl;" />
-      <InputSpinner source="FxBarHeight" minValue="1" maxValue="20" style="&spin;" />
     </FlowPanel>
 
     &separator;
