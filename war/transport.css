@@ -296,7 +296,8 @@
 .bee-tr-vtb-Info-overlap {
   color: red;
 }
-.bee-tr-dtb-Overlap {
+.bee-tr-dtb-Overlap,
+.bee-tr-vtb-Overlap {
   position: absolute;
   box-sizing: border-box;
   border: 2px solid red;
@@ -335,6 +336,13 @@
   left: 0;
   top: 0;
   font-size: 12px;
+}
+
+.bee-tr-vtb-Trip-panel,
+.bee-tr-vtb-Freight-panel {
+  position: absolute;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .bee-tr-fx-Customer-row-sep,

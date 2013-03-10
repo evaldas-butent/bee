@@ -1,6 +1,7 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
@@ -19,6 +20,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -47,7 +49,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-@SuppressWarnings("unused")
 abstract class VehicleTimeBoard extends ChartBase {
 
   private static class CargoHandling implements HasDateRange {
@@ -113,9 +114,9 @@ abstract class VehicleTimeBoard extends ChartBase {
     private final String orderNo;
     private final String customerName;
 
-    private final Range<JustDate> range;
+    private Range<JustDate> range;
 
-    private Freight(SimpleRow row) {
+    private Freight(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
       this.tripId = row.getLong(COL_TRIP_ID);
 
       this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
@@ -125,7 +126,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       this.cargoDescription = row.getValue(COL_DESCRIPTION);
 
       this.loadingDate = BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
-          row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)));
+          row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad);
       this.loadingCountry = BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
           row.getLong(defaultLoadingColumnAlias(COL_COUNTRY)));
       this.loadingPlace = BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
@@ -134,7 +135,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           row.getValue(defaultLoadingColumnAlias(COL_TERMINAL)));
 
       this.unloadingDate = BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)),
-          row.getDate(defaultUnloadingColumnAlias(COL_PLACE_DATE)));
+          row.getDate(defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload);
       this.unloadingCountry = BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_COUNTRY)),
           row.getLong(defaultUnloadingColumnAlias(COL_COUNTRY)));
       this.unloadingPlace = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
@@ -157,9 +158,38 @@ abstract class VehicleTimeBoard extends ChartBase {
     public Range<JustDate> getRange() {
       return range;
     }
+
+    private void adjustRange(Range<JustDate> tripRange) {
+      if (tripRange == null) {
+        return;
+      }
+      if (loadingDate != null && unloadingDate != null) {
+        return;
+      }
+
+      JustDate lower = BeeUtils.nvl(loadingDate, BeeUtils.getLowerEndpoint(tripRange));
+      JustDate upper = BeeUtils.nvl(unloadingDate, BeeUtils.getUpperEndpoint(tripRange));
+
+      setRange(ChartHelper.getActivity(lower, upper));
+    }
+
+    private JustDate getMaxDate() {
+      return BeeUtils.max(loadingDate, unloadingDate);
+    }
+
+    private void setRange(Range<JustDate> range) {
+      this.range = range;
+    }
   }
 
   private static class Trip implements HasDateRange, HasColorSource {
+    private static final String tripNoLabel = Data.getColumnLabel(VIEW_TRIPS, COL_TRIP_NO);
+    private static final String truckLabel = Data.getColumnLabel(VIEW_TRIPS, COL_VEHICLE);
+    private static final String trailerLabel = Data.getColumnLabel(VIEW_TRIPS, COL_TRAILER);
+    private static final String notesLabel = Data.getColumnLabel(VIEW_TRIPS, COL_TRIP_NOTES);
+
+    private static final String driversLabel = Data.getLocalizedCaption(VIEW_DRIVERS);
+
     private final Long tripId;
     private final String tripNo;
 
@@ -177,7 +207,9 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     private final Range<JustDate> range;
 
-    private Trip(SimpleRow row) {
+    private final String title;
+
+    private Trip(SimpleRow row, JustDate maxDate, String drv) {
       this.tripId = row.getLong(COL_TRIP_ID);
       this.tripNo = row.getValue(COL_TRIP_NO);
 
@@ -194,9 +226,13 @@ abstract class VehicleTimeBoard extends ChartBase {
       this.notes = row.getValue(COL_TRIP_NOTES);
 
       JustDate start = BeeUtils.nvl(this.dateFrom, this.date.getDate());
-      JustDate end = BeeUtils.nvl(this.dateTo, this.plannedEndDate);
+      JustDate end = BeeUtils.nvl(this.dateTo, this.plannedEndDate, maxDate);
 
       this.range = Range.closed(start, BeeUtils.max(start, end));
+
+      this.title = BeeUtils.buildLines(ChartHelper.getRangeLabel(this.range),
+          ChartHelper.buildTitle(tripNoLabel, this.tripNo, truckLabel, this.truckNumber,
+              trailerLabel, this.trailerNumber, driversLabel, drv, notesLabel, this.notes));
     }
 
     @Override
@@ -220,6 +256,10 @@ abstract class VehicleTimeBoard extends ChartBase {
         Data.getColumnIndex(VIEW_VEHICLES, COL_PARENT_MODEL_NAME);
     private static final int modelNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_MODEL_NAME);
     private static final int notesIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_NOTES);
+
+    private static final String startLabel =
+        Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_START_DATE);
+    private static final String endLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_END_DATE);
 
     private final BeeRow row;
 
@@ -248,13 +288,11 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       } else if (inactivity.hasUpperBound() && getRange().hasLowerBound()
           && BeeUtils.isLess(inactivity.upperEndpoint(), getRange().lowerEndpoint())) {
-        return ChartHelper.buildTitle(Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_START_DATE),
-            getRange().lowerEndpoint());
+        return ChartHelper.buildTitle(startLabel, getRange().lowerEndpoint());
 
       } else if (inactivity.hasLowerBound() && getRange().hasUpperBound()
           && BeeUtils.isMore(inactivity.lowerEndpoint(), getRange().upperEndpoint())) {
-        return ChartHelper.buildTitle(Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_END_DATE),
-            getRange().upperEndpoint());
+        return ChartHelper.buildTitle(endLabel, getRange().upperEndpoint());
 
       } else {
         return BeeConst.STRING_EMPTY;
@@ -288,6 +326,12 @@ abstract class VehicleTimeBoard extends ChartBase {
   private static final String STYLE_INFO_LABEL = STYLE_INFO_PREFIX + "label";
   private static final String STYLE_INFO_OVERLAP = STYLE_INFO_PREFIX + "overlap";
 
+  private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
+  private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
+
+  private static final String STYLE_FREIGHT_PREFIX = STYLE_PREFIX + "Freight-";
+  private static final String STYLE_FREIGHT_PANEL = STYLE_FREIGHT_PREFIX + "panel";
+
   private static final String STYLE_SERVICE_PREFIX = STYLE_PREFIX + "Service-";
   private static final String STYLE_SERVICE_PANEL = STYLE_SERVICE_PREFIX + "panel";
   private static final String STYLE_SERVICE_LABEL = STYLE_SERVICE_PREFIX + "label";
@@ -298,6 +342,8 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final List<Vehicle> vehicles = Lists.newArrayList();
 
   private final Multimap<Long, Trip> trips = ArrayListMultimap.create();
+  private final Multimap<Long, String> drivers = HashMultimap.create();
+  
   private final Multimap<Long, Freight> freights = ArrayListMultimap.create();
   private final Multimap<Long, CargoHandling> handling = ArrayListMultimap.create();
 
@@ -323,7 +369,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
-    return trips.values();
+    return separateCargo() ? freights.values() : trips.values();
   }
 
   protected abstract String getDayWidthColumnName();
@@ -347,6 +393,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected void initData(BeeRowSet rowSet) {
     vehicles.clear();
     trips.clear();
+    drivers.clear();
     freights.clear();
     handling.clear();
     services.clear();
@@ -363,21 +410,14 @@ abstract class VehicleTimeBoard extends ChartBase {
         vehicles.add(new Vehicle(row));
       }
     }
-
-    serialized = rowSet.getTableProperty(PROP_TRIPS);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
-      int index = srs.getColumnIndex(getRelatedTripColumnName());
-      for (SimpleRow row : srs) {
-        trips.put(row.getLong(index), new Trip(row));
-      }
-    }
-
-    serialized = rowSet.getTableProperty(PROP_CARGO);
+    
+    serialized = rowSet.getTableProperty(PROP_DRIVERS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
       for (SimpleRow row : srs) {
-        freights.put(row.getLong(COL_TRIP_ID), new Freight(row));
+        drivers.put(row.getLong(COL_TRIP), 
+            BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
+                row.getValue(CommonsConstants.COL_LAST_NAME)));
       }
     }
 
@@ -386,6 +426,55 @@ abstract class VehicleTimeBoard extends ChartBase {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
       for (SimpleRow row : srs) {
         handling.put(row.getLong(COL_CARGO), new CargoHandling(row));
+      }
+    }
+
+    serialized = rowSet.getTableProperty(PROP_CARGO);
+    if (!BeeUtils.isEmpty(serialized)) {
+      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+
+      for (SimpleRow row : srs) {
+        JustDate minLoad = null;
+        JustDate maxUnload = null;
+        Long cargoId = row.getLong(COL_CARGO);
+
+        if (handling.containsKey(cargoId)) {
+          for (CargoHandling ch : handling.get(cargoId)) {
+            minLoad = BeeUtils.min(minLoad, ch.loadingDate);
+            maxUnload = BeeUtils.max(maxUnload, ch.unloadingDate);
+          }
+        }
+
+        freights.put(row.getLong(COL_TRIP_ID), new Freight(row, minLoad, maxUnload));
+      }
+    }
+
+    serialized = rowSet.getTableProperty(PROP_TRIPS);
+    if (!BeeUtils.isEmpty(serialized)) {
+      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+      int index = srs.getColumnIndex(getRelatedTripColumnName());
+
+      for (SimpleRow row : srs) {
+        Long tripId = row.getLong(COL_TRIP_ID);
+        String drv = drivers.containsKey(tripId) 
+            ? BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, drivers.get(tripId)) : null;
+
+        if (freights.containsKey(tripId)) {
+          JustDate maxDate = null;
+          for (Freight freight : freights.get(tripId)) {
+            maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
+          }
+
+          Trip trip = new Trip(row, maxDate, drv);
+          trips.put(row.getLong(index), trip);
+
+          for (Freight freight : freights.get(tripId)) {
+            freight.adjustRange(trip.getRange());
+          }
+
+        } else {
+          trips.put(row.getLong(index), new Trip(row, null, drv));
+        }
       }
     }
 
@@ -398,9 +487,11 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
+    setSeparateCargo(ChartHelper.getBoolean(getSettings(), getSeparateCargoColumnName()));
     updateMaxRange();
-    logger.debug(getCaption(), vehicles.size(), trips.size(), freights.size(), handling.size(),
-        services.size());
+
+    logger.debug(getCaption(), vehicles.size(), trips.size(), drivers.size(), freights.size(),
+        handling.size(), services.size());
   }
 
   @Override
@@ -421,7 +512,11 @@ abstract class VehicleTimeBoard extends ChartBase {
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), getDayWidthColumnName(), 20,
         1, getChartWidth()));
 
-    setSeparateCargo(ChartHelper.getBoolean(getSettings(), getSeparateCargoColumnName()));
+    boolean sc = ChartHelper.getBoolean(getSettings(), getSeparateCargoColumnName());
+    if (separateCargo() != sc) {
+      setSeparateCargo(sc);
+      updateMaxRange();
+    }
   }
 
   @Override
@@ -449,6 +544,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
 
     Widget offWidget;
+    Widget itemWidget;
+    Widget overlapWidget;
 
     int rowIndex = 0;
     for (ChartRowLayout layout : vehicleLayout) {
@@ -465,7 +562,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       Vehicle vehicle = vehicles.get(layout.getDataIndex());
       Assert.notNull(vehicle, "vehicle not found");
-      boolean hasOverlap = !layout.getOverlap().isEmpty();
+
+      boolean hasOverlap = layout.hasOverlap();
 
       IdentifiableWidget numberWidget = createNumberWidget(vehicle, hasOverlap);
       addNumberWidget(panel, numberWidget.asWidget(), rowIndex, lastRow);
@@ -492,6 +590,43 @@ abstract class VehicleTimeBoard extends ChartBase {
         ChartHelper.apply(offWidget, rectangle, margins);
 
         panel.add(offWidget);
+      }
+
+      for (int i = 0; i < layout.getRows().size(); i++) {
+        for (HasDateRange item : layout.getRows().get(i)) {
+
+          if (item instanceof Trip) {
+            itemWidget = createTripWidget((Trip) item);
+          } else if (item instanceof Freight) {
+            itemWidget = createFreightWidget((Freight) item);
+          } else {
+            itemWidget = null;
+          }
+
+          if (itemWidget != null) {
+            Rectangle rectangle = getRectangle(item.getRange(), rowIndex + i);
+            ChartHelper.apply(itemWidget, rectangle, margins);
+            if (opacity != null) {
+              StyleUtils.setOpacity(itemWidget, opacity);
+            }
+
+            panel.add(itemWidget);
+          }
+
+          if (hasOverlap) {
+            Set<Range<JustDate>> overlap = ChartHelper.getOverlap(layout.getOverlap(),
+                item.getRange());
+
+            for (Range<JustDate> over : overlap) {
+              overlapWidget = new CustomDiv(STYLE_OVERLAP);
+
+              Rectangle rectangle = getRectangle(over, rowIndex + i);
+              ChartHelper.apply(overlapWidget, rectangle, margins);
+
+              panel.add(overlapWidget);
+            }
+          }
+        }
       }
 
       rowIndex += size;
@@ -551,6 +686,36 @@ abstract class VehicleTimeBoard extends ChartBase {
     panel.add(widget);
   }
 
+  private String buildFreightTitle(Freight freight) {
+    String loading = getPlaceLabel(freight.loadingCountry, freight.loadingPlace,
+        freight.loadingTerminal);
+    String unloading = getPlaceLabel(freight.unloadingCountry, freight.unloadingPlace,
+        freight.unloadingTerminal);
+
+    return BeeUtils.buildLines(freight.cargoDescription,
+        BeeUtils.joinWords("Pakrovimas:", freight.loadingDate, loading),
+        BeeUtils.joinWords("Iškrovimas:", freight.unloadingDate, unloading));
+  }
+
+  private Widget createFreightWidget(Freight freight) {
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_FREIGHT_PANEL);
+    setItemWidgetColor(freight, panel);
+
+    panel.setTitle(buildFreightTitle(freight));
+
+    final Long cargoId = freight.cargoId;
+
+    panel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
+      }
+    });
+
+    return panel;
+  }
+
   private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_INFO_PANEL);
@@ -599,6 +764,25 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     panel.add(label);
+
+    return panel;
+  }
+
+  private Widget createTripWidget(Trip trip) {
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_TRIP_PANEL);
+    setItemWidgetColor(trip, panel);
+
+    panel.setTitle(trip.title);
+
+    final Long tripId = trip.tripId;
+
+    panel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_TRIPS, tripId);
+      }
+    });
 
     return panel;
   }

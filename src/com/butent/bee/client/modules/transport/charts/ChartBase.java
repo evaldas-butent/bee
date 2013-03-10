@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -37,6 +37,7 @@ import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
@@ -618,7 +619,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected int clampHeaderHeight(int height, int canvasHeight) {
     return BeeUtils.clamp(height, 1, BeeUtils.clamp(canvasHeight / 5, 1, 100));
   }
-  
+
   protected int clampRowHeight(int height, int canvasHeight) {
     int defMax = (getScrollAreaHeight(canvasHeight) - ChartHelper.DEFAULT_MOVER_HEIGHT) / 2;
     return BeeUtils.clamp(height, 2, BeeUtils.clamp(defMax, 2, 1000));
@@ -840,7 +841,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected int getRowHeight() {
     return rowHeight;
   }
-  
+
   protected abstract String getRowHeightColumnName();
 
   protected Element getScrollArea() {
@@ -994,7 +995,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       if (rh != getRowHeight()) {
         updateSetting(getRowHeightColumnName(), rh);
       }
-      
+
       render(false);
     }
   }
@@ -1033,7 +1034,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       setSliderWidth(0);
     }
   }
-  
+
   protected void refresh() {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(getDataService()),
         new ResponseCallback() {
@@ -1073,9 +1074,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     prepareDefaults(canvasSize);
     prepareChart(canvasSize);
 
-    if (updateRange || getVisibleRange() == null || !getMaxRange().encloses(getVisibleRange())) {
+    if (updateRange || getVisibleRange() == null) {
       setVisibleRange(ChartHelper.getDefaultRange(getMaxRange(), getChartWidth(),
           getDayColumnWidth()));
+    } else {
+      checkVisibleRange();
     }
 
     adjustWidths();
@@ -1088,7 +1091,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     renderContent(content);
     finalizeContent(content);
-    
+
     addContentHandlers(content);
 
     Simple scroll = new Simple();
@@ -1112,12 +1115,12 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected abstract void renderContent(ComplexPanel panel);
-  
+
   protected void renderDayLabels(HasWidgets panel) {
     ChartHelper.renderDayLabels(panel, getVisibleRange(), getChartLeft(), getDayColumnWidth(),
         getHeaderHeight());
   }
-  
+
   protected void renderFooter(Collection<? extends HasDateRange> chartItems) {
     if (getFooterHeight() <= 0) {
       return;
@@ -1134,7 +1137,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     renderSliderLabels();
   }
-  
+
   protected void renderFooterSplitter() {
     if (getFooterSplitterSize() > 0) {
       Mover mover = ChartHelper.createVerticalMover();
@@ -1549,6 +1552,29 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     List<String> values = Lists.newArrayList(BeeUtils.toString(val1), BeeUtils.toString(val2));
 
     return updateSettings(colNames, values);
+  }
+
+  private void checkVisibleRange() {
+    if (!getMaxRange().encloses(getVisibleRange())) {
+      int visibleDays = ChartHelper.getSize(getVisibleRange());
+
+      if (visibleDays <= 0 || visibleDays >= ChartHelper.getSize(getMaxRange())) {
+        setVisibleRange(ChartHelper.normalizedCopyOf(getMaxRange()));
+      } else {
+        JustDate lower;
+        JustDate upper;
+
+        if (TimeUtils.isLess(getVisibleRange().lowerEndpoint(), getMaxRange().lowerEndpoint())) {
+          lower = JustDate.copyOf(getMaxRange().lowerEndpoint());
+          upper = TimeUtils.nextDay(lower, visibleDays - 1);
+        } else {
+          upper = JustDate.copyOf(getMaxRange().upperEndpoint());
+          lower = TimeUtils.nextDay(upper, 1 - visibleDays);
+        }
+
+        setVisibleRange(Range.closed(lower, upper));
+      }
+    }
   }
 
   private List<List<HasDateRange>> doStripLayout(Collection<? extends HasDateRange> chartItems,

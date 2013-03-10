@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Range;
 import com.google.gwt.event.dom.client.ClickEvent;

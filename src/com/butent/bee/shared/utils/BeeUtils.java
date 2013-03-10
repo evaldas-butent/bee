@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
@@ -611,6 +612,18 @@ public class BeeUtils {
       return null;
     }
   }
+  
+  public static <K, V> Collection<V> getIfContains(Multimap<K, V> multimap, K key) {
+    if (multimap != null && multimap.containsKey(key)) {
+      return multimap.get(key);
+    } else {
+      return null;
+    }
+  }
+
+  public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
+    return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
+  }
 
   /**
    * Gets a prefix from a String, where separator sets that the prefix will end at the first
@@ -723,6 +736,10 @@ public class BeeUtils {
     } else {
       return BeeConst.STRING_EMPTY;
     }
+  }
+
+  public static <C extends Comparable<C>> C getUpperEndpoint(Range<C> range) {
+    return (range != null && range.hasUpperBound()) ? range.upperEndpoint() : null;
   }
 
   public static boolean hasLength(CharSequence cs, int min) {
@@ -839,7 +856,7 @@ public class BeeUtils {
     }
     return false;
   }
-
+  
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;

@@ -15,7 +15,7 @@
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InputDateTime source="Date" style="width: 10em;" caption="Data" />
           <Button name="profit" html="Pelnas" />
-          <InputText source="TripNo" caption="Reiso.Nr." />
+          <InputText source="TripNo" caption="Reiso Nr." />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
           <FlowPanel>

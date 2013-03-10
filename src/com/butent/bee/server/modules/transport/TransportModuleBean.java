@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -46,7 +45,6 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -715,9 +713,9 @@ public class TransportModuleBean implements BeeModule {
 
     IsCondition where = SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION);
 
-    Map<Long, String> drivers = getTripDrivers(where);
-    if (!drivers.isEmpty()) {
-      settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
+    SimpleRowSet drivers = getTripDrivers(where);
+    if (!DataUtils.isEmpty(drivers)) {
+      settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
     }
 
     SimpleRowSet vehicleServices = getVehicleServices(null);
@@ -1101,9 +1099,7 @@ public class TransportModuleBean implements BeeModule {
     return tmpCosts;
   }
 
-  private Map<Long, String> getTripDrivers(IsCondition condition) {
-    Map<Long, String> result = Maps.newHashMap();
-
+  private SimpleRowSet getTripDrivers(IsCondition condition) {
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_TRIP_DRIVERS)
         .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
@@ -1118,40 +1114,11 @@ public class TransportModuleBean implements BeeModule {
     query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
         CommonsConstants.COL_LAST_NAME);
 
-    query.addOrder(TBL_TRIP_DRIVERS, COL_TRIP);
-
     if (condition != null) {
       query.setWhere(condition);
     }
 
-    SimpleRowSet data = qs.getData(query);
-    if (data == null || data.getNumberOfRows() == 0) {
-      return result;
-    }
-
-    List<String> drivers = Lists.newArrayList();
-    String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
-
-    Long lastTrip = null;
-    for (SimpleRow row : data) {
-      Long trip = row.getLong(COL_TRIP);
-
-      if (!trip.equals(lastTrip)) {
-        if (!drivers.isEmpty()) {
-          result.put(lastTrip, BeeUtils.join(separator, drivers));
-          drivers.clear();
-        }
-        lastTrip = trip;
-      }
-
-      drivers.add(BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
-          row.getValue(CommonsConstants.COL_LAST_NAME)));
-    }
-
-    if (!drivers.isEmpty()) {
-      result.put(lastTrip, BeeUtils.join(separator, drivers));
-    }
-    return result;
+    return qs.getData(query);
   }
 
   /**
@@ -1313,9 +1280,9 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_TRIPS, trips.serialize());
 
-    Map<Long, String> drivers = getTripDrivers(tripWhere);
-    if (!drivers.isEmpty()) {
-      settings.setTableProperty(PROP_DRIVERS, Codec.beeSerialize(drivers));
+    SimpleRowSet drivers = getTripDrivers(tripWhere);
+    if (!DataUtils.isEmpty(drivers)) {
+      settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
     }
 
     String loadAlias = "load_" + SqlUtils.uniqueName();
@@ -1373,6 +1340,9 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_CARGO, cargo.serialize());
 
+    IsCondition cargoHandlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
+        SqlUtils.notNull(unlAlias, COL_PLACE_DATE));
+    
     SqlSelect cargoHandlingQuery = new SqlSelect()
         .addFrom(TBL_TRIPS)
         .addFromInner(TBL_CARGO_TRIPS,
@@ -1393,7 +1363,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
         .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
         .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
-        .setWhere(tripWhere)
+        .setWhere(SqlUtils.and(tripWhere, cargoHandlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
 
     SimpleRowSet cargoHandling = qs.getData(cargoHandlingQuery);

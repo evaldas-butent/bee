@@ -1,10 +1,13 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
@@ -37,7 +40,8 @@ import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.transport.ChartData.Type;
+import com.butent.bee.client.modules.transport.TransportHandler;
+import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
@@ -64,7 +68,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -219,8 +222,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   private final List<Freight> items = Lists.newArrayList();
 
-  private final Map<Long, String> drivers = Maps.newHashMap();
-  private final Map<Long, List<VehicleService>> services = Maps.newHashMap();
+  private final Multimap<Long, String> drivers = HashMultimap.create();
+  private final Multimap<Long, VehicleService> services = ArrayListMultimap.create();
 
   private int vehicleWidth = BeeConst.UNDEF;
   private int tripWidth = BeeConst.UNDEF;
@@ -237,9 +240,9 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     super();
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDERS, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS,
-        VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES, CommonsConstants.VIEW_COLORS,
-        CommonsConstants.VIEW_THEME_COLORS);
+    setRelevantDataViews(VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDERS, VIEW_ORDER_CARGO,
+        VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES,
+        CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
   }
 
   @Override
@@ -308,7 +311,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   @Override
   protected boolean filter(DialogBox dialog) {
     Predicate<Freight> predicate = getPredicate();
-    
+
     List<Integer> match = Lists.newArrayList();
     if (predicate != null) {
       for (int i = 0; i < items.size(); i++) {
@@ -316,7 +319,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           match.add(i);
         }
       }
-      
+
       if (match.isEmpty()) {
         return false;
       }
@@ -324,9 +327,9 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
         match.clear();
       }
     }
-    
+
     dialog.close();
-    
+
     updateFilteredIndexes(match);
     return true;
   }
@@ -339,7 +342,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
         result.add(items.get(index));
       }
       return result;
-      
+
     } else {
       return items;
     }
@@ -384,7 +387,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   protected String getThemeColumnName() {
     return COL_SS_THEME;
   }
-  
+
   @Override
   protected void initData(BeeRowSet rowSet) {
     drivers.clear();
@@ -396,39 +399,20 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
     String serialized = rowSet.getTableProperty(PROP_DRIVERS);
     if (!BeeUtils.isEmpty(serialized)) {
-      String[] arr = Codec.beeDeserializeCollection(serialized);
-      if (arr != null) {
-        for (int i = 0; i < arr.length - 1; i += 2) {
-          if (BeeUtils.isLong(arr[i]) && !BeeUtils.isEmpty(arr[i + 1])) {
-            drivers.put(BeeUtils.toLong(arr[i]), arr[i + 1]);
-          }
-        }
+      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+      for (SimpleRow row : srs) {
+        drivers.put(row.getLong(COL_TRIP), 
+            BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
+                row.getValue(CommonsConstants.COL_LAST_NAME)));
       }
     }
 
     serialized = rowSet.getTableProperty(PROP_VEHICLE_SERVICES);
     if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet vsData = SimpleRowSet.restore(serialized);
-
-      List<VehicleService> vs = Lists.newArrayList();
-      Long lastVehicle = null;
-
-      for (SimpleRow row : vsData) {
+      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+      for (SimpleRow row : srs) {
         VehicleService service = new VehicleService(row);
-
-        if (!Objects.equal(service.getVehicleId(), lastVehicle)) {
-          if (!vs.isEmpty()) {
-            services.put(lastVehicle, Lists.newArrayList(vs));
-            vs.clear();
-          }
-          lastVehicle = service.getVehicleId();
-        }
-
-        vs.add(service);
-      }
-
-      if (!vs.isEmpty()) {
-        services.put(lastVehicle, Lists.newArrayList(vs));
+        services.put(service.getVehicleId(), service);
       }
     }
   }
@@ -438,7 +422,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (items.isEmpty()) {
       return super.initFilter();
     }
-    
+
     ChartData vehicleData = new ChartData(Type.VEHICLE);
     ChartData trailerData = new ChartData(Type.TRAILER);
     ChartData driverData = new ChartData(Type.DRIVER);
@@ -449,7 +433,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     ChartData loadData = new ChartData(Type.LOADING);
     ChartData unloadData = new ChartData(Type.UNLOADING);
     ChartData cargoData = new ChartData(Type.CARGO);
-    
+
     for (Freight item : items) {
       if (!BeeUtils.isEmpty(item.vehicleNumber)) {
         vehicleData.add(item.vehicleNumber, item.vehicleId);
@@ -458,14 +442,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       if (!BeeUtils.isEmpty(item.trailerNumber)) {
         trailerData.add(item.trailerNumber, item.trailerId);
       }
-      
-      if (item.tripId != null) {
-        String drv = drivers.get(item.tripId);
-        if (!BeeUtils.isEmpty(drv)) {
-          driverData.add(drv);
-        }
+
+      if (item.tripId != null && drivers.containsKey(item.tripId)) {
+        driverData.add(drivers.get(item.tripId));
       }
-      
+
       if (!BeeUtils.isEmpty(item.customerName)) {
         customerData.add(item.customerName);
       }
@@ -483,12 +464,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
       }
-      
+
       if (!BeeUtils.isEmpty(item.cargoDescription)) {
         cargoData.add(item.cargoDescription);
       }
     }
-    
+
     List<ChartData> result = Lists.newArrayList();
 
     if (!vehicleData.isEmpty()) {
@@ -500,7 +481,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (!driverData.isEmpty()) {
       result.add(driverData);
     }
-    
+
     if (!customerData.isEmpty()) {
       result.add(customerData);
     }
@@ -518,7 +499,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (!cargoData.isEmpty()) {
       result.add(cargoData);
     }
-    
+
     return result;
   }
 
@@ -582,7 +563,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_SS_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
   }
-  
+
   @Override
   protected List<HandlerRegistration> register() {
     List<HandlerRegistration> list = super.register();
@@ -760,7 +741,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       JustDate firstDate = getVisibleRange().lowerEndpoint();
       JustDate lastDate = getVisibleRange().upperEndpoint();
 
-      List<VehicleService> serviceItems = services.get(vehicleId);
+      Collection<VehicleService> serviceItems = services.get(vehicleId);
 
       for (VehicleService item : serviceItems) {
         if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
@@ -848,9 +829,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   private String buildTripTitle(Freight item) {
+    String drv = drivers.containsKey(item.tripId) 
+        ? BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, drivers.get(item.tripId)) : null;
+
     return ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
-        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber,
-        "Vairuotojai", drivers.get(item.tripId));
+        "Vilkikas", item.vehicleNumber, "Puspriekabė", item.trailerNumber, "Vairuotojai", drv);
   }
 
   private Widget createItemWidget(final Freight item) {
@@ -1165,9 +1148,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   private String findVehicleNumber(Long vehicleId) {
     if (services.containsKey(vehicleId)) {
-      List<VehicleService> vsList = services.get(vehicleId);
-      if (!vsList.isEmpty()) {
-        return vsList.get(0).getVehicleNumber();
+      for (VehicleService vs : services.get(vehicleId)) {
+        return vs.getVehicleNumber();
       }
     }
 
@@ -1187,12 +1169,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       if (data.size() <= 1) {
         continue;
       }
-      
+
       final Collection<String> selectedNames = data.getSelectedNames();
       if (selectedNames.isEmpty() || selectedNames.size() >= data.size()) {
         continue;
       }
-      
+
       Predicate<Freight> predicate;
       switch (data.getType()) {
         case VEHICLE:
@@ -1217,15 +1199,15 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {
-              if (input.tripId == null) {
-                return false;
+              if (input.tripId != null && drivers.containsKey(input.tripId)) {
+                return BeeUtils.containsAny(selectedNames, drivers.get(input.tripId));
               } else {
-                return selectedNames.contains(drivers.get(input.tripId));
+                return false;
               }
             }
           };
           break;
-          
+
         case CUSTOMER:
           predicate = new Predicate<Freight>() {
             @Override
@@ -1243,7 +1225,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
             }
           };
           break;
-          
+
         case LOADING:
           predicate = new Predicate<Freight>() {
             @Override
@@ -1263,7 +1245,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
             }
           };
           break;
-          
+
         case CARGO:
           predicate = new Predicate<Freight>() {
             @Override
@@ -1272,12 +1254,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
             }
           };
           break;
-          
+
         default:
           Assert.untouchable();
           predicate = null;
       }
-      
+
       if (predicate != null) {
         predicates.add(predicate);
       }
@@ -1393,11 +1375,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   private void setSeparateTrips(boolean separateTrips) {
     this.separateTrips = separateTrips;
   }
-  
+
   private void setTripWidth(int tripWidth) {
     this.tripWidth = tripWidth;
   }
-  
+
   private void setVehicleWidth(int vehicleWidth) {
     this.vehicleWidth = vehicleWidth;
   }

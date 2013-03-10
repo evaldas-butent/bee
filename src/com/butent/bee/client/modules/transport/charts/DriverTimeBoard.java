@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -20,6 +20,7 @@ import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;

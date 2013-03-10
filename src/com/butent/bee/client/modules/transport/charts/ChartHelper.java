@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
@@ -14,6 +14,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -25,6 +28,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Html;
@@ -49,7 +55,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-class ChartHelper {
+public class ChartHelper {
 
   static final int DEFAULT_MOVER_WIDTH = 3;
   static final int DEFAULT_MOVER_HEIGHT = 3;
@@ -98,6 +104,85 @@ class ChartHelper {
   private static final String STYLE_VERTICAL_MOVER = STYLE_PREFIX + "verticalMover";
 
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 10;
+
+  public static void register() {
+    final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
+      @Override
+      public void onSuccess(IdentifiableWidget result) {
+        BeeKeeper.getScreen().showWidget(result, true);
+      }
+    };
+
+    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        FreightExchange.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        FreightExchange.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        ShippingSchedule.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        ShippingSchedule.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(DriverTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        DriverTimeBoard.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        DriverTimeBoard.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(TruckTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        TruckTimeBoard.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        TruckTimeBoard.open(callback);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback(TrailerTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        TrailerTimeBoard.open(showInNewTab);
+      }
+    });
+
+    WidgetFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        TrailerTimeBoard.open(callback);
+      }
+    });
+  }
 
   static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
     CustomDiv separator = new CustomDiv(styleName);
@@ -213,7 +298,8 @@ class ChartHelper {
   }
 
   static JustDate clamp(JustDate date, Range<JustDate> range) {
-    return TimeUtils.clamp(date, range.lowerEndpoint(), range.upperEndpoint());
+    return TimeUtils.clamp(date, BeeUtils.getLowerEndpoint(range),
+        BeeUtils.getUpperEndpoint(range));
   }
 
   static Mover createHorizontalMover() {
@@ -233,14 +319,14 @@ class ChartHelper {
     }
 
     for (HasDateRange item : items) {
-      if (item != null && item.getRange() != null 
+      if (item != null && item.getRange() != null
           && BeeUtils.intersects(item.getRange(), activeRange)) {
         result.add(item);
       }
     }
     return result;
   }
-  
+
   static Range<JustDate> getActivity(JustDate start, JustDate end) {
     if (start == null && end == null) {
       return null;
@@ -424,7 +510,7 @@ class ChartHelper {
     if (range == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return getRangeLabel(range.lowerEndpoint(), range.upperEndpoint());
+      return getRangeLabel(BeeUtils.getLowerEndpoint(range), BeeUtils.getUpperEndpoint(range));
     }
   }
 
@@ -447,7 +533,7 @@ class ChartHelper {
   }
 
   static int getSize(Range<JustDate> range) {
-    if (range == null) {
+    if (range == null || !range.hasLowerBound() || !range.hasUpperBound()) {
       return BeeConst.UNDEF;
     }
 
@@ -475,12 +561,14 @@ class ChartHelper {
     JustDate max = defMax;
 
     for (HasDateRange item : items) {
-      if (min == null || TimeUtils.isLess(item.getRange().lowerEndpoint(), min)) {
-        min = item.getRange().lowerEndpoint();
+      JustDate lower = BeeUtils.getLowerEndpoint(item.getRange());
+      if (lower != null && (min == null || TimeUtils.isLess(lower, min))) {
+        min = lower;
       }
 
-      if (max == null || TimeUtils.isMore(item.getRange().upperEndpoint(), max)) {
-        max = item.getRange().upperEndpoint();
+      JustDate upper = BeeUtils.getUpperEndpoint(item.getRange());
+      if (upper != null && (max == null || TimeUtils.isMore(upper, max))) {
+        max = upper;
       }
     }
 
@@ -490,7 +578,7 @@ class ChartHelper {
       return Range.closed(min, max);
     }
   }
-  
+
   static JustDate getUpperBound(JustDate min, int size, JustDate max) {
     if (min == null || size <= 0) {
       return max;
@@ -506,6 +594,32 @@ class ChartHelper {
       return true;
     } else {
       return activeRange.isConnected(item.getRange());
+    }
+  }
+
+  static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
+    if (range == null || range.isEmpty() || !range.hasLowerBound() || !range.hasUpperBound()) {
+      return null;
+    }
+
+    if (range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED) {
+      return Range.closed(range.lowerEndpoint(), range.upperEndpoint());
+    }
+
+    int start = range.lowerEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.OPEN) {
+      start++;
+    }
+
+    int end = range.upperEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.OPEN) {
+      end--;
+    }
+
+    if (start <= end) {
+      return Range.closed(new JustDate(start), new JustDate(end));
+    } else {
+      return null;
     }
   }
 
@@ -875,32 +989,6 @@ class ChartHelper {
     }
   }
 
-  private static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
-    if (range == null || range.isEmpty()) {
-      return null;
-    }
-
-    if (range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED) {
-      return Range.closed(range.lowerEndpoint(), range.upperEndpoint());
-    }
-
-    int start = range.lowerEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.OPEN) {
-      start++;
-    }
-
-    int end = range.upperEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.OPEN) {
-      end--;
-    }
-
-    if (start <= end) {
-      return Range.closed(new JustDate(start), new JustDate(end));
-    } else {
-      return null;
-    }
-  }
-
   private static Widget renderDate(JustDate date, String styleName, int width, int height) {
     Size maxSize = new Size(width, height);
 
@@ -971,7 +1059,7 @@ class ChartHelper {
 
     return widget;
   }
-  
+
   private static Pair<Widget, Widget> renderRange(JustDate start, String startStyle,
       JustDate end, String endStyle, int width, int height) {
 
@@ -1019,7 +1107,7 @@ class ChartHelper {
       return Pair.of(startWidget, endWidget);
     }
   }
-  
+
   private ChartHelper() {
   }
 }

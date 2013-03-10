@@ -3,7 +3,8 @@
   xmlns:xpr="http://www.butent.com/expression"
 
   name="Drivers" source="Drivers"
-  editForm="Driver" newRowForm="Driver" newRowCaption="Naujas vairuotojas"
+  editForm="Driver" newRowForm="Driver"
+  caption="Vairuotojai" newRowCaption="Naujas vairuotojas"
   >
   <Columns>
     <SimpleColumn name="CompanyPerson" />

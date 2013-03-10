@@ -31,8 +31,8 @@
     <Boolean name="Dangerous" />
     <Numeric name="ExchangeOfPalettes" precision="2" />
 
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Pakrovimas" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Iškrovimas" />
     <Relation name="ShippingTerm"  relation="ShippingTerms" />
     <Text name="Notes" />
   </Fields>

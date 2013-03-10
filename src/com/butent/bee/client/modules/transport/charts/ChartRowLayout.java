@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -80,6 +80,10 @@ class ChartRowLayout {
 
   List<List<HasDateRange>> getRows() {
     return rows;
+  }
+  
+  boolean hasOverlap() {
+    return !getOverlap().isEmpty();
   }
 
   int size() {

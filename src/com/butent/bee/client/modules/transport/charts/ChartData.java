@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -109,6 +109,14 @@ class ChartData {
       items.add(new Item(name, id));
     } else {
       item.increment();
+    }
+  }
+  
+  void add(Collection<String> names) {
+    if (names != null) {
+      for (String name : names) {
+        add(name);
+      }
     }
   }
 

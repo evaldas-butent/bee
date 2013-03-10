@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
@@ -29,7 +29,8 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.transport.ChartData.Type;
+import com.butent.bee.client.modules.transport.TransportHandler;
+import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;

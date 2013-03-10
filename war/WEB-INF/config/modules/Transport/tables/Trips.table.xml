@@ -8,9 +8,9 @@
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
     <String name="TripNo" precision="20" unique="true" notNull="true"
-      defExpr="NEXT_NUMBER" defValue="R/" />
-    <Relation name="Vehicle" relation="Vehicles" />
-    <Relation name="Trailer" relation="Vehicles" />
+      defExpr="NEXT_NUMBER" defValue="R/" label="Reiso Nr." />
+    <Relation name="Vehicle" relation="Vehicles" label="Vilkikas" />
+    <Relation name="Trailer" relation="Vehicles" label="Puspriekabė" />
     <Date name="DateFrom" />
     <Date name="DateTo" />
     <Date name="PlannedEndDate" />
@@ -22,6 +22,6 @@
     <Relation name="Forwarder" relation="Companies" />
     <String name="ForwarderVehicle" precision="50" />
     <String name="ForwarderDriver" precision="50" />
-    <Text name="Notes" />
+    <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>

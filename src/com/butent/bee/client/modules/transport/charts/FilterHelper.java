@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -16,7 +16,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.transport.ChartData.Item;
+import com.butent.bee.client.modules.transport.charts.ChartData.Item;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
