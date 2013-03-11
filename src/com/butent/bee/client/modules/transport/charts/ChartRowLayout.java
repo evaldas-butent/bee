@@ -12,7 +12,60 @@ import java.util.List;
 import java.util.Set;
 
 class ChartRowLayout {
+  
+  interface Blender {
+    boolean willItBlend(HasDateRange x, HasDateRange y);
+  }
 
+  private static Set<Range<JustDate>> clash(Collection<? extends HasDateRange> items,
+      Range<JustDate> range, Range<JustDate> activeRange) {
+
+    Set<Range<JustDate>> overlap = intersection(items, range);
+    if (overlap.isEmpty() || activeRange == null) {
+      return overlap;
+    } else {
+      return clash(overlap, activeRange);
+    }
+  }
+
+  private static Set<Range<JustDate>> clash(Collection<Range<JustDate>> ranges,
+      Range<JustDate> range) {
+
+    Set<Range<JustDate>> result = Sets.newHashSet();
+    if (ranges == null || range == null) {
+      return result;
+    }
+
+    for (Range<JustDate> item : ranges) {
+      if (item != null && item.isConnected(range)) {
+        Range<JustDate> section = item.intersection(range);
+        if (!section.isEmpty()) {
+          result.add(section);
+        }
+      }
+    }
+    return result;
+  }
+  
+  private static Set<Range<JustDate>> intersection(Collection<? extends HasDateRange> items,
+      Range<JustDate> range) {
+    
+    Set<Range<JustDate>> result = Sets.newHashSet();
+    if (items == null || range == null) {
+      return result;
+    }
+
+    for (HasDateRange item : items) {
+      if (item != null && item.getRange() != null && item.getRange().isConnected(range)) {
+        Range<JustDate> section = item.getRange().intersection(range);
+        if (!section.isEmpty()) {
+          result.add(section);
+        }
+      }
+    }
+    return result;
+  }
+  
   private final int dataIndex;
 
   private final Set<HasDateRange> inactivity = Sets.newHashSet();
@@ -32,7 +85,7 @@ class ChartRowLayout {
       if (!rows.isEmpty()) {
         for (HasDateRange item : items) {
           for (List<HasDateRange> row : rows) {
-            Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), activeRange);
+            Set<Range<JustDate>> over = clash(row, item.getRange(), activeRange);
             if (!over.isEmpty()) {
               overlap.addAll(over);
             }
@@ -42,21 +95,38 @@ class ChartRowLayout {
     }
   }
 
+  void addItems(Collection<? extends HasDateRange> items, Range<JustDate> activeRange) {
+    addItems(items, activeRange, null);
+  }
+  
   void addItems(Collection<? extends HasDateRange> items, Range<JustDate> activeRange,
-      boolean addOverlap) {
+      Blender blender) {
 
     for (HasDateRange item : items) {
       boolean added = false;
 
       for (List<HasDateRange> row : rows) {
-        Set<Range<JustDate>> over = ChartHelper.getOverlap(row, item.getRange(), activeRange);
+        Set<Range<JustDate>> over = clash(row, item.getRange(), activeRange);
 
         if (over.isEmpty()) {
           row.add(item);
           added = true;
           break;
-        } else if (addOverlap) {
+
+        } else if (blender == null) {
           overlap.addAll(over);
+
+        } else {
+          List<HasDateRange> incompatible = Lists.newArrayList();
+          for (HasDateRange rowItem : row) {
+            if (!blender.willItBlend(item, rowItem)) {
+              incompatible.add(rowItem);
+            }
+          }
+          
+          if (!incompatible.isEmpty()) {
+            overlap.addAll(clash(incompatible, item.getRange(), activeRange));
+          }
         }
       }
 
@@ -74,8 +144,8 @@ class ChartRowLayout {
     return inactivity;
   }
 
-  Set<Range<JustDate>> getOverlap() {
-    return overlap;
+  Set<Range<JustDate>> getOverlap(Range<JustDate> activeRange) {
+    return clash(overlap, activeRange);
   }
 
   List<List<HasDateRange>> getRows() {
@@ -83,7 +153,7 @@ class ChartRowLayout {
   }
   
   boolean hasOverlap() {
-    return !getOverlap().isEmpty();
+    return !overlap.isEmpty();
   }
 
   int size() {

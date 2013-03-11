@@ -57,10 +57,11 @@ public class Flags {
   }
   
   public static void get(String countryCode, Callback<String> callback) {
+    Assert.notNull(callback);
     if (BeeUtils.isEmpty(countryCode)) {
+      callback.onFailure("flags: country code is empty");
       return;
     }
-    Assert.notNull(callback);
     
     switch (state) {
       case NEW:

@@ -16,7 +16,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrailerTbSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="440" height="360"
+  width="440" height="420"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
@@ -29,9 +29,21 @@
       <Label html="Informacinio stulpelio plotis px:" style="&lbl;" />
       <InputSpinner source="TrailerPixelsPerInfo" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
+
+    &separator;
     <FlowPanel style="&cb_row;">
       <Label html="Krovinius rodyti atskirai:" style="&lbl;" />
       <CheckBox source="TrailerSeparateCargo" style="&cb_inp;"/>
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&cb_row;">
+      <Label html="Rodyti šalių vėliavas:" style="&lbl;" />
+      <CheckBox source="TrailerCountryFlags" style="&cb_inp;"/>
+    </FlowPanel>
+    <FlowPanel style="&cb_row;">
+      <Label html="Rodyti pakrovimo / iškrovimo vietą:" style="&lbl;" />
+      <CheckBox source="TrailerPlaceInfo" style="&cb_inp;"/>
     </FlowPanel>
 
     &separator;

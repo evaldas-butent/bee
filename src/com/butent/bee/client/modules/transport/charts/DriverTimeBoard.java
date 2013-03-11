@@ -418,8 +418,7 @@ class DriverTimeBoard extends ChartBase {
             getChartLeft() + calendarWidth);
       }
 
-      driverWidget = createDriverWidget(drivers.get(layout.getDataIndex()),
-          !layout.getOverlap().isEmpty());
+      driverWidget = createDriverWidget(drivers.get(layout.getDataIndex()), layout.hasOverlap());
       addDriverWidget(panel, driverWidget, rowIndex, rowIndex + size - 1);
 
       for (int i = 1; i < size; i++) {
@@ -456,8 +455,7 @@ class DriverTimeBoard extends ChartBase {
             panel.add(itemWidget);
           }
           
-          Set<Range<JustDate>> overlap = ChartHelper.getOverlap(layout.getOverlap(),
-              item.getRange());
+          Set<Range<JustDate>> overlap = layout.getOverlap(item.getRange());
           
           for (Range<JustDate> over : overlap) {
             overlapWidget = new CustomDiv(STYLE_OVERLAP);
@@ -583,8 +581,8 @@ class DriverTimeBoard extends ChartBase {
       if (ChartHelper.isActive(driver, range)) {
         ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
-        layout.addItems(getTrips(driver.id, range), range, true);
-        layout.addItems(getAbsence(driver.id, range), range, true);
+        layout.addItems(getTrips(driver.id, range), range);
+        layout.addItems(getAbsence(driver.id, range), range);
 
         layout.addInactivity(ChartHelper.getInactivity(driver, range), range);
 

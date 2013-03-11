@@ -6,7 +6,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -823,24 +822,6 @@ public class BeeUtils {
     Assert.isTrue(pos <= src.length());
 
     return new StringBuilder(src).insert(pos, c).toString();
-  }
-
-  public static <C extends Comparable<C>> Set<Range<C>> intersection(
-      Collection<? extends HasRange<C>> col, Range<C> range) {
-    Set<Range<C>> result = Sets.newHashSet();
-    if (col == null || range == null) {
-      return result;
-    }
-
-    for (HasRange<C> item : col) {
-      if (item != null && item.getRange() != null && item.getRange().isConnected(range)) {
-        Range<C> section = item.getRange().intersection(range);
-        if (!section.isEmpty()) {
-          result.add(section);
-        }
-      }
-    }
-    return result;
   }
 
   public static <C extends Comparable<C>> boolean intersects(Collection<? extends HasRange<C>> col,

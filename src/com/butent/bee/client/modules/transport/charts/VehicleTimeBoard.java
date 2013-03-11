@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
@@ -16,6 +18,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -33,6 +36,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -41,18 +45,62 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 abstract class VehicleTimeBoard extends ChartBase {
 
+  private static class CargoEvent {
+    private final Freight freight;
+    private final CargoHandling cargoHandling;
+
+    private final boolean loading;
+
+    private CargoEvent(Freight freight, CargoHandling cargoHandling, boolean loading) {
+      this.freight = freight;
+      this.cargoHandling = cargoHandling;
+
+      this.loading = loading;
+    }
+
+    private Long getCountryId() {
+      if (cargoHandling == null) {
+        return loading ? freight.loadingCountry : freight.unloadingCountry;
+      } else if (loading) {
+        return BeeUtils.nvl(cargoHandling.loadingCountry, freight.loadingCountry);
+      } else {
+        return BeeUtils.nvl(cargoHandling.unloadingCountry, freight.unloadingCountry);
+      }
+    }
+
+    private String getPlace() {
+      if (cargoHandling == null) {
+        return loading ? freight.loadingPlace : freight.unloadingPlace;
+      } else {
+        return loading ? cargoHandling.loadingPlace : cargoHandling.unloadingPlace;
+      }
+    }
+
+    private String getTerminal() {
+      if (cargoHandling == null) {
+        return loading ? freight.loadingTerminal : freight.unloadingTerminal;
+      } else {
+        return loading ? cargoHandling.loadingTerminal : cargoHandling.unloadingTerminal;
+      }
+    }
+  }
+
   private static class CargoHandling implements HasDateRange {
-    private final Long cargoId;
+    private static final String notesLabel =
+        Data.getColumnLabel(VIEW_CARGO_HANDLING, COL_CARGO_HANDLING_NOTES);
 
     private final JustDate loadingDate;
     private final Long loadingCountry;
@@ -69,8 +117,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     private final Range<JustDate> range;
 
     private CargoHandling(SimpleRow row) {
-      this.cargoId = row.getLong(COL_CARGO);
-
       this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
       this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
       this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
@@ -90,9 +136,17 @@ abstract class VehicleTimeBoard extends ChartBase {
     public Range<JustDate> getRange() {
       return range;
     }
+
+    private String getTitle(String loadMessage, String unloadMessage) {
+      return BeeUtils.buildLines(loadMessage, unloadMessage,
+          ChartHelper.buildTitle(notesLabel, notes));
+    }
   }
 
   private static class Freight implements HasDateRange, HasColorSource {
+    private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+    private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
+
     private final Long tripId;
 
     private final Long cargoTripId;
@@ -100,6 +154,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     private final Long cargoId;
     private final String cargoDescription;
+
+    private final String notes;
 
     private final JustDate loadingDate;
     private final Long loadingCountry;
@@ -111,7 +167,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     private final String unloadingPlace;
     private final String unloadingTerminal;
 
-    private final String orderNo;
     private final String customerName;
 
     private Range<JustDate> range;
@@ -125,6 +180,8 @@ abstract class VehicleTimeBoard extends ChartBase {
       this.cargoId = row.getLong(COL_CARGO);
       this.cargoDescription = row.getValue(COL_DESCRIPTION);
 
+      this.notes = row.getValue(COL_CARGO_NOTES);
+      
       this.loadingDate = BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
           row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad);
       this.loadingCountry = BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
@@ -143,7 +200,6 @@ abstract class VehicleTimeBoard extends ChartBase {
       this.unloadingTerminal = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
           row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL)));
 
-      this.orderNo = row.getValue(COL_ORDER_NO);
       this.customerName = row.getValue(COL_CUSTOMER_NAME);
 
       this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
@@ -176,9 +232,28 @@ abstract class VehicleTimeBoard extends ChartBase {
     private JustDate getMaxDate() {
       return BeeUtils.max(loadingDate, unloadingDate);
     }
+    
+    private String getTitle(String loadMessage, String unloadMessage) {
+      return BeeUtils.buildLines(cargoDescription, loadMessage, unloadMessage,
+          ChartHelper.buildTitle(customerLabel, customerName, notesLabel, notes));
+    }
 
     private void setRange(Range<JustDate> range) {
       this.range = range;
+    }
+  }
+
+  private static class FreightBlender implements ChartRowLayout.Blender {
+    private FreightBlender() {
+    }
+
+    @Override
+    public boolean willItBlend(HasDateRange x, HasDateRange y) {
+      if (x instanceof Freight && y instanceof Freight) {
+        return Objects.equal(((Freight) x).tripId, ((Freight) y).tripId);
+      } else {
+        return false;
+      }
     }
   }
 
@@ -189,6 +264,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     private static final String notesLabel = Data.getColumnLabel(VIEW_TRIPS, COL_TRIP_NOTES);
 
     private static final String driversLabel = Data.getLocalizedCaption(VIEW_DRIVERS);
+    private static final String cargosLabel = Data.getLocalizedCaption(VIEW_CARGO_TRIPS);
 
     private final Long tripId;
     private final String tripNo;
@@ -209,7 +285,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     private final String title;
 
-    private Trip(SimpleRow row, JustDate maxDate, String drv) {
+    private Trip(SimpleRow row, JustDate maxDate, String drv, int cargoCount) {
       this.tripId = row.getLong(COL_TRIP_ID);
       this.tripNo = row.getValue(COL_TRIP_NO);
 
@@ -232,7 +308,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       this.title = BeeUtils.buildLines(ChartHelper.getRangeLabel(this.range),
           ChartHelper.buildTitle(tripNoLabel, this.tripNo, truckLabel, this.truckNumber,
-              trailerLabel, this.trailerNumber, driversLabel, drv, notesLabel, this.notes));
+              trailerLabel, this.trailerNumber, driversLabel, drv, cargosLabel, cargoCount,
+              notesLabel, this.notes));
     }
 
     @Override
@@ -328,6 +405,14 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
   private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
+  private static final String STYLE_TRIP_VOID = STYLE_TRIP_PREFIX + "void";
+
+  private static final String STYLE_TRIP_DAY_PREFIX = STYLE_TRIP_PREFIX + "day-";
+  private static final String STYLE_TRIP_DAY_PANEL = STYLE_TRIP_DAY_PREFIX + "panel";
+  private static final String STYLE_TRIP_DAY_WIDGET = STYLE_TRIP_DAY_PREFIX + "widget";
+  private static final String STYLE_TRIP_DAY_COUNTRY = STYLE_TRIP_DAY_PREFIX + "country";
+  private static final String STYLE_TRIP_DAY_NO_COUNTRY = STYLE_TRIP_DAY_PREFIX + "no-country";
+  private static final String STYLE_TRIP_DAY_LABEL = STYLE_TRIP_DAY_PREFIX + "label";
 
   private static final String STYLE_FREIGHT_PREFIX = STYLE_PREFIX + "Freight-";
   private static final String STYLE_FREIGHT_PANEL = STYLE_FREIGHT_PREFIX + "panel";
@@ -339,11 +424,13 @@ abstract class VehicleTimeBoard extends ChartBase {
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "Inactive";
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
 
+  private static final FreightBlender FREIGHT_BLENDER = new FreightBlender();
+
   private final List<Vehicle> vehicles = Lists.newArrayList();
 
   private final Multimap<Long, Trip> trips = ArrayListMultimap.create();
   private final Multimap<Long, String> drivers = HashMultimap.create();
-  
+
   private final Multimap<Long, Freight> freights = ArrayListMultimap.create();
   private final Multimap<Long, CargoHandling> handling = ArrayListMultimap.create();
 
@@ -353,6 +440,8 @@ abstract class VehicleTimeBoard extends ChartBase {
   private int infoWidth = BeeConst.UNDEF;
 
   private boolean separateCargo = false;
+  private boolean showCountryFlags = false;
+  private boolean showPlaceInfo = false;
 
   private final Set<String> numberPanels = Sets.newHashSet();
   private final Set<String> infoPanels = Sets.newHashSet();
@@ -389,6 +478,10 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected abstract String getSeparateCargoColumnName();
 
+  protected abstract String getShowCountryFlagsColumnName();
+  
+  protected abstract String getShowPlaceInfoColumnName();
+
   @Override
   protected void initData(BeeRowSet rowSet) {
     vehicles.clear();
@@ -410,12 +503,12 @@ abstract class VehicleTimeBoard extends ChartBase {
         vehicles.add(new Vehicle(row));
       }
     }
-    
+
     serialized = rowSet.getTableProperty(PROP_DRIVERS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
       for (SimpleRow row : srs) {
-        drivers.put(row.getLong(COL_TRIP), 
+        drivers.put(row.getLong(COL_TRIP),
             BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
                 row.getValue(CommonsConstants.COL_LAST_NAME)));
       }
@@ -456,16 +549,19 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       for (SimpleRow row : srs) {
         Long tripId = row.getLong(COL_TRIP_ID);
-        String drv = drivers.containsKey(tripId) 
+
+        String drv = drivers.containsKey(tripId)
             ? BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, drivers.get(tripId)) : null;
+        int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
           JustDate maxDate = null;
           for (Freight freight : freights.get(tripId)) {
             maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
+            cargoCount++;
           }
 
-          Trip trip = new Trip(row, maxDate, drv);
+          Trip trip = new Trip(row, maxDate, drv, cargoCount);
           trips.put(row.getLong(index), trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -473,7 +569,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(row.getLong(index), new Trip(row, null, drv));
+          trips.put(row.getLong(index), new Trip(row, null, drv, cargoCount));
         }
       }
     }
@@ -517,6 +613,9 @@ abstract class VehicleTimeBoard extends ChartBase {
       setSeparateCargo(sc);
       updateMaxRange();
     }
+    
+    setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
+    setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
   }
 
   @Override
@@ -614,8 +713,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
           if (hasOverlap) {
-            Set<Range<JustDate>> overlap = ChartHelper.getOverlap(layout.getOverlap(),
-                item.getRange());
+            Set<Range<JustDate>> overlap = layout.getOverlap(item.getRange());
 
             for (Range<JustDate> over : overlap) {
               overlapWidget = new CustomDiv(STYLE_OVERLAP);
@@ -692,9 +790,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     String unloading = getPlaceLabel(freight.unloadingCountry, freight.unloadingPlace,
         freight.unloadingTerminal);
 
-    return BeeUtils.buildLines(freight.cargoDescription,
-        BeeUtils.joinWords("Pakrovimas:", freight.loadingDate, loading),
-        BeeUtils.joinWords("Iškrovimas:", freight.unloadingDate, unloading));
+    return freight.getTitle(loading, unloading);
   }
 
   private Widget createFreightWidget(Freight freight) {
@@ -768,6 +864,103 @@ abstract class VehicleTimeBoard extends ChartBase {
     return panel;
   }
 
+  private Widget createTripDayPanel(Multimap<Long, CargoEvent> dayEvents) {
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_TRIP_DAY_PANEL);
+
+    int dayWidth = getDayColumnWidth();
+    int dayHeight = getRowHeight();
+
+    Set<Long> countryIds = dayEvents.keySet();
+    int widgetCount = countryIds.size();
+
+    int width;
+    int height;
+
+    if (widgetCount == 1) {
+      width = dayWidth;
+      height = dayHeight;
+
+    } else if (dayWidth > dayHeight) {
+      width = dayWidth / widgetCount;
+      height = dayHeight;
+
+    } else {
+      width = dayWidth;
+      height = dayHeight / widgetCount;
+    }
+
+    for (Long countryId : countryIds) {
+      Widget widget = createTripDayWidget(countryId, dayEvents.get(countryId));
+      StyleUtils.setSize(widget, width, height);
+
+      panel.add(widget);
+    }
+
+    return panel;
+  }
+
+  private Widget createTripDayWidget(Long countryId, Collection<CargoEvent> events) {
+    final Flow widget = new Flow();
+    widget.addStyleName(STYLE_TRIP_DAY_WIDGET);
+
+    if (showCountryFlags() && DataUtils.isId(countryId)) {
+      getCountryFlag(countryId, new Callback<String>() {
+        @Override
+        public void onFailure(String... reason) {
+          widget.addStyleName(STYLE_TRIP_DAY_NO_COUNTRY);
+        }
+
+        @Override
+        public void onSuccess(String result) {
+          if (BeeUtils.isEmpty(result)) {
+            widget.addStyleName(STYLE_TRIP_DAY_NO_COUNTRY);
+          } else {
+            widget.addStyleName(STYLE_TRIP_DAY_COUNTRY);
+            StyleUtils.setBackgroundImage(widget, result);
+          }
+        }
+      });
+
+    } else {
+      widget.addStyleName(STYLE_TRIP_DAY_NO_COUNTRY);
+    }
+    
+    if (!BeeUtils.isEmpty(events)) {
+      if (showPlaceInfo()) {
+        List<String> info = Lists.newArrayList();
+        
+        if (!showCountryFlags() && DataUtils.isId(countryId)) {
+          String countryLabel = getCountryLabel(countryId);
+          if (!BeeUtils.isEmpty(countryLabel)) {
+            info.add(countryLabel);
+          }
+        }
+        
+        for (CargoEvent event : events) {
+          String place = event.getPlace();
+          if (!BeeUtils.isEmpty(place) && !BeeUtils.containsSame(info, place)) {
+            info.add(place);
+          }
+          
+          String terminal = event.getTerminal();
+          if (!BeeUtils.isEmpty(terminal) && BeeUtils.containsSame(info, terminal)) {
+            info.add(terminal);
+          }
+        }
+        
+        if (!info.isEmpty()) {
+          CustomDiv label = new CustomDiv(STYLE_TRIP_DAY_LABEL);
+          label.setText(BeeUtils.join(BeeConst.STRING_SPACE, info));
+          
+          widget.add(label);
+        }
+      }
+    }
+
+    return widget;
+  }
+
   private Widget createTripWidget(Trip trip) {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_PANEL);
@@ -783,6 +976,46 @@ abstract class VehicleTimeBoard extends ChartBase {
         openDataRow(event, VIEW_TRIPS, tripId);
       }
     });
+
+    Range<JustDate> tripRange =
+        ChartHelper.normalizedCopyOf(trip.getRange().intersection(getVisibleRange()));
+    if (tripRange == null || tripRange.isEmpty()) {
+      return panel;
+    }
+
+    List<Range<JustDate>> voidRanges;
+
+    if (freights.containsKey(tripId)) {
+      Multimap<JustDate, CargoEvent> tripLayout = doTripLayout(tripId, tripRange);
+      Set<JustDate> eventDates = tripLayout.keySet();
+
+      for (JustDate date : eventDates) {
+        Multimap<Long, CargoEvent> dayLayout = doTripDayLayout(tripLayout.get(date));
+        if (!dayLayout.isEmpty()) {
+          Widget dayWidget = createTripDayPanel(dayLayout);
+
+          StyleUtils.setLeft(dayWidget, getRelativeLeft(tripRange, date));
+          StyleUtils.setWidth(dayWidget, getDayColumnWidth());
+
+          panel.add(dayWidget);
+        }
+      }
+
+      voidRanges = getVoidRanges(tripRange, eventDates, freights.get(tripId));
+
+    } else {
+      voidRanges = Lists.newArrayList();
+      voidRanges.add(tripRange);
+    }
+
+    for (Range<JustDate> voidRange : voidRanges) {
+      Widget voidWidget = new CustomDiv(STYLE_TRIP_VOID);
+
+      StyleUtils.setLeft(voidWidget, getRelativeLeft(tripRange, voidRange.lowerEndpoint()));
+      StyleUtils.setWidth(voidWidget, ChartHelper.getSize(voidRange) * getDayColumnWidth());
+
+      panel.add(voidWidget);
+    }
 
     return panel;
   }
@@ -804,12 +1037,12 @@ abstract class VehicleTimeBoard extends ChartBase {
             for (Trip trip : vehicleTrips) {
               if (freights.containsKey(trip.tripId)) {
                 layout.addItems(ChartHelper.getActiveItems(freights.get(trip.tripId), range),
-                    range, true);
+                    range, FREIGHT_BLENDER);
               }
             }
 
           } else {
-            layout.addItems(ChartHelper.getActiveItems(trips.get(vehicle.id), range), range, true);
+            layout.addItems(ChartHelper.getActiveItems(trips.get(vehicle.id), range), range);
           }
         }
 
@@ -824,12 +1057,133 @@ abstract class VehicleTimeBoard extends ChartBase {
     return result;
   }
 
+  private Multimap<Long, CargoEvent> doTripDayLayout(Collection<CargoEvent> events) {
+    Multimap<Long, CargoEvent> result = LinkedListMultimap.create();
+    for (CargoEvent event : events) {
+      result.put(event.getCountryId(), event);
+    }
+    return result;
+  }
+
+  private Multimap<JustDate, CargoEvent> doTripLayout(Long tripId, Range<JustDate> range) {
+    Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
+    if (tripId == null || range == null || range.isEmpty()) {
+      return result;
+    }
+
+    Collection<Freight> tripCargos = freights.get(tripId);
+    if (BeeUtils.isEmpty(tripCargos)) {
+      return result;
+    }
+
+    for (Freight freight : tripCargos) {
+      if (freight.loadingDate != null && range.contains(freight.loadingDate)) {
+        result.put(freight.loadingDate, new CargoEvent(freight, null, true));
+      }
+
+      if (handling.containsKey(freight.cargoId)) {
+        for (CargoHandling ch : handling.get(freight.cargoId)) {
+          if (ch.loadingDate != null && range.contains(ch.loadingDate)) {
+            result.put(ch.loadingDate, new CargoEvent(freight, ch, true));
+          }
+        }
+      }
+    }
+
+    for (Freight freight : tripCargos) {
+      if (handling.containsKey(freight.cargoId)) {
+        for (CargoHandling ch : handling.get(freight.cargoId)) {
+          if (ch.unloadingDate != null && range.contains(ch.unloadingDate)) {
+            result.put(ch.unloadingDate, new CargoEvent(freight, ch, false));
+          }
+        }
+      }
+
+      if (freight.unloadingDate != null && range.contains(freight.unloadingDate)) {
+        result.put(freight.unloadingDate, new CargoEvent(freight, null, false));
+      }
+    }
+
+    return result;
+  }
+
   private int getInfoWidth() {
     return infoWidth;
   }
 
   private int getNumberWidth() {
     return numberWidth;
+  }
+
+  private int getRelativeLeft(Range<JustDate> parent, JustDate date) {
+    return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
+  }
+
+  private List<Range<JustDate>> getVoidRanges(Range<JustDate> tripRange,
+      Set<JustDate> eventDates, Collection<Freight> tripFreights) {
+
+    List<Range<JustDate>> result = Lists.newArrayList();
+    int tripDays = ChartHelper.getSize(tripRange);
+
+    Set<JustDate> usedDates = Sets.newHashSet();
+
+    if (!BeeUtils.isEmpty(eventDates)) {
+      if (eventDates.size() >= tripDays) {
+        return result;
+      }
+      usedDates.addAll(eventDates);
+    }
+
+    if (!BeeUtils.isEmpty(tripFreights)) {
+      for (Freight freight : tripFreights) {
+        if (ChartHelper.isActive(freight, tripRange)) {
+          Range<JustDate> freightRange = 
+              ChartHelper.normalizedCopyOf(freight.getRange().intersection(tripRange));
+          if (freightRange == null) {
+            continue;
+          }
+          
+          int freightDays = ChartHelper.getSize(freightRange);
+          if (freightDays >= tripDays) {
+            return result;
+          }
+          
+          for (int i = 0; i < freightDays; i++) {
+            usedDates.add(TimeUtils.nextDay(freightRange.lowerEndpoint(), i));
+          }
+          
+          if (usedDates.size() >= tripDays) {
+            return result;
+          }
+        }
+      }
+    }
+    
+    if (BeeUtils.isEmpty(usedDates)) {
+      result.add(tripRange);
+      return result;
+    }
+
+    List<JustDate> dates = Lists.newArrayList(usedDates);
+    Collections.sort(dates);
+
+    for (int i = 0; i < dates.size(); i++) {
+      JustDate date = dates.get(i);
+
+      if (i == 0 && TimeUtils.isMore(date, tripRange.lowerEndpoint())) {
+        result.add(Range.closed(tripRange.lowerEndpoint(), TimeUtils.previousDay(date)));
+      }
+
+      if (i > 0 && TimeUtils.dayDiff(dates.get(i - 1), date) > 1) {
+        result.add(Range.closed(TimeUtils.nextDay(dates.get(i - 1)), TimeUtils.previousDay(date)));
+      }
+
+      if (i == dates.size() - 1 && TimeUtils.isLess(date, tripRange.upperEndpoint())) {
+        result.add(Range.closed(TimeUtils.nextDay(date), tripRange.upperEndpoint()));
+      }
+    }
+
+    return result;
   }
 
   private void onInfoResize(MoveEvent event) {
@@ -914,5 +1268,21 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private void setSeparateCargo(boolean separateCargo) {
     this.separateCargo = separateCargo;
+  }
+
+  private void setShowCountryFlags(boolean showCountryFlags) {
+    this.showCountryFlags = showCountryFlags;
+  }
+
+  private void setShowPlaceInfo(boolean showPlaceInfo) {
+    this.showPlaceInfo = showPlaceInfo;
+  }
+
+  private boolean showCountryFlags() {
+    return showCountryFlags;
+  }
+
+  private boolean showPlaceInfo() {
+    return showPlaceInfo;
   }
 }

@@ -55,7 +55,10 @@
 
     <SimpleColumn name="TruckPixelsPerNumber" />
     <SimpleColumn name="TruckPixelsPerInfo" />
+
     <SimpleColumn name="TruckSeparateCargo" />
+    <SimpleColumn name="TruckCountryFlags" />
+    <SimpleColumn name="TruckPlaceInfo" />
 
     <SimpleColumn name="TruckPixelsPerDay" />
     <SimpleColumn name="TruckPixelsPerRow" />
@@ -73,7 +76,10 @@
 
     <SimpleColumn name="TrailerPixelsPerNumber" />
     <SimpleColumn name="TrailerPixelsPerInfo" />
+
     <SimpleColumn name="TrailerSeparateCargo" />
+    <SimpleColumn name="TrailerCountryFlags" />
+    <SimpleColumn name="TrailerPlaceInfo" />
 
     <SimpleColumn name="TrailerPixelsPerDay" />
     <SimpleColumn name="TrailerPixelsPerRow" />

@@ -336,6 +336,7 @@
   left: 0;
   top: 0;
   font-size: 12px;
+  display: none;
 }
 
 .bee-tr-vtb-Trip-panel,
@@ -343,6 +344,39 @@
   position: absolute;
   overflow: hidden;
   cursor: pointer;
+}
+
+.bee-tr-vtb-Trip-void,
+.bee-tr-vtb-Trip-day-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.bee-tr-vtb-Trip-void {
+  background-color: lightgray;
+  pointer-events: none;
+}
+
+.bee-tr-vtb-Trip-day-panel {
+  display: -webkit-flex;
+  -webkit-flex-wrap: wrap;
+}
+
+.bee-tr-vtb-Trip-day-no-country {
+  background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+.bee-tr-vtb-Trip-day-country {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.bee-tr-vtb-Trip-day-label {
+  font-size: 12px;
+  line-height: 12px;
+  color: black;
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .bee-tr-fx-Customer-row-sep,

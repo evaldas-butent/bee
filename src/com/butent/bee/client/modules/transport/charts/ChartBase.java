@@ -25,6 +25,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -35,6 +36,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
+import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -131,6 +133,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
+  private static final String loadingLabel = 
+      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_LOADING_PLACE);
+  private static final String unloadingLabel = 
+      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_UNLOADING_PLACE);
+  
   private final HeaderView headerView;
   private final Flow canvas;
 
@@ -141,7 +148,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private final List<Color> colors = Lists.newArrayList();
 
   private BeeRowSet settings = null;
+
   private BeeRowSet countries = null;
+  private int countryCodeIndex = BeeConst.UNDEF;
+  private int countryNameIndex = BeeConst.UNDEF;
 
   private Range<JustDate> maxRange = null;
   private Range<JustDate> visibleRange = null;
@@ -757,6 +767,50 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return contentId;
   }
 
+  protected void getCountryFlag(Long countryId, Callback<String> callback) {
+    if (countryId == null) {
+      callback.onFailure("country id is null");
+      return;
+    }
+
+    if (DataUtils.isEmpty(getCountries())) {
+      callback.onFailure("countries not available");
+      return;
+    }
+    
+    BeeRow row = getCountries().getRowById(countryId);
+    if (row == null) {
+      callback.onFailure("country not found:", countryId.toString());
+      return;
+    }
+
+    String code = row.getString(getCountryCodeIndex());
+    if (BeeUtils.isEmpty(code)) {
+      callback.onFailure("country has no code:", row.getString(getCountryNameIndex()));
+    } else {
+      Flags.get(code, callback);
+    }
+  }
+  
+  protected String getCountryLabel(Long countryId) {
+    if (countryId == null || DataUtils.isEmpty(getCountries())) {
+      return null;
+    }
+
+    BeeRow row = getCountries().getRowById(countryId);
+    if (row == null) {
+      return null;
+    }
+
+    String label = row.getString(getCountryCodeIndex());
+
+    if (BeeUtils.isEmpty(label)) {
+      return BeeUtils.trim(row.getString(getCountryNameIndex()));
+    } else {
+      return BeeUtils.trim(label).toUpperCase();
+    }
+  }
+
   protected abstract String getDataService();
 
   protected int getDayColumnWidth() {
@@ -795,6 +849,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected int getHeaderSplitterSize() {
     return ChartHelper.DEFAULT_MOVER_HEIGHT;
+  }
+
+  protected String getLoadingMessage(JustDate date, String placeInfo) {
+    return ChartHelper.getMessage(loadingLabel, date, placeInfo);
   }
 
   protected String getPlaceLabel(Long countryId, String placeName, String terminal) {
@@ -878,6 +936,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected abstract String getStripOpacityColumnName();
 
   protected abstract String getThemeColumnName();
+
+  protected String getUnloadingMessage(JustDate date, String placeInfo) {
+    return ChartHelper.getMessage(unloadingLabel, date, placeInfo);
+  }
 
   protected void initContent(ComplexPanel panel, int rc) {
     setRowCount(rc);
@@ -1385,6 +1447,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     String serialized = rowSet.getTableProperty(PROP_COUNTRIES);
     if (!BeeUtils.isEmpty(serialized)) {
       setCountries(BeeRowSet.restore(serialized));
+      setCountryCodeIndex(getCountries().getColumnIndex(CommonsConstants.COL_CODE));
+      setCountryNameIndex(getCountries().getColumnIndex(CommonsConstants.COL_NAME));
     }
 
     serialized = rowSet.getTableProperty(PROP_COLORS);
@@ -1624,23 +1688,12 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return countries;
   }
 
-  private String getCountryLabel(Long countryId) {
-    if (countryId == null || DataUtils.isEmpty(getCountries())) {
-      return null;
-    }
+  private int getCountryCodeIndex() {
+    return countryCodeIndex;
+  }
 
-    BeeRow row = getCountries().getRowById(countryId);
-    if (row == null) {
-      return null;
-    }
-
-    String label = row.getString(getCountries().getColumnIndex(CommonsConstants.COL_CODE));
-
-    if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.trim(row.getString(getCountries().getColumnIndex(CommonsConstants.COL_NAME)));
-    } else {
-      return BeeUtils.trim(label).toUpperCase();
-    }
+  private int getCountryNameIndex() {
+    return countryNameIndex;
   }
 
   private int getRowCount() {
@@ -1695,6 +1748,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.countries = countries;
   }
 
+  private void setCountryCodeIndex(int countryCodeIndex) {
+    this.countryCodeIndex = countryCodeIndex;
+  }
+
+  private void setCountryNameIndex(int countryNameIndex) {
+    this.countryNameIndex = countryNameIndex;
+  }
+
   private void setMaxRange(Collection<? extends HasDateRange> items) {
     JustDate min = TimeUtils.today(-1);
     JustDate max = TimeUtils.startOfNextMonth(min);
@@ -1724,7 +1785,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setSettings(BeeRowSet settings) {
     this.settings = settings;
   }
-
+  
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {

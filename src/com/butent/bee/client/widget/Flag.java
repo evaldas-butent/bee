@@ -47,8 +47,12 @@ public class Flag extends CustomWidget {
 
       @Override
       public void onSuccess(String result) {
-        getImageElement().setSrc(result);
-        getElement().getStyle().clearVisibility();
+        if (BeeUtils.isEmpty(result)) {
+          clear();
+        } else {
+          getImageElement().setSrc(result);
+          getElement().getStyle().clearVisibility();
+        }
       }
     });
   }

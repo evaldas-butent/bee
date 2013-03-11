@@ -1542,10 +1542,6 @@ public class StyleUtils {
     setBackgroundColor(el.getStyle(), color);
   }
 
-  public static void setBackgroundColor(String id, String color) {
-    setBackgroundColor(DomUtils.getElement(id), color);
-  }
-
   public static void setBackgroundColor(Style st, String color) {
     Assert.notNull(st);
     if (BeeUtils.isEmpty(color)) {
@@ -1560,6 +1556,25 @@ public class StyleUtils {
     setBackgroundColor(obj.getElement(), color);
   }
 
+  public static void setBackgroundImage(Element el, String url) {
+    Assert.notNull(el);
+    setBackgroundImage(el.getStyle(), url);
+  }
+
+  public static void setBackgroundImage(Style st, String url) {
+    Assert.notNull(st);
+    if (BeeUtils.isEmpty(url)) {
+      st.clearBackgroundImage();
+    } else {
+      st.setBackgroundImage("url(" + url.trim() + ")");
+    }
+  }
+
+  public static void setBackgroundImage(UIObject obj, String url) {
+    Assert.notNull(obj);
+    setBackgroundImage(obj.getElement(), url);
+  }
+  
   public static void setBorderColor(Element el, String color) {
     Assert.notNull(el);
     setBorderColor(el.getStyle(), color);

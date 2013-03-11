@@ -119,6 +119,7 @@ public class TransportConstants {
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
+  public static final String COL_CARGO_NOTES = "Notes";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
   
@@ -227,7 +228,10 @@ public class TransportConstants {
 
   public static final String COL_TRUCK_PIXELS_PER_NUMBER = "TruckPixelsPerNumber";
   public static final String COL_TRUCK_PIXELS_PER_INFO = "TruckPixelsPerInfo";
+
   public static final String COL_TRUCK_SEPARATE_CARGO = "TruckSeparateCargo";
+  public static final String COL_TRUCK_COUNTRY_FLAGS = "TruckCountryFlags";
+  public static final String COL_TRUCK_PLACE_INFO = "TruckPlaceInfo";
 
   public static final String COL_TRUCK_PIXELS_PER_DAY = "TruckPixelsPerDay";
   public static final String COL_TRUCK_PIXELS_PER_ROW = "TruckPixelsPerRow";
@@ -242,7 +246,10 @@ public class TransportConstants {
 
   public static final String COL_TRAILER_PIXELS_PER_NUMBER = "TrailerPixelsPerNumber";
   public static final String COL_TRAILER_PIXELS_PER_INFO = "TrailerPixelsPerInfo";
+
   public static final String COL_TRAILER_SEPARATE_CARGO = "TrailerSeparateCargo";
+  public static final String COL_TRAILER_COUNTRY_FLAGS = "TrailerCountryFlags";
+  public static final String COL_TRAILER_PLACE_INFO = "TrailerPlaceInfo";
 
   public static final String COL_TRAILER_PIXELS_PER_DAY = "TrailerPixelsPerDay";
   public static final String COL_TRAILER_PIXELS_PER_ROW = "TrailerPixelsPerRow";

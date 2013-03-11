@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -53,7 +52,6 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class ChartHelper {
 
@@ -428,6 +426,16 @@ public class ChartHelper {
     }
   }
 
+  static String getMessage(String label, JustDate date, String info) {
+    if (date == null && BeeUtils.isEmpty(info)) {
+      return BeeConst.STRING_EMPTY;
+    } else if (BeeUtils.isEmpty(label)) {
+      return BeeUtils.joinWords(date, info);
+    } else {
+      return BeeUtils.joinWords(label.trim() + BeeConst.STRING_COLON, date, info);
+    }
+  }
+  
   static Double getOpacity(BeeRowSet settings, String colName) {
     if (DataUtils.isEmpty(settings)) {
       return null;
@@ -441,34 +449,6 @@ public class ChartHelper {
 
     Integer value = settings.getInteger(0, index);
     return (BeeUtils.isPositive(value) && value < 100) ? value / 100.0 : null;
-  }
-
-  static Set<Range<JustDate>> getOverlap(Collection<? extends HasDateRange> items,
-      Range<JustDate> range, Range<JustDate> activeRange) {
-
-    Set<Range<JustDate>> overlap = BeeUtils.intersection(items, range);
-    if (overlap.isEmpty() || activeRange == null) {
-      return overlap;
-    } else {
-      return getOverlap(overlap, activeRange);
-    }
-  }
-
-  static Set<Range<JustDate>> getOverlap(Collection<Range<JustDate>> ranges, Range<JustDate> range) {
-    Set<Range<JustDate>> result = Sets.newHashSet();
-    if (ranges == null || range == null) {
-      return result;
-    }
-
-    for (Range<JustDate> item : ranges) {
-      if (item != null && item.isConnected(range)) {
-        Range<JustDate> section = item.intersection(range);
-        if (!section.isEmpty()) {
-          result.add(section);
-        }
-      }
-    }
-    return result;
   }
 
   static int getPixels(BeeRowSet settings, String colName, int def) {

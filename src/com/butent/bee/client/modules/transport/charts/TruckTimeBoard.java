@@ -100,6 +100,16 @@ class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getShowCountryFlagsColumnName() {
+    return COL_TRUCK_COUNTRY_FLAGS;
+  }
+
+  @Override
+  protected String getShowPlaceInfoColumnName() {
+    return COL_TRUCK_PLACE_INFO;
+  }
+  
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_TRUCK_STRIP_OPACITY;
   }

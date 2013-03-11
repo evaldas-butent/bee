@@ -1320,7 +1320,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
         .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
         .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
-        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION)
+        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION, COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
         .addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY))
         .addField(defLoadAlias, COL_PLACE, defaultLoadingColumnAlias(COL_PLACE_NAME))

@@ -34,6 +34,6 @@
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Pakrovimas" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Iškrovimas" />
     <Relation name="ShippingTerm"  relation="ShippingTerms" />
-    <Text name="Notes" />
+    <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>

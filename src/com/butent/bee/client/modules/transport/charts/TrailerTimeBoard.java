@@ -98,6 +98,16 @@ class TrailerTimeBoard extends VehicleTimeBoard {
   protected String getSettingsFormName() {
     return FORM_TRAILER_SETTINGS;
   }
+
+  @Override
+  protected String getShowCountryFlagsColumnName() {
+    return COL_TRAILER_COUNTRY_FLAGS;
+  }
+
+  @Override
+  protected String getShowPlaceInfoColumnName() {
+    return COL_TRAILER_PLACE_INFO;
+  }
   
   @Override
   protected String getStripOpacityColumnName() {
