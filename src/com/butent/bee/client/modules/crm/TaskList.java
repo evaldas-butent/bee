@@ -718,7 +718,8 @@ class TaskList {
     DELEGATED("Deleguotos užduotys") {
       @Override
       Filter getFilter(LongValue userValue) {
-        return ComparisonFilter.isEqual(COL_OWNER, userValue);
+        return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue), ComparisonFilter
+            .isNotEqual(COL_EXECUTOR, userValue));
       }
     },
 
