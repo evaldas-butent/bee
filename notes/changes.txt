@@ -22,3 +22,4 @@
 2013.02.20 slf4j-api.1.7.2
 2013.02.20 logback-core-1.0.9.jar
 2013.02.20 logback-classic-1.0.9.jar
+2013.03.13 gwt-2.5.1, guava-14.0 
