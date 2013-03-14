@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:xpr="http://www.butent.com/expression"
+
+  name="OrderAssessments"
+  source="CargoAssessors"
+  newRowForm="NewOrderAssessment" editForm="OrderAssessment"
+  >
+  <Columns>
+    <SimpleColumn name="Manager" />
+    <SimpleColumn name="Assessor" />
+    <SimpleColumn name="Cargo" />
+
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleJoin name="Order" joinType="INNER">
+        <SimpleColumn name="Status" />
+        <SimpleColumn name="Date" alias="OrderDate" editable="true" />
+        <SimpleColumn name="OrderNo" />
+      
+        <SimpleColumn name="Customer" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Customer">
+          <SimpleColumn name="Name" alias="CustomerName" />
+        </SimpleJoin>
+      
+        <SimpleColumn name="CustomerPerson" editable="true" />
+        <SimpleJoin name="CustomerPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn alias="PersonFirstName" name="FirstName" />
+            <SimpleColumn alias="PersonLastName" name="LastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      
+        <SimpleColumn name="Notes" alias="OrderNotes" editable="true" />
+      </SimpleJoin>
+
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="LoadingDate" editable="true" />
+        <SimpleColumn name="Country" alias="LoadingCountry" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="LoadingCountryName" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        </SimpleJoin>
+        <SimpleColumn name="Place" alias="LoadingPlace" editable="true" />
+        <SimpleColumn name="Terminal" alias="LoadingTerminal" editable="true" />
+      </SimpleJoin>
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="UnloadingDate" editable="true" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="UnloadingCountryName" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        </SimpleJoin>
+        <SimpleColumn name="Place" alias="UnloadingPlace" editable="true" />
+        <SimpleColumn name="Terminal" alias="UnloadingTerminal" editable="true" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Description" editable="true" />
+
+      <SimpleColumn name="Weight" editable="true" />
+      <SimpleColumn name="Volume" editable="true" />
+      <SimpleColumn name="Quantity" editable="true" />
+      <SimpleColumn name="Value" editable="true" />
+      <SimpleColumn name="ValueCurrency" editable="true" />
+      <SimpleJoin joinType="LEFT" name="ValueCurrency">
+        <SimpleColumn name="Name" alias="ValueCurrencyName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Number" editable="true" />
+      <SimpleColumn name="Cmr" editable="true" />
+
+      <SimpleColumn name="Partial" editable="true" />
+      <SimpleColumn name="Outsized" editable="true" />
+      <SimpleColumn name="Dangerous" editable="true" />
+
+      <SimpleColumn name="Notes" editable="true" />
+      <SimpleColumn name="Price" editable="true" />
+      <SimpleColumn name="Currency" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="OrderDate" />
+  </Order>
+</View>

@@ -471,14 +471,14 @@
   margin-left: 2em;
 }
 
-.bee-tr-orderTrips-display {
+.bee-tr-orderTrips-display, .bee-tr-cargoServices-display {
   border-collapse: collapse;
 }
-.bee-tr-orderTrips-display td {
+.bee-tr-orderTrips-display td, .bee-tr-cargoServices-display td {
   border: 1px solid #aaa;
   padding: 3px;
 }
-.bee-tr-orderTrips-caption {
+.bee-tr-orderTrips-caption, .bee-tr-cargoServices-caption {
   font-weight: bold;
   text-align: center;
 }

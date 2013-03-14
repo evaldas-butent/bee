@@ -61,11 +61,7 @@ public class MailKeeper {
     BeeKeeper.getMenu().registerMenuCallback("open_mail", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
-        MailPanel panel = new MailPanel();
-
-        if (panel.getCurrentAccount() != null) {
-          mailPanels.add(panel);
-        }
+        mailPanels.add(new MailPanel());
       }
     });
 

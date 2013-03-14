@@ -177,12 +177,16 @@ public class UserServiceBean {
   }
 
   public String getUserName(long userId) {
-    Assert.contains(userCache, userId);
     return userCache.get(userId);
   }
 
   public long[] getUserRoles(long userId) {
-    return Longs.toArray(getUserInfo(userId).getRoles());
+    UserInfo userInfo = getUserInfo(userId);
+
+    if (userInfo != null) {
+      return Longs.toArray(getUserInfo(userId).getRoles());
+    }
+    return new long[0];
   }
 
   public Set<Long> getUsers() {
@@ -218,10 +222,10 @@ public class UserServiceBean {
     rightsCache.clear();
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_OBJECTS, FLD_OBJECT_NAME)
-        .addFields(TBL_RIGHTS, FLD_ROLE, FLD_STATE)
+        .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
+        .addFields(TBL_RIGHTS, COL_ROLE, COL_STATE)
         .addFrom(TBL_OBJECTS)
-        .addFromInner(TBL_RIGHTS, sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, FLD_OBJECT));
+        .addFromInner(TBL_RIGHTS, sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, COL_OBJECT));
 
     for (RightsObjectType tp : RightsObjectType.values()) {
       if (BeeUtils.isEmpty(tp.getRegisteredStates())) {
@@ -229,10 +233,10 @@ public class UserServiceBean {
       }
       HasConditions cl = SqlUtils.or();
       IsCondition wh =
-          SqlUtils.and(SqlUtils.equals(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal()), cl);
+          SqlUtils.and(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, tp.ordinal()), cl);
 
       for (RightsState state : tp.getRegisteredStates()) {
-        cl.add(SqlUtils.equals(TBL_RIGHTS, FLD_STATE, state.ordinal()));
+        cl.add(SqlUtils.equals(TBL_RIGHTS, COL_STATE, state.ordinal()));
       }
       SimpleRowSet res = qs.getData(ss.setWhere(wh));
 
@@ -244,15 +248,15 @@ public class UserServiceBean {
           rightsCache.put(tp, rightsObjects);
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
-          RightsState state = NameUtils.getEnumByIndex(RightsState.class, res.getInt(i, FLD_STATE));
-          String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
+          RightsState state = NameUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
+          String objectName = BeeUtils.normalize(res.getValue(i, COL_OBJECT_NAME));
           Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
           if (objectStates == null) {
             objectStates = HashMultimap.create();
             rightsObjects.put(objectName, objectStates);
           }
-          objectStates.put(state, res.getLong(i, FLD_ROLE));
+          objectStates.put(state, res.getLong(i, COL_ROLE));
         }
       }
     }
@@ -269,37 +273,37 @@ public class UserServiceBean {
     String roleIdName = sys.getIdName(TBL_ROLES);
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_ROLES, roleIdName, FLD_ROLE_NAME)
+        .addFields(TBL_ROLES, roleIdName, COL_ROLE_NAME)
         .addFrom(TBL_ROLES));
 
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
-      roleCache.put(rs.getLong(i, roleIdName), rs.getValue(i, FLD_ROLE_NAME));
+      roleCache.put(rs.getLong(i, roleIdName), rs.getValue(i, COL_ROLE_NAME));
     }
 
     rs = qs.getData(new SqlSelect()
-        .addFields(TBL_USER_ROLES, FLD_USER, FLD_ROLE)
+        .addFields(TBL_USER_ROLES, COL_USER, COL_ROLE)
         .addFrom(TBL_USER_ROLES));
 
     Multimap<Long, Long> userRoles = HashMultimap.create();
 
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
-      userRoles.put(rs.getLong(i, FLD_USER), rs.getLong(i, FLD_ROLE));
+      userRoles.put(rs.getLong(i, COL_USER), rs.getLong(i, COL_ROLE));
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, FLD_LOGIN, FLD_PROPERTIES)
+        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_PROPERTIES)
         .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
-            SqlUtils.join(TBL_USERS, FLD_COMPANY_PERSON,
+            SqlUtils.join(TBL_USERS, COL_COMPANY_PERSON,
                 TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS)))
         .addFromLeft(TBL_PERSONS,
-            SqlUtils.join(TBL_COMPANY_PERSONS, FLD_PERSON,
+            SqlUtils.join(TBL_COMPANY_PERSONS, COL_PERSON,
                 TBL_PERSONS, sys.getIdName(TBL_PERSONS)));
 
     for (SimpleRow row : qs.getData(ss)) {
       long userId = row.getLong(userIdName);
-      String login = key(row.getValue(FLD_LOGIN));
+      String login = key(row.getValue(COL_LOGIN));
 
       userCache.put(userId, login);
 
@@ -307,7 +311,7 @@ public class UserServiceBean {
           row.getValue(UserData.FLD_FIRST_NAME),
           row.getValue(UserData.FLD_LAST_NAME)))
           .setRoles(userRoles.get(userId))
-          .setProperties(row.getValue(FLD_PROPERTIES));
+          .setProperties(row.getValue(COL_PROPERTIES));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -354,7 +358,7 @@ public class UserServiceBean {
           .setRights(getUserRights(getUserId(user)));
 
       qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant(FLD_HOST, BeeUtils.joinWords(host, agent))
+          .addConstant(COL_HOST, BeeUtils.joinWords(host, agent))
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",
@@ -381,7 +385,7 @@ public class UserServiceBean {
       String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
       qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant(FLD_HOST, null)
+          .addConstant(COL_HOST, null)
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
 
       if (info.isOnline()) {

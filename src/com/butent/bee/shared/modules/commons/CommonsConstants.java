@@ -120,19 +120,19 @@ public class CommonsConstants {
 
   public static final String VIEW_COUNTRIES = "Countries";
 
-  public static final String FLD_LOGIN = "Login";
-  public static final String FLD_PASSWORD = "Password";
-  public static final String FLD_PROPERTIES = "Properties";
-  public static final String FLD_HOST = "Host";
-  public static final String FLD_ROLE_NAME = "Name";
-  public static final String FLD_USER = "User";
-  public static final String FLD_ROLE = "Role";
-  public static final String FLD_COMPANY_PERSON = "CompanyPerson";
-  public static final String FLD_PERSON = "Person";
-  public static final String FLD_OBJECT_TYPE = "Type";
-  public static final String FLD_OBJECT = "Object";
-  public static final String FLD_OBJECT_NAME = "Name";
-  public static final String FLD_STATE = "State";
+  public static final String COL_LOGIN = "Login";
+  public static final String COL_PASSWORD = "Password";
+  public static final String COL_PROPERTIES = "Properties";
+  public static final String COL_HOST = "Host";
+  public static final String COL_ROLE_NAME = "Name";
+  public static final String COL_USER = "User";
+  public static final String COL_ROLE = "Role";
+  public static final String COL_COMPANY_PERSON = "CompanyPerson";
+  public static final String COL_PERSON = "Person";
+  public static final String COL_OBJECT_TYPE = "Type";
+  public static final String COL_OBJECT = "Object";
+  public static final String COL_OBJECT_NAME = "Name";
+  public static final String COL_STATE = "State";
 
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
@@ -142,8 +142,6 @@ public class CommonsConstants {
 
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_EMAIL_LABEL = "Label";
-
-  public static final String COL_PERSON = "Person";
 
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";

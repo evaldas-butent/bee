@@ -9,7 +9,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ExchangeUtils {
+  public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
+  public static final String FLD_CURRENCY_NAME = "Name";
   public static final String FLD_CURRENCY = "Currency";
   public static final String FLD_DATE = "Date";
   public static final String FLD_QUANTITY = "Quantity";

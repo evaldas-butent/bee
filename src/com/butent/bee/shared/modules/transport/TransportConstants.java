@@ -37,6 +37,7 @@ public class TransportConstants {
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
+  public static final String SVC_GET_ASSESSMENT_INFO = "GetAssessmentInfo";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
@@ -59,7 +60,10 @@ public class TransportConstants {
   public static final String TBL_ORDER_CARGO = "OrderCargo";
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
+  public static final String TBL_CARGO_SERVICES = "CargoServices";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
+  public static final String TBL_CARGO_ASSESSORS = "CargoAssessors";
+  public static final String TBL_SERVICES = "Services";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
@@ -122,7 +126,11 @@ public class TransportConstants {
   public static final String COL_CARGO_NOTES = "Notes";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
-  
+
+  public static final String COL_ASSESSOR = "Assessor";
+  public static final String COL_ASSESSOR_DATE = "Date";
+  public static final String COL_ASSESSOR_MANAGER = "Manager";
+
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
   public static final String COL_OWNER_NAME = "OwnerName";
@@ -135,6 +143,10 @@ public class TransportConstants {
   public static final String COL_ORDER_DATE = "Date";
   public static final String COL_CUSTOMER = "Customer";
   public static final String COL_CUSTOMER_NAME = "CustomerName";
+
+  public static final String COL_SERVICE = "Service";
+  public static final String COL_SERVICE_EXPENSE = "Expense";
+  public static final String COL_SERVICE_AMOUNT = "Amount";
 
   public static final String COL_DESCRIPTION = "Description";
 
@@ -160,7 +172,7 @@ public class TransportConstants {
   public static final String COL_VEHICLE_START_DATE = "StartDate";
   public static final String COL_VEHICLE_END_DATE = "EndDate";
   public static final String COL_VEHICLE_NOTES = "Notes";
-  
+
   public static final String COL_DRIVER = "Driver";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
   public static final String COL_DRIVER_START_DATE = "StartDate";
@@ -261,12 +273,13 @@ public class TransportConstants {
 
   public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
-  
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
+  public static final String FORM_ORDER_ASSESSMENT = "OrderAssessment";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";

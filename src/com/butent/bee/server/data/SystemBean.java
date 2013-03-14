@@ -73,6 +73,8 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -141,6 +143,7 @@ public class SystemBean {
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
   private final EventBus viewEventBus = new EventBus();
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void activateTable(String tblName) {
     BeeTable table = getTable(tblName);
@@ -164,6 +167,10 @@ public class SystemBean {
       createTable(getTable(tbl), diff);
     }
     return diff;
+  }
+
+  public void filterVisibleState(SqlSelect query, String tblName) {
+    filterVisibleState(query, tblName, null);
   }
 
   public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
@@ -442,6 +449,7 @@ public class SystemBean {
     }
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));

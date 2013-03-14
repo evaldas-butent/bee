@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CargoAssessors"
+  idName="AssessorID"
+  x="0" y="0"
+  >
+  <Fields>
+    <DateTime name="Date" defExpr="CURRENT_TIME" notNull="true" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
+    <Relation name="Manager" relation="Users" label="Vertintojas" notNull="true" />
+    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
+  </Fields>
+</Table>

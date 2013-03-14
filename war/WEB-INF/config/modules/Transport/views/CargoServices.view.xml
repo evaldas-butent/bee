@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CargoServices" source="CargoServices" newRowCaption="Nauja paslauga"
+  name="CargoServices" source="CargoServices"
   >
   <Columns>
-    <SimpleColumn name="Cargo"/>
-    <SimpleColumn name="Service"/>
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Expense" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Name" alias="ServiceName" />
     </SimpleJoin>
@@ -14,12 +16,11 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    <SimpleColumn name="Cost" />
-    <SimpleColumn name="Number" />
-    <SimpleColumn name="Supplier" />
-    <SimpleJoin name="Supplier" joinType="LEFT">
-      <SimpleColumn name="Name" alias="SupplierName" />
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CompanyName" />
     </SimpleJoin>
+    <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
   </Columns>
 </View>

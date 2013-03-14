@@ -85,7 +85,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
       Provider provider = ((HasDataProvider) gridView.getViewPresenter()).getDataProvider();
 
       if (provider != null) {
-        int index = provider.getColumnIndex(FLD_ROLE);
+        int index = provider.getColumnIndex(COL_ROLE);
         Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
         List<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
 

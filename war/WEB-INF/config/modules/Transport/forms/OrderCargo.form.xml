@@ -97,6 +97,15 @@
         <InputInteger source="Palettes" />        
       </row>
     </Table>
-    <ChildGrid class="flexible" style="&section;" name="CargoTrips" relColumn="Cargo" caption="Reisai" />
+      <TabbedPages class="flexible" style="&section;">
+        <page>
+          <text>Reisai</text>
+          <ChildGrid name="CargoTrips" relColumn="Cargo" />
+        </page>
+        <page>
+          <text>Kitos sąnaudos</text>
+          <ChildGrid name="CargoExpenses" relColumn="Cargo" />
+        </page>
+      </TabbedPages>
   </FlowPanel>
 </f:Form>

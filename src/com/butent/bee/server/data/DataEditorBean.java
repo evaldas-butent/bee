@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -848,12 +849,22 @@ public class DataEditorBean {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
           String value = res.getValue(fldInfo.fieldAlias);
 
-          if (!BeeUtils.isEmpty(value)
-              && SqlDataType.DATE.equals(view.getColumnType(fldInfo.fieldAlias))) {
-            JustDate date = res.getDate(fldInfo.fieldAlias);
-            value = (date == null) ? null : date.serialize();
-          }
+          if (!BeeUtils.isEmpty(value)) {
+            SqlDataType type = view.getColumnType(fldInfo.fieldAlias);
 
+            switch (type) {
+              case DATE:
+                value = res.getDate(fldInfo.fieldAlias).serialize();
+                break;
+
+              case BOOLEAN:
+                value = BooleanValue.pack(res.getBoolean(fldInfo.fieldAlias));
+                break;
+
+              default:
+                break;
+            }
+          }
           if (!Objects.equal(value, fldInfo.oldValue)) {
             logger.warning("refreshUpdates:", tblInfo.tableName, tblInfo.id, fldInfo.fieldName,
                 "old:", fldInfo.oldValue, "value:", value);

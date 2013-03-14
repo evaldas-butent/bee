@@ -2,10 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoServices" viewName="CargoServices"
+  name="CargoExpenses" viewName="CargoServices"
   flexGrow="1" flexShrink="1"
-  filter="!(Expense)"
-  newRowCaption="Nauja paslauga"
+  filter="Expense"
+  newRowCaption="Naujos išlaidos"
   >
   <columns>
     <DataColumn name="Date" caption="Data" />
@@ -17,7 +17,7 @@
       </style>
     </DataColumn>
     <RelColumn name="Currency" caption="Val." flexGrow="0" />
-    <RelColumn name="Company" caption="Mokėtojas" />
+    <RelColumn name="Company" caption="Tiekėjas" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Note" caption="Pastaba" />
   </columns>

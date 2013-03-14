@@ -15,9 +15,9 @@ import javax.ejb.Startup;
 public class InitializationBean {
 
   @EJB
-  UserServiceBean usr;
-  @EJB
   ModuleHolderBean moduleBean;
+  @EJB
+  UserServiceBean usr;
 
   @PostConstruct
   public void init() {

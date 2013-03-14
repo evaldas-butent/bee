@@ -7,27 +7,13 @@
   editForm="OrderCargo"
   >
   <Columns>
-    <SimpleColumn name="Order" />
     <SimpleJoin name="Order" joinType="INNER">
       <SimpleColumn name="Status" />
-      <SimpleColumn name="Manager" />
-      <SimpleColumn name="Date" alias="OrderDate" editable="true" />
       <SimpleColumn name="OrderNo" />
       
-      <SimpleColumn name="Customer" editable="true" />
       <SimpleJoin joinType="LEFT" name="Customer">
         <SimpleColumn name="Name" alias="CustomerName" />
       </SimpleJoin>
-      
-      <SimpleColumn name="CustomerPerson" editable="true" />
-      <SimpleJoin name="CustomerPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn alias="PersonFirstName" name="FirstName" />
-          <SimpleColumn alias="PersonLastName" name="LastName" />
-        </SimpleJoin>
-      </SimpleJoin>
-      
-      <SimpleColumn name="Notes" alias="OrderNotes" editable="true" />
     </SimpleJoin>
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">

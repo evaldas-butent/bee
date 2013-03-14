@@ -88,6 +88,14 @@ public class TransportHandler {
     }
   }
 
+  private static class CargoExpensesHandler extends AbstractGridInterceptor {
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      newRow.setValue(DataUtils.getColumnIndex(COL_SERVICE_EXPENSE, gridView.getDataColumns()), true);
+      return true;
+    }
+  }
+
   private static class CargoGridHandler extends CargoPlaceRenderer {
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
@@ -112,7 +120,7 @@ public class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return new OrderFormHandler();
+      return this;
     }
 
     @Override
@@ -586,6 +594,7 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
+    GridFactory.registerGridInterceptor("CargoExpenses", new CargoExpensesHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGridHandler());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
@@ -597,15 +606,17 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
     GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
 
+    GridFactory.registerGridInterceptor("OrderAssessments", new OrderAssessmentsGrid());
+
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
-    FormFactory.registerFormInterceptor("OrderRequest", new OrderRequestHandler());
+    FormFactory.registerFormInterceptor(FORM_ORDER_ASSESSMENT, new OrderAssessmentForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
-    
+
     ChartHelper.register();
   }
 

@@ -237,12 +237,18 @@ public class MailStorageBean {
       placeId = data.getLong(COL_UNIQUE_ID);
     }
     if (!DataUtils.isId(messageId)) {
-      Long sender = storeAddress(envelope.getSender());
+      Address sender = envelope.getSender();
+
+      if (sender == null) {
+        logger.warning("Message does not have sender address");
+        return false;
+      }
+      Long senderId = storeAddress(sender);
 
       messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
           .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
           .addConstant(COL_DATE, envelope.getDate())
-          .addConstant(COL_SENDER, sender)
+          .addConstant(COL_SENDER, senderId)
           .addConstant(COL_SUBJECT, envelope.getSubject()));
 
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -481,7 +487,13 @@ public class MailStorageBean {
       } catch (ParseException e) {
         logger.warning(e);
       }
-      String disposition = part.getDisposition();
+      String disposition = null;
+
+      try {
+        disposition = part.getDisposition();
+      } catch (MessagingException e) {
+        logger.error(e);
+      }
       String fileName = part.getFileName();
 
       if (!BeeUtils.isEmpty(fileName)) {

@@ -37,8 +37,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 @Singleton
-@Lock(LockType.READ)
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+@Lock(LockType.READ)
 public class ParamHolderBean {
   private static final String TBL_PARAMS = "Parameters";
   private static final String TBL_USER_PARAMS = "UserParameters";

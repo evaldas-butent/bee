@@ -539,6 +539,7 @@ public class MailPanel extends AbstractFormInterceptor {
           FormFactory.openForm("Mail", MailPanel.this);
         } else {
           BeeKeeper.getScreen().notifyWarning("No accounts found");
+          MailKeeper.removeMailPanel(MailPanel.this);
         }
       }
     });

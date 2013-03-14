@@ -836,7 +836,7 @@ public class CalendarModuleBean implements BeeModule {
     if (attFilter.isEmpty()) {
       String tblUsers = CommonsConstants.TBL_USERS;
       Long cp = qs.getLong(new SqlSelect()
-          .addFields(tblUsers, CommonsConstants.FLD_COMPANY_PERSON)
+          .addFields(tblUsers, CommonsConstants.COL_COMPANY_PERSON)
           .addFrom(tblUsers)
           .setWhere(sys.idEquals(tblUsers, userId)));
 

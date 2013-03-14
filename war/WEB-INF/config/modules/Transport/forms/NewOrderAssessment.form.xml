@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="NewOrderAssesment" viewName="OrderAssesments" caption="Naujas užklausimas"
+  >
+  <FlowPanel style="margin: 10px 2px 2px 10px;">
+    <xi:include href="widgets/OrderAssessmentHeader.widget.xml" />
+  </FlowPanel>
+</f:Form>

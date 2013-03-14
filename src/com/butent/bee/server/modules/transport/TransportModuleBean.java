@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -45,6 +46,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -134,6 +136,10 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_USAGE)) {
       response = getCargoUsage(reqInfo.getParameter("ViewName"),
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
+
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_INFO)) {
+      response = getAssessmentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
+          BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -245,7 +251,7 @@ public class TransportModuleBean implements BeeModule {
               .addFromInner(TBL_TRANSPORT_GROUPS,
                   sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_DRIVER_GROUPS, COL_GROUP));
 
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS, null);
+          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
 
           event.getQuery().addFromInner(query, "subq",
               SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_DRIVER));
@@ -263,13 +269,84 @@ public class TransportModuleBean implements BeeModule {
               .addFromInner(TBL_TRANSPORT_GROUPS,
                   sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP));
 
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS, null);
+          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
 
           event.getQuery().addFromInner(query, "subq",
               SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
       }
     });
+  }
+
+  private ResponseObject getAssessmentData(Long assessorId, long cargoId) {
+    if (!DataUtils.isId(assessorId)) {
+      return ResponseObject.error("Assessor ID is not valid:", assessorId);
+    }
+    if (!DataUtils.isId(cargoId)) {
+      return ResponseObject.error("Cargo ID is not valid:", cargoId);
+    }
+    Map<String, SimpleRowSet> packet = Maps.newHashMap();
+
+    SqlSelect ss = sys.getView(TBL_CARGO_SERVICES).getQuery()
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId),
+            SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId)));
+
+    ss.addExpr(ExchangeUtils.exchangeField(ss,
+        SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
+        SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
+        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
+            SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE))), "CargoCost");
+
+    packet.put(TBL_CARGO_SERVICES, qs.getData(ss));
+
+    packet.put(TBL_CARGO_ASSESSORS, qs.getData(new SqlSelect()
+        .addField(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS), COL_ASSESSOR)
+        .addFields(TBL_CARGO_ASSESSORS, COL_ASSESSOR_DATE)
+        .addFields(CommonsConstants.TBL_PERSONS,
+            CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)
+        .addFrom(TBL_CARGO_ASSESSORS)
+        .addFromInner(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_CARGO_ASSESSORS, COL_ASSESSOR_MANAGER))
+        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromInner(CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_ASSESSORS, COL_CARGO, cargoId),
+            SqlUtils.equals(TBL_CARGO_ASSESSORS, COL_ASSESSOR, assessorId)))));
+
+    return ResponseObject.response(packet);
+  }
+
+  /**
+   * Return SqlSelect query, calculating cargo costs from CargoServices table.
+   * 
+   * @param flt - query filter with <b>unique</b> "Cargo" values.
+   * @return query with columns: "Cargo", "CargoCost"
+   */
+  private SqlSelect getCargoCostQuery(SqlSelect flt) {
+    String alias = SqlUtils.uniqueName();
+
+    SqlSelect ss = new SqlSelect()
+        .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+        .addFrom(TBL_ORDER_CARGO)
+        .addFromInner(flt, alias, sys.joinTables(TBL_ORDER_CARGO, alias, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_SERVICES,
+            SqlUtils.and(sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO),
+                SqlUtils.notNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE)))
+        .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
+
+    ss.addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_CARGO_SERVICES, "Amount"),
+        SqlUtils.field(TBL_CARGO_SERVICES, "Currency"),
+        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, "Date"),
+            SqlUtils.field(TBL_ORDERS, "Date"))), "CargoCost");
+
+    return ss;
   }
 
   /**
@@ -279,92 +356,96 @@ public class TransportModuleBean implements BeeModule {
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
    */
   private SqlSelect getCargoIncomeQuery(SqlSelect flt) {
-    String orders = sys.getViewSource(VIEW_ORDERS);
-    String cargo = sys.getViewSource(VIEW_ORDER_CARGO);
-    String services = sys.getViewSource(VIEW_CARGO_SERVICES);
     String alias = SqlUtils.uniqueName();
 
     SqlSelect ss = new SqlSelect()
-        .addField(cargo, sys.getIdName(cargo), COL_CARGO)
-        .addFrom(cargo)
-        .addFromInner(flt, alias, sys.joinTables(cargo, alias, COL_CARGO))
-        .addFromInner(orders, sys.joinTables(orders, cargo, COL_ORDER))
-        .addFromLeft(services, sys.joinTables(cargo, services, COL_CARGO))
-        .addGroup(cargo, sys.getIdName(cargo));
+        .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+        .addFrom(TBL_ORDER_CARGO)
+        .addFromInner(flt, alias, sys.joinTables(TBL_ORDER_CARGO, alias, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_SERVICES,
+            SqlUtils.and(sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO),
+                SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE)))
+        .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
-    ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(cargo, "Price"),
-        SqlUtils.field(cargo, "Currency"), SqlUtils.field(orders, "Date")), "CargoIncome")
-        .addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(services, "Amount"),
-            SqlUtils.field(services, "Currency"), SqlUtils.field(orders, "Date")),
-            "ServicesIncome");
+    IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, "Date"),
+        SqlUtils.field(TBL_ORDERS, "Date"));
+
+    ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_ORDER_CARGO, "Price"),
+        SqlUtils.field(TBL_ORDER_CARGO, "Currency"), dateExpr), "CargoIncome")
+        .addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_CARGO_SERVICES, "Amount"),
+            SqlUtils.field(TBL_CARGO_SERVICES, "Currency"), dateExpr), "ServicesIncome");
 
     return ss;
   }
 
   private ResponseObject getCargoProfit(SqlSelect flt) {
-    String services = VIEW_CARGO_SERVICES;
-    String cargoTrips = VIEW_CARGO_TRIPS;
-    String cargoId = "Cargo";
-    String tripId = "Trip";
-
     SqlSelect ss = getCargoIncomeQuery(flt)
-        .addSum(services, "Cost", "ServicesCost")
+        .addEmptyDouble("ServicesCost")
         .addEmptyDouble("TripCost");
 
     String crsTotals = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(crsTotals, cargoId);
+    qs.sqlIndex(crsTotals, COL_CARGO);
+
+    String alias = SqlUtils.uniqueName();
+
+    qs.updateData(new SqlUpdate(crsTotals)
+        .setFrom(getCargoCostQuery(flt), alias, SqlUtils.joinUsing(crsTotals, alias, COL_CARGO))
+        .addExpression("ServicesCost", SqlUtils.field(alias, "CargoCost")));
 
     ss = new SqlSelect()
         .setDistinctMode(true)
-        .addFields(cargoTrips, tripId)
-        .addFrom(cargoTrips)
-        .addFromInner(crsTotals, SqlUtils.joinUsing(cargoTrips, crsTotals, cargoId));
+        .addFields(TBL_CARGO_TRIPS, COL_TRIP)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(crsTotals, SqlUtils.joinUsing(TBL_CARGO_TRIPS, crsTotals, COL_CARGO));
 
     String crsIncomes = getTripIncome(ss);
     String crsCosts = getTripCost(ss);
 
     ss = new SqlSelect()
-        .addFields(crsIncomes, tripId)
-        .addSum(cargoTrips, "CargoPercent", "TotalPercent")
-        .addSum(SqlUtils.sqlIf(SqlUtils.isNull(cargoTrips, "CargoPercent"),
+        .addFields(crsIncomes, COL_TRIP)
+        .addSum(TBL_CARGO_TRIPS, "CargoPercent", "TotalPercent")
+        .addSum(SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_TRIPS, "CargoPercent"),
             SqlUtils.field(crsIncomes, "TripIncome"), 0), "TotalIncome")
         .addFrom(crsIncomes)
-        .addFromInner(cargoTrips, SqlUtils.joinUsing(crsIncomes, cargoTrips, tripId, cargoId))
-        .addGroup(crsIncomes, tripId);
+        .addFromInner(TBL_CARGO_TRIPS,
+            SqlUtils.joinUsing(crsIncomes, TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO))
+        .addGroup(crsIncomes, COL_TRIP);
 
     String tmp = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(tmp, tripId);
+    qs.sqlIndex(tmp, COL_TRIP);
 
     IsExpression xpr = SqlUtils.multiply(
         SqlUtils.divide(
             SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(crsCosts, "TripCost"), 0),
                 SqlUtils.nvl(SqlUtils.field(crsCosts, "FuelCost"), 0)),
             100),
-        SqlUtils.sqlIf(SqlUtils.isNull(cargoTrips, "CargoPercent"),
+        SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_TRIPS, "CargoPercent"),
             SqlUtils.multiply(
                 SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(tmp, "TotalPercent"), 0)),
                 SqlUtils.divide(SqlUtils.field(crsIncomes, "TripIncome"),
                     SqlUtils.field(tmp, "TotalIncome"))),
-            SqlUtils.field(cargoTrips, "CargoPercent")));
+            SqlUtils.field(TBL_CARGO_TRIPS, "CargoPercent")));
 
     ss = new SqlSelect()
-        .addFields(crsIncomes, cargoId)
+        .addFields(crsIncomes, COL_CARGO)
         .addSum(xpr, "Cost")
         .addFrom(crsIncomes)
-        .addFromInner(cargoTrips, SqlUtils.joinUsing(crsIncomes, cargoTrips, tripId, cargoId))
-        .addFromInner(crsCosts, SqlUtils.joinUsing(crsIncomes, crsCosts, tripId))
-        .addFromInner(tmp, SqlUtils.joinUsing(crsIncomes, tmp, tripId))
-        .addGroup(crsIncomes, cargoId);
+        .addFromInner(TBL_CARGO_TRIPS,
+            SqlUtils.joinUsing(crsIncomes, TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO))
+        .addFromInner(crsCosts, SqlUtils.joinUsing(crsIncomes, crsCosts, COL_TRIP))
+        .addFromInner(tmp, SqlUtils.joinUsing(crsIncomes, tmp, COL_TRIP))
+        .addGroup(crsIncomes, COL_CARGO);
 
     String crsTripCosts = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(crsTripCosts, cargoId);
+    qs.sqlIndex(crsTripCosts, COL_CARGO);
 
     qs.sqlDropTemp(tmp);
     qs.sqlDropTemp(crsCosts);
     qs.sqlDropTemp(crsIncomes);
 
     SqlUpdate su = new SqlUpdate(crsTotals)
-        .setFrom(crsTripCosts, SqlUtils.joinUsing(crsTotals, crsTripCosts, cargoId))
+        .setFrom(crsTripCosts, SqlUtils.joinUsing(crsTotals, crsTripCosts, COL_CARGO))
         .addExpression("TripCost", SqlUtils.field(crsTripCosts, "Cost"));
 
     qs.updateData(su);
@@ -1342,7 +1423,7 @@ public class TransportModuleBean implements BeeModule {
 
     IsCondition cargoHandlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
         SqlUtils.notNull(unlAlias, COL_PLACE_DATE));
-    
+
     SqlSelect cargoHandlingQuery = new SqlSelect()
         .addFrom(TBL_TRIPS)
         .addFromInner(TBL_CARGO_TRIPS,
@@ -1370,7 +1451,7 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isEmpty(cargoHandling)) {
       settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
-    
+
     return ResponseObject.response(settings);
   }
 }
