@@ -764,6 +764,7 @@ body {
   top: 0;
   bottom: 0;
   overflow: auto;
+  background-color: WhiteSmoke;
 }
 
 .bee-Frame {

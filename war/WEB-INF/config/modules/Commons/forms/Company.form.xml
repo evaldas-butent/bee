@@ -32,7 +32,7 @@
       <xi:include href="widgets/ContactInfo.widget.xml" />
     </VerticalPanel>
 
-    <TabbedPages class="flexible">
+    <TabbedPages class="flexible" style="margin-top: 15px;" >
       <page>
         <text>Kontaktiniai asmenys</text>
         <ChildGrid name="CompanyPersons" relColumn="Company" />

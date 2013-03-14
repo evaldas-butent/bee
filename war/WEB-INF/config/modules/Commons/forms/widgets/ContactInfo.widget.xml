@@ -41,6 +41,10 @@
 
     <InputText source="PostIndex" caption="Pašto indeksas:" style="width: 80px;" d:size="100"
       d:unit="px" d:rootStyle="position:absolute; left: 500px; top: 100px;" />
+
+    <InputText source="SocialContacts" caption="Socialiniai kontaktai:" style="width: 540px;" d:size="140"
+      d:unit="px" d:rootStyle="position:absolute; left: 0px; top: 130px;" />  
+
   </FlowPanel>
 </Disclosure>
 
