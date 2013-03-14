@@ -426,16 +426,6 @@ public class ChartHelper {
     }
   }
 
-  static String getMessage(String label, JustDate date, String info) {
-    if (date == null && BeeUtils.isEmpty(info)) {
-      return BeeConst.STRING_EMPTY;
-    } else if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.joinWords(date, info);
-    } else {
-      return BeeUtils.joinWords(label.trim() + BeeConst.STRING_COLON, date, info);
-    }
-  }
-  
   static Double getOpacity(BeeRowSet settings, String colName) {
     if (DataUtils.isEmpty(settings)) {
       return null;

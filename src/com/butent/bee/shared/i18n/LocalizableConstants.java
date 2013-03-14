@@ -4,11 +4,15 @@ import com.google.gwt.i18n.client.Constants;
 
 public interface LocalizableConstants extends Constants {
   String cancel();
+  String cargoLoading();
+  String cargoUnloading();
   String changedValues();
   String changePassword();
   String createNewAppointment();
   String createNewRow();
   String deleteAppointment();
+  String intermediateLoading();
+  String intermediateUnloading();
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
@@ -25,5 +29,6 @@ public interface LocalizableConstants extends Constants {
   String saveChanges();
   String selectAppointment();
   String sorry();
+  String tripDuration();
   String yes();
 }

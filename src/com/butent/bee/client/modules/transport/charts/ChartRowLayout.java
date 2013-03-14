@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -17,6 +18,23 @@ class ChartRowLayout {
     boolean willItBlend(HasDateRange x, HasDateRange y);
   }
 
+  private static class FreightBlender implements Blender {
+    FreightBlender() {
+      super();
+    }
+
+    @Override
+    public boolean willItBlend(HasDateRange x, HasDateRange y) {
+      if (x instanceof Freight && y instanceof Freight) {
+        return Objects.equal(((Freight) x).getTripId(), ((Freight) y).getTripId());
+      } else {
+        return false;
+      }
+    }
+  }
+
+  static final FreightBlender FREIGHT_BLENDER = new FreightBlender();
+  
   private static Set<Range<JustDate>> clash(Collection<? extends HasDateRange> items,
       Range<JustDate> range, Range<JustDate> activeRange) {
 

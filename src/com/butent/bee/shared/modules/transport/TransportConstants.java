@@ -120,6 +120,7 @@ public class TransportConstants {
   public static final String COL_FORWARDER_VEHICLE = "ForwarderVehicle";
 
   public static final String COL_CARGO = "Cargo";
+  public static final String COL_CARGO_DESCRIPTION = "Description";
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";

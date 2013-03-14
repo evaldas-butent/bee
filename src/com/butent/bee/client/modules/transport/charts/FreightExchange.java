@@ -98,7 +98,7 @@ class FreightExchange extends ChartBase {
       this.customerName = row.getValue(COL_CUSTOMER_NAME);
 
       this.cargoId = row.getLong(COL_CARGO_ID);
-      this.cargoDescription = row.getValue(COL_DESCRIPTION);
+      this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
 
       this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
       this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
@@ -299,12 +299,12 @@ class FreightExchange extends ChartBase {
         customerData.add(item.customerName, item.customerId);
       }
 
-      String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+      String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
       if (!BeeUtils.isEmpty(loading)) {
         loadData.add(loading);
       }
 
-      String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+      String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
           item.unloadingTerminal);
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
@@ -579,13 +579,13 @@ class FreightExchange extends ChartBase {
     panel.addStyleName(STYLE_ITEM_PANEL);
     setItemWidgetColor(item, panel);
 
-    String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
-    String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+    String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+    String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
         item.unloadingTerminal);
 
     String title = BeeUtils.buildLines(item.cargoDescription,
-        BeeUtils.joinWords("Pakrovimas:", item.loadingDate, loading),
-        BeeUtils.joinWords("Iškrovimas:", item.unloadingDate, unloading));
+        BeeUtils.joinWords(item.loadingDate, loading),
+        BeeUtils.joinWords(item.unloadingDate, unloading));
 
     panel.setTitle(title);
 
@@ -724,7 +724,7 @@ class FreightExchange extends ChartBase {
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceLabel(input.loadingCountry, input.loadingPlace,
+              return selectedNames.contains(getPlaceInfo(input.loadingCountry, input.loadingPlace,
                   input.loadingTerminal));
             }
           };
@@ -734,7 +734,7 @@ class FreightExchange extends ChartBase {
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceLabel(input.unloadingCountry,
+              return selectedNames.contains(getPlaceInfo(input.unloadingCountry,
                   input.unloadingPlace, input.unloadingTerminal));
             }
           };

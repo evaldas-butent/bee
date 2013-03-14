@@ -25,7 +25,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -133,11 +132,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
-  private static final String loadingLabel = 
-      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_LOADING_PLACE);
-  private static final String unloadingLabel = 
-      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_UNLOADING_PLACE);
-  
   private final HeaderView headerView;
   private final Flow canvas;
 
@@ -851,11 +845,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return ChartHelper.DEFAULT_MOVER_HEIGHT;
   }
 
-  protected String getLoadingMessage(JustDate date, String placeInfo) {
-    return ChartHelper.getMessage(loadingLabel, date, placeInfo);
+  protected String getLoadingInfo(HasShipmentInfo item) {
+    if (item == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(item.getLoadingDate(), getPlaceInfo(item.getLoadingCountry(),
+          item.getLoadingPlace(), item.getLoadingTerminal()));
+    }
   }
 
-  protected String getPlaceLabel(Long countryId, String placeName, String terminal) {
+  protected String getPlaceInfo(Long countryId, String placeName, String terminal) {
     String countryLabel = getCountryLabel(countryId);
 
     if (BeeUtils.isEmpty(countryLabel) || BeeUtils.containsSame(placeName, countryLabel)
@@ -865,7 +864,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, terminal);
     }
   }
-
+  
   protected int getPrintHeightAdjustment() {
     if (BeeUtils.anyEmpty(getScrollAreaId(), getContentId())) {
       return 0;
@@ -937,8 +936,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected abstract String getThemeColumnName();
 
-  protected String getUnloadingMessage(JustDate date, String placeInfo) {
-    return ChartHelper.getMessage(unloadingLabel, date, placeInfo);
+  protected String getUnloadingInfo(HasShipmentInfo item) {
+    if (item == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(item.getUnloadingDate(), getPlaceInfo(item.getUnloadingCountry(),
+          item.getUnloadingPlace(), item.getUnloadingTerminal()));
+    }
   }
 
   protected void initContent(ComplexPanel panel, int rc) {

@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -73,8 +74,8 @@ class ChartData {
     CUSTOMER("Užsakovas"),
     ORDER("Užsakymas"),
     CARGO("Krovinys"),
-    LOADING("Pakrovimas"),
-    UNLOADING("Iškrovimas"),
+    LOADING(Global.CONSTANTS.cargoLoading()),
+    UNLOADING(Global.CONSTANTS.cargoUnloading()),
     VEHICLE("Vilkikas"),
     TRAILER("Puspriekabė"),
     DRIVER("Vairuotojas");

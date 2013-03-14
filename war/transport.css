@@ -347,7 +347,7 @@
 }
 
 .bee-tr-vtb-Trip-void,
-.bee-tr-vtb-Trip-day-panel {
+.bee-tr-vtb-Day-panel {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -358,20 +358,20 @@
   pointer-events: none;
 }
 
-.bee-tr-vtb-Trip-day-panel {
+.bee-tr-vtb-Day-panel {
   display: -webkit-flex;
   -webkit-flex-wrap: wrap;
 }
 
-.bee-tr-vtb-Trip-day-no-country {
+.bee-tr-vtb-Day-no-country {
   background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
 }
-.bee-tr-vtb-Trip-day-country {
+.bee-tr-vtb-Day-country {
   background-repeat: no-repeat;
   background-position: center;
 }
 
-.bee-tr-vtb-Trip-day-label {
+.bee-tr-vtb-Day-label {
   font-size: 12px;
   line-height: 12px;
   color: black;

@@ -133,7 +133,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       this.cargoTripVersion = row.getLong(ALS_CARGO_TRIP_VERSION);
 
       this.cargoId = row.getLong(COL_CARGO);
-      this.cargoDescription = row.getValue(COL_DESCRIPTION);
+      this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
 
       this.loadingDate = BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
           row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)));
@@ -454,12 +454,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
         orderData.add(item.orderNo);
       }
 
-      String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+      String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
       if (!BeeUtils.isEmpty(loading)) {
         loadData.add(loading);
       }
 
-      String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+      String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
           item.unloadingTerminal);
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
@@ -846,8 +846,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
     panel.addStyleName((cargoId == null) ? STYLE_ITEM_TRIP : STYLE_ITEM_CARGO);
 
-    String loading = getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
-    String unloading = getPlaceLabel(item.unloadingCountry, item.unloadingPlace,
+    String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+    String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
         item.unloadingTerminal);
 
     String loadTitle = BeeUtils.emptyToNull(BeeUtils.joinWords(item.loadingDate, loading));
@@ -856,9 +856,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final String tripTitle = buildTripTitle(item);
 
     String cargoTitle = (cargoId == null) ? null : ChartHelper.buildTitle(
-        "Užsakymo Nr.", item.orderNo, "Užsakovas", item.customerName,
+        "Užsakymo Nr.", item.orderNo,
+        "Užsakovas", item.customerName,
         "Krovinys", item.cargoDescription,
-        "Pakrovimas", loadTitle, "Iškrovimas", unloadTitle);
+        Global.CONSTANTS.cargoLoading(), loadTitle,
+        Global.CONSTANTS.cargoUnloading(), unloadTitle);
 
     String itemTitle = BeeUtils.buildLines(tripTitle, cargoTitle);
     panel.setTitle(itemTitle);
@@ -1045,12 +1047,14 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     for (Freight item : targetItems) {
       if (item.cargoId != null) {
         String loading = BeeUtils.joinWords(item.loadingDate,
-            getPlaceLabel(item.loadingCountry, item.loadingPlace, item.loadingTerminal));
+            getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal));
         String unloading = BeeUtils.joinWords(item.unloadingDate,
-            getPlaceLabel(item.unloadingCountry, item.unloadingPlace, item.unloadingTerminal));
+            getPlaceInfo(item.unloadingCountry, item.unloadingPlace, item.unloadingTerminal));
 
         String message = ChartHelper.buildMessage(BeeConst.DEFAULT_LIST_SEPARATOR,
-            "Krovinys", item.cargoDescription, "Pakrovimas", loading, "Iškrovimas", unloading);
+            "Krovinys", item.cargoDescription,
+            Global.CONSTANTS.cargoLoading(), loading,
+            Global.CONSTANTS.cargoUnloading(), unloading);
         if (!BeeUtils.isEmpty(message)) {
           targetCargo.add(message);
         }
@@ -1230,7 +1234,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceLabel(input.loadingCountry, input.loadingPlace,
+              return selectedNames.contains(getPlaceInfo(input.loadingCountry, input.loadingPlace,
                   input.loadingTerminal));
             }
           };
@@ -1240,7 +1244,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceLabel(input.unloadingCountry,
+              return selectedNames.contains(getPlaceInfo(input.unloadingCountry,
                   input.unloadingPlace, input.unloadingTerminal));
             }
           };

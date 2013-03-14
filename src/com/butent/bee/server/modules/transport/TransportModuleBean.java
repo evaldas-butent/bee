@@ -699,8 +699,7 @@ public class TransportModuleBean implements BeeModule {
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
     query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
 
-    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_DESCRIPTION,
-        COL_LOADING_PLACE, COL_UNLOADING_PLACE);
+    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_CARGO_DESCRIPTION);
 
     query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
     query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
@@ -856,7 +855,7 @@ public class TransportModuleBean implements BeeModule {
     query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
     query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
 
-    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION);
+    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION);
 
     query.addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE));
     query.addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY));
@@ -1401,7 +1400,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
         .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
         .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
-        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_DESCRIPTION, COL_CARGO_NOTES)
+        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION, COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
         .addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY))
         .addField(defLoadAlias, COL_PLACE, defaultLoadingColumnAlias(COL_PLACE_NAME))
