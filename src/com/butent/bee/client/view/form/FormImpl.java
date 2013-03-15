@@ -708,7 +708,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       boolean rowEnabled = isRowEditable(rowValue, false);
 
       for (EditableWidget editableWidget : getEditableWidgets()) {
-        if (editableWidget.isReadOnly()) {
+        if (editableWidget.isReadOnly() || !isWidgetDisablable(editableWidget.getWidgetId())) {
           continue;
         }
         Editor editor = editableWidget.getEditor();
@@ -724,7 +724,21 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
 
       if (rowEnabled != wasRowEnabled) {
-        DomUtils.enableChildren(this, rowEnabled);
+        Set<String> editableIds = Sets.newHashSet();
+        for (EditableWidget editableWidget : getEditableWidgets()) {
+          editableIds.add(editableWidget.getWidgetId());
+        }
+
+        for (String id : getDisablableWidgets()) {
+          if (!editableIds.contains(id)) {
+            Widget widget = getWidgetById(id);
+            if (widget instanceof HasEnabled && rowEnabled != ((HasEnabled) widget).isEnabled()) {
+              ((HasEnabled) widget).setEnabled(rowEnabled);
+              widget.setStyleName(STYLE_WIDGET_DISABLED, !rowEnabled);
+            }
+          }
+        }
+
         refreshChildWidgets(rowValue);
       }
     }
@@ -1093,7 +1107,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void setState(State state) {
     this.state = state;
-    
+
     if (State.OPEN.equals(state)) {
       Previewer.ensureRegistered(this);
     } else if (State.CLOSED.equals(state)) {
@@ -1442,7 +1456,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (rowValue == null) {
       return false;
     }
-    
+
     boolean ok = rowValue.isEditable();
     if (ok && getRowEditable() != null) {
       getRowEditable().update(rowValue);
@@ -1457,6 +1471,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean isRowEnabled(IsRow rowValue) {
     return !isReadOnly() && isEnabled() && isRowEditable(rowValue, false);
+  }
+
+  private boolean isWidgetDisablable(String widgetId) {
+    return getDisablableWidgets().contains(widgetId);
   }
 
   private void navigate(Integer keyCode, boolean hasModifiers, String widgetId) {
@@ -1578,7 +1596,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
 
       editableWidget.refresh(getActiveRow());
-      if (editable != editor.isEnabled()) {
+      if (editable != editor.isEnabled() && isWidgetDisablable(editableWidget.getWidgetId())) {
         editor.setEnabled(editable);
         editor.asWidget().setStyleName(STYLE_WIDGET_DISABLED, !editable);
       }

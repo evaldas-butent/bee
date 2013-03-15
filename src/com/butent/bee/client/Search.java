@@ -433,6 +433,8 @@ public class Search {
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
+  private static final int MIN_SEARCH_PHRASE_LENGHT = 3;
+
   private Panel searchPanel = null;
   private InputText input = null;
 
@@ -527,8 +529,6 @@ public class Search {
     ResultPanel resultPanel = new ResultPanel(query, results);
     BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
-
-  private static final int MIN_SEARCH_PHRASE_LENGHT = 3;
 
   private void submit() {
     final String value = getInput().getValue();
