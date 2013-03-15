@@ -528,9 +528,17 @@ public class Search {
     BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
 
+  private static final int MIN_SEARCH_PHRASE_LENGHT = 3;
+
   private void submit() {
     final String value = getInput().getValue();
     if (!BeeUtils.isEmpty(value)) {
+
+      if (value.trim().length() < MIN_SEARCH_PHRASE_LENGHT) {
+        BeeKeeper.getScreen().notifyWarning("ieškomos frazės ilgis turi būti 3 simbolių ilgumo");
+        return;
+      }
+
       ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEARCH);
       params.addPositionalHeader(value.trim());
 

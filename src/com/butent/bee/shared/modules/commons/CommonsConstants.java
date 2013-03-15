@@ -111,6 +111,7 @@ public class CommonsConstants {
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
@@ -118,6 +119,7 @@ public class CommonsConstants {
   public static final String VIEW_THEMES = "Themes";
   public static final String VIEW_THEME_COLORS = "ThemeColors";
 
+  public static final String VIEW_ITEMS = "Items";
   public static final String VIEW_COUNTRIES = "Countries";
 
   public static final String COL_LOGIN = "Login";
@@ -150,6 +152,9 @@ public class CommonsConstants {
   public static final String COL_ITEM = "Item";
   public static final String COL_CATEGORY = "Category";
   public static final String COL_SERVICE = "IsService";
+
+  public static final String COL_ARTICLE = "Article";
+  public static final String COL_BARCODE = "Barcode";
 
   public static final String COL_CODE = "Code";
 

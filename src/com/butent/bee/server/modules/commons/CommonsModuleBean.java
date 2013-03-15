@@ -83,9 +83,29 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_COMPANIES,
+
+    List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
         Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
             COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
+    
+    List<SearchResult> personsSr =
+        qs.getSearchResults(VIEW_PERSONS,
+            Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
+                COL_EMAIL_ADDRESS, COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
+
+    List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
+        Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
+
+    List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
+        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_ARTICLE, COL_BARCODE), query));
+
+    List<SearchResult> commonsSr = Lists.newArrayList();
+    commonsSr.addAll(companiesSr);
+    commonsSr.addAll(personsSr);
+    commonsSr.addAll(usersSr);
+    commonsSr.addAll(itemsSr);
+
+    return commonsSr;
   }
 
   @Override
