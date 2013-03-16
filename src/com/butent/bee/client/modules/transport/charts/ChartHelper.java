@@ -566,7 +566,7 @@ public class ChartHelper {
       return activeRange.isConnected(item.getRange());
     }
   }
-
+  
   static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
     if (range == null || range.isEmpty() || !range.hasLowerBound() || !range.hasUpperBound()) {
       return null;
@@ -593,6 +593,19 @@ public class ChartHelper {
     }
   }
 
+  static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2) {
+    if (r1 == null || r2 == null) {
+      return null;
+    
+    } else if (r1.isConnected(r2)) {
+      Range<JustDate> section = r1.intersection(r2);
+      return isNormalized(section) ? section : normalizedCopyOf(section);
+
+    } else {
+      return null;
+    }
+  }
+  
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -746,6 +759,41 @@ public class ChartHelper {
     container.add(panel);
   }
 
+  static Size splitRectangle(int width, int height, int count) {
+    if (width <= 0 || height <= 0 || count <= 0 || count > width * height) {
+      return null;
+    }
+    if (count == 1) {
+      return new Size(width, height);
+    }
+    if (count * 2 > width * height) {
+      return new Size(1, 1);
+    }
+    
+    int x = 0;
+    int y = 0;
+    
+    for (int rows = 1; rows <= Math.min(count, height); rows++) {
+      int cols = count / rows;
+      if (count % rows > 0) {
+        cols++;
+      }
+      
+      if (cols > 0 && cols <= width) {
+        int w = width / cols;
+        int h = height / rows;
+        
+        if (Math.min(w, h) > Math.min(x, y) 
+            || Math.min(w, h) == Math.min(x, y) && Math.max(w, h) > Math.max(x, y)) {
+          x = w;
+          y = h;
+        }
+      }
+    }
+    
+    return new Size(x, y);
+  }
+  
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -957,6 +1005,11 @@ public class ChartHelper {
     } else {
       return 0;
     }
+  }
+
+  private static boolean isNormalized(Range<JustDate> range) {
+    return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
+        && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;
   }
 
   private static Widget renderDate(JustDate date, String styleName, int width, int height) {

@@ -31,10 +31,8 @@ class Trip implements HasDateRange, HasColorSource {
   private final JustDate dateFrom;
   private final JustDate dateTo;
 
-  @SuppressWarnings("unused")
   private final Long truckId;
   private final String truckNumber;
-  @SuppressWarnings("unused")
   private final Long trailerId;
   private final String trailerNumber;
 

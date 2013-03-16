@@ -127,9 +127,10 @@ class ChartRowLayout {
         Set<Range<JustDate>> over = clash(row, item.getRange(), activeRange);
 
         if (over.isEmpty()) {
-          row.add(item);
-          added = true;
-          break;
+          if (!added) {
+            row.add(item);
+            added = true;
+          }
 
         } else if (blender == null) {
           overlap.addAll(over);

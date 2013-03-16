@@ -761,28 +761,21 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return contentId;
   }
 
-  protected void getCountryFlag(Long countryId, Callback<String> callback) {
-    if (countryId == null) {
-      callback.onFailure("country id is null");
-      return;
-    }
-
-    if (DataUtils.isEmpty(getCountries())) {
-      callback.onFailure("countries not available");
-      return;
+  protected String getCountryFlag(Long countryId) {
+    if (countryId == null || DataUtils.isEmpty(getCountries())) {
+      return null;
     }
     
     BeeRow row = getCountries().getRowById(countryId);
     if (row == null) {
-      callback.onFailure("country not found:", countryId.toString());
-      return;
+      return null;
     }
 
     String code = row.getString(getCountryCodeIndex());
     if (BeeUtils.isEmpty(code)) {
-      callback.onFailure("country has no code:", row.getString(getCountryNameIndex()));
+      return null;
     } else {
-      Flags.get(code, callback);
+      return Flags.get(code);
     }
   }
   

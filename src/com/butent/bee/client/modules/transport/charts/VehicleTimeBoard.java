@@ -18,7 +18,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
@@ -84,8 +83,8 @@ abstract class VehicleTimeBoard extends ChartBase {
   private static final String STYLE_DAY_PREFIX = STYLE_PREFIX + "Day-";
   private static final String STYLE_DAY_PANEL = STYLE_DAY_PREFIX + "panel";
   private static final String STYLE_DAY_WIDGET = STYLE_DAY_PREFIX + "widget";
-  private static final String STYLE_DAY_COUNTRY = STYLE_DAY_PREFIX + "country";
-  private static final String STYLE_DAY_NO_COUNTRY = STYLE_DAY_PREFIX + "no-country";
+  private static final String STYLE_DAY_EMPTY = STYLE_DAY_PREFIX + "empty";
+  private static final String STYLE_DAY_FLAG = STYLE_DAY_PREFIX + "flag";
   private static final String STYLE_DAY_LABEL = STYLE_DAY_PREFIX + "label";
 
   private static final String STYLE_SERVICE_PREFIX = STYLE_PREFIX + "Service-";
@@ -235,6 +234,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
           for (Freight freight : freights.get(tripId)) {
             freight.adjustRange(trip.getRange());
+            freight.setTripTitle(trip.getTitle());
           }
 
         } else {
@@ -453,144 +453,41 @@ abstract class VehicleTimeBoard extends ChartBase {
     panel.add(widget);
   }
 
-  private Widget createFreightWidget(Freight freight) {
-    Flow panel = new Flow();
-    panel.addStyleName(STYLE_FREIGHT_PANEL);
-    setItemWidgetColor(freight, panel);
-
-    panel.setTitle(freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight)));
-
-    final Long cargoId = freight.getCargoId();
-
-    panel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
-      }
-    });
-
-    return panel;
-  }
-
-  private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
-    Simple panel = new Simple();
-    panel.addStyleName(STYLE_INFO_PANEL);
-    if (hasOverlap) {
-      panel.addStyleName(STYLE_INFO_OVERLAP);
-    }
-
-    final Long vehicleId = vehicle.getId();
-
-    BeeLabel label = new BeeLabel(vehicle.getInfo());
-    label.addStyleName(STYLE_INFO_LABEL);
-
-    UiHelper.maybeSetTitle(label, vehicle.getTitle());
-
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_VEHICLES, vehicleId);
-      }
-    });
-
-    panel.add(label);
-
-    return panel;
-  }
-
-  private IdentifiableWidget createNumberWidget(Vehicle vehicle, boolean hasOverlap) {
-    Simple panel = new Simple();
-    panel.addStyleName(STYLE_NUMBER_PANEL);
-    if (hasOverlap) {
-      panel.addStyleName(STYLE_NUMBER_OVERLAP);
-    }
-
-    final Long vehicleId = vehicle.getId();
-
-    BeeLabel label = new BeeLabel(vehicle.getNumber());
-    label.addStyleName(STYLE_NUMBER_LABEL);
-
-    UiHelper.maybeSetTitle(label, vehicle.getTitle());
-
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_VEHICLES, vehicleId);
-      }
-    });
-
-    panel.add(label);
-
-    return panel;
-  }
-
-  private Widget createTripDayPanel(Trip trip, Multimap<Long, CargoEvent> dayEvents) {
+  private Widget createDayPanel(Multimap<Long, CargoEvent> dayEvents, String tripTitle) {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_DAY_PANEL);
 
-    int dayWidth = getDayColumnWidth();
-    int dayHeight = getRowHeight();
-
     Set<Long> countryIds = dayEvents.keySet();
-    int widgetCount = countryIds.size();
+    Size size = ChartHelper.splitRectangle(getDayColumnWidth(), getRowHeight(), countryIds.size());
 
-    int width;
-    int height;
+    if (size != null) {
+      for (Long countryId : countryIds) {
+        Widget widget = createDayWidget(countryId, dayEvents.get(countryId), tripTitle);
+        StyleUtils.setSize(widget, size.getWidth(), size.getHeight());
 
-    if (widgetCount == 1) {
-      width = dayWidth;
-      height = dayHeight;
-
-    } else if (dayWidth > dayHeight) {
-      width = dayWidth / widgetCount;
-      height = dayHeight;
-
-    } else {
-      width = dayWidth;
-      height = dayHeight / widgetCount;
-    }
-
-    for (Long countryId : countryIds) {
-      Widget widget = createTripDayWidget(trip, countryId, dayEvents.get(countryId));
-      StyleUtils.setSize(widget, width, height);
-
-      panel.add(widget);
+        panel.add(widget);
+      }
     }
 
     return panel;
   }
 
-  private Widget createTripDayWidget(Trip trip, Long countryId, Collection<CargoEvent> events) {
-    final Flow widget = new Flow();
+  private Widget createDayWidget(Long countryId, Collection<CargoEvent> events, String tripTitle) {
+    Flow widget = new Flow();
     widget.addStyleName(STYLE_DAY_WIDGET);
 
-    if (showCountryFlags() && DataUtils.isId(countryId)) {
-      getCountryFlag(countryId, new Callback<String>() {
-        @Override
-        public void onFailure(String... reason) {
-          widget.addStyleName(STYLE_DAY_NO_COUNTRY);
-        }
+    String flag = showCountryFlags() ? getCountryFlag(countryId) : null;
 
-        @Override
-        public void onSuccess(String result) {
-          if (BeeUtils.isEmpty(result)) {
-            widget.addStyleName(STYLE_DAY_NO_COUNTRY);
-          } else {
-            widget.addStyleName(STYLE_DAY_COUNTRY);
-            StyleUtils.setBackgroundImage(widget, result);
-          }
-        }
-      });
-
-    } else {
-      widget.addStyleName(STYLE_DAY_NO_COUNTRY);
+    if (!BeeUtils.isEmpty(flag)) {
+      widget.addStyleName(STYLE_DAY_FLAG);
+      StyleUtils.setBackgroundImage(widget, flag);
     }
 
     if (!BeeUtils.isEmpty(events)) {
       if (showPlaceInfo()) {
         List<String> info = Lists.newArrayList();
 
-        if (!showCountryFlags() && DataUtils.isId(countryId)) {
+        if (BeeUtils.isEmpty(flag) && DataUtils.isId(countryId)) {
           String countryLabel = getCountryLabel(countryId);
           if (!BeeUtils.isEmpty(countryLabel)) {
             info.add(countryLabel);
@@ -649,7 +546,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         if (!title.isEmpty()) {
           title.add(BeeConst.STRING_NBSP);
         }
-        title.add(freight.getTitle(freightLoading, freightUnloading));
+        title.add(freight.getTitle(freightLoading, freightUnloading, false));
 
         if (!handlingEvents.isEmpty()) {
           title.add(BeeConst.STRING_NBSP);
@@ -664,14 +561,116 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
         }
       }
+      
+      if (!BeeUtils.isEmpty(tripTitle)) {
+        title.add(BeeConst.STRING_NBSP);
+        title.add(tripTitle);
+      }
+      
+      if (!title.isEmpty()) {
+        widget.setTitle(BeeUtils.join(BeeConst.STRING_EOL, title));
+      }
+    }
 
-      title.add(BeeConst.STRING_NBSP);
-      title.add(trip.getTitle());
-
-      widget.setTitle(BeeUtils.join(BeeConst.STRING_EOL, title));
+    if (widget.isEmpty() && BeeUtils.isEmpty(flag)) {
+      widget.addStyleName(STYLE_DAY_EMPTY);
     }
 
     return widget;
+  }
+
+  private Widget createFreightWidget(Freight freight) {
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_FREIGHT_PANEL);
+    setItemWidgetColor(freight, panel);
+
+    panel.setTitle(freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight), true));
+
+    final Long cargoId = freight.getCargoId();
+
+    panel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
+      }
+    });
+
+    Range<JustDate> freightRange =
+        ChartHelper.normalizedIntersection(freight.getRange(), getVisibleRange());
+    if (freightRange == null) {
+      return panel;
+    }
+
+    Multimap<JustDate, CargoEvent> freightLayout = splitFreightByDate(freight, freightRange);
+    if (freightLayout.isEmpty()) {
+      return panel;
+    }
+
+    for (JustDate date : freightLayout.keySet()) {
+      Multimap<Long, CargoEvent> dayLayout = splitByCountry(freightLayout.get(date));
+      if (!dayLayout.isEmpty()) {
+        Widget dayWidget = createDayPanel(dayLayout, freight.getTripTitle());
+
+        StyleUtils.setLeft(dayWidget, getRelativeLeft(freightRange, date));
+        StyleUtils.setWidth(dayWidget, getDayColumnWidth());
+
+        panel.add(dayWidget);
+      }
+    }
+
+    return panel;
+  }
+
+  private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
+    Simple panel = new Simple();
+    panel.addStyleName(STYLE_INFO_PANEL);
+    if (hasOverlap) {
+      panel.addStyleName(STYLE_INFO_OVERLAP);
+    }
+
+    final Long vehicleId = vehicle.getId();
+
+    BeeLabel label = new BeeLabel(vehicle.getInfo());
+    label.addStyleName(STYLE_INFO_LABEL);
+
+    UiHelper.maybeSetTitle(label, vehicle.getTitle());
+
+    label.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_VEHICLES, vehicleId);
+      }
+    });
+
+    panel.add(label);
+
+    return panel;
+  }
+
+  private IdentifiableWidget createNumberWidget(Vehicle vehicle, boolean hasOverlap) {
+    Simple panel = new Simple();
+    panel.addStyleName(STYLE_NUMBER_PANEL);
+    if (hasOverlap) {
+      panel.addStyleName(STYLE_NUMBER_OVERLAP);
+    }
+
+    final Long vehicleId = vehicle.getId();
+
+    BeeLabel label = new BeeLabel(vehicle.getNumber());
+    label.addStyleName(STYLE_NUMBER_LABEL);
+
+    UiHelper.maybeSetTitle(label, vehicle.getTitle());
+
+    label.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        openDataRow(event, VIEW_VEHICLES, vehicleId);
+      }
+    });
+
+    panel.add(label);
+
+    return panel;
   }
 
   private Widget createTripWidget(Trip trip) {
@@ -691,8 +690,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     Range<JustDate> tripRange =
-        ChartHelper.normalizedCopyOf(trip.getRange().intersection(getVisibleRange()));
-    if (tripRange == null || tripRange.isEmpty()) {
+        ChartHelper.normalizedIntersection(trip.getRange(), getVisibleRange());
+    if (tripRange == null) {
       return panel;
     }
 
@@ -705,7 +704,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       for (JustDate date : eventDates) {
         Multimap<Long, CargoEvent> dayLayout = splitByCountry(tripLayout.get(date));
         if (!dayLayout.isEmpty()) {
-          Widget dayWidget = createTripDayPanel(trip, dayLayout);
+          Widget dayWidget = createDayPanel(dayLayout, trip.getTitle());
 
           StyleUtils.setLeft(dayWidget, getRelativeLeft(tripRange, date));
           StyleUtils.setWidth(dayWidget, getDayColumnWidth());
@@ -802,7 +801,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       for (Freight freight : tripFreights) {
         if (ChartHelper.isActive(freight, tripRange)) {
           Range<JustDate> freightRange =
-              ChartHelper.normalizedCopyOf(freight.getRange().intersection(tripRange));
+              ChartHelper.normalizedIntersection(freight.getRange(), tripRange);
           if (freightRange == null) {
             continue;
           }

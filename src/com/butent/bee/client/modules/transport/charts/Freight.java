@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -21,9 +22,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   private final Long tripId;
 
-  @SuppressWarnings("unused")
   private final Long cargoTripId;
-  @SuppressWarnings("unused")
   private final Long cargoTripVersion;
 
   private final Long cargoId;
@@ -44,6 +43,8 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   private final String customerName;
 
   private Range<JustDate> range;
+  
+  private String tripTitle = null;
 
   Freight(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     this.tripId = row.getLong(COL_TRIP_ID);
@@ -151,15 +152,29 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     return BeeUtils.max(loadingDate, unloadingDate);
   }
 
-  String getTitle(String loadInfo, String unloadInfo) {
-    return ChartHelper.buildTitle(cargoLabel, cargoDescription, 
+  String getTitle(String loadInfo, String unloadInfo, boolean appendTripTitle) {
+    String title = ChartHelper.buildTitle(cargoLabel, cargoDescription, 
         Global.CONSTANTS.cargoLoading(), loadInfo,
         Global.CONSTANTS.cargoUnloading(), unloadInfo,
         customerLabel, customerName, notesLabel, notes);
+    
+    if (appendTripTitle && !BeeUtils.isEmpty(getTripTitle())) {
+      return BeeUtils.buildLines(title, BeeConst.STRING_NBSP, getTripTitle());
+    } else {
+      return title;
+    }
   }
 
   Long getTripId() {
     return tripId;
+  }
+
+  String getTripTitle() {
+    return tripTitle;
+  }
+
+  void setTripTitle(String tripTitle) {
+    this.tripTitle = tripTitle;
   }
 
   private void setRange(Range<JustDate> range) {

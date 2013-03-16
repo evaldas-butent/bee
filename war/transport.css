@@ -354,7 +354,7 @@
 }
 
 .bee-tr-vtb-Trip-void {
-  background-color: lightgray;
+  background-image: -webkit-repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
   pointer-events: none;
 }
 
@@ -363,10 +363,10 @@
   -webkit-flex-wrap: wrap;
 }
 
-.bee-tr-vtb-Day-no-country {
+.bee-tr-vtb-Day-empty {
   background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
 }
-.bee-tr-vtb-Day-country {
+.bee-tr-vtb-Day-flag {
   background-repeat: no-repeat;
   background-position: center;
 }
