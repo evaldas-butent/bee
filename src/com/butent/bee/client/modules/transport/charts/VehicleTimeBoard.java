@@ -18,6 +18,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
@@ -38,6 +40,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -113,6 +116,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private final Set<String> numberPanels = Sets.newHashSet();
   private final Set<String> infoPanels = Sets.newHashSet();
+  
+  private final List<Integer> vehicleIndexesByRow = Lists.newArrayList();
 
   protected VehicleTimeBoard() {
     super();
@@ -125,6 +130,15 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
+  public void handleAction(Action action) {
+    if (Action.ADD.equals(action)) {
+      RowFactory.createRow(VIEW_VEHICLES);
+    } else {
+      super.handleAction(action);
+    }
+  }
+  
+  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     return separateCargo() ? freights.values() : trips.values();
   }
@@ -133,7 +147,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.CONFIGURE);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
   }
 
   protected abstract String getInfoWidthColumnName();
@@ -142,13 +156,15 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected abstract String getNumberWidthColumnName();
 
-  protected abstract String getRelatedTripColumnName();
-
   protected abstract String getSeparateCargoColumnName();
 
   protected abstract String getShowCountryFlagsColumnName();
 
   protected abstract String getShowPlaceInfoColumnName();
+
+  protected abstract String getTripVehicleIdColumnName();
+
+  protected abstract String getTripVehicleNumberColumnName();
 
   @Override
   protected void initData(BeeRowSet rowSet) {
@@ -213,7 +229,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     serialized = rowSet.getTableProperty(PROP_TRIPS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
-      int index = srs.getColumnIndex(getRelatedTripColumnName());
+      int index = srs.getColumnIndex(getTripVehicleIdColumnName());
 
       for (SimpleRow row : srs) {
         Long tripId = row.getLong(COL_TRIP_ID);
@@ -265,6 +281,26 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
+  protected void onDoubleClickChart(int row, JustDate date) {
+    if (BeeUtils.isIndex(vehicleIndexesByRow, row) && TimeUtils.isMeq(date, TimeUtils.today())) {
+      DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
+      BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+
+      if (TimeUtils.isMore(date, TimeUtils.today())) {
+        newRow.setValue(dataInfo.getColumnIndex(COL_TRIP_DATE), date.getDateTime());
+      }
+      
+      Vehicle vehicle = vehicles.get(vehicleIndexesByRow.get(row));
+
+      newRow.setValue(dataInfo.getColumnIndex(getTripVehicleIdColumnName()), vehicle.getId());
+      newRow.setValue(dataInfo.getColumnIndex(getTripVehicleNumberColumnName()),
+          vehicle.getNumber());
+
+      RowFactory.createRow(dataInfo, newRow);
+    }
+  }
+  
+  @Override
   protected void prepareChart(Size canvasSize) {
     setNumberWidth(ChartHelper.getPixels(getSettings(), getNumberWidthColumnName(), 80,
         ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
@@ -291,7 +327,9 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected void renderContent(ComplexPanel panel) {
     numberPanels.clear();
     infoPanels.clear();
-
+    
+    vehicleIndexesByRow.clear();
+       
     List<ChartRowLayout> vehicleLayout = doLayout();
 
     int rc = 0;
@@ -317,6 +355,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     int rowIndex = 0;
     for (ChartRowLayout layout : vehicleLayout) {
+      
+      int vehicleIndex = layout.getDataIndex();
 
       int size = layout.size();
       int lastRow = rowIndex + size - 1;
@@ -328,7 +368,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             getChartLeft() + calendarWidth);
       }
 
-      Vehicle vehicle = vehicles.get(layout.getDataIndex());
+      Vehicle vehicle = vehicles.get(vehicleIndex);
       Assert.notNull(vehicle, "vehicle not found");
 
       boolean hasOverlap = layout.hasOverlap();
@@ -394,6 +434,10 @@ abstract class VehicleTimeBoard extends ChartBase {
             }
           }
         }
+      }
+      
+      for (int i = 0; i < size; i++) {
+        vehicleIndexesByRow.add(vehicleIndex);
       }
 
       rowIndex += size;

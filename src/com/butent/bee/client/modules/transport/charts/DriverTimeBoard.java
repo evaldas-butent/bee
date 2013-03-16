@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
@@ -218,6 +219,15 @@ class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  public void handleAction(Action action) {
+    if (Action.ADD.equals(action)) {
+      RowFactory.createRow(VIEW_DRIVERS);
+    } else {
+      super.handleAction(action);
+    }
+  }
+  
+  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     List<DriverTrip> result = Lists.newArrayList();
 
@@ -235,7 +245,7 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.CONFIGURE);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
   }
 
   @Override

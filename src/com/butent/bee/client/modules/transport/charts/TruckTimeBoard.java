@@ -80,11 +80,6 @@ class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
-  protected String getRelatedTripColumnName() {
-    return COL_VEHICLE;
-  }
-  
-  @Override
   protected String getRowHeightColumnName() {
     return COL_TRUCK_PIXELS_PER_ROW;
   }
@@ -117,5 +112,15 @@ class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getThemeColumnName() {
     return COL_TRUCK_THEME;
+  }
+  
+  @Override
+  protected String getTripVehicleIdColumnName() {
+    return COL_VEHICLE;
+  }
+
+  @Override
+  protected String getTripVehicleNumberColumnName() {
+    return COL_VEHICLE_NUMBER;
   }
 }

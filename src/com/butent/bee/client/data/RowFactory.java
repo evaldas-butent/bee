@@ -122,6 +122,10 @@ public class RowFactory {
   }
 
   public static void createRow(String viewName) {
+    createRow(viewName, null);
+  }
+
+  public static void createRow(String viewName, String caption) {
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -130,17 +134,17 @@ public class RowFactory {
     }
     
     BeeRow row = createEmptyRow(dataInfo, true);
-
-    createRow(dataInfo, row);
+    createRow(dataInfo, row, BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()));
   }
-
+  
   public static void createRow(DataInfo dataInfo, BeeRow row) {
     Assert.notNull(dataInfo);
+    createRow(dataInfo, row, dataInfo.getNewRowCaption());
+  }
 
-    String formName = dataInfo.getNewRowForm();
-    String caption = dataInfo.getNewRowCaption();
-
-    createRow(formName, caption, dataInfo, row, null, null);
+  public static void createRow(DataInfo dataInfo, BeeRow row, String caption) {
+    Assert.notNull(dataInfo);
+    createRow(dataInfo.getNewRowForm(), caption, dataInfo, row, null, null);
   }
   
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
