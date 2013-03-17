@@ -25,11 +25,6 @@ import java.util.List;
 
 class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
-  private static final String cargoLabel =
-      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
-  private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
-  private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
-
   private final Long tripId;
 
   private final Long truckId;
@@ -177,10 +172,10 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo, boolean appendTripTitle) {
-    String title = ChartHelper.buildTitle(cargoLabel, cargoDescription,
+    String title = ChartHelper.buildTitle(OrderCargo.cargoLabel, cargoDescription,
         Global.CONSTANTS.cargoLoading(), loadInfo,
         Global.CONSTANTS.cargoUnloading(), unloadInfo,
-        customerLabel, customerName, notesLabel, notes);
+        OrderCargo.customerLabel, customerName, OrderCargo.notesLabel, notes);
 
     if (appendTripTitle && !BeeUtils.isEmpty(getTripTitle())) {
       return BeeUtils.buildLines(title, BeeConst.STRING_NBSP, getTripTitle());

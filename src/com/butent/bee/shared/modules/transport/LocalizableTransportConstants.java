@@ -11,6 +11,9 @@ public interface LocalizableTransportConstants {
   String cargoLoading();
   String cargoUnloading();
   
+  String createTripForCargoCaption();
+  String createTripForCargoQuestion();
+  
   String intermediateLoading();
   String intermediateUnloading();
   

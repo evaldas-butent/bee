@@ -511,15 +511,13 @@ class FreightExchange extends ChartBase {
     String loading = getLoadingPlaceInfo(item);
     String unloading = getUnloadingPlaceInfo(item);
 
-    String title = BeeUtils.buildLines(item.getCargoDescription(),
-        BeeUtils.joinWords(item.getLoadingDate(), loading),
+    String title = item.getTitle(BeeUtils.joinWords(item.getLoadingDate(), loading),
         BeeUtils.joinWords(item.getUnloadingDate(), unloading));
-
     panel.setTitle(title);
 
     final Long cargoId = item.getCargoId();
 
-    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, cargoId, null, title, STYLE_ITEM_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, cargoId, null, item, STYLE_ITEM_DRAG, true);
 
     ClickHandler opener = new ClickHandler() {
       @Override

@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -905,9 +906,27 @@ abstract class VehicleTimeBoard extends ChartBase {
       ((Trip) DndHelper.getData()).dropOnVehicle(vehicleType, vehicle);
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+      final Freight freight = (Freight) DndHelper.getData();
+      String title = freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight), true);
+
+      Trip.createForCargo(vehicle, freight, title, false, new Queries.IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          freight.updateTrip(result, true);
+        }
+      });
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
         && DndHelper.getData() instanceof OrderCargo) {
+      final OrderCargo orderCargo = (OrderCargo) DndHelper.getData();
+      String title = orderCargo.getTitle(getLoadingInfo(orderCargo), getUnloadingInfo(orderCargo));
+
+      Trip.createForCargo(vehicle, orderCargo, title, false, new Queries.IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          orderCargo.assignToTrip(result, true);
+        }
+      });
     }
   }
 
@@ -999,15 +1018,19 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   private boolean mayDropOnVehicle(Long vehicleId) {
-    if (DndHelper.isDataType(DATA_TYPE_TRIP) && DndHelper.getData() instanceof Trip) {
+    if (!DataUtils.isId(vehicleId)) {
+      return false;
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRIP) && DndHelper.getData() instanceof Trip) {
       return !Objects.equal(vehicleId, ((Trip) DndHelper.getData()).getVehicleId(vehicleType));
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
-      return !Objects.equal(vehicleId, ((Freight) DndHelper.getData()).getVehicleId(vehicleType));
+      return vehicleType == VehicleType.TRUCK 
+          && !Objects.equal(vehicleId, ((Freight) DndHelper.getData()).getVehicleId(vehicleType));
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
         && DndHelper.getData() instanceof OrderCargo) {
-      return true;
+      return vehicleType == VehicleType.TRUCK;
       
     } else {
       return false;

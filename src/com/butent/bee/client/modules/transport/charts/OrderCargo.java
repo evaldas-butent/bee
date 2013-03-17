@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -24,6 +25,11 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 
 class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
+  
+  static final String cargoLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
+  static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
+
   private final Long orderId;
 
   private final OrderStatus orderStatus;
@@ -36,6 +42,8 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
   private final Long cargoId;
   private final String cargoDescription;
 
+  private final String notes;
+  
   private final JustDate loadingDate;
   private final Long loadingCountry;
   private final String loadingPlace;
@@ -60,6 +68,8 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
 
     this.cargoId = row.getLong(COL_CARGO_ID);
     this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
+
+    this.notes = row.getValue(COL_CARGO_NOTES);
 
     this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
     this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
@@ -182,5 +192,12 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
   
   OrderStatus getOrderStatus() {
     return orderStatus;
+  }
+  
+  String getTitle(String loadInfo, String unloadInfo) {
+    return ChartHelper.buildTitle(cargoLabel, cargoDescription,
+        Global.CONSTANTS.cargoLoading(), loadInfo,
+        Global.CONSTANTS.cargoUnloading(), unloadInfo,
+        customerLabel, customerName, notesLabel, notes);
   }
 }
