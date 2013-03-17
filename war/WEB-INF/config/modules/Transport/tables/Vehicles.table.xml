@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Type" notNull="true" relation="VehicleTypes" />
-    <Relation name="Model" notNull="true" relation="VehicleModels" />
+    <Relation name="Model" notNull="true" relation="VehicleModels" label="Modelis" />
     <String name="Number" precision="10" unique="true" notNull="true" />
     <String name="BodyNumber" precision="20" unique="true" />
     <String name="EngineNumber" precision="20" unique="true" />
@@ -22,7 +22,7 @@
     <Numeric name="Power" precision="4" />
     <Double name="Netto" />
     <Double name="Brutto" />
-    <Text name="Notes" />
+    <Text name="Notes" label="Pastabos" />
   </Fields>
   <Extensions>
     <Numeric name="Body" precision="1" />

@@ -103,6 +103,8 @@ public class ChartHelper {
 
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 10;
 
+  private static final String VALUE_SEPARATOR = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
+  
   public static void register() {
     final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
       @Override
@@ -273,24 +275,22 @@ public class ChartHelper {
     Assert.parameterCount(c, 2);
     Assert.isEven(c);
 
-    String valueSeparator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
-
     StringBuilder sb = new StringBuilder();
 
     for (int i = 0; i < c - 1; i += 2) {
       Object label = labelsAndValues[i];
       Object value = labelsAndValues[i + 1];
 
-      if (label instanceof String && value != null) {
+      if (label instanceof String && !isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(separator);
         }
-        sb.append(BeeUtils.join(valueSeparator, label, value));
+        sb.append(BeeUtils.join(VALUE_SEPARATOR, label, value));
       }
     }
     return sb.toString();
   }
-
+  
   static String buildTitle(Object... labelsAndValues) {
     return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
   }
@@ -565,6 +565,10 @@ public class ChartHelper {
     } else {
       return activeRange.isConnected(item.getRange());
     }
+  }
+
+  static String join(String label, Object value) {
+    return isEmpty(value) ? BeeConst.STRING_EMPTY : BeeUtils.join(VALUE_SEPARATOR, label, value);
   }
   
   static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
@@ -1007,6 +1011,16 @@ public class ChartHelper {
     }
   }
 
+  private static boolean isEmpty(Object value) {
+    if (value == null) {
+      return true;
+    } else if (value instanceof String) {
+      return BeeUtils.isEmpty((String) value);
+    } else {
+      return false;
+    }
+  }
+  
   private static boolean isNormalized(Range<JustDate> range) {
     return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
         && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;

@@ -91,10 +91,6 @@ import java.util.Set;
 abstract class ChartBase extends Flow implements Presenter, View, Printable, HandlesAllDataEvents,
     VisibilityChangeEvent.Handler, HasWidgetSupplier, HasVisibleRange, MoveEvent.Handler {
 
-  protected interface HasColorSource {
-    Long getColorSource();
-  }
-
   private enum RangeMover {
     START_SLIDER, END_SLIDER, MOVER
   }

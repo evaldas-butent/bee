@@ -24,6 +24,8 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -43,6 +45,9 @@ public class Queries {
   public abstract static class DataCallback extends Callback<Collection<BeeRowSet>> {
   }
 
+  public abstract static class IdCallback extends Callback<Long> {
+  }
+  
   public abstract static class IntCallback extends Callback<Integer> {
   }
 
@@ -52,6 +57,34 @@ public class Queries {
   private static final BeeLogger logger = LogUtils.getLogger(Queries.class);
 
   private static final int RESPONSE_FROM_CACHE = 0;
+
+  public static List<String> asList(Object... values) {
+    List<String> result = Lists.newArrayList();
+    if (values == null) {
+      return result;
+    }
+
+    String s;
+
+    for (Object value : values) {
+      if (value == null) {
+        s = null;
+
+      } else if (value instanceof JustDate) {
+        s = BeeUtils.toString(((JustDate) value).getDays());
+
+      } else if (value instanceof DateTime) {
+        s = BeeUtils.toString(((DateTime) value).getTime());
+      
+      } else {
+        s = value.toString();
+      }
+      
+      result.add(s);
+    }
+
+    return result;
+  }
 
   public static boolean checkResponse(String service, String viewName, ResponseObject response,
       Class<?> clazz, Callback<?> callback) {

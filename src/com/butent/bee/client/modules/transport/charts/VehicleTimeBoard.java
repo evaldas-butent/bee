@@ -738,7 +738,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     return panel;
   }
 
-  private IdentifiableWidget createNumberWidget(Vehicle vehicle, boolean hasOverlap) {
+  private IdentifiableWidget createNumberWidget(final Vehicle vehicle, boolean hasOverlap) {
     final Simple panel = new Simple();
     panel.addStyleName(STYLE_NUMBER_PANEL);
     if (hasOverlap) {
@@ -774,7 +774,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           @Override
           public void call(Long parameter) {
             panel.removeStyleName(STYLE_VEHICLE_OVER);
-            dropOnVehicle(vehicleId);
+            dropOnVehicle(vehicle);
           }
         });
 
@@ -900,7 +900,15 @@ abstract class VehicleTimeBoard extends ChartBase {
   private void dropOnTrip(Long tripId) {
   }
   
-  private void dropOnVehicle(Long vehicleId) {
+  private void dropOnVehicle(Vehicle vehicle) {
+    if (DndHelper.isDataType(DATA_TYPE_TRIP) && DndHelper.getData() instanceof Trip) {
+      ((Trip) DndHelper.getData()).dropOnVehicle(vehicleType, vehicle);
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
+        && DndHelper.getData() instanceof OrderCargo) {
+    }
   }
 
   private int getInfoWidth() {

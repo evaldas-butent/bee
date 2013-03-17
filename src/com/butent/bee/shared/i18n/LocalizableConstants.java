@@ -2,17 +2,16 @@ package com.butent.bee.shared.i18n;
 
 import com.google.gwt.i18n.client.Constants;
 
-public interface LocalizableConstants extends Constants {
+import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
+import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
+
+public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
+    LocalizableTransportConstants {
+
   String cancel();
-  String cargoLoading();
-  String cargoUnloading();
   String changedValues();
   String changePassword();
-  String createNewAppointment();
   String createNewRow();
-  String deleteAppointment();
-  String intermediateLoading();
-  String intermediateUnloading();
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
@@ -23,12 +22,9 @@ public interface LocalizableConstants extends Constants {
   String oldPassword();
   String oldPasswordIsInvalid();
   String oldPasswordIsRequired();
-  String overlappingAppointments();
   String questionLogout();  
   String repeatNewPassword();
   String saveChanges();
-  String selectAppointment();
   String sorry();
-  String tripDuration();
   String yes();
 }

@@ -1,18 +1,29 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class Trip implements HasDateRange, HasColorSource {
 
@@ -23,6 +34,17 @@ class Trip implements HasDateRange, HasColorSource {
 
   private static final String driversLabel = Data.getLocalizedCaption(VIEW_DRIVERS);
   private static final String cargosLabel = Data.getLocalizedCaption(VIEW_CARGO_TRIPS);
+
+  static String getVehicleLabel(VehicleType vehicleType) {
+    switch (vehicleType) {
+      case TRUCK:
+        return truckLabel;
+      case TRAILER:
+        return trailerLabel;
+      default:
+        return null;
+    }
+  }
 
   private final Long tripId;
   private final Long tripVersion;
@@ -86,6 +108,58 @@ class Trip implements HasDateRange, HasColorSource {
     return range;
   }
 
+  void dropOnVehicle(VehicleType vehicleType, Vehicle vehicle) {
+    if (vehicleType == null || vehicle == null) {
+      return;
+    }
+
+    final Long oldVehicleId = getVehicleId(vehicleType);
+    final Long newVehicleId = vehicle.getId();
+
+    if (Objects.equal(oldVehicleId, newVehicleId)) {
+      return;
+    }
+
+    String caption;
+    List<String> messages = Lists.newArrayList(vehicle.getMessage(getVehicleLabel(vehicleType)),
+        getTitle());
+
+    final List<BeeColumn> columns = Lists.newArrayList();
+
+    switch (vehicleType) {
+      case TRUCK:
+        caption = Global.CONSTANTS.assignTruckToTripCaption();
+        messages.add(Global.CONSTANTS.assignTruckToTripQuestion());
+
+        columns.add(Data.getColumn(VIEW_TRIPS, COL_VEHICLE));
+        break;
+
+      case TRAILER:
+        caption = Global.CONSTANTS.assignTrailerToTripCaption();
+        messages.add(Global.CONSTANTS.assignTrailerToTripQuestion());
+
+        columns.add(Data.getColumn(VIEW_TRIPS, COL_TRAILER));
+        break;
+
+      default:
+        Assert.untouchable();
+        caption = null;
+    }
+
+    Global.confirm(caption, Icon.QUESTION, messages, new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        Queries.update(VIEW_TRIPS, getTripId(), getTripVersion(), columns,
+            Queries.asList(oldVehicleId), Queries.asList(newVehicleId), new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_TRIPS, result));
+              }
+            });
+      }
+    });
+  }
+
   String getTitle() {
     return title;
   }
@@ -105,7 +179,7 @@ class Trip implements HasDateRange, HasColorSource {
   Long getTruckId() {
     return truckId;
   }
-  
+
   Long getVehicleId(VehicleType vehicleType) {
     switch (vehicleType) {
       case TRUCK:

@@ -1,18 +1,27 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.List;
 
 class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
   private final Long orderId;
@@ -118,6 +127,31 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
     return unloadingTerminal;
   }
 
+  void assignToTrip(Long tripId, boolean fire) {
+    if (!DataUtils.isId(tripId)) {
+      return;
+    }
+
+    final String viewName = VIEW_CARGO_TRIPS;
+
+    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
+    List<String> values = Queries.asList(getCargoId(), tripId);
+
+    RowCallback callback;
+    if (fire) {
+      callback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+        }
+      };
+    } else {
+      callback = null;
+    }
+
+    Queries.insert(viewName, columns, values, callback);
+  }
+
   String getCargoDescription() {
     return cargoDescription;
   }
@@ -145,7 +179,7 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
   String getOrderNo() {
     return orderNo;
   }
-
+  
   OrderStatus getOrderStatus() {
     return orderStatus;
   }

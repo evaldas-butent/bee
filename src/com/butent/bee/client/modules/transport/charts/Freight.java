@@ -1,22 +1,31 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
-  private static final String cargoLabel = 
+  private static final String cargoLabel =
       Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
@@ -25,7 +34,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   private final Long truckId;
   private final Long trailerId;
-  
+
   private final Long cargoTripId;
   private final Long cargoTripVersion;
 
@@ -47,7 +56,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   private final String customerName;
 
   private Range<JustDate> range;
-  
+
   private String tripTitle = null;
 
   Freight(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
@@ -55,7 +64,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
     this.truckId = row.getLong(COL_VEHICLE);
     this.trailerId = row.getLong(COL_TRAILER);
-    
+
     this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
     this.cargoTripVersion = row.getLong(ALS_CARGO_TRIP_VERSION);
 
@@ -136,7 +145,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   public String getUnloadingTerminal() {
     return unloadingTerminal;
   }
-  
+
   void adjustRange(Range<JustDate> tripRange) {
     if (tripRange == null) {
       return;
@@ -168,11 +177,11 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo, boolean appendTripTitle) {
-    String title = ChartHelper.buildTitle(cargoLabel, cargoDescription, 
+    String title = ChartHelper.buildTitle(cargoLabel, cargoDescription,
         Global.CONSTANTS.cargoLoading(), loadInfo,
         Global.CONSTANTS.cargoUnloading(), unloadInfo,
         customerLabel, customerName, notesLabel, notes);
-    
+
     if (appendTripTitle && !BeeUtils.isEmpty(getTripTitle())) {
       return BeeUtils.buildLines(title, BeeConst.STRING_NBSP, getTripTitle());
     } else {
@@ -187,7 +196,7 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   Long getTripId() {
     return tripId;
   }
-  
+
   String getTripTitle() {
     return tripTitle;
   }
@@ -209,6 +218,30 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   void setTripTitle(String tripTitle) {
     this.tripTitle = tripTitle;
+  }
+
+  void updateTrip(Long newTripId, boolean fire) {
+    if (!DataUtils.isId(newTripId) || Objects.equal(getTripId(), newTripId)) {
+      return;
+    }
+
+    final String viewName = VIEW_CARGO_TRIPS;
+    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
+
+    RowCallback callback;
+    if (fire) {
+      callback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+        }
+      };
+    } else {
+      callback = null;
+    }
+
+    Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
+        Queries.asList(getTripId()), Queries.asList(newTripId), callback);
   }
 
   private void setRange(Range<JustDate> range) {

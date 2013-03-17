@@ -14,15 +14,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 class Vehicle implements HasDateRange {
 
   private static final int numberIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_NUMBER);
-  private static final int startIndex =
-      Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_START_DATE);
-  private static final int endIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_END_DATE);
 
   private static final int parentModelNameIndex =
       Data.getColumnIndex(VIEW_VEHICLES, COL_PARENT_MODEL_NAME);
   private static final int modelNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_MODEL_NAME);
-  private static final int notesIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_NOTES);
+  private static final String modelLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_MODEL);
 
+  private static final int notesIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_NOTES);
+  private static final String notesLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_NOTES);
+
+  private static final int startIndex =
+      Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_START_DATE);
+  private static final int endIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_END_DATE);
   private static final String startLabel =
       Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_START_DATE);
   private static final String endLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_END_DATE);
@@ -70,15 +73,27 @@ class Vehicle implements HasDateRange {
   }
 
   String getInfo() {
-    return BeeUtils.joinWords(row.getString(parentModelNameIndex), row.getString(modelNameIndex),
-        row.getString(notesIndex));
+    return BeeUtils.joinWords(getModel(), getNotes());
+  }
+  
+  String getMessage(String caption) {
+    return ChartHelper.buildTitle(caption, getNumber(), modelLabel, getModel(),
+        notesLabel, getNotes());
   }
 
+  String getModel() {
+    return BeeUtils.joinWords(row.getString(parentModelNameIndex), row.getString(modelNameIndex));
+  }
+  
+  String getNotes() {
+    return BeeUtils.trim(row.getString(notesIndex));
+  }
+  
   String getNumber() {
     return number;
   }
 
   String getTitle() {
-    return BeeUtils.trim(row.getString(notesIndex));
+    return getNotes();
   }
 }

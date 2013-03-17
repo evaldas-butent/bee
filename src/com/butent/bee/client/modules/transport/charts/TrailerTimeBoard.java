@@ -51,7 +51,7 @@ class TrailerTimeBoard extends VehicleTimeBoard {
 
   @Override
   protected String getDataType() {
-    return DATA_TYPE_TRUCK;
+    return DATA_TYPE_TRAILER;
   }
 
   @Override
