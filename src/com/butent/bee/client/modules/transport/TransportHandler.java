@@ -18,7 +18,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -48,12 +48,10 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -459,12 +457,7 @@ public class TransportHandler {
                     BeeUtils.toString(updValue));
 
                 Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
-                    new RowCallback() {
-                      @Override
-                      public void onSuccess(BeeRow result) {
-                        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
-                      }
-                    });
+                    new RowUpdateCallback(viewName));
                 return null;
               }
             }

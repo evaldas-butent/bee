@@ -9,7 +9,7 @@
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
     <DateTime name="DateFrom" />
     <DateTime name="DateTo" />
-    <Relation name="Driver" notNull="true" relation="Drivers" />
+    <Relation name="Driver" notNull="true" relation="Drivers" label="Vairuotojas" />
     <String name="Note" precision="50" />
   </Fields>
 </Table>

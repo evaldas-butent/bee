@@ -13,14 +13,16 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.Queries.IdCallback;
+import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
@@ -28,6 +30,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 class Trip implements HasDateRange, HasColorSource {
@@ -121,10 +124,11 @@ class Trip implements HasDateRange, HasColorSource {
   private final String notes;
 
   private final Range<JustDate> range;
-
+  
+  private final Collection<Driver> drivers;
   private final String title;
 
-  Trip(SimpleRow row, JustDate maxDate, String drv, int cargoCount) {
+  Trip(SimpleRow row, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
@@ -145,13 +149,15 @@ class Trip implements HasDateRange, HasColorSource {
     JustDate end = BeeUtils.nvl(this.dateTo, this.plannedEndDate, maxDate);
 
     this.range = Range.closed(start, BeeUtils.max(start, end));
+    
+    this.drivers = drivers;
 
     this.title = ChartHelper.buildTitle(
         Global.CONSTANTS.tripDuration(), ChartHelper.getRangeLabel(this.range),
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
-        driversLabel, drv,
+        driversLabel, Driver.getNames(BeeConst.DEFAULT_LIST_SEPARATOR, drivers),
         cargosLabel, cargoCount,
         notesLabel, this.notes);
   }
@@ -196,6 +202,41 @@ class Trip implements HasDateRange, HasColorSource {
         return null;
     }
   }
+  
+  boolean hasDriver(Long driverId) {
+    if (drivers != null) {
+      for (Driver driver : drivers) {
+        if (Objects.equal(driverId, driver.getId())) {
+          return true;
+        }
+      }
+    }
+    return false; 
+  }
+  
+  void maybeAddDriver(final Driver driver) {
+    if (driver == null) {
+      return;
+    }
+    
+    final String viewName = VIEW_TRIP_DRIVERS;
+    
+    String driverTitle = ChartHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
+        driver.getName());
+    
+    Global.confirm(Global.CONSTANTS.assignDriverToTripCaption(), Icon.QUESTION,
+        Lists.newArrayList(driverTitle, getTitle(), Global.CONSTANTS.assignDriverToTripQuestion()),
+        new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            List<BeeColumn> columns = 
+                Data.getColumns(viewName, Lists.newArrayList(COL_TRIP, COL_DRIVER));
+            List<String> values = Queries.asList(getTripId(), driver.getId());
+
+            Queries.insert(viewName, columns, values, new RowInsertCallback(viewName));
+          }
+        });
+  }
 
   void maybeUpdateVehicle(VehicleType vehicleType, Vehicle vehicle) {
     if (vehicleType == null || vehicle == null) {
@@ -239,12 +280,8 @@ class Trip implements HasDateRange, HasColorSource {
       @Override
       public void onConfirm() {
         Queries.update(VIEW_NAME, getTripId(), getTripVersion(), columns,
-            Queries.asList(oldVehicleId), Queries.asList(newVehicleId), new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_NAME, result));
-              }
-            });
+            Queries.asList(oldVehicleId), Queries.asList(newVehicleId),
+            new RowUpdateCallback(VIEW_NAME));
       }
     });
   }

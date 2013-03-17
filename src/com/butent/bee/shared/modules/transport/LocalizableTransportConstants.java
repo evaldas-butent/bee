@@ -5,6 +5,9 @@ public interface LocalizableTransportConstants {
   String assignCargoToTripCaption();
   String assignCargoToTripQuestion();
   
+  String assignDriverToTripCaption();
+  String assignDriverToTripQuestion();
+  
   String assignTrailerToTripCaption();
   String assignTrailerToTripQuestion();
   

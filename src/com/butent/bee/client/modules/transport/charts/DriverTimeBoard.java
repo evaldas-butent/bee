@@ -19,14 +19,15 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
@@ -75,26 +76,6 @@ class DriverTimeBoard extends ChartBase {
       this.notes = notes;
 
       this.range = Range.closed(dateFrom, BeeUtils.max(dateFrom, dateTo));
-    }
-
-    @Override
-    public Range<JustDate> getRange() {
-      return range;
-    }
-  }
-
-  private static class Driver implements HasDateRange {
-    private final Long id;
-    private final String name;
-
-    private final Range<JustDate> range;
-
-    private Driver(Long driverId, String firstName, String lastName, JustDate startDate,
-        JustDate endDate) {
-      this.id = driverId;
-      this.name = BeeUtils.joinWords(firstName, lastName);
-
-      this.range = ChartHelper.getActivity(startDate, endDate);
     }
 
     @Override
@@ -166,6 +147,7 @@ class DriverTimeBoard extends ChartBase {
   private static final String STYLE_DRIVER_PANEL = STYLE_DRIVER_PREFIX + "panel";
   private static final String STYLE_DRIVER_LABEL = STYLE_DRIVER_PREFIX + "label";
   private static final String STYLE_DRIVER_OVERLAP = STYLE_DRIVER_PREFIX + "overlap";
+  private static final String STYLE_DRIVER_DRAG = STYLE_DRIVER_PREFIX + "drag";
 
   private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
   private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
@@ -541,10 +523,10 @@ class DriverTimeBoard extends ChartBase {
       Size labelSize = Rulers.getLineSize(null, da.label.trim(), false);
       int labelWidth = labelSize.getWidth();
       int labelTop = Math.max((getRowHeight() - labelSize.getHeight()) / 2, 0);
-      
+
       int incr = (labelWidth % dayWidth > 0) ? 1 : 0;
       int step = Math.min(panelWidth, (labelWidth / dayWidth + incr) * dayWidth);
-      
+
       if (step > 0) {
         for (int x = 0; x <= panelWidth - step; x += step) {
           CustomDiv label = new CustomDiv(STYLE_ABSENCE_LABEL);
@@ -569,10 +551,10 @@ class DriverTimeBoard extends ChartBase {
       panel.addStyleName(STYLE_DRIVER_OVERLAP);
     }
 
-    final Long driverId = driver.id;
+    final Long driverId = driver.getId();
 
-    BeeLabel widget = new BeeLabel(driver.name);
-    widget.addStyleName(STYLE_DRIVER_LABEL);
+    DndDiv widget = new DndDiv(STYLE_DRIVER_LABEL);
+    widget.setText(driver.getName());
 
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -580,6 +562,9 @@ class DriverTimeBoard extends ChartBase {
         openDataRow(event, VIEW_DRIVERS, driverId);
       }
     });
+
+    DndHelper.makeSource(widget, DATA_TYPE_DRIVER, driverId, null, driver, STYLE_DRIVER_DRAG,
+        false);
 
     panel.add(widget);
 
@@ -614,8 +599,8 @@ class DriverTimeBoard extends ChartBase {
       if (ChartHelper.isActive(driver, range)) {
         ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
-        layout.addItems(getTrips(driver.id, range), range);
-        layout.addItems(getAbsence(driver.id, range), range);
+        layout.addItems(getTrips(driver.getId(), range), range);
+        layout.addItems(getAbsence(driver.getId(), range), range);
 
         layout.addInactivity(ChartHelper.getInactivity(driver, range), range);
 

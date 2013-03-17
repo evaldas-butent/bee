@@ -6,17 +6,15 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -220,20 +218,10 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
       return;
     }
 
-    final String viewName = VIEW_CARGO_TRIPS;
+    String viewName = VIEW_CARGO_TRIPS;
     List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
 
-    RowCallback callback;
-    if (fire) {
-      callback = new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
-        }
-      };
-    } else {
-      callback = null;
-    }
+    RowCallback callback = fire ? new RowUpdateCallback(viewName) : null;
 
     Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
         Queries.asList(getTripId()), Queries.asList(newTripId), callback);

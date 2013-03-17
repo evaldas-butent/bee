@@ -125,7 +125,6 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final List<Vehicle> vehicles = Lists.newArrayList();
 
   private final Multimap<Long, Trip> trips = ArrayListMultimap.create();
-  private final Multimap<Long, String> drivers = HashMultimap.create();
 
   private final Multimap<Long, Freight> freights = ArrayListMultimap.create();
   private final Multimap<Long, CargoHandling> handling = ArrayListMultimap.create();
@@ -202,7 +201,6 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected void initData(BeeRowSet rowSet) {
     vehicles.clear();
     trips.clear();
-    drivers.clear();
     freights.clear();
     handling.clear();
     services.clear();
@@ -220,13 +218,17 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
+    Multimap<Long, Driver> drivers = HashMultimap.create();
+    
     serialized = rowSet.getTableProperty(PROP_DRIVERS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
+
       for (SimpleRow row : srs) {
-        drivers.put(row.getLong(COL_TRIP),
-            BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
-                row.getValue(CommonsConstants.COL_LAST_NAME)));
+        drivers.put(row.getLong(COL_TRIP), new Driver(row.getLong(COL_DRIVER),
+            row.getValue(CommonsConstants.COL_FIRST_NAME),
+            row.getValue(CommonsConstants.COL_LAST_NAME),
+            row.getDate(COL_TRIP_DRIVER_FROM), row.getDate(COL_TRIP_DRIVER_TO)));
       }
     }
 
@@ -266,8 +268,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       for (SimpleRow row : srs) {
         Long tripId = row.getLong(COL_TRIP_ID);
 
-        String drv = drivers.containsKey(tripId)
-            ? BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, drivers.get(tripId)) : null;
+        Collection<Driver> tripDrivers = BeeUtils.getIfContains(drivers, tripId);
         int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
@@ -277,7 +278,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             cargoCount++;
           }
 
-          Trip trip = new Trip(row, maxDate, drv, cargoCount);
+          Trip trip = new Trip(row, maxDate, tripDrivers, cargoCount);
           trips.put(row.getLong(index), trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -286,7 +287,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(row.getLong(index), new Trip(row, null, drv, cargoCount));
+          trips.put(row.getLong(index), new Trip(row, null, tripDrivers, cargoCount));
         }
       }
     }
@@ -672,7 +673,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, cargoId, null, freight, STYLE_FREIGHT_DRAG,
-        true);
+        false);
 
     DndHelper.makeTarget(panel, FREIGHT_ACCEPTS_DROP_TYPES, STYLE_FREIGHT_OVER,
         new Predicate<Long>() {
@@ -761,8 +762,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(label, getDataType(), vehicleId, null, vehicle, STYLE_VEHICLE_DRAG,
-        true);
+    DndHelper.makeSource(label, getDataType(), vehicleId, null, vehicle, STYLE_VEHICLE_DRAG, false);
 
     panel.add(label);
 
@@ -799,7 +799,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(panel, DATA_TYPE_TRIP, tripId, null, trip, STYLE_TRIP_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_TRIP, tripId, null, trip, STYLE_TRIP_DRAG, false);
 
     DndHelper.makeTarget(panel, TRIP_ACCEPTS_DROP_TYPES, STYLE_TRIP_OVER,
         new Predicate<Long>() {
@@ -949,6 +949,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           orderCargo.assignToTrip(trip.getTripId(), true);
         }
       });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_DRIVER)) {
+      trip.maybeAddDriver((Driver) DndHelper.getData());
     }
   }
 
@@ -1092,6 +1095,9 @@ abstract class VehicleTimeBoard extends ChartBase {
         && DndHelper.getData() instanceof OrderCargo) {
       return true;
 
+    } else if (DndHelper.isDataType(DATA_TYPE_DRIVER) && DndHelper.getData() instanceof Driver) {
+      return !trip.hasDriver(((Driver) DndHelper.getData()).getId());
+      
     } else {
       return false;
     }

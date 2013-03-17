@@ -29,6 +29,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
@@ -58,7 +60,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -401,7 +402,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
       for (SimpleRow row : srs) {
-        drivers.put(row.getLong(COL_TRIP), 
+        drivers.put(row.getLong(COL_TRIP),
             BeeUtils.joinWords(row.getValue(CommonsConstants.COL_FIRST_NAME),
                 row.getValue(CommonsConstants.COL_LAST_NAME)));
       }
@@ -786,19 +787,14 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
   }
 
   private void assignCargoToTrip(long cargoId, Long sourceTrip, long targetTrip) {
-    final String viewName = VIEW_CARGO_TRIPS;
+    String viewName = VIEW_CARGO_TRIPS;
 
     if (sourceTrip == null) {
       List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
       List<String> values = Lists.newArrayList(BeeUtils.toString(cargoId),
           BeeUtils.toString(targetTrip));
 
-      Queries.insert(viewName, columns, values, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
-        }
-      });
+      Queries.insert(viewName, columns, values, new RowInsertCallback(viewName));
 
     } else {
       Freight sourceItem = null;
@@ -819,17 +815,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       List<String> newValues = Lists.newArrayList(BeeUtils.toString(targetTrip));
 
       Queries.update(viewName, sourceItem.cargoTripId, sourceItem.cargoTripVersion,
-          columns, oldValues, newValues, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
-            }
-          });
+          columns, oldValues, newValues, new RowUpdateCallback(viewName));
     }
   }
 
   private String buildTripTitle(Freight item) {
-    String drv = drivers.containsKey(item.tripId) 
+    String drv = drivers.containsKey(item.tripId)
         ? BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, drivers.get(item.tripId)) : null;
 
     return ChartHelper.buildTitle("Reiso Nr.", item.tripNo,
@@ -877,8 +868,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
           true);
     }
 
-    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_ITEM_OVER,
-        new Predicate<Long>() {
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO, DATA_TYPE_FREIGHT),
+        STYLE_ITEM_OVER, new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
             return !Objects.equal(tripId, DndHelper.getRelatedId());
@@ -914,8 +905,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long tripId = item.tripId;
     final String tripTitle = buildTripTitle(item);
 
-    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_TRIP_OVER,
-        new Predicate<Long>() {
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO, DATA_TYPE_FREIGHT),
+        STYLE_TRIP_OVER, new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
             return !Objects.equal(tripId, DndHelper.getRelatedId());
@@ -967,8 +958,8 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long vehicleId = item.vehicleId;
     final String vehicleNumber = item.vehicleNumber;
 
-    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_VEHICLE_OVER,
-        DndHelper.alwaysTarget, new Procedure<Long>() {
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO, DATA_TYPE_FREIGHT),
+        STYLE_VEHICLE_OVER, DndHelper.alwaysTarget, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {
             dropCargoOnVehicle(parameter, vehicleId, vehicleNumber, panel, STYLE_VEHICLE_OVER);
@@ -1029,6 +1020,9 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       final Widget targetWidget, final String targetStyle) {
 
     final Long sourceTrip = DndHelper.getRelatedId();
+    if (!(DndHelper.getData() instanceof String)) {
+      return;
+    }
     String sourceDescription = (String) DndHelper.getData();
 
     if (!DataUtils.isId(cargoId) || !DataUtils.isId(targetTrip)) {
@@ -1093,6 +1087,9 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       String vehicleNumber, final Widget targetWidget, final String targetStyle) {
 
     final Long sourceTrip = DndHelper.getRelatedId();
+    if (!(DndHelper.getData() instanceof String)) {
+      return;
+    }
     String sourceDescription = (String) DndHelper.getData();
 
     if (!DataUtils.isId(cargoId) || !DataUtils.isId(vehicleId)) {

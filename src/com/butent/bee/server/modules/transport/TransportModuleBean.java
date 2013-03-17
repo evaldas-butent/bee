@@ -1191,7 +1191,8 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
                 CommonsConstants.COL_PERSON));
 
-    query.addFields(TBL_TRIP_DRIVERS, COL_TRIP);
+    query.addFields(TBL_TRIP_DRIVERS, COL_TRIP, COL_DRIVER,
+        COL_TRIP_DRIVER_FROM, COL_TRIP_DRIVER_TO);
     query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
         CommonsConstants.COL_LAST_NAME);
 
