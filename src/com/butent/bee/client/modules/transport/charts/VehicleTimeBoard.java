@@ -24,6 +24,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -85,20 +86,20 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private static final String STYLE_VEHICLE_DRAG = STYLE_VEHICLE_PREFIX + "drag";
   private static final String STYLE_VEHICLE_OVER = STYLE_VEHICLE_PREFIX + "over";
-  
+
   private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
   private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
   private static final String STYLE_TRIP_VOID = STYLE_TRIP_PREFIX + "void";
 
   private static final String STYLE_TRIP_DRAG = STYLE_TRIP_PREFIX + "drag";
   private static final String STYLE_TRIP_OVER = STYLE_TRIP_PREFIX + "over";
-  
+
   private static final String STYLE_FREIGHT_PREFIX = STYLE_PREFIX + "Freight-";
   private static final String STYLE_FREIGHT_PANEL = STYLE_FREIGHT_PREFIX + "panel";
 
   private static final String STYLE_FREIGHT_DRAG = STYLE_FREIGHT_PREFIX + "drag";
   private static final String STYLE_FREIGHT_OVER = STYLE_FREIGHT_PREFIX + "over";
-  
+
   private static final String STYLE_DAY_PREFIX = STYLE_PREFIX + "Day-";
   private static final String STYLE_DAY_PANEL = STYLE_DAY_PREFIX + "panel";
   private static final String STYLE_DAY_WIDGET = STYLE_DAY_PREFIX + "widget";
@@ -112,13 +113,13 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "Inactive";
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
-  
-  private static final Set<String> VEHICLE_ACCEPTS_DROP_TYPES = 
+
+  private static final Set<String> VEHICLE_ACCEPTS_DROP_TYPES =
       ImmutableSet.of(DATA_TYPE_TRIP, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
-  private static final Set<String> TRIP_ACCEPTS_DROP_TYPES = 
+  private static final Set<String> TRIP_ACCEPTS_DROP_TYPES =
       ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,
           DATA_TYPE_DRIVER);
-  private static final Set<String> FREIGHT_ACCEPTS_DROP_TYPES = 
+  private static final Set<String> FREIGHT_ACCEPTS_DROP_TYPES =
       ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
   private final List<Vehicle> vehicles = Lists.newArrayList();
@@ -140,9 +141,9 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private final Set<String> numberPanels = Sets.newHashSet();
   private final Set<String> infoPanels = Sets.newHashSet();
-  
+
   private final List<Integer> vehicleIndexesByRow = Lists.newArrayList();
-  
+
   private final VehicleType vehicleType;
 
   protected VehicleTimeBoard() {
@@ -153,8 +154,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     setRelevantDataViews(VIEW_VEHICLES, VIEW_TRIPS, VIEW_ORDER_CARGO, VIEW_CARGO_HANDLING,
         VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES,
         CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
-    
-    this.vehicleType = getDataType().equals(DATA_TYPE_TRUCK) 
+
+    this.vehicleType = getDataType().equals(DATA_TYPE_TRUCK)
         ? VehicleType.TRUCK : VehicleType.TRAILER;
   }
 
@@ -166,7 +167,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       super.handleAction(action);
     }
   }
-  
+
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     return separateCargo() ? freights.values() : trips.values();
@@ -320,7 +321,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       if (TimeUtils.isMore(date, TimeUtils.today())) {
         newRow.setValue(dataInfo.getColumnIndex(COL_TRIP_DATE), date.getDateTime());
       }
-      
+
       Vehicle vehicle = vehicles.get(vehicleIndexesByRow.get(row));
 
       newRow.setValue(dataInfo.getColumnIndex(getTripVehicleIdColumnName()), vehicle.getId());
@@ -330,7 +331,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       RowFactory.createRow(dataInfo, newRow);
     }
   }
-  
+
   @Override
   protected void prepareChart(Size canvasSize) {
     setNumberWidth(ChartHelper.getPixels(getSettings(), getNumberWidthColumnName(), 80,
@@ -358,9 +359,9 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected void renderContent(ComplexPanel panel) {
     numberPanels.clear();
     infoPanels.clear();
-    
+
     vehicleIndexesByRow.clear();
-       
+
     List<ChartRowLayout> vehicleLayout = doLayout();
 
     int rc = 0;
@@ -386,7 +387,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     int rowIndex = 0;
     for (ChartRowLayout layout : vehicleLayout) {
-      
+
       int vehicleIndex = layout.getDataIndex();
 
       int size = layout.size();
@@ -466,7 +467,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
         }
       }
-      
+
       for (int i = 0; i < size; i++) {
         vehicleIndexesByRow.add(vehicleIndex);
       }
@@ -636,12 +637,12 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
         }
       }
-      
+
       if (!BeeUtils.isEmpty(tripTitle)) {
         title.add(BeeConst.STRING_NBSP);
         title.add(tripTitle);
       }
-      
+
       if (!title.isEmpty()) {
         widget.setTitle(BeeUtils.join(BeeConst.STRING_EOL, title));
       }
@@ -654,7 +655,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     return widget;
   }
 
-  private Widget createFreightWidget(Freight freight) {
+  private Widget createFreightWidget(final Freight freight) {
     final Flow panel = new Flow();
     panel.addStyleName(STYLE_FREIGHT_PANEL);
     setItemWidgetColor(freight, panel);
@@ -672,21 +673,21 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, cargoId, null, freight, STYLE_FREIGHT_DRAG,
         true);
-    
+
     DndHelper.makeTarget(panel, FREIGHT_ACCEPTS_DROP_TYPES, STYLE_FREIGHT_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
-            return mayDropOnFreight(cargoId);
+            return mayDropOnFreight(freight.getTripId());
           }
         }, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {
             panel.removeStyleName(STYLE_FREIGHT_OVER);
-            dropOnFreight(cargoId);
+            dropOnFreight(freight);
           }
         });
-    
+
     Range<JustDate> freightRange =
         ChartHelper.normalizedIntersection(freight.getRange(), getVisibleRange());
     if (freightRange == null) {
@@ -760,9 +761,9 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(label, getDataType(), vehicleId, null, vehicle.getNumber(),
-        STYLE_VEHICLE_DRAG, true);
-    
+    DndHelper.makeSource(label, getDataType(), vehicleId, null, vehicle, STYLE_VEHICLE_DRAG,
+        true);
+
     panel.add(label);
 
     DndHelper.makeTarget(panel, VEHICLE_ACCEPTS_DROP_TYPES, STYLE_VEHICLE_OVER,
@@ -781,8 +782,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     return panel;
   }
-  
-  private Widget createTripWidget(Trip trip) {
+
+  private Widget createTripWidget(final Trip trip) {
     final Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_PANEL);
     setItemWidgetColor(trip, panel);
@@ -799,21 +800,21 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     DndHelper.makeSource(panel, DATA_TYPE_TRIP, tripId, null, trip, STYLE_TRIP_DRAG, true);
-    
+
     DndHelper.makeTarget(panel, TRIP_ACCEPTS_DROP_TYPES, STYLE_TRIP_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
-            return mayDropOnTrip(tripId);
+            return mayDropOnTrip(trip);
           }
         }, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {
             panel.removeStyleName(STYLE_TRIP_OVER);
-            dropOnTrip(tripId);
+            dropOnTrip(trip);
           }
         });
-    
+
     Range<JustDate> tripRange =
         ChartHelper.normalizedIntersection(trip.getRange(), getVisibleRange());
     if (tripRange == null) {
@@ -894,18 +895,68 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
     return result;
   }
-  
-  private void dropOnFreight(Long cargoId) {
+
+  private void dropOnFreight(final Freight target) {
+    if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
+      final Freight freight = (Freight) DndHelper.getData();
+      String title = freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight), false);
+
+      Trip.maybeAssignCargo(title, target.getTripTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          freight.updateTrip(target.getTripId(), true);
+        }
+      });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
+      final OrderCargo orderCargo = (OrderCargo) DndHelper.getData();
+      String title = orderCargo.getTitle(getLoadingInfo(orderCargo), getUnloadingInfo(orderCargo));
+
+      Trip.maybeAssignCargo(title, target.getTripTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          orderCargo.assignToTrip(target.getTripId(), true);
+        }
+      });
+    }
   }
 
-  private void dropOnTrip(Long tripId) {
+  private void dropOnTrip(final Trip trip) {
+    if (DndHelper.isDataType(DATA_TYPE_TRUCK)) {
+      trip.maybeUpdateVehicle(VehicleType.TRUCK, (Vehicle) DndHelper.getData());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRAILER)) {
+      trip.maybeUpdateVehicle(VehicleType.TRAILER, (Vehicle) DndHelper.getData());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
+      final Freight freight = (Freight) DndHelper.getData();
+      String title = freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight), false);
+
+      Trip.maybeAssignCargo(title, trip.getTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          freight.updateTrip(trip.getTripId(), true);
+        }
+      });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
+      final OrderCargo orderCargo = (OrderCargo) DndHelper.getData();
+      String title = orderCargo.getTitle(getLoadingInfo(orderCargo), getUnloadingInfo(orderCargo));
+
+      Trip.maybeAssignCargo(title, trip.getTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          orderCargo.assignToTrip(trip.getTripId(), true);
+        }
+      });
+    }
   }
-  
+
   private void dropOnVehicle(Vehicle vehicle) {
-    if (DndHelper.isDataType(DATA_TYPE_TRIP) && DndHelper.getData() instanceof Trip) {
-      ((Trip) DndHelper.getData()).dropOnVehicle(vehicleType, vehicle);
+    if (DndHelper.isDataType(DATA_TYPE_TRIP)) {
+      ((Trip) DndHelper.getData()).maybeUpdateVehicle(vehicleType, vehicle);
 
-    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
       final Freight freight = (Freight) DndHelper.getData();
       String title = freight.getTitle(getLoadingInfo(freight), getUnloadingInfo(freight), true);
 
@@ -916,8 +967,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         }
       });
 
-    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
-        && DndHelper.getData() instanceof OrderCargo) {
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
       final OrderCargo orderCargo = (OrderCargo) DndHelper.getData();
       String title = orderCargo.getTitle(getLoadingInfo(orderCargo), getUnloadingInfo(orderCargo));
 
@@ -937,7 +987,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private int getNumberWidth() {
     return numberWidth;
   }
-  
+
   private int getRelativeLeft(Range<JustDate> parent, JustDate date) {
     return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
   }
@@ -1009,12 +1059,42 @@ abstract class VehicleTimeBoard extends ChartBase {
     return result;
   }
 
-  private boolean mayDropOnFreight(Long cargoId) {
-    return true;
+  private boolean mayDropOnFreight(Long tripId) {
+    if (!DataUtils.isId(tripId)) {
+      return false;
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+      return !Objects.equal(tripId, ((Freight) DndHelper.getData()).getTripId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)
+        && DndHelper.getData() instanceof OrderCargo) {
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
-  private boolean mayDropOnTrip(Long tripId) {
-    return true;
+  private boolean mayDropOnTrip(Trip trip) {
+    if (trip == null) {
+      return false;
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRUCK) && DndHelper.getData() instanceof Vehicle) {
+      return !Objects.equal(trip.getTruckId(), ((Vehicle) DndHelper.getData()).getId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRAILER) && DndHelper.getData() instanceof Vehicle) {
+      return !Objects.equal(trip.getTrailerId(), ((Vehicle) DndHelper.getData()).getId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+      return !Objects.equal(trip.getTripId(), ((Freight) DndHelper.getData()).getTripId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)
+        && DndHelper.getData() instanceof OrderCargo) {
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   private boolean mayDropOnVehicle(Long vehicleId) {
@@ -1025,13 +1105,13 @@ abstract class VehicleTimeBoard extends ChartBase {
       return !Objects.equal(vehicleId, ((Trip) DndHelper.getData()).getVehicleId(vehicleType));
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
-      return vehicleType == VehicleType.TRUCK 
+      return vehicleType == VehicleType.TRUCK
           && !Objects.equal(vehicleId, ((Freight) DndHelper.getData()).getVehicleId(vehicleType));
 
-    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)
         && DndHelper.getData() instanceof OrderCargo) {
       return vehicleType == VehicleType.TRUCK;
-      
+
     } else {
       return false;
     }

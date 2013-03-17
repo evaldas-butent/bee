@@ -2,6 +2,9 @@ package com.butent.bee.shared.modules.transport;
 
 public interface LocalizableTransportConstants {
   
+  String assignCargoToTripCaption();
+  String assignCargoToTripQuestion();
+  
   String assignTrailerToTripCaption();
   String assignTrailerToTripQuestion();
   

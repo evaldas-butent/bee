@@ -81,7 +81,7 @@ class Trip implements HasDateRange, HasColorSource {
           }
         });
   }
-
+  
   static String getVehicleLabel(VehicleType vehicleType) {
     switch (vehicleType) {
       case TRUCK:
@@ -91,6 +91,17 @@ class Trip implements HasDateRange, HasColorSource {
       default:
         return null;
     }
+  }
+
+  static void maybeAssignCargo(String cargoMessage, String tripMessage, 
+      final ConfirmationCallback callback) {
+    if (BeeUtils.isEmpty(cargoMessage) || BeeUtils.isEmpty(tripMessage) || callback == null) {
+      return;
+    }
+
+    Global.confirm(Global.CONSTANTS.assignCargoToTripCaption(), Icon.QUESTION,
+        Lists.newArrayList(cargoMessage, tripMessage, Global.CONSTANTS.assignCargoToTripQuestion()),
+        callback);
   }
 
   private final Long tripId;
@@ -155,7 +166,38 @@ class Trip implements HasDateRange, HasColorSource {
     return range;
   }
 
-  void dropOnVehicle(VehicleType vehicleType, Vehicle vehicle) {
+  String getTitle() {
+    return title;
+  }
+
+  Long getTrailerId() {
+    return trailerId;
+  }
+
+  Long getTripId() {
+    return tripId;
+  }
+
+  Long getTripVersion() {
+    return tripVersion;
+  }
+
+  Long getTruckId() {
+    return truckId;
+  }
+
+  Long getVehicleId(VehicleType vehicleType) {
+    switch (vehicleType) {
+      case TRUCK:
+        return getTruckId();
+      case TRAILER:
+        return getTrailerId();
+      default:
+        return null;
+    }
+  }
+
+  void maybeUpdateVehicle(VehicleType vehicleType, Vehicle vehicle) {
     if (vehicleType == null || vehicle == null) {
       return;
     }
@@ -205,36 +247,5 @@ class Trip implements HasDateRange, HasColorSource {
             });
       }
     });
-  }
-
-  String getTitle() {
-    return title;
-  }
-
-  Long getTrailerId() {
-    return trailerId;
-  }
-
-  Long getTripId() {
-    return tripId;
-  }
-
-  Long getTripVersion() {
-    return tripVersion;
-  }
-
-  Long getTruckId() {
-    return truckId;
-  }
-
-  Long getVehicleId(VehicleType vehicleType) {
-    switch (vehicleType) {
-      case TRUCK:
-        return getTruckId();
-      case TRAILER:
-        return getTrailerId();
-      default:
-        return null;
-    }
   }
 }
