@@ -33,7 +33,7 @@ class TrailerTimeBoard extends VehicleTimeBoard {
   public String getCaption() {
     return "Puspriekabių užimtumas";
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "trailer-park";
@@ -47,6 +47,11 @@ class TrailerTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getDataService() {
     return DATA_SERVICE;
+  }
+
+  @Override
+  protected String getDataType() {
+    return DATA_TYPE_TRUCK;
   }
 
   @Override

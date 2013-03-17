@@ -24,6 +24,10 @@ public class TransportConstants {
     }
   }
 
+  public enum VehicleType {
+    TRUCK, TRAILER
+  }
+  
   public static final String TRANSPORT_MODULE = "Transport";
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
@@ -295,8 +299,9 @@ public class TransportConstants {
   public static final String PROP_VEHICLES = "Vehicles";
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
   public static final String PROP_DATA = "Data";
+  public static final String PROP_ORDER_CARGO = "OrderCargo";
   public static final String PROP_TRIPS = "Trips";
-  public static final String PROP_CARGO = "Cargo";
+  public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
 
   public static final String ALS_TRIP_DATE = "TripDate";
@@ -311,12 +316,18 @@ public class TransportConstants {
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
-  public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVer";
+  public static final String ALS_TRIP_VERSION = "TripVersion";
+  public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVersion";
 
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
-  public static final String DATA_TYPE_CARGO = "Cargo";
+  public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
+  public static final String DATA_TYPE_TRIP = "Trip";
+  public static final String DATA_TYPE_FREIGHT = "Freight";
+  public static final String DATA_TYPE_TRUCK = "Truck";
+  public static final String DATA_TYPE_TRAILER = "Trailer";
+  public static final String DATA_TYPE_DRIVER = "Driver";
 
   public static final String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;

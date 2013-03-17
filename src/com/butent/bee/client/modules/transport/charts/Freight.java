@@ -9,6 +9,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -22,6 +23,9 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   private final Long tripId;
 
+  private final Long truckId;
+  private final Long trailerId;
+  
   private final Long cargoTripId;
   private final Long cargoTripVersion;
 
@@ -49,6 +53,9 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   Freight(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     this.tripId = row.getLong(COL_TRIP_ID);
 
+    this.truckId = row.getLong(COL_VEHICLE);
+    this.trailerId = row.getLong(COL_TRAILER);
+    
     this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
     this.cargoTripVersion = row.getLong(ALS_CARGO_TRIP_VERSION);
 
@@ -148,6 +155,14 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     return cargoId;
   }
 
+  Long getCargoTripId() {
+    return cargoTripId;
+  }
+
+  Long getCargoTripVersion() {
+    return cargoTripVersion;
+  }
+
   JustDate getMaxDate() {
     return BeeUtils.max(loadingDate, unloadingDate);
   }
@@ -165,12 +180,31 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     }
   }
 
+  Long getTrailerId() {
+    return trailerId;
+  }
+
   Long getTripId() {
     return tripId;
   }
-
+  
   String getTripTitle() {
     return tripTitle;
+  }
+
+  Long getTruckId() {
+    return truckId;
+  }
+
+  Long getVehicleId(VehicleType vehicleType) {
+    switch (vehicleType) {
+      case TRUCK:
+        return getTruckId();
+      case TRAILER:
+        return getTrailerId();
+      default:
+        return null;
+    }
   }
 
   void setTripTitle(String tripTitle) {

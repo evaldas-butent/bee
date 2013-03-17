@@ -50,6 +50,11 @@ class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getDataType() {
+    return DATA_TYPE_TRUCK;
+  }
+
+  @Override
   protected String getDayWidthColumnName() {
     return COL_TRUCK_PIXELS_PER_DAY;
   }

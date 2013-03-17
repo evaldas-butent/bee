@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -22,6 +25,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -31,9 +35,11 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -76,13 +82,22 @@ abstract class VehicleTimeBoard extends ChartBase {
   private static final String STYLE_INFO_LABEL = STYLE_INFO_PREFIX + "label";
   private static final String STYLE_INFO_OVERLAP = STYLE_INFO_PREFIX + "overlap";
 
+  private static final String STYLE_VEHICLE_DRAG = STYLE_VEHICLE_PREFIX + "drag";
+  private static final String STYLE_VEHICLE_OVER = STYLE_VEHICLE_PREFIX + "over";
+  
   private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
   private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
   private static final String STYLE_TRIP_VOID = STYLE_TRIP_PREFIX + "void";
 
+  private static final String STYLE_TRIP_DRAG = STYLE_TRIP_PREFIX + "drag";
+  private static final String STYLE_TRIP_OVER = STYLE_TRIP_PREFIX + "over";
+  
   private static final String STYLE_FREIGHT_PREFIX = STYLE_PREFIX + "Freight-";
   private static final String STYLE_FREIGHT_PANEL = STYLE_FREIGHT_PREFIX + "panel";
 
+  private static final String STYLE_FREIGHT_DRAG = STYLE_FREIGHT_PREFIX + "drag";
+  private static final String STYLE_FREIGHT_OVER = STYLE_FREIGHT_PREFIX + "over";
+  
   private static final String STYLE_DAY_PREFIX = STYLE_PREFIX + "Day-";
   private static final String STYLE_DAY_PANEL = STYLE_DAY_PREFIX + "panel";
   private static final String STYLE_DAY_WIDGET = STYLE_DAY_PREFIX + "widget";
@@ -96,6 +111,14 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "Inactive";
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
+  
+  private static final Set<String> VEHICLE_ACCEPTS_DROP_TYPES = 
+      ImmutableSet.of(DATA_TYPE_TRIP, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
+  private static final Set<String> TRIP_ACCEPTS_DROP_TYPES = 
+      ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,
+          DATA_TYPE_DRIVER);
+  private static final Set<String> FREIGHT_ACCEPTS_DROP_TYPES = 
+      ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
   private final List<Vehicle> vehicles = Lists.newArrayList();
 
@@ -118,6 +141,8 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final Set<String> infoPanels = Sets.newHashSet();
   
   private final List<Integer> vehicleIndexesByRow = Lists.newArrayList();
+  
+  private final VehicleType vehicleType;
 
   protected VehicleTimeBoard() {
     super();
@@ -127,6 +152,9 @@ abstract class VehicleTimeBoard extends ChartBase {
     setRelevantDataViews(VIEW_VEHICLES, VIEW_TRIPS, VIEW_ORDER_CARGO, VIEW_CARGO_HANDLING,
         VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES,
         CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
+    
+    this.vehicleType = getDataType().equals(DATA_TYPE_TRUCK) 
+        ? VehicleType.TRUCK : VehicleType.TRAILER;
   }
 
   @Override
@@ -142,6 +170,8 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected Collection<? extends HasDateRange> getChartItems() {
     return separateCargo() ? freights.values() : trips.values();
   }
+
+  protected abstract String getDataType();
 
   protected abstract String getDayWidthColumnName();
 
@@ -206,7 +236,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_CARGO);
+    serialized = rowSet.getTableProperty(PROP_FREIGHTS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
 
@@ -624,7 +654,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   private Widget createFreightWidget(Freight freight) {
-    Flow panel = new Flow();
+    final Flow panel = new Flow();
     panel.addStyleName(STYLE_FREIGHT_PANEL);
     setItemWidgetColor(freight, panel);
 
@@ -639,6 +669,23 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
+    DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, cargoId, null, freight, STYLE_FREIGHT_DRAG,
+        true);
+    
+    DndHelper.makeTarget(panel, FREIGHT_ACCEPTS_DROP_TYPES, STYLE_FREIGHT_OVER,
+        new Predicate<Long>() {
+          @Override
+          public boolean apply(Long input) {
+            return mayDropOnFreight(cargoId);
+          }
+        }, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            panel.removeStyleName(STYLE_FREIGHT_OVER);
+            dropOnFreight(cargoId);
+          }
+        });
+    
     Range<JustDate> freightRange =
         ChartHelper.normalizedIntersection(freight.getRange(), getVisibleRange());
     if (freightRange == null) {
@@ -692,7 +739,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   private IdentifiableWidget createNumberWidget(Vehicle vehicle, boolean hasOverlap) {
-    Simple panel = new Simple();
+    final Simple panel = new Simple();
     panel.addStyleName(STYLE_NUMBER_PANEL);
     if (hasOverlap) {
       panel.addStyleName(STYLE_NUMBER_OVERLAP);
@@ -700,8 +747,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     final Long vehicleId = vehicle.getId();
 
-    BeeLabel label = new BeeLabel(vehicle.getNumber());
-    label.addStyleName(STYLE_NUMBER_LABEL);
+    DndDiv label = new DndDiv(STYLE_NUMBER_LABEL);
+    label.setText(vehicle.getNumber());
 
     UiHelper.maybeSetTitle(label, vehicle.getTitle());
 
@@ -712,13 +759,30 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
+    DndHelper.makeSource(label, getDataType(), vehicleId, null, vehicle.getNumber(),
+        STYLE_VEHICLE_DRAG, true);
+    
     panel.add(label);
+
+    DndHelper.makeTarget(panel, VEHICLE_ACCEPTS_DROP_TYPES, STYLE_VEHICLE_OVER,
+        new Predicate<Long>() {
+          @Override
+          public boolean apply(Long input) {
+            return mayDropOnVehicle(vehicleId);
+          }
+        }, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            panel.removeStyleName(STYLE_VEHICLE_OVER);
+            dropOnVehicle(vehicleId);
+          }
+        });
 
     return panel;
   }
-
+  
   private Widget createTripWidget(Trip trip) {
-    Flow panel = new Flow();
+    final Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_PANEL);
     setItemWidgetColor(trip, panel);
 
@@ -733,6 +797,22 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
+    DndHelper.makeSource(panel, DATA_TYPE_TRIP, tripId, null, trip, STYLE_TRIP_DRAG, true);
+    
+    DndHelper.makeTarget(panel, TRIP_ACCEPTS_DROP_TYPES, STYLE_TRIP_OVER,
+        new Predicate<Long>() {
+          @Override
+          public boolean apply(Long input) {
+            return mayDropOnTrip(tripId);
+          }
+        }, new Procedure<Long>() {
+          @Override
+          public void call(Long parameter) {
+            panel.removeStyleName(STYLE_TRIP_OVER);
+            dropOnTrip(tripId);
+          }
+        });
+    
     Range<JustDate> tripRange =
         ChartHelper.normalizedIntersection(trip.getRange(), getVisibleRange());
     if (tripRange == null) {
@@ -813,6 +893,15 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
     return result;
   }
+  
+  private void dropOnFreight(Long cargoId) {
+  }
+
+  private void dropOnTrip(Long tripId) {
+  }
+  
+  private void dropOnVehicle(Long vehicleId) {
+  }
 
   private int getInfoWidth() {
     return infoWidth;
@@ -821,7 +910,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private int getNumberWidth() {
     return numberWidth;
   }
-
+  
   private int getRelativeLeft(Range<JustDate> parent, JustDate date) {
     return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
   }
@@ -891,6 +980,30 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     return result;
+  }
+
+  private boolean mayDropOnFreight(Long cargoId) {
+    return true;
+  }
+
+  private boolean mayDropOnTrip(Long tripId) {
+    return true;
+  }
+
+  private boolean mayDropOnVehicle(Long vehicleId) {
+    if (DndHelper.isDataType(DATA_TYPE_TRIP) && DndHelper.getData() instanceof Trip) {
+      return !Objects.equal(vehicleId, ((Trip) DndHelper.getData()).getVehicleId(vehicleType));
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && DndHelper.getData() instanceof Freight) {
+      return !Objects.equal(vehicleId, ((Freight) DndHelper.getData()).getVehicleId(vehicleType));
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) 
+        && DndHelper.getData() instanceof OrderCargo) {
+      return true;
+      
+    } else {
+      return false;
+    }
   }
 
   private void onInfoResize(MoveEvent event) {

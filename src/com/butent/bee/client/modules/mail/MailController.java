@@ -285,7 +285,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Binder.addDragOverHandler(label, new DragOverHandler() {
       @Override
       public void onDragOver(DragOverEvent event) {
-        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
           Long id = folderId;
 
           if (!DataUtils.isId(id)) {
@@ -306,7 +306,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Binder.addDragLeaveHandler(label, new DragLeaveHandler() {
       @Override
       public void onDragLeave(DragLeaveEvent event) {
-        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
           label.removeStyleDependentName(STYLE_DND_TARGET);
         }
       }
@@ -314,14 +314,14 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Binder.addDropHandler(label, new DropHandler() {
       @Override
       public void onDrop(DropEvent event) {
-        if (DndHelper.isTarget(MailConstants.DATA_TYPE_MESSAGE)) {
+        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
           label.removeStyleDependentName(STYLE_DND_TARGET);
           Long folderTo = folderId;
 
           if (!DataUtils.isId(folderTo)) {
             folderTo = MailKeeper.getCurrentSystemFolderId(sysFolder);
           }
-          String[] places = Codec.beeDeserializeCollection(DndHelper.getDataDescription());
+          String[] places = Codec.beeDeserializeCollection((String) DndHelper.getData());
 
           if (ArrayUtils.isEmpty(places)) {
             places = new String[] {BeeUtils.toString(DndHelper.getDataId())};

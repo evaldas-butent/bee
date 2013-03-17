@@ -1348,6 +1348,7 @@ public class TransportModuleBean implements BeeModule {
         .addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
             COL_TRIP_DATE, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO,
             COL_TRIP_NOTES)
+        .addField(TBL_TRIPS, sys.getVersionName(TBL_TRIPS), ALS_TRIP_VERSION)
         .addField(truckJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER)
         .addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER)
         .setWhere(tripWhere)
@@ -1373,7 +1374,7 @@ public class TransportModuleBean implements BeeModule {
 
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
 
-    SqlSelect cargoQuery = new SqlSelect()
+    SqlSelect freightQuery = new SqlSelect()
         .addFrom(TBL_TRIPS)
         .addFromInner(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
@@ -1389,7 +1390,7 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(CommonsConstants.TBL_COMPANIES,
             sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
-        .addFields(TBL_TRIPS, COL_TRIP_ID)
+        .addFields(TBL_TRIPS, COL_TRIP_ID, COL_VEHICLE, COL_TRAILER)
         .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID)
         .addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
@@ -1414,11 +1415,11 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(tripWhere)
         .addOrder(TBL_TRIPS, COL_TRIP_ID);
 
-    SimpleRowSet cargo = qs.getData(cargoQuery);
-    if (DataUtils.isEmpty(cargo)) {
+    SimpleRowSet freights = qs.getData(freightQuery);
+    if (DataUtils.isEmpty(freights)) {
       return ResponseObject.response(settings);
     }
-    settings.setTableProperty(PROP_CARGO, cargo.serialize());
+    settings.setTableProperty(PROP_FREIGHTS, freights.serialize());
 
     IsCondition cargoHandlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
         SqlUtils.notNull(unlAlias, COL_PLACE_DATE));

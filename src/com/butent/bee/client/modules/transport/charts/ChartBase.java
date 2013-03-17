@@ -842,8 +842,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (item == null) {
       return null;
     } else {
-      return BeeUtils.joinWords(item.getLoadingDate(), getPlaceInfo(item.getLoadingCountry(),
-          item.getLoadingPlace(), item.getLoadingTerminal()));
+      return BeeUtils.joinWords(item.getLoadingDate(), getLoadingPlaceInfo(item));
+    }
+  }
+
+  protected String getLoadingPlaceInfo(HasShipmentInfo item) {
+    if (item == null) {
+      return null;
+    } else {
+      return getPlaceInfo(item.getLoadingCountry(), item.getLoadingPlace(),
+          item.getLoadingTerminal());
     }
   }
 
@@ -870,7 +878,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
     return content.getClientHeight() - scrollArea.getClientHeight();
   }
-
+  
   protected Rectangle getRectangle(Range<JustDate> range, int row) {
     return getRectangle(range, row, row);
   }
@@ -933,8 +941,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (item == null) {
       return null;
     } else {
-      return BeeUtils.joinWords(item.getUnloadingDate(), getPlaceInfo(item.getUnloadingCountry(),
-          item.getUnloadingPlace(), item.getUnloadingTerminal()));
+      return BeeUtils.joinWords(item.getUnloadingDate(), getUnloadingPlaceInfo(item));
+    }
+  }
+
+  protected String getUnloadingPlaceInfo(HasShipmentInfo item) {
+    if (item == null) {
+      return null;
+    } else {
+      return getPlaceInfo(item.getUnloadingCountry(), item.getUnloadingPlace(),
+          item.getUnloadingTerminal());
     }
   }
 

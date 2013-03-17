@@ -271,7 +271,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   @Override
   public void onMotion(MotionEvent event) {
-    if (!DATA_TYPE_CARGO.equals(event.getDataType())) {
+    if (!DATA_TYPE_ORDER_CARGO.equals(event.getDataType())) {
       return;
     }
 
@@ -873,11 +873,11 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     });
 
     if (cargoId != null) {
-      DndHelper.makeSource(panel, DATA_TYPE_CARGO, cargoId, tripId, itemTitle, STYLE_ITEM_DRAG,
+      DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, cargoId, tripId, itemTitle, STYLE_ITEM_DRAG,
           true);
     }
 
-    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_ITEM_OVER,
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_ITEM_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
@@ -914,7 +914,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long tripId = item.tripId;
     final String tripTitle = buildTripTitle(item);
 
-    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_TRIP_OVER,
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_TRIP_OVER,
         new Predicate<Long>() {
           @Override
           public boolean apply(Long input) {
@@ -967,7 +967,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     final Long vehicleId = item.vehicleId;
     final String vehicleNumber = item.vehicleNumber;
 
-    DndHelper.makeTarget(panel, DATA_TYPE_CARGO, STYLE_VEHICLE_OVER,
+    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO), STYLE_VEHICLE_OVER,
         DndHelper.alwaysTarget, new Procedure<Long>() {
           @Override
           public void call(Long parameter) {
@@ -1029,7 +1029,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       final Widget targetWidget, final String targetStyle) {
 
     final Long sourceTrip = DndHelper.getRelatedId();
-    String sourceDescription = DndHelper.getDataDescription();
+    String sourceDescription = (String) DndHelper.getData();
 
     if (!DataUtils.isId(cargoId) || !DataUtils.isId(targetTrip)) {
       return;
@@ -1093,7 +1093,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       String vehicleNumber, final Widget targetWidget, final String targetStyle) {
 
     final Long sourceTrip = DndHelper.getRelatedId();
-    String sourceDescription = DndHelper.getDataDescription();
+    String sourceDescription = (String) DndHelper.getData();
 
     if (!DataUtils.isId(cargoId) || !DataUtils.isId(vehicleId)) {
       return;

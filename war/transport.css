@@ -268,8 +268,7 @@
   font-size: 12px;
 }
 
-.bee-tr-dtb-Trip-panel,
-.bee-tr-dtb-Absence-panel {
+.bee-tr-dtb-Trip-panel {
   position: absolute;
   overflow: hidden;
   display: -webkit-flex;
@@ -283,6 +282,15 @@
 .bee-tr-dtb-Trip-panel,
 .bee-tr-dtb-View .bee-tr-chart-Selector-strip {
   background-color: palegreen;
+}
+
+.bee-tr-dtb-Absence-panel {
+  position: absolute;
+  overflow: hidden;
+}
+.bee-tr-dtb-Absence-label {
+  position: absolute;
+  text-align: center;
 }
 
 .bee-tr-dtb-Inactive,
@@ -306,7 +314,10 @@
 }
 
 .bee-tr-fx-Item-drag,
-.bee-tr-ss-Item-drag {
+.bee-tr-ss-Item-drag,
+.bee-tr-vtb-Vehicle-drag,
+.bee-tr-vtb-Trip-drag,
+.bee-tr-vtb-Freight-drag {
   background-image: -webkit-linear-gradient(top, white, white);
   box-sizing: border-box;
   border: 2px inset darkgreen;
@@ -321,6 +332,12 @@
 .bee-tr-ss-Vehicle-over,
 .bee-tr-ss-Trip-over {
   border: 2px dashed red;
+}
+
+.bee-tr-vtb-Vehicle-over,
+.bee-tr-vtb-Trip-over,
+.bee-tr-vtb-Freight-over {
+  outline: red dashed 2px;
 }
 
 .bee-tr-ss-Service-panel,

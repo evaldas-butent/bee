@@ -18,6 +18,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -226,7 +227,7 @@ class DriverTimeBoard extends ChartBase {
       super.handleAction(action);
     }
   }
-  
+
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     List<DriverTrip> result = Lists.newArrayList();
@@ -390,7 +391,7 @@ class DriverTimeBoard extends ChartBase {
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
   }
-  
+
   @Override
   protected void renderContent(ComplexPanel panel) {
     List<ChartRowLayout> driverLayout = doLayout();
@@ -399,19 +400,19 @@ class DriverTimeBoard extends ChartBase {
     for (ChartRowLayout layout : driverLayout) {
       rc += layout.size();
     }
-    
+
     initContent(panel, rc);
     if (driverLayout.isEmpty()) {
       return;
     }
-    
+
     int calendarWidth = getCalendarWidth();
 
     Double opacity = ChartHelper.getOpacity(getSettings(), COL_DTB_ITEM_OPACITY);
 
     Edges margins = new Edges();
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
-    
+
     Widget driverWidget;
     Widget offWidget;
     Widget itemWidget;
@@ -464,9 +465,9 @@ class DriverTimeBoard extends ChartBase {
 
             panel.add(itemWidget);
           }
-          
+
           Set<Range<JustDate>> overlap = layout.getOverlap(item.getRange());
-          
+
           for (Range<JustDate> over : overlap) {
             overlapWidget = new CustomDiv(STYLE_OVERLAP);
 
@@ -531,9 +532,31 @@ class DriverTimeBoard extends ChartBase {
     }
 
     if (!BeeUtils.isEmpty(da.label)) {
-      BeeLabel label = new BeeLabel(da.label);
-      label.addStyleName(STYLE_ABSENCE_LABEL);
-      panel.add(label);
+      Range<JustDate> range = ChartHelper.normalizedIntersection(da.getRange(), getVisibleRange());
+      int dayCount = ChartHelper.getSize(range);
+
+      int dayWidth = getDayColumnWidth();
+      int panelWidth = dayCount * dayWidth;
+
+      Size labelSize = Rulers.getLineSize(null, da.label.trim(), false);
+      int labelWidth = labelSize.getWidth();
+      int labelTop = Math.max((getRowHeight() - labelSize.getHeight()) / 2, 0);
+      
+      int incr = (labelWidth % dayWidth > 0) ? 1 : 0;
+      int step = Math.min(panelWidth, (labelWidth / dayWidth + incr) * dayWidth);
+      
+      if (step > 0) {
+        for (int x = 0; x <= panelWidth - step; x += step) {
+          CustomDiv label = new CustomDiv(STYLE_ABSENCE_LABEL);
+          label.setText(da.label);
+
+          StyleUtils.setLeft(label, x);
+          StyleUtils.setWidth(label, step);
+          StyleUtils.setTop(label, labelTop);
+
+          panel.add(label);
+        }
+      }
     }
 
     return panel;

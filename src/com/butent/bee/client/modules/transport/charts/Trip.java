@@ -8,6 +8,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.transport.charts.ChartBase.HasColorSource;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -24,6 +25,7 @@ class Trip implements HasDateRange, HasColorSource {
   private static final String cargosLabel = Data.getLocalizedCaption(VIEW_CARGO_TRIPS);
 
   private final Long tripId;
+  private final Long tripVersion;
   private final String tripNo;
 
   private final DateTime date;
@@ -44,6 +46,7 @@ class Trip implements HasDateRange, HasColorSource {
 
   Trip(SimpleRow row, JustDate maxDate, String drv, int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
+    this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
 
     this.date = row.getDateTime(COL_TRIP_DATE);
@@ -87,7 +90,30 @@ class Trip implements HasDateRange, HasColorSource {
     return title;
   }
 
+  Long getTrailerId() {
+    return trailerId;
+  }
+
   Long getTripId() {
     return tripId;
+  }
+
+  Long getTripVersion() {
+    return tripVersion;
+  }
+
+  Long getTruckId() {
+    return truckId;
+  }
+  
+  Long getVehicleId(VehicleType vehicleType) {
+    switch (vehicleType) {
+      case TRUCK:
+        return getTruckId();
+      case TRAILER:
+        return getTrailerId();
+      default:
+        return null;
+    }
   }
 }

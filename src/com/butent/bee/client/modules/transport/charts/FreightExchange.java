@@ -5,7 +5,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -44,13 +43,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -59,73 +56,6 @@ import java.util.Map;
 import java.util.Set;
 
 class FreightExchange extends ChartBase {
-
-  private static class Freight implements HasDateRange, HasColorSource {
-    private final Long orderId;
-
-    private final OrderStatus orderStatus;
-    private final DateTime orderDate;
-    private final String orderNo;
-
-    private final Long customerId;
-    private final String customerName;
-
-    private final Long cargoId;
-    private final String cargoDescription;
-
-    private final JustDate loadingDate;
-    private final Long loadingCountry;
-    private final String loadingPlace;
-    private final String loadingTerminal;
-
-    private final JustDate unloadingDate;
-    private final Long unloadingCountry;
-    private final String unloadingPlace;
-    private final String unloadingTerminal;
-
-    private final Range<JustDate> range;
-
-    private Freight(SimpleRow row) {
-      super();
-
-      this.orderId = row.getLong(COL_ORDER);
-
-      this.orderStatus = NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS));
-      this.orderDate = row.getDateTime(COL_ORDER_DATE);
-      this.orderNo = row.getValue(COL_ORDER_NO);
-
-      this.customerId = row.getLong(COL_CUSTOMER);
-      this.customerName = row.getValue(COL_CUSTOMER_NAME);
-
-      this.cargoId = row.getLong(COL_CARGO_ID);
-      this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
-
-      this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
-      this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
-      this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
-      this.loadingTerminal = row.getValue(loadingColumnAlias(COL_TERMINAL));
-
-      this.unloadingDate = row.getDate(unloadingColumnAlias(COL_PLACE_DATE));
-      this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_COUNTRY));
-      this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_NAME));
-      this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_TERMINAL));
-
-      JustDate start = BeeUtils.nvl(loadingDate, unloadingDate, orderDate.getDate());
-      JustDate end = BeeUtils.nvl(unloadingDate, start);
-
-      this.range = Range.closed(start, TimeUtils.max(start, end));
-    }
-
-    @Override
-    public Long getColorSource() {
-      return cargoId;
-    }
-
-    @Override
-    public Range<JustDate> getRange() {
-      return range;
-    }
-  }
 
   static final String SUPPLIER_KEY = "freight_exchange";
   private static final String DATA_SERVICE = SVC_GET_FX_DATA;
@@ -160,7 +90,7 @@ class FreightExchange extends ChartBase {
         });
   }
 
-  private final List<Freight> items = Lists.newArrayList();
+  private final List<OrderCargo> items = Lists.newArrayList();
 
   private int customerWidth = BeeConst.UNDEF;
   private int orderWidth = BeeConst.UNDEF;
@@ -205,7 +135,7 @@ class FreightExchange extends ChartBase {
 
   @Override
   protected boolean filter(DialogBox dialog) {
-    Predicate<Freight> predicate = getPredicate();
+    Predicate<OrderCargo> predicate = getPredicate();
     
     List<Integer> match = Lists.newArrayList();
     if (predicate != null) {
@@ -232,7 +162,7 @@ class FreightExchange extends ChartBase {
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
-      List<Freight> result = Lists.newArrayList();
+      List<OrderCargo> result = Lists.newArrayList();
       for (int index : getFilteredIndexes()) {
         result.add(items.get(index));
       }
@@ -294,24 +224,23 @@ class FreightExchange extends ChartBase {
     ChartData unloadData = new ChartData(Type.UNLOADING);
     ChartData cargoData = new ChartData(Type.CARGO);
     
-    for (Freight item : items) {
-      if (!BeeUtils.isEmpty(item.customerName)) {
-        customerData.add(item.customerName, item.customerId);
+    for (OrderCargo item : items) {
+      if (!BeeUtils.isEmpty(item.getCustomerName())) {
+        customerData.add(item.getCustomerName(), item.getCustomerId());
       }
 
-      String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
+      String loading = getLoadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(loading)) {
         loadData.add(loading);
       }
 
-      String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
-          item.unloadingTerminal);
+      String unloading = getUnloadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
       }
       
-      if (!BeeUtils.isEmpty(item.cargoDescription)) {
-        cargoData.add(item.cargoDescription, item.cargoId);
+      if (!BeeUtils.isEmpty(item.getCargoDescription())) {
+        cargoData.add(item.getCargoDescription(), item.getCargoId());
       }
     }
     
@@ -339,7 +268,7 @@ class FreightExchange extends ChartBase {
   protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
     items.clear();
     for (SimpleRow row : data) {
-      items.add(new Freight(row));
+      items.add(new OrderCargo(row));
     }
 
     return items;
@@ -386,7 +315,7 @@ class FreightExchange extends ChartBase {
     customersByRow.clear();
     ordersByRow.clear();
 
-    List<List<Freight>> layoutRows = doLayout();
+    List<List<OrderCargo>> layoutRows = doLayout();
     
     initContent(panel, layoutRows.size());
     if (layoutRows.isEmpty()) {
@@ -410,10 +339,10 @@ class FreightExchange extends ChartBase {
     Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_FX_ITEM_OPACITY);
 
     for (int row = 0; row < layoutRows.size(); row++) {
-      List<Freight> rowItems = layoutRows.get(row);
+      List<OrderCargo> rowItems = layoutRows.get(row);
       int top = row * getRowHeight();
 
-      Freight rowItem = rowItems.get(0);
+      OrderCargo rowItem = rowItems.get(0);
 
       if (row == 0) {
         customerWidget = createCustomerWidget(rowItem);
@@ -422,12 +351,12 @@ class FreightExchange extends ChartBase {
         orderWidget = createOrderWidget(rowItem);
         orderStartRow = row;
 
-        lastCustomer = rowItem.customerId;
-        lastOrder = rowItem.orderId;
+        lastCustomer = rowItem.getCustomerId();
+        lastOrder = rowItem.getOrderId();
 
       } else {
-        boolean customerChanged = !Objects.equal(lastCustomer, rowItem.customerId);
-        boolean orderChanged = customerChanged || !Objects.equal(lastOrder, rowItem.orderId);
+        boolean customerChanged = !Objects.equal(lastCustomer, rowItem.getCustomerId());
+        boolean orderChanged = customerChanged || !Objects.equal(lastOrder, rowItem.getOrderId());
 
         if (customerChanged) {
           addCustomerWidget(panel, customerWidget, lastCustomer, customerStartRow, row - 1);
@@ -435,7 +364,7 @@ class FreightExchange extends ChartBase {
           customerWidget = createCustomerWidget(rowItem);
           customerStartRow = row;
 
-          lastCustomer = rowItem.customerId;
+          lastCustomer = rowItem.getCustomerId();
         }
 
         if (orderChanged) {
@@ -444,7 +373,7 @@ class FreightExchange extends ChartBase {
           orderWidget = createOrderWidget(rowItem);
           orderStartRow = row;
 
-          lastOrder = rowItem.orderId;
+          lastOrder = rowItem.getOrderId();
         }
 
         if (customerChanged) {
@@ -458,7 +387,7 @@ class FreightExchange extends ChartBase {
         }
       }
 
-      for (Freight item : rowItems) {
+      for (OrderCargo item : rowItems) {
         JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
         JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
 
@@ -555,11 +484,11 @@ class FreightExchange extends ChartBase {
     }
   }
 
-  private IdentifiableWidget createCustomerWidget(Freight item) {
-    BeeLabel widget = new BeeLabel(item.customerName);
+  private IdentifiableWidget createCustomerWidget(OrderCargo item) {
+    BeeLabel widget = new BeeLabel(item.getCustomerName());
     widget.addStyleName(STYLE_CUSTOMER_LABEL);
 
-    final Long customerId = item.customerId;
+    final Long customerId = item.getCustomerId();
 
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -574,24 +503,23 @@ class FreightExchange extends ChartBase {
     return panel;
   }
 
-  private Widget createItemWidget(Freight item) {
+  private Widget createItemWidget(OrderCargo item) {
     final Flow panel = new Flow();
     panel.addStyleName(STYLE_ITEM_PANEL);
     setItemWidgetColor(item, panel);
 
-    String loading = getPlaceInfo(item.loadingCountry, item.loadingPlace, item.loadingTerminal);
-    String unloading = getPlaceInfo(item.unloadingCountry, item.unloadingPlace,
-        item.unloadingTerminal);
+    String loading = getLoadingPlaceInfo(item);
+    String unloading = getUnloadingPlaceInfo(item);
 
-    String title = BeeUtils.buildLines(item.cargoDescription,
-        BeeUtils.joinWords(item.loadingDate, loading),
-        BeeUtils.joinWords(item.unloadingDate, unloading));
+    String title = BeeUtils.buildLines(item.getCargoDescription(),
+        BeeUtils.joinWords(item.getLoadingDate(), loading),
+        BeeUtils.joinWords(item.getUnloadingDate(), unloading));
 
     panel.setTitle(title);
 
-    final Long cargoId = item.cargoId;
+    final Long cargoId = item.getCargoId();
 
-    DndHelper.makeSource(panel, DATA_TYPE_CARGO, cargoId, null, title, STYLE_ITEM_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, cargoId, null, title, STYLE_ITEM_DRAG, true);
 
     ClickHandler opener = new ClickHandler() {
       @Override
@@ -619,16 +547,16 @@ class FreightExchange extends ChartBase {
     return panel;
   }
 
-  private IdentifiableWidget createOrderWidget(Freight item) {
-    BeeLabel widget = new BeeLabel(item.orderNo);
+  private IdentifiableWidget createOrderWidget(OrderCargo item) {
+    BeeLabel widget = new BeeLabel(item.getOrderNo());
     widget.addStyleName(STYLE_ORDER_LABEL);
 
     widget.setTitle(BeeUtils.buildLines(
-        BeeUtils.joinWords("Data:", TimeUtils.renderCompact(item.orderDate)),
-        BeeUtils.joinWords("Būsena:", item.orderStatus.getCaption()),
-        BeeUtils.joinWords("ID:", item.orderId)));
+        BeeUtils.joinWords("Data:", TimeUtils.renderCompact(item.getOrderDate())),
+        BeeUtils.joinWords("Būsena:", item.getOrderStatus().getCaption()),
+        BeeUtils.joinWords("ID:", item.getOrderId())));
 
-    final Long orderId = item.orderId;
+    final Long orderId = item.getOrderId();
 
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -643,21 +571,21 @@ class FreightExchange extends ChartBase {
     return panel;
   }
 
-  private List<List<Freight>> doLayout() {
-    List<List<Freight>> rows = Lists.newArrayList();
+  private List<List<OrderCargo>> doLayout() {
+    List<List<OrderCargo>> rows = Lists.newArrayList();
 
     Long orderId = null;
-    List<Freight> rowItems = Lists.newArrayList();
+    List<OrderCargo> rowItems = Lists.newArrayList();
     
     for (int i = 0; i < items.size(); i++) {
       if (isFiltered() && !getFilteredIndexes().contains(i)) {
         continue;
       }
-      Freight item = items.get(i);
+      OrderCargo item = items.get(i);
 
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
-        if (!Objects.equal(item.orderId, orderId) 
+        if (!Objects.equal(item.getOrderId(), orderId) 
             || BeeUtils.intersects(rowItems, item.getRange())) {
 
           if (!rowItems.isEmpty()) {
@@ -665,7 +593,7 @@ class FreightExchange extends ChartBase {
             rowItems.clear();
           }
 
-          orderId = item.orderId;
+          orderId = item.getOrderId();
         }
 
         rowItems.add(item);
@@ -679,9 +607,9 @@ class FreightExchange extends ChartBase {
   }
 
   private String findCustomerName(Long customerId) {
-    for (Freight item : items) {
-      if (Objects.equal(item.customerId, customerId)) {
-        return item.customerName;
+    for (OrderCargo item : items) {
+      if (Objects.equal(item.getCustomerId(), customerId)) {
+        return item.getCustomerName();
       }
     }
     
@@ -696,8 +624,8 @@ class FreightExchange extends ChartBase {
     return orderWidth;
   }
 
-  private Predicate<Freight> getPredicate() {
-    List<Predicate<Freight>> predicates = Lists.newArrayList();
+  private Predicate<OrderCargo> getPredicate() {
+    List<Predicate<OrderCargo>> predicates = Lists.newArrayList();
 
     for (ChartData data : getFilterData()) {
       if (data.size() <= 1) {
@@ -709,42 +637,40 @@ class FreightExchange extends ChartBase {
         continue;
       }
       
-      Predicate<Freight> predicate;
+      Predicate<OrderCargo> predicate;
       switch (data.getType()) {
         case CUSTOMER:
-          predicate = new Predicate<Freight>() {
+          predicate = new Predicate<OrderCargo>() {
             @Override
-            public boolean apply(Freight input) {
-              return selectedNames.contains(input.customerName);
+            public boolean apply(OrderCargo input) {
+              return selectedNames.contains(input.getCustomerName());
             }
           };
           break;
 
         case LOADING:
-          predicate = new Predicate<Freight>() {
+          predicate = new Predicate<OrderCargo>() {
             @Override
-            public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceInfo(input.loadingCountry, input.loadingPlace,
-                  input.loadingTerminal));
+            public boolean apply(OrderCargo input) {
+              return selectedNames.contains(getLoadingPlaceInfo(input));
             }
           };
           break;
 
         case UNLOADING:
-          predicate = new Predicate<Freight>() {
+          predicate = new Predicate<OrderCargo>() {
             @Override
-            public boolean apply(Freight input) {
-              return selectedNames.contains(getPlaceInfo(input.unloadingCountry,
-                  input.unloadingPlace, input.unloadingTerminal));
+            public boolean apply(OrderCargo input) {
+              return selectedNames.contains(getUnloadingPlaceInfo(input));
             }
           };
           break;
           
         case CARGO:
-          predicate = new Predicate<Freight>() {
+          predicate = new Predicate<OrderCargo>() {
             @Override
-            public boolean apply(Freight input) {
-              return selectedNames.contains(input.cargoDescription);
+            public boolean apply(OrderCargo input) {
+              return selectedNames.contains(input.getCargoDescription());
             }
           };
           break;
