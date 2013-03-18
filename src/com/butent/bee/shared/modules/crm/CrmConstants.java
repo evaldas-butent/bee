@@ -145,6 +145,7 @@ public class CrmConstants {
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
 
+  public static final String VIEW_DOCUMENTS = "Documents";
   public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
   
   public static final String COL_START_TIME = "StartTime";
@@ -162,6 +163,7 @@ public class CrmConstants {
   public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
   public static final String COL_PROJECT = "Project";
+  public static final String COL_PROJECT_NAME = "ProjectName";
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
 
@@ -179,6 +181,7 @@ public class CrmConstants {
   public static final String COL_TYPE_NAME = "TypeName";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_PLACE_NAME = "PlaceName";
 
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "FileName";
@@ -191,9 +194,15 @@ public class CrmConstants {
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
+  public static final String COL_NUMBER = "Number";
+  public static final String COL_REGISTRATION_NUMBER = "RegistrationNumber";
+  public static final String COL_EXPIRES = "Expires";
+
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "CompanyName";
   public static final String COL_CONTACT = "Contact";
+  public static final String COL_CONTACT_FIRST_NAME = "ContactFirstName";
+  public static final String COL_CONTACT_LAST_NAME = "ContactLastName";
 
   public static final String COL_REMINDER = "Reminder";
   public static final String COL_STATUS = "Status";
@@ -222,6 +231,11 @@ public class CrmConstants {
   public static final String COL_COMPLETED = "Completed";
   public static final String COL_APPROVED = "Approved";
   
+  public static final String COL_PERSON = "Person";
+  public static final String COL_PERSON_FIRST_NAME = "PersonFirstName";
+  public static final String COL_PERSON_LAST_NAME = "PersonLastName";
+  public static final String COL_PERSON_COMPANY_NAME = "PersonCompanyName";
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
 
