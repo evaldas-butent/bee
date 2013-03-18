@@ -27,12 +27,12 @@ body {
 
 .bee-SignIn-Logo-container {
   position: absolute;
-  left: 160px;
+  left: 135px;
   top: 0;
 }
 
 .bee-SignIn-Logo {
-  width: 55px;
+  width: 112px;
   height: 76px;  
 }
 
