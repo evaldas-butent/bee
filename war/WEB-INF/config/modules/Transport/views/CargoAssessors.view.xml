@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="CargoAssessors"
+  source="CargoAssessors"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Assessor" />
+    <SimpleColumn name="Cargo" />
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Income">
+      <x:number>0</x:number>
+    </SimpleColumn>
+    <SimpleColumn name="Expenses">
+      <x:number>0</x:number>
+    </SimpleColumn>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

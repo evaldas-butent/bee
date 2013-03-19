@@ -27,7 +27,7 @@
     
   <FlowPanel style="&section;">
     <Label html="Maršrutas" class="bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="OrderNotes" required="true" visibleLines="8" style="width:400px;" />
+    <InputArea source="CargoNotes" required="true" visibleLines="8" style="width:400px;" />
   </FlowPanel>
 
   &separator;
@@ -39,7 +39,7 @@
     
   <FlowPanel style="&section;">
     <Label html="Papildoma informacija" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Notes" style="width:400px;" />
+    <InputArea source="AssessorNotes" style="width:400px;" />
   </FlowPanel>
 
   &separator;

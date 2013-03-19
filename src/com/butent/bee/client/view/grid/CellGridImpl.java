@@ -52,11 +52,11 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
@@ -105,13 +105,13 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.ui.Relation;
-import com.butent.bee.shared.ui.UiConstants;
-import com.butent.bee.shared.ui.ColumnDescription.ColType;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.RenderableToken;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -1056,6 +1056,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public int getDataIndex(String source) {
+    return DataUtils.getColumnIndex(source, getDataColumns());
+  }
+
+  @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
 
@@ -1125,7 +1130,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (getGrid().getSelectedRows().isEmpty() || !SelectedRows.EDITABLE.equals(mode)) {
       return getGrid().getSelectedRows().values();
     }
-    
+
     Collection<RowInfo> result = Lists.newArrayList();
     for (RowInfo rowInfo : getGrid().getSelectedRows().values()) {
       if (rowInfo.isEditable()) {
@@ -1170,7 +1175,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (rowValue == null) {
       return false;
     }
-    
+
     boolean ok = getGrid().isRowEditable(rowValue);
     if (!ok && warn) {
       notifyWarning("Row is read only");

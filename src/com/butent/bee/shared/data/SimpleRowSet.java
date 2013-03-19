@@ -361,28 +361,6 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return getIntColumn(getColumnIndex(colName));
   }
 
-  public int getKeyIndex(String keyName, String keyValue) {
-    int colIndex = getColumnIndex(keyName);
-  
-    if (indexes == null) {
-      indexes = Maps.newHashMap();
-    }
-    if (!indexes.containsKey(colIndex)) {
-      Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
-  
-      for (int i = 0; i < getNumberOfRows(); i++) {
-        index.put(getValue(i, colIndex), i);
-      }
-      indexes.put(colIndex, index);
-    }
-    Integer idx = indexes.get(colIndex).get(keyValue);
-  
-    if (idx == null) {
-      idx = BeeConst.UNDEF;
-    }
-    return idx;
-  }
-
   public Long getLong(int rowIndex, int colIndex) {
     return BeeUtils.toLongOrNull(getValue(rowIndex, colIndex));
   }
@@ -419,6 +397,10 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return null;
   }
 
+  public SimpleRow getRowByKey(String keyName, String keyValue) {
+    return getRow(getKeyIndex(keyName, keyValue));
+  }
+
   public List<String[]> getRows() {
     return rows;
   }
@@ -451,7 +433,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   public boolean isEmpty() {
     return rows.isEmpty();
   }
-  
+
   @Override
   public Iterator<SimpleRow> iterator() {
     return new RowSetIterator();
@@ -475,5 +457,27 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  private int getKeyIndex(String keyName, String keyValue) {
+    int colIndex = getColumnIndex(keyName);
+
+    if (indexes == null) {
+      indexes = Maps.newHashMap();
+    }
+    if (!indexes.containsKey(colIndex)) {
+      Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
+
+      for (int i = 0; i < getNumberOfRows(); i++) {
+        index.put(getValue(i, colIndex), i);
+      }
+      indexes.put(colIndex, index);
+    }
+    Integer idx = indexes.get(colIndex).get(keyValue);
+
+    if (idx == null) {
+      idx = BeeConst.UNDEF;
+    }
+    return idx;
   }
 }

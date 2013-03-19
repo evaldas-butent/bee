@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
-  <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelWidth "100px;">
-  <!ENTITY labelLeft "&inline; width:&labelWidth; padding-top:1px;">
-  <!ENTITY labelRight "&labelLeft; text-align:right; margin-right:10px;">
-  <!ENTITY input "&inline; width:110px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -14,25 +8,9 @@
   
   name="OrderAssessment" viewName="OrderAssessments" caption="Užklausimas"
   >
-  <FlowPanel style="margin: 10px 2px 2px 10px;">
-    <xi:include href="widgets/OrderAssessmentHeader.widget.xml" />
-
+  <FlowPanel style="padding: 10px 2px 2px 10px;" class="bee-tr-assessment-form">
+    <xi:include href="widgets/AssessmentInfo.widget.xml" />
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Pajamos" style="&labelLeft; vertical-align:top;" />
-      <FlowPanel name="IncomeInfo" style="&inline;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label html="Sąnaudos" style="&labelLeft; vertical-align:top;" />
-      <FlowPanel name="ExpenseInfo" style="&inline;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label html="Vertinimai" style="&labelLeft; vertical-align:top;" />
-      <FlowPanel name="AssessmentInfo" style="&inline;" />
-    </FlowPanel>
+    <xi:include href="widgets/AssessmentData.widget.xml" />
   </FlowPanel>
 </f:Form>

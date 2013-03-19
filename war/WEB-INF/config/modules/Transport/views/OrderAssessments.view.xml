@@ -7,9 +7,19 @@
   newRowForm="NewOrderAssessment" editForm="OrderAssessment"
   >
   <Columns>
-    <SimpleColumn name="Manager" />
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Notes" alias="AssessorNotes" label="Papildoma informacija" />
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
 
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleJoin name="Order" joinType="INNER">
@@ -29,9 +39,9 @@
             <SimpleColumn alias="PersonLastName" name="LastName" />
           </SimpleJoin>
         </SimpleJoin>
-      
-        <SimpleColumn name="Notes" alias="OrderNotes" editable="true" />
       </SimpleJoin>
+
+      <SimpleColumn name="Notes" alias="CargoNotes" label="Maršrutas" editable="true" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" editable="true" />
@@ -72,7 +82,6 @@
       <SimpleColumn name="Outsized" editable="true" />
       <SimpleColumn name="Dangerous" editable="true" />
 
-      <SimpleColumn name="Notes" editable="true" />
       <SimpleColumn name="Price" editable="true" />
       <SimpleColumn name="Currency" editable="true" />
       <SimpleJoin joinType="LEFT" name="Currency">

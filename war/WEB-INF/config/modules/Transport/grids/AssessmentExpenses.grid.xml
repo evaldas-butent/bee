@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="AssessmentExpenses" viewName="CargoServices"
+  flexGrow="1" flexShrink="1"
+  filter="Expense"
+  newRowCaption="Naujos sąnaudos"
+  >
+  <columns>
+    <DataColumn name="Date" caption="Data" />
+    <RelColumn name="ServiceName" caption="Paslauga" />
+    <DataColumn name="Amount" caption="Suma" format="#.00">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </DataColumn>
+    <RelColumn name="Currency" caption="Val." flexGrow="0" />
+    <RelColumn name="Company" caption="Tiekėjas" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Note" caption="Pastaba" />
+  </columns>
+</Grid>

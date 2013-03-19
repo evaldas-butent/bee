@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
@@ -26,8 +28,7 @@ public class OrderAssessmentsGrid extends AbstractGridInterceptor {
   @Override
   public String getRowCaption(IsRow row, boolean edit) {
     if (edit) {
-      Long parent = row.getLong(DataUtils.getColumnIndex("Assessor",
-          getGridPresenter().getDataColumns()));
+      Long parent = row.getLong(getGridPresenter().getGridView().getDataIndex(COL_ASSESSOR));
       return DataUtils.isId(parent) ? "Vertinimas" : "Užklausimas";
     } else {
       return super.getRowCaption(row, edit);
@@ -36,13 +37,14 @@ public class OrderAssessmentsGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onLoad(GridDescription gridDescription) {
-    gridDescription.setFilter(ComparisonFilter.isEqual("Manager", new LongValue(userId)));
+    gridDescription.setFilter(ComparisonFilter.isEqual(COL_ASSESSOR_MANAGER,
+        new LongValue(userId)));
     return true;
   }
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    newRow.setValue(DataUtils.getColumnIndex("Manager", gridView.getDataColumns()), userId);
+    newRow.setValue(gridView.getDataIndex(COL_ASSESSOR_MANAGER), userId);
     return true;
   }
 }

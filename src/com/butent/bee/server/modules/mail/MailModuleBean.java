@@ -72,7 +72,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 
 @Stateless
 @LocalBean
@@ -460,9 +459,6 @@ public class MailModuleBean implements BeeModule {
 
         try {
           p.attachFile(file.getValue(CommonsConstants.COL_FILE_REPO));
-          p.setFileName(MimeUtility.encodeText(file.getValue(CommonsConstants.COL_FILE_NAME)));
-
-        } catch (UnsupportedEncodingException ex) {
           p.setFileName(file.getValue(CommonsConstants.COL_FILE_NAME));
         } catch (IOException ex) {
           logger.error(ex);
@@ -558,9 +554,10 @@ public class MailModuleBean implements BeeModule {
         remoteFolder.fetch(newMessages, fp);
 
         for (Message message : newMessages) {
-          if (mail.storeMail(message, localFolder.getId(),
-              uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null)) {
+          boolean ok = mail.storeMail(message, localFolder.getId(),
+              uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null);
 
+          if (ok) {
             if (localFolder.getParent() == null) { // INBOX
               // TODO applyRules(message);
             }

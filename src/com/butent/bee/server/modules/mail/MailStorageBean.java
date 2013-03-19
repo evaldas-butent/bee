@@ -33,7 +33,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -53,7 +52,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 @Stateless
@@ -321,7 +319,7 @@ public class MailStorageBean {
 
         for (Message message : msgs) {
           long uid = ((UIDFolder) remoteFolder).getUID(message);
-          SimpleRow row = data.getRow(data.getKeyIndex(COL_MESSAGE_UID, BeeUtils.toString(uid)));
+          SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
 
           if (row != null) {
             Integer flags = MailEnvelope.getFlagMask(message);
@@ -480,27 +478,26 @@ public class MailStorageBean {
     } else if (part.isMimeType("message/rfc822")) {
       storePart(messageId, (Message) part.getContent(), alternative);
     } else {
-      String contentType = part.getContentType();
+      String contentType = null;
 
       try {
-        contentType = new ContentType(contentType).getBaseType();
+        contentType = new ContentType(part.getContentType()).getBaseType();
       } catch (ParseException e) {
-        logger.warning(e);
+        logger.warning("( MessageID =", messageId, ") Error getting part content type:", e);
       }
       String disposition = null;
 
       try {
         disposition = part.getDisposition();
-      } catch (MessagingException e) {
-        logger.error(e);
+      } catch (ParseException e) {
+        logger.warning("( MessageID =", messageId, ") Error getting part disposition:", e);
       }
-      String fileName = part.getFileName();
+      String fileName = null;
 
-      if (!BeeUtils.isEmpty(fileName)) {
-        try {
-          fileName = MimeUtility.decodeText(part.getFileName());
-        } catch (UnsupportedEncodingException ex) {
-        }
+      try {
+        fileName = part.getFileName();
+      } catch (ParseException e) {
+        logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
       }
       if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)

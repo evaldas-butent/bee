@@ -135,6 +135,7 @@ public class TransportConstants {
   public static final String COL_ASSESSOR = "Assessor";
   public static final String COL_ASSESSOR_DATE = "Date";
   public static final String COL_ASSESSOR_MANAGER = "Manager";
+  public static final String COL_ASSESSOR_NOTES = "Notes";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";

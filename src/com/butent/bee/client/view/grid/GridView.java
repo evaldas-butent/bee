@@ -29,7 +29,7 @@ import java.util.List;
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, SearchView {
-  
+
   public enum SelectedRows {
     ALL, EDITABLE
   }
@@ -47,6 +47,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void formConfirm();
 
   List<BeeColumn> getDataColumns();
+
+  int getDataIndex(String source);
 
   FormView getForm(boolean edit);
 

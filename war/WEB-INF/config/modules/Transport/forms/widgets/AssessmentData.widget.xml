@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FlowPanel [
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY separator "<hr/>">
+  <!ENTITY inline "display:inline-block;">
+]>
+<FlowPanel xmlns="http://www.butent.com/widget"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  >
+  <FlowPanel style="&section;">
+    <TabbedPages style="&section; height:150px;">
+      <page>
+        <text>Vežėjai</text>
+        <FlowPanel />
+      </page>
+      <page>
+        <FlowPanel>
+          <Label html="Pajamos" style="&inline;" />
+          <FlowPanel name="IncomeTotal" style="&inline;" />
+        </FlowPanel>
+        <ChildGrid name="AssessmentIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+      <page>
+        <FlowPanel>
+          <Label html="Sąnaudos" style="&inline;" />
+          <FlowPanel name="ExpenseTotal" style="&inline;" />
+        </FlowPanel>
+        <ChildGrid name="AssessmentExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+    </TabbedPages>
+
+    &separator;
+    <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" style="&section; height:150px;"
+      disablable="false" />
+  </FlowPanel>
+</FlowPanel>

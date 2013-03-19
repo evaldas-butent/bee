@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="CargoAssessors" viewName="CargoAssessors"
+  caption="Vertinimai" newRowCaption="Naujas vertinimas"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <ActionColumn element="link" name="Date" caption="Sukūrimo data" width="120">
+      <renderToken source="Date" />
+    </ActionColumn>
+    <RelColumn name="Manager" caption="Vadybininkas" />
+    <DataColumn name="Notes" caption="Pastabos" />
+    <DataColumn name="Income" caption="Pajamos" />
+    <DataColumn name="Expenses" caption="Sąnaudos" />
+  </columns>
+</Grid>

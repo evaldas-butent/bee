@@ -154,7 +154,7 @@ public class Search {
     public Element getPrintElement() {
       return getElement();
     }
-    
+
     @Override
     public Presenter getViewPresenter() {
       return this;
@@ -232,12 +232,12 @@ public class Search {
 
       } else if (header.asWidget().getElement().isOrHasChild(source)) {
         return header.onPrint(source, target);
-      
+
       } else {
         return true;
       }
     }
-    
+
     @Override
     public void onRowDelete(RowDeleteEvent event) {
       ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
@@ -535,7 +535,8 @@ public class Search {
     if (!BeeUtils.isEmpty(value)) {
 
       if (value.trim().length() < MIN_SEARCH_PHRASE_LENGHT) {
-        BeeKeeper.getScreen().notifyWarning("ieškomos frazės ilgis turi būti 3 simbolių ilgumo");
+        BeeKeeper.getScreen().notifyWarning("Ieškoma frazė turi būti sudaryta bent iš",
+            BeeUtils.toString(MIN_SEARCH_PHRASE_LENGHT), "simbolių");
         return;
       }
 

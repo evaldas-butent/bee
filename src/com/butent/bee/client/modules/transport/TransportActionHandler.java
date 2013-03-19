@@ -25,6 +25,9 @@ public class TransportActionHandler implements Handler {
 
         RowEditor.openRow(data.getEditForm(), data, tripId);
       }
+    } else if (event.hasView("CargoAssessors")) {
+      event.consume();
+      RowEditor.openRow("CargoAssessment", Data.getDataInfo("CargoAssessors"), event.getRowId());
     }
   }
 }

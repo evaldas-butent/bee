@@ -27,7 +27,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="OrderNotes" caption="Maršrutas" minWidth="100">
+    <DataColumn name="CargoNotes" caption="Maršrutas" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
