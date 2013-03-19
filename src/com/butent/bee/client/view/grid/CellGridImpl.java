@@ -47,6 +47,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -727,7 +728,12 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           break;
 
         case ACTION:
-          column = new ActionColumn(ActionCell.create(viewName, columnDescr), dataIndex, renderer);
+          if (renderer == null && cellSource != null) {
+            renderer = new SimpleRenderer(cellSource);
+          }
+          if (renderer != null) {
+            column = new ActionColumn(ActionCell.create(viewName, columnDescr), renderer);
+          }
           break;
 
         case PROPERTY:

@@ -14,16 +14,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ActionColumn extends AbstractColumn<String> implements HasCellRenderer {
 
-  private final int dataIndex;
   private AbstractCellRenderer renderer;
 
-  public ActionColumn(int dataIndex, AbstractCellRenderer renderer) {
-    this(new ActionCell(), dataIndex, renderer);
+  public ActionColumn(AbstractCellRenderer renderer) {
+    this(new ActionCell(), renderer);
   }
 
-  public ActionColumn(Cell<String> cell, int dataIndex, AbstractCellRenderer renderer) {
+  public ActionColumn(Cell<String> cell, AbstractCellRenderer renderer) {
     super(cell);
-    this.dataIndex = dataIndex;
     this.renderer = renderer;
   }
 
@@ -48,8 +46,6 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
       return null;
     } else if (getRenderer() != null) {
       return getRenderer().render(row);
-    } else if (getDataIndex() >= 0) {
-      return row.getString(getDataIndex());
     } else {
       return null;
     }
@@ -72,9 +68,5 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
   @Override
   public void setRenderer(AbstractCellRenderer renderer) {
     this.renderer = renderer;
-  }
-
-  private int getDataIndex() {
-    return dataIndex;
   }
 }
