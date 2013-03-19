@@ -139,6 +139,17 @@ class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
+    final DialogBox dialog = DialogBox.create("Filtras", STYLE_DIALOG);
+    
+    BeeButton filter = new BeeButton("Filtruoti", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        callback.onSuccess(dialog);
+      }
+    });
+    filter.addStyleName(STYLE_COMMAND_FILTER);
+    commands.add(filter);
+
     BeeButton clear = new BeeButton("Išvalyti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -155,17 +166,6 @@ class FilterHelper {
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
-
-    final DialogBox dialog = DialogBox.create("Filtras", STYLE_DIALOG);
-    
-    BeeButton filter = new BeeButton("Filtruoti", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        callback.onSuccess(dialog);
-      }
-    });
-    filter.addStyleName(STYLE_COMMAND_FILTER);
-    commands.add(filter);
     
     container.add(commands);
     

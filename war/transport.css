@@ -75,8 +75,6 @@
   top: 0; 
   bottom: 0;
   cursor: move;
-}
-.bee-tr-chart-Selector-mover:hover {
   background-color: rgba(0, 0, 255, 0.1);
 }
 
@@ -392,7 +390,6 @@
 .bee-tr-vtb-Day-label {
   font-size: 12px;
   line-height: 12px;
-  color: black;
   overflow: hidden;
   word-wrap: break-word;
 }
@@ -485,7 +482,7 @@
 .bee-tr-chart-filter-commandGroup {
   margin-top: 1ex;
 }
-.bee-tr-chart-filter-commandFilter {
+.bee-tr-chart-filter-commandClear {
   margin-left: 2em;
 }
 

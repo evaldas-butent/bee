@@ -144,7 +144,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final List<Integer> vehicleIndexesByRow = Lists.newArrayList();
 
   private final VehicleType vehicleType;
-
+  
   protected VehicleTimeBoard() {
     super();
 
@@ -178,7 +178,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
   }
 
   protected abstract String getInfoWidthColumnName();
@@ -1222,7 +1222,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private boolean showPlaceInfo() {
     return showPlaceInfo;
   }
-
+  
   private Multimap<Long, CargoEvent> splitByCountry(Collection<CargoEvent> events) {
     Multimap<Long, CargoEvent> result = LinkedListMultimap.create();
     if (BeeUtils.isEmpty(events)) {

@@ -228,7 +228,7 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
   }
 
   @Override

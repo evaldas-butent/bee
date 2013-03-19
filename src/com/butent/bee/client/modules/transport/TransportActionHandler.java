@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowActionEvent.Handler;
@@ -25,7 +26,7 @@ public class TransportActionHandler implements Handler {
 
         RowEditor.openRow(data.getEditForm(), data, tripId);
       }
-    } else if (event.hasView("CargoAssessors")) {
+    } else if (event.hasView("CargoAssessors") && event.hasService(Service.CELL_ACTION)) {
       event.consume();
       RowEditor.openRow("CargoAssessment", Data.getDataInfo("CargoAssessors"), event.getRowId());
     }
