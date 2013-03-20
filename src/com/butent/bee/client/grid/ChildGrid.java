@@ -46,6 +46,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private final String relSource;
 
   private final GridFactory.GridOptions gridOptions;
+  
+  private final boolean disablable;
 
   private GridInterceptor gridInterceptor = null;
   private GridDescription gridDescription = null;
@@ -58,13 +60,14 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private HandlerRegistration parentRowReg = null;
 
   public ChildGrid(String gridName, int parentIndex, String relSource,
-      GridFactory.GridOptions gridOptions) {
+      GridFactory.GridOptions gridOptions, boolean disablable) {
     super();
 
     this.gridName = gridName;
     this.parentIndex = parentIndex;
     this.relSource = relSource;
     this.gridOptions = gridOptions;
+    this.disablable = disablable;
 
     this.gridInterceptor = GridFactory.getGridInterceptor(gridName);
 
@@ -110,7 +113,11 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     }
 
     setPendingRow(event.getRow());
-    setPendingEnabled(event.isEnabled());
+    if (isDisablable()) {
+      setPendingEnabled(event.isEnabled());
+    } else { 
+      setPendingEnabled(event.getRow() != null);
+    }
 
     resolveState();
   }
@@ -264,6 +271,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   private boolean hasParentValue(IsRow row) {
     return getParentValue(row) != 0;
+  }
+  
+  private boolean isDisablable() {
+    return disablable;
   }
 
   private void register() {
