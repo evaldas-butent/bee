@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CompanyUsers"
+  idName="CompanyUserResponsibilityId"
+  x="501" y="339"
+  >
+  <Fields>
+    <Relation name="Company" relation="Companies" notNull="true" label="Įmonė"/>
+    <Relation name="User" relation="Users" notNull="true" label="Atsakingas vartotojas"/>
+    <Relation name="Responsibility" relation="Responsibilities" notNull="true" label="Atsakomybė"/>
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Company</KeyField>
+      <KeyField>User</KeyField>
+    </Key>
+  </Keys>
+</Table>

@@ -38,6 +38,10 @@
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
       <page>
+      	<text>Atsakomybės</text>
+       	<ChildGrid name="CompanyUsers" relColumn="Company" />
+      </page>
+      <page>
         <text>Papildoma informacija</text>
         <FlowPanel style="margin:5px;">
           <Table>

@@ -14,6 +14,7 @@ name="Contacts" label="Kontaktai" order="20"
   <Item name="FinancialStates" label="Klientų mokumo požymiai" service="grid" parameters="FinancialStates" />
   <Item name="InformationSources" label="Klientų informacijos šaltiniai" service="grid" parameters="InformationSources" />
   <Item name="CompanyActivities" label="Klientų įmonių veiklos" service="grid" parameters="CompanyActivities" />
+  <Item name="Responsibilities" label="Atsakomybės" service="grid" parameters="Responsibilities" />
 
   <Item name="CompanyRelationTypes" label="Klientų sąryšio tipai" service="grid" parameters="CompanyRelationTypes" separator="true" />
   <Item name="CompanyRelationTypeStates" label="Klientų sąryšio būsenos" service="grid" parameters="CompanyRelationTypeStates" />

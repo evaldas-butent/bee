@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="CompanyUsers" viewName="CompanyUsers"
+  flexGrow="1" flexShrink="1" flexBasis="100"
+  >
+  <columns>
+    <RelColumn name="User" minWidth="150" maxWidth="200">
+    	<renderToken source="FirstName" suffix=" " />
+    	<renderToken source="LastName" />
+    </RelColumn>
+    
+    <RelColumn name="Responsibility" minWidth="100" maxWidth="150">
+    	<renderToken source="ResponsibilityName" />
+    </RelColumn>
+  </columns>
+</Grid>
