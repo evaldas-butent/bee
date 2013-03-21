@@ -37,7 +37,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE, HAS_FOOTERS,
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
+    NEW_ROW_FORM_IMMEDIATE,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_POPUP,
+    EDIT_FORM_IMMEDIATE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
@@ -88,6 +90,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String newRowDefaults = null;
   private String newRowCaption = null;
   private Boolean newRowPopup = null;
+  private Boolean newRowFormImmediate = null;
 
   private String editForm = null;
   private Boolean editMode = null;
@@ -96,6 +99,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean editShowId = null;
   private String editInPlace = null;
   private Boolean editPopup = null;
+  private Boolean editFormImmediate = null;
 
   private Map<String, String> styleSheets = null;
 
@@ -377,6 +381,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_CHANGE_SENSITIVITY_MILLIS:
           setRowChangeSensitivityMillis(BeeUtils.toIntOrNull(value));
           break;
+        case NEW_ROW_FORM_IMMEDIATE:
+          setNewRowFormImmediate(BeeUtils.toBooleanOrNull(value));
+          break;
+        case EDIT_FORM_IMMEDIATE:
+          setEditFormImmediate(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -423,6 +433,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getEditForm() {
     return editForm;
+  }
+
+  public Boolean getEditFormImmediate() {
+    return editFormImmediate;
   }
 
   public String getEditInPlace() {
@@ -479,12 +493,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "New Row Defaults", getNewRowDefaults(),
         "New Row Caption", getNewRowCaption(),
         "New Row Popup", getNewRowPopup(),
+        "New Row Form Immediate", getNewRowFormImmediate(),
         "Edit Form", getEditForm(),
         "Edit Mode", getEditMode(),
         "Edit Save", getEditSave(),
         "Edit Show Id", getEditShowId(),
         "Edit In Place", getEditInPlace(),
         "Edit Popup", getEditPopup(),
+        "Edit Form Immediate", getEditFormImmediate(),
         "Enabled Actions", getEnabledActions(),
         "Disabled Actions", getDisabledActions(),
         "Min Column Width", getMinColumnWidth(),
@@ -632,6 +648,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getNewRowForm() {
     return newRowForm;
+  }
+
+  public Boolean getNewRowFormImmediate() {
+    return newRowFormImmediate;
   }
 
   public Boolean getNewRowPopup() {
@@ -898,6 +918,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_CHANGE_SENSITIVITY_MILLIS:
           arr[i++] = getRowChangeSensitivityMillis();
           break;
+        case NEW_ROW_FORM_IMMEDIATE:
+          arr[i++] = getNewRowFormImmediate();
+          break;
+        case EDIT_FORM_IMMEDIATE:
+          arr[i++] = getEditFormImmediate();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -945,6 +971,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.editForm = editForm;
   }
 
+  public void setEditFormImmediate(Boolean editFormImmediate) {
+    this.editFormImmediate = editFormImmediate;
+  }
+
   public void setEditInPlace(String editInPlace) {
     this.editInPlace = editInPlace;
   }
@@ -988,7 +1018,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
   }
-
+  
   public void setHasFooters(Boolean hasFooters) {
     this.hasFooters = hasFooters;
   }
@@ -1000,11 +1030,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setHeaderMode(String headerMode) {
     this.headerMode = headerMode;
   }
-  
+
   public void setInitialRowSetSize(Integer initialRowSetSize) {
     this.initialRowSetSize = initialRowSetSize;
   }
-
+  
   public void setMaxColumnWidth(Integer maxColumnWidth) {
     this.maxColumnWidth = maxColumnWidth;
   }
@@ -1016,7 +1046,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setMinColumnWidth(Integer minColumnWidth) {
     this.minColumnWidth = minColumnWidth;
   }
-  
+
   public void setMinNumberOfRows(Integer minNumberOfRows) {
     this.minNumberOfRows = minNumberOfRows;
   }
@@ -1035,6 +1065,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
+  }
+
+  public void setNewRowFormImmediate(Boolean newRowFormImmediate) {
+    this.newRowFormImmediate = newRowFormImmediate;
   }
 
   public void setNewRowPopup(Boolean newRowPopup) {
@@ -1068,7 +1102,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowEditable(Calculation rowEditable) {
     this.rowEditable = rowEditable;
   }
-
+  
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }
@@ -1084,7 +1118,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-  
+
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }

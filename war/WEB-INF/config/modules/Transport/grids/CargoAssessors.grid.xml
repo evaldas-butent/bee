@@ -3,10 +3,11 @@
 
   name="CargoAssessors" viewName="CargoAssessors"
   caption="Vertinimai" newRowCaption="Naujas vertinimas"
+  editForm="CargoAssessment"
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <ActionColumn element="link" name="Date" caption="Sukūrimo data" width="120" />
+    <DataColumn name="Date" caption="Sukūrimo data" width="120" />
     <RelColumn name="Manager" caption="Vadybininkas" />
     <DataColumn name="Notes" caption="Pastabos" />
     <DataColumn name="Income" caption="Pajamos" />

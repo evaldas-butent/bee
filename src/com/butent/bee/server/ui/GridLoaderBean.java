@@ -107,11 +107,13 @@ public class GridLoaderBean {
 
   private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
   private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
+  private static final String ATTR_NEW_ROW_FORM_IMMEDIATE = "newRowFormImmediate";
 
   private static final String ATTR_EDIT_MODE = "editMode";
   private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
+  private static final String ATTR_EDIT_FORM_IMMEDIATE = "editFormImmediate";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -831,7 +833,11 @@ public class GridLoaderBean {
     if (newRowPopup != null) {
       dst.setNewRowPopup(newRowPopup);
     }
-
+    Boolean newRowFormImmediate = XmlUtils.getAttributeBoolean(src, ATTR_NEW_ROW_FORM_IMMEDIATE);
+    if (newRowFormImmediate != null) {
+      dst.setNewRowFormImmediate(newRowFormImmediate);
+    }
+    
     String editForm = src.getAttribute(UiConstants.ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);
@@ -859,6 +865,10 @@ public class GridLoaderBean {
     Boolean editPopup = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_EDIT_POPUP);
     if (editPopup != null) {
       dst.setEditPopup(editPopup);
+    }
+    Boolean editFormImmediate = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_FORM_IMMEDIATE);
+    if (editFormImmediate != null) {
+      dst.setEditFormImmediate(editFormImmediate);
     }
 
     List<Element> cssNodes = XmlUtils.getElementsByLocalName(src, TAG_CSS);
