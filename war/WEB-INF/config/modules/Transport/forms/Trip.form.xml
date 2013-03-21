@@ -41,42 +41,42 @@
         <text>Pagrindiniai duomenys</text>
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="flexBox-vertical" style="margin-left: 1em">
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <Label html="Išvykimas" style="font-weight: bold;" />
-              <Label html="Sugrįžimas" style="font-weight: bold;" />
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+              <Label html="Išvykimas" style="font-weight: bold; margin: 0 20px" />
+              <Label html="Sugrįžimas" style="font-weight: bold; margin: 0 65px" />
             </FlowPanel>
             
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
               <SimplePanel>
                 <InputDate source="DateFrom" style="width: 7em;" />
               </SimplePanel>
-              <Label html="Data" />
+              <Label html="Data"  style="margin: 0 20px 0 20px"/>
               <SimplePanel>
                 <InputDate source="DateTo" style="width: 7em;" />
               </SimplePanel>
             </FlowPanel>
             
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
               <SimplePanel>
                 <InputDouble source="SpeedometerBefore" style="width: 6em;" />
               </SimplePanel>
-              <Label html="Spidometras" style="margin: 0 1em 0 1em" />
+              <Label html="Spidometras" style="margin: 0 10px 0 10px" />
               <SimplePanel>
                 <InputDouble source="SpeedometerAfter" style="width: 6em;" />
               </SimplePanel>
             </FlowPanel>
             
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
               <SimplePanel>
                 <InputDecimal source="FuelBefore" style="width: 4em;" />
               </SimplePanel>
-              <Label html="Kuro likutis bake" />
+              <Label html="Kuro likutis bake" style="margin: 0 24px 0 24px"/>
               <SimplePanel>
                 <InputDecimal source="FuelAfter" style="width: 4em;" />
               </SimplePanel>
             </FlowPanel>
 
-            <InputDate source="PlannedEndDate" caption="Planuojama pabaigos data" style="width: 7em;" />
+            <InputDate source="PlannedEndDate" caption="Planuojama pabaigos data " style="width: 7em; margin: 0 3px" />
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
