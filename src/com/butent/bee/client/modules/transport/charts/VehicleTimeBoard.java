@@ -52,6 +52,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -144,7 +145,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final List<Integer> vehicleIndexesByRow = Lists.newArrayList();
 
   private final VehicleType vehicleType;
-  
+
   protected VehicleTimeBoard() {
     super();
 
@@ -219,7 +220,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     Multimap<Long, Driver> drivers = HashMultimap.create();
-    
+
     serialized = rowSet.getTableProperty(PROP_DRIVERS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
@@ -306,6 +307,136 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     logger.debug(getCaption(), vehicles.size(), trips.size(), drivers.size(), freights.size(),
         handling.size(), services.size());
+  }
+
+  @Override
+  protected List<ChartData> initFilter() {
+    if (vehicles.isEmpty()) {
+      return super.initFilter();
+    }
+
+    boolean trucks = vehicleType == VehicleType.TRUCK;
+
+    ChartData truckData = new ChartData(ChartData.Type.TRUCK);
+    ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
+
+    ChartData modelData = new ChartData(ChartData.Type.VEHICLE_MODEL);
+    ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
+
+    ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
+    ChartData orderData = new ChartData(ChartData.Type.ORDER);
+    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
+
+    ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+
+    ChartData tripData = new ChartData(ChartData.Type.TRIP);
+
+    ChartData loadData = new ChartData(ChartData.Type.LOADING);
+    ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
+    ChartData placeData = new ChartData(ChartData.Type.PLACE);
+
+    ChartData driverData = new ChartData(ChartData.Type.DRIVER);
+
+    for (Vehicle vehicle : vehicles) {
+      String vehicleName = vehicle.getItemName();
+      if (trucks) {
+        truckData.add(vehicleName, vehicle.getId());
+      } else {
+        trailerData.add(vehicleName, vehicle.getId());
+      }
+
+      modelData.add(vehicle.getModel());
+      typeData.add(vehicle.getType());
+    }
+
+    if (!trips.isEmpty()) {
+      VehicleType otherVehicleType = trucks ? VehicleType.TRAILER : VehicleType.TRUCK;
+
+      for (Trip trip : trips.values()) {
+        tripData.add(trip.getItemName(), trip.getTripId());
+
+        String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
+        if (!BeeUtils.isEmpty(otherVehicleNumber)) {
+          if (trucks) {
+            trailerData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
+          } else {
+            truckData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
+          }
+        }
+        
+        if (trip.hasDrivers()) {
+          for (Driver driver : trip.getDrivers()) {
+            driverData.add(driver.getItemName(), driver.getId());
+          }
+        }
+      }
+    }
+
+    if (!freights.isEmpty()) {
+      for (Freight freight : freights.values()) {
+        customerData.add(freight.getCustomerName(), freight.getCustomerId());
+        orderData.add(freight.getOrderName(), freight.getOrderId());
+        
+        OrderStatus status = freight.getOrderStatus();
+        if (status != null) {
+          statusData.add(status.getCaption(), (long) status.ordinal());
+        }
+        
+        String loading = getLoadingPlaceInfo(freight);
+        if (!BeeUtils.isEmpty(loading)) {
+          loadData.add(loading);
+          placeData.add(loading);
+        }
+
+        String unloading = getUnloadingPlaceInfo(freight);
+        if (!BeeUtils.isEmpty(unloading)) {
+          unloadData.add(unloading);
+          placeData.add(unloading);
+        }
+        
+        cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+      }
+    }
+
+    if (!handling.isEmpty()) {
+      for (CargoHandling ch : handling.values()) {
+        String loading = getLoadingPlaceInfo(ch);
+        if (!BeeUtils.isEmpty(loading)) {
+          loadData.add(loading);
+          placeData.add(loading);
+        }
+
+        String unloading = getUnloadingPlaceInfo(ch);
+        if (!BeeUtils.isEmpty(unloading)) {
+          unloadData.add(unloading);
+          placeData.add(unloading);
+        }
+      }
+    }
+    
+    List<ChartData> data = Lists.newArrayList();
+
+    data.add(trucks ? truckData : trailerData);
+    data.add(modelData);
+    data.add(typeData);
+
+    data.add(customerData);
+    data.add(orderData);
+    data.add(statusData);
+
+    data.add(cargoData);
+
+    data.add(tripData);
+
+    data.add(loadData);
+    data.add(unloadData);
+    data.add(placeData);
+
+    data.add(driverData);
+
+    data.add(trucks ? trailerData : truckData);
+
+    return FilterHelper.notEmptyData(data);
   }
 
   @Override
@@ -1097,7 +1228,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     } else if (DndHelper.isDataType(DATA_TYPE_DRIVER) && DndHelper.getData() instanceof Driver) {
       return !trip.hasDriver(((Driver) DndHelper.getData()).getId());
-      
+
     } else {
       return false;
     }
@@ -1222,7 +1353,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private boolean showPlaceInfo() {
     return showPlaceInfo;
   }
-  
+
   private Multimap<Long, CargoEvent> splitByCountry(Collection<CargoEvent> events) {
     Multimap<Long, CargoEvent> result = LinkedListMultimap.create();
     if (BeeUtils.isEmpty(events)) {

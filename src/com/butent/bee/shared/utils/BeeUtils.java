@@ -283,8 +283,7 @@ public class BeeUtils {
    * @param x2 second value to compare
    * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
    */
-  @SuppressWarnings("unchecked")
-  public static <T> int compare(Comparable<T> x1, Comparable<T> x2) {
+  public static <T extends Comparable<T>> int compare(T x1, T x2) {
     if (x1 == null) {
       if (x2 == null) {
         return BeeConst.COMPARE_EQUAL;
@@ -294,7 +293,7 @@ public class BeeUtils {
     } else if (x2 == null) {
       return BeeConst.COMPARE_MORE;
     } else {
-      return x1.compareTo((T) x2);
+      return x1.compareTo(x2);
     }
   }
 
@@ -1068,11 +1067,11 @@ public class BeeUtils {
     return ok;
   }
 
-  public static <T> boolean isLeq(Comparable<T> x1, Comparable<T> x2) {
+  public static <T extends Comparable<T>> boolean isLeq(T x1, T x2) {
     return compare(x1, x2) <= 0;
   }
 
-  public static <T> boolean isLess(Comparable<T> x1, Comparable<T> x2) {
+  public static <T extends Comparable<T>> boolean isLess(T x1, T x2) {
     return compare(x1, x2) < 0;
   }
 
@@ -1101,11 +1100,11 @@ public class BeeUtils {
     return ok;
   }
 
-  public static <T> boolean isMeq(Comparable<T> x1, Comparable<T> x2) {
+  public static <T extends Comparable<T>> boolean isMeq(T x1, T x2) {
     return compare(x1, x2) >= 0;
   }
 
-  public static <T> boolean isMore(Comparable<T> x1, Comparable<T> x2) {
+  public static <T extends Comparable<T>> boolean isMore(T x1, T x2) {
     return compare(x1, x2) > 0;
   }
 

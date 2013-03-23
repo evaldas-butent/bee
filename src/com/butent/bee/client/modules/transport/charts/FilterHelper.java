@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableRowElement;
@@ -47,6 +48,20 @@ class FilterHelper {
   private static final String STYLE_COMMAND_GROUP = STYLE_PREFIX + "commandGroup";
   private static final String STYLE_COMMAND_CLEAR = STYLE_PREFIX + "commandClear";
   private static final String STYLE_COMMAND_FILTER = STYLE_PREFIX + "commandFilter";
+  
+  static List<ChartData> notEmptyData(Collection<ChartData> data) {
+    List<ChartData> result = Lists.newArrayList();
+    
+    if (data != null) {
+      for (ChartData cd : data) {
+        if (cd != null && !cd.isEmpty()) {
+          result.add(cd);
+        }
+      }
+    }
+    
+    return result;
+  }
   
   static void openDialog(final List<ChartData> data, final DialogCallback callback) {
     boolean ok = false;

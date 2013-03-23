@@ -11,7 +11,7 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class Vehicle implements HasDateRange {
+class Vehicle implements HasDateRange, HasItemName {
 
   private static final int numberIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_NUMBER);
 
@@ -36,16 +36,30 @@ class Vehicle implements HasDateRange {
 
   private final Long id;
   private final String number;
+  private final String model;
+  private final String type;
 
   private final Range<JustDate> range;
+  
+  private final String itemName;
 
   Vehicle(BeeRow row) {
     this.row = row;
 
     this.id = row.getId();
     this.number = row.getString(numberIndex);
+    this.model = BeeUtils.joinWords(row.getString(parentModelNameIndex), 
+        row.getString(modelNameIndex));
+    this.type = BeeUtils.trim(row.getString(typeNameIndex));
 
     this.range = ChartHelper.getActivity(row.getDate(startIndex), row.getDate(endIndex));
+    
+    this.itemName = BeeUtils.joinWords(number, model);
+  }
+
+  @Override
+  public String getItemName() {
+    return itemName;
   }
 
   @Override
@@ -73,33 +87,33 @@ class Vehicle implements HasDateRange {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  
   String getInfo() {
     return BeeUtils.joinWords(getModel(), getNotes());
   }
-  
+
   String getMessage(String caption) {
     return ChartHelper.buildTitle(caption, getNumber(), modelLabel, getModel(),
         notesLabel, getNotes());
   }
-
+  
   String getModel() {
-    return BeeUtils.joinWords(row.getString(parentModelNameIndex), row.getString(modelNameIndex));
+    return model;
   }
   
   String getNotes() {
     return BeeUtils.trim(row.getString(notesIndex));
   }
-  
+
   String getNumber() {
     return number;
   }
-
+  
   String getTitle() {
     return getNotes();
   }
-  
+
   String getType() {
-    return BeeUtils.trim(row.getString(typeNameIndex));
+    return type;
   }
 }

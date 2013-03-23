@@ -19,6 +19,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -57,6 +58,8 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   private final Long customerId;
   private final String customerName;
+  
+  private final String orderName;
 
   private Range<JustDate> range;
 
@@ -102,6 +105,8 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
     this.customerId = row.getLong(COL_CUSTOMER);
     this.customerName = row.getValue(COL_CUSTOMER_NAME);
+    
+    this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
 
     this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
   }
@@ -204,6 +209,10 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   Long getOrderId() {
     return orderId;
+  }
+
+  String getOrderName() {
+    return orderName;
   }
 
   String getOrderNo() {

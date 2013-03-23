@@ -554,7 +554,7 @@ class DriverTimeBoard extends ChartBase {
     final Long driverId = driver.getId();
 
     DndDiv widget = new DndDiv(STYLE_DRIVER_LABEL);
-    widget.setText(driver.getName());
+    widget.setText(driver.getItemName());
 
     widget.addClickHandler(new ClickHandler() {
       @Override

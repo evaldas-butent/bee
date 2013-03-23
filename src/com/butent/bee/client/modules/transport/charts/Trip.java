@@ -33,7 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class Trip implements HasDateRange, HasColorSource {
+class Trip implements HasDateRange, HasColorSource, HasItemName {
 
   private static final String VIEW_NAME = VIEW_TRIPS;
 
@@ -128,6 +128,8 @@ class Trip implements HasDateRange, HasColorSource {
   private final Collection<Driver> drivers;
   private final String title;
 
+  private final String itemName;
+
   Trip(SimpleRow row, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
@@ -151,15 +153,19 @@ class Trip implements HasDateRange, HasColorSource {
     this.range = Range.closed(start, BeeUtils.max(start, end));
     
     this.drivers = drivers;
+    
+    String rangeLabel = ChartHelper.getRangeLabel(this.range);
 
     this.title = ChartHelper.buildTitle(
-        Global.CONSTANTS.tripDuration(), ChartHelper.getRangeLabel(this.range),
+        Global.CONSTANTS.tripDuration(), rangeLabel,
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
         driversLabel, Driver.getNames(BeeConst.DEFAULT_LIST_SEPARATOR, drivers),
         cargosLabel, cargoCount,
         notesLabel, this.notes);
+    
+    this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
   }
 
   @Override
@@ -168,8 +174,17 @@ class Trip implements HasDateRange, HasColorSource {
   }
 
   @Override
+  public String getItemName() {
+    return itemName;
+  }
+
+  @Override
   public Range<JustDate> getRange() {
     return range;
+  }
+
+  Collection<Driver> getDrivers() {
+    return drivers;
   }
 
   String getTitle() {
@@ -191,13 +206,24 @@ class Trip implements HasDateRange, HasColorSource {
   Long getTruckId() {
     return truckId;
   }
-
+  
   Long getVehicleId(VehicleType vehicleType) {
     switch (vehicleType) {
       case TRUCK:
         return getTruckId();
       case TRAILER:
         return getTrailerId();
+      default:
+        return null;
+    }
+  }
+
+  String getVehicleNumber(VehicleType vehicleType) {
+    switch (vehicleType) {
+      case TRUCK:
+        return truckNumber;
+      case TRAILER:
+        return trailerNumber;
       default:
         return null;
     }
@@ -213,6 +239,10 @@ class Trip implements HasDateRange, HasColorSource {
     }
     return false; 
   }
+
+  boolean hasDrivers() {
+    return !BeeUtils.isEmpty(drivers);
+  }
   
   void maybeAddDriver(final Driver driver) {
     if (driver == null) {
@@ -222,7 +252,7 @@ class Trip implements HasDateRange, HasColorSource {
     final String viewName = VIEW_TRIP_DRIVERS;
     
     String driverTitle = ChartHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
-        driver.getName());
+        driver.getItemName());
     
     Global.confirm(Global.CONSTANTS.assignDriverToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(driverTitle, getTitle(), Global.CONSTANTS.assignDriverToTripQuestion()),

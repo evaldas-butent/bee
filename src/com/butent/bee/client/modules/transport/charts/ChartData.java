@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -28,17 +29,17 @@ class ChartData {
 
     @Override
     public int compareTo(Item o) {
-      return name.compareTo(o.name);
+      return BeeUtils.compare(name, o.name);
     }
 
     @Override
     public boolean equals(Object obj) {
-      return (obj instanceof Item) ? name.equals(((Item) obj).name) : false;
+      return (obj instanceof Item) ? Objects.equal(name, ((Item) obj).name) : false;
     }
 
     @Override
     public int hashCode() {
-      return name.hashCode();
+      return (name == null) ? 0 : name.hashCode();
     }
 
     int getCount() {
@@ -125,6 +126,12 @@ class ChartData {
       for (String name : names) {
         add(name);
       }
+    }
+  }
+  
+  void addNotEmpty(String name) {
+    if (!BeeUtils.isEmpty(name)) {
+      add(name);
     }
   }
 
