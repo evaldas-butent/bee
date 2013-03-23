@@ -13,6 +13,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String changePassword();
   String clear();
   String createNewRow();
+  String deselectAll();
   String doFilter();
   String filter();
   String newPassword();
@@ -30,6 +31,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String removeFilter();
   String repeatNewPassword();
   String saveChanges();
+  String selectAll();
   String sorry();
   String tooLittleData();
   String yes();

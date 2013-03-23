@@ -175,11 +175,15 @@
       <xs:enumeration value="add" />
       <xs:enumeration value="alarm" />
       <xs:enumeration value="arrowDown" />
+      <xs:enumeration value="arrowDownDouble" />
       <xs:enumeration value="arrowIn" />
       <xs:enumeration value="arrowLeft" />
+      <xs:enumeration value="arrowLeftDouble" />
       <xs:enumeration value="arrowOut" />
       <xs:enumeration value="arrowRight" />
+      <xs:enumeration value="arrowRightDouble" />
       <xs:enumeration value="arrowUp" />
+      <xs:enumeration value="arrowUpDouble" />
       <xs:enumeration value="ascending" />
       <xs:enumeration value="attachment" />
       <xs:enumeration value="bookmark" />

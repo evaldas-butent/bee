@@ -32,21 +32,33 @@ public class Images {
     @Source("arrow_down.png")
     ImageResource arrowDown();
 
+    @Source("arrow_down_double.png")
+    ImageResource arrowDownDouble();
+    
     @Source("arrow_in.png")
     ImageResource arrowIn();
 
     @Source("arrow_left.png")
     ImageResource arrowLeft();
 
+    @Source("arrow_left_double.png")
+    ImageResource arrowLeftDouble();
+    
     @Source("arrow_out.png")
     ImageResource arrowOut();
 
     @Source("arrow_right.png")
     ImageResource arrowRight();
 
+    @Source("arrow_right_double.png")
+    ImageResource arrowRightDouble();
+    
     @Source("arrow_up.png")
     ImageResource arrowUp();
 
+    @Source("arrow_up_double.png")
+    ImageResource arrowUpDouble();
+    
     @Source("ascending.gif")
     ImageResource ascending();
 
@@ -304,11 +316,15 @@ public class Images {
     map.put(key("alarm"), resources.alarm());
 
     map.put(key("arrowDown"), resources.arrowDown());
+    map.put(key("arrowDownDouble"), resources.arrowDownDouble());
     map.put(key("arrowIn"), resources.arrowIn());
     map.put(key("arrowLeft"), resources.arrowLeft());
+    map.put(key("arrowLeftDouble"), resources.arrowLeftDouble());
     map.put(key("arrowOut"), resources.arrowOut());
     map.put(key("arrowRight"), resources.arrowRight());
+    map.put(key("arrowRightDouble"), resources.arrowRightDouble());
     map.put(key("arrowUp"), resources.arrowUp());
+    map.put(key("arrowUpDouble"), resources.arrowUpDouble());
 
     map.put(key("ascending"), resources.ascending());
 

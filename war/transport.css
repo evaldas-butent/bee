@@ -432,50 +432,26 @@
   text-overflow: ellipsis;
 }
 
-.bee-tr-chart-filter-container {
-  display: -webkit-flex;
-  -webkit-flex-flow: column;
-  -webkit-align-items: center;
+.bee-tr-chart-filter-data-panel {
+  position: relative;
 }
 
-.bee-tr-chart-filter-dataWrapper {
-  display: -webkit-flex;
-  -webkit-flex-wrap: wrap;
-  max-width: 600px;  
-}
-
-.bee-tr-chart-filter-panel {
-  display: -webkit-flex;
-  -webkit-flex-flow: column;
-  -webkit-align-items: center;
-  margin: 3px 10px;
-}
-
-.bee-tr-chart-filter-caption {
+.bee-tr-chart-filter-data-caption {
   padding-bottom: 3px;
   font-weight: bold; 
 }
-.bee-tr-chart-filter-caption:hover {
-  text-decoration: underline;
-  color: #00e;
-  cursor: pointer;
-}
 
-.bee-tr-chart-filter-tableWrapper {
-  overflow: auto;
+.bee-tr-chart-filter-data-itemContainer {
   max-height: 200px;
-}
-.bee-tr-chart-filter-table {
-  background-color: white;
-  border-collapse: collapse;
-  cursor: pointer;
+  max-width: 200px;
+  overflow: auto;
 }
 
-.bee-tr-chart-filter-table tr:hover {
-  background-color: #eee;
+.bee-tr-chart-filter-data-item:hover {
+  cursor: pointer;
 }
-.bee-tr-chart-filter-selected {
-  background-image: -webkit-linear-gradient(top, #4D90FE, #357AE8);
+.bee-tr-chart-filter-data-item:hover {
+  background-color: rgba(0, 0, 255, 0.4);
   color: white;
 }
 
