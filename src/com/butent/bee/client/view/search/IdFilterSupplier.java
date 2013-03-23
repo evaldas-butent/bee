@@ -8,11 +8,11 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.utils.BeeUtils;

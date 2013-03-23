@@ -424,7 +424,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
       return super.initFilter();
     }
 
-    ChartData vehicleData = new ChartData(Type.VEHICLE);
+    ChartData vehicleData = new ChartData(Type.TRUCK);
     ChartData trailerData = new ChartData(Type.TRAILER);
     ChartData driverData = new ChartData(Type.DRIVER);
 
@@ -1178,7 +1178,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
       Predicate<Freight> predicate;
       switch (data.getType()) {
-        case VEHICLE:
+        case TRUCK:
           predicate = new Predicate<Freight>() {
             @Override
             public boolean apply(Freight input) {

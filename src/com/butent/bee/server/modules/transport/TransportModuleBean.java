@@ -1488,7 +1488,8 @@ public class TransportModuleBean implements BeeModule {
         .addField(defUnlAlias, COL_COUNTRY, defaultUnloadingColumnAlias(COL_COUNTRY))
         .addField(defUnlAlias, COL_PLACE, defaultUnloadingColumnAlias(COL_PLACE_NAME))
         .addField(defUnlAlias, COL_TERMINAL, defaultUnloadingColumnAlias(COL_TERMINAL))
-        .addFields(TBL_ORDERS, COL_ORDER_NO)
+        .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
+        .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
         .addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME)
         .setWhere(tripWhere)
         .addOrder(TBL_TRIPS, COL_TRIP_ID);

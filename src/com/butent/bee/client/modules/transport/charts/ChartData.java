@@ -71,14 +71,21 @@ class ChartData {
   }
 
   enum Type implements HasCaption {
-    CUSTOMER("Užsakovas"),
-    ORDER("Užsakymas"),
-    CARGO("Krovinys"),
+    DRIVER(Global.CONSTANTS.drivers()),
+    DRIVER_GROUP(Global.CONSTANTS.driverGroups()),
+    CARGO(Global.CONSTANTS.cargos()),
+    CUSTOMER(Global.CONSTANTS.transportationCustomers()),
     LOADING(Global.CONSTANTS.cargoLoading()),
+    ORDER(Global.CONSTANTS.transportationOrders()),
+    ORDER_STATUS(Global.CONSTANTS.transportationOrderStatuses()),
+    PLACE(Global.CONSTANTS.cargoHandlingPlaces()),
+    TRAILER(Global.CONSTANTS.trailers()),
+    TRIP(Global.CONSTANTS.trips()),
+    TRUCK(Global.CONSTANTS.trucks()),
     UNLOADING(Global.CONSTANTS.cargoUnloading()),
-    VEHICLE("Vilkikas"),
-    TRAILER("Puspriekabė"),
-    DRIVER("Vairuotojas");
+    VEHICLE_GROUP(Global.CONSTANTS.vehicleGroups()),
+    VEHICLE_MODEL(Global.CONSTANTS.vehicleModels()),
+    VEHICLE_TYPE(Global.CONSTANTS.vehicleTypes());
 
     private final String caption;
 

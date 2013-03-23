@@ -70,6 +70,9 @@ public class Service {
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
 
+  public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
+  public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
+  
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -155,6 +158,8 @@ public class Service {
   public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
 
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
+  
+  public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

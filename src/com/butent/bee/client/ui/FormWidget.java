@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.ColorEditor;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
@@ -164,6 +165,7 @@ public enum FormWidget {
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   CHILD_GRID("ChildGrid", EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
+  CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
@@ -522,6 +524,13 @@ public enum FormWidget {
         }
         break;
         
+      case CHILD_SELECTOR:
+        relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
+        if (relation != null) {
+          widget = ChildSelector.create(viewName, relation, attributes);
+        }
+        break;
+
       case COLOR_EDITOR:
         widget = new ColorEditor();
         break;
@@ -554,9 +563,6 @@ public enum FormWidget {
         relation = createRelation(viewName, attributes, children, Relation.RenderMode.TARGET);
         if (relation != null) {
           widget = new DataSelector(relation, true);
-          if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
-            ((DataSelector) widget).setUpperCase(true);
-          }
         }
         break;
 
@@ -808,9 +814,6 @@ public enum FormWidget {
 
       case INPUT_TEXT:
         widget = new InputText();
-        if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
-          ((InputText) widget).setUpperCase(true);
-        }
         break;
 
       case INPUT_TIME:
@@ -902,9 +905,6 @@ public enum FormWidget {
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
           widget = new MultiSelector(relation, true, attributes.get(UiConstants.ATTR_PROPERTY));
-          if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
-            ((MultiSelector) widget).setUpperCase(true);
-          }
         }
         break;
 
@@ -1928,6 +1928,11 @@ public enum FormWidget {
 
       } else if (BeeUtils.same(name, ATTR_PLACEHOLDER)) {
         DomUtils.setPlaceholder(widget.asWidget(), value);
+        
+      } else if (BeeUtils.same(name, HasCapsLock.ATTR_UPPER_CASE)) {
+        if (widget instanceof HasCapsLock && BeeConst.isTrue(value)) {
+          ((HasCapsLock) widget).setUpperCase(true);
+        }
       }
     }
   }

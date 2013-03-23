@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -57,7 +58,7 @@ class FilterHelper {
     }
 
     if (!ok) {
-      BeeKeeper.getScreen().notifyWarning("Nėra ką filtruoti");
+      BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.tooLittleData());
       return;
     }
     
@@ -139,9 +140,9 @@ class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
-    final DialogBox dialog = DialogBox.create("Filtras", STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.create(Global.CONSTANTS.filter(), STYLE_DIALOG);
     
-    BeeButton filter = new BeeButton("Filtruoti", new ClickHandler() {
+    BeeButton filter = new BeeButton(Global.CONSTANTS.doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         callback.onSuccess(dialog);
@@ -150,7 +151,7 @@ class FilterHelper {
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    BeeButton clear = new BeeButton("Išvalyti", new ClickHandler() {
+    BeeButton clear = new BeeButton(Global.CONSTANTS.clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         for (ChartData cd : data) {

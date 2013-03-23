@@ -5,9 +5,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;

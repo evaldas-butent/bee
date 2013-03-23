@@ -16,7 +16,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +28,7 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -48,9 +48,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   protected enum SupplierAction implements HasCaption {
     ALL("Visi"),
-    CLEAR("Išvalyti"),
-    COMMIT("Filtruoti"),
-    CANCEL("Atsisakyti");
+    CLEAR(Global.CONSTANTS.clear()),
+    COMMIT(Global.CONSTANTS.doFilter()),
+    CANCEL(Global.CONSTANTS.cancel());
 
     private final String caption;
 

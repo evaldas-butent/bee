@@ -20,17 +20,13 @@ import com.butent.bee.shared.utils.Codec;
 
 public class DsnService extends CompositeService {
 
-  public static final String SVC_GET_DSNS = Service.DATA_SERVICE_PREFIX + "get_dsns";
-  public static final String SVC_SWITCH_DSN = Service.DATA_SERVICE_PREFIX + "switch_dsn";
-  public static final String VAR_DSN = Service.RPC_VAR_PREFIX + "dsn";
-
   private Variable dsn;
 
   @Override
   protected boolean doStage(final String stg, Object... params) {
     boolean ok = true;
 
-    if (stg.equals(SVC_GET_DSNS)) {
+    if (stg.equals(Service.GET_DSNS)) {
       BeeKeeper.getRpc().makeGetRequest(stg,
           new ResponseCallback() {
             @Override
@@ -49,7 +45,7 @@ public class DsnService extends CompositeService {
                     new DialogCallback() {
                       @Override
                       public boolean onConfirm(Popup popup) {
-                        return doStage(SVC_SWITCH_DSN);
+                        return doStage(Service.SWITCH_DSN);
                       }
                     });
               } else {
@@ -60,12 +56,12 @@ public class DsnService extends CompositeService {
           });
       return ok;
 
-    } else if (stg.equals(SVC_SWITCH_DSN)) {
+    } else if (stg.equals(Service.SWITCH_DSN)) {
       String dsnName = dsn.getValue();
 
       if (!BeeUtils.isEmpty(dsnName)) {
         ParameterList args = BeeKeeper.getRpc().createParameters(stg);
-        args.addQueryItem(VAR_DSN, dsnName);
+        args.addQueryItem(Service.VAR_DSN, dsnName);
 
         BeeKeeper.getRpc().makeGetRequest(args,
             new ResponseCallback() {

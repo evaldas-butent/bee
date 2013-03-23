@@ -267,7 +267,7 @@ public class CliWorker {
       showDimensions(args);
 
     } else if (z.equals("dsn")) {
-      CompositeService.doService(new DsnService().name(), DsnService.SVC_GET_DSNS);
+      CompositeService.doService(new DsnService().name(), Service.GET_DSNS);
 
     } else if (z.startsWith("dt")) {
       showDate(z, args);

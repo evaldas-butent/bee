@@ -11,20 +11,26 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String cancel();
   String changedValues();
   String changePassword();
+  String clear();
   String createNewRow();
+  String doFilter();
+  String filter();
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
   String newTab();
   String newValues();
   String no();
+  String nothingFound();
   String ok();
   String oldPassword();
   String oldPasswordIsInvalid();
   String oldPasswordIsRequired();
-  String questionLogout();  
+  String questionLogout();
+  String removeFilter();
   String repeatNewPassword();
   String saveChanges();
   String sorry();
+  String tooLittleData();
   String yes();
 }

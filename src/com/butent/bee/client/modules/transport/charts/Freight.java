@@ -15,9 +15,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -46,6 +49,13 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
   private final String unloadingPlace;
   private final String unloadingTerminal;
 
+  private final Long orderId;
+
+  private final OrderStatus orderStatus;
+  private final DateTime orderDate;
+  private final String orderNo;
+
+  private final Long customerId;
   private final String customerName;
 
   private Range<JustDate> range;
@@ -84,6 +94,13 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     this.unloadingTerminal = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
         row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL)));
 
+    this.orderId = row.getLong(COL_ORDER);
+
+    this.orderStatus = NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS));
+    this.orderDate = row.getDateTime(ALS_ORDER_DATE);
+    this.orderNo = row.getValue(COL_ORDER_NO);
+
+    this.customerId = row.getLong(COL_CUSTOMER);
     this.customerName = row.getValue(COL_CUSTOMER_NAME);
 
     this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
@@ -153,6 +170,10 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     setRange(ChartHelper.getActivity(lower, upper));
   }
 
+  String getCargoDescription() {
+    return cargoDescription;
+  }
+
   Long getCargoId() {
     return cargoId;
   }
@@ -165,8 +186,32 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     return cargoTripVersion;
   }
 
+  Long getCustomerId() {
+    return customerId;
+  }
+
+  String getCustomerName() {
+    return customerName;
+  }
+
   JustDate getMaxDate() {
     return BeeUtils.max(loadingDate, unloadingDate);
+  }
+
+  DateTime getOrderDate() {
+    return orderDate;
+  }
+
+  Long getOrderId() {
+    return orderId;
+  }
+
+  String getOrderNo() {
+    return orderNo;
+  }
+  
+  OrderStatus getOrderStatus() {
+    return orderStatus;
   }
 
   String getTitle(String loadInfo, String unloadInfo, boolean appendTripTitle) {

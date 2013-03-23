@@ -6,11 +6,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTimeOfDay;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;

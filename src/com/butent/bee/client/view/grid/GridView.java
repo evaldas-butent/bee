@@ -1,7 +1,6 @@
 package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.data.ParentRowCreator;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
@@ -12,6 +11,7 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;

@@ -49,6 +49,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.Action;

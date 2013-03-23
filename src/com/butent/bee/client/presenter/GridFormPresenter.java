@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.ParentRowCreator;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -20,6 +19,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;

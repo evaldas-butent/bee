@@ -365,7 +365,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       return null;
     }
   }
-
+  
   public String getEditableRelationView(String colName) {
     ViewColumn viewColumn = getViewColumn(colName);
 
@@ -470,6 +470,22 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       }
     }
     return tables;
+  }
+
+  public String getRelationField(String relation) {
+    if (BeeUtils.isEmpty(relation)) {
+      return null;
+    }
+    
+    Set<String> fields = Sets.newHashSet();
+    
+    for (ViewColumn vc : getViewColumns()) {
+      if (BeeUtils.same(vc.getRelation(), relation)) {
+        fields.add(vc.getField());
+      }
+    }
+    
+    return (fields.size() == 1) ? BeeUtils.peek(fields) : null;
   }
 
   public String getRelationView(String colName) {

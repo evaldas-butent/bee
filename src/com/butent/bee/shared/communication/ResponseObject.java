@@ -3,9 +3,9 @@ package com.butent.bee.shared.communication;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;

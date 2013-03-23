@@ -11,7 +11,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -35,6 +34,7 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;

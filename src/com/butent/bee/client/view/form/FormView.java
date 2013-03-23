@@ -7,10 +7,10 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasDimensions;

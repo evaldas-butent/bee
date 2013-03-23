@@ -178,7 +178,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE);
+    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
   }
 
   protected abstract String getInfoWidthColumnName();

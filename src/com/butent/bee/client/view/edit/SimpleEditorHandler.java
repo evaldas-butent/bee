@@ -5,11 +5,11 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 

@@ -7,12 +7,12 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.cellview.client.Header;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.HasFilterHandler;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;

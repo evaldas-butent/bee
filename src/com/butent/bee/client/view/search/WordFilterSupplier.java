@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 
 import java.util.List;

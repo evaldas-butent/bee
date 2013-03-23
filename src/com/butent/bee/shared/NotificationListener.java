@@ -1,4 +1,4 @@
-package com.butent.bee.client.dialog;
+package com.butent.bee.shared;
 
 /**
  * Requires implementing notification management classes to contain methods to handle info, severe

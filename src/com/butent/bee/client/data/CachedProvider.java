@@ -3,10 +3,10 @@ package com.butent.bee.client.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;

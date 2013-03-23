@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
-import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
@@ -160,10 +159,10 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
       response = getTableInfo(reqInfo);
 
-    } else if (BeeUtils.same(svc, DsnService.SVC_GET_DSNS)) {
+    } else if (BeeUtils.same(svc, Service.GET_DSNS)) {
       response = getDsns();
-    } else if (BeeUtils.same(svc, DsnService.SVC_SWITCH_DSN)) {
-      response = switchDsn(reqInfo.getParameter(DsnService.VAR_DSN));
+    } else if (BeeUtils.same(svc, Service.SWITCH_DSN)) {
+      response = switchDsn(reqInfo.getParameter(Service.VAR_DSN));
 
     } else if (BeeUtils.same(svc, Service.SEARCH)) {
       response = search.processQuery(reqInfo.getParameter(0));

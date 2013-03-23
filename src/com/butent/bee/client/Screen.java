@@ -3,11 +3,11 @@ package com.butent.bee.client;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.Workspace;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.NotificationListener;
 
 /**
  * manages the main browser window and it's main containing elements (f.e. panels).

@@ -189,7 +189,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         Action.NO_ACTIONS);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {
-      BeeButton filter = new BeeButton("Filtras", new ClickHandler() {
+      BeeButton filter = new BeeButton(Global.CONSTANTS.filter(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           handleAction(Action.FILTER);
@@ -303,7 +303,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
             if (ok) {
               refreshFilterInfo();
             } else {
-              BeeKeeper.getScreen().notifyWarning("Nieko nerasta");
+              BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.nothingFound());
             }
           }
         });
@@ -988,7 +988,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (setData(response)) {
       callback.onSuccess(this);
     } else {
-      callback.onFailure(getCaption(), "negavo duomenų iš serverio", Global.CONSTANTS.sorry());
+      callback.onFailure(getCaption(), Global.CONSTANTS.nothingFound());
     }
   }
 

@@ -559,7 +559,7 @@ public class Search {
           }
 
           if (results.isEmpty()) {
-            BeeKeeper.getScreen().notifyWarning(value, "nieko nerasta");
+            BeeKeeper.getScreen().notifyWarning(value, Global.CONSTANTS.nothingFound());
           } else {
             ModuleManager.maybeInitialize(new Command() {
               @Override

@@ -20,6 +20,8 @@ class Vehicle implements HasDateRange {
   private static final int modelNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_MODEL_NAME);
   private static final String modelLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_MODEL);
 
+  private static final int typeNameIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_TYPE_NAME);
+
   private static final int notesIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_VEHICLE_NOTES);
   private static final String notesLabel = Data.getColumnLabel(VIEW_VEHICLES, COL_VEHICLE_NOTES);
 
@@ -95,5 +97,9 @@ class Vehicle implements HasDateRange {
 
   String getTitle() {
     return getNotes();
+  }
+  
+  String getType() {
+    return BeeUtils.trim(row.getString(typeNameIndex));
   }
 }

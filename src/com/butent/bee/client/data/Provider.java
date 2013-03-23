@@ -6,10 +6,10 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -215,7 +215,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       if (Global.isDebug()) {
         notificationListener.notifyWarning("no rows found", filter.toString());
       } else {
-        notificationListener.notifyWarning("Nieko nerasta");
+        notificationListener.notifyWarning(Global.CONSTANTS.nothingFound());
       }
     }
   }

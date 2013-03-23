@@ -1,8 +1,8 @@
 package com.butent.bee.client.validation;
 
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
