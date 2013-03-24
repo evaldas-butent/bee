@@ -18,6 +18,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
@@ -111,7 +112,7 @@ class FreightExchange extends ChartBase {
 
   @Override
   public String getCaption() {
-    return "Užsakymų birža";
+    return Global.CONSTANTS.freightExchange();
   }
 
   @Override

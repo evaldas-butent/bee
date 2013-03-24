@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -31,7 +32,7 @@ class TruckTimeBoard extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return "Vilkikų užimtumas";
+    return Global.CONSTANTS.truckTimeBoard();
   }
 
   @Override

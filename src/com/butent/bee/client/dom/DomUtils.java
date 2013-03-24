@@ -91,6 +91,7 @@ public class DomUtils {
   public static final String ATTRIBUTE_TYPE = "type";
   public static final String ATTRIBUTE_VALUE = "value";
 
+  public static final String ATTRIBUTE_DATA_INDEX = "data-idx";
   public static final String ATTRIBUTE_DATA_COLUMN = "data-col";
   public static final String ATTRIBUTE_DATA_ROW = "data-row";
   public static final String ATTRIBUTE_ROLE = "data-role";
@@ -534,19 +535,16 @@ public class DomUtils {
   }
 
   public static String getDataColumn(Element elem) {
-    return elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
+    return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
 
-  public static String getDataColumn(UIObject obj) {
-    return getAttribute(obj, ATTRIBUTE_DATA_COLUMN);
+  public static int getDataIndex(Element elem) {
+    String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
+    return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
   }
-
+  
   public static String getDataRow(Element elem) {
-    return elem.getAttribute(ATTRIBUTE_DATA_ROW);
-  }
-
-  public static String getDataRow(UIObject obj) {
-    return getAttribute(obj, ATTRIBUTE_DATA_ROW);
+    return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
 
   public static Element getElement(String id) {
@@ -1569,10 +1567,11 @@ public class DomUtils {
     elem.setAttribute(ATTRIBUTE_DATA_COLUMN, Integer.toString(col));
   }
 
-  public static void setDataColumn(UIObject obj, int col) {
-    setAttribute(obj, ATTRIBUTE_DATA_COLUMN, col);
+  public static void setDataIndex(Element elem, int idx) {
+    Assert.notNull(elem);
+    elem.setAttribute(ATTRIBUTE_DATA_INDEX, Integer.toString(idx));
   }
-
+  
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);

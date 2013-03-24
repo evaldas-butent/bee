@@ -20,6 +20,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class DialogBox extends Popup implements Printable {
 
+  public static final int HEADER_HEIGHT = 31;
+
   private static final String STYLE_DIALOG = "bee-DialogBox";
 
   private static final String STYLE_HEADER = "bee-Dialog-header";

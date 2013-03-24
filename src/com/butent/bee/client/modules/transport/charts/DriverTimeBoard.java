@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Edges;
@@ -188,7 +189,7 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   public String getCaption() {
-    return "Vairuotojų užimtumas";
+    return Global.CONSTANTS.driverTimeBoard();
   }
 
   @Override

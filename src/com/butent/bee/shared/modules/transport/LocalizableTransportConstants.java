@@ -28,12 +28,19 @@ public interface LocalizableTransportConstants {
   String createTripForCargoQuestion();
   
   String driverGroups();
+  String driverGroupsShort();
   String drivers();
+  String driverTimeBoard();
+
+  String freightExchange();
 
   String intermediateLoading();
   String intermediateUnloading();
   
+  String shippingSchedule();
+
   String trailers();
+  String trailerTimeBoard();
   
   String transportationCustomers();
   String transportationOrders();
@@ -43,8 +50,12 @@ public interface LocalizableTransportConstants {
   String trips();
 
   String trucks();
+  String truckTimeBoard();
 
   String vehicleGroups();
+  String vehicleGroupsShort();
   String vehicleModels();
+  String vehicleModelsShort();
   String vehicleTypes();
+  String vehicleTypesShort();
 }

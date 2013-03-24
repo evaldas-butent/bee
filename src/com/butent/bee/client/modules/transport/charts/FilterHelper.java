@@ -29,34 +29,33 @@ import java.util.Collection;
 import java.util.List;
 
 class FilterHelper {
-  
+
   abstract static class DialogCallback extends Callback<DialogBox> {
   }
-  
+
   private static class DataWidget extends Flow {
-    
+
     private final ChartData data;
 
     private DataWidget(ChartData data) {
       super();
       this.data = data;
-      
+
       addStyleName(STYLE_DATA_PANEL);
-      
+
       Element unselectedContainer = Document.get().createDivElement();
       Element selectedContainer = Document.get().createDivElement();
-      
-      List<Item> items = data.getList();
-      int selectedCounter = 0;
-      
-      for (Item item : items) {
+
+      List<Item> items = data.getItems();
+
+      for (int i = 0; i < items.size(); i++) {
         Element itemElement = Document.get().createDivElement();
         itemElement.addClassName(STYLE_DATA_ITEM);
-        itemElement.setInnerText(item.getName());
-        
-        if (item.isSelected()) {
+        itemElement.setInnerText(items.get(i).getName());
+        DomUtils.setDataIndex(itemElement, i);
+
+        if (items.get(i).isSelected()) {
           selectedContainer.appendChild(itemElement);
-          selectedCounter++;
         } else {
           unselectedContainer.appendChild(itemElement);
         }
@@ -65,24 +64,24 @@ class FilterHelper {
       CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
       caption.setText(data.getType().getCaption());
       add(caption);
-      
+
       CustomWidget unselectedPanel = new CustomWidget(unselectedContainer, STYLE_DATA_UNSELECTED);
       unselectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
       add(unselectedPanel);
-      
+
       Flow unselectedControls = new Flow();
       unselectedControls.addStyleName(STYLE_DATA_UNSELECTED);
       unselectedControls.addStyleName(STYLE_DATA_CONTROLS);
-      
+
       CustomDiv unselectedSize = new CustomDiv(STYLE_DATA_SIZE);
-      unselectedSize.setText(BeeUtils.toString(items.size() - selectedCounter));
+      unselectedSize.setText(BeeUtils.toString(data.getNumberOfUnselectedItems()));
       unselectedControls.add(unselectedSize);
-      
+
       BeeImage selectAll = new BeeImage(Global.getImages().arrowDownDouble());
       selectAll.addStyleName(STYLE_DATA_COMMAND_ALL);
       selectAll.setTitle(Global.CONSTANTS.selectAll());
       unselectedControls.add(selectAll);
-      
+
       add(unselectedControls);
 
       InputText search = new InputText();
@@ -93,18 +92,18 @@ class FilterHelper {
       Flow selectedControls = new Flow();
       selectedControls.addStyleName(STYLE_DATA_SELECTED);
       selectedControls.addStyleName(STYLE_DATA_CONTROLS);
-      
+
       CustomDiv selectedSize = new CustomDiv(STYLE_DATA_SIZE);
-      selectedSize.setText(BeeUtils.toString(selectedCounter));
+      selectedSize.setText(BeeUtils.toString(data.getNumberOfSelectedItems()));
       selectedControls.add(selectedSize);
-      
+
       BeeImage deselectAll = new BeeImage(Global.getImages().arrowUpDouble());
       deselectAll.addStyleName(STYLE_DATA_COMMAND_ALL);
       deselectAll.setTitle(Global.CONSTANTS.deselectAll());
       selectedControls.add(deselectAll);
-      
+
       add(selectedControls);
-      
+
       CustomWidget selectedPanel = new CustomWidget(selectedContainer, STYLE_DATA_SELECTED);
       selectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
       add(selectedPanel);
@@ -112,14 +111,15 @@ class FilterHelper {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FilterHelper.class);
-  
+
   private static final String STYLE_PREFIX = "bee-tr-chart-filter-";
 
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
-  private static final String STYLE_WRAPPER = STYLE_PREFIX + "wrapper";
-  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
+  private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
 
   private static final String STYLE_DATA_PREFIX = STYLE_PREFIX + "data-";
+  private static final String STYLE_DATA_WRAPPER = STYLE_DATA_PREFIX + "wrapper";
+  private static final String STYLE_DATA_CONTAINER = STYLE_DATA_PREFIX + "container";
   private static final String STYLE_DATA_PANEL = STYLE_DATA_PREFIX + "panel";
   private static final String STYLE_DATA_UNSELECTED = STYLE_DATA_PREFIX + "unselected";
   private static final String STYLE_DATA_SELECTED = STYLE_DATA_PREFIX + "selected";
@@ -139,18 +139,19 @@ class FilterHelper {
   private static final String STYLE_COMMAND_FILTER = STYLE_PREFIX + "commandFilter";
 
   private static final int DATA_SPLITTER_WIDTH = 3;
-  private static final int DATA_PANEL_WIDTH = 150;
-  private static final int DATA_PANEL_HEIGHT = 400;
+  private static final int DATA_PANEL_MIN_WIDTH = 100;
+  private static final int DATA_PANEL_MAX_WIDTH = 250;
+  private static final int DATA_PANEL_MIN_HEIGHT = 200;
+  private static final int DATA_PANEL_MAX_HEIGHT = 400;
 
-  private static final int COMMAND_GROUP_HEIGHT = 30;
-  private static final int COMMAND_SPLITTER_HEIGHT = 0;
+  private static final int COMMAND_GROUP_HEIGHT = 32;
 
-  private static final int CONTAINER_WIDTH_RESERVE = 100;
-  private static final int CONTAINER_HEIGHT_RESERVE = 60;
-  
+  private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
+  private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
+
   static List<ChartData> notEmptyData(Collection<ChartData> data) {
     List<ChartData> result = Lists.newArrayList();
-    
+
     if (data != null) {
       for (ChartData cd : data) {
         if (cd != null && !cd.isEmpty()) {
@@ -158,10 +159,10 @@ class FilterHelper {
         }
       }
     }
-    
+
     return result;
   }
-  
+
   static void openDialog(final List<ChartData> filterData, final DialogCallback callback) {
     boolean ok = false;
     int dataCounter = 0;
@@ -180,29 +181,56 @@ class FilterHelper {
       return;
     }
 
-    int containerWidth = DATA_PANEL_WIDTH * dataCounter + DATA_SPLITTER_WIDTH * (dataCounter - 1);
-    int containerHeight = DATA_PANEL_HEIGHT + COMMAND_SPLITTER_HEIGHT + COMMAND_GROUP_HEIGHT;
+    int dialogMaxWidth = BeeUtils.round(BeeKeeper.getScreen().getWidth()
+        * DIALOG_MAX_WIDTH_FACTOR);
+    int dialogMaxHeight = BeeUtils.round(BeeKeeper.getScreen().getHeight()
+        * DIALOG_MAX_HEIGHT_FACTOR);
     
-    int wrapperWidth = Math.min(containerWidth,
-        BeeKeeper.getScreen().getWidth() - CONTAINER_WIDTH_RESERVE);
-    int wrapperHeight = Math.min(containerHeight,
-        BeeKeeper.getScreen().getHeight() - CONTAINER_HEIGHT_RESERVE);
-    
-    if (wrapperWidth < 50 || wrapperHeight < COMMAND_GROUP_HEIGHT + 50) {
+    int dataPanelWidth = (dialogMaxWidth - DATA_SPLITTER_WIDTH * (dataCounter - 1)) / dataCounter;
+    int dataPanelHeight = dialogMaxHeight - DialogBox.HEADER_HEIGHT - COMMAND_GROUP_HEIGHT
+        - DomUtils.getScrollBarHeight();
+
+    if (dialogMaxWidth < DATA_PANEL_MIN_WIDTH || dataPanelHeight < DATA_PANEL_MIN_HEIGHT) {
       logger.warning("get a real computer", BeeKeeper.getScreen().getWidth(),
-          BeeKeeper.getScreen().getHeight());
+          BeeKeeper.getScreen().getHeight(), dataPanelWidth, dataPanelHeight);
       return;
     }
     
+    dataPanelWidth = BeeUtils.clamp(dataPanelWidth, DATA_PANEL_MIN_WIDTH, DATA_PANEL_MAX_WIDTH);
+    dataPanelHeight = BeeUtils.clamp(dataPanelHeight, DATA_PANEL_MIN_HEIGHT, DATA_PANEL_MAX_HEIGHT);
+    
+    int dataContainerWidth = dataPanelWidth * dataCounter + DATA_SPLITTER_WIDTH * (dataCounter - 1);
+    int dataContainerHeight = dataPanelHeight;
+
+    int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth);
+    int dataWrapperHeight = dataContainerHeight + DomUtils.getScrollBarHeight();
+
+    int contentWidth = dataWrapperWidth;
+    int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
+    
     final DialogBox dialog = DialogBox.create(Global.CONSTANTS.filter(), STYLE_DIALOG);
 
-    Split container = new Split(DATA_SPLITTER_WIDTH);
-    container.addStyleName(STYLE_CONTAINER);
-    StyleUtils.setSize(container, containerWidth, containerHeight);
+    Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
+    dataContainer.addStyleName(STYLE_DATA_CONTAINER);
+    StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
+
+    int dataIndex = 0;
+    for (ChartData data : filterData) {
+      if (!data.isEmpty()) {
+        DataWidget dataWidget = new DataWidget(data);
+        dataIndex++;
+
+        if (dataIndex < dataCounter) {
+          dataContainer.addWest(dataWidget, dataPanelWidth, DATA_SPLITTER_WIDTH);
+        } else {
+          dataContainer.add(dataWidget);
+        }
+      }
+    }
     
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
-    
+
     BeeButton filter = new BeeButton(Global.CONSTANTS.doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -216,38 +244,29 @@ class FilterHelper {
       @Override
       public void onClick(ClickEvent event) {
         for (ChartData cd : filterData) {
-          cd.setSelected(false);
+          cd.deselectAll();
         }
       }
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
-    
-    container.addSouth(commands, COMMAND_GROUP_HEIGHT, COMMAND_SPLITTER_HEIGHT);
-    
-    int dataIndex = 0;
-    for (ChartData data : filterData) {
-      if (!data.isEmpty()) {
-        DataWidget dataWidget = new DataWidget(data);
-        dataIndex++;
 
-        if (dataIndex < dataCounter) {
-          container.addWest(dataWidget, DATA_PANEL_WIDTH, DATA_SPLITTER_WIDTH);
-        } else {
-          container.add(dataWidget);
-        }
-      }
-    }
+    Simple dataWrapper = new Simple(dataContainer);
+    dataWrapper.addStyleName(STYLE_DATA_WRAPPER);
+    StyleUtils.setSize(dataWrapper, dataWrapperWidth, dataWrapperHeight);
     
-    Simple wrapper = new Simple(container);
-    wrapper.addStyleName(STYLE_WRAPPER);
-    StyleUtils.setSize(wrapper, wrapperWidth, wrapperHeight);
+    Flow content = new Flow();
+    content.addStyleName(STYLE_CONTENT);
+    StyleUtils.setSize(content, contentWidth, contentHeight);
+    
+    content.add(dataWrapper);
+    content.add(commands);
 
-    dialog.setWidget(wrapper);
-    
+    dialog.setWidget(content);
+
     dialog.setHideOnEscape(true);
     dialog.setAnimationEnabled(true);
-    
+
     dialog.center();
     filter.setFocus(true);
   }

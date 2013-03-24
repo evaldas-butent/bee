@@ -637,7 +637,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     removeFilter.setVisible(false);
 
     for (ChartData data : filterData) {
-      data.setSelected(false);
+      data.deselectAll();
     }
   }
 

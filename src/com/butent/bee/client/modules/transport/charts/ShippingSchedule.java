@@ -248,7 +248,7 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
 
   @Override
   public String getCaption() {
-    return "Reisų kalendorius";
+    return Global.CONSTANTS.shippingSchedule();
   }
 
   @Override

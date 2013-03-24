@@ -435,6 +435,10 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(driverData);
 
     data.add(trucks ? trailerData : truckData);
+    
+    for (ChartData cd : data) {
+      cd.prepare();
+    }
 
     return FilterHelper.notEmptyData(data);
   }

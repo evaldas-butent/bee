@@ -432,31 +432,82 @@
   text-overflow: ellipsis;
 }
 
-.bee-tr-chart-filter-data-panel {
-  position: relative;
-}
-
-.bee-tr-chart-filter-data-caption {
-  padding-bottom: 3px;
-  font-weight: bold; 
-}
-
-.bee-tr-chart-filter-data-itemContainer {
-  max-height: 200px;
-  max-width: 200px;
+.bee-tr-chart-filter-data-wrapper {
   overflow: auto;
 }
 
-.bee-tr-chart-filter-data-item:hover {
+.bee-tr-chart-filter-data-caption {
+  height: 35px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.bee-tr-chart-filter-data-unselected.bee-tr-chart-filter-data-itemContainer {
+  top: 36px;
+  bottom: 50%; 
+}
+
+.bee-tr-chart-filter-data-unselected.bee-tr-chart-filter-data-controls {
+  top: -webkit-calc(50% + 4px);
+  bottom: 0; 
+}
+
+.bee-tr-chart-filter-data-search {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: -webkit-calc(50% + 25px);
+}
+
+.bee-tr-chart-filter-data-selected.bee-tr-chart-filter-data-controls {
+  top: -webkit-calc(50% + 48px);
+  bottom: 0; 
+}
+
+.bee-tr-chart-filter-data-selected.bee-tr-chart-filter-data-itemContainer {
+  top: -webkit-calc(50% + 70px);
+  bottom: 0; 
+}
+
+.bee-tr-chart-filter-data-controls {
+  position: absolute;
+  left: 0;
+  right: 2px;
+  height: 16px;
+  display: -webkit-flex;
+  -webkit-justify-content: flex-end;
+}
+
+.bee-tr-chart-filter-data-itemContainer {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.bee-tr-chart-filter-data-item {
+  font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
 }
 .bee-tr-chart-filter-data-item:hover {
-  background-color: rgba(0, 0, 255, 0.4);
+  background-color: rgba(0, 0, 255, 0.5);
   color: white;
 }
 
+.bee-tr-chart-filter-data-size {
+  font-weight: bold;
+  margin-right: 3px;
+}
+.bee-tr-chart-filter-data-commandAll {
+  -webkit-filter: grayscale(50%);
+}
+
 .bee-tr-chart-filter-commandGroup {
-  margin-top: 1ex;
+  margin-top: 2px;
+  display: -webkit-flex;
+  -webkit-justify-content: center;
 }
 .bee-tr-chart-filter-commandClear {
   margin-left: 2em;

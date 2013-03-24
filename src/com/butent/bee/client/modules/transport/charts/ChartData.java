@@ -2,13 +2,13 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 class ChartData {
@@ -53,27 +53,23 @@ class ChartData {
     String getName() {
       return name;
     }
-    
-    void invert() {
-      setSelected(!isSelected());
-    }
 
     boolean isSelected() {
       return selected;
     }
 
-    void setSelected(boolean selected) {
-      this.selected = selected;
-    }
-
     private void increment() {
       count++;
+    }
+
+    private void setSelected(boolean selected) {
+      this.selected = selected;
     }
   }
 
   enum Type implements HasCaption {
     DRIVER(Global.CONSTANTS.drivers()),
-    DRIVER_GROUP(Global.CONSTANTS.driverGroups()),
+    DRIVER_GROUP(Global.CONSTANTS.driverGroupsShort()),
     CARGO(Global.CONSTANTS.cargos()),
     CUSTOMER(Global.CONSTANTS.transportationCustomers()),
     LOADING(Global.CONSTANTS.cargoLoading()),
@@ -84,9 +80,9 @@ class ChartData {
     TRIP(Global.CONSTANTS.trips()),
     TRUCK(Global.CONSTANTS.trucks()),
     UNLOADING(Global.CONSTANTS.cargoUnloading()),
-    VEHICLE_GROUP(Global.CONSTANTS.vehicleGroups()),
-    VEHICLE_MODEL(Global.CONSTANTS.vehicleModels()),
-    VEHICLE_TYPE(Global.CONSTANTS.vehicleTypes());
+    VEHICLE_GROUP(Global.CONSTANTS.vehicleGroupsShort()),
+    VEHICLE_MODEL(Global.CONSTANTS.vehicleModelsShort()),
+    VEHICLE_TYPE(Global.CONSTANTS.vehicleTypesShort());
 
     private final String caption;
 
@@ -102,10 +98,20 @@ class ChartData {
 
   private final Type type;
 
-  private final Collection<Item> items = Sets.newTreeSet();
+  private final List<Item> items = Lists.newArrayList();
+  
+  private int numberOfSelectedItems = 0;
 
   ChartData(Type type) {
     this.type = type;
+  }
+
+  void add(Collection<String> names) {
+    if (names != null) {
+      for (String name : names) {
+        add(name);
+      }
+    }
   }
 
   void add(String name) {
@@ -120,15 +126,7 @@ class ChartData {
       item.increment();
     }
   }
-  
-  void add(Collection<String> names) {
-    if (names != null) {
-      for (String name : names) {
-        add(name);
-      }
-    }
-  }
-  
+
   void addNotEmpty(String name) {
     if (!BeeUtils.isEmpty(name)) {
       add(name);
@@ -137,10 +135,26 @@ class ChartData {
 
   void clear() {
     items.clear();
+    setNumberOfSelectedItems(0);
   }
 
-  List<Item> getList() {
-    return Lists.newArrayList(items);
+  void deselectAll() {
+    for (Item item : items) {
+      item.setSelected(false);
+    }
+    setNumberOfSelectedItems(0);
+  }
+
+  List<Item> getItems() {
+    return items;
+  }
+
+  int getNumberOfSelectedItems() {
+    return numberOfSelectedItems;
+  }
+  
+  int getNumberOfUnselectedItems() {
+    return size() - getNumberOfSelectedItems();
   }
 
   Collection<String> getSelectedNames() {
@@ -151,28 +165,36 @@ class ChartData {
         names.add(item.name);
       }
     }
-    
+
     return names;
   }
-  
+
   Type getType() {
     return type;
   }
-  
+
   boolean isEmpty() {
     return items.isEmpty();
   }
-
-  void setSelected(boolean selected) {
-    for (Item item : items) {
-      item.setSelected(selected);
+  
+  void prepare() {
+    if (size() > 1) {
+      Collections.sort(items);
     }
   }
-  
+
+  void selectAll() {
+    for (Item item : items) {
+      item.setSelected(true);
+    }
+    setNumberOfSelectedItems(size());
+  }
+
   void setSelected(String name, boolean selected) {
     Item item = find(name);
-    if (item != null) {
+    if (item != null && item.isSelected() != selected) {
       item.setSelected(selected);
+      setNumberOfSelectedItems(getNumberOfSelectedItems() + (selected ? 1 : -1));
     }
   }
 
@@ -181,13 +203,15 @@ class ChartData {
   }
 
   private Item find(String name) {
-    if (!BeeUtils.isEmpty(name)) {
-      for (Item item : items) {
-        if (item.name.equals(name)) {
-          return item;
-        }
+    for (Item item : items) {
+      if (Objects.equal(item.name, name)) {
+        return item;
       }
     }
     return null;
+  }
+  
+  private void setNumberOfSelectedItems(int numberOfSelectedItems) {
+    this.numberOfSelectedItems = numberOfSelectedItems;
   }
 }
