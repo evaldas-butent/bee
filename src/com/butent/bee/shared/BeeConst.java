@@ -71,6 +71,7 @@ public class BeeConst {
   public static final String STRING_COLON = ":";
   public static final String STRING_PERCENT = "%";
   public static final String STRING_NBSP = "\u00a0";
+  public static final String STRING_SLASH = "/";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);

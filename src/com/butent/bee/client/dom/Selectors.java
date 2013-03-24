@@ -197,7 +197,7 @@ public class Selectors {
 
   public static String idSelector(String id) {
     assertIdentifier(id);
-    return CLASS_SELECTOR_PREFIX + id.trim();
+    return ID_SELECTOR_PREFIX + id.trim();
   }
 
   public static boolean isIdentifier(String s) {

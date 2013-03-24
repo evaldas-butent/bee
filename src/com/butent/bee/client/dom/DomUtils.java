@@ -542,7 +542,7 @@ public class DomUtils {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
   }
-  
+
   public static String getDataRow(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
@@ -639,6 +639,20 @@ public class DomUtils {
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
+
+  public static Element getFirstVisibleChild(Element parent) {
+    if (parent == null) {
+      return null;
+    }
+
+    for (Element child = parent.getFirstChildElement(); child != null;
+        child = child.getNextSiblingElement()) {
+      if (UIObject.isVisible(child)) {
+        return child;
+      }
+    }
+    return null;
+  }
 
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
@@ -1116,6 +1130,21 @@ public class DomUtils {
     Assert.notNull(obj);
     return getValueInt(obj.getElement());
   }
+  
+  public static List<Element> getVisibleChildren(Element parent) {
+    List<Element> result = Lists.newArrayList();
+    if (parent == null) {
+      return result;
+    }
+
+    for (Element child = parent.getFirstChildElement(); child != null;
+        child = child.getNextSiblingElement()) {
+      if (UIObject.isVisible(child)) {
+        result.add(child);
+      }
+    }
+    return result;
+  }
 
   public static Widget getWidget(String id) {
     Widget root = BeeKeeper.getScreen().getScreenPanel();
@@ -1350,6 +1379,10 @@ public class DomUtils {
     }
   }
 
+  public static void moveBy(String id, int dx, int dy) {
+    moveBy(getElement(id), dx, dy);
+  }
+
   public static void moveBy(Style st, int dx, int dy) {
     if (dx != 0) {
       StyleUtils.setLeft(st, StyleUtils.getLeft(st) + dx);
@@ -1357,10 +1390,6 @@ public class DomUtils {
     if (dy != 0) {
       StyleUtils.setTop(st, StyleUtils.getTop(st) + dy);
     }
-  }
-
-  public static void moveBy(String id, int dx, int dy) {
-    moveBy(getElement(id), dx, dy);
   }
 
   public static void moveBy(UIObject obj, int dx, int dy) {
@@ -1460,6 +1489,10 @@ public class DomUtils {
     }
   }
 
+  public static void resizeBy(String id, int dw, int dh) {
+    resizeBy(getElement(id), dw, dh);
+  }
+
   public static void resizeBy(Style st, int dw, int dh) {
     if (dw != 0) {
       StyleUtils.setWidth(st, StyleUtils.getWidth(st) + dw);
@@ -1467,10 +1500,6 @@ public class DomUtils {
     if (dh != 0) {
       StyleUtils.setHeight(st, StyleUtils.getHeight(st) + dh);
     }
-  }
-
-  public static void resizeBy(String id, int dw, int dh) {
-    resizeBy(getElement(id), dw, dh);
   }
 
   public static void resizeBy(UIObject obj, int dw, int dh) {
@@ -1493,12 +1522,12 @@ public class DomUtils {
     }
   }
 
-  public static void resizeHorizontalBy(Style st, int dw) {
-    resizeBy(st, dw, 0);
-  }
-
   public static void resizeHorizontalBy(String id, int dw) {
     resizeHorizontalBy(getElement(id), dw);
+  }
+
+  public static void resizeHorizontalBy(Style st, int dw) {
+    resizeBy(st, dw, 0);
   }
 
   public static void resizeHorizontalBy(UIObject obj, int dw) {
@@ -1521,12 +1550,12 @@ public class DomUtils {
     }
   }
 
-  public static void resizeVerticalBy(Style st, int dh) {
-    resizeBy(st, 0, dh);
-  }
-
   public static void resizeVerticalBy(String id, int dh) {
     resizeVerticalBy(getElement(id), dh);
+  }
+
+  public static void resizeVerticalBy(Style st, int dh) {
+    resizeBy(st, 0, dh);
   }
 
   public static void resizeVerticalBy(UIObject obj, int dh) {
@@ -1571,7 +1600,7 @@ public class DomUtils {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Integer.toString(idx));
   }
-  
+
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
@@ -1746,7 +1775,7 @@ public class DomUtils {
     Element elem = DOM.createDiv();
 
     elem.getStyle().setPosition(Position.ABSOLUTE);
-    
+
     StyleUtils.setLeft(elem, -1000);
     StyleUtils.setTop(elem, -1000);
     StyleUtils.setWidth(elem, 100);

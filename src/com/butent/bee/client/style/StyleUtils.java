@@ -109,7 +109,7 @@ public class StyleUtils {
         return FONT_SIZE_LARGER;
       }
     };
-    
+
     public String getClassName() {
       return "bee-font-" + getCssName();
     }
@@ -314,7 +314,7 @@ public class StyleUtils {
   public static final String STYLE_LETTER_SPACING = "letterSpacing";
 
   public static final String STYLE_TRANSFORM = "webkitTransform";
-  
+
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -342,7 +342,7 @@ public class StyleUtils {
 
   public static final String NAME_BOLD = "bee-font-bold";
   public static final String NAME_ITALIC = "bee-font-italic";
-  
+
   public static final String FONT_SIZE_XX_SMALL = "xx-small";
   public static final String FONT_SIZE_X_SMALL = "x-small";
   public static final String FONT_SIZE_SMALL = "small";
@@ -397,7 +397,7 @@ public class StyleUtils {
   public static final String CSS_LINE_HEIGHT = "line-height";
   public static final String CSS_TEXT_TRANSFORM = "text-transform";
   public static final String CSS_LETTER_SPACING = "letter-spacing";
-  
+
   public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
       buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
 
@@ -642,7 +642,7 @@ public class StyleUtils {
   public static SafeStyles buildLineHeight(String value) {
     return buildStyle(CSS_LINE_HEIGHT, value);
   }
-  
+
   public static SafeStyles buildMargin(String value) {
     return buildStyle(STYLE_MARGIN, value);
   }
@@ -679,7 +679,7 @@ public class StyleUtils {
     Assert.notNull(textTransform);
     return buildStyle(CSS_TEXT_TRANSFORM, textTransform.getCssName());
   }
-  
+
   public static SafeStyles buildTop(double value, CssUnit unit) {
     return buildStyle(STYLE_TOP, toCssLength(value, unit));
   }
@@ -711,7 +711,7 @@ public class StyleUtils {
   public static void clearClip(UIObject obj) {
     clearClip(Assert.notNull(obj).getElement());
   }
-  
+
   public static void clearDisplay(Element el) {
     Assert.notNull(el);
     if (!BeeUtils.isEmpty(el.getStyle().getDisplay())) {
@@ -737,7 +737,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     clearHeight(obj.getElement());
   }
-  
+
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
@@ -757,7 +757,7 @@ public class StyleUtils {
     Assert.notNull(st);
     st.clearProperty(STYLE_TRANSFORM);
   }
-  
+
   public static void clearWidth(Element el) {
     Assert.notNull(el);
     el.getStyle().clearWidth();
@@ -767,7 +767,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     clearWidth(obj.getElement());
   }
-  
+
   public static void collapseBorders(Element el) {
     Assert.notNull(el);
     collapseBorders(el.getStyle());
@@ -786,7 +786,7 @@ public class StyleUtils {
   public static boolean containsClassName(String classes, String className) {
     return indexOfClassName(className, classes) >= 0;
   }
-  
+
   public static void copyBorder(Style src, Style dst) {
     copyProperties(src, dst, STYLE_BORDER_WIDTH, STYLE_BORDER_STYLE, STYLE_BORDER_COLOR,
         STYLE_BORDER_LEFT, STYLE_BORDER_RIGHT, STYLE_BORDER_TOP, STYLE_BORDER_BOTTOM);
@@ -1013,7 +1013,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     return getCssText(obj.getElement());
   }
-  
+
   public static int getHeight(Element el) {
     Assert.notNull(el);
     return getHeight(el.getStyle());
@@ -1093,12 +1093,12 @@ public class StyleUtils {
       if (sheet == null) {
         continue;
       }
-      
+
       JsCSSRuleList rules = sheet.getRules();
       if (rules == null) {
         continue;
       }
-      
+
       for (int j = 0; j < rules.length(); j++) {
         String text = rules.item(j).getCssText();
         if (!BeeUtils.isEmpty(text)) {
@@ -1113,7 +1113,7 @@ public class StyleUtils {
     Assert.notNull(el);
     return getScroll(el.getStyle());
   }
-  
+
   public static ScrollBars getScroll(Style st) {
     Assert.notNull(st);
 
@@ -1334,14 +1334,14 @@ public class StyleUtils {
     }
     return cnt;
   }
-  
+
   public static boolean isPositioned(Style st) {
     Assert.notNull(st);
     String value = st.getPosition();
     if (BeeUtils.isEmpty(value)) {
       return false;
     }
-    
+
     Position position = parseCssName(Position.class, value);
     return (position != null && !Position.STATIC.equals(position));
   }
@@ -1400,11 +1400,11 @@ public class StyleUtils {
     Assert.notNull(el);
     occupy(el.getStyle());
   }
-  
+
   public static void occupy(Style st) {
     Assert.notNull(st);
     st.setPosition(Position.ABSOLUTE);
-    
+
     setLeft(st, 0, CssUnit.PX);
     setRight(st, 0, CssUnit.PX);
     setTop(st, 0, CssUnit.PX);
@@ -1437,7 +1437,7 @@ public class StyleUtils {
     }
     return Pair.of(value, unit);
   }
-  
+
   public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {
     Assert.notNull(clazz);
     Assert.notEmpty(input);
@@ -1449,7 +1449,7 @@ public class StyleUtils {
     }
     return null;
   }
-  
+
   public static FontSize parseFontSize(String input) {
     return parseCssName(FontSize.class, input);
   }
@@ -1491,7 +1491,7 @@ public class StyleUtils {
   public static TextTransform parseTextTransform(String input) {
     return parseCssName(TextTransform.class, input);
   }
-  
+
   public static VerticalAlign parseVerticalAlign(String input) {
     return parseCssName(VerticalAlign.class, input);
   }
@@ -1528,7 +1528,7 @@ public class StyleUtils {
 
     return sb.toString();
   }
-  
+
   public static void removeStyleDependentName(Element el, String style) {
     setStyleDependentName(el, style, false);
   }
@@ -1574,7 +1574,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     setBackgroundImage(obj.getElement(), url);
   }
-  
+
   public static void setBorderColor(Element el, String color) {
     Assert.notNull(el);
     setBorderColor(el.getStyle(), color);
@@ -1624,7 +1624,7 @@ public class StyleUtils {
     Assert.nonNegative(px);
     st.setPropertyPx(STYLE_BORDER_WIDTH, px);
   }
-  
+
   public static void setBorderWidth(UIObject obj, int px) {
     Assert.notNull(obj);
     setBorderWidth(obj.getElement(), px);
@@ -1639,7 +1639,7 @@ public class StyleUtils {
     Assert.notNull(el);
     setBottom(el.getStyle(), px);
   }
-  
+
   public static void setBottom(String id, int px) {
     setBottom(DomUtils.getElement(id), px);
   }
@@ -1667,7 +1667,7 @@ public class StyleUtils {
   public static void setClip(Element el, Edges edges) {
     setClip(Assert.notNull(el).getStyle(), edges);
   }
-  
+
   public static void setClip(Element el, int top, int right, int bottom, int left) {
     setClip(Assert.notNull(el).getStyle(), top, right, bottom, left);
   }
@@ -1683,7 +1683,7 @@ public class StyleUtils {
   public static void setClip(UIObject obj, Edges edges) {
     setClip(Assert.notNull(obj).getElement(), edges);
   }
-  
+
   public static void setClip(UIObject obj, int top, int right, int bottom, int left) {
     setClip(Assert.notNull(obj).getElement(), top, right, bottom, left);
   }
@@ -1765,7 +1765,7 @@ public class StyleUtils {
     Assert.notNull(el);
     setFontSize(el.getStyle(), size, unit);
   }
-  
+
   public static void setFontSize(Element el, FontSize size) {
     Assert.notNull(el);
     setFontSize(el.getStyle(), size);
@@ -1904,7 +1904,7 @@ public class StyleUtils {
     Assert.notNull(el);
     setLeft(el.getStyle(), value, unit);
   }
-  
+
   public static void setLeft(Element el, int px) {
     Assert.notNull(el);
     setLeft(el.getStyle(), px);
@@ -1942,7 +1942,7 @@ public class StyleUtils {
     Assert.notNull(el);
     setLetterSpacing(el.getStyle(), value);
   }
-  
+
   public static void setLetterSpacing(Style st, String value) {
     Assert.notNull(st);
     Assert.notEmpty(value);
@@ -1985,7 +1985,7 @@ public class StyleUtils {
     Assert.isPositive(value);
     setProperty(st, STYLE_MAX_HEIGHT, value, normalizeUnit(unit));
   }
-  
+
   public static void setMaxHeight(Style st, int px) {
     Assert.notNull(st);
     Assert.isPositive(px);
@@ -2182,7 +2182,7 @@ public class StyleUtils {
 
   public static void setRectangle(Style st, int left, int top, int width, int height) {
     Assert.notNull(st);
-    
+
     setLeft(st, left, DEFAULT_UNIT);
     setTop(st, top, DEFAULT_UNIT);
     setWidth(st, width, DEFAULT_UNIT);
@@ -2348,22 +2348,22 @@ public class StyleUtils {
     Assert.notNull(el);
     setTransformRotate(el.getStyle(), angle);
   }
-  
+
   public static void setTransformRotate(Style st, int angle) {
     Assert.notNull(st);
     st.setProperty(STYLE_TRANSFORM, "rotate(" + angle + "deg)");
   }
-  
+
   public static void setTransformRotate(UIObject obj, int angle) {
     Assert.notNull(obj);
     setTransformRotate(obj.getElement(), angle);
   }
-  
+
   public static void setTransformScale(Element el, double x, double y) {
     Assert.notNull(el);
     setTransformScale(el.getStyle(), x, y);
   }
-  
+
   public static void setTransformScale(Style st, double x, double y) {
     Assert.notNull(st);
     st.setProperty(STYLE_TRANSFORM, "scale(" + x + "," + y + ")");
@@ -2373,16 +2373,36 @@ public class StyleUtils {
     Assert.notNull(obj);
     setTransformScale(obj.getElement(), x, y);
   }
-  
+
   public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
     Assert.notNull(el);
     setVerticalAlign(el.getStyle(), align);
   }
-  
+
   public static void setVerticalAlign(Style st, VerticalAlignmentConstant align) {
     Assert.notNull(st);
     Assert.notNull(align);
     st.setProperty(STYLE_VERTICAL_ALIGN, align.getVerticalAlignString());
+  }
+
+  public static void setVisible(Element el, boolean visible) {
+    Assert.notNull(el);
+    if (UIObject.isVisible(el) != visible) {
+      if (visible) {
+        el.getStyle().clearDisplay();
+      } else {
+        el.getStyle().setDisplay(Display.NONE);
+      }
+    }
+  }
+
+  public static void setVisible(String id, boolean visible) {
+    setVisible(DomUtils.getElement(id), visible);
+  }
+
+  public static void setVisible(UIObject obj, boolean visible) {
+    Assert.notNull(obj);
+    setVisible(obj.getElement(), visible);
   }
 
   public static void setWhiteSpace(Element el, WhiteSpace value) {
@@ -2563,7 +2583,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     updateClasses(obj.getElement(), classes);
   }
-  
+
   public static void updateStyle(Element el, String styles) {
     Assert.notNull(el);
     updateStyle(el.getStyle(), styles);
@@ -2747,7 +2767,7 @@ public class StyleUtils {
     }
     return result;
   }
-  
+
   private static void setFontSize(Style st, String value) {
     Assert.notNull(st);
     Assert.notEmpty(value);

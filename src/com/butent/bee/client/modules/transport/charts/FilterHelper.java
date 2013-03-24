@@ -5,12 +5,19 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.InputEvent;
+import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
@@ -21,6 +28,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -35,7 +43,24 @@ class FilterHelper {
 
   private static class DataWidget extends Flow {
 
+    private static final int MIN_SIZE_FOR_COMMAND_ALL = 2;
+    private static final int MIN_SIZE_FOR_SEARCH = 5;
+
     private final ChartData data;
+
+    private final Element unselectedContainer;
+    private final Element selectedContainer;
+
+    private final CustomDiv unselectedSizeWidget;
+    private final BeeImage selectAllWidget;
+
+    private final CustomDiv selectedSizeWidget;
+    private final BeeImage deselectAllWidget;
+
+    private final InputText searchBox;
+
+    private String searchQuery = null;
+    private int numberOfHiddenItems = 0;
 
     private DataWidget(ChartData data) {
       super();
@@ -43,11 +68,122 @@ class FilterHelper {
 
       addStyleName(STYLE_DATA_PANEL);
 
-      Element unselectedContainer = Document.get().createDivElement();
-      Element selectedContainer = Document.get().createDivElement();
+      this.unselectedContainer = Document.get().createDivElement();
+      this.selectedContainer = Document.get().createDivElement();
 
       List<Item> items = data.getItems();
+      addItems(items);
 
+      CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
+      caption.setText(data.getType().getCaption());
+      add(caption);
+
+      CustomWidget unselectedPanel = new CustomWidget(unselectedContainer, STYLE_DATA_UNSELECTED);
+      unselectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
+
+      unselectedPanel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          DataWidget.this.onItemClick(event, false);
+        }
+      });
+
+      add(unselectedPanel);
+
+      Flow unselectedControls = new Flow();
+      unselectedControls.addStyleName(STYLE_DATA_UNSELECTED);
+      unselectedControls.addStyleName(STYLE_DATA_CONTROLS);
+
+      this.unselectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
+      unselectedControls.add(unselectedSizeWidget);
+
+      if (items.size() >= MIN_SIZE_FOR_COMMAND_ALL) {
+        this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
+        selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
+        selectAllWidget.setTitle(Global.CONSTANTS.selectAll());
+
+        selectAllWidget.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            DataWidget.this.doAll(false);
+          }
+        });
+
+        unselectedControls.add(selectAllWidget);
+      } else {
+        this.selectAllWidget = null;
+      }
+
+      add(unselectedControls);
+
+      if (items.size() >= MIN_SIZE_FOR_SEARCH) {
+        this.searchBox = new InputText();
+        searchBox.addStyleName(STYLE_DATA_SEARCH);
+        DomUtils.setInputType(searchBox, DomUtils.TYPE_SEARCH);
+
+        searchBox.addInputHandler(new InputHandler() {
+          @Override
+          public void onInput(InputEvent event) {
+            DataWidget.this.doSearch(DataWidget.this.searchBox.getValue());
+          }
+        });
+
+        searchBox.addKeyDownHandler(new KeyDownHandler() {
+          @Override
+          public void onKeyDown(KeyDownEvent event) {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+              DataWidget.this.onEnterKeyDown(EventUtils.hasModifierKey(event.getNativeEvent()));
+            }
+          }
+        });
+
+        add(searchBox);
+      } else {
+        this.searchBox = null;
+      }
+
+      Flow selectedControls = new Flow();
+      selectedControls.addStyleName(STYLE_DATA_SELECTED);
+      selectedControls.addStyleName(STYLE_DATA_CONTROLS);
+
+      this.selectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
+      selectedControls.add(selectedSizeWidget);
+
+      if (items.size() >= MIN_SIZE_FOR_COMMAND_ALL) {
+        this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
+        deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
+        deselectAllWidget.setTitle(Global.CONSTANTS.deselectAll());
+
+        deselectAllWidget.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            DataWidget.this.doAll(true);
+          }
+        });
+
+        selectedControls.add(deselectAllWidget);
+      } else {
+        this.deselectAllWidget = null;
+      }
+
+      add(selectedControls);
+
+      CustomWidget selectedPanel = new CustomWidget(selectedContainer, STYLE_DATA_SELECTED);
+      selectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
+
+      selectedPanel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          DataWidget.this.onItemClick(event, true);
+        }
+      });
+
+      add(selectedPanel);
+
+      refresh();
+    }
+    
+    private void addItems(List<Item> items) {
       for (int i = 0; i < items.size(); i++) {
         Element itemElement = Document.get().createDivElement();
         itemElement.addClassName(STYLE_DATA_ITEM);
@@ -60,53 +196,170 @@ class FilterHelper {
           unselectedContainer.appendChild(itemElement);
         }
       }
+    }
 
-      CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
-      caption.setText(data.getType().getCaption());
-      add(caption);
+    private void doAll(boolean wasSelected) {
+      List<Element> children = DomUtils.getVisibleChildren(wasSelected
+          ? selectedContainer : unselectedContainer);
 
-      CustomWidget unselectedPanel = new CustomWidget(unselectedContainer, STYLE_DATA_UNSELECTED);
-      unselectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
-      add(unselectedPanel);
+      boolean updated = false;
+      for (Element child : children) {
+        updated |= moveItem(child, wasSelected);
+      }
 
-      Flow unselectedControls = new Flow();
-      unselectedControls.addStyleName(STYLE_DATA_UNSELECTED);
-      unselectedControls.addStyleName(STYLE_DATA_CONTROLS);
+      if (updated) {
+        refresh();
+      }
+    }
 
-      CustomDiv unselectedSize = new CustomDiv(STYLE_DATA_SIZE);
-      unselectedSize.setText(BeeUtils.toString(data.getNumberOfUnselectedItems()));
-      unselectedControls.add(unselectedSize);
+    private void doSearch(String input) {
+      String oldQuery = getSearchQuery();
+      String newQuery = BeeUtils.trim(input);
+      setSearchQuery(newQuery);
+      
+      if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfUnselectedItems() <= 0) {
+        return;
+      }
+      if (getNumberOfVisibleUnselectedItems() <= 0 && BeeUtils.containsSame(newQuery, oldQuery)) {
+        return;
+      }
+      if (getNumberOfHiddenItems() <= 0 && BeeUtils.isEmpty(newQuery)) {
+        return;
+      }
+      
+      int hideCnt = 0;
+      
+      for (Element itemElement = unselectedContainer.getFirstChildElement(); itemElement != null;
+          itemElement = itemElement.getNextSiblingElement()) {
+        if (StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)) {
+          boolean match = match(itemElement, newQuery);
+          StyleUtils.setVisible(itemElement, match);
+          
+          if (!match) {
+            hideCnt++;
+          }
+        }
+      }
+      
+      if (getNumberOfHiddenItems() != hideCnt) {
+        setNumberOfHiddenItems(hideCnt);
+        refresh();
+      }
+    }
 
-      BeeImage selectAll = new BeeImage(Global.getImages().arrowDownDouble());
-      selectAll.addStyleName(STYLE_DATA_COMMAND_ALL);
-      selectAll.setTitle(Global.CONSTANTS.selectAll());
-      unselectedControls.add(selectAll);
+    private int getNumberOfHiddenItems() {
+      return numberOfHiddenItems;
+    }
 
-      add(unselectedControls);
+    private int getNumberOfVisibleUnselectedItems() {
+      return data.getNumberOfUnselectedItems() - getNumberOfHiddenItems();
+    }
 
-      InputText search = new InputText();
-      search.addStyleName(STYLE_DATA_SEARCH);
-      DomUtils.setInputType(search, DomUtils.TYPE_SEARCH);
-      add(search);
+    private String getSearchQuery() {
+      return searchQuery;
+    }
+    
+    private boolean match(Element itemElement, String query) {
+      return BeeUtils.isEmpty(query) 
+          ? true : BeeUtils.containsSame(itemElement.getInnerText(), query);
+    }
 
-      Flow selectedControls = new Flow();
-      selectedControls.addStyleName(STYLE_DATA_SELECTED);
-      selectedControls.addStyleName(STYLE_DATA_CONTROLS);
+    private boolean moveItem(Element itemElement, boolean wasSelected) {
+      boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
+          && data.setSelected(DomUtils.getDataIndex(itemElement), !wasSelected);
 
-      CustomDiv selectedSize = new CustomDiv(STYLE_DATA_SIZE);
-      selectedSize.setText(BeeUtils.toString(data.getNumberOfSelectedItems()));
-      selectedControls.add(selectedSize);
+      if (updated) {
+        if (wasSelected) {
+          selectedContainer.removeChild(itemElement);
+          
+          if (!match(itemElement, getSearchQuery())) {
+            StyleUtils.setVisible(itemElement, false);
+            setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
+          }
+        
+          unselectedContainer.appendChild(itemElement);
 
-      BeeImage deselectAll = new BeeImage(Global.getImages().arrowUpDouble());
-      deselectAll.addStyleName(STYLE_DATA_COMMAND_ALL);
-      deselectAll.setTitle(Global.CONSTANTS.deselectAll());
-      selectedControls.add(deselectAll);
+        } else {
+          unselectedContainer.removeChild(itemElement);
+          selectedContainer.appendChild(itemElement);
+        }
+      }
 
-      add(selectedControls);
+      return updated;
+    }
 
-      CustomWidget selectedPanel = new CustomWidget(selectedContainer, STYLE_DATA_SELECTED);
-      selectedPanel.addStyleName(STYLE_DATA_ITEM_CONTAINER);
-      add(selectedPanel);
+    private void onEnterKeyDown(boolean hasModifiers) {
+      if (BeeUtils.isEmpty(getSearchQuery()) || getNumberOfVisibleUnselectedItems() <= 0) {
+        return;
+      }
+
+      if (hasModifiers) {
+        doAll(false);
+      } else if (moveItem(DomUtils.getFirstVisibleChild(unselectedContainer), false)) {
+        refresh();
+      }
+    }
+
+    private void onItemClick(ClickEvent event, boolean wasSelected) {
+      if (moveItem(EventUtils.getEventTargetElement(event), wasSelected)) {
+        refresh();
+      }
+    }
+
+    private void refresh() {
+      int cnt = data.getNumberOfUnselectedItems();
+      if (unselectedSizeWidget != null) {
+        String text;
+        if (cnt <= 0) {
+          text = BeeConst.STRING_EMPTY;
+        } else if (getNumberOfHiddenItems() > 0) {
+          text = BeeUtils.join(BeeConst.STRING_SLASH, getNumberOfVisibleUnselectedItems(), cnt);
+        } else {
+          text = BeeUtils.toString(cnt);
+        }
+        unselectedSizeWidget.setText(text);
+      }
+
+      if (selectAllWidget != null) {
+        StyleUtils.setVisible(selectAllWidget, getNumberOfVisibleUnselectedItems() > 0);
+      }
+
+      cnt = data.getNumberOfSelectedItems();
+      if (selectedSizeWidget != null) {
+        String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
+        selectedSizeWidget.setText(text);
+      }
+      
+      if (deselectAllWidget != null) {
+        StyleUtils.setVisible(deselectAllWidget, cnt > 0);
+      }
+    }
+    
+    private void reset() {
+      if (searchBox != null) {
+        searchBox.clearValue();
+        setSearchQuery(null);
+        setNumberOfHiddenItems(0);
+      }
+      
+      if (data.getNumberOfSelectedItems() > 0) {
+        data.deselectAll();
+      }
+      
+      DomUtils.clear(unselectedContainer);
+      DomUtils.clear(selectedContainer);
+      
+      addItems(data.getItems());
+      
+      refresh();
+    }
+
+    private void setNumberOfHiddenItems(int numberOfHiddenItems) {
+      this.numberOfHiddenItems = numberOfHiddenItems;
+    }
+
+    private void setSearchQuery(String searchQuery) {
+      this.searchQuery = searchQuery;
     }
   }
 
@@ -163,7 +416,7 @@ class FilterHelper {
     return result;
   }
 
-  static void openDialog(final List<ChartData> filterData, final DialogCallback callback) {
+  static void openDialog(List<ChartData> filterData, final DialogCallback callback) {
     boolean ok = false;
     int dataCounter = 0;
 
@@ -185,7 +438,7 @@ class FilterHelper {
         * DIALOG_MAX_WIDTH_FACTOR);
     int dialogMaxHeight = BeeUtils.round(BeeKeeper.getScreen().getHeight()
         * DIALOG_MAX_HEIGHT_FACTOR);
-    
+
     int dataPanelWidth = (dialogMaxWidth - DATA_SPLITTER_WIDTH * (dataCounter - 1)) / dataCounter;
     int dataPanelHeight = dialogMaxHeight - DialogBox.HEADER_HEIGHT - COMMAND_GROUP_HEIGHT
         - DomUtils.getScrollBarHeight();
@@ -195,10 +448,10 @@ class FilterHelper {
           BeeKeeper.getScreen().getHeight(), dataPanelWidth, dataPanelHeight);
       return;
     }
-    
+
     dataPanelWidth = BeeUtils.clamp(dataPanelWidth, DATA_PANEL_MIN_WIDTH, DATA_PANEL_MAX_WIDTH);
     dataPanelHeight = BeeUtils.clamp(dataPanelHeight, DATA_PANEL_MIN_HEIGHT, DATA_PANEL_MAX_HEIGHT);
-    
+
     int dataContainerWidth = dataPanelWidth * dataCounter + DATA_SPLITTER_WIDTH * (dataCounter - 1);
     int dataContainerHeight = dataPanelHeight;
 
@@ -207,10 +460,10 @@ class FilterHelper {
 
     int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
-    
+
     final DialogBox dialog = DialogBox.create(Global.CONSTANTS.filter(), STYLE_DIALOG);
 
-    Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
+    final Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
 
@@ -227,7 +480,7 @@ class FilterHelper {
         }
       }
     }
-    
+
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
@@ -243,8 +496,10 @@ class FilterHelper {
     BeeButton clear = new BeeButton(Global.CONSTANTS.clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        for (ChartData cd : filterData) {
-          cd.deselectAll();
+        for (Widget widget : dataContainer) {
+          if (widget instanceof DataWidget) {
+            ((DataWidget) widget).reset();
+          }
         }
       }
     });
@@ -254,11 +509,11 @@ class FilterHelper {
     Simple dataWrapper = new Simple(dataContainer);
     dataWrapper.addStyleName(STYLE_DATA_WRAPPER);
     StyleUtils.setSize(dataWrapper, dataWrapperWidth, dataWrapperHeight);
-    
+
     Flow content = new Flow();
     content.addStyleName(STYLE_CONTENT);
     StyleUtils.setSize(content, contentWidth, contentHeight);
-    
+
     content.add(dataWrapper);
     content.add(commands);
 

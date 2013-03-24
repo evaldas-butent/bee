@@ -190,12 +190,26 @@ class ChartData {
     setNumberOfSelectedItems(size());
   }
 
-  void setSelected(String name, boolean selected) {
-    Item item = find(name);
+  boolean setItemSelected(Item item, boolean selected) {
     if (item != null && item.isSelected() != selected) {
       item.setSelected(selected);
       setNumberOfSelectedItems(getNumberOfSelectedItems() + (selected ? 1 : -1));
+      return true;
+    } else {
+      return false;
     }
+  }
+
+  boolean setSelected(int index, boolean selected) {
+    if (BeeUtils.isIndex(items, index)) {
+      return setItemSelected(items.get(index), selected);
+    } else {
+      return false;
+    }
+  }
+
+  boolean setSelected(String name, boolean selected) {
+    return setItemSelected(find(name), selected);
   }
 
   int size() {
