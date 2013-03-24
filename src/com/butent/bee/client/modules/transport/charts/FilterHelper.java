@@ -34,6 +34,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 
 class FilterHelper {
@@ -71,8 +72,7 @@ class FilterHelper {
       this.unselectedContainer = Document.get().createDivElement();
       this.selectedContainer = Document.get().createDivElement();
 
-      List<Item> items = data.getItems();
-      addItems(items);
+      int itemCount = addItems(data.getItems());
 
       CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
       caption.setText(data.getType().getCaption());
@@ -97,7 +97,7 @@ class FilterHelper {
       this.unselectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
       unselectedControls.add(unselectedSizeWidget);
 
-      if (items.size() >= MIN_SIZE_FOR_COMMAND_ALL) {
+      if (itemCount >= MIN_SIZE_FOR_COMMAND_ALL) {
         this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
         selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
         selectAllWidget.setTitle(Global.CONSTANTS.selectAll());
@@ -116,7 +116,7 @@ class FilterHelper {
 
       add(unselectedControls);
 
-      if (items.size() >= MIN_SIZE_FOR_SEARCH) {
+      if (itemCount >= MIN_SIZE_FOR_SEARCH) {
         this.searchBox = new InputText();
         searchBox.addStyleName(STYLE_DATA_SEARCH);
         DomUtils.setInputType(searchBox, DomUtils.TYPE_SEARCH);
@@ -149,7 +149,7 @@ class FilterHelper {
       this.selectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
       selectedControls.add(selectedSizeWidget);
 
-      if (items.size() >= MIN_SIZE_FOR_COMMAND_ALL) {
+      if (itemCount >= MIN_SIZE_FOR_COMMAND_ALL) {
         this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
         deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
         deselectAllWidget.setTitle(Global.CONSTANTS.deselectAll());
@@ -183,19 +183,29 @@ class FilterHelper {
       refresh();
     }
     
-    private void addItems(List<Item> items) {
+    private int addItems(List<Item> items) {
+      int count = 0;
+
       for (int i = 0; i < items.size(); i++) {
+        Item item = items.get(i);
+        if (!item.isEnabled()) {
+          continue;
+        }
+        
         Element itemElement = Document.get().createDivElement();
         itemElement.addClassName(STYLE_DATA_ITEM);
-        itemElement.setInnerText(items.get(i).getName());
+        itemElement.setInnerText(item.getName());
         DomUtils.setDataIndex(itemElement, i);
 
-        if (items.get(i).isSelected()) {
+        if (item.isSelected()) {
           selectedContainer.appendChild(itemElement);
         } else {
           unselectedContainer.appendChild(itemElement);
         }
+        count++;
       }
+      
+      return count;
     }
 
     private void doAll(boolean wasSelected) {
@@ -217,7 +227,7 @@ class FilterHelper {
       String newQuery = BeeUtils.trim(input);
       setSearchQuery(newQuery);
       
-      if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfUnselectedItems() <= 0) {
+      if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfEnabledUnselectedItems() <= 0) {
         return;
       }
       if (getNumberOfVisibleUnselectedItems() <= 0 && BeeUtils.containsSame(newQuery, oldQuery)) {
@@ -252,7 +262,7 @@ class FilterHelper {
     }
 
     private int getNumberOfVisibleUnselectedItems() {
-      return data.getNumberOfUnselectedItems() - getNumberOfHiddenItems();
+      return data.getNumberOfEnabledUnselectedItems() - getNumberOfHiddenItems();
     }
 
     private String getSearchQuery() {
@@ -307,7 +317,7 @@ class FilterHelper {
     }
 
     private void refresh() {
-      int cnt = data.getNumberOfUnselectedItems();
+      int cnt = data.getNumberOfEnabledUnselectedItems();
       if (unselectedSizeWidget != null) {
         String text;
         if (cnt <= 0) {
@@ -401,6 +411,32 @@ class FilterHelper {
 
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
+  
+  static List<ChartData> getSelectedData(Collection<ChartData> data) {
+    List<ChartData> result = Lists.newArrayList();
+
+    if (data != null) {
+      for (ChartData input : data) {
+        if (input != null && input.hasSelection()) {
+          ChartData selected = new ChartData(input.getType());
+          selected.getItems().addAll(input.getSelectedItems());
+          
+          result.add(selected);
+        }
+      }
+    }
+
+    return result;
+  }
+  
+  static boolean matched(EnumMap<Filterable.FilterType, Boolean> results,
+      Filterable.FilterType filterType) {
+    if (results.containsKey(filterType)) {
+      return BeeUtils.unbox(results.get(filterType));
+    } else {
+      return false;
+    }
+  }
 
   static List<ChartData> notEmptyData(Collection<ChartData> data) {
     List<ChartData> result = Lists.newArrayList();
@@ -421,7 +457,7 @@ class FilterHelper {
     int dataCounter = 0;
 
     for (ChartData data : filterData) {
-      if (data.size() > 1) {
+      if (data.getNumberOfEnabledItems() > 1) {
         ok = true;
       }
       if (!data.isEmpty()) {

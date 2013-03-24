@@ -33,7 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class Trip implements HasDateRange, HasColorSource, HasItemName {
+class Trip extends Filterable implements HasDateRange, HasColorSource, HasItemName {
 
   private static final String VIEW_NAME = VIEW_TRIPS;
 
@@ -168,6 +168,20 @@ class Trip implements HasDateRange, HasColorSource, HasItemName {
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
   }
 
+  @Override
+  public boolean filter(FilterType filterType, Collection<ChartData> data) {
+    boolean match = true;
+    
+    for (ChartData cd : data) {
+      if (cd.getType() == ChartData.Type.TRIP) {
+        match = cd.contains(getTripId());
+        break;
+      }
+    }
+
+    return match;
+  }
+  
   @Override
   public Long getColorSource() {
     return tripId;

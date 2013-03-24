@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-class Driver implements HasDateRange, HasItemName {
+class Driver extends Filterable implements HasDateRange, HasItemName  {
   
   static String getNames(String separator, Collection<Driver> drivers) {
     if (BeeUtils.isEmpty(drivers)) {
@@ -34,12 +34,26 @@ class Driver implements HasDateRange, HasItemName {
   private final String itemName;
 
   private final Range<JustDate> range;
-
+  
   Driver(Long driverId, String firstName, String lastName, JustDate startDate, JustDate endDate) {
     this.id = driverId;
     this.itemName = BeeUtils.joinWords(firstName, lastName);
 
     this.range = ChartHelper.getActivity(startDate, endDate);
+  }
+
+  @Override
+  public boolean filter(FilterType filterType, Collection<ChartData> data) {
+    boolean match = true;
+    
+    for (ChartData cd : data) {
+      if (cd.getType() == ChartData.Type.DRIVER) {
+        match = cd.contains(getId());
+        break;
+      }
+    }
+
+    return match;
   }
 
   @Override

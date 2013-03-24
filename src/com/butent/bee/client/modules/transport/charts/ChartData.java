@@ -18,7 +18,10 @@ class ChartData {
     private final Long id;
 
     private int count;
+
     private boolean selected = false;
+    private boolean used = false;
+    private boolean enabled = true;
 
     private Item(String name, Long id) {
       this.name = name;
@@ -54,16 +57,32 @@ class ChartData {
       return name;
     }
 
+    boolean isEnabled() {
+      return enabled;
+    }
+
     boolean isSelected() {
       return selected;
+    }
+
+    boolean isUsed() {
+      return used;
     }
 
     private void increment() {
       count++;
     }
 
+    private void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
     private void setSelected(boolean selected) {
       this.selected = selected;
+    }
+
+    private void setUsed(boolean used) {
+      this.used = used;
     }
   }
 
@@ -99,8 +118,10 @@ class ChartData {
   private final Type type;
 
   private final List<Item> items = Lists.newArrayList();
-  
+
   private int numberOfSelectedItems = 0;
+  private int numberOfUsedItems = 0;
+  private int numberOfDisabledItems = 0;
 
   ChartData(Type type) {
     this.type = type;
@@ -132,37 +153,83 @@ class ChartData {
       add(name);
     }
   }
-
+  
   void clear() {
     items.clear();
+
     setNumberOfSelectedItems(0);
+    setNumberOfUsedItems(0);
+    setNumberOfDisabledItems(0);
   }
 
-  void deselectAll() {
-    for (Item item : items) {
-      item.setSelected(false);
+  boolean contains(Long id) {
+    if (id == null) {
+      return false;
     }
-    setNumberOfSelectedItems(0);
+
+    for (Item item : items) {
+      if (Objects.equal(item.id, id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  boolean contains(String name) {
+    return find(name) != null;
+  }
+  
+  void deselectAll() {
+    if (getNumberOfSelectedItems() > 0) {
+      for (Item item : items) {
+        item.setSelected(false);
+      }
+      setNumberOfSelectedItems(0);
+    }
   }
 
   List<Item> getItems() {
     return items;
   }
 
+  int getNumberOfEnabledItems() {
+    return size() - getNumberOfDisabledItems();
+  }
+  
+  int getNumberOfEnabledUnselectedItems() {
+    return size() - getNumberOfSelectedItems() - getNumberOfDisabledItems();
+  }
+
   int getNumberOfSelectedItems() {
     return numberOfSelectedItems;
   }
-  
-  int getNumberOfUnselectedItems() {
-    return size() - getNumberOfSelectedItems();
+
+  int getNumberOfUsedItems() {
+    return numberOfUsedItems;
+  }
+
+  List<Item> getSelectedItems() {
+    List<Item> result = Lists.newArrayList();
+
+    if (getNumberOfSelectedItems() > 0) {
+      for (Item item : items) {
+        if (item.isSelected()) {
+          result.add(item);
+        }
+      }
+    }
+
+    return result;
   }
 
   Collection<String> getSelectedNames() {
     List<String> names = Lists.newArrayList();
 
-    for (Item item : items) {
-      if (item.isSelected()) {
-        names.add(item.name);
+    if (getNumberOfSelectedItems() > 0) {
+      for (Item item : items) {
+        if (item.isSelected()) {
+          names.add(item.name);
+        }
       }
     }
 
@@ -172,11 +239,29 @@ class ChartData {
   Type getType() {
     return type;
   }
+  
+  Collection<String> getUsedNames() {
+    List<String> names = Lists.newArrayList();
+
+    if (getNumberOfUsedItems() > 0) {
+      for (Item item : items) {
+        if (item.isUsed()) {
+          names.add(item.name);
+        }
+      }
+    }
+
+    return names;
+  }
+
+  boolean hasSelection() {
+    return getNumberOfSelectedItems() > 0 && getNumberOfEnabledUnselectedItems() > 0;
+  }
 
   boolean isEmpty() {
     return items.isEmpty();
   }
-  
+
   void prepare() {
     if (size() > 1) {
       Collections.sort(items);
@@ -184,16 +269,44 @@ class ChartData {
   }
 
   void selectAll() {
-    for (Item item : items) {
-      item.setSelected(true);
+    if (getNumberOfSelectedItems() < size()) {
+      for (Item item : items) {
+        item.setSelected(true);
+      }
+      setNumberOfSelectedItems(size());
     }
-    setNumberOfSelectedItems(size());
+  }
+
+  boolean setItemEnabled(Item item, boolean enabled) {
+    if (item != null && item.isEnabled() != enabled) {
+      item.setEnabled(enabled);
+      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enabled ? -1 : 1));
+      
+      if (!enabled) {
+        setItemSelected(item, false);
+        setItemUsed(item, false);
+      }
+      
+      return true;
+    } else {
+      return false;
+    }
   }
 
   boolean setItemSelected(Item item, boolean selected) {
     if (item != null && item.isSelected() != selected) {
       item.setSelected(selected);
       setNumberOfSelectedItems(getNumberOfSelectedItems() + (selected ? 1 : -1));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  boolean setItemUsed(Item item, boolean used) {
+    if (item != null && item.isUsed() != used) {
+      item.setUsed(used);
+      setNumberOfUsedItems(getNumberOfUsedItems() + (used ? 1 : -1));
       return true;
     } else {
       return false;
@@ -211,11 +324,16 @@ class ChartData {
   boolean setSelected(String name, boolean selected) {
     return setItemSelected(find(name), selected);
   }
-
-  int size() {
-    return items.size();
+  
+  void unuseAll() {
+    if (getNumberOfUsedItems() > 0) {
+      for (Item item : items) {
+        item.setUsed(false);
+      }
+      setNumberOfUsedItems(0);
+    }
   }
-
+  
   private Item find(String name) {
     for (Item item : items) {
       if (Objects.equal(item.name, name)) {
@@ -224,8 +342,24 @@ class ChartData {
     }
     return null;
   }
-  
+
+  private int getNumberOfDisabledItems() {
+    return numberOfDisabledItems;
+  }
+
+  private void setNumberOfDisabledItems(int numberOfDisabledItems) {
+    this.numberOfDisabledItems = numberOfDisabledItems;
+  }
+
   private void setNumberOfSelectedItems(int numberOfSelectedItems) {
     this.numberOfSelectedItems = numberOfSelectedItems;
+  }
+
+  private void setNumberOfUsedItems(int numberOfUsedItems) {
+    this.numberOfUsedItems = numberOfUsedItems;
+  }
+
+  private int size() {
+    return items.size();
   }
 }

@@ -11,7 +11,9 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class Vehicle implements HasDateRange, HasItemName {
+import java.util.Collection;
+
+class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   private static final int numberIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_NUMBER);
 
@@ -58,6 +60,25 @@ class Vehicle implements HasDateRange, HasItemName {
   }
 
   @Override
+  public boolean filter(FilterType filterType, Collection<ChartData> data) {
+    boolean match = true;
+    
+    for (ChartData cd : data) {
+      if (cd.getType() == ChartData.Type.VEHICLE_MODEL) {
+        match = cd.contains(getModel());
+      } else if (cd.getType() == ChartData.Type.VEHICLE_TYPE) {
+        match = cd.contains(getType());
+      }
+      
+      if (!match) {
+        break;
+      }
+    }
+
+    return match;
+  }
+
+  @Override
   public String getItemName() {
     return itemName;
   }
@@ -70,7 +91,7 @@ class Vehicle implements HasDateRange, HasItemName {
   Long getId() {
     return id;
   }
-
+  
   String getInactivityTitle(Range<JustDate> inactivity) {
     if (inactivity == null || getRange() == null) {
       return BeeConst.STRING_EMPTY;
@@ -87,11 +108,11 @@ class Vehicle implements HasDateRange, HasItemName {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   String getInfo() {
     return BeeUtils.joinWords(getModel(), getNotes());
   }
-
+  
   String getMessage(String caption) {
     return ChartHelper.buildTitle(caption, getNumber(), modelLabel, getModel(),
         notesLabel, getNotes());
@@ -100,15 +121,15 @@ class Vehicle implements HasDateRange, HasItemName {
   String getModel() {
     return model;
   }
-  
+
   String getNotes() {
     return BeeUtils.trim(row.getString(notesIndex));
   }
-
+  
   String getNumber() {
     return number;
   }
-  
+
   String getTitle() {
     return getNotes();
   }

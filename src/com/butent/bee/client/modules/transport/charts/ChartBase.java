@@ -637,7 +637,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     removeFilter.setVisible(false);
 
     for (ChartData data : filterData) {
-      data.deselectAll();
+      data.unuseAll();
     }
   }
 
@@ -1721,7 +1721,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     List<String> selection = Lists.newArrayList();
     for (ChartData data : filterData) {
       Collection<String> selectedNames = data.getSelectedNames();
-      if (!selectedNames.isEmpty() && selectedNames.size() < data.size()) {
+      if (!selectedNames.isEmpty() && selectedNames.size() < data.getNumberOfEnabledItems()) {
         selection.addAll(selectedNames);
       }
     }

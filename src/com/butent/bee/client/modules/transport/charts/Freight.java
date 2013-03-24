@@ -15,7 +15,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -23,9 +22,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 
-class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
+class Freight extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
 
   private final Long tripId;
 
@@ -111,6 +111,35 @@ class Freight implements HasDateRange, HasColorSource, HasShipmentInfo {
     this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
   }
 
+  @Override
+  public boolean filter(FilterType filterType, Collection<ChartData> data) {
+    boolean match = true;
+    
+    for (ChartData cd : data) {
+      switch (cd.getType()) {
+        case CARGO:
+          match = cd.contains(getCargoId());
+          break;
+        case CUSTOMER:
+          match = cd.contains(getCustomerId());
+          break;
+        case ORDER:
+          match = cd.contains(getOrderId());
+          break;
+        case ORDER_STATUS:
+          match = (getOrderStatus() != null) && cd.contains((long) getOrderStatus().ordinal());
+          break;
+        default:
+      }
+      
+      if (!match) {
+        break;
+      }
+    }
+
+    return match;
+  }
+  
   @Override
   public Long getColorSource() {
     return tripId;

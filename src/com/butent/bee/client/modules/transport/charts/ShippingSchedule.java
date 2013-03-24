@@ -1167,12 +1167,12 @@ class ShippingSchedule extends ChartBase implements MotionEvent.Handler {
     List<Predicate<Freight>> predicates = Lists.newArrayList();
 
     for (ChartData data : getFilterData()) {
-      if (data.size() <= 1) {
+      if (data.getNumberOfEnabledItems() <= 1) {
         continue;
       }
 
       final Collection<String> selectedNames = data.getSelectedNames();
-      if (selectedNames.isEmpty() || selectedNames.size() >= data.size()) {
+      if (selectedNames.isEmpty() || selectedNames.size() >= data.getNumberOfEnabledItems()) {
         continue;
       }
 
