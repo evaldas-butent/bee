@@ -306,6 +306,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
               BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.nothingFound());
             }
           }
+
+          @Override
+          void onSelectionChange(HasWidgets dataContainer, ChartData.Type dataType) {
+            onFilterSelection(dataContainer, dataType);
+          }
         });
         break;
 
@@ -997,6 +1002,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
    * @param date
    */
   protected void onDoubleClickChart(int row, JustDate date) {
+  }
+
+  /**
+   * @param dataContainer  
+   * @param dataType 
+   */
+  protected void onFilterSelection(HasWidgets dataContainer, ChartData.Type dataType) {
   }
 
   protected void onFooterSplitterMove(MoveEvent event) {
@@ -1790,11 +1802,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setScrollAreaId(String scrollAreaId) {
     this.scrollAreaId = scrollAreaId;
   }
-
+  
   private void setSettings(BeeRowSet settings) {
     this.settings = settings;
   }
-  
+
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
@@ -1809,7 +1821,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       }
     });
   }
-
+  
   private void updateFilterData(List<ChartData> newData) {
     if (BeeUtils.isEmpty(newData)) {
       filterData.clear();

@@ -2,6 +2,8 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Maps;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 import java.util.Collection;
 import java.util.EnumMap;
 
@@ -17,10 +19,19 @@ abstract class Filterable {
   abstract boolean filter(FilterType filterType, Collection<ChartData> data);
   
   boolean matched(FilterType filterType) {
-    return FilterHelper.matched(filterResults, filterType);
+    if (filterType != null && filterResults.containsKey(filterType)) {
+      return BeeUtils.unbox(filterResults.get(filterType));
+    } else {
+      return true;
+    }
   }
 
-  void setMatch(FilterType filterType, boolean match) {
-    filterResults.put(filterType, match);
+  boolean setMatch(FilterType filterType, boolean match) {
+    if (matched(filterType) == match) {
+      return false;
+    } else {
+      filterResults.put(filterType, match);
+      return true;
+    }
   }
 }

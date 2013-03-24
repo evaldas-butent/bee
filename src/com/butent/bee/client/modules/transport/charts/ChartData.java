@@ -188,6 +188,22 @@ class ChartData {
     }
   }
 
+  void disableAll() {
+    if (getNumberOfEnabledItems() > 0) {
+      for (Item item : items) {
+        item.setEnabled(false);
+
+        item.setSelected(false);
+        item.setUsed(false);
+      }
+
+      setNumberOfDisabledItems(size());
+
+      setNumberOfSelectedItems(0);
+      setNumberOfUsedItems(0);
+    }
+  }
+  
   List<Item> getItems() {
     return items;
   }
