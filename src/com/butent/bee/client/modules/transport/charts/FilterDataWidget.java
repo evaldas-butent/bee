@@ -11,6 +11,7 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -32,7 +33,7 @@ import java.util.List;
 class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Type> {
 
   private static final String STYLE_PREFIX = FilterHelper.STYLE_DATA_PREFIX;
-  
+
   private static final String STYLE_DATA_PANEL = STYLE_PREFIX + "panel";
   private static final String STYLE_DATA_UNSELECTED = STYLE_PREFIX + "unselected";
   private static final String STYLE_DATA_SELECTED = STYLE_PREFIX + "selected";
@@ -46,7 +47,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private static final String STYLE_DATA_CONTROLS = STYLE_PREFIX + "controls";
   private static final String STYLE_DATA_SIZE = STYLE_PREFIX + "size";
   private static final String STYLE_DATA_COMMAND_ALL = STYLE_PREFIX + "commandAll";
-  
+
   private static final int MIN_SIZE_FOR_COMMAND_ALL = 2;
   private static final int MIN_SIZE_FOR_SEARCH = 5;
 
@@ -100,50 +101,42 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.unselectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
     unselectedControls.add(unselectedSizeWidget);
 
-    if (itemCount >= MIN_SIZE_FOR_COMMAND_ALL) {
-      this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
-      selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-      selectAllWidget.setTitle(Global.CONSTANTS.selectAll());
+    this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
+    selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
+    selectAllWidget.setTitle(Global.CONSTANTS.selectAll());
 
-      selectAllWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          FilterDataWidget.this.doAll(false);
-        }
-      });
+    selectAllWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        FilterDataWidget.this.doAll(false);
+      }
+    });
 
-      unselectedControls.add(selectAllWidget);
-    } else {
-      this.selectAllWidget = null;
-    }
+    unselectedControls.add(selectAllWidget);
 
     add(unselectedControls);
 
-    if (itemCount >= MIN_SIZE_FOR_SEARCH) {
-      this.searchBox = new InputText();
-      searchBox.addStyleName(STYLE_DATA_SEARCH);
-      DomUtils.setInputType(searchBox, DomUtils.TYPE_SEARCH);
+    this.searchBox = new InputText();
+    searchBox.addStyleName(STYLE_DATA_SEARCH);
+    DomUtils.setInputType(searchBox, DomUtils.TYPE_SEARCH);
 
-      searchBox.addInputHandler(new InputHandler() {
-        @Override
-        public void onInput(InputEvent event) {
-          FilterDataWidget.this.doSearch(FilterDataWidget.this.searchBox.getValue());
+    searchBox.addInputHandler(new InputHandler() {
+      @Override
+      public void onInput(InputEvent event) {
+        FilterDataWidget.this.doSearch(FilterDataWidget.this.searchBox.getValue());
+      }
+    });
+
+    searchBox.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          FilterDataWidget.this.onEnterKeyDown(EventUtils.hasModifierKey(event.getNativeEvent()));
         }
-      });
+      }
+    });
 
-      searchBox.addKeyDownHandler(new KeyDownHandler() {
-        @Override
-        public void onKeyDown(KeyDownEvent event) {
-          if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-            FilterDataWidget.this.onEnterKeyDown(EventUtils.hasModifierKey(event.getNativeEvent()));
-          }
-        }
-      });
-
-      add(searchBox);
-    } else {
-      this.searchBox = null;
-    }
+    add(searchBox);
 
     Flow selectedControls = new Flow();
     selectedControls.addStyleName(STYLE_DATA_SELECTED);
@@ -152,22 +145,18 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.selectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
     selectedControls.add(selectedSizeWidget);
 
-    if (itemCount >= MIN_SIZE_FOR_COMMAND_ALL) {
-      this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
-      deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-      deselectAllWidget.setTitle(Global.CONSTANTS.deselectAll());
+    this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
+    deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
+    deselectAllWidget.setTitle(Global.CONSTANTS.deselectAll());
 
-      deselectAllWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          FilterDataWidget.this.doAll(true);
-        }
-      });
+    deselectAllWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        FilterDataWidget.this.doAll(true);
+      }
+    });
 
-      selectedControls.add(deselectAllWidget);
-    } else {
-      this.deselectAllWidget = null;
-    }
+    selectedControls.add(deselectAllWidget);
 
     add(selectedControls);
 
@@ -183,34 +172,98 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     add(selectedPanel);
 
+    updateVisibility(itemCount);
     refresh();
   }
-  
+
   @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<ChartData.Type> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
-  
+
+  void addItem(Item item, int index) {
+    Element itemElement = Document.get().createDivElement();
+    itemElement.addClassName(STYLE_DATA_ITEM);
+    itemElement.setInnerText(item.getName());
+    DomUtils.setDataIndex(itemElement, index);
+
+    if (item.isSelected()) {
+      selectedContainer.appendChild(itemElement);
+
+    } else {
+      if (!matches(itemElement, getSearchQuery())) {
+        StyleUtils.setVisible(itemElement, false);
+        setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
+      }
+      
+      unselectedContainer.appendChild(itemElement);
+    }
+  }
+
   boolean hasType(ChartData.Type type) {
     return data.getType() == type;
   }
   
-  void reset(boolean deselect) {
+  void refresh() {
+    int cnt = data.getNumberOfEnabledUnselectedItems();
+    if (unselectedSizeWidget != null) {
+      String text;
+      if (cnt <= 0) {
+        text = BeeConst.STRING_EMPTY;
+      } else if (getNumberOfHiddenItems() > 0) {
+        text = BeeUtils.join(BeeConst.STRING_SLASH, getNumberOfVisibleUnselectedItems(), cnt);
+      } else {
+        text = BeeUtils.toString(cnt);
+      }
+      unselectedSizeWidget.setText(text);
+    }
+
+    if (selectAllWidget != null) {
+      StyleUtils.setVisible(selectAllWidget,
+          getNumberOfVisibleUnselectedItems() >= MIN_SIZE_FOR_COMMAND_ALL);
+    }
+
+    cnt = data.getNumberOfSelectedItems();
+    if (selectedSizeWidget != null) {
+      String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
+      selectedSizeWidget.setText(text);
+    }
+
+    if (deselectAllWidget != null) {
+      StyleUtils.setVisible(deselectAllWidget, cnt >= MIN_SIZE_FOR_COMMAND_ALL);
+    }
+  }
+
+  void removeItem(int index, boolean selected) {
+    Element itemElement = DomUtils.getChildByDataIndex(selected
+        ? selectedContainer : unselectedContainer, index);
+
+    if (itemElement != null) {
+      if (!selected && !UIObject.isVisible(itemElement)) {
+        setNumberOfHiddenItems(getNumberOfHiddenItems() - 1);
+      }
+      itemElement.removeFromParent();
+    }
+  }
+  
+  void reset(boolean resetData) {
     if (searchBox != null) {
       searchBox.clearValue();
       setSearchQuery(null);
       setNumberOfHiddenItems(0);
     }
-    
-    if (deselect && data.getNumberOfSelectedItems() > 0) {
+
+    if (resetData) {
+      data.enableAll();
       data.deselectAll();
     }
-    
+
     DomUtils.clear(unselectedContainer);
     DomUtils.clear(selectedContainer);
-    
-    addItems(data.getItems());
-    
+
+    int itemCount = addItems(data.getItems());
+
+    updateVisibility(itemCount);
     refresh();
   }
 
@@ -219,23 +272,12 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     for (int i = 0; i < items.size(); i++) {
       Item item = items.get(i);
-      if (!item.isEnabled()) {
-        continue;
+      if (item.isEnabled()) {
+        addItem(item, i);
+        count++;
       }
-      
-      Element itemElement = Document.get().createDivElement();
-      itemElement.addClassName(STYLE_DATA_ITEM);
-      itemElement.setInnerText(item.getName());
-      DomUtils.setDataIndex(itemElement, i);
-
-      if (item.isSelected()) {
-        selectedContainer.appendChild(itemElement);
-      } else {
-        unselectedContainer.appendChild(itemElement);
-      }
-      count++;
     }
-    
+
     return count;
   }
 
@@ -258,7 +300,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     String oldQuery = getSearchQuery();
     String newQuery = BeeUtils.trim(input);
     setSearchQuery(newQuery);
-    
+
     if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfEnabledUnselectedItems() <= 0) {
       return;
     }
@@ -268,21 +310,21 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     if (getNumberOfHiddenItems() <= 0 && BeeUtils.isEmpty(newQuery)) {
       return;
     }
-    
+
     int hideCnt = 0;
-    
+
     for (Element itemElement = unselectedContainer.getFirstChildElement(); itemElement != null;
         itemElement = itemElement.getNextSiblingElement()) {
       if (StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)) {
-        boolean match = match(itemElement, newQuery);
+        boolean match = matches(itemElement, newQuery);
         StyleUtils.setVisible(itemElement, match);
-        
+
         if (!match) {
           hideCnt++;
         }
       }
     }
-    
+
     if (getNumberOfHiddenItems() != hideCnt) {
       setNumberOfHiddenItems(hideCnt);
       refresh();
@@ -296,7 +338,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private int getNumberOfHiddenItems() {
     return numberOfHiddenItems;
   }
-  
+
   private int getNumberOfVisibleUnselectedItems() {
     return data.getNumberOfEnabledUnselectedItems() - getNumberOfHiddenItems();
   }
@@ -305,8 +347,8 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     return searchQuery;
   }
 
-  private boolean match(Element itemElement, String query) {
-    return BeeUtils.isEmpty(query) 
+  private boolean matches(Element itemElement, String query) {
+    return BeeUtils.isEmpty(query)
         ? true : BeeUtils.containsSame(itemElement.getInnerText(), query);
   }
 
@@ -317,12 +359,12 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     if (updated) {
       if (wasSelected) {
         selectedContainer.removeChild(itemElement);
-        
-        if (!match(itemElement, getSearchQuery())) {
+
+        if (!matches(itemElement, getSearchQuery())) {
           StyleUtils.setVisible(itemElement, false);
           setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
         }
-      
+
         unselectedContainer.appendChild(itemElement);
 
       } else {
@@ -346,7 +388,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       fireSelection();
     }
   }
-  
+
   private void onItemClick(ClickEvent event, boolean wasSelected) {
     if (moveItem(EventUtils.getEventTargetElement(event), wasSelected)) {
       refresh();
@@ -354,40 +396,15 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     }
   }
 
-  private void refresh() {
-    int cnt = data.getNumberOfEnabledUnselectedItems();
-    if (unselectedSizeWidget != null) {
-      String text;
-      if (cnt <= 0) {
-        text = BeeConst.STRING_EMPTY;
-      } else if (getNumberOfHiddenItems() > 0) {
-        text = BeeUtils.join(BeeConst.STRING_SLASH, getNumberOfVisibleUnselectedItems(), cnt);
-      } else {
-        text = BeeUtils.toString(cnt);
-      }
-      unselectedSizeWidget.setText(text);
-    }
-
-    if (selectAllWidget != null) {
-      StyleUtils.setVisible(selectAllWidget, getNumberOfVisibleUnselectedItems() > 0);
-    }
-
-    cnt = data.getNumberOfSelectedItems();
-    if (selectedSizeWidget != null) {
-      String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
-      selectedSizeWidget.setText(text);
-    }
-    
-    if (deselectAllWidget != null) {
-      StyleUtils.setVisible(deselectAllWidget, cnt > 0);
-    }
-  }
-
   private void setNumberOfHiddenItems(int numberOfHiddenItems) {
     this.numberOfHiddenItems = numberOfHiddenItems;
   }
-  
+
   private void setSearchQuery(String searchQuery) {
     this.searchQuery = searchQuery;
+  }
+
+  private void updateVisibility(int itemCount) {
+    StyleUtils.setVisible(searchBox, itemCount >= MIN_SIZE_FOR_SEARCH);
   }
 }

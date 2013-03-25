@@ -175,6 +175,23 @@ class Trip extends Filterable implements HasDateRange, HasColorSource, HasItemNa
     for (ChartData cd : data) {
       if (cd.getType() == ChartData.Type.TRIP) {
         match = cd.contains(getTripId());
+
+      } else if (cd.getType() == ChartData.Type.DRIVER) {
+        boolean ok = false;
+
+        if (hasDrivers()) {
+          for (Driver driver : drivers) {
+            if (cd.contains(driver.getId())) {
+              ok = true;
+              break;
+            }
+          }
+        }
+        
+        match = ok;
+      }
+      
+      if (!match) {
         break;
       }
     }

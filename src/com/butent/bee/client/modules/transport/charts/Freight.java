@@ -118,7 +118,7 @@ class Freight extends Filterable implements HasDateRange, HasColorSource, HasShi
     for (ChartData cd : data) {
       switch (cd.getType()) {
         case CARGO:
-          match = cd.contains(getCargoId());
+          match = cd.contains(getCargoDescription());
           break;
         case CUSTOMER:
           match = cd.contains(getCustomerId());

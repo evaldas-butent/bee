@@ -56,6 +56,34 @@ class FilterHelper {
 
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
+  
+  static boolean containsName(ChartData data, String name) {
+    if (data == null || BeeUtils.isEmpty(name)) {
+      return false;
+    } else {
+      return data.contains(name);
+    }
+  }
+
+  static ChartData getDataByType(Collection<ChartData> data, ChartData.Type type) {
+    if (data != null && type != null) {
+      for (ChartData cd : data) {
+        if (cd != null && cd.getType() == type) {
+          return cd;
+        }
+      }
+    }
+    return null;
+  }
+  
+  static FilterDataWidget getDataWidget(HasWidgets container, ChartData.Type type) {
+    for (Widget widget : container) {
+      if (widget instanceof FilterDataWidget && ((FilterDataWidget) widget).hasType(type)) {
+        return (FilterDataWidget) widget;
+      }
+    }
+    return null;
+  }
 
   static List<ChartData> getSelectedData(Collection<ChartData> data) {
     List<ChartData> result = Lists.newArrayList();
@@ -72,17 +100,6 @@ class FilterHelper {
     }
 
     return result;
-  }
-
-  static ChartData getDataByType(Collection<ChartData> data, ChartData.Type type) {
-    if (data != null && type != null) {
-      for (ChartData cd : data) {
-        if (cd != null && cd.getType() == type) {
-          return cd;
-        }
-      }
-    }
-    return null;
   }
   
   static List<ChartData> notEmptyData(Collection<ChartData> data) {

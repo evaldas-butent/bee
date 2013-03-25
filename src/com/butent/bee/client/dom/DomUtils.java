@@ -413,6 +413,20 @@ public class DomUtils {
     }
   }
 
+  public static Element getChildByDataIndex(Element parent, int dataIndex) {
+    if (parent == null || BeeConst.isUndef(dataIndex)) {
+      return null;
+    }
+
+    for (Element child = parent.getFirstChildElement(); child != null;
+        child = child.getNextSiblingElement()) {
+      if (getDataIndex(child) == dataIndex) {
+        return child;
+      }
+    }
+    return null;
+  }
+
   public static Widget getChildByElement(Widget root, Element elem) {
     if (root == null || elem == null) {
       return null;
@@ -653,7 +667,7 @@ public class DomUtils {
     }
     return null;
   }
-
+  
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
     if (nodes != null && nodes.getLength() > 0) {

@@ -203,6 +203,15 @@ class ChartData {
       setNumberOfUsedItems(0);
     }
   }
+
+  void enableAll() {
+    if (getNumberOfDisabledItems() > 0) {
+      for (Item item : items) {
+        item.setEnabled(true);
+      }
+      setNumberOfDisabledItems(0);
+    }
+  }
   
   List<Item> getItems() {
     return items;
@@ -271,7 +280,7 @@ class ChartData {
   }
 
   boolean hasSelection() {
-    return getNumberOfSelectedItems() > 0 && getNumberOfEnabledUnselectedItems() > 0;
+    return getNumberOfSelectedItems() > 0;
   }
 
   boolean isEmpty() {
