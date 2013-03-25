@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="ContactsClassifiers" label="Kontaktų klasifikatoriai" parent="Contacts" order="3" 
+>
+  <Item name="CompanyTypes" label="Klientų tipai" service="grid" parameters="CompanyTypes" separator="true" />
+  <Item name="CompanyGroups" label="Klientų grupės" service="grid" parameters="CompanyGroups" />
+  <Item name="CompanyPriorities" label="Klientų prioritetai" service="grid" parameters="CompanyPriorities" />
+  <Item name="CompanySizes" label="Klientų įmonių dydžiai" service="grid" parameters="CompanySizes" />
+  <Item name="FinancialStates" label="Klientų mokumo požymiai" service="grid" parameters="FinancialStates" />
+  <Item name="InformationSources" label="Klientų informacijos šaltiniai" service="grid" parameters="InformationSources" />
+  <Item name="CompanyActivities" label="Klientų įmonių veiklos" service="grid" parameters="CompanyActivities" />
+  <Item name="Responsibilities" label="Atsakomybės" service="grid" parameters="Responsibilities" />
+
+  <Item name="CompanyRelationTypes" label="Klientų sąryšio tipai" service="grid" parameters="CompanyRelationTypes" separator="true" />
+  <Item name="CompanyRelationTypeStates" label="Klientų sąryšio būsenos" service="grid" parameters="CompanyRelationTypeStates" />
+</Entry>
