@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   font-size: small;
-  color: #43494F;
+  color: black;
 }
 
 [draggable] {
@@ -834,13 +834,30 @@ body {
 }
 
 .bee-TreeItem-child {
-  margin-left: 16px;
+  margin-left: 24px;
 }
 
 .bee-TreeItem-leafContainer {
-  padding-left: 7px;
+  padding-left: 24px;
   padding-top: 1px;
   padding-bottom: 1px;
+  background-image: url("images/silver/tree_rtb.gif");
+  background-repeat: no-repeat;
+  background-position-x: 5px;
+}
+
+.bee-TreeItem-leafContainer:last-of-type {
+  background-image: url("images/silver/tree_rt.gif");
+}
+
+.bee-TreeItem-branchContainer {
+  background-image: url('images/silver/tree_tb.gif');
+  background-repeat: repeat-y;
+  background-position-x: 5px;
+}
+
+.bee-TreeItem-branchContainer:last-of-type {
+  background-repeat: no-repeat;
 }
 
 .bee-TreeItem-branch {
@@ -849,6 +866,13 @@ body {
 
 .bee-TreeItem-imageCell,.bee-TreeItem-contentCell {
   vertical-align: middle;
+}
+
+.bee-TreeItem-imageCell {
+  background-image: url("images/silver/tree_rt_plus.gif");
+  background-repeat: no-repeat;
+  background-position-x: 3px;
+  background-position-y: 3px;
 }
 
 .bee-TreeItem-selected {
