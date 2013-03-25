@@ -2,12 +2,13 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.collect.Maps;
 
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.EnumMap;
 
-abstract class Filterable {
+abstract class Filterable implements HasDateRange {
   
   private final EnumMap<Filterable.FilterType, Boolean> filterResults =
       Maps.newEnumMap(Filterable.FilterType.class);
@@ -24,6 +25,13 @@ abstract class Filterable {
     } else {
       return true;
     }
+  }
+  
+  boolean persistFilter() {
+    boolean match = matched(FilterType.TENTATIVE);
+    setMatch(FilterType.PERSISTENT, match);
+    
+    return match;
   }
 
   boolean setMatch(FilterType filterType, boolean match) {

@@ -1733,7 +1733,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     List<String> selection = Lists.newArrayList();
     for (ChartData data : filterData) {
       Collection<String> selectedNames = data.getSelectedNames();
-      if (!selectedNames.isEmpty() && selectedNames.size() < data.getNumberOfEnabledItems()) {
+      if (!selectedNames.isEmpty()) {
         selection.addAll(selectedNames);
       }
     }

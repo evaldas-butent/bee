@@ -43,6 +43,7 @@ public interface LocalizableTransportConstants {
   String trailerTimeBoard();
   
   String transportationCustomers();
+  String transportationOrder();
   String transportationOrders();
   String transportationOrderStatuses();
 

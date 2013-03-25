@@ -25,6 +25,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -44,6 +45,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.Size;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -170,8 +172,46 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
+  protected void clearFilter() {
+    resetFilter(FilterType.PERSISTENT);
+    super.clearFilter();
+
+    render(false);
+  }
+  
+  @Override
+  protected boolean filter(DialogBox dialog) {
+    persistFilter();
+
+    dialog.close();
+    render(false);
+
+    return true;
+  }
+
+  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
-    return separateCargo() ? freights.values() : trips.values();
+    List<HasDateRange> result = Lists.newArrayList();
+
+    for (Vehicle vehicle : vehicles) {
+      if (vehicle.matched(FilterType.PERSISTENT) && trips.containsKey(vehicle.getId())) {
+
+        if (separateCargo()) {
+          for (Trip trip : trips.get(vehicle.getId())) {
+            if (trip.matched(FilterType.PERSISTENT) && freights.containsKey(trip.getTripId())) {
+              result.addAll(ChartHelper.filterItems(freights.get(trip.getTripId()),
+                  FilterType.PERSISTENT, null));
+            }
+          }
+
+        } else {
+          result.addAll(ChartHelper.filterItems(trips.get(vehicle.getId()),
+              FilterType.PERSISTENT, null));
+        }
+      }
+    }
+
+    return result;
   }
 
   protected abstract String getDataType();
@@ -343,10 +383,10 @@ abstract class VehicleTimeBoard extends ChartBase {
   @Override
   protected void onFilterSelection(HasWidgets dataContainer, ChartData.Type dataType) {
     setFilter(FilterType.TENTATIVE);
-    
+
     List<ChartData> allData = getFilterData();
     List<ChartData> tentativeData = prepareFilterData(FilterType.TENTATIVE);
-    
+
     ChartData.Type typeOfSingleDataHavingSelection = null;
     for (ChartData data : allData) {
       if (data.hasSelection()) {
@@ -358,7 +398,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         }
       }
     }
-    
+
     for (ChartData data : allData) {
       ChartData.Type type = data.getType();
 
@@ -368,13 +408,13 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
 
       ChartData tentative = FilterHelper.getDataByType(tentativeData, data.getType());
-      
+
       int size = data.getItems().size();
       boolean changed = false;
-      
+
       for (int i = 0; i < size; i++) {
         ChartData.Item item = data.getItems().get(i);
-        
+
         boolean enabled;
         if (typeOfSingleDataHavingSelection != null && typeOfSingleDataHavingSelection == type) {
           enabled = true;
@@ -383,20 +423,20 @@ abstract class VehicleTimeBoard extends ChartBase {
         } else {
           enabled = tentative.contains(item.getName());
         }
-        
+
         boolean selected = item.isSelected();
-        
+
         if (data.setItemEnabled(item, enabled)) {
           if (enabled) {
             dataWidget.addItem(item, i);
           } else {
             dataWidget.removeItem(i, selected);
           }
-          
+
           changed = true;
         }
       }
-      
+
       if (changed) {
         dataWidget.refresh();
       }
@@ -425,7 +465,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
     setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
   }
-
+  
   @Override
   protected void renderContent(ComplexPanel panel) {
     numberPanels.clear();
@@ -574,6 +614,21 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     panel.add(infoMover);
+  }
+
+  @Override
+  protected boolean setData(ResponseObject response) {
+    boolean ok = super.setData(response);
+    if (!ok) {
+      return ok;
+    }
+    
+    boolean filtered = setFilter(FilterType.TENTATIVE);
+    if (filtered) {
+      persistFilter();
+    }
+    
+    return ok;
   }
 
   private void addInfoWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {
@@ -935,7 +990,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     for (int vehicleIndex = 0; vehicleIndex < vehicles.size(); vehicleIndex++) {
       Vehicle vehicle = vehicles.get(vehicleIndex);
 
-      if (ChartHelper.isActive(vehicle, range)) {
+      if (ChartHelper.isActive(vehicle, range) && vehicle.matched(FilterType.PERSISTENT)) {
         ChartRowLayout layout = new ChartRowLayout(vehicleIndex);
 
         if (trips.containsKey(vehicle.getId())) {
@@ -943,14 +998,15 @@ abstract class VehicleTimeBoard extends ChartBase {
             Collection<Trip> vehicleTrips = trips.get(vehicle.getId());
 
             for (Trip trip : vehicleTrips) {
-              if (freights.containsKey(trip.getTripId())) {
-                layout.addItems(ChartHelper.getActiveItems(freights.get(trip.getTripId()), range),
-                    range, ChartRowLayout.FREIGHT_BLENDER);
+              if (trip.matched(FilterType.PERSISTENT) && freights.containsKey(trip.getTripId())) {
+                layout.addItems(ChartHelper.filterItems(freights.get(trip.getTripId()),
+                    FilterType.PERSISTENT, range), range, ChartRowLayout.FREIGHT_BLENDER);
               }
             }
 
           } else {
-            layout.addItems(ChartHelper.getActiveItems(trips.get(vehicle.getId()), range), range);
+            layout.addItems(ChartHelper.filterItems(trips.get(vehicle.getId()),
+                FilterType.PERSISTENT, range), range);
           }
         }
 
@@ -1261,6 +1317,20 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
   }
 
+  private void persistFilter() {
+    for (Vehicle vehicle : vehicles) {
+      vehicle.persistFilter();
+    }
+
+    for (Trip trip : trips.values()) {
+      trip.persistFilter();
+    }
+
+    for (Freight freight : freights.values()) {
+      freight.persistFilter();
+    }
+  }
+
   private List<ChartData> prepareFilterData(FilterType filterType) {
     List<ChartData> data = Lists.newArrayList();
     if (vehicles.isEmpty()) {
@@ -1426,18 +1496,18 @@ abstract class VehicleTimeBoard extends ChartBase {
     return separateCargo;
   }
 
-  private int setFilter(FilterType filterType) {
+  private boolean setFilter(FilterType filterType) {
+    boolean filtered = false;
+
     List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
     if (selectedData.isEmpty()) {
       resetFilter(filterType);
-      return vehicles.size();
+      return filtered;
     }
 
-    int vehicleCount = 0;
-    
     boolean trucks = vehicleType == VehicleType.TRUCK;
     VehicleType otherVehicleType = trucks ? VehicleType.TRAILER : VehicleType.TRUCK;
-    
+
     ChartData vehicleData = FilterHelper.getDataByType(selectedData,
         trucks ? ChartData.Type.TRUCK : ChartData.Type.TRAILER);
     ChartData otherVehicleData = FilterHelper.getDataByType(selectedData,
@@ -1446,7 +1516,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData customerData = FilterHelper.getDataByType(selectedData, ChartData.Type.CUSTOMER);
     ChartData orderData = FilterHelper.getDataByType(selectedData, ChartData.Type.ORDER);
     ChartData statusData = FilterHelper.getDataByType(selectedData, ChartData.Type.ORDER_STATUS);
-    
+
     ChartData cargoData = FilterHelper.getDataByType(selectedData, ChartData.Type.CARGO);
 
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
@@ -1455,10 +1525,10 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData loadData = FilterHelper.getDataByType(selectedData, ChartData.Type.LOADING);
     ChartData unloadData = FilterHelper.getDataByType(selectedData, ChartData.Type.UNLOADING);
     ChartData placeData = FilterHelper.getDataByType(selectedData, ChartData.Type.PLACE);
-    
+
     boolean checkLoad = loadData != null || placeData != null;
     boolean checkUnload = unloadData != null || placeData != null;
-    
+
     boolean freightRequired = customerData != null || orderData != null || statusData != null
         || cargoData != null || checkLoad || checkUnload;
     boolean tripRequired = freightRequired || otherVehicleData != null || tripData != null
@@ -1469,7 +1539,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       if (vehicleMatch && vehicleData != null) {
         vehicleMatch = vehicleData.contains(vehicle.getId());
       }
-      
+
       boolean hasTrips = trips.containsKey(vehicle.getId());
       if (vehicleMatch && !hasTrips && tripRequired) {
         vehicleMatch = false;
@@ -1480,12 +1550,12 @@ abstract class VehicleTimeBoard extends ChartBase {
 
         for (Trip trip : trips.get(vehicle.getId())) {
           boolean tripMatch = trip.filter(filterType, selectedData);
-          
+
           if (tripMatch && otherVehicleData != null) {
             Long otherVehicleId = trip.getVehicleId(otherVehicleType);
             tripMatch = otherVehicleId != null && otherVehicleData.contains(otherVehicleId);
           }
-          
+
           boolean hasFreights = freights.containsKey(trip.getTripId());
           if (tripMatch && !hasFreights && freightRequired) {
             tripMatch = false;
@@ -1496,11 +1566,11 @@ abstract class VehicleTimeBoard extends ChartBase {
 
             for (Freight freight : freights.get(trip.getTripId())) {
               boolean freightMatch = freight.filter(filterType, selectedData);
-              
+
               if (freightMatch && (checkLoad || checkUnload)) {
                 boolean ok = false;
                 String info;
-                
+
                 if (checkLoad) {
                   info = getLoadingPlaceInfo(freight);
                   ok = FilterHelper.containsName(loadData, info)
@@ -1524,13 +1594,13 @@ abstract class VehicleTimeBoard extends ChartBase {
                       ok = FilterHelper.containsName(unloadData, info)
                           || FilterHelper.containsName(placeData, info);
                     }
-                    
+
                     if (ok) {
                       break;
                     }
                   }
                 }
-                
+
                 if (!ok) {
                   freightMatch = false;
                 }
@@ -1539,6 +1609,8 @@ abstract class VehicleTimeBoard extends ChartBase {
               freight.setMatch(filterType, freightMatch);
               if (freightMatch) {
                 freightCount++;
+              } else {
+                filtered = true;
               }
             }
 
@@ -1550,6 +1622,8 @@ abstract class VehicleTimeBoard extends ChartBase {
           trip.setMatch(filterType, tripMatch);
           if (tripMatch) {
             tripCount++;
+          } else {
+            filtered = true;
           }
         }
 
@@ -1559,12 +1633,12 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
 
       vehicle.setMatch(filterType, vehicleMatch);
-      if (vehicleMatch) {
-        vehicleCount++;
+      if (!vehicleMatch) {
+        filtered = true;
       }
     }
 
-    return vehicleCount;
+    return filtered;
   }
 
   private void setInfoWidth(int infoWidth) {

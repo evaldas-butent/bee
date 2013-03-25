@@ -308,6 +308,32 @@ public class ChartHelper {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
+  static List<Filterable> filterItems(Collection<? extends Filterable> items,
+      Filterable.FilterType filterType, Range<JustDate> activeRange) {
+
+    List<Filterable> result = Lists.newArrayList();
+    if (items == null) {
+      return result;
+    }
+
+    for (Filterable item : items) {
+      if (item == null) {
+        continue;
+      }
+      
+      if (filterType != null && !item.matched(filterType)) {
+        continue;
+      }
+
+      if (activeRange != null && !BeeUtils.intersects(item.getRange(), activeRange)) {
+        continue;
+      }
+
+      result.add(item);
+    }
+    return result;
+  }
+
   static List<HasDateRange> getActiveItems(Collection<? extends HasDateRange> items,
       Range<JustDate> activeRange) {
 
@@ -324,7 +350,7 @@ public class ChartHelper {
     }
     return result;
   }
-
+  
   static Range<JustDate> getActivity(JustDate start, JustDate end) {
     if (start == null && end == null) {
       return null;

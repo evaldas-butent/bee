@@ -3,13 +3,12 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-class Driver extends Filterable implements HasDateRange, HasItemName  {
+class Driver extends Filterable implements HasItemName  {
   
   static String getNames(String separator, Collection<Driver> drivers) {
     if (BeeUtils.isEmpty(drivers)) {

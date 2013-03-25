@@ -16,7 +16,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -25,7 +24,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 
-class Freight extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
+class Freight extends Filterable implements HasColorSource, HasShipmentInfo {
 
   private final Long tripId;
 
@@ -256,6 +255,7 @@ class Freight extends Filterable implements HasDateRange, HasColorSource, HasShi
     String title = ChartHelper.buildTitle(OrderCargo.cargoLabel, cargoDescription,
         Global.CONSTANTS.cargoLoading(), loadInfo,
         Global.CONSTANTS.cargoUnloading(), unloadInfo,
+        Global.CONSTANTS.transportationOrder(), orderName,
         OrderCargo.customerLabel, customerName, OrderCargo.notesLabel, notes);
 
     if (appendTripTitle && !BeeUtils.isEmpty(getTripTitle())) {
