@@ -5,7 +5,7 @@
   >
   <columns>
     <DataColumn name="Name" />
-    <DataColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="TypeName" caption="Statusas" />
     <DataColumn name="GroupName" caption="Grupė" />
 
     <DataColumn name="Code" />

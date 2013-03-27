@@ -15,7 +15,7 @@
       <FlowPanel style="position:relative; width: 790px; height: 90px;">
         <InputText source="Name" caption="Pavadinimas:" style="width: 200px;" d:size="100"
           d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 10px;" />
-        <DataSelector source="CompanyType" caption="Tipas:" style="width: 80px;" d:size="50"
+        <DataSelector source="CompanyType" caption="Statusas:" style="width: 80px;" d:size="50"
           d:unit="px" d:rootStyle="position:absolute; left: 330px; top: 10px;" />
         <DataSelector source="CompanyGroup" caption="Grupė:" style="width: 80px;" d:size="50"
           d:unit="px" d:rootStyle="position:absolute; left: 480px; top: 10px;" />
