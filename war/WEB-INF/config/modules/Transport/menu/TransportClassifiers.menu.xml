@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="TransportClassifiers" label="Transporto klasifikatoriai" parent="Transport" order="12" 
+>
+  <Item name="ShippingTerms" label="Krovinių pristatymo sąlygos" service="grid" parameters="ShippingTerms" />
+  <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
+  <Item name="AbsenceTypes" label="Nebuvimo darbe tipai" service="grid" parameters="AbsenceTypes" />
+
+  <Item name="ExpeditionTrips" label="Ekspedijavimo reisai" service="grid" parameters="ExpeditionTrips" separator="true" />
+  <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" />
+  
+  <Item name="VehicleTypes" label="Transporto priemonių tipai" service="grid" parameters="VehicleTypes" separator="true" />
+  <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
+  <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
+  <Item name="TransportGroups" label="Transporto grupės" service="grid" parameters="TransportGroups" />
+ 
+</Entry>

@@ -5,26 +5,15 @@ name="Transport" label="Transportas" order="60"
 >
   <Item name="Orders" label="=transportationOrders" service="grid" parameters="TransportationOrders" />
   <Item name="Cargo" label="=cargos" service="grid" parameters="CargoList" />
-  <Item name="ShippingTerms" label="Krovinių pristatymo sąlygos" service="grid" parameters="ShippingTerms" />
-  <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
 
   <Item name="Requests" label="Užklausimai" service="grid" parameters="OrderAssessments" separator="true" />
 
   <Item name="Trips" label="=trips" service="grid" parameters="Trips" separator="true" />
   <Item name="Drivers" label="=drivers" service="grid" parameters="Drivers" separator="true" />
-  <Item name="AbsenceTypes" label="Nebuvimo darbe tipai" service="grid" parameters="AbsenceTypes" />
 
-  <Item name="ExpeditionTrips" label="Ekspedijavimo reisai" service="grid" parameters="ExpeditionTrips" separator="true" />
-  <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" />
-    
   <Item name="Vehicles" label="Transporto priemonės" service="grid" parameters="Vehicles" separator="true" />
   <Item name="SpareParts" label="Keičiamos dalys" service="grid" parameters="SpareParts" />
 
-  <Item name="VehicleTypes" label="Transporto priemonių tipai" service="grid" parameters="VehicleTypes" separator="true" />
-  <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
-  <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
-  <Item name="TransportGroups" label="Transporto grupės" service="grid" parameters="TransportGroups" />
-  
   <Item name="FreightExchange" label="=freightExchange" service="freight_exchange" separator="true" />
   <Item name="ShippingSchedule" label="=shippingSchedule" service="shipping_schedule" />
   <Item name="DriverTimeBoard" label="=driverTimeBoard" service="driver_time_board" />
