@@ -15,7 +15,7 @@ import java.util.Set;
 
 public enum Action implements BeeSerializable, HasCaption {
   ADD("naujas", "add"),
-  BOOKMARK("bookmark", "bookmark"),
+  BOOKMARK("pridėti žymą", "bookmark"),
   CLOSE("uždaryti", "close"),
   CONFIGURE("nustatymai", "configure"),
   DELETE("išmesti", "delete"),
