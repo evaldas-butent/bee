@@ -4,7 +4,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewOrderAssesment" viewName="OrderAssesments" caption="Naujas užklausimas"
+  name="NewOrderAssesment" viewName="CargoAssessors" caption="Naujas užklausimas"
   >
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <xi:include href="widgets/AssessmentInfo.widget.xml" />

@@ -6,9 +6,10 @@
   x="0" y="0"
   >
   <Fields>
+    <Integer name="Status" notNull="true" defValue="0" label="Būsena" />
     <DateTime name="Date" defExpr="CURRENT_TIME" notNull="true" />
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="Manager" relation="Users" label="Vertintojas" notNull="true" />
+    <Relation name="Manager" relation="Users" label="Vertintojas" notNull="true" defExpr="CURRENT_USER" />
     <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
     <Text name="Notes" />
   </Fields>

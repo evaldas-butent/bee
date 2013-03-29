@@ -37,7 +37,6 @@ public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareId(Operator op, long value) {
     Assert.notNull(op);
-
     return new IdFilter(op, value);
   }
 
@@ -49,8 +48,13 @@ public abstract class ComparisonFilter extends Filter {
     return compareId(op, BeeUtils.toLong(value));
   }
 
-  public static Filter compareVersion(String value) {
+  public static Filter compareVersion(long value) {
     return compareVersion(Operator.EQ, value);
+  }
+
+  public static Filter compareVersion(Operator op, long value) {
+    Assert.notNull(op);
+    return new VersionFilter(op, value);
   }
 
   public static Filter compareVersion(Operator op, String value) {
@@ -61,7 +65,7 @@ public abstract class ComparisonFilter extends Filter {
       logger.warning("Not a DATETIME value:", value);
       return null;
     }
-    return new VersionFilter(op, time.getTime());
+    return compareVersion(op, time.getTime());
   }
 
   public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {

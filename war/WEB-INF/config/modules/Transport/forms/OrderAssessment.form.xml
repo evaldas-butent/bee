@@ -1,16 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
+  <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
+  <!ENTITY inline "display:inline-block;">
+  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
+  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY input "&inline; width:110px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="OrderAssessment" viewName="OrderAssessments" caption="Užklausimas"
+  name="OrderAssessment" viewName="CargoAssessors" caption="Užklausimas"
+  showRowId="true"
   >
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="bee-tr-assessment-form">
     <xi:include href="widgets/AssessmentInfo.widget.xml" />
+
     &separator;
-    <xi:include href="widgets/AssessmentData.widget.xml" />
+    <FlowPanel style="&section;">
+      <Label html="Kaina klientui" style="&labelLeft;" />
+      <Label name="Total" style="&inline; width:70px; font-weight:bold;" />
+      <DataSelector name="Currency" source="Currency" style="&inline; width:40px; margin-right:10px;" />
+      <Label html="Spausdinti" style="&labelRight;" />
+      <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
+      <Button name="RU" html="RU" style="&inline; margin-right:10px;" disablable="false" />
+      <Button name="EN" html="EN" style="&inline; margin-right:10px;" disablable="false" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;">
+      <TabbedPages style="&section; height:150px;">
+        <page>
+          <text>Vežėjai</text>
+          <FlowPanel />
+        </page>
+        <page>
+          <FlowPanel>
+            <Label html="Pajamos" style="&inline;" />
+            <FlowPanel name="IncomeTotal" style="&inline;" />
+          </FlowPanel>
+          <ChildGrid name="AssessmentIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
+        </page>
+        <page>
+          <FlowPanel>
+            <Label html="Sąnaudos" style="&inline;" />
+            <FlowPanel name="ExpensesTotal" style="&inline;" />
+          </FlowPanel>
+          <ChildGrid name="AssessmentExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
+        </page>
+      </TabbedPages>
+
+      &separator;
+      <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" style="&section; height:150px;"
+        disablable="false" />
+    </FlowPanel>
   </FlowPanel>
 </f:Form>

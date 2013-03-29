@@ -3,15 +3,15 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="OrderAssessments" viewName="CargoAssessors" caption="Užklausimai"
-  flexGrow="1" flexShrink="1"
-  newRowForm="NewOrderAssessment" editForm="OrderAssessment"
+  name="AssessmentOrders" viewName="CargoAssessors" caption="Užsakymai"
+  flexGrow="1" flexShrink="1" disabledActions="add"
+  editForm="OrderAssessment"
   >
   <north size="40">
     <w:HorizontalPanel>
-      <w:CheckBox name="New" html="Nauji" checked="true" />
-      <w:CheckBox name="Answered" html="Atsakyti" checked="true" />
-      <w:CheckBox name="Lost" html="Pralaimėti" />
+      <w:CheckBox name="Active" html="Vykdomi" checked="true" />
+      <w:CheckBox name="Completed" html="Įvykdyti" />
+      <w:CheckBox name="Canceled" html="Atšaukti" checked="true" />
     </w:HorizontalPanel>
   </north>
   <columns>
@@ -39,7 +39,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="OrderNotes" caption="Maršrutas" minWidth="100">
+    <DataColumn name="CargoNotes" caption="Maršrutas" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>

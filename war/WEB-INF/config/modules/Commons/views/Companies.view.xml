@@ -41,12 +41,14 @@
       <SimpleColumn name="City" />
       <SimpleJoin name="City" joinType="LEFT">
         <SimpleColumn alias="CityName" name="Name" />
-
-        <SimpleJoin name="Country" joinType="LEFT">
-          <SimpleColumn alias="CountryName" name="Name" />
-          <SimpleColumn alias="CountryCode" name="Code" />
-        </SimpleJoin>
       </SimpleJoin>
+
+      <SimpleColumn name="Country" />
+      <SimpleJoin name="Country" joinType="LEFT">
+        <SimpleColumn alias="CountryName" name="Name" />
+        <SimpleColumn alias="CountryCode" name="Code" />
+      </SimpleJoin>
+
       <SimpleColumn name="SocialContacts" /> 
     </SimpleJoin>
 

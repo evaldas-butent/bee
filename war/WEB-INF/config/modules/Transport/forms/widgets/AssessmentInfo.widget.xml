@@ -3,14 +3,19 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelWidth "100px;">
-  <!ENTITY labelLeft "&inline; width:&labelWidth; padding-top:1px;">
-  <!ENTITY labelRight "&labelLeft; text-align:right; margin-right:10px;">
+  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
+  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:110px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  >
+           xmlns:ui="http://www.butent.com/ui"
+>
+  <FlowPanel style="&section;">
+    <Label html="Būsena" style="&labelLeft;" />
+    <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
+    <Label html="Vadybininkas" class="bee-required" style="&labelRight; width:120px;" />
+    <DataSelector source="Manager" style="&input; width:200px;" />
+  </FlowPanel>
   <FlowPanel style="&section;">
     <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
     <InputDateTime source="OrderDate" style="&input;" />
@@ -25,21 +30,61 @@
     <DataSelector source="CustomerPerson" style="&input; width:200px;" />
   </FlowPanel>
     
-  <FlowPanel style="&section;">
-    <Label html="Maršrutas" class="bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="CargoNotes" required="true" visibleLines="8" style="width:400px;" />
-  </FlowPanel>
-
   &separator;
   <FlowPanel style="&section;">
-    <SimplePanel style="padding-left:&labelWidth;">
-      <xi:include href="CargoPlaces.widget.xml" />
-    </SimplePanel>
+    <Label html="Maršrutas" class="bee-required" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="OrderNotes" required="true" visibleLines="8" style="width:400px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Pakrovimas" style="font-weight: bold; &inline; width:150px; margin-left:100px;" />
+    <Label html="Iškrovimas" style="font-weight: bold; &labelLeft; margin-left:70px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Data" style="&labelLeft;" />
+    <InputDate source="LoadingDate" style="&inline; width:70px; margin-right:80px;" />
+    <Label html="Data" style="&labelRight;" />
+    <InputDate source="UnloadingDate" style="&inline; width:70px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Šalis" class="bee-required" style="&labelLeft;" />
+    <FlowPanel style="&inline; width:150px;">
+      <DataSelector source="LoadingCountry" style="&inline; width:130px;" required="true" >
+        <renderToken source="LoadingCountryName" />
+        <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="LoadingCountryCode" style="&inline; padding-left:2px;" />
+    </FlowPanel>
+    <Label html="Šalis" class="bee-required" style="&labelRight;" />
+    <FlowPanel style="&inline; width:150px;">
+      <DataSelector source="UnloadingCountry" style="&inline; width:130px;" required="true" >
+        <renderToken source="UnloadingCountryName" />
+        <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
+    </FlowPanel>
+  </FlowPanel>
+  
+  <FlowPanel style="&section;">
+    <Label html="Vieta" style="&labelLeft;" />
+    <InputDate source="LoadingPlace" style="&inline; width:150px;" />
+    <Label html="Vieta" style="&labelRight;" />
+    <InputDate source="UnloadingPlace" style="&inline; width:150px;" />
   </FlowPanel>
     
   <FlowPanel style="&section;">
     <Label html="Papildoma informacija" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="AssessorNotes" style="width:400px;" />
+    <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
   &separator;

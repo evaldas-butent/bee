@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
+      xmlns:ui="http://www.butent.com/ui"
 
   name="CargoAssessors" viewName="CargoAssessors"
   caption="Vertinimai" newRowCaption="Naujas vertinimas"
-  editForm="CargoAssessment"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1" flexShrink="1" order="Date"
   >
   <columns>
-    <DataColumn name="Date" caption="Sukūrimo data" width="120" />
+    <DataColumn name="Date" caption="Sukūrimo data" width="110" readOnly="true" />
+    <ActionColumn element="link" name="ID" options="open" width="40">
+      <render><ui:expression>rowId</ui:expression></render>
+    </ActionColumn>
+    <DataColumn name="Assessor" caption="PID" readOnly="true" width="40" />
     <RelColumn name="Manager" caption="Vadybininkas" />
     <DataColumn name="Notes" caption="Pastabos" />
-    <DataColumn name="Income" caption="Pajamos" />
-    <DataColumn name="Expenses" caption="Sąnaudos" />
+    <DataColumn name="Income" caption="Pajamos" format="#.00" />
+    <DataColumn name="Expenses" caption="Sąnaudos" format="#.00" />
+    <DataColumn name="Status" itemKey="AssessmentStatus" />
+    <CalcColumn type="boolean" name="Ok" width="20">
+      <render><ui:expression>row.Status == 1</ui:expression></render>
+    </CalcColumn>
   </columns>
 </Grid>

@@ -10,7 +10,8 @@ public class TransportConstants {
     ACTIVATED("Aktyvus"),
     CONFIRMED("Patvirtintas"),
     CANCELED("Atšauktas"),
-    COMPLETED("Baigtas");
+    COMPLETED("Baigtas"),
+    REQUESTED("Užklausimas");
 
     private final String caption;
 
@@ -24,10 +25,62 @@ public class TransportConstants {
     }
   }
 
+  public enum AssessmentStatus implements HasCaption {
+    NEW("Naujas", "Grąžinti į užklausimus?", OrderStatus.REQUESTED, true),
+    ANSWERED("Atsakytas", "Pažymėti kaip atsakytą?", null, false),
+    LOST("Pralaimėtas", "Pažymėti kaip pralaimėtą?", OrderStatus.CANCELED, false),
+    ACTIVE("Vykdomas", "Perkelti į užsakymus?", OrderStatus.ACTIVATED, true),
+    COMPLETED("Įvykdytas", "Pažymėti kaip įvykdytą?", OrderStatus.COMPLETED, false),
+    CANCELED("Atšauktas", "Atšaukti užsakymą?", OrderStatus.CANCELED, false);
+
+    public static boolean in(int status, AssessmentStatus... statuses) {
+      for (AssessmentStatus ts : statuses) {
+        if (ts.ordinal() == status) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private final String caption;
+    private final String confirmation;
+    private final OrderStatus orderStatus;
+    private final boolean closable;
+
+    private AssessmentStatus(String caption, String confirmation, OrderStatus orderStatus,
+        boolean closable) {
+      this.caption = caption;
+      this.confirmation = confirmation;
+      this.orderStatus = orderStatus;
+      this.closable = closable;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+
+    public String getConfirmation() {
+      return confirmation;
+    }
+
+    public OrderStatus getOrderStatus() {
+      return orderStatus;
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
+    }
+
+    public boolean isClosable() {
+      return closable;
+    }
+  }
+
   public enum VehicleType {
     TRUCK, TRAILER
   }
-  
+
   public static final String TRANSPORT_MODULE = "Transport";
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
@@ -41,7 +94,7 @@ public class TransportConstants {
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
-  public static final String SVC_GET_ASSESSMENT_INFO = "GetAssessmentInfo";
+  public static final String SVC_GET_ASSESSMENT_TOTAL = "GetAssessmentTotal";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";

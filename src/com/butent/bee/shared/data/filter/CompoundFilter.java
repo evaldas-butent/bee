@@ -39,7 +39,7 @@ public class CompoundFilter extends Filter {
     }
   }
 
-  public Filter add(Filter... filters) {
+  public CompoundFilter add(Filter... filters) {
     if (!isEmpty() && type == CompoundType.NOT) {
       Assert.unsupported();
     }
@@ -176,7 +176,7 @@ public class CompoundFilter extends Filter {
   public int size() {
     return subFilters.size();
   }
-  
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

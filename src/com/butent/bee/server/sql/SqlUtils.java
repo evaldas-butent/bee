@@ -631,8 +631,12 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
-    return new FunctionExpression(SqlFunction.IF,
-        ImmutableMap.of("condition", cond, "ifTrue", ifTrue, "ifFalse", ifFalse));
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("condition", cond);
+    params.put("ifTrue", ifTrue);
+    params.put("ifFalse", ifFalse);
+
+    return new FunctionExpression(SqlFunction.IF, params);
   }
 
   public static IsCondition sqlTrue() {

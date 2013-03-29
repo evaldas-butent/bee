@@ -15,5 +15,6 @@
     <String name="PostIndex" precision="20" label="Pašto indeksas" />
     <String name="SocialContacts" precision="100" label="Socialiniai kontaktai" />
     <Relation name="City" relation="Cities" label="Miestas" />
+    <Relation name="Country" relation="Countries" label="Šalis" />
   </Fields>
 </Table>

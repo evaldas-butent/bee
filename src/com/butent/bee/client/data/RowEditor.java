@@ -76,11 +76,11 @@ public class RowEditor {
     return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
   }
 
-  public static void openRow(String viewName, BeeRow row, boolean modal) {
+  public static void openRow(String viewName, IsRow row, boolean modal) {
     openRow(viewName, row, modal, null, null, modal ? null : PresenterCallback.SHOW_IN_NEW_TAB);
   }
 
-  public static void openRow(String viewName, BeeRow row, boolean modal, UIObject target,
+  public static void openRow(String viewName, IsRow row, boolean modal, UIObject target,
       RowCallback rowCallback, PresenterCallback presenterCallback) {
     Assert.notEmpty(viewName);
 
@@ -92,8 +92,8 @@ public class RowEditor {
     String formName = getFormName(null, dataInfo);
     openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
   }
-  
-  public static void openRow(String formName, DataInfo dataInfo, BeeRow row, boolean modal,
+
+  public static void openRow(String formName, DataInfo dataInfo, IsRow row, boolean modal,
       UIObject target, RowCallback rowCallback, PresenterCallback presenterCallback) {
 
     Assert.notNull(dataInfo);
@@ -123,7 +123,7 @@ public class RowEditor {
     getRow(formName, dataInfo, rowId, modal, target, rowCallback);
   }
 
-  public static boolean openRow(String viewName, Long rowId, boolean modal, 
+  public static boolean openRow(String viewName, Long rowId, boolean modal,
       RowCallback rowCallback) {
     if (BeeUtils.isEmpty(viewName) || !DataUtils.isId(rowId)) {
       return false;
@@ -143,7 +143,7 @@ public class RowEditor {
     return true;
   }
 
-  public static void openRow(String formName, String viewName, BeeRow row, boolean modal,
+  public static void openRow(String formName, String viewName, IsRow row, boolean modal,
       RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
@@ -159,7 +159,7 @@ public class RowEditor {
     hasEditorDelegates.add(viewName);
   }
 
-  private static void createForm(String formName, final DataInfo dataInfo, final BeeRow row,
+  private static void createForm(String formName, final DataInfo dataInfo, final IsRow row,
       final boolean modal, final UIObject target, final RowCallback rowCallback,
       final PresenterCallback presenterCallback) {
 
@@ -303,7 +303,7 @@ public class RowEditor {
           }
         }
       });
-      
+
       dialog.addOpenHandler(new OpenEvent.Handler() {
         @Override
         public void onOpen(OpenEvent event) {

@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -20,6 +19,7 @@ import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -34,7 +34,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -47,8 +46,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -139,10 +138,10 @@ public class TransportModuleBean implements BeeModule {
       response = getCargoUsage(reqInfo.getParameter("ViewName"),
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
 
-    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_INFO)) {
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTAL)) {
       response = getAssessmentTotal(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
           BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
-          BooleanValue.unpack(reqInfo.getParameter(COL_SERVICE_EXPENSE)));
+          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.FLD_CURRENCY)));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -171,45 +170,47 @@ public class TransportModuleBean implements BeeModule {
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe
-      public void fillAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_CARGO_ASSESSORS) && event.isAfter()) {
-          SqlSelect ss = event.getQuery().resetFields().resetOrder().resetGroup()
-              .addField(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS), COL_ASSESSOR)
-              .addFromLeft(TBL_CARGO_SERVICES,
-                  sys.joinTables(TBL_CARGO_ASSESSORS, TBL_CARGO_SERVICES, COL_ASSESSOR))
-              .addFromLeft(TBL_ORDER_CARGO,
-                  sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO))
-              .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-              .addGroup(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS));
+      public void calcAssessmentAmounts(ViewQueryEvent event) {
+        SqlSelect query = event.getQuery();
 
-          IsExpression xpr = ExchangeUtils.exchangeField(ss,
-              SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
-              SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
-              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
-                  SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)));
+        if (BeeUtils.same(event.getViewName(), TBL_CARGO_ASSESSORS) && event.isBefore()) {
+          String servicesAlias = null;
+          String ordersAlias = null;
 
+          for (IsFrom from : query.getFrom()) {
+            Object source = from.getSource();
+
+            if (source instanceof String) {
+              if (BeeUtils.same((String) source, TBL_CARGO_SERVICES)) {
+                servicesAlias = BeeUtils.notEmpty(from.getAlias(), TBL_CARGO_SERVICES);
+              } else if (BeeUtils.same((String) source, TBL_ORDERS)) {
+                ordersAlias = BeeUtils.notEmpty(from.getAlias(), TBL_ORDERS);
+              }
+            }
+          }
+          if (!BeeUtils.allNotNull(servicesAlias, ordersAlias)) {
+            return;
+          }
           String colIncome = "Income";
           String colExpenses = "Expenses";
 
-          ss.addSum(SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE),
-              xpr, 0), colIncome);
+          for (Iterator<IsExpression[]> it = query.getFields().iterator(); it.hasNext();) {
+            IsExpression als = it.next()[SqlSelect.FIELD_ALIAS];
 
-          ss.addSum(SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE), 0,
-              xpr), colExpenses);
-
-          SimpleRowSet rs = qs.getData(ss);
-
-          BeeRowSet rowset = event.getRowset();
-          int incomeIndex = rowset.getColumnIndex(colIncome);
-          int expensesIndex = rowset.getColumnIndex(colExpenses);
-
-          for (int i = 0; i < rowset.getNumberOfRows(); i++) {
-            BeeRow row = rowset.getRow(i);
-            SimpleRow xRow = rs.getRowByKey(COL_ASSESSOR, BeeUtils.toString(row.getId()));
-
-            row.setValue(incomeIndex, xRow.getValue(colIncome));
-            row.setValue(expensesIndex, xRow.getValue(colExpenses));
+            if (als != null && BeeUtils.inListSame((String) als.getValue(), colIncome, colExpenses)) {
+              it.remove();
+            }
           }
+          IsExpression xpr = ExchangeUtils.exchangeField(query,
+              SqlUtils.field(servicesAlias, COL_SERVICE_AMOUNT),
+              SqlUtils.field(servicesAlias, ExchangeUtils.FLD_CURRENCY),
+              SqlUtils.nvl(SqlUtils.field(servicesAlias, COL_SERVICE_DATE),
+                  SqlUtils.field(ordersAlias, COL_ORDER_DATE)));
+
+          query.addSum(SqlUtils.sqlIf(SqlUtils.isNull(servicesAlias, COL_SERVICE_EXPENSE),
+              xpr, null), colIncome)
+              .addSum(SqlUtils.sqlIf(SqlUtils.isNull(servicesAlias, COL_SERVICE_EXPENSE),
+                  null, xpr), colExpenses);
         }
       }
 
@@ -324,51 +325,7 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject getAssessmentData(Long assessorId, long cargoId) {
-    if (!DataUtils.isId(assessorId)) {
-      return ResponseObject.error("Assessor ID is not valid:", assessorId);
-    }
-    if (!DataUtils.isId(cargoId)) {
-      return ResponseObject.error("Cargo ID is not valid:", cargoId);
-    }
-    Map<String, SimpleRowSet> packet = Maps.newHashMap();
-
-    SqlSelect ss = sys.getView(TBL_CARGO_SERVICES).getQuery()
-        .addFromInner(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO))
-        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId),
-            SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId)));
-
-    ss.addExpr(ExchangeUtils.exchangeField(ss,
-        SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
-        SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
-        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
-            SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE))), "CargoCost");
-
-    packet.put(TBL_CARGO_SERVICES, qs.getData(ss));
-
-    packet.put(TBL_CARGO_ASSESSORS, qs.getData(new SqlSelect()
-        .addField(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS), COL_ASSESSOR)
-        .addFields(TBL_CARGO_ASSESSORS, COL_ASSESSOR_DATE)
-        .addFields(CommonsConstants.TBL_PERSONS,
-            CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)
-        .addFrom(TBL_CARGO_ASSESSORS)
-        .addFromInner(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_CARGO_ASSESSORS, COL_ASSESSOR_MANAGER))
-        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                CommonsConstants.COL_COMPANY_PERSON))
-        .addFromInner(CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_ASSESSORS, COL_CARGO, cargoId),
-            SqlUtils.equals(TBL_CARGO_ASSESSORS, COL_ASSESSOR, assessorId)))));
-
-    return ResponseObject.response(packet);
-  }
-
-  private ResponseObject getAssessmentTotal(Long assessorId, long cargoId, boolean expense) {
+  private ResponseObject getAssessmentTotal(Long assessorId, long cargoId, Long currencyId) {
     if (!DataUtils.isId(cargoId)) {
       return ResponseObject.error("Cargo ID is not valid:", cargoId);
     }
@@ -377,11 +334,8 @@ public class TransportModuleBean implements BeeModule {
     if (DataUtils.isId(assessorId)) {
       wh.add(SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId));
     }
-    if (expense) {
-      wh.add(SqlUtils.notNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE));
-    } else {
-      wh.add(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE));
-    }
+    wh.add(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE));
+
     SqlSelect ss = new SqlSelect()
         .addFrom(TBL_CARGO_SERVICES)
         .addFromInner(TBL_ORDER_CARGO,
@@ -389,12 +343,20 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .setWhere(wh);
 
-    ss.addSum(ExchangeUtils.exchangeField(ss,
-        SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
-        SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
-        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
-            SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE))), COL_SERVICE_AMOUNT);
-
+    if (DataUtils.isId(currencyId)) {
+      ss.addSum(ExchangeUtils.exchangeFieldTo(ss,
+          SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
+          SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
+              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currencyId)),
+          COL_SERVICE_AMOUNT);
+    } else {
+      ss.addSum(ExchangeUtils.exchangeField(ss,
+          SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
+          SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
+              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE))), COL_SERVICE_AMOUNT);
+    }
     return ResponseObject.response(qs.getDouble(ss));
   }
 

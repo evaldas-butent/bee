@@ -5,8 +5,8 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
@@ -388,7 +388,7 @@ public abstract class SqlBuilder {
     }
     return ok;
   }
-  
+
   protected String sqlCondition(Operator operator, Map<String, String> params) {
     String expression = params.get("expression");
     String value = params.get("value" + 0);
@@ -438,8 +438,8 @@ public abstract class SqlBuilder {
       case IF:
         return BeeUtils.joinWords(
             "CASE WHEN", params.get("condition"),
-            "THEN", params.get("ifTrue"),
-            "ELSE", params.get("ifFalse"),
+            "THEN", params.get("ifTrue") == null ? "NULL" : params.get("ifTrue"),
+            "ELSE", params.get("ifFalse") == null ? "NULL" : params.get("ifFalse"),
             "END");
 
       case CASE:
@@ -452,10 +452,10 @@ public abstract class SqlBuilder {
           xpr.append(" WHEN ")
               .append(params.get("case" + i))
               .append(" THEN ")
-              .append(params.get("value" + i));
+              .append(params.get("value" + i) == null ? "NULL" : params.get("value" + i));
         }
         xpr.append(" ELSE ")
-            .append(params.get("caseElse"))
+            .append(params.get("caseElse") == null ? "NULL" : params.get("caseElse"))
             .append(" END");
 
         return xpr.toString();
@@ -890,7 +890,7 @@ public abstract class SqlBuilder {
     Assert.untouchable();
     return null;
   }
-  
+
   protected String transform(Object x) {
     if (x == null) {
       return BeeConst.STRING_EMPTY;

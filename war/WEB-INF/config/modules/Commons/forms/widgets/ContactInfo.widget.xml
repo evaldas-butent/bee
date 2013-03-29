@@ -27,13 +27,21 @@
     <InputText source="Address" caption="Adresas:" style="width: 600px;" d:size="80" d:unit="px"
       d:rootStyle="position:absolute; left: 0; top: 70px;" />
 
-    <DataSelector source="City" caption="Miestas:" style="width: 360px;" d:size="80" d:unit="px"
+    <DataSelector source="City" caption="Miestas:" style="width: 160px;" d:size="80" d:unit="px"
       d:rootStyle="position:absolute; left: 0; top: 100px;">
-      <renderToken source="CityName" />
-      <renderToken source="CountryName" prefix=", " />
       <selectorColumn source="Name" />
       <selectorColumn source="CountryName" />
       <selectorColumn source="CountryCode">
+        <ui:renderer type="flag" />
+      </selectorColumn>
+    </DataSelector>
+
+    <DataSelector source="Country" caption="Šalis:" style="width: 140px;" d:size="60" d:unit="px"
+      d:rootStyle="position:absolute; left: 250px; top: 100px;">
+      <renderToken source="CountryName" />
+      <renderToken source="CountryCode" prefix=" (" suffix=")" />
+      <selectorColumn source="Name" />
+      <selectorColumn source="Code">
         <ui:renderer type="flag" />
       </selectorColumn>
     </DataSelector>

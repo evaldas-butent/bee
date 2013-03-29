@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
@@ -89,7 +90,7 @@ public class TransportHandler {
   private static class CargoExpensesHandler extends AbstractGridInterceptor {
     @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(DataUtils.getColumnIndex(COL_SERVICE_EXPENSE, gridView.getDataColumns()), true);
+      newRow.setValue(gridView.getDataIndex(COL_SERVICE_EXPENSE), true);
       return true;
     }
   }
@@ -583,6 +584,7 @@ public class TransportHandler {
 
   public static void register() {
     Captions.register(OrderStatus.class);
+    Captions.register(AssessmentStatus.class);
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
@@ -600,6 +602,7 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
 
     GridFactory.registerGridInterceptor("OrderAssessments", new OrderAssessmentsGrid());
+    GridFactory.registerGridInterceptor("AssessmentOrders", new OrderAssessmentsGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
@@ -607,6 +610,10 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
     FormFactory.registerFormInterceptor(FORM_ORDER_ASSESSMENT, new OrderAssessmentForm());
+
+    FormFactory.registerFormInterceptor("PrintOrderLT", new PrintOrderForm());
+    FormFactory.registerFormInterceptor("PrintOrderRU", new PrintOrderForm());
+    FormFactory.registerFormInterceptor("PrintOrderEN", new PrintOrderForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 

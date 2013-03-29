@@ -15,7 +15,10 @@ public class TransportActionHandler implements Handler {
 
   @Override
   public void onRowAction(RowActionEvent event) {
-    if (event.hasView(VIEW_CARGO_TRIPS) && event.hasService(Service.CELL_ACTION)) {
+    if (!event.hasService(Service.CELL_ACTION)) {
+      return;
+    }
+    if (event.hasView(VIEW_CARGO_TRIPS)) {
       event.consume();
       Long tripId = Data.getLong(VIEW_CARGO_TRIPS, event.getRow(), COL_TRIP);
 
@@ -26,6 +29,9 @@ public class TransportActionHandler implements Handler {
 
         RowEditor.openRow(data.getEditForm(), data, tripId);
       }
+    } else if (event.hasView(TBL_CARGO_ASSESSORS)) {
+      event.consume();
+      OrderAssessmentForm.doRowAction(event);
     }
   }
 }

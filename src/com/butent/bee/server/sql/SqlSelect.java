@@ -18,8 +18,8 @@ import java.util.List;
 
 public class SqlSelect extends HasFrom<SqlSelect> {
 
-  static final int FIELD_EXPR = 0;
-  static final int FIELD_ALIAS = 1;
+  public static final int FIELD_EXPR = 0;
+  public static final int FIELD_ALIAS = 1;
 
   static final int ORDER_SRC = 0;
   static final int ORDER_FLD = 1;
