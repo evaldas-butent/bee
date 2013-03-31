@@ -37,7 +37,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -156,7 +156,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   
   private String oldValue = null;
   
-  private final Procedure<InputText> inputResizer;
+  private final Consumer<InputText> inputResizer;
   
   public MultiSelector(Relation relation, boolean embedded, String rowProperty) {
     super(relation, embedded);
@@ -261,7 +261,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   public void setDisplayValue(String value) {
     if (!Objects.equal(getDisplayValue(), value)) {
       super.setDisplayValue(value);
-      inputResizer.call(getInput());
+      inputResizer.accept(getInput());
     }
   }
 
@@ -341,7 +341,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     inputWidget.addInputHandler(new InputHandler() {
       @Override
       public void onInput(InputEvent event) {
-        inputResizer.call(inputWidget);
+        inputResizer.accept(inputWidget);
       }
     });
     

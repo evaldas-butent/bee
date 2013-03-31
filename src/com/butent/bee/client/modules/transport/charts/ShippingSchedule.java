@@ -1,16 +1,12 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -19,15 +15,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.data.RowInsertCallback;
-import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -36,15 +24,10 @@ import com.butent.bee.client.modules.transport.charts.ChartRowLayout.GroupLayout
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -323,39 +306,6 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
     }
   }
   
-  private void assignCargoToTrip(long cargoId, Long sourceTrip, long targetTrip) {
-    String viewName = VIEW_CARGO_TRIPS;
-
-    if (sourceTrip == null) {
-      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
-      List<String> values = Lists.newArrayList(BeeUtils.toString(cargoId),
-          BeeUtils.toString(targetTrip));
-
-      Queries.insert(viewName, columns, values, new RowInsertCallback(viewName));
-
-    } else {
-      Freight sourceItem = null;
-//      for (Freight item : items) {
-//        if (Objects.equal(cargoId, item.getCargoId())) {
-//          sourceItem = item;
-//          break;
-//        }
-//      }
-
-      if (sourceItem == null) {
-        LogUtils.getRootLogger().warning("cargo source not found:", cargoId, sourceTrip);
-        return;
-      }
-
-      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
-      List<String> oldValues = Lists.newArrayList(BeeUtils.toString(sourceTrip));
-      List<String> newValues = Lists.newArrayList(BeeUtils.toString(targetTrip));
-
-      Queries.update(viewName, sourceItem.getCargoTripId(), sourceItem.getCargoTripVersion(),
-          columns, oldValues, newValues, new RowUpdateCallback(viewName));
-    }
-  }
-  
   private IdentifiableWidget createTripGroupWidget(Trip trip, boolean hasOverlap) {
     final Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_GROUP_PANEL);
@@ -365,19 +315,8 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
 
     final Long tripId = trip.getTripId();
     final String tripTitle = trip.getTitle();
-
-    DndHelper.makeTarget(panel, Sets.newHashSet(DATA_TYPE_ORDER_CARGO, DATA_TYPE_FREIGHT),
-        STYLE_TRIP_GROUP_DRAG_OVER, new Predicate<Long>() {
-          @Override
-          public boolean apply(Long input) {
-            return !Objects.equal(tripId, DndHelper.getRelatedId());
-          }
-        }, new Procedure<Long>() {
-          @Override
-          public void call(Long parameter) {
-            dropCargoOnTrip(parameter, tripId, tripTitle, panel, STYLE_TRIP_GROUP_DRAG_OVER);
-          }
-        });
+    
+    trip.makeTarget(panel, STYLE_TRIP_GROUP_DRAG_OVER);
 
     BeeLabel label = new BeeLabel(trip.getTripNo());
     label.addStyleName(STYLE_TRIP_GROUP_LABEL);
@@ -410,124 +349,6 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
     }
 
     return panel;
-  }
-
-  private void dropCargoOnTrip(final Long cargoId, final Long targetTrip, String targetDescription,
-      final Widget targetWidget, final String targetStyle) {
-
-    final Long sourceTrip = DndHelper.getRelatedId();
-    if (!(DndHelper.getData() instanceof String)) {
-      return;
-    }
-    String sourceDescription = (String) DndHelper.getData();
-
-    if (!DataUtils.isId(cargoId) || !DataUtils.isId(targetTrip)) {
-      return;
-    }
-    if (Objects.equal(sourceTrip, targetTrip)) {
-      return;
-    }
-
-    List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "REISAS:",
-        targetDescription);
-
-//    List<Freight> targetItems = filterByTrip(targetTrip);
-    List<Freight> targetItems = Lists.newArrayList();
-    List<String> targetCargo = Lists.newArrayList();
-
-    for (Freight item : targetItems) {
-      if (item.getCargoId() != null) {
-        String loading = getLoadingInfo(item);
-        String unloading = getUnloadingInfo(item);
-
-        String message = ChartHelper.buildMessage(BeeConst.DEFAULT_LIST_SEPARATOR,
-            "Krovinys", item.getCargoDescription(),
-            Global.CONSTANTS.cargoLoading(), loading,
-            Global.CONSTANTS.cargoUnloading(), unloading);
-        if (!BeeUtils.isEmpty(message)) {
-          targetCargo.add(message);
-        }
-      }
-    }
-
-    if (!targetCargo.isEmpty()) {
-      messages.add(BeeUtils.joinWords("REISO KROVINIAI:", BeeUtils.bracket(targetCargo.size())));
-      messages.add(BeeUtils.join(BeeConst.STRING_EOL, targetCargo));
-    }
-
-    messages.add("Priskirti krovinį reisui ?");
-
-    Global.confirm("Krovinio priskyrimas reisui", Icon.QUESTION, messages,
-        new ConfirmationCallback() {
-          @Override
-          public void onCancel() {
-            reset();
-          }
-
-          @Override
-          public void onConfirm() {
-            reset();
-            assignCargoToTrip(cargoId, sourceTrip, targetTrip);
-          }
-
-          private void reset() {
-            if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
-              targetWidget.removeStyleName(targetStyle);
-            }
-          }
-        });
-  }
-
-  private void dropCargoOnVehicle(final Long cargoId, final Long vehicleId,
-      String vehicleNumber, final Widget targetWidget, final String targetStyle) {
-
-    final Long sourceTrip = DndHelper.getRelatedId();
-    if (!(DndHelper.getData() instanceof String)) {
-      return;
-    }
-    String sourceDescription = (String) DndHelper.getData();
-
-    if (!DataUtils.isId(cargoId) || !DataUtils.isId(vehicleId)) {
-      return;
-    }
-
-    List<String> messages = Lists.newArrayList("KROVINYS:", sourceDescription, "VILKIKAS:",
-        vehicleNumber, "Sukurti kroviniui naują reisą ?");
-
-    Global.confirm("Naujo reiso sukūrimas", Icon.QUESTION, messages, new ConfirmationCallback() {
-      @Override
-      public void onCancel() {
-        reset();
-      }
-
-      @Override
-      public void onConfirm() {
-        reset();
-
-        final String viewName = VIEW_TRIPS;
-        final DataInfo dataInfo = Data.getDataInfo(viewName);
-
-        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
-        newRow.setValue(dataInfo.getColumnIndex(COL_VEHICLE), vehicleId);
-
-        Queries.insert(viewName, dataInfo.getColumns(), newRow, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
-            assignCargoToTrip(cargoId, sourceTrip, result.getId());
-
-            BeeKeeper.getScreen().notifyInfo("Sukurtas naujas reisas",
-                "Nr. " + result.getString(dataInfo.getColumnIndex(COL_TRIP_NO)));
-          }
-        });
-      }
-
-      private void reset() {
-        if (targetWidget != null && !BeeUtils.isEmpty(targetStyle)) {
-          targetWidget.removeStyleName(targetStyle);
-        }
-      }
-    });
   }
 
   private boolean separateTrips() {

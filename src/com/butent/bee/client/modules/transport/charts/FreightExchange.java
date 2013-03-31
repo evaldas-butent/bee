@@ -237,12 +237,12 @@ class FreightExchange extends ChartBase {
         customerData.add(item.getCustomerName(), item.getCustomerId());
       }
 
-      String loading = getLoadingPlaceInfo(item);
+      String loading = Places.getLoadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(loading)) {
         loadData.add(loading);
       }
 
-      String unloading = getUnloadingPlaceInfo(item);
+      String unloading = Places.getUnloadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
       }
@@ -512,20 +512,15 @@ class FreightExchange extends ChartBase {
   }
 
   private Widget createItemWidget(OrderCargo item) {
-    final Flow panel = new Flow();
+    Flow panel = new Flow();
     panel.addStyleName(STYLE_ITEM_PANEL);
     setItemWidgetColor(item, panel);
 
-    String loading = getLoadingPlaceInfo(item);
-    String unloading = getUnloadingPlaceInfo(item);
-
-    String title = item.getTitle(BeeUtils.joinWords(item.getLoadingDate(), loading),
-        BeeUtils.joinWords(item.getUnloadingDate(), unloading));
-    panel.setTitle(title);
+    panel.setTitle(item.getTitle());
 
     final Long cargoId = item.getCargoId();
 
-    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, cargoId, null, item, STYLE_ITEM_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, item, STYLE_ITEM_DRAG, true);
 
     ClickHandler opener = new ClickHandler() {
       @Override
@@ -536,6 +531,7 @@ class FreightExchange extends ChartBase {
 
     panel.addClickHandler(opener);
 
+    String loading = Places.getLoadingPlaceInfo(item);
     if (!BeeUtils.isEmpty(loading)) {
       BeeLabel loadingLabel = new BeeLabel(loading);
       loadingLabel.addStyleName(STYLE_ITEM_LOAD);
@@ -543,6 +539,7 @@ class FreightExchange extends ChartBase {
       panel.add(loadingLabel);
     }
 
+    String unloading = Places.getUnloadingPlaceInfo(item);
     if (!BeeUtils.isEmpty(unloading)) {
       BeeLabel unloadingLabel = new BeeLabel(unloading);
       unloadingLabel.addStyleName(STYLE_ITEM_UNLOAD);
@@ -657,7 +654,7 @@ class FreightExchange extends ChartBase {
           predicate = new Predicate<OrderCargo>() {
             @Override
             public boolean apply(OrderCargo input) {
-              return selectedNames.contains(getLoadingPlaceInfo(input));
+              return selectedNames.contains(Places.getLoadingPlaceInfo(input));
             }
           };
           break;
@@ -666,7 +663,7 @@ class FreightExchange extends ChartBase {
           predicate = new Predicate<OrderCargo>() {
             @Override
             public boolean apply(OrderCargo input) {
-              return selectedNames.contains(getUnloadingPlaceInfo(input));
+              return selectedNames.contains(Places.getUnloadingPlaceInfo(input));
             }
           };
           break;

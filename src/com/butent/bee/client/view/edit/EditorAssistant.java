@@ -11,7 +11,7 @@ import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.EditorAction;
@@ -82,7 +82,7 @@ public class EditorAssistant {
   }
 
   public static void editStarCell(EditStartEvent event, final CellSource source,
-      final Procedure<Integer> updater) {
+      final Consumer<Integer> updater) {
 
     Assert.notNull(event);
     Assert.notNull(source);
@@ -104,7 +104,7 @@ public class EditorAssistant {
         }
         
         if (updater != null) {
-          updater.call(null);
+          updater.accept(null);
         }
       }
 
@@ -129,7 +129,7 @@ public class EditorAssistant {
       }
 
       if (updater != null) {
-        updater.call(newValue);
+        updater.accept(newValue);
       }
 
     } else {
@@ -148,7 +148,7 @@ public class EditorAssistant {
             }
 
             if (updater != null) {
-              updater.call(value);
+              updater.accept(value);
             }
           }
 

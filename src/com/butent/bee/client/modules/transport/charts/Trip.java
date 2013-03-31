@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -17,13 +19,17 @@ import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.DndHelper;
+import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -32,6 +38,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemName {
 
@@ -45,6 +52,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private static final String driversLabel = Data.getLocalizedCaption(VIEW_DRIVERS);
   private static final String cargosLabel = Data.getLocalizedCaption(VIEW_CARGO_TRIPS);
 
+  private static final Set<String> acceptsDropTypes =
+      ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,
+          DATA_TYPE_DRIVER);
+  
   static void createForCargo(final Vehicle truck, final HasShipmentInfo cargo, String cargoTitle,
       final boolean fire, final IdCallback callback) {
 
@@ -283,6 +294,22 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     return !BeeUtils.isEmpty(drivers);
   }
   
+  void makeTarget(final DndTarget widget, final String overStyle) {
+    DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
+        new Predicate<Object>() {
+          @Override
+          public boolean apply(Object input) {
+            return Trip.this.isTarget(input);
+          }
+        }, new Consumer<Object>() {
+          @Override
+          public void accept(Object input) {
+            widget.asWidget().removeStyleName(overStyle);
+            Trip.this.acceptDrop(input);
+          }
+        });
+  }
+
   void maybeAddDriver(final Driver driver) {
     if (driver == null) {
       return;
@@ -306,7 +333,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           }
         });
   }
-
+  
   void maybeUpdateVehicle(VehicleType vehicleType, Vehicle vehicle) {
     if (vehicleType == null || vehicle == null) {
       return;
@@ -353,5 +380,60 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
             new RowUpdateCallback(VIEW_NAME));
       }
     });
+  }
+  
+  private void acceptDrop(Object data) {
+    if (DndHelper.isDataType(DATA_TYPE_TRUCK)) {
+      maybeUpdateVehicle(VehicleType.TRUCK, (Vehicle) data);
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRAILER)) {
+      maybeUpdateVehicle(VehicleType.TRAILER, (Vehicle) data);
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
+      final Freight freight = (Freight) data;
+      String freightTitle = freight.getTitle(false);
+
+      Trip.maybeAssignCargo(freightTitle, getTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          freight.updateTrip(Trip.this.getTripId(), true);
+        }
+      });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
+      final OrderCargo orderCargo = (OrderCargo) data;
+      String cargoTitle = orderCargo.getTitle();
+
+      Trip.maybeAssignCargo(cargoTitle, getTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          orderCargo.assignToTrip(Trip.this.getTripId(), true);
+        }
+      });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_DRIVER)) {
+      maybeAddDriver((Driver) data);
+    }
+  }
+  
+  private boolean isTarget(Object data) {
+    if (DndHelper.isDataType(DATA_TYPE_TRUCK) && data instanceof Vehicle) {
+      return !Objects.equal(getTruckId(), ((Vehicle) data).getId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_TRAILER) && data instanceof Vehicle) {
+      return !Objects.equal(getTrailerId(), ((Vehicle) data).getId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && data instanceof Freight) {
+      return !Objects.equal(getTripId(), ((Freight) data).getTripId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo) {
+      return true;
+
+    } else if (DndHelper.isDataType(DATA_TYPE_DRIVER) && data instanceof Driver) {
+      return !hasDriver(((Driver) data).getId());
+
+    } else {
+      return false;
+    }
   }
 }

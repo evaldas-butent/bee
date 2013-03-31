@@ -13,7 +13,7 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.HasFilterHandler;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -119,9 +119,9 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
   
   private void onResponse(final Element elem, Boolean filterChanged) {
     if (BeeUtils.isTrue(filterChanged) && getFilterHandler() != null) {
-      getFilterHandler().onFilterChange(new Procedure<Boolean>() {
+      getFilterHandler().onFilterChange(new Consumer<Boolean>() {
         @Override
-        public void call(Boolean parameter) {
+        public void accept(Boolean parameter) {
           if (BeeUtils.isTrue(parameter)) {
             getFooterCell().update(elem, getValue());
           }

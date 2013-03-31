@@ -1179,7 +1179,7 @@ public class ChartHelper {
       return Pair.of(startWidget, endWidget);
     }
   }
-
+ 
   private ChartHelper() {
   }
 }

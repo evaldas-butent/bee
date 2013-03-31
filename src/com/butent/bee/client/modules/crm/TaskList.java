@@ -44,7 +44,7 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -192,9 +192,9 @@ class TaskList {
 
         final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
 
-        EditorAssistant.editStarCell(event, source, new Procedure<Integer>() {
+        EditorAssistant.editStarCell(event, source, new Consumer<Integer>() {
           @Override
-          public void call(Integer parameter) {
+          public void accept(Integer parameter) {
             updateStar(event, source, parameter);
           }
         });

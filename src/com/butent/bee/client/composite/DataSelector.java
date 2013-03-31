@@ -63,7 +63,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
@@ -735,9 +735,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           ((EnumRenderer) rowRenderer).getValueStartIndex());
     }
 
-    oracle.addRowCountChangeHandler(new Procedure<Integer>() {
+    oracle.addRowCountChangeHandler(new Consumer<Integer>() {
       @Override
-      public void call(Integer parameter) {
+      public void accept(Integer parameter) {
         DataSelector.this.setAlive(parameter > 0);
       }
     });

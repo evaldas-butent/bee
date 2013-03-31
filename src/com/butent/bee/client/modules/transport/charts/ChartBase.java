@@ -35,7 +35,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
-import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -71,7 +70,6 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -138,10 +136,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private final List<Color> colors = Lists.newArrayList();
 
   private BeeRowSet settings = null;
-
-  private BeeRowSet countries = null;
-  private int countryCodeIndex = BeeConst.UNDEF;
-  private int countryNameIndex = BeeConst.UNDEF;
 
   private Range<JustDate> maxRange = null;
   private Range<JustDate> visibleRange = null;
@@ -756,43 +750,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return contentId;
   }
 
-  protected String getCountryFlag(Long countryId) {
-    if (countryId == null || DataUtils.isEmpty(getCountries())) {
-      return null;
-    }
-    
-    BeeRow row = getCountries().getRowById(countryId);
-    if (row == null) {
-      return null;
-    }
-
-    String code = row.getString(getCountryCodeIndex());
-    if (BeeUtils.isEmpty(code)) {
-      return null;
-    } else {
-      return Flags.get(code);
-    }
-  }
-  
-  protected String getCountryLabel(Long countryId) {
-    if (countryId == null || DataUtils.isEmpty(getCountries())) {
-      return null;
-    }
-
-    BeeRow row = getCountries().getRowById(countryId);
-    if (row == null) {
-      return null;
-    }
-
-    String label = row.getString(getCountryCodeIndex());
-
-    if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.trim(row.getString(getCountryNameIndex()));
-    } else {
-      return BeeUtils.trim(label).toUpperCase();
-    }
-  }
-
   protected abstract String getDataService();
 
   protected int getDayColumnWidth() {
@@ -829,23 +786,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return ChartHelper.DEFAULT_MOVER_HEIGHT;
   }
 
-  protected String getLoadingInfo(HasShipmentInfo item) {
-    if (item == null) {
-      return null;
-    } else {
-      return BeeUtils.joinWords(item.getLoadingDate(), getLoadingPlaceInfo(item));
-    }
-  }
-
-  protected String getLoadingPlaceInfo(HasShipmentInfo item) {
-    if (item == null) {
-      return null;
-    } else {
-      return getPlaceInfo(item.getLoadingCountry(), item.getLoadingPlace(),
-          item.getLoadingTerminal());
-    }
-  }
-  
   protected int getLastResizableColumnMaxLeft(int minLeft) {
     int maxLeft = minLeft + ChartHelper.MAX_RESIZABLE_COLUMN_WIDTH;
     if (getChartWidth() > 0) {
@@ -854,17 +794,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return maxLeft;
   }
 
-  protected String getPlaceInfo(Long countryId, String placeName, String terminal) {
-    String countryLabel = getCountryLabel(countryId);
-
-    if (BeeUtils.isEmpty(countryLabel) || BeeUtils.containsSame(placeName, countryLabel)
-        || BeeUtils.containsSame(terminal, countryLabel)) {
-      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, placeName, terminal);
-    } else {
-      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, terminal);
-    }
-  }
-  
   protected int getPrintHeightAdjustment() {
     if (BeeUtils.anyEmpty(getScrollAreaId(), getContentId())) {
       return 0;
@@ -936,23 +865,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected abstract String getThemeColumnName();
 
-  protected String getUnloadingInfo(HasShipmentInfo item) {
-    if (item == null) {
-      return null;
-    } else {
-      return BeeUtils.joinWords(item.getUnloadingDate(), getUnloadingPlaceInfo(item));
-    }
-  }
-
-  protected String getUnloadingPlaceInfo(HasShipmentInfo item) {
-    if (item == null) {
-      return null;
-    } else {
-      return getPlaceInfo(item.getUnloadingCountry(), item.getUnloadingPlace(),
-          item.getUnloadingTerminal());
-    }
-  }
-
   protected void initContent(ComplexPanel panel, int rc) {
     setRowCount(rc);
 
@@ -981,6 +893,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
+  }
+
+  protected boolean isFiltered() {
+    return filtered;
   }
 
   protected void onCreate(ResponseObject response, Callback<IdentifiableWidget> callback) {
@@ -1461,9 +1377,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     String serialized = rowSet.getTableProperty(PROP_COUNTRIES);
     if (!BeeUtils.isEmpty(serialized)) {
-      setCountries(BeeRowSet.restore(serialized));
-      setCountryCodeIndex(getCountries().getColumnIndex(CommonsConstants.COL_CODE));
-      setCountryNameIndex(getCountries().getColumnIndex(CommonsConstants.COL_NAME));
+      Places.setCountries(BeeRowSet.restore(serialized));
     }
 
     serialized = rowSet.getTableProperty(PROP_COLORS);
@@ -1495,6 +1409,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void setEndSliderLabel(Widget endSliderLabel) {
     this.endSliderLabel = endSliderLabel;
+  }
+
+  protected void setFiltered(boolean filtered) {
+    this.filtered = filtered;
   }
 
   protected void setFooterHeight(int footerHeight) {
@@ -1689,18 +1607,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return getRowCount() * getRowHeight();
   }
 
-  private BeeRowSet getCountries() {
-    return countries;
-  }
-
-  private int getCountryCodeIndex() {
-    return countryCodeIndex;
-  }
-
-  private int getCountryNameIndex() {
-    return countryNameIndex;
-  }
-
   private int getRowCount() {
     return rowCount;
   }
@@ -1749,18 +1655,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.contentId = contentId;
   }
 
-  private void setCountries(BeeRowSet countries) {
-    this.countries = countries;
-  }
-
-  private void setCountryCodeIndex(int countryCodeIndex) {
-    this.countryCodeIndex = countryCodeIndex;
-  }
-
-  private void setCountryNameIndex(int countryNameIndex) {
-    this.countryNameIndex = countryNameIndex;
-  }
-
   private void setMaxRange(Collection<? extends HasDateRange> items) {
     JustDate min = TimeUtils.today(-1);
     JustDate max = TimeUtils.startOfNextMonth(min);
@@ -1778,7 +1672,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setRenderPending(boolean renderPending) {
     this.renderPending = renderPending;
   }
-
+  
   private void setRowCount(int rowCount) {
     this.rowCount = rowCount;
   }
@@ -1805,7 +1699,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       }
     });
   }
-  
+
   private void updateFilterData(List<ChartData> newData) {
     if (BeeUtils.isEmpty(newData)) {
       filterData.clear();
@@ -1835,13 +1729,5 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       filterData.clear();
       filterData.addAll(newData);
     }
-  }
-
-  protected boolean isFiltered() {
-    return filtered;
-  }
-
-  protected void setFiltered(boolean filtered) {
-    this.filtered = filtered;
   }
 }

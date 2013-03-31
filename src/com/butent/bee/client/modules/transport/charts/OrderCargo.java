@@ -151,6 +151,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     Queries.insert(viewName, columns, values, callback);
   }
 
+  @Override
+  boolean filter(FilterType filterType, Collection<ChartData> data) {
+    return false;
+  }
+
   String getCargoDescription() {
     return cargoDescription;
   }
@@ -174,7 +179,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   Long getOrderId() {
     return orderId;
   }
-
+  
   String getOrderNo() {
     return orderNo;
   }
@@ -182,16 +187,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   OrderStatus getOrderStatus() {
     return orderStatus;
   }
-  
-  String getTitle(String loadInfo, String unloadInfo) {
-    return ChartHelper.buildTitle(cargoLabel, cargoDescription,
-        Global.CONSTANTS.cargoLoading(), loadInfo,
-        Global.CONSTANTS.cargoUnloading(), unloadInfo,
-        customerLabel, customerName, notesLabel, notes);
-  }
 
-  @Override
-  boolean filter(FilterType filterType, Collection<ChartData> data) {
-    return false;
+  String getTitle() {
+    return ChartHelper.buildTitle(cargoLabel, cargoDescription,
+        Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),
+        Global.CONSTANTS.cargoUnloading(), Places.getUnloadingInfo(this),
+        customerLabel, customerName, notesLabel, notes);
   }
 }

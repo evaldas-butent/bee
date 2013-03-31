@@ -32,7 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
@@ -278,10 +278,10 @@ public class UiHelper {
     }
   }
 
-  public static Procedure<InputText> getTextBoxResizer(final int reserve) {
-    return new Procedure<InputText>() {
+  public static Consumer<InputText> getTextBoxResizer(final int reserve) {
+    return new Consumer<InputText>() {
       @Override
-      public void call(InputText input) {
+      public void accept(InputText input) {
         String value = input.getValue();
 
         int oldWidth = input.getOffsetWidth();

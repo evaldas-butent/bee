@@ -30,7 +30,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.ui.CssUnit;
 
 /**
@@ -137,17 +137,17 @@ public class RichTextToolbar extends Flow implements HasEnabled {
         formatter.setJustification(RichTextArea.Justification.RIGHT);
 
       } else if (sender == insertImage) {
-        getInput("Image URL", "http://", new Procedure<String>() {
+        getInput("Image URL", "http://", new Consumer<String>() {
           @Override
-          public void call(String parameter) {
+          public void accept(String parameter) {
             formatter.insertImage(parameter);
           }
         });
 
       } else if (sender == createLink) {
-        getInput("Link URL", "http://", new Procedure<String>() {
+        getInput("Link URL", "http://", new Consumer<String>() {
           @Override
-          public void call(String parameter) {
+          public void accept(String parameter) {
             formatter.createLink(parameter);
           }
         });
@@ -168,9 +168,9 @@ public class RichTextToolbar extends Flow implements HasEnabled {
         updateStatus();
 
       } else if (sender == insertHtml) {
-        getInput("Html", null, new Procedure<String>() {
+        getInput("Html", null, new Consumer<String>() {
           @Override
-          public void call(String parameter) {
+          public void accept(String parameter) {
             formatter.insertHTML(parameter);
           }
         });
@@ -408,7 +408,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     return tb;
   }
 
-  private void getInput(String caption, String defaultValue, final Procedure<String> procedure) {
+  private void getInput(String caption, String defaultValue, final Consumer<String> procedure) {
     setWaiting(true);
 
     Global.inputString(caption, null, new StringCallback() {
@@ -421,7 +421,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       @Override
       public void onSuccess(String value) {
         setWaiting(false);
-        procedure.call(value);
+        procedure.accept(value);
       }}, defaultValue);
   }
   

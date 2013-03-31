@@ -1236,10 +1236,6 @@ public class TransportModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
-  private IsCondition tripCondition(IsCondition where) {
-    return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
-  }
-
   private ResponseObject getVehicleTbData(String svc, Filter vehicleFilter,
       VehicleType vehicleType, String themeColumnName) {
 
@@ -1392,5 +1388,9 @@ public class TransportModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(settings);
+  }
+
+  private IsCondition tripCondition(IsCondition where) {
+    return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
   }
 }

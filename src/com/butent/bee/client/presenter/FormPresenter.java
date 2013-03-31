@@ -36,7 +36,7 @@ import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -325,7 +325,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
           }
 
           @Override
-          public void onFilterChange(Procedure<Boolean> callback) {
+          public void onFilterChange(Consumer<Boolean> callback) {
             FormPresenter.this.updateFilter(callback);
           }
         };
@@ -397,7 +397,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     getNotificationListener().notifySevere(ArrayUtils.toArray(messages));
   }
 
-  private void updateFilter(Procedure<Boolean> callback) {
+  private void updateFilter(Consumer<Boolean> callback) {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       logger.info("filter not changed", filter);

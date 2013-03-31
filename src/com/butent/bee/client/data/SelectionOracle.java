@@ -8,7 +8,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -195,7 +195,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private PendingRequest pendingRequest = null;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
-  private final Set<Procedure<Integer>> rowCountChangeHandlers = Sets.newHashSet();
+  private final Set<Consumer<Integer>> rowCountChangeHandlers = Sets.newHashSet();
 
   private boolean dataInitialized = false;
 
@@ -225,7 +225,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
   }
 
-  public void addRowCountChangeHandler(Procedure<Integer> handler) {
+  public void addRowCountChangeHandler(Consumer<Integer> handler) {
     if (handler != null) {
       rowCountChangeHandlers.add(handler);
     }
@@ -476,8 +476,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private void onRowCountChange(int count) {
-    for (Procedure<Integer> handler : rowCountChangeHandlers) {
-      handler.call(count);
+    for (Consumer<Integer> handler : rowCountChangeHandlers) {
+      handler.accept(count);
     }
   }
 

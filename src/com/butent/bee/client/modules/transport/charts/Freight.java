@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -11,10 +13,15 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.event.DndHelper;
+import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -24,8 +31,12 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 class Freight extends Filterable implements HasColorSource, HasDateRange, HasShipmentInfo {
+
+  private static final Set<String> acceptsDropTypes =
+      ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
   private final Long tripId;
 
@@ -58,7 +69,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
 
   private final Long customerId;
   private final String customerName;
-  
+
   private final String orderName;
 
   private Range<JustDate> range;
@@ -105,7 +116,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
 
     this.customerId = row.getLong(COL_CUSTOMER);
     this.customerName = row.getValue(COL_CUSTOMER_NAME);
-    
+
     this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
 
     this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
@@ -114,7 +125,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
   @Override
   public boolean filter(FilterType filterType, Collection<ChartData> data) {
     boolean match = true;
-    
+
     for (ChartData cd : data) {
       switch (cd.getType()) {
         case CARGO:
@@ -131,7 +142,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
           break;
         default:
       }
-      
+
       if (!match) {
         break;
       }
@@ -139,7 +150,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
 
     return match;
   }
-  
+
   @Override
   public Long getColorSource() {
     return tripId;
@@ -247,15 +258,15 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
   String getOrderNo() {
     return orderNo;
   }
-  
+
   OrderStatus getOrderStatus() {
     return orderStatus;
   }
 
-  String getTitle(String loadInfo, String unloadInfo, boolean appendTripTitle) {
+  String getTitle(boolean appendTripTitle) {
     String title = ChartHelper.buildTitle(OrderCargo.cargoLabel, cargoDescription,
-        Global.CONSTANTS.cargoLoading(), loadInfo,
-        Global.CONSTANTS.cargoUnloading(), unloadInfo,
+        Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),
+        Global.CONSTANTS.cargoUnloading(), Places.getUnloadingInfo(this),
         Global.CONSTANTS.transportationOrder(), orderName,
         OrderCargo.customerLabel, customerName, OrderCargo.notesLabel, notes);
 
@@ -293,6 +304,22 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
     }
   }
 
+  void makeTarget(final DndTarget widget, final String overStyle) {
+    DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
+        new Predicate<Object>() {
+          @Override
+          public boolean apply(Object input) {
+            return Freight.this.isTarget(input);
+          }
+        }, new Consumer<Object>() {
+          @Override
+          public void accept(Object input) {
+            widget.asWidget().removeStyleName(overStyle);
+            Freight.this.acceptDrop(input);
+          }
+        });
+  }
+
   void setTripTitle(String tripTitle) {
     this.tripTitle = tripTitle;
   }
@@ -309,6 +336,43 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
 
     Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
         Queries.asList(getTripId()), Queries.asList(newTripId), callback);
+  }
+
+  private void acceptDrop(Object data) {
+    if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
+      final Freight freight = (Freight) data;
+      String title = freight.getTitle(false);
+
+      Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          freight.updateTrip(Freight.this.getTripId(), true);
+        }
+      });
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
+      final OrderCargo orderCargo = (OrderCargo) data;
+      String title = orderCargo.getTitle();
+
+      Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          orderCargo.assignToTrip(Freight.this.getTripId(), true);
+        }
+      });
+    }
+  }
+
+  private boolean isTarget(Object data) {
+    if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && data instanceof Freight) {
+      return !Objects.equal(getTripId(), ((Freight) data).getTripId());
+
+    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo) {
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   private void setRange(Range<JustDate> range) {

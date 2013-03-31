@@ -48,7 +48,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -546,7 +546,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
 
         @Override
-        public void onFilterChange(Procedure<Boolean> callback) {
+        public void onFilterChange(Consumer<Boolean> callback) {
           GridPresenter.this.updateFilter(callback);
         }
       };
@@ -671,7 +671,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     getGridView().notifyInfo(messages);
   }
 
-  private void updateFilter(Procedure<Boolean> callback) {
+  private void updateFilter(Consumer<Boolean> callback) {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
 
     if (!Objects.equal(filter, getLastFilter())) {

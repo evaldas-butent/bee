@@ -21,7 +21,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Procedure;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -70,12 +70,16 @@ public class DndHelper {
   }
 
   public static void makeSource(final DndSource widget, final String contentType,
+      final Object content, final String dragStyle, final boolean fireMotion) {
+    makeSource(widget, contentType, null, null, content, dragStyle, fireMotion);
+  }
+  
+  public static void makeSource(final DndSource widget, final String contentType,
       final Long contentId, final Long relId, final Object content,
       final String dragStyle, final boolean fireMotion) {
 
     Assert.notNull(widget);
     Assert.notNull(contentType);
-    Assert.notNull(contentId);
 
     DomUtils.setDraggable(widget.asWidget());
 
@@ -87,7 +91,9 @@ public class DndHelper {
         }
 
         EventUtils.allowMove(event);
-        EventUtils.setDndData(event, contentId);
+        if (contentId != null) {
+          EventUtils.setDndData(event, contentId);
+        }
 
         fillContent(contentType, contentId, relId, content);
 
@@ -127,7 +133,8 @@ public class DndHelper {
   }
 
   public static void makeTarget(final DndTarget widget, final Collection<String> contentTypes,
-      final String overStyle, final Predicate<Long> targetPredicate, final Procedure<Long> onDrop) {
+      final String overStyle, final Predicate<Object> targetPredicate,
+      final Consumer<Object> onDrop) {
 
     Assert.notNull(widget);
     Assert.notEmpty(contentTypes);
@@ -180,7 +187,7 @@ public class DndHelper {
       public void onDrop(DropEvent event) {
         if (widget.getTargetState() != null) {
           event.stopPropagation();
-          onDrop.call(getDataId());
+          onDrop.accept(getData());
         }
       }
     });
@@ -195,8 +202,9 @@ public class DndHelper {
     return motionEvent;
   }
 
-  private static boolean isTarget(Collection<String> contentTypes, Predicate<Long> targetPredicate) {
-    return contentTypes.contains(getDataType()) && targetPredicate.apply(getDataId());
+  private static boolean isTarget(Collection<String> contentTypes,
+      Predicate<Object> targetPredicate) {
+    return contentTypes.contains(getDataType()) && targetPredicate.apply(getData());
   }
 
   private static void setData(Object data) {
