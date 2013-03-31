@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -32,7 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class Trip extends Filterable implements HasColorSource, HasItemName {
+class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemName {
 
   private static final String VIEW_NAME = VIEW_TRIPS;
 
@@ -224,9 +225,17 @@ class Trip extends Filterable implements HasColorSource, HasItemName {
   Long getTrailerId() {
     return trailerId;
   }
+  
+  String getTrailerNumber() {
+    return trailerNumber;
+  }
 
   Long getTripId() {
     return tripId;
+  }
+
+  String getTripNo() {
+    return tripNo;
   }
 
   Long getTripVersion() {

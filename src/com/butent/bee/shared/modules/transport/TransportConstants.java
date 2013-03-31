@@ -78,7 +78,30 @@ public class TransportConstants {
   }
 
   public enum VehicleType {
-    TRUCK, TRAILER
+    TRUCK {
+      @Override
+      public String getTripVehicleIdColumnName() {
+        return COL_VEHICLE;
+      }
+      @Override
+      public String getTripVehicleNumberColumnName() {
+        return COL_VEHICLE_NUMBER;
+      }
+    }, 
+    TRAILER {
+      @Override
+      public String getTripVehicleIdColumnName() {
+        return COL_TRAILER;
+      }
+      @Override
+      public String getTripVehicleNumberColumnName() {
+        return COL_TRAILER_NUMBER;
+      }
+    };
+    
+    public abstract String getTripVehicleIdColumnName();
+
+    public abstract String getTripVehicleNumberColumnName();
   }
 
   public static final String TRANSPORT_MODULE = "Transport";
@@ -275,7 +298,12 @@ public class TransportConstants {
 
   public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
   public static final String COL_SS_PIXELS_PER_TRIP = "SsPixelsPerTrip";
+
   public static final String COL_SS_SEPARATE_TRIPS = "SsSeparateTrips";
+  public static final String COL_SS_SEPARATE_CARGO = "SsSeparateCargo";
+  
+  public static final String COL_SS_COUNTRY_FLAGS = "SsCountryFlags";
+  public static final String COL_SS_PLACE_INFO = "SsPlaceInfo";
 
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";

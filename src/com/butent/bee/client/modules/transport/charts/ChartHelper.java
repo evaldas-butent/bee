@@ -61,6 +61,8 @@ public class ChartHelper {
   static final int DAY_SEPARATOR_WIDTH = 1;
   static final int ROW_SEPARATOR_HEIGHT = 1;
 
+  static final int MAX_RESIZABLE_COLUMN_WIDTH = 300;
+
   private static final BeeLogger logger = LogUtils.getLogger(ChartHelper.class);
 
   private static final String STYLE_PREFIX = "bee-tr-chart-";
@@ -104,7 +106,7 @@ public class ChartHelper {
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 10;
 
   private static final String VALUE_SEPARATOR = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
-  
+
   public static void register() {
     final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
       @Override
@@ -290,7 +292,7 @@ public class ChartHelper {
     }
     return sb.toString();
   }
-  
+
   static String buildTitle(Object... labelsAndValues) {
     return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
   }
@@ -308,28 +310,35 @@ public class ChartHelper {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
-  static List<Filterable> filterItems(Collection<? extends Filterable> items,
-      Filterable.FilterType filterType, Range<JustDate> activeRange) {
+  static <T extends Filterable & HasDateRange> List<HasDateRange> filterActiveItems(
+      Collection<T> items, Filterable.FilterType filterType, Range<JustDate> activeRange) {
 
-    List<Filterable> result = Lists.newArrayList();
-    if (items == null) {
+    List<HasDateRange> result = Lists.newArrayList();
+    if (items == null || filterType == null || activeRange == null) {
       return result;
     }
 
-    for (Filterable item : items) {
-      if (item == null) {
-        continue;
+    for (T item : items) {
+      if (item != null && item.matched(filterType) && item.getRange() != null
+          && BeeUtils.intersects(item.getRange(), activeRange)) {
+        result.add(item);
       }
-      
-      if (filterType != null && !item.matched(filterType)) {
-        continue;
-      }
+    }
+    return result;
+  }
 
-      if (activeRange != null && !BeeUtils.intersects(item.getRange(), activeRange)) {
-        continue;
-      }
+  static <T extends Filterable & HasDateRange> List<HasDateRange> filterItems(Collection<T> items,
+      Filterable.FilterType filterType) {
 
-      result.add(item);
+    List<HasDateRange> result = Lists.newArrayList();
+    if (items == null || filterType == null) {
+      return result;
+    }
+
+    for (T item : items) {
+      if (item != null && item.matched(filterType)) {
+        result.add(item);
+      }
     }
     return result;
   }
@@ -350,7 +359,7 @@ public class ChartHelper {
     }
     return result;
   }
-  
+
   static Range<JustDate> getActivity(JustDate start, JustDate end) {
     if (start == null && end == null) {
       return null;
@@ -596,7 +605,7 @@ public class ChartHelper {
   static String join(String label, Object value) {
     return isEmpty(value) ? BeeConst.STRING_EMPTY : BeeUtils.join(VALUE_SEPARATOR, label, value);
   }
-  
+
   static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
     if (range == null || range.isEmpty() || !range.hasLowerBound() || !range.hasUpperBound()) {
       return null;
@@ -626,7 +635,7 @@ public class ChartHelper {
   static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2) {
     if (r1 == null || r2 == null) {
       return null;
-    
+
     } else if (r1.isConnected(r2)) {
       Range<JustDate> section = r1.intersection(r2);
       return isNormalized(section) ? section : normalizedCopyOf(section);
@@ -635,7 +644,7 @@ public class ChartHelper {
       return null;
     }
   }
-  
+
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -799,31 +808,31 @@ public class ChartHelper {
     if (count * 2 > width * height) {
       return new Size(1, 1);
     }
-    
+
     int x = 0;
     int y = 0;
-    
+
     for (int rows = 1; rows <= Math.min(count, height); rows++) {
       int cols = count / rows;
       if (count % rows > 0) {
         cols++;
       }
-      
+
       if (cols > 0 && cols <= width) {
         int w = width / cols;
         int h = height / rows;
-        
-        if (Math.min(w, h) > Math.min(x, y) 
+
+        if (Math.min(w, h) > Math.min(x, y)
             || Math.min(w, h) == Math.min(x, y) && Math.max(w, h) > Math.max(x, y)) {
           x = w;
           y = h;
         }
       }
     }
-    
+
     return new Size(x, y);
   }
-  
+
   private static void addDayStyle(Widget widget, JustDate date) {
     if (TimeUtils.isMore(TimeUtils.today(), date)) {
       widget.addStyleName(STYLE_PAST);
@@ -1046,7 +1055,7 @@ public class ChartHelper {
       return false;
     }
   }
-  
+
   private static boolean isNormalized(Range<JustDate> range) {
     return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
         && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;

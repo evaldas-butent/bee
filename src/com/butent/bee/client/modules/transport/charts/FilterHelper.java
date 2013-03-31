@@ -16,6 +16,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -56,7 +57,7 @@ class FilterHelper {
 
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
-  
+
   static boolean containsName(ChartData data, String name) {
     if (data == null || BeeUtils.isEmpty(name)) {
       return false;
@@ -75,7 +76,7 @@ class FilterHelper {
     }
     return null;
   }
-  
+
   static FilterDataWidget getDataWidget(HasWidgets container, ChartData.Type type) {
     for (Widget widget : container) {
       if (widget instanceof FilterDataWidget && ((FilterDataWidget) widget).hasType(type)) {
@@ -101,7 +102,7 @@ class FilterHelper {
 
     return result;
   }
-  
+
   static List<ChartData> notEmptyData(Collection<ChartData> data) {
     List<ChartData> result = Lists.newArrayList();
 
@@ -232,5 +233,17 @@ class FilterHelper {
 
     dialog.center();
     filter.setFocus(true);
+  }
+
+  static void persistFilter(Collection<? extends Filterable> items) {
+    for (Filterable item : items) {
+      item.persistFilter();
+    }
+  }
+  
+  static void resetFilter(Collection<? extends Filterable> items, FilterType filterType) {
+    for (Filterable item : items) {
+      item.setMatch(filterType, true);
+    }
   }
 }

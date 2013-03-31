@@ -20,7 +20,6 @@ class ChartData {
     private int count;
 
     private boolean selected = false;
-    private boolean used = false;
     private boolean enabled = true;
 
     private Item(String name, Long id) {
@@ -65,10 +64,6 @@ class ChartData {
       return selected;
     }
 
-    boolean isUsed() {
-      return used;
-    }
-
     private void increment() {
       count++;
     }
@@ -79,10 +74,6 @@ class ChartData {
 
     private void setSelected(boolean selected) {
       this.selected = selected;
-    }
-
-    private void setUsed(boolean used) {
-      this.used = used;
     }
   }
 
@@ -120,7 +111,6 @@ class ChartData {
   private final List<Item> items = Lists.newArrayList();
 
   private int numberOfSelectedItems = 0;
-  private int numberOfUsedItems = 0;
   private int numberOfDisabledItems = 0;
 
   ChartData(Type type) {
@@ -158,7 +148,6 @@ class ChartData {
     items.clear();
 
     setNumberOfSelectedItems(0);
-    setNumberOfUsedItems(0);
     setNumberOfDisabledItems(0);
   }
 
@@ -192,15 +181,11 @@ class ChartData {
     if (getNumberOfEnabledItems() > 0) {
       for (Item item : items) {
         item.setEnabled(false);
-
         item.setSelected(false);
-        item.setUsed(false);
       }
 
       setNumberOfDisabledItems(size());
-
       setNumberOfSelectedItems(0);
-      setNumberOfUsedItems(0);
     }
   }
 
@@ -227,10 +212,6 @@ class ChartData {
 
   int getNumberOfSelectedItems() {
     return numberOfSelectedItems;
-  }
-
-  int getNumberOfUsedItems() {
-    return numberOfUsedItems;
   }
 
   List<Item> getSelectedItems() {
@@ -265,20 +246,6 @@ class ChartData {
     return type;
   }
   
-  Collection<String> getUsedNames() {
-    List<String> names = Lists.newArrayList();
-
-    if (getNumberOfUsedItems() > 0) {
-      for (Item item : items) {
-        if (item.isUsed()) {
-          names.add(item.name);
-        }
-      }
-    }
-
-    return names;
-  }
-
   boolean hasSelection() {
     return getNumberOfSelectedItems() > 0;
   }
@@ -309,7 +276,6 @@ class ChartData {
       
       if (!enabled) {
         setItemSelected(item, false);
-        setItemUsed(item, false);
       }
       
       return true;
@@ -328,16 +294,6 @@ class ChartData {
     }
   }
 
-  boolean setItemUsed(Item item, boolean used) {
-    if (item != null && item.isUsed() != used) {
-      item.setUsed(used);
-      setNumberOfUsedItems(getNumberOfUsedItems() + (used ? 1 : -1));
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   boolean setSelected(int index, boolean selected) {
     if (BeeUtils.isIndex(items, index)) {
       return setItemSelected(items.get(index), selected);
@@ -348,15 +304,6 @@ class ChartData {
 
   boolean setSelected(String name, boolean selected) {
     return setItemSelected(find(name), selected);
-  }
-  
-  void unuseAll() {
-    if (getNumberOfUsedItems() > 0) {
-      for (Item item : items) {
-        item.setUsed(false);
-      }
-      setNumberOfUsedItems(0);
-    }
   }
   
   private Item find(String name) {
@@ -378,10 +325,6 @@ class ChartData {
 
   private void setNumberOfSelectedItems(int numberOfSelectedItems) {
     this.numberOfSelectedItems = numberOfSelectedItems;
-  }
-
-  private void setNumberOfUsedItems(int numberOfUsedItems) {
-    this.numberOfUsedItems = numberOfUsedItems;
   }
 
   private int size() {

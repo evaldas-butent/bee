@@ -117,16 +117,19 @@ public class TransportModuleBean implements BeeModule {
       response = getFxData();
 
     } else if (BeeUtils.same(svc, SVC_GET_SS_DATA)) {
-      response = getSsData();
+      response = getVehicleTbData(svc, Filter.in(COL_VEHICLE_ID, VIEW_TRIPS, COL_VEHICLE),
+          VehicleType.TRUCK, COL_SS_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_DTB_DATA)) {
       response = getDtbData();
 
     } else if (BeeUtils.same(svc, SVC_GET_TRUCK_TB_DATA)) {
-      response = getVehicleTbData(svc, true);
+      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRUCK), VehicleType.TRUCK,
+          COL_TRUCK_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_TRAILER_TB_DATA)) {
-      response = getVehicleTbData(svc, false);
+      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRAILER), VehicleType.TRAILER,
+          COL_TRAILER_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
@@ -816,114 +819,6 @@ public class TransportModuleBean implements BeeModule {
     return qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
   }
 
-  private ResponseObject getSsData() {
-    BeeRowSet settings = getSettings();
-    if (settings == null) {
-      return ResponseObject.error("user settings not available");
-    }
-
-    Long theme = settings.getLong(0, settings.getColumnIndex(COL_SS_THEME));
-    List<Color> colors = getThemeColors(theme);
-
-    settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
-
-    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
-    settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-
-    IsCondition where = SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION);
-
-    SimpleRowSet drivers = getTripDrivers(where);
-    if (!DataUtils.isEmpty(drivers)) {
-      settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
-    }
-
-    SimpleRowSet vehicleServices = getVehicleServices(null);
-    if (!DataUtils.isEmpty(vehicleServices)) {
-      settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
-    }
-
-    String vehicleJoinAlias = "veh_" + SqlUtils.uniqueName();
-    String trailerJoinAlias = "trail_" + SqlUtils.uniqueName();
-
-    String loadAlias = "load_" + SqlUtils.uniqueName();
-    String unlAlias = "unl_" + SqlUtils.uniqueName();
-
-    String defLoadAlias = "defl_" + SqlUtils.uniqueName();
-    String defUnlAlias = "defu_" + SqlUtils.uniqueName();
-
-    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-
-    SqlSelect query = new SqlSelect()
-        .addFrom(TBL_TRIPS)
-        .addFromLeft(TBL_VEHICLES, vehicleJoinAlias,
-            SqlUtils.join(vehicleJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_VEHICLE))
-        .addFromLeft(TBL_VEHICLES, trailerJoinAlias,
-            SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
-        .addFromLeft(TBL_CARGO_TRIPS,
-            SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
-        .addFromLeft(TBL_CARGO_PLACES, loadAlias,
-            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_TRIPS, COL_LOADING_PLACE))
-        .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE))
-        .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-        .addFromLeft(TBL_CARGO_PLACES, defLoadAlias,
-            SqlUtils.join(defLoadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
-        .addFromLeft(TBL_CARGO_PLACES, defUnlAlias,
-            SqlUtils.join(defUnlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
-        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER));
-
-    query.addField(TBL_TRIPS, COL_TRIP_DATE, ALS_TRIP_DATE);
-    query.addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
-        COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO);
-
-    query.addField(vehicleJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER);
-    query.addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER);
-
-    query.addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID);
-    query.addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION);
-
-    query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
-    query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
-    query.addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME));
-    query.addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL));
-
-    query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
-    query.addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY));
-    query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
-    query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
-
-    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION);
-
-    query.addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE));
-    query.addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY));
-    query.addField(defLoadAlias, COL_PLACE, defaultLoadingColumnAlias(COL_PLACE_NAME));
-    query.addField(defLoadAlias, COL_TERMINAL, defaultLoadingColumnAlias(COL_TERMINAL));
-
-    query.addField(defUnlAlias, COL_PLACE_DATE, defaultUnloadingColumnAlias(COL_PLACE_DATE));
-    query.addField(defUnlAlias, COL_COUNTRY, defaultUnloadingColumnAlias(COL_COUNTRY));
-    query.addField(defUnlAlias, COL_PLACE, defaultUnloadingColumnAlias(COL_PLACE_NAME));
-    query.addField(defUnlAlias, COL_TERMINAL, defaultUnloadingColumnAlias(COL_TERMINAL));
-
-    query.addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE);
-    query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_NO, COL_CUSTOMER);
-    query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
-
-    query.setWhere(where);
-
-    query.addOrder(vehicleJoinAlias, COL_NUMBER);
-    query.addOrder(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_NO, COL_TRIP_ID);
-
-    SimpleRowSet data = qs.getData(query);
-    if (data == null) {
-      return ResponseObject.error(SVC_GET_SS_DATA, "data not available");
-    }
-
-    settings.setTableProperty(PROP_DATA, data.serialize());
-    return ResponseObject.response(settings);
-  }
-
   private List<Color> getThemeColors(Long theme) {
     List<Color> result = Lists.newArrayList();
 
@@ -1341,15 +1236,19 @@ public class TransportModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
-  private ResponseObject getVehicleTbData(String svc, boolean truck) {
+  private IsCondition tripCondition(IsCondition where) {
+    return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
+  }
+
+  private ResponseObject getVehicleTbData(String svc, Filter vehicleFilter,
+      VehicleType vehicleType, String themeColumnName) {
+
     BeeRowSet settings = getSettings();
     if (settings == null) {
       return ResponseObject.error("user settings not available");
     }
 
-    Filter vehicleFilter = Filter.notEmpty(truck ? COL_IS_TRUCK : COL_IS_TRAILER);
     Order vehicleOrder = new Order(COL_NUMBER, true);
-
     BeeRowSet vehicles = qs.getViewData(VIEW_VEHICLES, vehicleFilter, vehicleOrder);
     if (DataUtils.isEmpty(vehicles)) {
       String msg = BeeUtils.joinWords(svc, "vehicles not available");
@@ -1358,7 +1257,6 @@ public class TransportModuleBean implements BeeModule {
     }
     settings.setTableProperty(PROP_VEHICLES, vehicles.serialize());
 
-    String themeColumnName = truck ? COL_TRUCK_THEME : COL_TRAILER_THEME;
     Long theme = settings.getLong(0, settings.getColumnIndex(themeColumnName));
     List<Color> colors = getThemeColors(theme);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
@@ -1374,8 +1272,8 @@ public class TransportModuleBean implements BeeModule {
       settings.setTableProperty(PROP_VEHICLE_SERVICES, vehicleServices.serialize());
     }
 
-    IsCondition tripWhere = SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION),
-        SqlUtils.inList(TBL_TRIPS, truck ? COL_VEHICLE : COL_TRAILER, vehicleIds));
+    IsCondition tripWhere = tripCondition(SqlUtils.inList(TBL_TRIPS,
+        vehicleType.getTripVehicleIdColumnName(), vehicleIds));
 
     String truckJoinAlias = "truck_" + SqlUtils.uniqueName();
     String trailerJoinAlias = "trail_" + SqlUtils.uniqueName();
@@ -1392,7 +1290,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(truckJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER)
         .addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER)
         .setWhere(tripWhere)
-        .addOrder(truck ? truckJoinAlias : trailerJoinAlias, COL_NUMBER);
+        .addOrder(TBL_TRIPS, vehicleType.getTripVehicleIdColumnName(), COL_TRIP_DATE);
 
     SimpleRowSet trips = qs.getData(tripQuery);
     if (DataUtils.isEmpty(trips)) {

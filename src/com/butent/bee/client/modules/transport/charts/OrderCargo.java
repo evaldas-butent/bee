@@ -20,9 +20,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 
-class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
+class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
   
   static final String cargoLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
   static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
@@ -187,5 +188,10 @@ class OrderCargo implements HasDateRange, HasColorSource, HasShipmentInfo {
         Global.CONSTANTS.cargoLoading(), loadInfo,
         Global.CONSTANTS.cargoUnloading(), unloadInfo,
         customerLabel, customerName, notesLabel, notes);
+  }
+
+  @Override
+  boolean filter(FilterType filterType, Collection<ChartData> data) {
+    return false;
   }
 }

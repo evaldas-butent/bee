@@ -23,7 +23,12 @@
 
     <Integer name="SsPixelsPerTruck" />
     <Integer name="SsPixelsPerTrip" />
+
     <Boolean name="SsSeparateTrips" />
+    <Boolean name="SsSeparateCargo" />
+
+    <Boolean name="SsCountryFlags" />
+    <Boolean name="SsPlaceInfo" />
 
     <Integer name="SsPixelsPerDay" />
     <Integer name="SsPixelsPerRow" />
@@ -51,6 +56,7 @@
     <Integer name="TruckPixelsPerInfo" />
 
     <Boolean name="TruckSeparateCargo" />
+
     <Boolean name="TruckCountryFlags" />
     <Boolean name="TruckPlaceInfo" />
 
@@ -69,6 +75,7 @@
     <Integer name="TrailerPixelsPerInfo" />
 
     <Boolean name="TrailerSeparateCargo" />
+
     <Boolean name="TrailerCountryFlags" />
     <Boolean name="TrailerPlaceInfo" />
 

@@ -379,12 +379,9 @@ class DriverTimeBoard extends ChartBase {
   protected void renderContent(ComplexPanel panel) {
     List<ChartRowLayout> driverLayout = doLayout();
 
-    int rc = 0;
-    for (ChartRowLayout layout : driverLayout) {
-      rc += layout.size();
-    }
-
+    int rc = ChartRowLayout.countRows(driverLayout, 1);
     initContent(panel, rc);
+
     if (driverLayout.isEmpty()) {
       return;
     }
@@ -404,7 +401,7 @@ class DriverTimeBoard extends ChartBase {
     int rowIndex = 0;
     for (ChartRowLayout layout : driverLayout) {
 
-      int size = layout.size();
+      int size = layout.getSize(1);
       int top = rowIndex * getRowHeight();
 
       if (rowIndex > 0) {
@@ -429,7 +426,7 @@ class DriverTimeBoard extends ChartBase {
       }
 
       for (int i = 0; i < layout.getRows().size(); i++) {
-        for (HasDateRange item : layout.getRows().get(i)) {
+        for (HasDateRange item : layout.getRows().get(i).getRowItems()) {
 
           if (item instanceof DriverTrip) {
             itemWidget = createTripWidget((DriverTrip) item);
@@ -596,12 +593,13 @@ class DriverTimeBoard extends ChartBase {
 
     for (int driverIndex = 0; driverIndex < drivers.size(); driverIndex++) {
       Driver driver = drivers.get(driverIndex);
+      Long driverId = driver.getId();
 
       if (ChartHelper.isActive(driver, range)) {
         ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
-        layout.addItems(getTrips(driver.getId(), range), range);
-        layout.addItems(getAbsence(driver.getId(), range), range);
+        layout.addItems(driverId, getTrips(driverId, range), range);
+        layout.addItems(driverId, getAbsence(driverId, range), range);
 
         layout.addInactivity(ChartHelper.getInactivity(driver, range), range);
 
@@ -640,11 +638,7 @@ class DriverTimeBoard extends ChartBase {
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);
 
-    int maxLeft = 300;
-    if (getChartWidth() > 0) {
-      maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
-    }
-
+    int maxLeft = getLastResizableColumnMaxLeft(0);
     int newLeft = BeeUtils.clamp(oldLeft + delta, 1, maxLeft);
 
     if (newLeft != oldLeft || event.isFinished()) {

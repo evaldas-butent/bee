@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,7 +25,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 
-class Freight extends Filterable implements HasColorSource, HasShipmentInfo {
+class Freight extends Filterable implements HasColorSource, HasDateRange, HasShipmentInfo {
 
   private final Long tripId;
 

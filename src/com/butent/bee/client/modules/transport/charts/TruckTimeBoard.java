@@ -119,14 +119,4 @@ class TruckTimeBoard extends VehicleTimeBoard {
   protected String getThemeColumnName() {
     return COL_TRUCK_THEME;
   }
-  
-  @Override
-  protected String getTripVehicleIdColumnName() {
-    return COL_VEHICLE;
-  }
-
-  @Override
-  protected String getTripVehicleNumberColumnName() {
-    return COL_VEHICLE_NUMBER;
-  }
 }

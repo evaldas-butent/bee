@@ -7,12 +7,13 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-class Vehicle extends Filterable implements HasItemName {
+class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   private static final int numberIndex = Data.getColumnIndex(VIEW_VEHICLES, COL_NUMBER);
 

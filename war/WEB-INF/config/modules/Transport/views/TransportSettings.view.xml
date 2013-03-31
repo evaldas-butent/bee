@@ -26,7 +26,12 @@
 
     <SimpleColumn name="SsPixelsPerTruck" />
     <SimpleColumn name="SsPixelsPerTrip" />
+
     <SimpleColumn name="SsSeparateTrips" />
+    <SimpleColumn name="SsSeparateCargo" />
+
+    <SimpleColumn name="SsCountryFlags" />
+    <SimpleColumn name="SsPlaceInfo" />
 
     <SimpleColumn name="SsPixelsPerDay" />
     <SimpleColumn name="SsPixelsPerRow" />
@@ -57,6 +62,7 @@
     <SimpleColumn name="TruckPixelsPerInfo" />
 
     <SimpleColumn name="TruckSeparateCargo" />
+
     <SimpleColumn name="TruckCountryFlags" />
     <SimpleColumn name="TruckPlaceInfo" />
 
@@ -78,6 +84,7 @@
     <SimpleColumn name="TrailerPixelsPerInfo" />
 
     <SimpleColumn name="TrailerSeparateCargo" />
+
     <SimpleColumn name="TrailerCountryFlags" />
     <SimpleColumn name="TrailerPlaceInfo" />
 

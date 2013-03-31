@@ -172,11 +172,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private final Set<String> relevantDataViews = Sets.newHashSet();
 
-  private final List<ChartData> filterData = Lists.newArrayList();
-  private final List<Integer> filteredIndexes = Lists.newArrayList();
-
   private final CustomDiv filterLabel;
   private final BeeImage removeFilter;
+
+  private final List<ChartData> filterData = Lists.newArrayList();
+  private boolean filtered = false;
 
   protected ChartBase() {
     super();
@@ -632,17 +632,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void clearFilter() {
     if (isFiltered()) {
-      filteredIndexes.clear();
+      setFiltered(false);
+      render(false);
 
-      updateMaxRange();
-      render(true);
-    }
-
-    filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
-    removeFilter.setVisible(false);
-
-    for (ChartData data : filterData) {
-      data.unuseAll();
+      filterLabel.setText(BeeConst.STRING_EMPTY);
+      removeFilter.setVisible(false);
     }
   }
 
@@ -815,10 +809,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return filterData;
   }
 
-  protected List<Integer> getFilteredIndexes() {
-    return filteredIndexes;
-  }
-
   protected int getFooterHeight() {
     return footerHeight;
   }
@@ -854,6 +844,14 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       return getPlaceInfo(item.getLoadingCountry(), item.getLoadingPlace(),
           item.getLoadingTerminal());
     }
+  }
+  
+  protected int getLastResizableColumnMaxLeft(int minLeft) {
+    int maxLeft = minLeft + ChartHelper.MAX_RESIZABLE_COLUMN_WIDTH;
+    if (getChartWidth() > 0) {
+      maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
+    }
+    return maxLeft;
   }
 
   protected String getPlaceInfo(Long countryId, String placeName, String terminal) {
@@ -983,10 +981,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
-  }
-
-  protected boolean isFiltered() {
-    return !filteredIndexes.isEmpty();
   }
 
   protected void onCreate(ResponseObject response, Callback<IdentifiableWidget> callback) {
@@ -1553,16 +1547,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.visibleRange = visibleRange;
   }
 
-  protected void updateFilteredIndexes(List<Integer> indexes) {
-    if (!BeeUtils.sameElements(indexes, filteredIndexes)) {
-      filteredIndexes.clear();
-      filteredIndexes.addAll(indexes);
-
-      updateMaxRange();
-      render(true);
-    }
-  }
-
   protected void updateMaxRange() {
     setMaxRange(getChartItems());
   }
@@ -1851,5 +1835,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       filterData.clear();
       filterData.addAll(newData);
     }
+  }
+
+  protected boolean isFiltered() {
+    return filtered;
+  }
+
+  protected void setFiltered(boolean filtered) {
+    this.filtered = filtered;
   }
 }

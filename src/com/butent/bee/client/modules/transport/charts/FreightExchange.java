@@ -31,6 +31,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.ChartData.Type;
+import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
@@ -138,37 +139,43 @@ class FreightExchange extends ChartBase {
   protected boolean filter(DialogBox dialog) {
     Predicate<OrderCargo> predicate = getPredicate();
     
-    List<Integer> match = Lists.newArrayList();
+    int matchSize = 0;
+    
     if (predicate != null) {
-      for (int i = 0; i < items.size(); i++) {
-        if (predicate.apply(items.get(i))) {
-          match.add(i);
+      for (OrderCargo item : items) {
+        boolean match = predicate.apply(item);
+        item.setMatch(FilterType.TENTATIVE, match);
+        
+        if (match) {
+          matchSize++;
         }
       }
       
-      if (match.isEmpty()) {
+      if (matchSize == 0) {
         return false;
       }
-      if (match.size() >= items.size()) {
-        match.clear();
+      if (matchSize >= items.size()) {
+        matchSize = 0;
       }
     }
     
     dialog.close();
     
-    updateFilteredIndexes(match);
+    if (matchSize > 0) {
+      setFiltered(true);
+      FilterHelper.persistFilter(items);
+    } else {
+      FilterHelper.resetFilter(items, FilterType.PERSISTENT);
+      clearFilter();
+    }
+    
     return true;
   }
 
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
-      List<OrderCargo> result = Lists.newArrayList();
-      for (int index : getFilteredIndexes()) {
-        result.add(items.get(index));
-      }
-      return result;
-      
+      return ChartHelper.filterItems(items, FilterType.PERSISTENT);
     } else {
       return items;
     }
@@ -576,11 +583,10 @@ class FreightExchange extends ChartBase {
     Long orderId = null;
     List<OrderCargo> rowItems = Lists.newArrayList();
     
-    for (int i = 0; i < items.size(); i++) {
-      if (isFiltered() && !getFilteredIndexes().contains(i)) {
+    for (OrderCargo item : items) {
+      if (isFiltered() && !item.matched(FilterType.PERSISTENT)) {
         continue;
       }
-      OrderCargo item = items.get(i);
 
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
@@ -737,11 +743,7 @@ class FreightExchange extends ChartBase {
     Element resizer = ((Mover) event.getSource()).getElement();
     int oldLeft = StyleUtils.getLeft(resizer);
 
-    int maxLeft = getCustomerWidth() + 300;
-    if (getChartWidth() > 0) {
-      maxLeft = Math.min(maxLeft, getChartLeft() + getChartWidth() / 2);
-    }
-
+    int maxLeft = getLastResizableColumnMaxLeft(getCustomerWidth());
     int newLeft = BeeUtils.clamp(oldLeft + delta, getCustomerWidth() + 1, maxLeft);
 
     if (newLeft != oldLeft || event.isFinished()) {
