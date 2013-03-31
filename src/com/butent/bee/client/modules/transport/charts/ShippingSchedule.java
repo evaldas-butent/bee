@@ -2,12 +2,10 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -16,26 +14,21 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.event.logical.MotionEvent;
-import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.ChartRowLayout.GroupLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
 import java.util.Map;
 
-class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
+class ShippingSchedule extends VehicleTimeBoard  {
 
   static final String SUPPLIER_KEY = "shipping_schedule";
   private static final String DATA_SERVICE = SVC_GET_SS_DATA;
@@ -49,8 +42,6 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
   private static final String STYLE_TRIP_GROUP_TRAILER = STYLE_TRIP_GROUP_PREFIX + "trailer";
   private static final String STYLE_TRIP_GROUP_OVERLAP = STYLE_TRIP_GROUP_PREFIX + "overlap";
   private static final String STYLE_TRIP_GROUP_DRAG_OVER = STYLE_TRIP_GROUP_PREFIX + "dragOver";
-
-  private static final int SCROLL_STEP = 2;
 
   static void open(final Callback<IdentifiableWidget> callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
@@ -93,45 +84,6 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
       RowFactory.createRow(VIEW_TRIPS);
     } else {
       super.handleAction(action);
-    }
-  }
-
-  @Override
-  public void onMotion(MotionEvent event) {
-    if (!DATA_TYPE_ORDER_CARGO.equals(event.getDataType())) {
-      return;
-    }
-
-    Element panel = getScrollArea();
-
-    if (event.getDirectionY() != null && panel != null
-        && BeeUtils.betweenInclusive(event.getCurrentX(), panel.getAbsoluteLeft(),
-            panel.getAbsoluteRight())) {
-
-      int panelTop = panel.getAbsoluteTop();
-      int panelheight = panel.getClientHeight();
-
-      int oldPos = panel.getScrollTop();
-      int scrollHeight = panel.getScrollHeight();
-
-      int y = event.getCurrentY();
-      int rh = getRowHeight();
-
-      int newPos = BeeConst.UNDEF;
-
-      if (oldPos > 0 && BeeUtils.betweenExclusive(y, panelTop - rh, panelTop)
-          && event.getDirectionY() == Direction.NORTH) {
-        newPos = Math.max(oldPos - SCROLL_STEP, 0);
-
-      } else if (panelheight < scrollHeight
-          && BeeUtils.betweenInclusive(y, panelTop + panelheight + 1, panelTop + panelheight + rh)
-          && event.getDirectionY() == Direction.SOUTH) {
-        newPos = Math.min(oldPos + SCROLL_STEP, scrollHeight - panelheight);
-      }
-
-      if (newPos >= 0 && newPos != oldPos) {
-        panel.setScrollTop(newPos);
-      }
     }
   }
 
@@ -252,14 +204,6 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
   }
   
   @Override
-  protected List<HandlerRegistration> register() {
-    List<HandlerRegistration> list = super.register();
-    list.add(MotionEvent.register(this));
-
-    return list;
-  }
-
-  @Override
   protected void renderContentInit() {
     super.renderContentInit();
     tripsByRow.clear();
@@ -287,12 +231,13 @@ class ShippingSchedule extends VehicleTimeBoard implements MotionEvent.Handler {
     for (int rowIndex = firstRow + 1; rowIndex <= lastRow; rowIndex++) {
       int top = rowIndex * getRowHeight(); 
       Long currentTrip = tripsByRow.get(rowIndex);
-
+      
       if (Objects.equal(lastTrip, currentTrip)) {
         ChartHelper.addRowSeparator(panel, top, getChartLeft(), getCalendarWidth());
       } else {
         ChartHelper.addRowSeparator(panel, STYLE_TRIP_GROUP_ROW_SEPARATOR, top,
             getNumberWidth(), getInfoWidth() + getCalendarWidth());
+        lastTrip = currentTrip;
       }
     }
   }

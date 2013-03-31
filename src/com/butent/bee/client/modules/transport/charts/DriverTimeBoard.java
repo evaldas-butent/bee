@@ -561,7 +561,7 @@ class DriverTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(widget, DATA_TYPE_DRIVER, driver, STYLE_DRIVER_DRAG, true);
+    DndHelper.makeSource(widget, DATA_TYPE_DRIVER, driver, STYLE_DRIVER_DRAG);
 
     panel.add(widget);
 

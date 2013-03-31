@@ -520,7 +520,7 @@ class FreightExchange extends ChartBase {
 
     final Long cargoId = item.getCargoId();
 
-    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, item, STYLE_ITEM_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, item, STYLE_ITEM_DRAG);
 
     ClickHandler opener = new ClickHandler() {
       @Override

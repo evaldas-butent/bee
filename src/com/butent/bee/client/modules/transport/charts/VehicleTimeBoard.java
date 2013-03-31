@@ -145,7 +145,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     setRelevantDataViews(VIEW_VEHICLES, VIEW_TRIPS, VIEW_ORDER_CARGO, VIEW_CARGO_HANDLING,
         VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES,
         CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
-
+    
     if (getDataType().equals(DATA_TYPE_TRAILER)) {
       this.vehicleType = VehicleType.TRAILER;
       this.otherVehicleType = VehicleType.TRUCK;
@@ -863,7 +863,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
     
     freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
 
@@ -942,7 +942,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     panel.add(label);
     
-    DndHelper.makeSource(label, getDataType(), vehicle, STYLE_VEHICLE_DRAG, true);
+    DndHelper.makeSource(label, getDataType(), vehicle, STYLE_VEHICLE_DRAG);
     vehicle.makeTarget(panel, STYLE_VEHICLE_DRAG_OVER, vehicleType);
 
     return panel;
@@ -964,7 +964,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     });
 
-    DndHelper.makeSource(panel, DATA_TYPE_TRIP, trip, STYLE_TRIP_DRAG, true);
+    DndHelper.makeSource(panel, DATA_TYPE_TRIP, trip, STYLE_TRIP_DRAG);
     trip.makeTarget(panel, STYLE_TRIP_DRAG_OVER);
 
     Range<JustDate> tripRange =

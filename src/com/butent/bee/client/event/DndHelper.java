@@ -69,9 +69,9 @@ public class DndHelper {
     return BeeUtils.same(contentType, getDataType());
   }
 
-  public static void makeSource(final DndSource widget, final String contentType,
-      final Object content, final String dragStyle, final boolean fireMotion) {
-    makeSource(widget, contentType, null, null, content, dragStyle, fireMotion);
+  public static void makeSource(DndSource widget, String contentType, Object content, 
+      String dragStyle) {
+    makeSource(widget, contentType, null, null, content, dragStyle, false);
   }
   
   public static void makeSource(final DndSource widget, final String contentType,
