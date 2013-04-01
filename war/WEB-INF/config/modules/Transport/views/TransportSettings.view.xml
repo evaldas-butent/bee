@@ -10,6 +10,9 @@
     <SimpleColumn name="FxPixelsPerCustomer" />
     <SimpleColumn name="FxPixelsPerOrder" />
 
+    <SimpleColumn name="FxCountryFlags" />
+    <SimpleColumn name="FxPlaceInfo" />
+
     <SimpleColumn name="FxPixelsPerDay" />
     <SimpleColumn name="FxPixelsPerRow" />
 
@@ -49,6 +52,9 @@
 
     <SimpleColumn name="DtbPixelsPerDriver" />
 
+    <SimpleColumn name="DtbCountryFlags" />
+    <SimpleColumn name="DtbPlaceInfo" />
+
     <SimpleColumn name="DtbPixelsPerDay" />
     <SimpleColumn name="DtbPixelsPerRow" />
 
@@ -57,6 +63,11 @@
 
     <SimpleColumn name="DtbItemOpacity" />
     <SimpleColumn name="DtbStripOpacity" />
+
+    <SimpleColumn name="DtbColor" />
+    <SimpleJoin name="DtbColor" joinType="LEFT">
+      <SimpleColumn alias="DtbColorName" name="Name" />
+    </SimpleJoin>
 
     <SimpleColumn name="TruckPixelsPerNumber" />
     <SimpleColumn name="TruckPixelsPerInfo" />

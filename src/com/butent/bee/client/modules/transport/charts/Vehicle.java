@@ -171,7 +171,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
       final Freight freight = (Freight) data;
-      String title = freight.getTitle(true);
+      String title = freight.getCargoAndTripTitle();
 
       Trip.createForCargo(this, freight, title, false, new Queries.IdCallback() {
         @Override

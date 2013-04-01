@@ -301,10 +301,7 @@
   color: black;
 }
 
-.bee-tr-ss-trip-Group-dragOver {
-  border: 2px dashed red;
-}
-
+.bee-tr-ss-trip-Group-dragOver,
 .bee-tr-vtb-Vehicle-dragOver,
 .bee-tr-vtb-Trip-dragOver,
 .bee-tr-vtb-Freight-dragOver {
@@ -332,36 +329,12 @@
   cursor: pointer;
 }
 
-.bee-tr-vtb-Trip-void,
-.bee-tr-vtb-Day-panel {
+.bee-tr-vtb-Trip-void {
   position: absolute;
   top: 0;
   bottom: 0;
-}
-
-.bee-tr-vtb-Trip-void {
   background-image: -webkit-repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
   pointer-events: none;
-}
-
-.bee-tr-vtb-Day-panel {
-  display: -webkit-flex;
-  -webkit-flex-wrap: wrap;
-}
-
-.bee-tr-vtb-Day-empty {
-  background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
-}
-.bee-tr-vtb-Day-flag {
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.bee-tr-vtb-Day-label {
-  font-size: 12px;
-  line-height: 12px;
-  overflow: hidden;
-  word-wrap: break-word;
 }
 
 .bee-tr-fx-Customer-row-sep,
@@ -380,6 +353,30 @@
 .bee-tr-dtb-Driver-row-sep,
 .bee-tr-vtb-Vehicle-row-sep {
   background-color: #ddd;
+}
+
+.bee-tr-chart-shipment-day-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: -webkit-flex;
+  -webkit-flex-wrap: wrap;
+}
+
+.bee-tr-chart-shipment-day-empty {
+  background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+.bee-tr-chart-shipment-day-flag {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.bee-tr-chart-shipment-day-label {
+  font-size: 12px;
+  line-height: 12px;
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .bee-tr-PlaceRenderer-table {

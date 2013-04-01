@@ -755,10 +755,10 @@ public class TransportModuleBean implements BeeModule {
 
     Set<Integer> statuses = Sets.newHashSet(OrderStatus.CREATED.ordinal(),
         OrderStatus.ACTIVATED.ordinal(), OrderStatus.CONFIRMED.ordinal());
-    IsCondition where = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
+    IsCondition cargoWhere = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
         SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
 
-    query.setWhere(where);
+    query.setWhere(cargoWhere);
 
     query.addOrder(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME);
     query.addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
@@ -766,11 +766,42 @@ public class TransportModuleBean implements BeeModule {
     query.addOrder(unlAlias, COL_PLACE_DATE);
 
     SimpleRowSet data = qs.getData(query);
-    if (data == null) {
-      return ResponseObject.error(SVC_GET_FX_DATA, "data not available");
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.response(settings);
+    }
+    settings.setTableProperty(PROP_DATA, data.serialize());
+    
+    IsCondition cargoHandlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
+        SqlUtils.notNull(unlAlias, COL_PLACE_DATE));
+
+    SqlSelect cargoHandlingQuery = new SqlSelect()
+        .addFrom(TBL_ORDER_CARGO)
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_TRIPS,
+            SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID))
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+        .addFromLeft(TBL_CARGO_PLACES, loadAlias,
+            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CARGO_PLACES, unlAlias,
+            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
+        .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
+        .addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY))
+        .addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME))
+        .addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL))
+        .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
+        .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
+        .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
+        .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
+        .setWhere(SqlUtils.and(cargoWhere, cargoHandlingWhere))
+        .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
+
+    SimpleRowSet cargoHandling = qs.getData(cargoHandlingQuery);
+    if (!DataUtils.isEmpty(cargoHandling)) {
+      settings.setTableProperty(PROP_CARGO_HANDLING, cargoHandling.serialize());
     }
 
-    settings.setTableProperty(PROP_DATA, data.serialize());
     return ResponseObject.response(settings);
   }
 

@@ -391,7 +391,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
       final Freight freight = (Freight) data;
-      String freightTitle = freight.getTitle(false);
+      String freightTitle = freight.getTitle();
 
       Trip.maybeAssignCargo(freightTitle, getTitle(), new ConfirmationCallback() {
         @Override

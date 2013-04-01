@@ -602,6 +602,11 @@ public class ChartHelper {
     }
   }
 
+  static boolean isNormalized(Range<JustDate> range) {
+    return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
+        && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;
+  }
+
   static String join(String label, Object value) {
     return isEmpty(value) ? BeeConst.STRING_EMPTY : BeeUtils.join(VALUE_SEPARATOR, label, value);
   }
@@ -1054,11 +1059,6 @@ public class ChartHelper {
     } else {
       return false;
     }
-  }
-
-  private static boolean isNormalized(Range<JustDate> range) {
-    return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
-        && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;
   }
 
   private static Widget renderDate(JustDate date, String styleName, int width, int height) {

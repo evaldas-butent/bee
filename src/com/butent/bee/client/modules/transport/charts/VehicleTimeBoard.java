@@ -3,9 +3,7 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -28,7 +26,6 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.transport.charts.CargoEvent.Type;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -39,6 +36,7 @@ import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -61,7 +59,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 abstract class VehicleTimeBoard extends ChartBase {
@@ -99,13 +96,6 @@ abstract class VehicleTimeBoard extends ChartBase {
   private static final String STYLE_FREIGHT_DRAG = STYLE_FREIGHT_PREFIX + "drag";
   private static final String STYLE_FREIGHT_DRAG_OVER = STYLE_FREIGHT_PREFIX + "dragOver";
 
-  private static final String STYLE_DAY_PREFIX = STYLE_PREFIX + "Day-";
-  private static final String STYLE_DAY_PANEL = STYLE_DAY_PREFIX + "panel";
-  private static final String STYLE_DAY_WIDGET = STYLE_DAY_PREFIX + "widget";
-  private static final String STYLE_DAY_EMPTY = STYLE_DAY_PREFIX + "empty";
-  private static final String STYLE_DAY_FLAG = STYLE_DAY_PREFIX + "flag";
-  private static final String STYLE_DAY_LABEL = STYLE_DAY_PREFIX + "label";
-
   private static final String STYLE_SERVICE_PREFIX = STYLE_PREFIX + "Service-";
   private static final String STYLE_SERVICE_PANEL = STYLE_SERVICE_PREFIX + "panel";
   private static final String STYLE_SERVICE_LABEL = STYLE_SERVICE_PREFIX + "label";
@@ -118,7 +108,6 @@ abstract class VehicleTimeBoard extends ChartBase {
   private final Multimap<Long, Trip> trips = ArrayListMultimap.create();
 
   private final Multimap<Long, Freight> freights = ArrayListMultimap.create();
-  private final Multimap<Long, CargoHandling> handling = ArrayListMultimap.create();
 
   private final Multimap<Long, VehicleService> services = ArrayListMultimap.create();
 
@@ -126,8 +115,6 @@ abstract class VehicleTimeBoard extends ChartBase {
   private int infoWidth = BeeConst.UNDEF;
 
   private boolean separateCargo = false;
-  private boolean showCountryFlags = false;
-  private boolean showPlaceInfo = false;
 
   private final Set<String> numberPanels = Sets.newHashSet();
   private final Set<String> infoPanels = Sets.newHashSet();
@@ -142,10 +129,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_VEHICLES, VIEW_TRIPS, VIEW_ORDER_CARGO, VIEW_CARGO_HANDLING,
-        VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES,
-        CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
-    
+    addRelevantDataViews(VIEW_VEHICLES, VIEW_TRIPS, VIEW_TRIP_DRIVERS, VIEW_VEHICLE_SERVICES);
+
     if (getDataType().equals(DATA_TYPE_TRAILER)) {
       this.vehicleType = VehicleType.TRAILER;
       this.otherVehicleType = VehicleType.TRUCK;
@@ -295,16 +280,11 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected abstract String getSeparateCargoColumnName();
 
-  protected abstract String getShowCountryFlagsColumnName();
-
-  protected abstract String getShowPlaceInfoColumnName();
-
   @Override
   protected void initData(BeeRowSet rowSet) {
     vehicles.clear();
     trips.clear();
     freights.clear();
-    handling.clear();
     services.clear();
 
     if (rowSet == null) {
@@ -334,31 +314,14 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_CARGO_HANDLING);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
-      for (SimpleRow row : srs) {
-        handling.put(row.getLong(COL_CARGO), new CargoHandling(row));
-      }
-    }
-
     serialized = rowSet.getTableProperty(PROP_FREIGHTS);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
 
       for (SimpleRow row : srs) {
-        JustDate minLoad = null;
-        JustDate maxUnload = null;
-        Long cargoId = row.getLong(COL_CARGO);
-
-        if (handling.containsKey(cargoId)) {
-          for (CargoHandling ch : handling.get(cargoId)) {
-            minLoad = BeeUtils.min(minLoad, ch.getLoadingDate());
-            maxUnload = BeeUtils.max(maxUnload, ch.getUnloadingDate());
-          }
-        }
-
-        freights.put(row.getLong(COL_TRIP_ID), new Freight(row, minLoad, maxUnload));
+        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO));
+        freights.put(row.getLong(COL_TRIP_ID),
+            Freight.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
     }
 
@@ -407,14 +370,14 @@ abstract class VehicleTimeBoard extends ChartBase {
     updateMaxRange();
 
     logger.debug(getCaption(), vehicles.size(), trips.size(), drivers.size(), freights.size(),
-        handling.size(), services.size());
+        services.size());
   }
 
   @Override
   protected List<ChartData> initFilter() {
     return prepareFilterData(null);
   }
-  
+
   @Override
   protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
     return null;
@@ -423,7 +386,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected boolean isInfoColumnVisible() {
     return true;
   }
-  
+
   protected boolean layoutIdleVehicles() {
     return true;
   }
@@ -524,9 +487,6 @@ abstract class VehicleTimeBoard extends ChartBase {
       setSeparateCargo(sc);
       updateMaxRange();
     }
-
-    setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
-    setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
   }
 
   @Override
@@ -575,11 +535,11 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       IdentifiableWidget numberWidget = createNumberWidget(vehicle, hasOverlap);
       addNumberWidget(panel, numberWidget, rowIndex, lastRow);
-      
+
       if (isInfoColumnVisible()) {
         renderInfoCell(layout, vehicle, panel, rowIndex, lastRow);
       }
-      
+
       if (size > 1) {
         renderRowSeparators(panel, rowIndex, lastRow);
       }
@@ -711,7 +671,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private void addNumberWidget(HasWidgets panel, IdentifiableWidget widget,
       int firstRow, int lastRow) {
-    
+
     Rectangle rectangle = ChartHelper.getRectangle(0, getNumberWidth(), firstRow, lastRow,
         getRowHeight());
 
@@ -720,179 +680,29 @@ abstract class VehicleTimeBoard extends ChartBase {
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
 
     ChartHelper.apply(widget.asWidget(), rectangle, margins);
-    
+
     panel.add(widget.asWidget());
-    
+
     numberPanels.add(widget.getId());
-  }
-
-  private Widget createDayPanel(Multimap<Long, CargoEvent> dayEvents, String tripTitle) {
-    Flow panel = new Flow();
-    panel.addStyleName(STYLE_DAY_PANEL);
-
-    Set<Long> countryIds = dayEvents.keySet();
-    Size size = ChartHelper.splitRectangle(getDayColumnWidth(), getRowHeight(), countryIds.size());
-
-    if (size != null) {
-      for (Long countryId : countryIds) {
-        Widget widget = createDayWidget(countryId, dayEvents.get(countryId), tripTitle);
-        StyleUtils.setSize(widget, size.getWidth(), size.getHeight());
-
-        panel.add(widget);
-      }
-    }
-
-    return panel;
-  }
-  
-  private Widget createDayWidget(Long countryId, Collection<CargoEvent> events, String tripTitle) {
-    Flow widget = new Flow();
-    widget.addStyleName(STYLE_DAY_WIDGET);
-
-    String flag = showCountryFlags() ? Places.getCountryFlag(countryId) : null;
-
-    if (!BeeUtils.isEmpty(flag)) {
-      widget.addStyleName(STYLE_DAY_FLAG);
-      StyleUtils.setBackgroundImage(widget, flag);
-    }
-
-    if (!BeeUtils.isEmpty(events)) {
-      if (showPlaceInfo()) {
-        List<String> info = Lists.newArrayList();
-
-        if (BeeUtils.isEmpty(flag) && DataUtils.isId(countryId)) {
-          String countryLabel = Places.getCountryLabel(countryId);
-          if (!BeeUtils.isEmpty(countryLabel)) {
-            info.add(countryLabel);
-          }
-        }
-
-        for (CargoEvent event : events) {
-          String place = event.getPlace();
-          if (!BeeUtils.isEmpty(place) && !BeeUtils.containsSame(info, place)) {
-            info.add(place);
-          }
-
-          String terminal = event.getTerminal();
-          if (!BeeUtils.isEmpty(terminal) && BeeUtils.containsSame(info, terminal)) {
-            info.add(terminal);
-          }
-        }
-
-        if (!info.isEmpty()) {
-          CustomDiv label = new CustomDiv(STYLE_DAY_LABEL);
-          label.setText(BeeUtils.join(BeeConst.STRING_SPACE, info));
-
-          widget.add(label);
-        }
-      }
-
-      List<String> title = Lists.newArrayList();
-
-      Multimap<Freight, CargoEvent> eventsByFreight = LinkedListMultimap.create();
-      for (CargoEvent event : events) {
-        eventsByFreight.put(event.getFreight(), event);
-      }
-
-      for (Freight freight : eventsByFreight.keySet()) {
-        EnumSet<CargoEvent.Type> freightEventTypes = EnumSet.noneOf(CargoEvent.Type.class);
-        Map<CargoHandling, EnumSet<CargoEvent.Type>> handlingEvents = Maps.newHashMap();
-
-        for (CargoEvent event : eventsByFreight.get(freight)) {
-          CargoEvent.Type eventType = event.isLoading()
-              ? CargoEvent.Type.LOADING : CargoEvent.Type.UNLOADING;
-
-          if (event.isFreightEvent()) {
-            freightEventTypes.add(eventType);
-          } else if (handlingEvents.containsKey(event.getCargoHandling())) {
-            handlingEvents.get(event.getCargoHandling()).add(eventType);
-          } else {
-            handlingEvents.put(event.getCargoHandling(), EnumSet.of(eventType));
-          }
-        }
-
-        if (!title.isEmpty()) {
-          title.add(BeeConst.STRING_NBSP);
-        }
-        title.add(freight.getTitle(false));
-
-        if (!handlingEvents.isEmpty()) {
-          title.add(BeeConst.STRING_NBSP);
-
-          for (Map.Entry<CargoHandling, EnumSet<Type>> entry : handlingEvents.entrySet()) {
-            String chLoading = entry.getValue().contains(CargoEvent.Type.LOADING)
-                ? Places.getLoadingInfo(entry.getKey()) : null;
-            String chUnloading = entry.getValue().contains(CargoEvent.Type.UNLOADING)
-                ? Places.getUnloadingInfo(entry.getKey()) : null;
-
-            title.add(entry.getKey().getTitle(chLoading, chUnloading));
-          }
-        }
-      }
-
-      if (!BeeUtils.isEmpty(tripTitle)) {
-        title.add(BeeConst.STRING_NBSP);
-        title.add(tripTitle);
-      }
-
-      if (!title.isEmpty()) {
-        widget.setTitle(BeeUtils.join(BeeConst.STRING_EOL, title));
-      }
-    }
-
-    if (widget.isEmpty() && BeeUtils.isEmpty(flag)) {
-      widget.addStyleName(STYLE_DAY_EMPTY);
-    }
-
-    return widget;
   }
 
   private Widget createFreightWidget(Freight freight) {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_FREIGHT_PANEL);
     setItemWidgetColor(freight, panel);
+    
+    panel.setTitle(freight.getCargoAndTripTitle());
 
-    panel.setTitle(freight.getTitle(true));
-
-    final Long cargoId = freight.getCargoId();
-
-    panel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
-      }
-    });
+    bindCargoOpener(freight, panel);
 
     DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
-    
     freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
-
-    Range<JustDate> freightRange =
-        ChartHelper.normalizedIntersection(freight.getRange(), getVisibleRange());
-    if (freightRange == null) {
-      return panel;
-    }
-
-    Multimap<JustDate, CargoEvent> freightLayout = splitFreightByDate(freight, freightRange);
-    if (freightLayout.isEmpty()) {
-      return panel;
-    }
-
-    for (JustDate date : freightLayout.keySet()) {
-      Multimap<Long, CargoEvent> dayLayout = splitByCountry(freightLayout.get(date));
-      if (!dayLayout.isEmpty()) {
-        Widget dayWidget = createDayPanel(dayLayout, freight.getTripTitle());
-
-        StyleUtils.setLeft(dayWidget, getRelativeLeft(freightRange, date));
-        StyleUtils.setWidth(dayWidget, getDayColumnWidth());
-
-        panel.add(dayWidget);
-      }
-    }
+    
+    renderCargoShipment(panel, freight, freight.getTripTitle());
 
     return panel;
   }
-  
+
   private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_INFO_PANEL);
@@ -918,7 +728,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     return panel;
   }
-  
+
   private IdentifiableWidget createNumberWidget(Vehicle vehicle, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_NUMBER_PANEL);
@@ -941,7 +751,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     });
 
     panel.add(label);
-    
+
     DndHelper.makeSource(label, getDataType(), vehicle, STYLE_VEHICLE_DRAG);
     vehicle.makeTarget(panel, STYLE_VEHICLE_DRAG_OVER, vehicleType);
 
@@ -980,9 +790,9 @@ abstract class VehicleTimeBoard extends ChartBase {
       Set<JustDate> eventDates = tripLayout.keySet();
 
       for (JustDate date : eventDates) {
-        Multimap<Long, CargoEvent> dayLayout = splitByCountry(tripLayout.get(date));
+        Multimap<Long, CargoEvent> dayLayout = CargoEvent.splitByCountry(tripLayout.get(date));
         if (!dayLayout.isEmpty()) {
-          Widget dayWidget = createDayPanel(dayLayout, trip.getTitle());
+          Widget dayWidget = createShipmentDayPanel(dayLayout, trip.getTitle());
 
           StyleUtils.setLeft(dayWidget, getRelativeLeft(tripRange, date));
           StyleUtils.setWidth(dayWidget, getDayColumnWidth());
@@ -1021,7 +831,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       if (ChartHelper.isActive(vehicle, range) && vehicle.matched(FilterType.PERSISTENT)) {
         ChartRowLayout layout = new ChartRowLayout(vehicleIndex);
 
-        Collection<Trip> vehicleTrips = getTripsForLayout(vehicleId, 
+        Collection<Trip> vehicleTrips = getTripsForLayout(vehicleId,
             separateCargo() ? null : range);
 
         for (Trip trip : vehicleTrips) {
@@ -1036,7 +846,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             layout.addItem(getGroupIdForTripLayout(trip), trip, range, null);
           }
         }
-        
+
         if (layout.isEmpty() && !layoutIdleVehicles()) {
           continue;
         }
@@ -1070,10 +880,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     return result;
-  }
-
-  private int getRelativeLeft(Range<JustDate> parent, JustDate date) {
-    return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
   }
 
   private List<Trip> getTripsForLayout(Long vehicleId, Range<JustDate> range) {
@@ -1359,8 +1165,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
 
-          if (handling.containsKey(freight.getCargoId())) {
-            for (CargoHandling ch : handling.get(freight.getCargoId())) {
+          if (hasCargoHandling(freight.getCargoId())) {
+            for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
               loading = Places.getLoadingPlaceInfo(ch);
               if (!BeeUtils.isEmpty(loading)) {
                 loadData.add(loading);
@@ -1506,8 +1312,8 @@ abstract class VehicleTimeBoard extends ChartBase {
                       || FilterHelper.containsName(placeData, info);
                 }
 
-                if (!ok && handling.containsKey(freight.getCargoId())) {
-                  for (CargoHandling ch : handling.get(freight.getCargoId())) {
+                if (!ok && hasCargoHandling(freight.getCargoId())) {
+                  for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
                     if (checkLoad) {
                       info = Places.getLoadingPlaceInfo(ch);
                       ok = FilterHelper.containsName(loadData, info)
@@ -1577,83 +1383,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     this.separateCargo = separateCargo;
   }
 
-  private void setShowCountryFlags(boolean showCountryFlags) {
-    this.showCountryFlags = showCountryFlags;
-  }
-
-  private void setShowPlaceInfo(boolean showPlaceInfo) {
-    this.showPlaceInfo = showPlaceInfo;
-  }
-
-  private boolean showCountryFlags() {
-    return showCountryFlags;
-  }
-
-  private boolean showPlaceInfo() {
-    return showPlaceInfo;
-  }
-
-  private Multimap<Long, CargoEvent> splitByCountry(Collection<CargoEvent> events) {
-    Multimap<Long, CargoEvent> result = LinkedListMultimap.create();
-    if (BeeUtils.isEmpty(events)) {
-      return result;
-    }
-
-    for (CargoEvent event : events) {
-      if (event.isLoading() && event.isFreightEvent()) {
-        result.put(event.getCountryId(), event);
-      }
-    }
-
-    for (CargoEvent event : events) {
-      if (event.isLoading() && event.isHandlingEvent()) {
-        result.put(event.getCountryId(), event);
-      }
-    }
-    for (CargoEvent event : events) {
-      if (event.isUnloading() && event.isHandlingEvent()) {
-        result.put(event.getCountryId(), event);
-      }
-    }
-
-    for (CargoEvent event : events) {
-      if (event.isUnloading() && event.isFreightEvent()) {
-        result.put(event.getCountryId(), event);
-      }
-    }
-
-    return result;
-  }
-
-  private Multimap<JustDate, CargoEvent> splitFreightByDate(Freight freight, Range<JustDate> range) {
-    Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
-    if (freight == null || range == null || range.isEmpty()) {
-      return result;
-    }
-
-    if (freight.getLoadingDate() != null && range.contains(freight.getLoadingDate())) {
-      result.put(freight.getLoadingDate(), new CargoEvent(freight, null, true));
-    }
-
-    if (freight.getUnloadingDate() != null && range.contains(freight.getUnloadingDate())) {
-      result.put(freight.getUnloadingDate(), new CargoEvent(freight, null, false));
-    }
-
-    if (handling.containsKey(freight.getCargoId())) {
-      for (CargoHandling ch : handling.get(freight.getCargoId())) {
-        if (ch.getLoadingDate() != null && range.contains(ch.getLoadingDate())) {
-          result.put(ch.getLoadingDate(), new CargoEvent(freight, ch, true));
-        }
-
-        if (ch.getUnloadingDate() != null && range.contains(ch.getUnloadingDate())) {
-          result.put(ch.getUnloadingDate(), new CargoEvent(freight, ch, false));
-        }
-      }
-    }
-
-    return result;
-  }
-
   private Multimap<JustDate, CargoEvent> splitTripByDate(Long tripId, Range<JustDate> range) {
     Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
     if (tripId == null || range == null || range.isEmpty() || !freights.containsKey(tripId)) {
@@ -1662,7 +1391,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     Collection<Freight> tripCargos = freights.get(tripId);
     for (Freight freight : tripCargos) {
-      result.putAll(splitFreightByDate(freight, range));
+      result.putAll(splitCargoByDate(freight, range));
     }
 
     return result;

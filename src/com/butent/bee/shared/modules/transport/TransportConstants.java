@@ -285,6 +285,10 @@ public class TransportConstants {
 
   public static final String COL_FX_PIXELS_PER_CUSTOMER = "FxPixelsPerCustomer";
   public static final String COL_FX_PIXELS_PER_ORDER = "FxPixelsPerOrder";
+
+  public static final String COL_FX_COUNTRY_FLAGS = "FxCountryFlags";
+  public static final String COL_FX_PLACE_INFO = "FxPlaceInfo";
+  
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
   public static final String COL_FX_PIXELS_PER_ROW = "FxPixelsPerRow";
 
@@ -318,12 +322,17 @@ public class TransportConstants {
 
   public static final String COL_DTB_PIXELS_PER_DRIVER = "DtbPixelsPerDriver";
 
+  public static final String COL_DTB_COUNTRY_FLAGS = "DtbCountryFlags";
+  public static final String COL_DTB_PLACE_INFO = "DtbPlaceInfo";
+  
   public static final String COL_DTB_PIXELS_PER_DAY = "DtbPixelsPerDay";
   public static final String COL_DTB_PIXELS_PER_ROW = "DtbPixelsPerRow";
 
   public static final String COL_DTB_HEADER_HEIGHT = "DtbHeaderHeight";
   public static final String COL_DTB_FOOTER_HEIGHT = "DtbFooterHeight";
 
+  public static final String COL_DTB_COLOR = "DtbColor";
+  
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
 

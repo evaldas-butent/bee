@@ -24,71 +24,105 @@ import java.util.Collection;
 import java.util.List;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
-  
-  static final String cargoLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
-  static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
-  static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
+
+  private static final String cargoLabel = 
+      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
+  private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
+
+  static OrderCargo create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
+    OrderCargo orderCargo = new OrderCargo(row.getLong(COL_ORDER),
+        NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
+        row.getDateTime(COL_ORDER_DATE), row.getValue(COL_ORDER_NO),
+        row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
+        row.getLong(COL_CARGO_ID), row.getValue(COL_CARGO_DESCRIPTION),
+        row.getValue(COL_CARGO_NOTES),
+        BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)), minLoad),
+        row.getLong(loadingColumnAlias(COL_COUNTRY)),
+        row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
+        row.getValue(loadingColumnAlias(COL_TERMINAL)),
+        BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
+        row.getLong(unloadingColumnAlias(COL_COUNTRY)),
+        row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
+        row.getValue(unloadingColumnAlias(COL_TERMINAL)));
+    
+    if (!ChartHelper.isNormalized(orderCargo.getRange()) && orderCargo.getOrderDate() != null) {
+      JustDate start = BeeUtils.nvl(orderCargo.getLoadingDate(),
+          orderCargo.getUnloadingDate(), orderCargo.getOrderDate().getDate());
+      JustDate end = BeeUtils.nvl(orderCargo.getUnloadingDate(), start);
+
+      orderCargo.setRange(ChartHelper.getActivity(start, end));
+    }
+    
+    return orderCargo;
+  }
 
   private final Long orderId;
-
   private final OrderStatus orderStatus;
   private final DateTime orderDate;
+
   private final String orderNo;
-
   private final Long customerId;
-  private final String customerName;
 
+  private final String customerName;
   private final Long cargoId;
+
   private final String cargoDescription;
 
   private final String notes;
-  
   private final JustDate loadingDate;
   private final Long loadingCountry;
   private final String loadingPlace;
-  private final String loadingTerminal;
 
+  private final String loadingTerminal;
   private final JustDate unloadingDate;
   private final Long unloadingCountry;
   private final String unloadingPlace;
+
   private final String unloadingTerminal;
 
-  private final Range<JustDate> range;
+  private final String orderName;
 
-  OrderCargo(SimpleRow row) {
-    this.orderId = row.getLong(COL_ORDER);
+  private Range<JustDate> range;
 
-    this.orderStatus = NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS));
-    this.orderDate = row.getDateTime(COL_ORDER_DATE);
-    this.orderNo = row.getValue(COL_ORDER_NO);
+  protected OrderCargo(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
+      Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
+      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingTerminal,
+      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
+      String unloadingTerminal) {
+    super();
 
-    this.customerId = row.getLong(COL_CUSTOMER);
-    this.customerName = row.getValue(COL_CUSTOMER_NAME);
+    this.orderId = orderId;
+    this.orderStatus = orderStatus;
+    this.orderDate = orderDate;
+    this.orderNo = orderNo;
 
-    this.cargoId = row.getLong(COL_CARGO_ID);
-    this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
+    this.customerId = customerId;
+    this.customerName = customerName;
 
-    this.notes = row.getValue(COL_CARGO_NOTES);
+    this.cargoId = cargoId;
+    this.cargoDescription = cargoDescription;
 
-    this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
-    this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
-    this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
-    this.loadingTerminal = row.getValue(loadingColumnAlias(COL_TERMINAL));
+    this.notes = notes;
 
-    this.unloadingDate = row.getDate(unloadingColumnAlias(COL_PLACE_DATE));
-    this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_COUNTRY));
-    this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_NAME));
-    this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_TERMINAL));
+    this.loadingDate = loadingDate;
+    this.loadingCountry = loadingCountry;
+    this.loadingPlace = loadingPlace;
+    this.loadingTerminal = loadingTerminal;
 
-    JustDate start = BeeUtils.nvl(loadingDate, unloadingDate, orderDate.getDate());
-    JustDate end = BeeUtils.nvl(unloadingDate, start);
+    this.unloadingDate = unloadingDate;
+    this.unloadingCountry = unloadingCountry;
+    this.unloadingPlace = unloadingPlace;
+    this.unloadingTerminal = unloadingTerminal;
 
-    this.range = Range.closed(start, TimeUtils.max(start, end));
+    this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
+    
+    this.range = ChartHelper.getActivity(loadingDate, unloadingDate);
   }
 
   @Override
   public Long getColorSource() {
-    return cargoId;
+    return orderId;
   }
 
   @Override
@@ -136,6 +170,20 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return unloadingTerminal;
   }
 
+  void adjustRange(Range<JustDate> defaultRange) {
+    if (defaultRange == null) {
+      return;
+    }
+    if (loadingDate != null && unloadingDate != null) {
+      return;
+    }
+
+    JustDate lower = BeeUtils.nvl(loadingDate, BeeUtils.getLowerEndpoint(defaultRange));
+    JustDate upper = BeeUtils.nvl(unloadingDate, BeeUtils.getUpperEndpoint(defaultRange));
+
+    setRange(ChartHelper.getActivity(lower, upper));
+  }
+  
   void assignToTrip(Long tripId, boolean fire) {
     if (!DataUtils.isId(tripId)) {
       return;
@@ -150,10 +198,34 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
     Queries.insert(viewName, columns, values, callback);
   }
-
+  
   @Override
   boolean filter(FilterType filterType, Collection<ChartData> data) {
-    return false;
+    boolean match = true;
+
+    for (ChartData cd : data) {
+      switch (cd.getType()) {
+        case CARGO:
+          match = cd.contains(getCargoDescription());
+          break;
+        case CUSTOMER:
+          match = cd.contains(getCustomerId());
+          break;
+        case ORDER:
+          match = cd.contains(getOrderId());
+          break;
+        case ORDER_STATUS:
+          match = (getOrderStatus() != null) && cd.contains((long) getOrderStatus().ordinal());
+          break;
+        default:
+      }
+
+      if (!match) {
+        break;
+      }
+    }
+
+    return match;
   }
 
   String getCargoDescription() {
@@ -172,6 +244,10 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return customerName;
   }
 
+  JustDate getMaxDate() {
+    return BeeUtils.max(loadingDate, unloadingDate);
+  }
+  
   DateTime getOrderDate() {
     return orderDate;
   }
@@ -180,10 +256,14 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return orderId;
   }
   
+  String getOrderName() {
+    return orderName;
+  }
+
   String getOrderNo() {
     return orderNo;
   }
-  
+
   OrderStatus getOrderStatus() {
     return orderStatus;
   }
@@ -192,6 +272,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return ChartHelper.buildTitle(cargoLabel, cargoDescription,
         Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),
         Global.CONSTANTS.cargoUnloading(), Places.getUnloadingInfo(this),
+        Global.CONSTANTS.transportationOrder(), orderName,
         customerLabel, customerName, notesLabel, notes);
+  }
+  
+  private void setRange(Range<JustDate> range) {
+    this.range = range;
   }
 }

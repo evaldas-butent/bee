@@ -1,8 +1,11 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -12,6 +15,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -38,6 +42,7 @@ import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
+import com.butent.bee.client.modules.transport.charts.CargoEvent.Type;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
@@ -54,6 +59,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -61,6 +67,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -70,6 +77,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -124,6 +132,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_FILTER_LABEL = STYLE_PREFIX + "filterLabel";
   private static final String STYLE_ACTION_REMOVE_FILTER = STYLE_PREFIX + "actionRemoveFilter";
 
+  private static final String STYLE_SHIPMENT_DAY_PREFIX = STYLE_PREFIX + "shipment-day-";
+  private static final String STYLE_SHIPMENT_DAY_PANEL = STYLE_SHIPMENT_DAY_PREFIX + "panel";
+  private static final String STYLE_SHIPMENT_DAY_WIDGET = STYLE_SHIPMENT_DAY_PREFIX + "widget";
+  private static final String STYLE_SHIPMENT_DAY_EMPTY = STYLE_SHIPMENT_DAY_PREFIX + "empty";
+  private static final String STYLE_SHIPMENT_DAY_FLAG = STYLE_SHIPMENT_DAY_PREFIX + "flag";
+  private static final String STYLE_SHIPMENT_DAY_LABEL = STYLE_SHIPMENT_DAY_PREFIX + "label";
+
   private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
   private final HeaderView headerView;
@@ -134,6 +149,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private boolean enabled = true;
 
   private final List<Color> colors = Lists.newArrayList();
+
+  private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
 
   private BeeRowSet settings = null;
 
@@ -152,6 +169,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private int dayColumnWidth = BeeConst.UNDEF;
   private int rowHeight = BeeConst.UNDEF;
 
+  private boolean showCountryFlags = false;
+  private boolean showPlaceInfo = false;
+
   private int sliderWidth = 0;
 
   private Widget startSliderLabel = null;
@@ -164,7 +184,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private int rowCount = 0;
 
-  private final Set<String> relevantDataViews = Sets.newHashSet();
+  private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
+      VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, CommonsConstants.VIEW_COUNTRIES,
+      CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
 
   private final CustomDiv filterLabel;
   private final BeeImage removeFilter;
@@ -604,6 +626,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     });
   }
 
+  protected void addRelevantDataViews(String... viewNames) {
+    if (viewNames != null) {
+      for (String viewName : viewNames) {
+        if (!BeeUtils.isEmpty(viewName)) {
+          relevantDataViews.add(viewName);
+        }
+      }
+    }
+  }
+  
   protected void adjustWidths() {
     int chartColumnCount = ChartHelper.getSize(getVisibleRange());
     if (chartColumnCount > 0) {
@@ -611,6 +643,19 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
+  protected void bindCargoOpener(OrderCargo cargo, HasClickHandlers widget) {
+    if (cargo != null && widget != null) {
+      final Long cargoId = cargo.getCargoId();
+
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          openDataRow(event, VIEW_ORDER_CARGO, cargoId);
+        }
+      });
+    }
+  }
+  
   protected int clampFooterHeight(int height, int canvasHeight) {
     return BeeUtils.clamp(height, 3, BeeUtils.clamp(canvasHeight / 2, 3, 1000));
   }
@@ -632,6 +677,27 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       filterLabel.setText(BeeConst.STRING_EMPTY);
       removeFilter.setVisible(false);
     }
+  }
+
+  protected Widget createShipmentDayPanel(Multimap<Long, CargoEvent> dayEvents,
+      String parentTitle) {
+
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_SHIPMENT_DAY_PANEL);
+
+    Set<Long> countryIds = dayEvents.keySet();
+    Size size = ChartHelper.splitRectangle(getDayColumnWidth(), getRowHeight(), countryIds.size());
+
+    if (size != null) {
+      for (Long countryId : countryIds) {
+        Widget widget = createShipmentDayWidget(countryId, dayEvents.get(countryId), parentTitle);
+        StyleUtils.setSize(widget, size.getWidth(), size.getHeight());
+
+        panel.add(widget);
+      }
+    }
+
+    return panel;
   }
 
   protected void editSettings() {
@@ -709,6 +775,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected int getCanvasWidth() {
     return canvas.getElement().getClientWidth();
+  }
+
+  protected Collection<CargoHandling> getCargoHandling(Long cargoId) {
+    return cargoHandling.get(cargoId);
+  }
+
+  protected Pair<JustDate, JustDate> getCargoHandlingSpan(Long cargoId) {
+    JustDate minLoad = null;
+    JustDate maxUnload = null;
+
+    if (hasCargoHandling(cargoId)) {
+      for (CargoHandling ch : getCargoHandling(cargoId)) {
+        minLoad = BeeUtils.min(minLoad, ch.getLoadingDate());
+        maxUnload = BeeUtils.max(maxUnload, ch.getUnloadingDate());
+      }
+    }
+
+    return Pair.of(minLoad, maxUnload);
   }
 
   protected abstract Collection<? extends HasDateRange> getChartItems();
@@ -806,7 +890,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
     return content.getClientHeight() - scrollArea.getClientHeight();
   }
-  
+
   protected Rectangle getRectangle(Range<JustDate> range, int row) {
     return getRectangle(range, row, row);
   }
@@ -822,6 +906,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
 
     return ChartHelper.getRectangle(left, width, firstRow, lastRow, getRowHeight());
+  }
+
+  protected int getRelativeLeft(Range<JustDate> parent, JustDate date) {
+    return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
   }
 
   protected int getRowHeight() {
@@ -853,6 +941,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected abstract String getSettingsFormName();
 
+  protected abstract String getShowCountryFlagsColumnName();
+
+  protected abstract String getShowPlaceInfoColumnName();
+
   protected int getSliderWidth() {
     return sliderWidth;
   }
@@ -864,6 +956,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected abstract String getStripOpacityColumnName();
 
   protected abstract String getThemeColumnName();
+
+  protected boolean hasCargoHandling(Long cargoId) {
+    return cargoId != null && cargoHandling.containsKey(cargoId);
+  }
 
   protected void initContent(ComplexPanel panel, int rc) {
     setRowCount(rc);
@@ -915,8 +1011,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   /**
-   * @param dataContainer  
-   * @param dataType 
+   * @param dataContainer
+   * @param dataType
    */
   protected void onFilterSelection(HasWidgets dataContainer, ChartData.Type dataType) {
   }
@@ -1017,6 +1113,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     int rh = ChartHelper.getPixels(getSettings(), getRowHeightColumnName(), 20);
     setRowHeight(clampRowHeight(rh, canvasSize.getHeight()));
+
+    setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
+    setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
   }
 
   protected void prepareFooter() {
@@ -1105,6 +1204,34 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     renderFooter(getChartItems());
 
     setRenderPending(false);
+  }
+
+  protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle) {
+    if (panel == null || cargo == null) {
+      return;
+    }
+
+    Range<JustDate> range = ChartHelper.normalizedIntersection(cargo.getRange(), getVisibleRange());
+    if (range == null) {
+      return;
+    }
+
+    Multimap<JustDate, CargoEvent> cargoLayout = splitCargoByDate(cargo, range);
+    if (cargoLayout.isEmpty()) {
+      return;
+    }
+
+    for (JustDate date : cargoLayout.keySet()) {
+      Multimap<Long, CargoEvent> dayLayout = CargoEvent.splitByCountry(cargoLayout.get(date));
+      if (!dayLayout.isEmpty()) {
+        Widget dayWidget = createShipmentDayPanel(dayLayout, parentTitle);
+
+        StyleUtils.setLeft(dayWidget, getRelativeLeft(range, date));
+        StyleUtils.setWidth(dayWidget, getDayColumnWidth());
+
+        panel.add(dayWidget);
+      }
+    }
   }
 
   protected abstract void renderContent(ComplexPanel panel);
@@ -1385,6 +1512,15 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       restoreColors(serialized);
     }
 
+    cargoHandling.clear();
+    serialized = rowSet.getTableProperty(PROP_CARGO_HANDLING);
+    if (!BeeUtils.isEmpty(serialized)) {
+      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+      for (SimpleRow row : srs) {
+        cargoHandling.put(row.getLong(COL_CARGO), new CargoHandling(row));
+      }
+    }
+
     serialized = rowSet.getTableProperty(PROP_DATA);
     if (!BeeUtils.isEmpty(serialized)) {
       SimpleRowSet data = SimpleRowSet.restore(serialized);
@@ -1437,18 +1573,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
-  protected void setRelevantDataViews(String... viewNames) {
-    relevantDataViews.clear();
-
-    if (viewNames != null) {
-      for (String viewName : viewNames) {
-        if (!BeeUtils.isEmpty(viewName)) {
-          relevantDataViews.add(viewName);
-        }
-      }
-    }
-  }
-
   protected void setRowHeight(int rowHeight) {
     this.rowHeight = rowHeight;
   }
@@ -1463,6 +1587,37 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void setVisibleRange(Range<JustDate> visibleRange) {
     this.visibleRange = visibleRange;
+  }
+
+  protected Multimap<JustDate, CargoEvent> splitCargoByDate(OrderCargo cargo,
+      Range<JustDate> range) {
+
+    Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
+    if (cargo == null || range == null || range.isEmpty()) {
+      return result;
+    }
+
+    if (cargo.getLoadingDate() != null && range.contains(cargo.getLoadingDate())) {
+      result.put(cargo.getLoadingDate(), new CargoEvent(cargo, true));
+    }
+
+    if (cargo.getUnloadingDate() != null && range.contains(cargo.getUnloadingDate())) {
+      result.put(cargo.getUnloadingDate(), new CargoEvent(cargo, false));
+    }
+
+    if (hasCargoHandling(cargo.getCargoId())) {
+      for (CargoHandling ch : getCargoHandling(cargo.getCargoId())) {
+        if (ch.getLoadingDate() != null && range.contains(ch.getLoadingDate())) {
+          result.put(ch.getLoadingDate(), new CargoEvent(cargo, ch, true));
+        }
+
+        if (ch.getUnloadingDate() != null && range.contains(ch.getUnloadingDate())) {
+          result.put(ch.getUnloadingDate(), new CargoEvent(cargo, ch, false));
+        }
+      }
+    }
+
+    return result;
   }
 
   protected void updateMaxRange() {
@@ -1562,6 +1717,109 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         setVisibleRange(Range.closed(lower, upper));
       }
     }
+  }
+
+  private Widget createShipmentDayWidget(Long countryId, Collection<CargoEvent> events,
+      String parentTitle) {
+
+    Flow widget = new Flow();
+    widget.addStyleName(STYLE_SHIPMENT_DAY_WIDGET);
+
+    String flag = showCountryFlags() ? Places.getCountryFlag(countryId) : null;
+
+    if (!BeeUtils.isEmpty(flag)) {
+      widget.addStyleName(STYLE_SHIPMENT_DAY_FLAG);
+      StyleUtils.setBackgroundImage(widget, flag);
+    }
+
+    if (!BeeUtils.isEmpty(events)) {
+      if (showPlaceInfo()) {
+        List<String> info = Lists.newArrayList();
+
+        if (BeeUtils.isEmpty(flag) && DataUtils.isId(countryId)) {
+          String countryLabel = Places.getCountryLabel(countryId);
+          if (!BeeUtils.isEmpty(countryLabel)) {
+            info.add(countryLabel);
+          }
+        }
+
+        for (CargoEvent event : events) {
+          String place = event.getPlace();
+          if (!BeeUtils.isEmpty(place) && !BeeUtils.containsSame(info, place)) {
+            info.add(place);
+          }
+
+          String terminal = event.getTerminal();
+          if (!BeeUtils.isEmpty(terminal) && BeeUtils.containsSame(info, terminal)) {
+            info.add(terminal);
+          }
+        }
+
+        if (!info.isEmpty()) {
+          CustomDiv label = new CustomDiv(STYLE_SHIPMENT_DAY_LABEL);
+          label.setText(BeeUtils.join(BeeConst.STRING_SPACE, info));
+
+          widget.add(label);
+        }
+      }
+
+      List<String> title = Lists.newArrayList();
+
+      Multimap<OrderCargo, CargoEvent> eventsByCargo = LinkedListMultimap.create();
+      for (CargoEvent event : events) {
+        eventsByCargo.put(event.getCargo(), event);
+      }
+
+      for (OrderCargo cargo : eventsByCargo.keySet()) {
+        Map<CargoHandling, EnumSet<CargoEvent.Type>> handlingEvents = Maps.newHashMap();
+
+        for (CargoEvent event : eventsByCargo.get(cargo)) {
+          if (event.isHandlingEvent()) {
+            CargoEvent.Type eventType = event.isLoading()
+                ? CargoEvent.Type.LOADING : CargoEvent.Type.UNLOADING;
+
+            if (handlingEvents.containsKey(event.getHandling())) {
+              handlingEvents.get(event.getHandling()).add(eventType);
+            } else {
+              handlingEvents.put(event.getHandling(), EnumSet.of(eventType));
+            }
+          }
+        }
+
+        if (!title.isEmpty()) {
+          title.add(BeeConst.STRING_NBSP);
+        }
+        title.add(cargo.getTitle());
+
+        if (!handlingEvents.isEmpty()) {
+          title.add(BeeConst.STRING_NBSP);
+
+          for (Map.Entry<CargoHandling, EnumSet<Type>> entry : handlingEvents.entrySet()) {
+            String chLoading = entry.getValue().contains(CargoEvent.Type.LOADING)
+                ? Places.getLoadingInfo(entry.getKey()) : null;
+            String chUnloading = entry.getValue().contains(CargoEvent.Type.UNLOADING)
+                ? Places.getUnloadingInfo(entry.getKey()) : null;
+
+            title.add(entry.getKey().getTitle(chLoading, chUnloading));
+          }
+        }
+      }
+
+      if (!BeeUtils.isEmpty(parentTitle)) {
+        title.add(BeeConst.STRING_NBSP);
+        title.add(parentTitle);
+      }
+
+      if (!title.isEmpty()) {
+        widget.setTitle(BeeUtils.join(BeeConst.STRING_EOL, title));
+      }
+    }
+
+    if (widget.isEmpty() && BeeUtils.isEmpty(flag)) {
+      widget.addStyleName(STYLE_SHIPMENT_DAY_EMPTY);
+    }
+
+    return widget;
   }
 
   private List<List<HasDateRange>> doStripLayout(Collection<? extends HasDateRange> chartItems,
@@ -1672,7 +1930,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setRenderPending(boolean renderPending) {
     this.renderPending = renderPending;
   }
-  
+
   private void setRowCount(int rowCount) {
     this.rowCount = rowCount;
   }
@@ -1680,9 +1938,25 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void setScrollAreaId(String scrollAreaId) {
     this.scrollAreaId = scrollAreaId;
   }
-  
+
   private void setSettings(BeeRowSet settings) {
     this.settings = settings;
+  }
+
+  private void setShowCountryFlags(boolean showCountryFlags) {
+    this.showCountryFlags = showCountryFlags;
+  }
+
+  private void setShowPlaceInfo(boolean showPlaceInfo) {
+    this.showPlaceInfo = showPlaceInfo;
+  }
+
+  private boolean showCountryFlags() {
+    return showCountryFlags;
+  }
+
+  private boolean showPlaceInfo() {
+    return showPlaceInfo;
   }
 
   private void updateColorTheme(Long theme) {

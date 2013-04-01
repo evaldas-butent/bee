@@ -6,15 +6,17 @@
 
   <!ENTITY row "margin-bottom: 3px;">
   <!ENTITY slider_row "position: relative; height: 25px;">
+  <!ENTITY cb_row "position: relative; height: 20px;">
 
   <!ENTITY lbl "&inline; width: 260px; padding: 2px 10px 0 10px; text-align: right;">
   <!ENTITY spin "&inline; width: 50px;">
   <!ENTITY slider_inp "position: absolute; left: 280px; top: 0; width: 100px;">
+  <!ENTITY cb_inp "position: absolute; left: 280px; top: 3px; margin: 0;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrDtbSettings" viewName="TransportSettings" caption="Nustatymai"
-  width="440" height="300"
+  width="440" height="380"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
@@ -22,6 +24,16 @@
     <FlowPanel style="&row; margin-top: 2ex;">
       <Label html="Vairuotojo stulpelio plotis px:" style="&lbl;" />
       <InputSpinner source="DtbPixelsPerDriver" minValue="4" maxValue="300" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&cb_row;">
+      <Label html="Rodyti šalių vėliavas:" style="&lbl;" />
+      <CheckBox source="DtbCountryFlags" style="&cb_inp;"/>
+    </FlowPanel>
+    <FlowPanel style="&cb_row;">
+      <Label html="Rodyti pakrovimo / iškrovimo vietą:" style="&lbl;" />
+      <CheckBox source="DtbPlaceInfo" style="&cb_inp;"/>
     </FlowPanel>
 
     &separator;
@@ -42,6 +54,12 @@
     <FlowPanel style="&row;">
       <Label html="Laikotarpio pasirinkimo srities aukštis px:" style="&lbl;" />
       <InputSpinner source="DtbFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label html="Reisų spalva:" style="&lbl;" />
+      <DataSelector source="DtbColor" renderColumns="DtbColorName" style="&inline; width: 100px;" />
     </FlowPanel>
 
     &separator;

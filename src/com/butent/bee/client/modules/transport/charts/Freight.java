@@ -4,11 +4,9 @@ import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -21,134 +19,73 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-class Freight extends Filterable implements HasColorSource, HasDateRange, HasShipmentInfo {
+class Freight extends OrderCargo {
 
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
+  static Freight create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
+    return new Freight(row.getLong(COL_ORDER),
+        NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
+        row.getDateTime(ALS_ORDER_DATE), row.getValue(COL_ORDER_NO),
+        row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
+        row.getLong(COL_CARGO), row.getValue(COL_CARGO_DESCRIPTION),
+        row.getValue(COL_CARGO_NOTES),
+        BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
+            row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad),
+        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
+            row.getLong(defaultLoadingColumnAlias(COL_COUNTRY))),
+        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
+            row.getValue(defaultLoadingColumnAlias(COL_PLACE_NAME))),
+        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_TERMINAL)),
+            row.getValue(defaultLoadingColumnAlias(COL_TERMINAL))),
+        BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)),
+            row.getDate(defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
+        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_COUNTRY)),
+            row.getLong(defaultUnloadingColumnAlias(COL_COUNTRY))),
+        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
+            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NAME))),
+        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
+            row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL))),
+        row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
+        row.getLong(COL_CARGO_TRIP_ID), row.getLong(ALS_CARGO_TRIP_VERSION));
+  }
+
   private final Long tripId;
-
   private final Long truckId;
+
   private final Long trailerId;
-
   private final Long cargoTripId;
+
   private final Long cargoTripVersion;
-
-  private final Long cargoId;
-  private final String cargoDescription;
-
-  private final String notes;
-
-  private final JustDate loadingDate;
-  private final Long loadingCountry;
-  private final String loadingPlace;
-  private final String loadingTerminal;
-
-  private final JustDate unloadingDate;
-  private final Long unloadingCountry;
-  private final String unloadingPlace;
-  private final String unloadingTerminal;
-
-  private final Long orderId;
-
-  private final OrderStatus orderStatus;
-  private final DateTime orderDate;
-  private final String orderNo;
-
-  private final Long customerId;
-  private final String customerName;
-
-  private final String orderName;
-
-  private Range<JustDate> range;
 
   private String tripTitle = null;
 
-  Freight(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
-    this.tripId = row.getLong(COL_TRIP_ID);
+  private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
+      Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
+      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingTerminal,
+      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
+      String unloadingTerminal, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
+      Long cargoTripVersion) {
 
-    this.truckId = row.getLong(COL_VEHICLE);
-    this.trailerId = row.getLong(COL_TRAILER);
-
-    this.cargoTripId = row.getLong(COL_CARGO_TRIP_ID);
-    this.cargoTripVersion = row.getLong(ALS_CARGO_TRIP_VERSION);
-
-    this.cargoId = row.getLong(COL_CARGO);
-    this.cargoDescription = row.getValue(COL_CARGO_DESCRIPTION);
-
-    this.notes = row.getValue(COL_CARGO_NOTES);
-
-    this.loadingDate = BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)),
-        row.getDate(defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad);
-    this.loadingCountry = BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
-        row.getLong(defaultLoadingColumnAlias(COL_COUNTRY)));
-    this.loadingPlace = BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
-        row.getValue(defaultLoadingColumnAlias(COL_PLACE_NAME)));
-    this.loadingTerminal = BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_TERMINAL)),
-        row.getValue(defaultLoadingColumnAlias(COL_TERMINAL)));
-
-    this.unloadingDate = BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)),
-        row.getDate(defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload);
-    this.unloadingCountry = BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_COUNTRY)),
-        row.getLong(defaultUnloadingColumnAlias(COL_COUNTRY)));
-    this.unloadingPlace = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
-        row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NAME)));
-    this.unloadingTerminal = BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
-        row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL)));
-
-    this.orderId = row.getLong(COL_ORDER);
-
-    this.orderStatus = NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS));
-    this.orderDate = row.getDateTime(ALS_ORDER_DATE);
-    this.orderNo = row.getValue(COL_ORDER_NO);
-
-    this.customerId = row.getLong(COL_CUSTOMER);
-    this.customerName = row.getValue(COL_CUSTOMER_NAME);
-
-    this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
-
-    this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
-  }
-
-  @Override
-  public boolean filter(FilterType filterType, Collection<ChartData> data) {
-    boolean match = true;
-
-    for (ChartData cd : data) {
-      switch (cd.getType()) {
-        case CARGO:
-          match = cd.contains(getCargoDescription());
-          break;
-        case CUSTOMER:
-          match = cd.contains(getCustomerId());
-          break;
-        case ORDER:
-          match = cd.contains(getOrderId());
-          break;
-        case ORDER_STATUS:
-          match = (getOrderStatus() != null) && cd.contains((long) getOrderStatus().ordinal());
-          break;
-        default:
-      }
-
-      if (!match) {
-        break;
-      }
-    }
-
-    return match;
+    super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, cargoId,
+        cargoDescription, notes, loadingDate, loadingCountry, loadingPlace, loadingTerminal,
+        unloadingDate, unloadingCountry, unloadingPlace, unloadingTerminal);
+    
+    this.tripId = tripId;
+    this.truckId = truckId;
+    this.trailerId = trailerId;
+    
+    this.cargoTripId = cargoTripId;
+    this.cargoTripVersion = cargoTripVersion;
   }
 
   @Override
@@ -156,71 +93,12 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
     return tripId;
   }
 
-  @Override
-  public Long getLoadingCountry() {
-    return loadingCountry;
-  }
-
-  @Override
-  public JustDate getLoadingDate() {
-    return loadingDate;
-  }
-
-  @Override
-  public String getLoadingPlace() {
-    return loadingPlace;
-  }
-
-  @Override
-  public String getLoadingTerminal() {
-    return loadingTerminal;
-  }
-
-  @Override
-  public Range<JustDate> getRange() {
-    return range;
-  }
-
-  @Override
-  public Long getUnloadingCountry() {
-    return unloadingCountry;
-  }
-
-  @Override
-  public JustDate getUnloadingDate() {
-    return unloadingDate;
-  }
-
-  @Override
-  public String getUnloadingPlace() {
-    return unloadingPlace;
-  }
-
-  @Override
-  public String getUnloadingTerminal() {
-    return unloadingTerminal;
-  }
-
-  void adjustRange(Range<JustDate> tripRange) {
-    if (tripRange == null) {
-      return;
+  String getCargoAndTripTitle() {
+    if (!BeeUtils.isEmpty(getTripTitle())) {
+      return BeeUtils.buildLines(getTitle(), BeeConst.STRING_NBSP, getTripTitle());
+    } else {
+      return getTitle();
     }
-    if (loadingDate != null && unloadingDate != null) {
-      return;
-    }
-
-    JustDate lower = BeeUtils.nvl(loadingDate, BeeUtils.getLowerEndpoint(tripRange));
-    JustDate upper = BeeUtils.nvl(unloadingDate, BeeUtils.getUpperEndpoint(tripRange));
-
-    setRange(ChartHelper.getActivity(lower, upper));
-  }
-
-  String getCargoDescription() {
-    return cargoDescription;
-  }
-
-  Long getCargoId() {
-    return cargoId;
   }
 
   Long getCargoTripId() {
@@ -229,52 +107,6 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
 
   Long getCargoTripVersion() {
     return cargoTripVersion;
-  }
-
-  Long getCustomerId() {
-    return customerId;
-  }
-
-  String getCustomerName() {
-    return customerName;
-  }
-
-  JustDate getMaxDate() {
-    return BeeUtils.max(loadingDate, unloadingDate);
-  }
-
-  DateTime getOrderDate() {
-    return orderDate;
-  }
-
-  Long getOrderId() {
-    return orderId;
-  }
-
-  String getOrderName() {
-    return orderName;
-  }
-
-  String getOrderNo() {
-    return orderNo;
-  }
-
-  OrderStatus getOrderStatus() {
-    return orderStatus;
-  }
-
-  String getTitle(boolean appendTripTitle) {
-    String title = ChartHelper.buildTitle(OrderCargo.cargoLabel, cargoDescription,
-        Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),
-        Global.CONSTANTS.cargoUnloading(), Places.getUnloadingInfo(this),
-        Global.CONSTANTS.transportationOrder(), orderName,
-        OrderCargo.customerLabel, customerName, OrderCargo.notesLabel, notes);
-
-    if (appendTripTitle && !BeeUtils.isEmpty(getTripTitle())) {
-      return BeeUtils.buildLines(title, BeeConst.STRING_NBSP, getTripTitle());
-    } else {
-      return title;
-    }
   }
 
   Long getTrailerId() {
@@ -341,7 +173,7 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
   private void acceptDrop(Object data) {
     if (DndHelper.isDataType(DATA_TYPE_FREIGHT)) {
       final Freight freight = (Freight) data;
-      String title = freight.getTitle(false);
+      String title = freight.getTitle();
 
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
@@ -373,9 +205,5 @@ class Freight extends Filterable implements HasColorSource, HasDateRange, HasShi
     } else {
       return false;
     }
-  }
-
-  private void setRange(Range<JustDate> range) {
-    this.range = range;
   }
 }

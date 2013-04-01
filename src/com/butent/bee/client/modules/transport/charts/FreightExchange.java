@@ -38,6 +38,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -107,8 +108,7 @@ class FreightExchange extends ChartBase {
     super();
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_ORDERS, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
-        CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
+    addRelevantDataViews(VIEW_ORDERS);
   }
 
   @Override
@@ -212,10 +212,20 @@ class FreightExchange extends ChartBase {
   }
   
   @Override
+  protected String getShowCountryFlagsColumnName() {
+    return COL_FX_COUNTRY_FLAGS;
+  }
+  
+  @Override
+  protected String getShowPlaceInfoColumnName() {
+    return COL_FX_PLACE_INFO;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_FX_STRIP_OPACITY;
   }
-  
+
   @Override
   protected String getThemeColumnName() {
     return COL_FX_THEME;
@@ -275,8 +285,10 @@ class FreightExchange extends ChartBase {
   @Override
   protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
     items.clear();
+
     for (SimpleRow row : data) {
-      items.add(new OrderCargo(row));
+      Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID));
+      items.add(OrderCargo.create(row, handlingSpan.getA(), handlingSpan.getB()));
     }
 
     return items;
@@ -330,9 +342,6 @@ class FreightExchange extends ChartBase {
       return;
     }
 
-    JustDate firstDate = getVisibleRange().lowerEndpoint();
-    JustDate lastDate = getVisibleRange().upperEndpoint();
-
     int calendarWidth = getCalendarWidth();
 
     Long lastCustomer = null;
@@ -346,6 +355,9 @@ class FreightExchange extends ChartBase {
 
     Double itemOpacity = ChartHelper.getOpacity(getSettings(), COL_FX_ITEM_OPACITY);
 
+    Edges margins = new Edges();
+    margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
+    
     for (int row = 0; row < layoutRows.size(); row++) {
       List<OrderCargo> rowItems = layoutRows.get(row);
       int top = row * getRowHeight();
@@ -396,17 +408,11 @@ class FreightExchange extends ChartBase {
       }
 
       for (OrderCargo item : rowItems) {
-        JustDate start = TimeUtils.clamp(item.getRange().lowerEndpoint(), firstDate, lastDate);
-        JustDate end = TimeUtils.clamp(item.getRange().upperEndpoint(), firstDate, lastDate);
-
-        int left = getChartLeft() + TimeUtils.dayDiff(firstDate, start) * getDayColumnWidth();
-        int width = (TimeUtils.dayDiff(start, end) + 1) * getDayColumnWidth();
-
-        Rectangle rectangle = new Rectangle(left, top, width,
-            getRowHeight() - ChartHelper.ROW_SEPARATOR_HEIGHT);
-
         Widget itemWidget = createItemWidget(item);
-        rectangle.applyTo(itemWidget);
+
+        Rectangle rectangle = getRectangle(item.getRange(), row);
+        ChartHelper.apply(itemWidget, rectangle, margins);
+        
         if (itemOpacity != null) {
           StyleUtils.setOpacity(itemWidget, itemOpacity);
         }
@@ -517,35 +523,12 @@ class FreightExchange extends ChartBase {
     setItemWidgetColor(item, panel);
 
     panel.setTitle(item.getTitle());
-
-    final Long cargoId = item.getCargoId();
+    
+    bindCargoOpener(item, panel);
 
     DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, item, STYLE_ITEM_DRAG);
-
-    ClickHandler opener = new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_ORDER_CARGO, cargoId);
-      }
-    };
-
-    panel.addClickHandler(opener);
-
-    String loading = Places.getLoadingPlaceInfo(item);
-    if (!BeeUtils.isEmpty(loading)) {
-      BeeLabel loadingLabel = new BeeLabel(loading);
-      loadingLabel.addStyleName(STYLE_ITEM_LOAD);
-
-      panel.add(loadingLabel);
-    }
-
-    String unloading = Places.getUnloadingPlaceInfo(item);
-    if (!BeeUtils.isEmpty(unloading)) {
-      BeeLabel unloadingLabel = new BeeLabel(unloading);
-      unloadingLabel.addStyleName(STYLE_ITEM_UNLOAD);
-
-      panel.add(unloadingLabel);
-    }
+    
+    renderCargoShipment(panel, item, null);
 
     return panel;
   }
@@ -760,7 +743,7 @@ class FreightExchange extends ChartBase {
       }
     }
   }
-
+  
   private void setCustomerWidth(int customerWidth) {
     this.customerWidth = customerWidth;
   }

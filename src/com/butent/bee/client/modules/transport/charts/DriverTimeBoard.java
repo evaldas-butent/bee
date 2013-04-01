@@ -182,9 +182,8 @@ class DriverTimeBoard extends ChartBase {
     super();
     addStyleName(STYLE_PREFIX + "View");
 
-    setRelevantDataViews(VIEW_DRIVERS, VIEW_DRIVER_ABSENCE, VIEW_ABSENCE_TYPES, VIEW_TRIP_DRIVERS,
-        VIEW_TRIPS, VIEW_VEHICLES, VIEW_ORDER_CARGO, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
-        CommonsConstants.VIEW_COLORS);
+    addRelevantDataViews(VIEW_DRIVERS, VIEW_DRIVER_ABSENCE, VIEW_ABSENCE_TYPES, VIEW_TRIP_DRIVERS,
+        VIEW_TRIPS);
   }
 
   @Override
@@ -250,6 +249,16 @@ class DriverTimeBoard extends ChartBase {
   @Override
   protected String getSettingsFormName() {
     return FORM_DTB_SETTINGS;
+  }
+
+  @Override
+  protected String getShowCountryFlagsColumnName() {
+    return COL_DTB_COUNTRY_FLAGS;
+  }
+
+  @Override
+  protected String getShowPlaceInfoColumnName() {
+    return COL_DTB_PLACE_INFO;
   }
 
   @Override
@@ -630,7 +639,7 @@ class DriverTimeBoard extends ChartBase {
     }
     return trips;
   }
-
+  
   private void onDriverResize(MoveEvent event) {
     int delta = event.getDeltaX();
 

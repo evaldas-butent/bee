@@ -1,6 +1,11 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
 
 class CargoEvent {
 
@@ -8,58 +13,94 @@ class CargoEvent {
     LOADING, UNLOADING
   }
   
-  private final Freight freight;
-  private final CargoHandling cargoHandling;
+  static Multimap<Long, CargoEvent> splitByCountry(Collection<CargoEvent> events) {
+    Multimap<Long, CargoEvent> result = LinkedListMultimap.create();
+    if (BeeUtils.isEmpty(events)) {
+      return result;
+    }
+
+    for (CargoEvent event : events) {
+      if (event.isLoading() && event.isCargoEvent()) {
+        result.put(event.getCountryId(), event);
+      }
+    }
+
+    for (CargoEvent event : events) {
+      if (event.isLoading() && event.isHandlingEvent()) {
+        result.put(event.getCountryId(), event);
+      }
+    }
+    for (CargoEvent event : events) {
+      if (event.isUnloading() && event.isHandlingEvent()) {
+        result.put(event.getCountryId(), event);
+      }
+    }
+
+    for (CargoEvent event : events) {
+      if (event.isUnloading() && event.isCargoEvent()) {
+        result.put(event.getCountryId(), event);
+      }
+    }
+
+    return result;
+  }
+  
+  private final OrderCargo cargo;
+  private final CargoHandling handling;
 
   private final boolean loading;
 
-  CargoEvent(Freight freight, CargoHandling cargoHandling, boolean loading) {
-    this.freight = freight;
-    this.cargoHandling = cargoHandling;
+  CargoEvent(OrderCargo cargo, boolean loading) {
+    this(cargo, null, loading);
+  }
+
+  CargoEvent(OrderCargo cargo, CargoHandling handling, boolean loading) {
+    this.cargo = cargo;
+    this.handling = handling;
 
     this.loading = loading;
   }
 
-  CargoHandling getCargoHandling() {
-    return cargoHandling;
+  OrderCargo getCargo() {
+    return cargo;
   }
 
   Long getCountryId() {
-    if (isFreightEvent()) {
-      return loading ? freight.getLoadingCountry() : freight.getUnloadingCountry();
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingCountry() : cargo.getUnloadingCountry();
     } else if (loading) {
-      return BeeUtils.nvl(cargoHandling.getLoadingCountry(), freight.getLoadingCountry());
+      return BeeUtils.nvl(handling.getLoadingCountry(), cargo.getLoadingCountry());
     } else {
-      return BeeUtils.nvl(cargoHandling.getUnloadingCountry(), freight.getUnloadingCountry());
+      return BeeUtils.nvl(handling.getUnloadingCountry(), cargo.getUnloadingCountry());
     }
   }
 
-  Freight getFreight() {
-    return freight;
+  CargoHandling getHandling() {
+    return handling;
   }
 
   String getPlace() {
-    if (isFreightEvent()) {
-      return loading ? freight.getLoadingPlace() : freight.getUnloadingPlace();
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingPlace() : cargo.getUnloadingPlace();
     } else {
-      return loading ? cargoHandling.getLoadingPlace() : cargoHandling.getUnloadingPlace();
+      return loading ? handling.getLoadingPlace() : handling.getUnloadingPlace();
     }
   }
 
   String getTerminal() {
-    if (isFreightEvent()) {
-      return loading ? freight.getLoadingTerminal() : freight.getUnloadingTerminal();
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingTerminal() : cargo.getUnloadingTerminal();
     } else {
-      return loading ? cargoHandling.getLoadingTerminal() : cargoHandling.getUnloadingTerminal();
+      return loading ? handling.getLoadingTerminal() : handling.getUnloadingTerminal();
     }
   }
 
-  boolean isFreightEvent() {
-    return cargoHandling == null;
+  boolean isCargoEvent() {
+    return handling == null;
   }
 
   boolean isHandlingEvent() {
-    return cargoHandling != null;
+    return handling != null;
   }
 
   boolean isLoading() {
