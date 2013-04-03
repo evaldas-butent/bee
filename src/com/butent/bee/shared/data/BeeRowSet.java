@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Extends {@code RowList} class and enables using row set objects which are chunks of data put in
@@ -25,6 +26,16 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   private enum Serial {
     VIEW, COLUMNS, ROWS, PROPERTIES
+  }
+  
+  public static BeeRowSet getIfPresent(Map<String, String> map, String key) {
+    if (BeeUtils.containsKey(map, key)) {
+      String serialized = map.get(key);
+      if (!BeeUtils.isEmpty(serialized)) {
+        return restore(serialized);
+      }
+    }
+    return null;
   }
 
   public static BeeRowSet restore(String s) {

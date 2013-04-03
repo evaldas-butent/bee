@@ -313,11 +313,14 @@ public class Color implements BeeSerializable {
     return (hex.length() == 1) ? BeeConst.STRING_ZERO + hex : hex;
   }
   
+  private long id;
+  
   private String background = null;
   private String foreground = null;
 
-  public Color(String background, String foreground) {
+  public Color(long id, String background, String foreground) {
     super();
+    this.id = id;
     this.background = background;
     this.foreground = foreground;
   }
@@ -329,10 +332,11 @@ public class Color implements BeeSerializable {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 2);
+    Assert.lengthEquals(arr, 3);
     
-    setBackground(arr[0]);
-    setForeground(arr[1]);
+    setId(BeeUtils.toLong(arr[0]));
+    setBackground(arr[1]);
+    setForeground(arr[2]);
   }
 
   public String getBackground() {
@@ -343,17 +347,26 @@ public class Color implements BeeSerializable {
     return foreground;
   }
 
+  public long getId() {
+    return id;
+  }
+
   @Override
   public String serialize() {
-    List<String> values = Lists.newArrayList(getBackground(), getForeground());
+    List<String> values = Lists.newArrayList(BeeUtils.toString(getId()), getBackground(),
+        getForeground());
     return Codec.beeSerialize(values);
   }
 
-  public void setBackground(String background) {
+  private void setBackground(String background) {
     this.background = background;
   }
 
-  public void setForeground(String foreground) {
+  private void setForeground(String foreground) {
     this.foreground = foreground;
+  }
+
+  private void setId(long id) {
+    this.id = id;
   }
 }

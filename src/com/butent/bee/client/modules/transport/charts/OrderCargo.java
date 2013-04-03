@@ -17,6 +17,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -30,6 +31,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
 
+  private static final String orderDateLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_DATE);
+  private static final String orderStatusLabel = Data.getColumnLabel(VIEW_ORDERS, COL_STATUS);
+  
   static OrderCargo create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     OrderCargo orderCargo = new OrderCargo(row.getLong(COL_ORDER),
         NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
@@ -268,6 +272,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return orderStatus;
   }
 
+  String getOrderTitle() {
+    return ChartHelper.buildTitle(orderDateLabel, TimeUtils.renderCompact(getOrderDate()),
+        orderStatusLabel, Captions.getCaption(getOrderStatus()));
+  }
+  
   String getTitle() {
     return ChartHelper.buildTitle(cargoLabel, cargoDescription,
         Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),

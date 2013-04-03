@@ -83,6 +83,8 @@ public class TimeUtils {
   
   private static final int MINIMAL_DAYS_IN_FIRST_WEEK = 4;
 
+  private static final String MS = "ms";
+
   /**
    * Adds an amount of field type data to the date.
    * 
@@ -583,6 +585,10 @@ public class TimeUtils {
       return null;
     }
 
+    if (BeeUtils.isSuffix(input, MS)) {
+      return new JustDate(BeeUtils.toLong(BeeUtils.removeSuffix(input, MS)));
+    }
+
     List<Integer> fields = parseFields(input);
     if (BeeUtils.isPositive(BeeUtils.max(fields))) {
       return parseDate(input, fields);
@@ -594,6 +600,10 @@ public class TimeUtils {
   public static DateTime parseDateTime(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
+    }
+    
+    if (BeeUtils.isSuffix(input, MS)) {
+      return new DateTime(BeeUtils.toLong(BeeUtils.removeSuffix(input, MS)));
     }
 
     List<Integer> fields = parseFields(input);

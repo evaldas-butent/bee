@@ -9,8 +9,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -45,8 +43,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.HasDateRange;
@@ -56,14 +52,11 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract class VehicleTimeBoard extends ChartBase {
-
-  private static final BeeLogger logger = LogUtils.getLogger(VehicleTimeBoard.class);
 
   private static final String STYLE_PREFIX = "bee-tr-vtb-";
 
@@ -251,11 +244,6 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected abstract String getDayWidthColumnName();
 
-  @Override
-  protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
-  }
-
   protected Long getGroupIdForFreightLayout(Trip trip) {
     return trip.getVehicleId(vehicleType);
   }
@@ -281,20 +269,18 @@ abstract class VehicleTimeBoard extends ChartBase {
   protected abstract String getSeparateCargoColumnName();
 
   @Override
-  protected void initData(BeeRowSet rowSet) {
+  protected void initData(Map<String, String> properties) {
     vehicles.clear();
     trips.clear();
     freights.clear();
     services.clear();
 
-    if (rowSet == null) {
-      updateMaxRange();
+    if (BeeUtils.isEmpty(properties)) {
       return;
     }
 
-    String serialized = rowSet.getTableProperty(PROP_VEHICLES);
-    if (!BeeUtils.isEmpty(serialized)) {
-      BeeRowSet brs = BeeRowSet.restore(serialized);
+    BeeRowSet brs = BeeRowSet.getIfPresent(properties, PROP_VEHICLES);
+    if (!DataUtils.isEmpty(brs)) {
       for (BeeRow row : brs.getRows()) {
         vehicles.add(new Vehicle(row));
       }
@@ -302,22 +288,19 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     Multimap<Long, Driver> drivers = HashMultimap.create();
 
-    serialized = rowSet.getTableProperty(PROP_DRIVERS);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
-
+    SimpleRowSet srs = SimpleRowSet.getIfPresent(properties, PROP_TRIP_DRIVERS);
+    if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         drivers.put(row.getLong(COL_TRIP), new Driver(row.getLong(COL_DRIVER),
             row.getValue(CommonsConstants.COL_FIRST_NAME),
             row.getValue(CommonsConstants.COL_LAST_NAME),
-            row.getDate(COL_TRIP_DRIVER_FROM), row.getDate(COL_TRIP_DRIVER_TO)));
+            row.getDateTime(COL_TRIP_DRIVER_FROM), row.getDateTime(COL_TRIP_DRIVER_TO),
+            row.getValue(COL_TRIP_DRIVER_NOTE)));
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_FREIGHTS);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
-
+    srs = SimpleRowSet.getIfPresent(properties, PROP_FREIGHTS);
+    if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO));
         freights.put(row.getLong(COL_TRIP_ID),
@@ -325,9 +308,8 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_TRIPS);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+    srs = SimpleRowSet.getIfPresent(properties, PROP_TRIPS);
+    if (!DataUtils.isEmpty(srs)) {
       int index = srs.getColumnIndex(vehicleType.getTripVehicleIdColumnName());
 
       for (SimpleRow row : srs) {
@@ -357,9 +339,8 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_VEHICLE_SERVICES);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet srs = SimpleRowSet.restore(serialized);
+    srs = SimpleRowSet.getIfPresent(properties, PROP_VEHICLE_SERVICES);
+    if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         VehicleService service = new VehicleService(row);
         services.put(service.getVehicleId(), service);
@@ -367,20 +348,11 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     setSeparateCargo(ChartHelper.getBoolean(getSettings(), getSeparateCargoColumnName()));
-    updateMaxRange();
-
-    logger.debug(getCaption(), vehicles.size(), trips.size(), drivers.size(), freights.size(),
-        services.size());
   }
 
   @Override
   protected List<ChartData> initFilter() {
     return prepareFilterData(null);
-  }
-
-  @Override
-  protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
-    return null;
   }
 
   protected boolean isInfoColumnVisible() {
@@ -693,7 +665,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     
     panel.setTitle(freight.getCargoAndTripTitle());
 
-    bindCargoOpener(freight, panel);
+    bindOpener(panel, VIEW_ORDER_CARGO, freight.getCargoId());
 
     DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
     freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
@@ -710,20 +682,13 @@ abstract class VehicleTimeBoard extends ChartBase {
       panel.addStyleName(STYLE_INFO_OVERLAP);
     }
 
-    final Long vehicleId = vehicle.getId();
-
     BeeLabel label = new BeeLabel(vehicle.getInfo());
     label.addStyleName(STYLE_INFO_LABEL);
 
     UiHelper.maybeSetTitle(label, vehicle.getTitle());
 
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_VEHICLES, vehicleId);
-      }
-    });
-
+    bindOpener(label, VIEW_VEHICLES, vehicle.getId());
+    
     panel.add(label);
 
     return panel;
@@ -736,19 +701,12 @@ abstract class VehicleTimeBoard extends ChartBase {
       panel.addStyleName(STYLE_NUMBER_OVERLAP);
     }
 
-    final Long vehicleId = vehicle.getId();
-
     DndDiv label = new DndDiv(STYLE_NUMBER_LABEL);
     label.setText(vehicle.getNumber());
 
     UiHelper.maybeSetTitle(label, vehicle.getTitle());
 
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_VEHICLES, vehicleId);
-      }
-    });
+    bindOpener(label, VIEW_VEHICLES, vehicle.getId());
 
     panel.add(label);
 
@@ -765,14 +723,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     panel.setTitle(trip.getTitle());
 
-    final Long tripId = trip.getTripId();
-
-    panel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_TRIPS, tripId);
-      }
-    });
+    Long tripId = trip.getTripId();
+    bindOpener(panel, VIEW_TRIPS, tripId);
 
     DndHelper.makeSource(panel, DATA_TYPE_TRIP, trip, STYLE_TRIP_DRAG);
     trip.makeTarget(panel, STYLE_TRIP_DRAG_OVER);
@@ -782,40 +734,9 @@ abstract class VehicleTimeBoard extends ChartBase {
     if (tripRange == null) {
       return panel;
     }
-
-    List<Range<JustDate>> voidRanges;
-
-    if (freights.containsKey(tripId)) {
-      Multimap<JustDate, CargoEvent> tripLayout = splitTripByDate(tripId, tripRange);
-      Set<JustDate> eventDates = tripLayout.keySet();
-
-      for (JustDate date : eventDates) {
-        Multimap<Long, CargoEvent> dayLayout = CargoEvent.splitByCountry(tripLayout.get(date));
-        if (!dayLayout.isEmpty()) {
-          Widget dayWidget = createShipmentDayPanel(dayLayout, trip.getTitle());
-
-          StyleUtils.setLeft(dayWidget, getRelativeLeft(tripRange, date));
-          StyleUtils.setWidth(dayWidget, getDayColumnWidth());
-
-          panel.add(dayWidget);
-        }
-      }
-
-      voidRanges = getVoidRanges(tripRange, eventDates, freights.get(tripId));
-
-    } else {
-      voidRanges = Lists.newArrayList();
-      voidRanges.add(tripRange);
-    }
-
-    for (Range<JustDate> voidRange : voidRanges) {
-      Widget voidWidget = new CustomDiv(STYLE_TRIP_VOID);
-
-      StyleUtils.setLeft(voidWidget, getRelativeLeft(tripRange, voidRange.lowerEndpoint()));
-      StyleUtils.setWidth(voidWidget, ChartHelper.getSize(voidRange) * getDayColumnWidth());
-
-      panel.add(voidWidget);
-    }
+    
+    renderTrip(panel, trip.getTitle(), BeeUtils.getIfContains(freights, tripId), tripRange,
+        STYLE_TRIP_VOID);
 
     return panel;
   }
@@ -897,73 +818,6 @@ abstract class VehicleTimeBoard extends ChartBase {
         continue;
       }
       result.add(trip);
-    }
-
-    return result;
-  }
-
-  private List<Range<JustDate>> getVoidRanges(Range<JustDate> tripRange,
-      Set<JustDate> eventDates, Collection<Freight> tripFreights) {
-
-    List<Range<JustDate>> result = Lists.newArrayList();
-    int tripDays = ChartHelper.getSize(tripRange);
-
-    Set<JustDate> usedDates = Sets.newHashSet();
-
-    if (!BeeUtils.isEmpty(eventDates)) {
-      if (eventDates.size() >= tripDays) {
-        return result;
-      }
-      usedDates.addAll(eventDates);
-    }
-
-    if (!BeeUtils.isEmpty(tripFreights)) {
-      for (Freight freight : tripFreights) {
-        if (ChartHelper.isActive(freight, tripRange)) {
-          Range<JustDate> freightRange =
-              ChartHelper.normalizedIntersection(freight.getRange(), tripRange);
-          if (freightRange == null) {
-            continue;
-          }
-
-          int freightDays = ChartHelper.getSize(freightRange);
-          if (freightDays >= tripDays) {
-            return result;
-          }
-
-          for (int i = 0; i < freightDays; i++) {
-            usedDates.add(TimeUtils.nextDay(freightRange.lowerEndpoint(), i));
-          }
-
-          if (usedDates.size() >= tripDays) {
-            return result;
-          }
-        }
-      }
-    }
-
-    if (BeeUtils.isEmpty(usedDates)) {
-      result.add(tripRange);
-      return result;
-    }
-
-    List<JustDate> dates = Lists.newArrayList(usedDates);
-    Collections.sort(dates);
-
-    for (int i = 0; i < dates.size(); i++) {
-      JustDate date = dates.get(i);
-
-      if (i == 0 && TimeUtils.isMore(date, tripRange.lowerEndpoint())) {
-        result.add(Range.closed(tripRange.lowerEndpoint(), TimeUtils.previousDay(date)));
-      }
-
-      if (i > 0 && TimeUtils.dayDiff(dates.get(i - 1), date) > 1) {
-        result.add(Range.closed(TimeUtils.nextDay(dates.get(i - 1)), TimeUtils.previousDay(date)));
-      }
-
-      if (i == dates.size() - 1 && TimeUtils.isLess(date, tripRange.upperEndpoint())) {
-        result.add(Range.closed(TimeUtils.nextDay(date), tripRange.upperEndpoint()));
-      }
     }
 
     return result;
@@ -1381,19 +1235,5 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private void setSeparateCargo(boolean separateCargo) {
     this.separateCargo = separateCargo;
-  }
-
-  private Multimap<JustDate, CargoEvent> splitTripByDate(Long tripId, Range<JustDate> range) {
-    Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
-    if (tripId == null || range == null || range.isEmpty() || !freights.containsKey(tripId)) {
-      return result;
-    }
-
-    Collection<Freight> tripCargos = freights.get(tripId);
-    for (Freight freight : tripCargos) {
-      result.putAll(splitCargoByDate(freight, range));
-    }
-
-    return result;
   }
 }

@@ -8,8 +8,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -42,6 +40,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -53,7 +52,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,8 +75,6 @@ class FreightExchange extends ChartBase {
 
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "Item-";
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
-  private static final String STYLE_ITEM_LOAD = STYLE_ITEM_PREFIX + "load";
-  private static final String STYLE_ITEM_UNLOAD = STYLE_ITEM_PREFIX + "unload";
 
   private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
 
@@ -103,7 +99,7 @@ class FreightExchange extends ChartBase {
 
   private final Map<Integer, Long> customersByRow = Maps.newHashMap();
   private final Map<Integer, Long> ordersByRow = Maps.newHashMap();
-  
+
   private FreightExchange() {
     super();
     addStyleName(STYLE_PREFIX + "View");
@@ -138,19 +134,19 @@ class FreightExchange extends ChartBase {
   @Override
   protected boolean filter(DialogBox dialog) {
     Predicate<OrderCargo> predicate = getPredicate();
-    
+
     int matchSize = 0;
-    
+
     if (predicate != null) {
       for (OrderCargo item : items) {
         boolean match = predicate.apply(item);
         item.setMatch(FilterType.TENTATIVE, match);
-        
+
         if (match) {
           matchSize++;
         }
       }
-      
+
       if (matchSize == 0) {
         return false;
       }
@@ -158,9 +154,9 @@ class FreightExchange extends ChartBase {
         matchSize = 0;
       }
     }
-    
+
     dialog.close();
-    
+
     if (matchSize > 0) {
       setFiltered(true);
       FilterHelper.persistFilter(items);
@@ -168,7 +164,7 @@ class FreightExchange extends ChartBase {
       FilterHelper.resetFilter(items, FilterType.PERSISTENT);
       clearFilter();
     }
-    
+
     return true;
   }
 
@@ -184,11 +180,6 @@ class FreightExchange extends ChartBase {
   @Override
   protected String getDataService() {
     return DATA_SERVICE;
-  }
-
-  @Override
-  protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.FILTER);
   }
 
   @Override
@@ -210,12 +201,12 @@ class FreightExchange extends ChartBase {
   protected String getSettingsFormName() {
     return FORM_FX_SETTINGS;
   }
-  
+
   @Override
   protected String getShowCountryFlagsColumnName() {
     return COL_FX_COUNTRY_FLAGS;
   }
-  
+
   @Override
   protected String getShowPlaceInfoColumnName() {
     return COL_FX_PLACE_INFO;
@@ -232,16 +223,29 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected void initData(Map<String, String> properties) {
+    items.clear();
+
+    SimpleRowSet srs = SimpleRowSet.getIfPresent(properties, PROP_ORDER_CARGO);
+    if (!DataUtils.isEmpty(srs)) {
+      for (SimpleRow row : srs) {
+        Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID));
+        items.add(OrderCargo.create(row, handlingSpan.getA(), handlingSpan.getB()));
+      }
+    }
+  }
+
+  @Override
   protected List<ChartData> initFilter() {
     if (items.isEmpty()) {
       return super.initFilter();
     }
-    
+
     ChartData customerData = new ChartData(Type.CUSTOMER);
     ChartData loadData = new ChartData(Type.LOADING);
     ChartData unloadData = new ChartData(Type.UNLOADING);
     ChartData cargoData = new ChartData(Type.CARGO);
-    
+
     for (OrderCargo item : items) {
       if (!BeeUtils.isEmpty(item.getCustomerName())) {
         customerData.add(item.getCustomerName(), item.getCustomerId());
@@ -256,12 +260,12 @@ class FreightExchange extends ChartBase {
       if (!BeeUtils.isEmpty(unloading)) {
         unloadData.add(unloading);
       }
-      
+
       if (!BeeUtils.isEmpty(item.getCargoDescription())) {
         cargoData.add(item.getCargoDescription(), item.getCargoId());
       }
     }
-    
+
     List<ChartData> result = Lists.newArrayList();
 
     if (!customerData.isEmpty()) {
@@ -278,20 +282,8 @@ class FreightExchange extends ChartBase {
     if (!cargoData.isEmpty()) {
       result.add(cargoData);
     }
-    
+
     return result;
-  }
-
-  @Override
-  protected Collection<? extends HasDateRange> initItems(SimpleRowSet data) {
-    items.clear();
-
-    for (SimpleRow row : data) {
-      Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID));
-      items.add(OrderCargo.create(row, handlingSpan.getA(), handlingSpan.getB()));
-    }
-
-    return items;
   }
 
   @Override
@@ -301,14 +293,14 @@ class FreightExchange extends ChartBase {
     if (customerId != null && TimeUtils.isMeq(date, TimeUtils.today())) {
       DataInfo dataInfo = Data.getDataInfo(VIEW_ORDERS);
       BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
-      
+
       if (TimeUtils.isMore(date, TimeUtils.today())) {
         newRow.setValue(dataInfo.getColumnIndex(COL_ORDER_DATE), date.getDateTime());
       }
-      
+
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER), customerId);
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER_NAME), findCustomerName(customerId));
-      
+
       RowFactory.createRow(dataInfo, newRow);
     }
   }
@@ -331,12 +323,12 @@ class FreightExchange extends ChartBase {
   protected void renderContent(ComplexPanel panel) {
     customerPanels.clear();
     orderPanels.clear();
-    
+
     customersByRow.clear();
     ordersByRow.clear();
 
     List<List<OrderCargo>> layoutRows = doLayout();
-    
+
     initContent(panel, layoutRows.size());
     if (layoutRows.isEmpty()) {
       return;
@@ -357,7 +349,7 @@ class FreightExchange extends ChartBase {
 
     Edges margins = new Edges();
     margins.setBottom(ChartHelper.ROW_SEPARATOR_HEIGHT);
-    
+
     for (int row = 0; row < layoutRows.size(); row++) {
       List<OrderCargo> rowItems = layoutRows.get(row);
       int top = row * getRowHeight();
@@ -412,7 +404,7 @@ class FreightExchange extends ChartBase {
 
         Rectangle rectangle = getRectangle(item.getRange(), row);
         ChartHelper.apply(itemWidget, rectangle, margins);
-        
+
         if (itemOpacity != null) {
           StyleUtils.setOpacity(itemWidget, itemOpacity);
         }
@@ -502,14 +494,7 @@ class FreightExchange extends ChartBase {
     BeeLabel widget = new BeeLabel(item.getCustomerName());
     widget.addStyleName(STYLE_CUSTOMER_LABEL);
 
-    final Long customerId = item.getCustomerId();
-
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, CommonsConstants.VIEW_COMPANIES, customerId);
-      }
-    });
+    bindOpener(widget, CommonsConstants.VIEW_COMPANIES, item.getCustomerId());
 
     Simple panel = new Simple(widget);
     panel.addStyleName(STYLE_CUSTOMER_PANEL);
@@ -523,11 +508,11 @@ class FreightExchange extends ChartBase {
     setItemWidgetColor(item, panel);
 
     panel.setTitle(item.getTitle());
-    
-    bindCargoOpener(item, panel);
+
+    bindOpener(panel, VIEW_ORDER_CARGO, item.getCargoId());
 
     DndHelper.makeSource(panel, DATA_TYPE_ORDER_CARGO, item, STYLE_ITEM_DRAG);
-    
+
     renderCargoShipment(panel, item, null);
 
     return panel;
@@ -537,19 +522,9 @@ class FreightExchange extends ChartBase {
     BeeLabel widget = new BeeLabel(item.getOrderNo());
     widget.addStyleName(STYLE_ORDER_LABEL);
 
-    widget.setTitle(BeeUtils.buildLines(
-        BeeUtils.joinWords("Data:", TimeUtils.renderCompact(item.getOrderDate())),
-        BeeUtils.joinWords("Būsena:", item.getOrderStatus().getCaption()),
-        BeeUtils.joinWords("ID:", item.getOrderId())));
+    widget.setTitle(item.getOrderTitle());
 
-    final Long orderId = item.getOrderId();
-
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_ORDERS, orderId);
-      }
-    });
+    bindOpener(widget, VIEW_ORDERS, item.getOrderId());
 
     Simple panel = new Simple(widget);
     panel.addStyleName(STYLE_ORDER_PANEL);
@@ -562,7 +537,7 @@ class FreightExchange extends ChartBase {
 
     Long orderId = null;
     List<OrderCargo> rowItems = Lists.newArrayList();
-    
+
     for (OrderCargo item : items) {
       if (isFiltered() && !item.matched(FilterType.PERSISTENT)) {
         continue;
@@ -570,7 +545,7 @@ class FreightExchange extends ChartBase {
 
       if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
-        if (!Objects.equal(item.getOrderId(), orderId) 
+        if (!Objects.equal(item.getOrderId(), orderId)
             || BeeUtils.intersects(rowItems, item.getRange())) {
 
           if (!rowItems.isEmpty()) {
@@ -597,7 +572,7 @@ class FreightExchange extends ChartBase {
         return item.getCustomerName();
       }
     }
-    
+
     return null;
   }
 
@@ -616,12 +591,12 @@ class FreightExchange extends ChartBase {
       if (data.getNumberOfEnabledItems() <= 1) {
         continue;
       }
-      
+
       final Collection<String> selectedNames = data.getSelectedNames();
       if (selectedNames.isEmpty() || selectedNames.size() >= data.getNumberOfEnabledItems()) {
         continue;
       }
-      
+
       Predicate<OrderCargo> predicate;
       switch (data.getType()) {
         case CUSTOMER:
@@ -650,7 +625,7 @@ class FreightExchange extends ChartBase {
             }
           };
           break;
-          
+
         case CARGO:
           predicate = new Predicate<OrderCargo>() {
             @Override
@@ -659,12 +634,12 @@ class FreightExchange extends ChartBase {
             }
           };
           break;
-          
+
         default:
           Assert.untouchable();
           predicate = null;
       }
-      
+
       if (predicate != null) {
         predicates.add(predicate);
       }
@@ -743,7 +718,7 @@ class FreightExchange extends ChartBase {
       }
     }
   }
-  
+
   private void setCustomerWidth(int customerWidth) {
     this.customerWidth = customerWidth;
   }

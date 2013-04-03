@@ -37,6 +37,10 @@ public class Captions {
     }
   }
 
+  public static String getCaption(HasCaption source) {
+    return (source == null) ? null : source.getCaption();
+  }
+  
   public static String getCaption(String key, int index) {
     if (BeeUtils.isEmpty(key)) {
       logger.severe("Caption key not specified");

@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 
@@ -252,43 +250,28 @@ class ShippingSchedule extends VehicleTimeBoard  {
   }
   
   private IdentifiableWidget createTripGroupWidget(Trip trip, boolean hasOverlap) {
-    final Flow panel = new Flow();
+    Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_GROUP_PANEL);
     if (hasOverlap) {
       panel.addStyleName(STYLE_TRIP_GROUP_OVERLAP);
     }
 
-    final Long tripId = trip.getTripId();
-    final String tripTitle = trip.getTitle();
-    
     trip.makeTarget(panel, STYLE_TRIP_GROUP_DRAG_OVER);
 
     BeeLabel label = new BeeLabel(trip.getTripNo());
     label.addStyleName(STYLE_TRIP_GROUP_LABEL);
 
-    label.setTitle(tripTitle);
+    label.setTitle(trip.getTitle());
 
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        openDataRow(event, VIEW_TRIPS, tripId);
-      }
-    });
-
+    bindOpener(label, VIEW_TRIPS, trip.getTripId());
+    
     panel.add(label);
 
     if (trip.getTrailerId() != null) {
       BeeLabel trailer = new BeeLabel(trip.getTrailerNumber());
       trailer.addStyleName(STYLE_TRIP_GROUP_TRAILER);
-
-      final Long trailerId = trip.getTrailerId();
-
-      trailer.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          openDataRow(event, VIEW_VEHICLES, trailerId);
-        }
-      });
+      
+      bindOpener(trailer, VIEW_VEHICLES, trip.getTrailerId());
 
       panel.add(trailer);
     }

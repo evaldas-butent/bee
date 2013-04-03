@@ -261,9 +261,12 @@ public class TransportConstants {
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
   public static final String COL_DRIVER_START_DATE = "StartDate";
   public static final String COL_DRIVER_END_DATE = "EndDate";
+  public static final String COL_DRIVER_EXPERIENCE = "Experience";
+  public static final String COL_DRIVER_NOTES = "Notes";
 
   public static final String COL_TRIP_DRIVER_FROM = "DateFrom";
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
+  public static final String COL_TRIP_DRIVER_NOTE = "Note";
 
   public static final String COL_SERVICE_DATE = "Date";
   public static final String COL_SERVICE_DATE_TO = "DateTo";
@@ -391,20 +394,14 @@ public class TransportConstants {
   public static final String PROP_ABSENCE = "Absence";
   public static final String PROP_VEHICLES = "Vehicles";
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
-  public static final String PROP_DATA = "Data";
   public static final String PROP_ORDER_CARGO = "OrderCargo";
   public static final String PROP_TRIPS = "Trips";
+  public static final String PROP_TRIP_DRIVERS = "TripDrivers";
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
-
-  public static final String ALS_TRIP_DATE_FROM = "TripDateFrom";
-  public static final String ALS_TRIP_DATE_TO = "TripDateTo";
-
-  public static final String ALS_TRIP_DRIVER_FROM = "TripDriverDateFrom";
-  public static final String ALS_TRIP_DRIVER_TO = "TripDriverDateTo";
 
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
@@ -422,19 +419,19 @@ public class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
-  public static final String defaultLoadingColumnAlias(String colName) {
+  public static String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;
   }
 
-  public static final String defaultUnloadingColumnAlias(String colName) {
+  public static String defaultUnloadingColumnAlias(String colName) {
     return "DefUnload" + colName;
   }
-
-  public static final String loadingColumnAlias(String colName) {
+  
+  public static String loadingColumnAlias(String colName) {
     return "Loading" + colName;
   }
 
-  public static final String unloadingColumnAlias(String colName) {
+  public static String unloadingColumnAlias(String colName) {
     return "Unloading" + colName;
   }
 

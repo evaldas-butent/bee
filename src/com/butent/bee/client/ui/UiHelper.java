@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -38,6 +39,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -169,7 +171,7 @@ public class UiHelper {
     }
     return result;
   }
-  
+
   public static FormView getForm(Widget widget) {
     if (widget == null) {
       return null;
@@ -224,7 +226,7 @@ public class UiHelper {
     }
     return result;
   }
-  
+
   public static int getMaxLength(IsColumn column) {
     if (column == null) {
       return BeeConst.UNDEF;
@@ -352,7 +354,7 @@ public class UiHelper {
       widget.setTitle(title);
     }
   }
-  
+
   public static boolean moveFocus(Widget parent, boolean forward) {
     if (parent == null) {
       return false;
@@ -493,6 +495,18 @@ public class UiHelper {
     }
     if (!BeeUtils.isEmpty(max)) {
       obj.setMaxValue(max);
+    }
+  }
+
+  public static void setColor(UIObject obj, Color color) {
+    Assert.notNull(obj);
+    Assert.notNull(color);
+
+    if (!BeeUtils.isEmpty(color.getBackground())) {
+      StyleUtils.setBackgroundColor(obj, color.getBackground());
+    }
+    if (!BeeUtils.isEmpty(color.getForeground())) {
+      StyleUtils.setColor(obj, color.getForeground());
     }
   }
 

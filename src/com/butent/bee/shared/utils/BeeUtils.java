@@ -174,6 +174,25 @@ public class BeeUtils {
     return sb.toString();
   }
 
+  public static String buildLines(Collection<String> lines) {
+    if (lines == null || lines.isEmpty()) {
+      return null;
+    }
+
+    char sep = BeeConst.CHAR_EOL;
+    StringBuilder sb = new StringBuilder();
+
+    for (String line : lines) {
+      if (line != null) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(line);
+      }
+    }
+    return sb.toString();
+  }
+  
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
   }
@@ -351,6 +370,14 @@ public class BeeUtils {
     return ok;
   }
 
+  public static <K> boolean containsKey(Map<? extends K, ?> map, K key) {
+    if (map == null) {
+      return false;
+    } else {
+      return map.containsKey(key);
+    }
+  }
+  
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 

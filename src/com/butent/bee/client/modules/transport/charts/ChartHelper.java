@@ -451,6 +451,20 @@ public class ChartHelper {
     return result;
   }
 
+  static Long getLong(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    } else {
+      return settings.getLong(0, index);
+    }
+  }
+  
   static JustDate getLowerBound(JustDate min, int size, JustDate max) {
     if (max == null || size <= 0) {
       return min;
@@ -650,6 +664,11 @@ public class ChartHelper {
     }
   }
 
+  static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2,
+      Range<JustDate> r3) {
+    return normalizedIntersection(r1, normalizedIntersection(r2, r3));
+  }
+  
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 

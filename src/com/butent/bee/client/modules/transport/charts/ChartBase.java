@@ -49,6 +49,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -138,8 +139,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_SHIPMENT_DAY_EMPTY = STYLE_SHIPMENT_DAY_PREFIX + "empty";
   private static final String STYLE_SHIPMENT_DAY_FLAG = STYLE_SHIPMENT_DAY_PREFIX + "flag";
   private static final String STYLE_SHIPMENT_DAY_LABEL = STYLE_SHIPMENT_DAY_PREFIX + "label";
-
-  private static final Color DEFAULT_ITEM_COLOR = new Color("yellow", "black");
 
   private final HeaderView headerView;
   private final Flow canvas;
@@ -635,7 +634,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       }
     }
   }
-  
+
   protected void adjustWidths() {
     int chartColumnCount = ChartHelper.getSize(getVisibleRange());
     if (chartColumnCount > 0) {
@@ -643,19 +642,17 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
-  protected void bindCargoOpener(OrderCargo cargo, HasClickHandlers widget) {
-    if (cargo != null && widget != null) {
-      final Long cargoId = cargo.getCargoId();
-
+  protected void bindOpener(HasClickHandlers widget, final String viewName, final Long id) {
+    if (widget != null && id != null) {
       widget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          openDataRow(event, VIEW_ORDER_CARGO, cargoId);
+          openDataRow(event, viewName, id);
         }
       });
     }
   }
-  
+
   protected int clampFooterHeight(int height, int canvasHeight) {
     return BeeUtils.clamp(height, 3, BeeUtils.clamp(canvasHeight / 2, 3, 1000));
   }
@@ -761,6 +758,19 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     renderRowResizer(panel);
   }
 
+  protected Color findColor(Long id) {
+    if (id == null) {
+      return null;
+    }
+
+    for (Color color : colors) {
+      if (Objects.equal(color.getId(), id)) {
+        return color;
+      }
+    }
+    return null;
+  }
+
   protected int getCalendarWidth() {
     return ChartHelper.getSize(getVisibleRange()) * getDayColumnWidth();
   }
@@ -809,16 +819,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return chartWidth;
   }
 
-  protected Color getColor(Long id) {
-    if (id == null) {
+  protected Color getColor(Long colorSource) {
+    if (colorSource == null) {
       return null;
     }
 
-    int index = ChartHelper.getColorIndex(id, colors.size());
+    int index = ChartHelper.getColorIndex(colorSource, colors.size());
     if (BeeUtils.isIndex(colors, index)) {
       return colors.get(index);
     } else {
-      return DEFAULT_ITEM_COLOR;
+      return null;
     }
   }
 
@@ -840,7 +850,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return dayColumnWidth;
   }
 
-  protected abstract Set<Action> getEnabledActions();
+  protected Set<Action> getEnabledActions() {
+    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE);
+  }
 
   protected Widget getEndSliderLabel() {
     return endSliderLabel;
@@ -975,17 +987,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
   }
 
-  /**
-   * @param rowSet
-   */
-  protected void initData(BeeRowSet rowSet) {
-  }
+  protected abstract void initData(Map<String, String> properties);
 
   protected List<ChartData> initFilter() {
     return Lists.newArrayList();
   }
-
-  protected abstract Collection<? extends HasDateRange> initItems(SimpleRowSet data);
 
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
@@ -1388,9 +1394,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       for (HasDateRange item : rows.get(row)) {
 
         Widget itemStrip = new CustomDiv(STYLE_SELECTOR_STRIP);
-        if (item instanceof HasColorSource) {
-          setItemWidgetColor((HasColorSource) item, itemStrip);
-        }
+        setItemWidgetColor(item, itemStrip);
+
         if (stripOpacity != null) {
           StyleUtils.setOpacity(itemStrip, stripOpacity);
         }
@@ -1478,6 +1483,44 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     canvas.add(endLabel);
   }
 
+  protected void renderTrip(HasWidgets panel, String title,
+      Collection<? extends OrderCargo> cargos, Range<JustDate> range, String styleVoid) {
+
+    List<Range<JustDate>> voidRanges;
+
+    if (BeeUtils.isEmpty(cargos)) {
+      voidRanges = Lists.newArrayList();
+      voidRanges.add(range);
+
+    } else {
+      Multimap<JustDate, CargoEvent> tripLayout = splitTripByDate(cargos, range);
+      Set<JustDate> eventDates = tripLayout.keySet();
+
+      for (JustDate date : eventDates) {
+        Multimap<Long, CargoEvent> dayLayout = CargoEvent.splitByCountry(tripLayout.get(date));
+        if (!dayLayout.isEmpty()) {
+          Widget dayWidget = createShipmentDayPanel(dayLayout, title);
+
+          StyleUtils.setLeft(dayWidget, getRelativeLeft(range, date));
+          StyleUtils.setWidth(dayWidget, getDayColumnWidth());
+
+          panel.add(dayWidget);
+        }
+      }
+
+      voidRanges = Trip.getVoidRanges(range, eventDates, cargos);
+    }
+
+    for (Range<JustDate> voidRange : voidRanges) {
+      Widget voidWidget = new CustomDiv(styleVoid);
+
+      StyleUtils.setLeft(voidWidget, getRelativeLeft(range, voidRange.lowerEndpoint()));
+      StyleUtils.setWidth(voidWidget, ChartHelper.getSize(voidRange) * getDayColumnWidth());
+
+      panel.add(voidWidget);
+    }
+  }
+
   protected void renderVisibleRange(HasWidgets panel) {
     ChartHelper.renderVisibleRange(this, panel, getChartLeft(), getHeaderHeight());
   }
@@ -1521,18 +1564,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       }
     }
 
-    serialized = rowSet.getTableProperty(PROP_DATA);
-    if (!BeeUtils.isEmpty(serialized)) {
-      SimpleRowSet data = SimpleRowSet.restore(serialized);
-
-      Collection<? extends HasDateRange> items = initItems(data);
-      if (items != null) {
-        logger.debug(getCaption(), "loaded", items.size(), "items");
-        setMaxRange(items);
-      }
-    }
-
-    initData(rowSet);
+    initData(rowSet.getTableProperties());
+    updateMaxRange();
 
     updateFilterData(initFilter());
 
@@ -1559,17 +1592,12 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.headerHeight = headerHeight;
   }
 
-  protected void setItemWidgetColor(HasColorSource item, Widget widget) {
-    Color color = getColor(item.getColorSource());
-    if (color == null) {
-      return;
-    }
-
-    if (!BeeUtils.isEmpty(color.getBackground())) {
-      StyleUtils.setBackgroundColor(widget, color.getBackground());
-    }
-    if (!BeeUtils.isEmpty(color.getForeground())) {
-      StyleUtils.setColor(widget, color.getForeground());
+  protected void setItemWidgetColor(HasDateRange item, Widget widget) {
+    if (item instanceof HasColorSource) {
+      Color color = getColor(((HasColorSource) item).getColorSource());
+      if (color != null) {
+        UiHelper.setColor(widget, color);
+      }
     }
   }
 
@@ -1615,6 +1643,21 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
           result.put(ch.getUnloadingDate(), new CargoEvent(cargo, ch, false));
         }
       }
+    }
+
+    return result;
+  }
+
+  protected Multimap<JustDate, CargoEvent> splitTripByDate(Collection<? extends OrderCargo> cargos,
+      Range<JustDate> range) {
+
+    Multimap<JustDate, CargoEvent> result = ArrayListMultimap.create();
+    if (BeeUtils.isEmpty(cargos)) {
+      return result;
+    }
+
+    for (OrderCargo cargo : cargos) {
+      result.putAll(splitCargoByDate(cargo, range));
     }
 
     return result;

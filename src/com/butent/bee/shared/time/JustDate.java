@@ -101,6 +101,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * @param other another date object to compare
    * @return 0 if dates are equals, less than 0 the {@code other} is for later date and otherwise
    */
+  @Override
   public int compareTo(JustDate other) {
     if (other == null) {
       return BeeConst.COMPARE_MORE;
@@ -157,6 +158,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value the day of month.
    */
+  @Override
   public int getDom() {
     ensureFields();
     return fields[Grego.IDX_DOM];
@@ -168,6 +170,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value the day of week.
    */
+  @Override
   public int getDow() {
     ensureFields();
     return fields[Grego.IDX_DOW];
@@ -178,6 +181,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value the day of year.
    */
+  @Override
   public int getDoy() {
     ensureFields();
     return fields[Grego.IDX_DOY];
@@ -193,11 +197,13 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value of month
    */
+  @Override
   public int getMonth() {
     ensureFields();
     return fields[Grego.IDX_MONTH];
   }
 
+  @Override
   public long getTime() {
     return TimeUtils.MILLIS_PER_DAY * days;
   }
@@ -212,6 +218,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value of year.
    */
+  @Override
   public int getYear() {
     ensureFields();
     return fields[Grego.IDX_YEAR];
@@ -253,6 +260,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     this.fields = null;
   }
 
+  @Override
   public void setDom(int dom) {
     if (getDom() != dom) {
       fields[Grego.IDX_DOM] = dom;
@@ -260,6 +268,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     }  
   }
   
+  @Override
   public void setMonth(int month) {
     if (getMonth() != month) {
       fields[Grego.IDX_MONTH] = month;
@@ -267,6 +276,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     }  
   }
   
+  @Override
   public void setYear(int year) {
     if (getYear() != year) {
       fields[Grego.IDX_YEAR] = year;
@@ -274,6 +284,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     }  
   }
   
+  @Override
   public boolean supportsTimezoneOffset() {
     return false;
   }

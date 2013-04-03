@@ -111,6 +111,16 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     COLUMNS, ROWS
   }
 
+  public static SimpleRowSet getIfPresent(Map<String, String> map, String key) {
+    if (BeeUtils.containsKey(map, key)) {
+      String serialized = map.get(key);
+      if (!BeeUtils.isEmpty(serialized)) {
+        return restore(serialized);
+      }
+    }
+    return null;
+  }
+  
   public static SimpleRowSet restore(String s) {
     SimpleRowSet rs = new SimpleRowSet();
     rs.deserialize(s);

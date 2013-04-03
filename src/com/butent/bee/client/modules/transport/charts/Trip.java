@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -37,6 +38,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -107,6 +109,72 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     }
   }
 
+  static List<Range<JustDate>> getVoidRanges(Range<JustDate> range,
+      Set<JustDate> eventDates, Collection<? extends OrderCargo> cargos) {
+
+    List<Range<JustDate>> result = Lists.newArrayList();
+    int tripDays = ChartHelper.getSize(range);
+
+    Set<JustDate> usedDates = Sets.newHashSet();
+
+    if (!BeeUtils.isEmpty(eventDates)) {
+      if (eventDates.size() >= tripDays) {
+        return result;
+      }
+      usedDates.addAll(eventDates);
+    }
+
+    if (!BeeUtils.isEmpty(cargos)) {
+      for (OrderCargo cargo : cargos) {
+        if (ChartHelper.isActive(cargo, range)) {
+          Range<JustDate> cargoRange = ChartHelper.normalizedIntersection(cargo.getRange(), range);
+          if (cargoRange == null) {
+            continue;
+          }
+
+          int cargoDays = ChartHelper.getSize(cargoRange);
+          if (cargoDays >= tripDays) {
+            return result;
+          }
+
+          for (int i = 0; i < cargoDays; i++) {
+            usedDates.add(TimeUtils.nextDay(cargoRange.lowerEndpoint(), i));
+          }
+
+          if (usedDates.size() >= tripDays) {
+            return result;
+          }
+        }
+      }
+    }
+
+    if (BeeUtils.isEmpty(usedDates)) {
+      result.add(range);
+      return result;
+    }
+
+    List<JustDate> dates = Lists.newArrayList(usedDates);
+    Collections.sort(dates);
+
+    for (int i = 0; i < dates.size(); i++) {
+      JustDate date = dates.get(i);
+
+      if (i == 0 && TimeUtils.isMore(date, range.lowerEndpoint())) {
+        result.add(Range.closed(range.lowerEndpoint(), TimeUtils.previousDay(date)));
+      }
+
+      if (i > 0 && TimeUtils.dayDiff(dates.get(i - 1), date) > 1) {
+        result.add(Range.closed(TimeUtils.nextDay(dates.get(i - 1)), TimeUtils.previousDay(date)));
+      }
+
+      if (i == dates.size() - 1 && TimeUtils.isLess(date, range.upperEndpoint())) {
+        result.add(Range.closed(TimeUtils.nextDay(date), range.upperEndpoint()));
+      }
+    }
+
+    return result;
+  }
+  
   static void maybeAssignCargo(String cargoMessage, String tripMessage, 
       final ConfirmationCallback callback) {
     if (BeeUtils.isEmpty(cargoMessage) || BeeUtils.isEmpty(tripMessage) || callback == null) {
