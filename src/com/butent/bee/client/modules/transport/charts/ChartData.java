@@ -143,6 +143,12 @@ class ChartData {
       add(name);
     }
   }
+
+  <E extends Enum<?> & HasCaption> void addNotNull(E item) {
+    if (item != null) {
+      add(item.getCaption(), (long) item.ordinal());
+    }
+  }
   
   void clear() {
     items.clear();
@@ -151,6 +157,15 @@ class ChartData {
     setNumberOfDisabledItems(0);
   }
 
+  boolean contains(Enum<?> e) {
+    if (e == null) {
+      return false;
+    }
+    
+    long id = e.ordinal();
+    return contains(id);
+  }
+  
   boolean contains(Long id) {
     if (id == null) {
       return false;

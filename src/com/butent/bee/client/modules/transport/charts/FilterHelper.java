@@ -58,14 +58,6 @@ class FilterHelper {
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
 
-  static boolean containsName(ChartData data, String name) {
-    if (data == null || BeeUtils.isEmpty(name)) {
-      return false;
-    } else {
-      return data.contains(name);
-    }
-  }
-
   static ChartData getDataByType(Collection<ChartData> data, ChartData.Type type) {
     if (data != null && type != null) {
       for (ChartData cd : data) {
@@ -101,6 +93,26 @@ class FilterHelper {
     }
 
     return result;
+  }
+
+  static boolean matches(ChartData data, Long id) {
+    if (data == null) {
+      return true;
+    } else if (id == null) {
+      return false;
+    } else {
+      return data.contains(id);
+    }
+  }
+
+  static boolean matches(ChartData data, String name) {
+    if (data == null) {
+      return true;
+    } else if (BeeUtils.isEmpty(name)) {
+      return false;
+    } else {
+      return data.contains(name);
+    }
   }
 
   static List<ChartData> notEmptyData(Collection<ChartData> data) {

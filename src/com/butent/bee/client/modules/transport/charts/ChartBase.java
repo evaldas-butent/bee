@@ -43,6 +43,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.CargoEvent.Type;
+import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
@@ -314,17 +315,23 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
           @Override
           public void onSuccess(DialogBox result) {
-            boolean ok = filter(result);
-            if (ok) {
-              refreshFilterInfo();
-            } else {
-              BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.nothingFound());
+            result.close();
+            
+            boolean wasFiltered = isFiltered();
+            setFiltered(persistFilter());
+            
+            if (wasFiltered && !isFiltered()) {
+              resetFilter(FilterType.PERSISTENT);
             }
+            
+            render(false);
+
+            refreshFilterInfo();
           }
 
           @Override
           void onSelectionChange(HasWidgets dataContainer, ChartData.Type dataType) {
-            onFilterSelection(dataContainer, dataType);
+            onFilterSelection(dataContainer);
           }
         });
         break;
@@ -668,6 +675,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected void clearFilter() {
     if (isFiltered()) {
+      resetFilter(FilterType.PERSISTENT);
+
       setFiltered(false);
       render(false);
 
@@ -746,11 +755,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
 
     setMaxRange(Range.closed(lower, upper));
-  }
-
-  protected boolean filter(DialogBox dialog) {
-    dialog.close();
-    return false;
   }
 
   protected void finalizeContent(ComplexPanel panel) {
@@ -989,10 +993,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected abstract void initData(Map<String, String> properties);
 
-  protected List<ChartData> initFilter() {
-    return Lists.newArrayList();
-  }
-
   protected boolean isDataEventRelevant(DataEvent event) {
     return event != null && relevantDataViews.contains(event.getViewName());
   }
@@ -1016,11 +1016,66 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void onDoubleClickChart(int row, JustDate date) {
   }
 
-  /**
-   * @param dataContainer
-   * @param dataType
-   */
-  protected void onFilterSelection(HasWidgets dataContainer, ChartData.Type dataType) {
+  protected void onFilterSelection(HasWidgets dataContainer) {
+    setFilter(FilterType.TENTATIVE);
+
+    List<ChartData> allData = getFilterData();
+    List<ChartData> tentativeData = prepareFilterData(FilterType.TENTATIVE);
+
+    ChartData.Type typeOfSingleDataHavingSelection = null;
+    for (ChartData data : allData) {
+      if (data.hasSelection()) {
+        if (typeOfSingleDataHavingSelection == null) {
+          typeOfSingleDataHavingSelection = data.getType();
+        } else {
+          typeOfSingleDataHavingSelection = null;
+          break;
+        }
+      }
+    }
+
+    for (ChartData data : allData) {
+      ChartData.Type type = data.getType();
+
+      FilterDataWidget dataWidget = FilterHelper.getDataWidget(dataContainer, type);
+      if (dataWidget == null) {
+        continue;
+      }
+
+      ChartData tentative = FilterHelper.getDataByType(tentativeData, data.getType());
+
+      int size = data.getItems().size();
+      boolean changed = false;
+
+      for (int i = 0; i < size; i++) {
+        ChartData.Item item = data.getItems().get(i);
+
+        boolean itemEnabled;
+        if (typeOfSingleDataHavingSelection != null && typeOfSingleDataHavingSelection == type) {
+          itemEnabled = true;
+        } else if (tentative == null) {
+          itemEnabled = false;
+        } else {
+          itemEnabled = tentative.contains(item.getName());
+        }
+
+        boolean selected = item.isSelected();
+
+        if (data.setItemEnabled(item, itemEnabled)) {
+          if (itemEnabled) {
+            dataWidget.addItem(item, i);
+          } else {
+            dataWidget.removeItem(i, selected);
+          }
+
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        dataWidget.refresh();
+      }
+    }
   }
 
   protected void onFooterSplitterMove(MoveEvent event) {
@@ -1106,6 +1161,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     RowEditor.openRow(viewName, rowId, !EventUtils.hasModifierKey(event.getNativeEvent()), null);
   }
 
+  protected abstract boolean persistFilter();
+
   protected abstract void prepareChart(Size canvasSize);
 
   protected void prepareDefaults(Size canvasSize) {
@@ -1123,6 +1180,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
     setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
   }
+
+  protected abstract List<ChartData> prepareFilterData(FilterType filterType);
 
   protected void prepareFooter() {
     if (getChartWidth() > 0) {
@@ -1525,6 +1584,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     ChartHelper.renderVisibleRange(this, panel, getChartLeft(), getHeaderHeight());
   }
 
+  protected abstract void resetFilter(FilterType filterType);
+
   protected void setChartLeft(int chartLeft) {
     this.chartLeft = chartLeft;
   }
@@ -1567,7 +1628,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     initData(rowSet.getTableProperties());
     updateMaxRange();
 
-    updateFilterData(initFilter());
+    updateFilterData(prepareFilterData(null));
+    if (setFilter(FilterType.TENTATIVE)) {
+      persistFilter();
+    }
 
     return true;
   }
@@ -1579,6 +1643,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   protected void setEndSliderLabel(Widget endSliderLabel) {
     this.endSliderLabel = endSliderLabel;
   }
+
+  protected abstract boolean setFilter(FilterType filterType);
 
   protected void setFiltered(boolean filtered) {
     this.filtered = filtered;
@@ -1921,21 +1987,24 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   private void refreshFilterInfo() {
-    List<String> selection = Lists.newArrayList();
-    for (ChartData data : filterData) {
-      Collection<String> selectedNames = data.getSelectedNames();
-      if (!selectedNames.isEmpty()) {
-        selection.addAll(selectedNames);
+    if (isFiltered()) {
+      List<String> selection = Lists.newArrayList();
+      for (ChartData data : filterData) {
+        Collection<String> selectedNames = data.getSelectedNames();
+        if (!selectedNames.isEmpty()) {
+          selection.addAll(selectedNames);
+        }
+      }
+
+      if (!selection.isEmpty()) {
+        filterLabel.getElement().setInnerText(BeeUtils.join(BeeConst.STRING_COMMA, selection));
+        removeFilter.setVisible(true);
+        return;
       }
     }
 
-    if (selection.isEmpty()) {
-      filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
-      removeFilter.setVisible(false);
-    } else {
-      filterLabel.getElement().setInnerText(BeeUtils.join(BeeConst.STRING_COMMA, selection));
-      removeFilter.setVisible(true);
-    }
+    filterLabel.getElement().setInnerText(BeeConst.STRING_EMPTY);
+    removeFilter.setVisible(false);
   }
 
   private void restoreColors(String serialized) {

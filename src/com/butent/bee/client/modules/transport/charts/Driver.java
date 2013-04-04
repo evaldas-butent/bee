@@ -69,20 +69,6 @@ class Driver extends Filterable implements HasDateRange, HasItemName  {
   }
 
   @Override
-  public boolean filter(FilterType filterType, Collection<ChartData> data) {
-    boolean match = true;
-    
-    for (ChartData cd : data) {
-      if (cd.getType() == ChartData.Type.DRIVER) {
-        match = cd.contains(getId());
-        break;
-      }
-    }
-
-    return match;
-  }
-
-  @Override
   public String getItemName() {
     return itemName;
   }

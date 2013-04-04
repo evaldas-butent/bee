@@ -17,7 +17,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -36,7 +35,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -44,7 +42,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -158,14 +155,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     infoPanels.add(widget.getId());
   }
 
-  @Override
-  protected void clearFilter() {
-    resetFilter(FilterType.PERSISTENT);
-    super.clearFilter();
-
-    render(false);
-  }
-
   protected BeeRow createNewTripRow(DataInfo dataInfo, int rowIndex, JustDate date) {
     BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
@@ -184,16 +173,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     return newRow;
-  }
-
-  @Override
-  protected boolean filter(DialogBox dialog) {
-    persistFilter();
-
-    dialog.close();
-    render(false);
-
-    return true;
   }
 
   protected Trip findTripById(Long tripId) {
@@ -350,11 +329,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     setSeparateCargo(ChartHelper.getBoolean(getSettings(), getSeparateCargoColumnName()));
   }
 
-  @Override
-  protected List<ChartData> initFilter() {
-    return prepareFilterData(null);
-  }
-
   protected boolean isInfoColumnVisible() {
     return true;
   }
@@ -374,66 +348,28 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
-  protected void onFilterSelection(HasWidgets dataContainer, ChartData.Type dataType) {
-    setFilter(FilterType.TENTATIVE);
+  protected boolean persistFilter() {
+    boolean filtered = false;
 
-    List<ChartData> allData = getFilterData();
-    List<ChartData> tentativeData = prepareFilterData(FilterType.TENTATIVE);
-
-    ChartData.Type typeOfSingleDataHavingSelection = null;
-    for (ChartData data : allData) {
-      if (data.hasSelection()) {
-        if (typeOfSingleDataHavingSelection == null) {
-          typeOfSingleDataHavingSelection = data.getType();
-        } else {
-          typeOfSingleDataHavingSelection = null;
-          break;
-        }
+    for (Vehicle vehicle : vehicles) {
+      if (!vehicle.persistFilter()) {
+        filtered = true;
       }
     }
 
-    for (ChartData data : allData) {
-      ChartData.Type type = data.getType();
-
-      FilterDataWidget dataWidget = FilterHelper.getDataWidget(dataContainer, type);
-      if (dataWidget == null) {
-        continue;
-      }
-
-      ChartData tentative = FilterHelper.getDataByType(tentativeData, data.getType());
-
-      int size = data.getItems().size();
-      boolean changed = false;
-
-      for (int i = 0; i < size; i++) {
-        ChartData.Item item = data.getItems().get(i);
-
-        boolean enabled;
-        if (typeOfSingleDataHavingSelection != null && typeOfSingleDataHavingSelection == type) {
-          enabled = true;
-        } else if (tentative == null) {
-          enabled = false;
-        } else {
-          enabled = tentative.contains(item.getName());
-        }
-
-        boolean selected = item.isSelected();
-
-        if (data.setItemEnabled(item, enabled)) {
-          if (enabled) {
-            dataWidget.addItem(item, i);
-          } else {
-            dataWidget.removeItem(i, selected);
-          }
-
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        dataWidget.refresh();
+    for (Trip trip : trips.values()) {
+      if (!trip.persistFilter()) {
+        filtered = true;
       }
     }
+
+    for (Freight freight : freights.values()) {
+      if (!freight.persistFilter()) {
+        filtered = true;
+      }
+    }
+    
+    return filtered;
   }
 
   @Override
@@ -459,6 +395,147 @@ abstract class VehicleTimeBoard extends ChartBase {
       setSeparateCargo(sc);
       updateMaxRange();
     }
+  }
+
+  @Override
+  protected List<ChartData> prepareFilterData(FilterType filterType) {
+    List<ChartData> data = Lists.newArrayList();
+    if (vehicles.isEmpty()) {
+      return data;
+    }
+
+    ChartData truckData = new ChartData(ChartData.Type.TRUCK);
+    ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
+
+    ChartData modelData = new ChartData(ChartData.Type.VEHICLE_MODEL);
+    ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
+
+    ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
+    ChartData orderData = new ChartData(ChartData.Type.ORDER);
+    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
+
+    ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+
+    ChartData tripData = new ChartData(ChartData.Type.TRIP);
+
+    ChartData loadData = new ChartData(ChartData.Type.LOADING);
+    ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
+    ChartData placeData = new ChartData(ChartData.Type.PLACE);
+
+    ChartData driverData = new ChartData(ChartData.Type.DRIVER);
+
+    for (Vehicle vehicle : vehicles) {
+      if (!vehicle.matched(filterType)) {
+        continue;
+      }
+
+      String vehicleName = vehicle.getItemName();
+      if (isTrailerPark()) {
+        trailerData.add(vehicleName, vehicle.getId());
+      } else {
+        truckData.add(vehicleName, vehicle.getId());
+      }
+
+      modelData.add(vehicle.getModel());
+      typeData.add(vehicle.getType());
+
+      if (!trips.containsKey(vehicle.getId())) {
+        continue;
+      }
+
+      for (Trip trip : trips.get(vehicle.getId())) {
+        if (!trip.matched(filterType)) {
+          continue;
+        }
+
+        tripData.add(trip.getItemName(), trip.getTripId());
+
+        String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
+        if (!BeeUtils.isEmpty(otherVehicleNumber)) {
+          if (isTrailerPark()) {
+            truckData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
+          } else {
+            trailerData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
+          }
+        }
+
+        if (trip.hasDrivers()) {
+          for (Driver driver : trip.getDrivers()) {
+            driverData.add(driver.getItemName());
+          }
+        }
+
+        if (!freights.containsKey(trip.getTripId())) {
+          continue;
+        }
+
+        for (Freight freight : freights.get(trip.getTripId())) {
+          if (!freight.matched(filterType)) {
+            continue;
+          }
+
+          customerData.add(freight.getCustomerName(), freight.getCustomerId());
+          orderData.add(freight.getOrderName(), freight.getOrderId());
+          statusData.addNotNull(freight.getOrderStatus());
+
+          cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+
+          String loading = Places.getLoadingPlaceInfo(freight);
+          if (!BeeUtils.isEmpty(loading)) {
+            loadData.add(loading);
+            placeData.add(loading);
+          }
+
+          String unloading = Places.getUnloadingPlaceInfo(freight);
+          if (!BeeUtils.isEmpty(unloading)) {
+            unloadData.add(unloading);
+            placeData.add(unloading);
+          }
+
+          if (hasCargoHandling(freight.getCargoId())) {
+            for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
+              loading = Places.getLoadingPlaceInfo(ch);
+              if (!BeeUtils.isEmpty(loading)) {
+                loadData.add(loading);
+                placeData.add(loading);
+              }
+
+              unloading = Places.getUnloadingPlaceInfo(ch);
+              if (!BeeUtils.isEmpty(unloading)) {
+                unloadData.add(unloading);
+                placeData.add(unloading);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    data.add(isTrailerPark() ? trailerData : truckData);
+    data.add(modelData);
+    data.add(typeData);
+
+    data.add(customerData);
+    data.add(orderData);
+    data.add(statusData);
+
+    data.add(cargoData);
+
+    data.add(tripData);
+
+    data.add(loadData);
+    data.add(unloadData);
+    data.add(placeData);
+
+    data.add(driverData);
+
+    data.add(isTrailerPark() ? truckData : trailerData);
+
+    for (ChartData cd : data) {
+      cd.prepare();
+    }
+
+    return FilterHelper.notEmptyData(data);
   }
 
   @Override
@@ -627,18 +704,122 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
-  protected boolean setData(ResponseObject response) {
-    boolean ok = super.setData(response);
-    if (!ok) {
-      return ok;
+  protected void resetFilter(FilterType filterType) {
+    for (Vehicle vehicle : vehicles) {
+      vehicle.setMatch(filterType, true);
     }
 
-    boolean filtered = setFilter(FilterType.TENTATIVE);
-    if (filtered) {
-      persistFilter();
+    for (Trip trip : trips.values()) {
+      trip.setMatch(filterType, true);
     }
 
-    return ok;
+    for (Freight freight : freights.values()) {
+      freight.setMatch(filterType, true);
+    }
+  }
+
+  @Override
+  protected boolean setFilter(FilterType filterType) {
+    boolean filtered = false;
+
+    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
+    if (selectedData.isEmpty()) {
+      resetFilter(filterType);
+      return filtered;
+    }
+
+    ChartData vehicleData = FilterHelper.getDataByType(selectedData,
+        isTrailerPark() ? ChartData.Type.TRAILER : ChartData.Type.TRUCK);
+    ChartData otherVehicleData = FilterHelper.getDataByType(selectedData,
+        isTrailerPark() ? ChartData.Type.TRUCK : ChartData.Type.TRAILER);
+    
+    ChartData typeData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_TYPE);
+    ChartData modelData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_MODEL);
+
+    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
+
+    ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
+    
+    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
+
+    boolean freightRequired = cargoMatcher != null || placeMatcher != null;
+    boolean tripRequired = freightRequired || otherVehicleData != null || tripData != null
+        || driverData != null;
+
+    for (Vehicle vehicle : vehicles) {
+      boolean vehicleMatch = FilterHelper.matches(vehicleData, vehicle.getId())
+          && FilterHelper.matches(typeData, vehicle.getType())
+          && FilterHelper.matches(modelData, vehicle.getModel());
+
+      boolean hasTrips = vehicleMatch && trips.containsKey(vehicle.getId());
+      if (vehicleMatch && !hasTrips && tripRequired) {
+        vehicleMatch = false;
+      }
+
+      if (vehicleMatch && hasTrips) {
+        int tripCount = 0;
+
+        for (Trip trip : trips.get(vehicle.getId())) {
+          boolean tripMatch = FilterHelper.matches(tripData, trip.getTripId())
+              && FilterHelper.matches(otherVehicleData, trip.getVehicleId(otherVehicleType))
+              && trip.matchesDrivers(driverData);
+
+          boolean hasFreights = tripMatch && freights.containsKey(trip.getTripId());
+          if (tripMatch && !hasFreights && freightRequired) {
+            tripMatch = false;
+          }
+
+          if (tripMatch && hasFreights) {
+            int freightCount = 0;
+
+            for (Freight freight : freights.get(trip.getTripId())) {
+              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
+
+              if (freightMatch && placeMatcher != null) {
+                boolean ok = placeMatcher.matches(freight);
+                if (!ok && hasCargoHandling(freight.getCargoId())) {
+                  ok = placeMatcher.matchesAnyOf(getCargoHandling(freight.getCargoId()));
+                }
+
+                if (!ok) {
+                  freightMatch = false;
+                }
+              }
+
+              freight.setMatch(filterType, freightMatch);
+              if (freightMatch) {
+                freightCount++;
+              } else {
+                filtered = true;
+              }
+            }
+
+            if (freightCount <= 0) {
+              tripMatch = false;
+            }
+          }
+
+          trip.setMatch(filterType, tripMatch);
+          if (tripMatch) {
+            tripCount++;
+          } else {
+            filtered = true;
+          }
+        }
+
+        if (tripCount <= 0) {
+          vehicleMatch = false;
+        }
+      }
+
+      vehicle.setMatch(filterType, vehicleMatch);
+      if (!vehicleMatch) {
+        filtered = true;
+      }
+    }
+
+    return filtered;
   }
 
   private void addNumberWidget(HasWidgets panel, IdentifiableWidget widget,
@@ -907,322 +1088,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
   }
 
-  private void persistFilter() {
-    for (Vehicle vehicle : vehicles) {
-      vehicle.persistFilter();
-    }
-
-    for (Trip trip : trips.values()) {
-      trip.persistFilter();
-    }
-
-    for (Freight freight : freights.values()) {
-      freight.persistFilter();
-    }
-  }
-
-  private List<ChartData> prepareFilterData(FilterType filterType) {
-    List<ChartData> data = Lists.newArrayList();
-    if (vehicles.isEmpty()) {
-      return data;
-    }
-
-    ChartData truckData = new ChartData(ChartData.Type.TRUCK);
-    ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
-
-    ChartData modelData = new ChartData(ChartData.Type.VEHICLE_MODEL);
-    ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
-
-    ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
-    ChartData orderData = new ChartData(ChartData.Type.ORDER);
-    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
-
-    ChartData cargoData = new ChartData(ChartData.Type.CARGO);
-
-    ChartData tripData = new ChartData(ChartData.Type.TRIP);
-
-    ChartData loadData = new ChartData(ChartData.Type.LOADING);
-    ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
-    ChartData placeData = new ChartData(ChartData.Type.PLACE);
-
-    ChartData driverData = new ChartData(ChartData.Type.DRIVER);
-
-    for (Vehicle vehicle : vehicles) {
-      if (filterType != null && !vehicle.matched(filterType)) {
-        continue;
-      }
-
-      String vehicleName = vehicle.getItemName();
-      if (isTrailerPark()) {
-        trailerData.add(vehicleName, vehicle.getId());
-      } else {
-        truckData.add(vehicleName, vehicle.getId());
-      }
-
-      modelData.add(vehicle.getModel());
-      typeData.add(vehicle.getType());
-
-      if (!trips.containsKey(vehicle.getId())) {
-        continue;
-      }
-
-      for (Trip trip : trips.get(vehicle.getId())) {
-        if (filterType != null && !trip.matched(filterType)) {
-          continue;
-        }
-
-        tripData.add(trip.getItemName(), trip.getTripId());
-
-        String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
-        if (!BeeUtils.isEmpty(otherVehicleNumber)) {
-          if (isTrailerPark()) {
-            truckData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
-          } else {
-            trailerData.add(otherVehicleNumber, trip.getVehicleId(otherVehicleType));
-          }
-        }
-
-        if (trip.hasDrivers()) {
-          for (Driver driver : trip.getDrivers()) {
-            driverData.add(driver.getItemName(), driver.getId());
-          }
-        }
-
-        if (!freights.containsKey(trip.getTripId())) {
-          continue;
-        }
-
-        for (Freight freight : freights.get(trip.getTripId())) {
-          if (filterType != null && !freight.matched(filterType)) {
-            continue;
-          }
-
-          customerData.add(freight.getCustomerName(), freight.getCustomerId());
-          orderData.add(freight.getOrderName(), freight.getOrderId());
-
-          OrderStatus status = freight.getOrderStatus();
-          if (status != null) {
-            statusData.add(status.getCaption(), (long) status.ordinal());
-          }
-
-          String loading = Places.getLoadingPlaceInfo(freight);
-          if (!BeeUtils.isEmpty(loading)) {
-            loadData.add(loading);
-            placeData.add(loading);
-          }
-
-          String unloading = Places.getUnloadingPlaceInfo(freight);
-          if (!BeeUtils.isEmpty(unloading)) {
-            unloadData.add(unloading);
-            placeData.add(unloading);
-          }
-
-          cargoData.add(freight.getCargoDescription(), freight.getCargoId());
-
-          if (hasCargoHandling(freight.getCargoId())) {
-            for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
-              loading = Places.getLoadingPlaceInfo(ch);
-              if (!BeeUtils.isEmpty(loading)) {
-                loadData.add(loading);
-                placeData.add(loading);
-              }
-
-              unloading = Places.getUnloadingPlaceInfo(ch);
-              if (!BeeUtils.isEmpty(unloading)) {
-                unloadData.add(unloading);
-                placeData.add(unloading);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    data.add(isTrailerPark() ? trailerData : truckData);
-    data.add(modelData);
-    data.add(typeData);
-
-    data.add(customerData);
-    data.add(orderData);
-    data.add(statusData);
-
-    data.add(cargoData);
-
-    data.add(tripData);
-
-    data.add(loadData);
-    data.add(unloadData);
-    data.add(placeData);
-
-    data.add(driverData);
-
-    data.add(isTrailerPark() ? truckData : trailerData);
-
-    for (ChartData cd : data) {
-      cd.prepare();
-    }
-
-    return FilterHelper.notEmptyData(data);
-  }
-
-  private void resetFilter(FilterType filterType) {
-    for (Vehicle vehicle : vehicles) {
-      vehicle.setMatch(filterType, true);
-    }
-
-    for (Trip trip : trips.values()) {
-      trip.setMatch(filterType, true);
-    }
-
-    for (Freight freight : freights.values()) {
-      freight.setMatch(filterType, true);
-    }
-  }
-
   private boolean separateCargo() {
     return separateCargo;
-  }
-
-  private boolean setFilter(FilterType filterType) {
-    boolean filtered = false;
-
-    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
-    if (selectedData.isEmpty()) {
-      resetFilter(filterType);
-      return filtered;
-    }
-
-    ChartData vehicleData = FilterHelper.getDataByType(selectedData,
-        isTrailerPark() ? ChartData.Type.TRAILER : ChartData.Type.TRUCK);
-    ChartData otherVehicleData = FilterHelper.getDataByType(selectedData,
-        isTrailerPark() ? ChartData.Type.TRUCK : ChartData.Type.TRAILER);
-
-    ChartData customerData = FilterHelper.getDataByType(selectedData, ChartData.Type.CUSTOMER);
-    ChartData orderData = FilterHelper.getDataByType(selectedData, ChartData.Type.ORDER);
-    ChartData statusData = FilterHelper.getDataByType(selectedData, ChartData.Type.ORDER_STATUS);
-
-    ChartData cargoData = FilterHelper.getDataByType(selectedData, ChartData.Type.CARGO);
-
-    ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
-    ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
-
-    ChartData loadData = FilterHelper.getDataByType(selectedData, ChartData.Type.LOADING);
-    ChartData unloadData = FilterHelper.getDataByType(selectedData, ChartData.Type.UNLOADING);
-    ChartData placeData = FilterHelper.getDataByType(selectedData, ChartData.Type.PLACE);
-
-    boolean checkLoad = loadData != null || placeData != null;
-    boolean checkUnload = unloadData != null || placeData != null;
-
-    boolean freightRequired = customerData != null || orderData != null || statusData != null
-        || cargoData != null || checkLoad || checkUnload;
-    boolean tripRequired = freightRequired || otherVehicleData != null || tripData != null
-        || driverData != null;
-
-    for (Vehicle vehicle : vehicles) {
-      boolean vehicleMatch = vehicle.filter(filterType, selectedData);
-      if (vehicleMatch && vehicleData != null) {
-        vehicleMatch = vehicleData.contains(vehicle.getId());
-      }
-
-      boolean hasTrips = trips.containsKey(vehicle.getId());
-      if (vehicleMatch && !hasTrips && tripRequired) {
-        vehicleMatch = false;
-      }
-
-      if (vehicleMatch && hasTrips) {
-        int tripCount = 0;
-
-        for (Trip trip : trips.get(vehicle.getId())) {
-          boolean tripMatch = trip.filter(filterType, selectedData);
-
-          if (tripMatch && otherVehicleData != null) {
-            Long otherVehicleId = trip.getVehicleId(otherVehicleType);
-            tripMatch = otherVehicleId != null && otherVehicleData.contains(otherVehicleId);
-          }
-
-          boolean hasFreights = freights.containsKey(trip.getTripId());
-          if (tripMatch && !hasFreights && freightRequired) {
-            tripMatch = false;
-          }
-
-          if (tripMatch && hasFreights) {
-            int freightCount = 0;
-
-            for (Freight freight : freights.get(trip.getTripId())) {
-              boolean freightMatch = freight.filter(filterType, selectedData);
-
-              if (freightMatch && (checkLoad || checkUnload)) {
-                boolean ok = false;
-                String info;
-
-                if (checkLoad) {
-                  info = Places.getLoadingPlaceInfo(freight);
-                  ok = FilterHelper.containsName(loadData, info)
-                      || FilterHelper.containsName(placeData, info);
-                }
-                if (!ok && checkUnload) {
-                  info = Places.getUnloadingPlaceInfo(freight);
-                  ok = FilterHelper.containsName(unloadData, info)
-                      || FilterHelper.containsName(placeData, info);
-                }
-
-                if (!ok && hasCargoHandling(freight.getCargoId())) {
-                  for (CargoHandling ch : getCargoHandling(freight.getCargoId())) {
-                    if (checkLoad) {
-                      info = Places.getLoadingPlaceInfo(ch);
-                      ok = FilterHelper.containsName(loadData, info)
-                          || FilterHelper.containsName(placeData, info);
-                    }
-                    if (!ok && checkUnload) {
-                      info = Places.getUnloadingPlaceInfo(ch);
-                      ok = FilterHelper.containsName(unloadData, info)
-                          || FilterHelper.containsName(placeData, info);
-                    }
-
-                    if (ok) {
-                      break;
-                    }
-                  }
-                }
-
-                if (!ok) {
-                  freightMatch = false;
-                }
-              }
-
-              freight.setMatch(filterType, freightMatch);
-              if (freightMatch) {
-                freightCount++;
-              } else {
-                filtered = true;
-              }
-            }
-
-            if (freightCount <= 0) {
-              tripMatch = false;
-            }
-          }
-
-          trip.setMatch(filterType, tripMatch);
-          if (tripMatch) {
-            tripCount++;
-          } else {
-            filtered = true;
-          }
-        }
-
-        if (tripCount <= 0) {
-          vehicleMatch = false;
-        }
-      }
-
-      vehicle.setMatch(filterType, vehicleMatch);
-      if (!vehicleMatch) {
-        filtered = true;
-      }
-    }
-
-    return filtered;
   }
 
   private void setInfoWidth(int infoWidth) {

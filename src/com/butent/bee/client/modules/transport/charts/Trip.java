@@ -246,37 +246,6 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
   }
-
-  @Override
-  public boolean filter(FilterType filterType, Collection<ChartData> data) {
-    boolean match = true;
-    
-    for (ChartData cd : data) {
-      if (cd.getType() == ChartData.Type.TRIP) {
-        match = cd.contains(getTripId());
-
-      } else if (cd.getType() == ChartData.Type.DRIVER) {
-        boolean ok = false;
-
-        if (hasDrivers()) {
-          for (Driver driver : drivers) {
-            if (cd.contains(driver.getId())) {
-              ok = true;
-              break;
-            }
-          }
-        }
-        
-        match = ok;
-      }
-      
-      if (!match) {
-        break;
-      }
-    }
-
-    return match;
-  }
   
   @Override
   public Long getColorSource() {
@@ -304,11 +273,11 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   Long getTrailerId() {
     return trailerId;
   }
-  
+
   String getTrailerNumber() {
     return trailerNumber;
   }
-
+  
   Long getTripId() {
     return tripId;
   }
@@ -323,6 +292,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   Long getTruckId() {
     return truckId;
+  }
+
+  String getTruckNumber() {
+    return truckNumber;
   }
   
   Long getVehicleId(VehicleType vehicleType) {
@@ -346,7 +319,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         return null;
     }
   }
-  
+
   boolean hasDriver(Long driverId) {
     if (drivers != null) {
       for (Driver driver : drivers) {
@@ -357,11 +330,11 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     }
     return false; 
   }
-
+  
   boolean hasDrivers() {
     return !BeeUtils.isEmpty(drivers);
   }
-  
+
   void makeTarget(final DndTarget widget, final String overStyle) {
     DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
         new Predicate<Object>() {
@@ -376,6 +349,22 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
             Trip.this.acceptDrop(input);
           }
         });
+  }
+  
+  boolean matchesDrivers(ChartData driverData) {
+    if (driverData == null) {
+      return true;
+    }
+
+    if (hasDrivers()) {
+      for (Driver driver : drivers) {
+        if (driverData.contains(driver.getItemName())) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
   }
 
   void maybeAddDriver(final Driver driver) {

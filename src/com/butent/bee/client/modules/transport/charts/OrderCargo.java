@@ -21,7 +21,6 @@ import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
@@ -203,35 +202,6 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     Queries.insert(viewName, columns, values, callback);
   }
   
-  @Override
-  boolean filter(FilterType filterType, Collection<ChartData> data) {
-    boolean match = true;
-
-    for (ChartData cd : data) {
-      switch (cd.getType()) {
-        case CARGO:
-          match = cd.contains(getCargoDescription());
-          break;
-        case CUSTOMER:
-          match = cd.contains(getCustomerId());
-          break;
-        case ORDER:
-          match = cd.contains(getOrderId());
-          break;
-        case ORDER_STATUS:
-          match = (getOrderStatus() != null) && cd.contains((long) getOrderStatus().ordinal());
-          break;
-        default:
-      }
-
-      if (!match) {
-        break;
-      }
-    }
-
-    return match;
-  }
-
   String getCargoDescription() {
     return cargoDescription;
   }

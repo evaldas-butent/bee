@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -20,7 +18,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -28,13 +25,11 @@ import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.transport.TransportHandler;
-import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Mover;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
@@ -132,43 +127,6 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected boolean filter(DialogBox dialog) {
-    Predicate<OrderCargo> predicate = getPredicate();
-
-    int matchSize = 0;
-
-    if (predicate != null) {
-      for (OrderCargo item : items) {
-        boolean match = predicate.apply(item);
-        item.setMatch(FilterType.TENTATIVE, match);
-
-        if (match) {
-          matchSize++;
-        }
-      }
-
-      if (matchSize == 0) {
-        return false;
-      }
-      if (matchSize >= items.size()) {
-        matchSize = 0;
-      }
-    }
-
-    dialog.close();
-
-    if (matchSize > 0) {
-      setFiltered(true);
-      FilterHelper.persistFilter(items);
-    } else {
-      FilterHelper.resetFilter(items, FilterType.PERSISTENT);
-      clearFilter();
-    }
-
-    return true;
-  }
-
-  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
       return ChartHelper.filterItems(items, FilterType.PERSISTENT);
@@ -236,57 +194,6 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected List<ChartData> initFilter() {
-    if (items.isEmpty()) {
-      return super.initFilter();
-    }
-
-    ChartData customerData = new ChartData(Type.CUSTOMER);
-    ChartData loadData = new ChartData(Type.LOADING);
-    ChartData unloadData = new ChartData(Type.UNLOADING);
-    ChartData cargoData = new ChartData(Type.CARGO);
-
-    for (OrderCargo item : items) {
-      if (!BeeUtils.isEmpty(item.getCustomerName())) {
-        customerData.add(item.getCustomerName(), item.getCustomerId());
-      }
-
-      String loading = Places.getLoadingPlaceInfo(item);
-      if (!BeeUtils.isEmpty(loading)) {
-        loadData.add(loading);
-      }
-
-      String unloading = Places.getUnloadingPlaceInfo(item);
-      if (!BeeUtils.isEmpty(unloading)) {
-        unloadData.add(unloading);
-      }
-
-      if (!BeeUtils.isEmpty(item.getCargoDescription())) {
-        cargoData.add(item.getCargoDescription(), item.getCargoId());
-      }
-    }
-
-    List<ChartData> result = Lists.newArrayList();
-
-    if (!customerData.isEmpty()) {
-      result.add(customerData);
-    }
-
-    if (!loadData.isEmpty()) {
-      result.add(loadData);
-    }
-    if (!unloadData.isEmpty()) {
-      result.add(unloadData);
-    }
-
-    if (!cargoData.isEmpty()) {
-      result.add(cargoData);
-    }
-
-    return result;
-  }
-
-  @Override
   protected void onDoubleClickChart(int row, JustDate date) {
     Long customerId = customersByRow.get(row);
 
@@ -306,6 +213,19 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected boolean persistFilter() {
+    boolean filtered = false;
+    
+    for (OrderCargo item : items) {
+      if (!item.persistFilter()) {
+        filtered = true;
+      }
+    }
+    
+    return filtered;
+  }
+
+  @Override
   protected void prepareChart(Size canvasSize) {
     setCustomerWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
         ChartHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
@@ -317,6 +237,80 @@ class FreightExchange extends ChartBase {
 
     setDayColumnWidth(ChartHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20,
         1, getChartWidth()));
+  }
+
+  @Override
+  protected List<ChartData> prepareFilterData(FilterType filterType) {
+    List<ChartData> data = Lists.newArrayList();
+    if (items.isEmpty()) {
+      return data;
+    }
+
+    ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
+    ChartData orderData = new ChartData(ChartData.Type.ORDER);
+    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
+
+    ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+
+    ChartData loadData = new ChartData(ChartData.Type.LOADING);
+    ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
+    ChartData placeData = new ChartData(ChartData.Type.PLACE);
+
+    for (OrderCargo item : items) {
+      if (!item.matched(filterType)) {
+        continue;
+      }
+
+      customerData.add(item.getCustomerName(), item.getCustomerId());
+      orderData.add(item.getOrderName(), item.getOrderId());
+      statusData.addNotNull(item.getOrderStatus());
+
+      cargoData.add(item.getCargoDescription(), item.getCargoId());
+
+      String loading = Places.getLoadingPlaceInfo(item);
+      if (!BeeUtils.isEmpty(loading)) {
+        loadData.add(loading);
+        placeData.add(loading);
+      }
+
+      String unloading = Places.getUnloadingPlaceInfo(item);
+      if (!BeeUtils.isEmpty(unloading)) {
+        unloadData.add(unloading);
+        placeData.add(unloading);
+      }
+
+      if (hasCargoHandling(item.getCargoId())) {
+        for (CargoHandling ch : getCargoHandling(item.getCargoId())) {
+          loading = Places.getLoadingPlaceInfo(ch);
+          if (!BeeUtils.isEmpty(loading)) {
+            loadData.add(loading);
+            placeData.add(loading);
+          }
+
+          unloading = Places.getUnloadingPlaceInfo(ch);
+          if (!BeeUtils.isEmpty(unloading)) {
+            unloadData.add(unloading);
+            placeData.add(unloading);
+          }
+        }
+      }
+    }
+
+    data.add(customerData);
+    data.add(orderData);
+    data.add(statusData);
+
+    data.add(cargoData);
+
+    data.add(loadData);
+    data.add(unloadData);
+    data.add(placeData);
+
+    for (ChartData cd : data) {
+      cd.prepare();
+    }
+
+    return FilterHelper.notEmptyData(data);
   }
 
   @Override
@@ -452,6 +446,49 @@ class FreightExchange extends ChartBase {
     panel.add(orderMover);
   }
 
+  @Override
+  protected void resetFilter(FilterType filterType) {
+    for (OrderCargo item : items) {
+      item.setMatch(filterType, true);
+    }
+  }
+
+  @Override
+  protected boolean setFilter(FilterType filterType) {
+    boolean filtered = false;
+
+    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
+    if (selectedData.isEmpty()) {
+      resetFilter(filterType);
+      return filtered;
+    }
+    
+    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
+    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
+    
+    for (OrderCargo item : items) {
+      boolean match = (cargoMatcher == null) ? true : cargoMatcher.matches(item);
+      
+      if (match && placeMatcher != null) {
+        boolean ok = placeMatcher.matches(item);
+        if (!ok && hasCargoHandling(item.getCargoId())) {
+          ok = placeMatcher.matchesAnyOf(getCargoHandling(item.getCargoId()));
+        }
+
+        if (!ok) {
+          match = false;
+        }
+      }
+      
+      item.setMatch(filterType, match);
+      if (!match) {
+        filtered = true;
+      }
+    }
+    
+    return filtered;
+  }
+
   private void addCustomerWidget(HasWidgets panel, IdentifiableWidget widget, Long customerId,
       int firstRow, int lastRow) {
 
@@ -584,76 +621,6 @@ class FreightExchange extends ChartBase {
     return orderWidth;
   }
 
-  private Predicate<OrderCargo> getPredicate() {
-    List<Predicate<OrderCargo>> predicates = Lists.newArrayList();
-
-    for (ChartData data : getFilterData()) {
-      if (data.getNumberOfEnabledItems() <= 1) {
-        continue;
-      }
-
-      final Collection<String> selectedNames = data.getSelectedNames();
-      if (selectedNames.isEmpty() || selectedNames.size() >= data.getNumberOfEnabledItems()) {
-        continue;
-      }
-
-      Predicate<OrderCargo> predicate;
-      switch (data.getType()) {
-        case CUSTOMER:
-          predicate = new Predicate<OrderCargo>() {
-            @Override
-            public boolean apply(OrderCargo input) {
-              return selectedNames.contains(input.getCustomerName());
-            }
-          };
-          break;
-
-        case LOADING:
-          predicate = new Predicate<OrderCargo>() {
-            @Override
-            public boolean apply(OrderCargo input) {
-              return selectedNames.contains(Places.getLoadingPlaceInfo(input));
-            }
-          };
-          break;
-
-        case UNLOADING:
-          predicate = new Predicate<OrderCargo>() {
-            @Override
-            public boolean apply(OrderCargo input) {
-              return selectedNames.contains(Places.getUnloadingPlaceInfo(input));
-            }
-          };
-          break;
-
-        case CARGO:
-          predicate = new Predicate<OrderCargo>() {
-            @Override
-            public boolean apply(OrderCargo input) {
-              return selectedNames.contains(input.getCargoDescription());
-            }
-          };
-          break;
-
-        default:
-          Assert.untouchable();
-          predicate = null;
-      }
-
-      if (predicate != null) {
-        predicates.add(predicate);
-      }
-    }
-
-    if (predicates.isEmpty()) {
-      return null;
-    } else if (predicates.size() == 1) {
-      return predicates.get(0);
-    } else {
-      return Predicates.and(predicates);
-    }
-  }
-
   private void onCustomerResize(MoveEvent event) {
     int delta = event.getDeltaX();
 
@@ -691,7 +658,7 @@ class FreightExchange extends ChartBase {
       }
     }
   }
-
+  
   private void onOrderResize(MoveEvent event) {
     int delta = event.getDeltaX();
 
@@ -718,11 +685,11 @@ class FreightExchange extends ChartBase {
       }
     }
   }
-
+  
   private void setCustomerWidth(int customerWidth) {
     this.customerWidth = customerWidth;
   }
-
+  
   private void setOrderWidth(int orderWidth) {
     this.orderWidth = orderWidth;
   }

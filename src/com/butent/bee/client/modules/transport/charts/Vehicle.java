@@ -18,7 +18,6 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.Set;
 
 class Vehicle extends Filterable implements HasDateRange, HasItemName {
@@ -68,25 +67,6 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
     this.range = ChartHelper.getActivity(row.getDate(startIndex), row.getDate(endIndex));
 
     this.itemName = BeeUtils.joinWords(number, model);
-  }
-
-  @Override
-  public boolean filter(FilterType filterType, Collection<ChartData> data) {
-    boolean match = true;
-
-    for (ChartData cd : data) {
-      if (cd.getType() == ChartData.Type.VEHICLE_MODEL) {
-        match = cd.contains(getModel());
-      } else if (cd.getType() == ChartData.Type.VEHICLE_TYPE) {
-        match = cd.contains(getType());
-      }
-
-      if (!match) {
-        break;
-      }
-    }
-
-    return match;
   }
 
   @Override

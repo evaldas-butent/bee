@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.EnumMap;
 
 abstract class Filterable {
@@ -15,8 +14,6 @@ abstract class Filterable {
   enum FilterType {
     TENTATIVE, PERSISTENT
   }
-  
-  abstract boolean filter(FilterType filterType, Collection<ChartData> data);
   
   boolean matched(FilterType filterType) {
     if (filterType != null && filterResults.containsKey(filterType)) {
