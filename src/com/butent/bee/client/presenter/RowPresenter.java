@@ -4,9 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderSilverImpl;
@@ -134,10 +134,10 @@ public class RowPresenter extends AbstractPresenter implements Printable {
     boolean ok;
 
     if (container.getId().equals(source.getId())) {
-      StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
+      ElementSize.copyWithAdjustment(source, target, container.getForm().getPrintElement());
       ok = true;
     } else if (getHeader().asWidget().getElement().isOrHasChild(source)) {
-      ok = getHeader().onPrint(source, target);
+      ok = container.getForm().printHeader() && getHeader().onPrint(source, target);
     } else {
       ok = true;
     }

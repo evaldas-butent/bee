@@ -28,6 +28,7 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -459,10 +460,6 @@ public class StyleUtils {
     setStyleDependentName(el, style, true);
   }
 
-  public static void addStyleName(String id, String style) {
-    setStyleName(DomUtils.getElement(id), style, true);
-  }
-
   public static void alwaysScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     alwaysScroll(el.getStyle(), scroll);
@@ -717,10 +714,6 @@ public class StyleUtils {
     if (!BeeUtils.isEmpty(el.getStyle().getDisplay())) {
       el.getStyle().clearDisplay();
     }
-  }
-
-  public static void clearDisplay(String id) {
-    clearDisplay(DomUtils.getElement(id));
   }
 
   public static void clearDisplay(UIObject obj) {
@@ -981,10 +974,6 @@ public class StyleUtils {
     return getBottom(el.getStyle());
   }
 
-  public static int getBottom(String id) {
-    return getBottom(DomUtils.getElement(id));
-  }
-
   public static int getBottom(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getBottom(), false);
@@ -998,10 +987,6 @@ public class StyleUtils {
   public static String getCssText(Element el) {
     Assert.notNull(el);
     return getCssText(el.getStyle());
-  }
-
-  public static String getCssText(String id) {
-    return getCssText(DomUtils.getElement(id));
   }
 
   public static String getCssText(Style st) {
@@ -1019,10 +1004,6 @@ public class StyleUtils {
     return getHeight(el.getStyle());
   }
 
-  public static int getHeight(String id) {
-    return getHeight(DomUtils.getElement(id));
-  }
-
   public static int getHeight(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getHeight(), false);
@@ -1036,10 +1017,6 @@ public class StyleUtils {
   public static int getLeft(Element el) {
     Assert.notNull(el);
     return getLeft(el.getStyle());
-  }
-
-  public static int getLeft(String id) {
-    return getLeft(DomUtils.getElement(id));
   }
 
   public static int getLeft(Style st) {
@@ -1064,10 +1041,6 @@ public class StyleUtils {
   public static Rectangle getRectangle(Element el) {
     Assert.notNull(el);
     return getRectangle(el.getStyle());
-  }
-
-  public static Rectangle getRectangle(String id) {
-    return getRectangle(DomUtils.getElement(id));
   }
 
   public static Rectangle getRectangle(Style st) {
@@ -1157,10 +1130,6 @@ public class StyleUtils {
     return getTop(el.getStyle());
   }
 
-  public static int getTop(String id) {
-    return getTop(DomUtils.getElement(id));
-  }
-
   public static int getTop(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getTop(), false);
@@ -1176,10 +1145,6 @@ public class StyleUtils {
     return getWidth(el.getStyle());
   }
 
-  public static int getWidth(String id) {
-    return getWidth(DomUtils.getElement(id));
-  }
-
   public static int getWidth(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getWidth(), false);
@@ -1193,10 +1158,6 @@ public class StyleUtils {
   public static int getZIndex(Element el) {
     Assert.notNull(el);
     return getZIndex(el.getStyle());
-  }
-
-  public static int getZIndex(String id) {
-    return getZIndex(DomUtils.getElement(id));
   }
 
   public static int getZIndex(Style st) {
@@ -1246,10 +1207,6 @@ public class StyleUtils {
   public static void hideOutline(Element el) {
     Assert.notNull(el);
     hideOutline(el.getStyle());
-  }
-
-  public static void hideOutline(String id) {
-    hideOutline(DomUtils.getElement(id));
   }
 
   public static void hideOutline(Style st) {
@@ -1363,10 +1320,6 @@ public class StyleUtils {
     el.getStyle().setPosition(Position.ABSOLUTE);
   }
 
-  public static void makeAbsolute(String id) {
-    makeAbsolute(DomUtils.getElement(id));
-  }
-
   public static void makeAbsolute(UIObject obj) {
     Assert.notNull(obj);
     makeAbsolute(obj.getElement());
@@ -1385,10 +1338,6 @@ public class StyleUtils {
   public static void makeRelative(Element el) {
     Assert.notNull(el);
     el.getStyle().setPosition(Position.RELATIVE);
-  }
-
-  public static void makeRelative(String id) {
-    makeRelative(DomUtils.getElement(id));
   }
 
   public static void makeRelative(UIObject obj) {
@@ -1533,10 +1482,6 @@ public class StyleUtils {
     setStyleDependentName(el, style, false);
   }
 
-  public static void removeStyleName(String id, String style) {
-    setStyleName(DomUtils.getElement(id), style, false);
-  }
-
   public static void setBackgroundColor(Element el, String color) {
     Assert.notNull(el);
     setBackgroundColor(el.getStyle(), color);
@@ -1578,10 +1523,6 @@ public class StyleUtils {
   public static void setBorderColor(Element el, String color) {
     Assert.notNull(el);
     setBorderColor(el.getStyle(), color);
-  }
-
-  public static void setBorderColor(String id, String color) {
-    setBorderColor(DomUtils.getElement(id), color);
   }
 
   public static void setBorderColor(Style st, String color) {
@@ -1640,17 +1581,12 @@ public class StyleUtils {
     setBottom(el.getStyle(), px);
   }
 
-  public static void setBottom(String id, int px) {
-    setBottom(DomUtils.getElement(id), px);
-  }
-
   public static void setBottom(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_BOTTOM, value, normalizeUnit(unit));
   }
 
   public static void setBottom(Style st, int px) {
-    Assert.notNull(st);
     setBottom(st, px, DEFAULT_UNIT);
   }
 
@@ -1693,10 +1629,6 @@ public class StyleUtils {
     setColor(el.getStyle(), color);
   }
 
-  public static void setColor(String id, String color) {
-    setColor(DomUtils.getElement(id), color);
-  }
-
   public static void setColor(Style st, String color) {
     Assert.notNull(st);
     if (BeeUtils.isEmpty(color)) {
@@ -1716,10 +1648,6 @@ public class StyleUtils {
     setCssText(el.getStyle(), text);
   }
 
-  public static void setCssText(String id, String text) {
-    setCssText(DomUtils.getElement(id), text);
-  }
-
   public static void setCssText(Style st, String text) {
     Assert.notNull(st);
     Assert.notNull(text);
@@ -1734,10 +1662,6 @@ public class StyleUtils {
   public static void setDisplay(Element el, Display value) {
     Assert.notNull(el);
     el.getStyle().setDisplay(value);
-  }
-
-  public static void setDisplay(String id, Display value) {
-    setDisplay(DomUtils.getElement(id), value);
   }
 
   public static void setDisplay(UIObject obj, Display value) {
@@ -1834,21 +1758,12 @@ public class StyleUtils {
     setHeight(el.getStyle(), px);
   }
 
-  public static void setHeight(String id, double value, CssUnit unit) {
-    setHeight(DomUtils.getElement(id), value, unit);
-  }
-
-  public static void setHeight(String id, int px) {
-    setHeight(DomUtils.getElement(id), px);
-  }
-
   public static void setHeight(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_HEIGHT, value, normalizeUnit(unit));
   }
 
   public static void setHeight(Style st, int px) {
-    Assert.notNull(st);
     setHeight(st, px, DEFAULT_UNIT);
   }
 
@@ -1870,14 +1785,6 @@ public class StyleUtils {
   public static void setHorizontalPadding(Element el, int px) {
     Assert.notNull(el);
     setHorizontalPadding(el.getStyle(), px);
-  }
-
-  public static void setHorizontalPadding(String id, double value, CssUnit unit) {
-    setHorizontalPadding(DomUtils.getElement(id), value, unit);
-  }
-
-  public static void setHorizontalPadding(String id, int px) {
-    setHorizontalPadding(DomUtils.getElement(id), px);
   }
 
   public static void setHorizontalPadding(Style st, double value, CssUnit unit) {
@@ -1910,21 +1817,12 @@ public class StyleUtils {
     setLeft(el.getStyle(), px);
   }
 
-  public static void setLeft(String id, double value, CssUnit unit) {
-    setLeft(DomUtils.getElement(id), value, unit);
-  }
-
-  public static void setLeft(String id, int px) {
-    setLeft(DomUtils.getElement(id), px);
-  }
-
   public static void setLeft(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_LEFT, value, normalizeUnit(unit));
   }
 
   public static void setLeft(Style st, int px) {
-    Assert.notNull(st);
     setLeft(st, px, DEFAULT_UNIT);
   }
 
@@ -2103,10 +2001,6 @@ public class StyleUtils {
     el.getStyle().setOpacity(value);
   }
 
-  public static void setOpacity(String id, double value) {
-    setOpacity(DomUtils.getElement(id), value);
-  }
-
   public static void setOpacity(UIObject obj, double value) {
     Assert.notNull(obj);
     setOpacity(obj.getElement(), value);
@@ -2115,10 +2009,6 @@ public class StyleUtils {
   public static void setOutlineStyle(Element el, OutlineStyle value) {
     Assert.notNull(el);
     setOutlineStyle(el.getStyle(), value);
-  }
-
-  public static void setOutlineStyle(String id, OutlineStyle value) {
-    setOutlineStyle(DomUtils.getElement(id), value);
   }
 
   public static void setOutlineStyle(Style st, OutlineStyle value) {
@@ -2176,10 +2066,6 @@ public class StyleUtils {
     setRectangle(el.getStyle(), left, top, width, height);
   }
 
-  public static void setRectangle(String id, int left, int top, int width, int height) {
-    setRectangle(DomUtils.getElement(id), left, top, width, height);
-  }
-
   public static void setRectangle(Style st, int left, int top, int width, int height) {
     Assert.notNull(st);
 
@@ -2204,17 +2090,12 @@ public class StyleUtils {
     setRight(el.getStyle(), px);
   }
 
-  public static void setRight(String id, int px) {
-    setRight(DomUtils.getElement(id), px);
-  }
-
   public static void setRight(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_RIGHT, value, normalizeUnit(unit));
   }
 
   public static void setRight(Style st, int px) {
-    Assert.notNull(st);
     setRight(st, px, DEFAULT_UNIT);
   }
 
@@ -2233,10 +2114,6 @@ public class StyleUtils {
     setSize(el.getStyle(), width, height);
   }
 
-  public static void setSize(String id, int width, int height) {
-    setSize(DomUtils.getElement(id), width, height);
-  }
-
   public static void setSize(Style st, int width, int height) {
     Assert.notNull(st);
     setWidth(st, width, DEFAULT_UNIT);
@@ -2248,6 +2125,24 @@ public class StyleUtils {
     setSize(obj.getElement(), width, height);
   }
 
+  public static void setSize(Element el, Size size) {
+    Assert.notNull(el);
+    setSize(el.getStyle(), size);
+  }
+
+  public static void setSize(Style st, Size size) {
+    Assert.notNull(st);
+    Assert.notNull(size);
+
+    setWidth(st, size.getWidth(), DEFAULT_UNIT);
+    setHeight(st, size.getHeight(), DEFAULT_UNIT);
+  }
+
+  public static void setSize(UIObject obj, Size size) {
+    Assert.notNull(obj);
+    setSize(obj.getElement(), size);
+  }
+  
   public static void setStyleDependentName(Element el, String style, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(style);
@@ -2316,21 +2211,12 @@ public class StyleUtils {
     setTop(el.getStyle(), px);
   }
 
-  public static void setTop(String id, double value, CssUnit unit) {
-    setTop(DomUtils.getElement(id), value, unit);
-  }
-
-  public static void setTop(String id, int px) {
-    setTop(DomUtils.getElement(id), px);
-  }
-
   public static void setTop(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_TOP, value, normalizeUnit(unit));
   }
 
   public static void setTop(Style st, int px) {
-    Assert.notNull(st);
     setTop(st, px, DEFAULT_UNIT);
   }
 
@@ -2396,10 +2282,6 @@ public class StyleUtils {
     }
   }
 
-  public static void setVisible(String id, boolean visible) {
-    setVisible(DomUtils.getElement(id), visible);
-  }
-
   public static void setVisible(UIObject obj, boolean visible) {
     Assert.notNull(obj);
     setVisible(obj.getElement(), visible);
@@ -2431,21 +2313,12 @@ public class StyleUtils {
     setWidth(el.getStyle(), px);
   }
 
-  public static void setWidth(String id, double value, CssUnit unit) {
-    setWidth(DomUtils.getElement(id), value, unit);
-  }
-
-  public static void setWidth(String id, int px) {
-    setWidth(DomUtils.getElement(id), px);
-  }
-
   public static void setWidth(Style st, double value, CssUnit unit) {
     Assert.notNull(st);
     setProperty(st, STYLE_WIDTH, value, normalizeUnit(unit));
   }
 
   public static void setWidth(Style st, int px) {
-    Assert.notNull(st);
     setWidth(st, px, DEFAULT_UNIT);
   }
 
@@ -2476,10 +2349,6 @@ public class StyleUtils {
   public static void setZIndex(Element el, int value) {
     Assert.notNull(el);
     setZIndex(el.getStyle(), value);
-  }
-
-  public static void setZIndex(String id, int value) {
-    setZIndex(DomUtils.getElement(id), value);
   }
 
   public static void setZIndex(Style st, int value) {
@@ -2530,10 +2399,6 @@ public class StyleUtils {
     if (!BeeUtils.isEmpty(styles)) {
       updateStyle(el.getStyle(), styles);
     }
-  }
-
-  public static void updateAppearance(String id, String className, String styles) {
-    updateAppearance(DomUtils.getElement(id), className, styles);
   }
 
   public static void updateAppearance(UIObject obj, String className, String styles) {

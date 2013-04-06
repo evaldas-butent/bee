@@ -1239,6 +1239,13 @@ public class DomUtils {
     }
   }
 
+  public static boolean isButtonElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_BUTTON);
+  }
+  
   public static boolean isChecked(Element elem) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);

@@ -18,6 +18,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -620,7 +621,8 @@ class FreightExchange extends ChartBase {
         StyleUtils.setLeft(resizer, newLeft);
 
         for (String id : customerPanels) {
-          StyleUtils.setWidth(id, customerPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+          StyleUtils.setWidth(DomUtils.getElement(id),
+              customerPx - ChartHelper.DEFAULT_MOVER_WIDTH);
         }
 
         for (String id : orderPanels) {
@@ -657,7 +659,7 @@ class FreightExchange extends ChartBase {
         StyleUtils.setLeft(resizer, newLeft);
 
         for (String id : orderPanels) {
-          StyleUtils.setWidth(id, orderPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+          StyleUtils.setWidth(DomUtils.getElement(id), orderPx - ChartHelper.DEFAULT_MOVER_WIDTH);
         }
       }
 

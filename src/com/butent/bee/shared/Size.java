@@ -55,6 +55,16 @@ public class Size {
     return width > 0 && height > 0;
   }
 
+  public Size minus(Size size) {
+    Assert.notNull(size);
+    return new Size(width - size.width, height - size.height);
+  }
+
+  public Size plus(Size size) {
+    Assert.notNull(size);
+    return new Size(width + size.width, height + size.height);
+  }
+  
   public Size rotate() {
     return new Size(height, width);
   }

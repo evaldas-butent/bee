@@ -67,7 +67,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(HeaderSilverImpl.class);
-  
+
   private static final int HEIGHT = 30;
 
   private static final String STYLE_CONTAINER = "bee-Header-container";
@@ -76,7 +76,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final String STYLE_MESSAGE = "bee-Header-message";
 
   private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
-  
+
   private static final String STYLE_CONTROL = "bee-Header-control";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
@@ -92,7 +92,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private final Map<Action, String> actionControls = Maps.newHashMap();
 
   private final Horizontal commandPanel = new Horizontal();
-  
+
   public HeaderSilverImpl() {
     super();
   }
@@ -124,7 +124,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
     messageWidget.addStyleName(STYLE_MESSAGE);
     add(messageWidget);
-    
+
     commandPanel.addStyleName(STYLE_COMMAND_PANEL);
     add(commandPanel);
 
@@ -138,22 +138,22 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverDelete(), Action.DELETE));
     }
-    
+
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK));
     }
-    
+
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverEdit(), Action.EDIT));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverSave(), Action.SAVE));
     }
-    
+
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE));
     }
-    
+
     if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverPrint(), Action.PRINT));
     }
@@ -206,7 +206,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (BeeUtils.isEmpty(id)) {
       return false;
     }
-    
+
     Widget child = DomUtils.getChildQuietly(this, id);
     if (child instanceof HasEnabled) {
       return child.isVisible() && ((HasEnabled) child).isEnabled();
@@ -222,8 +222,12 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public boolean onPrint(Element source, Element target) {
-    String id = source.getId();
-    return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
+    if (DomUtils.isButtonElement(source)) {
+      return false;
+    } else {
+      String id = source.getId();
+      return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
+    }
   }
 
   @Override
@@ -301,7 +305,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
     return control;
   }
-  
+
   private Map<Action, String> getActionControls() {
     return actionControls;
   }

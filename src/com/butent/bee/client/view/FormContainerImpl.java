@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
@@ -329,23 +330,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     boolean ok;
 
     if (getId().equals(source.getId())) {
-      int width = source.getClientWidth();
-      int height = source.getClientHeight();
-
-      Element content = getContent().getRootWidget().asWidget().getElement();
-      int delta = content.getScrollHeight() - content.getClientHeight();
-      if (delta > 0) {
-        height += delta;
-      }
-
-      StyleUtils.setSize(target, width, height);
+      ElementSize.copyWithAdjustment(source, target, getContent().getPrintElement());
       ok = true;
       
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
-      ok = getHeader().onPrint(source, target);
+      ok = getContent().printHeader() && getHeader().onPrint(source, target);
 
     } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
-      ok = getFooter().onPrint(source, target);
+      ok = getContent().printFooter() && getFooter().onPrint(source, target);
 
     } else {
       ok = true;

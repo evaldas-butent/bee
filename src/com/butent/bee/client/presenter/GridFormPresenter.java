@@ -5,10 +5,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HasGridView;
@@ -145,7 +145,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case PRINT:
-        Printer.print(this);
+        if (getForm().printHeader()) {
+          Printer.print(this);
+        } else {
+          Printer.print(getForm());
+        }
         break;
 
       default:
@@ -169,10 +173,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     boolean ok;
 
     if (container.getId().equals(source.getId())) {
-      StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
+      ElementSize.copyWithAdjustment(source, target, getForm().getPrintElement());
       ok = true;
     } else if (header.asWidget().getElement().isOrHasChild(source)) {
-      ok = header.onPrint(source, target);
+      ok = getForm().printHeader() && header.onPrint(source, target);
     } else {
       ok = true;
     }

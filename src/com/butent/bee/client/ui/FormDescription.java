@@ -32,6 +32,9 @@ public class FormDescription implements HasViewName {
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
 
   private static final String ATTR_SHOW_ROW_ID = "showRowId";
+
+  private static final String ATTR_PRINT_HEADER = "printHeader";
+  private static final String ATTR_PRINT_FOOTER = "printFooter";
   
   public static String getName(Element element) {
     Assert.notNull(element);
@@ -125,6 +128,14 @@ public class FormDescription implements HasViewName {
     return readOnly;
   }
 
+  public boolean printFooter() {
+    return BeeUtils.isTrue(XmlUtils.getAttributeBoolean(getFormElement(), ATTR_PRINT_FOOTER));
+  }
+
+  public boolean printHeader() {
+    return BeeUtils.isTrue(XmlUtils.getAttributeBoolean(getFormElement(), ATTR_PRINT_HEADER));
+  }
+  
   public boolean showRowId() {
     return BeeUtils.isTrue(XmlUtils.getAttributeBoolean(getFormElement(), ATTR_SHOW_ROW_ID));
   }

@@ -27,6 +27,8 @@
     <xs:attribute name="enabledActions" type="ui:viewActions" />
     <xs:attribute name="disabledActions" type="ui:viewActions" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
+    <xs:attribute name="printHeader" type="xs:boolean" />
+    <xs:attribute name="printFooter" type="xs:boolean" />
     <xs:attributeGroup ref="ui:dimension" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>

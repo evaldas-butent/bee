@@ -273,7 +273,11 @@ public class RowEditor {
           close.onSave();
 
         } else if (Action.PRINT.equals(action)) {
-          Printer.print(presenter);
+          if (formView.printHeader()) {
+            Printer.print(presenter);
+          } else {
+            Printer.print(formView);
+          }
         }
       }
     });

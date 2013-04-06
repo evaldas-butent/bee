@@ -532,7 +532,12 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       ok = true;
 
     } else if (headerView.asWidget().getElement().isOrHasChild(source)) {
-      ok = headerView.onPrint(source, target);
+      if (StyleUtils.hasClassName(source, STYLE_ACTION_FILTER)
+          || StyleUtils.hasClassName(source, STYLE_ACTION_REMOVE_FILTER)) {
+        ok = false;
+      } else {
+        ok = headerView.onPrint(source, target);
+      }
 
     } else {
       ok = true;

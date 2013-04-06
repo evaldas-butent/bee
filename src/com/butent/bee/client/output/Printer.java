@@ -29,7 +29,7 @@ public class Printer {
   private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
 
   private static BeeFrame frame = null;
-
+  
   public static void print(Element element, Printable widget) {
     Assert.notNull(element);
     

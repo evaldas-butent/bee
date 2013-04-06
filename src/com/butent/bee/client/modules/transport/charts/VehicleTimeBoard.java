@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.DndHelper;
@@ -982,7 +983,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         StyleUtils.setLeft(resizer, newLeft);
 
         for (String id : infoPanels) {
-          StyleUtils.setWidth(id, infoPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+          StyleUtils.setWidth(DomUtils.getElement(id), infoPx - ChartHelper.DEFAULT_MOVER_WIDTH);
         }
       }
 
@@ -1016,7 +1017,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         StyleUtils.setLeft(resizer, newLeft);
 
         for (String id : numberPanels) {
-          StyleUtils.setWidth(id, numberPx - ChartHelper.DEFAULT_MOVER_WIDTH);
+          StyleUtils.setWidth(DomUtils.getElement(id), numberPx - ChartHelper.DEFAULT_MOVER_WIDTH);
         }
 
         if (isInfoColumnVisible()) {

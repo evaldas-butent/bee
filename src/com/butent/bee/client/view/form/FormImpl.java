@@ -23,6 +23,7 @@ import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
@@ -261,6 +262,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private String caption = null;
   private boolean showRowId = false;
 
+  private boolean printFooter = false;
+  private boolean printHeader = false;
+
   private FormInterceptor formInterceptor = null;
 
   private final CreationCallback creationCallback = new CreationCallback();
@@ -396,6 +400,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     setCaption(formDescription.getCaption());
     setShowRowId(formDescription.showRowId());
 
+    setPrintHeader(formDescription.printHeader());
+    setPrintFooter(formDescription.printFooter());
+
     setDimensions(formDescription.getDimensions());
 
     IdentifiableWidget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
@@ -529,6 +536,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public int getPageStart() {
     return pageStart;
+  }
+
+  @Override
+  public Element getPrintElement() {
+    return getRootWidget().asWidget().getElement();
   }
 
   @Override
@@ -893,6 +905,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean onPrint(Element source, Element target) {
+    if (getRootWidget().getId().equals(source.getId())) {
+      ElementSize.copyScroll(source, target);
+    }
+    return true;
+  }
+
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
   }
 
@@ -963,6 +983,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     fireEvent(event);
+  }
+
+  @Override
+  public boolean printFooter() {
+    return printFooter;
+  }
+
+  @Override
+  public boolean printHeader() {
+    return printHeader;
   }
 
   @Override
@@ -1674,6 +1704,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setPreviewId(String previewId) {
     this.previewId = previewId;
+  }
+
+  private void setPrintFooter(boolean printFooter) {
+    this.printFooter = printFooter;
+  }
+
+  private void setPrintHeader(boolean printHeader) {
+    this.printHeader = printHeader;
   }
 
   private void setReadOnly(boolean readOnly) {

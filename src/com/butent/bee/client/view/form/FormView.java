@@ -11,6 +11,7 @@ import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasDimensions;
@@ -35,7 +36,7 @@ import java.util.List;
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
     ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, HasAllDragAndDropHandlers,
-    EditEndEvent.Handler, SaveChangesEvent.Handler, RequiresResize {
+    EditEndEvent.Handler, SaveChangesEvent.Handler, RequiresResize, Printable {
 
   void applyOptions(String options);
 
@@ -75,6 +76,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   void onClose(CloseCallback closeCallback);
 
   void prepareForInsert();
+  
+  boolean printFooter();
+
+  boolean printHeader();
 
   int refreshBySource(String source);
 

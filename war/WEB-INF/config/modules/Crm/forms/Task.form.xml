@@ -17,7 +17,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="Task" viewName="Tasks" caption="Užduotis" showRowId="true"
+  name="Task" viewName="Tasks" caption="Užduotis" showRowId="true" printHeader="true"
   >
 
   <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form" style="margin-top: 1ex;">

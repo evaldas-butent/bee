@@ -32,6 +32,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -208,7 +209,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case PRINT:
-        Printer.print(formContainer);
+        FormView form = formContainer.getContent();
+        if (form.printHeader() || form.printFooter()) {
+          Printer.print(formContainer);
+        } else {
+          Printer.print(form);
+        }
         break;
         
       default:
