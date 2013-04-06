@@ -310,39 +310,6 @@ public class ChartHelper {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
   }
 
-  static <T extends Filterable & HasDateRange> List<HasDateRange> filterActiveItems(
-      Collection<T> items, Filterable.FilterType filterType, Range<JustDate> activeRange) {
-
-    List<HasDateRange> result = Lists.newArrayList();
-    if (items == null || filterType == null || activeRange == null) {
-      return result;
-    }
-
-    for (T item : items) {
-      if (item != null && item.matched(filterType) && item.getRange() != null
-          && BeeUtils.intersects(item.getRange(), activeRange)) {
-        result.add(item);
-      }
-    }
-    return result;
-  }
-
-  static <T extends Filterable & HasDateRange> List<HasDateRange> filterItems(Collection<T> items,
-      Filterable.FilterType filterType) {
-
-    List<HasDateRange> result = Lists.newArrayList();
-    if (items == null || filterType == null) {
-      return result;
-    }
-
-    for (T item : items) {
-      if (item != null && item.matched(filterType)) {
-        result.add(item);
-      }
-    }
-    return result;
-  }
-
   static List<HasDateRange> getActiveItems(Collection<? extends HasDateRange> items,
       Range<JustDate> activeRange) {
 
@@ -352,8 +319,7 @@ public class ChartHelper {
     }
 
     for (HasDateRange item : items) {
-      if (item != null && item.getRange() != null
-          && BeeUtils.intersects(item.getRange(), activeRange)) {
+      if (hasRangeAndIsActive(item, activeRange)) {
         result.add(item);
       }
     }
@@ -608,14 +574,26 @@ public class ChartHelper {
     }
   }
 
-  static boolean isActive(HasDateRange item, Range<JustDate> activeRange) {
-    if (activeRange == null || item == null || item.getRange() == null) {
+  static boolean hasRangeAndIsActive(HasDateRange item, Range<JustDate> activeRange) {
+    if (item == null || item.getRange() == null) {
+      return false;
+    } else if (activeRange == null) {
       return true;
     } else {
       return activeRange.isConnected(item.getRange());
     }
   }
 
+  static boolean isActive(HasDateRange item, Range<JustDate> activeRange) {
+    if (item == null) {
+      return false;
+    } else if (activeRange == null || item.getRange() == null) {
+      return true;
+    } else {
+      return activeRange.isConnected(item.getRange());
+    }
+  }
+  
   static boolean isNormalized(Range<JustDate> range) {
     return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
         && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;

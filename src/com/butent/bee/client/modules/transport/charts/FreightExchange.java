@@ -127,9 +127,45 @@ class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected boolean filter(FilterType filterType) {
+    boolean filtered = false;
+
+    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
+    if (selectedData.isEmpty()) {
+      resetFilter(filterType);
+      return filtered;
+    }
+    
+    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
+    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
+    
+    for (OrderCargo item : items) {
+      boolean match = (cargoMatcher == null) ? true : cargoMatcher.matches(item);
+      
+      if (match && placeMatcher != null) {
+        boolean ok = placeMatcher.matches(item);
+        if (!ok && hasCargoHandling(item.getCargoId())) {
+          ok = placeMatcher.matchesAnyOf(getCargoHandling(item.getCargoId()));
+        }
+
+        if (!ok) {
+          match = false;
+        }
+      }
+      
+      item.setMatch(filterType, match);
+      if (!match) {
+        filtered = true;
+      }
+    }
+    
+    return filtered;
+  }
+
+  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
-      return ChartHelper.filterItems(items, FilterType.PERSISTENT);
+      return FilterHelper.getPersistentItems(items);
     } else {
       return items;
     }
@@ -214,15 +250,7 @@ class FreightExchange extends ChartBase {
 
   @Override
   protected boolean persistFilter() {
-    boolean filtered = false;
-    
-    for (OrderCargo item : items) {
-      if (!item.persistFilter()) {
-        filtered = true;
-      }
-    }
-    
-    return filtered;
+    return FilterHelper.persistFilter(items);
   }
 
   @Override
@@ -306,11 +334,7 @@ class FreightExchange extends ChartBase {
     data.add(unloadData);
     data.add(placeData);
 
-    for (ChartData cd : data) {
-      cd.prepare();
-    }
-
-    return FilterHelper.notEmptyData(data);
+    return data;
   }
 
   @Override
@@ -448,45 +472,7 @@ class FreightExchange extends ChartBase {
 
   @Override
   protected void resetFilter(FilterType filterType) {
-    for (OrderCargo item : items) {
-      item.setMatch(filterType, true);
-    }
-  }
-
-  @Override
-  protected boolean setFilter(FilterType filterType) {
-    boolean filtered = false;
-
-    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
-    if (selectedData.isEmpty()) {
-      resetFilter(filterType);
-      return filtered;
-    }
-    
-    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
-    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
-    
-    for (OrderCargo item : items) {
-      boolean match = (cargoMatcher == null) ? true : cargoMatcher.matches(item);
-      
-      if (match && placeMatcher != null) {
-        boolean ok = placeMatcher.matches(item);
-        if (!ok && hasCargoHandling(item.getCargoId())) {
-          ok = placeMatcher.matchesAnyOf(getCargoHandling(item.getCargoId()));
-        }
-
-        if (!ok) {
-          match = false;
-        }
-      }
-      
-      item.setMatch(filterType, match);
-      if (!match) {
-        filtered = true;
-      }
-    }
-    
-    return filtered;
+    FilterHelper.resetFilter(items, filterType);
   }
 
   private void addCustomerWidget(HasWidgets panel, IdentifiableWidget widget, Long customerId,
@@ -572,17 +558,13 @@ class FreightExchange extends ChartBase {
   private List<List<OrderCargo>> doLayout() {
     List<List<OrderCargo>> rows = Lists.newArrayList();
 
-    Long orderId = null;
+    Long lastOrder = null;
     List<OrderCargo> rowItems = Lists.newArrayList();
 
     for (OrderCargo item : items) {
-      if (isFiltered() && !item.matched(FilterType.PERSISTENT)) {
-        continue;
-      }
+      if (isItemVisible(item) && BeeUtils.intersects(getVisibleRange(), item.getRange())) {
 
-      if (BeeUtils.intersects(getVisibleRange(), item.getRange())) {
-
-        if (!Objects.equal(item.getOrderId(), orderId)
+        if (!Objects.equal(item.getOrderId(), lastOrder)
             || BeeUtils.intersects(rowItems, item.getRange())) {
 
           if (!rowItems.isEmpty()) {
@@ -590,7 +572,7 @@ class FreightExchange extends ChartBase {
             rowItems.clear();
           }
 
-          orderId = item.getOrderId();
+          lastOrder = item.getOrderId();
         }
 
         rowItems.add(item);

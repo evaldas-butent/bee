@@ -610,6 +610,18 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
+  protected void hide(CloseEvent.Cause cause, EventTarget eventTarget, boolean fireEvent) {
+    if (!isShowing()) {
+      return;
+    }
+    Stacking.removeContext(this);
+
+    resizeAnimation.setState(false, false);
+    if (fireEvent) {
+      CloseEvent.fire(this, cause, eventTarget);
+    }
+  }
+
   /**
    * @param event
    */
@@ -692,18 +704,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private void hide(boolean fireEvent) {
     hide(CloseEvent.Cause.SCRIPT, null, fireEvent);
-  }
-
-  private void hide(CloseEvent.Cause cause, EventTarget eventTarget, boolean fireEvent) {
-    if (!isShowing()) {
-      return;
-    }
-    Stacking.removeContext(this);
-
-    resizeAnimation.setState(false, false);
-    if (fireEvent) {
-      CloseEvent.fire(this, cause, eventTarget);
-    }
   }
 
   private boolean isDragging() {

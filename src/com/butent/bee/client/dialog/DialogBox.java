@@ -8,6 +8,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
@@ -132,7 +133,7 @@ public class DialogBox extends Popup implements Printable {
     BeeImage close = new BeeImage(imageResource, new ScheduledCommand() {
       @Override
       public void execute() {
-        close();
+        hide(CloseEvent.Cause.MOUSE, null, true);
       }
     });
 

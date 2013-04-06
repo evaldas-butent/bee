@@ -332,7 +332,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       int width = source.getClientWidth();
       int height = source.getClientHeight();
 
-      Element content = getContent().asWidget().getElement();
+      Element content = getContent().getRootWidget().asWidget().getElement();
       int delta = content.getScrollHeight() - content.getClientHeight();
       if (delta > 0) {
         height += delta;
@@ -340,7 +340,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
       StyleUtils.setSize(target, width, height);
       ok = true;
-
+      
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
       ok = getHeader().onPrint(source, target);
 

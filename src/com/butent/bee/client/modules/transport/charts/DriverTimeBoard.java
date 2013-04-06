@@ -216,15 +216,116 @@ class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected boolean filter(FilterType filterType) {
+    boolean filtered = false;
+
+    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
+    if (selectedData.isEmpty()) {
+      resetFilter(filterType);
+      return filtered;
+    }
+
+    ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
+
+    ChartData truckData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRUCK);
+    ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
+    ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+
+    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
+    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
+
+    boolean freightRequired = cargoMatcher != null || placeMatcher != null;
+    boolean tripRequired = freightRequired || truckData != null || trailerData != null
+        || tripData != null;
+
+    for (Driver driver : drivers) {
+      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName());
+
+      boolean hasTrips = driverMatch && driverTrips.containsKey(driver.getId());
+      if (driverMatch && !hasTrips && tripRequired) {
+        driverMatch = false;
+      }
+
+      if (driverMatch && hasTrips) {
+        int tripCount = 0;
+
+        for (DriverTrip driverTrip : driverTrips.get(driver.getId())) {
+          Long tripId = driverTrip.tripId;
+          Trip trip = trips.get(tripId);
+          if (trip == null) {
+            continue;
+          }
+
+          boolean tripMatch = FilterHelper.matches(tripData, tripId)
+              && FilterHelper.matches(truckData, trip.getTruckId())
+              && FilterHelper.matches(trailerData, trip.getTrailerId());
+
+          boolean hasFreights = tripMatch && freights.containsKey(tripId);
+          if (tripMatch && !hasFreights && freightRequired) {
+            tripMatch = false;
+          }
+
+          if (tripMatch && hasFreights) {
+            int freightCount = 0;
+
+            for (Freight freight : freights.get(tripId)) {
+              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
+
+              if (freightMatch && placeMatcher != null) {
+                boolean ok = placeMatcher.matches(freight);
+                if (!ok && hasCargoHandling(freight.getCargoId())) {
+                  ok = placeMatcher.matchesAnyOf(getCargoHandling(freight.getCargoId()));
+                }
+
+                if (!ok) {
+                  freightMatch = false;
+                }
+              }
+
+              freight.setMatch(filterType, freightMatch);
+              if (freightMatch) {
+                freightCount++;
+              } else {
+                filtered = true;
+              }
+            }
+
+            if (freightCount <= 0) {
+              tripMatch = false;
+            }
+          }
+
+          trip.setMatch(filterType, tripMatch);
+          if (tripMatch) {
+            tripCount++;
+          } else {
+            filtered = true;
+          }
+        }
+
+        if (tripCount <= 0) {
+          driverMatch = false;
+        }
+      }
+
+      driver.setMatch(filterType, driverMatch);
+      if (!driverMatch) {
+        filtered = true;
+      }
+    }
+
+    return filtered;
+  }
+
+  @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     if (isFiltered()) {
       List<HasDateRange> result = Lists.newArrayList();
 
       for (Driver driver : drivers) {
-        if (driver.matched(FilterType.PERSISTENT) && driverTrips.containsKey(driver.getId())) {
+        if (isItemVisible(driver) && driverTrips.containsKey(driver.getId())) {
           for (DriverTrip driverTrip : driverTrips.get(driver.getId())) {
-            Trip trip = trips.get(driverTrip.tripId);
-            if (trip != null && trip.matched(FilterType.PERSISTENT)) {
+            if (isItemVisible(trips.get(driverTrip.tripId))) {
               result.add(driverTrip);
             }
           }
@@ -418,27 +519,9 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   protected boolean persistFilter() {
-    boolean filtered = false;
-
-    for (Driver driver : drivers) {
-      if (!driver.persistFilter()) {
-        filtered = true;
-      }
-    }
-
-    for (Trip trip : trips.values()) {
-      if (!trip.persistFilter()) {
-        filtered = true;
-      }
-    }
-
-    for (Freight freight : freights.values()) {
-      if (!freight.persistFilter()) {
-        filtered = true;
-      }
-    }
-    
-    return filtered;
+    return FilterHelper.persistFilter(drivers)
+        | FilterHelper.persistFilter(trips.values())
+        | FilterHelper.persistFilter(freights.values());
   }
 
   @Override
@@ -578,11 +661,7 @@ class DriverTimeBoard extends ChartBase {
     data.add(unloadData);
     data.add(placeData);
 
-    for (ChartData cd : data) {
-      cd.prepare();
-    }
-
-    return FilterHelper.notEmptyData(data);
+    return data;
   }
 
   @Override
@@ -697,119 +776,9 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   protected void resetFilter(FilterType filterType) {
-    for (Driver driver : drivers) {
-      driver.setMatch(filterType, true);
-    }
-
-    for (Trip trip : trips.values()) {
-      trip.setMatch(filterType, true);
-    }
-
-    for (Freight freight : freights.values()) {
-      freight.setMatch(filterType, true);
-    }
-  }
-
-  @Override
-  protected boolean setFilter(FilterType filterType) {
-    boolean filtered = false;
-
-    List<ChartData> selectedData = FilterHelper.getSelectedData(getFilterData());
-    if (selectedData.isEmpty()) {
-      resetFilter(filterType);
-      return filtered;
-    }
-
-    ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
-
-    ChartData truckData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRUCK);
-    ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
-    ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
-
-    CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
-    PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
-
-    boolean freightRequired = cargoMatcher != null || placeMatcher != null;
-    boolean tripRequired = freightRequired || truckData != null || trailerData != null
-        || tripData != null;
-
-    for (Driver driver : drivers) {
-      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName());
-
-      boolean hasTrips = driverMatch && driverTrips.containsKey(driver.getId());
-      if (driverMatch && !hasTrips && tripRequired) {
-        driverMatch = false;
-      }
-
-      if (driverMatch && hasTrips) {
-        int tripCount = 0;
-
-        for (DriverTrip driverTrip : driverTrips.get(driver.getId())) {
-          Long tripId = driverTrip.tripId;
-          Trip trip = trips.get(tripId);
-          if (trip == null) {
-            continue;
-          }
-
-          boolean tripMatch = FilterHelper.matches(tripData, tripId)
-              && FilterHelper.matches(truckData, trip.getTruckId())
-              && FilterHelper.matches(trailerData, trip.getTrailerId());
-
-          boolean hasFreights = tripMatch && freights.containsKey(tripId);
-          if (tripMatch && !hasFreights && freightRequired) {
-            tripMatch = false;
-          }
-
-          if (tripMatch && hasFreights) {
-            int freightCount = 0;
-
-            for (Freight freight : freights.get(tripId)) {
-              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
-
-              if (freightMatch && placeMatcher != null) {
-                boolean ok = placeMatcher.matches(freight);
-                if (!ok && hasCargoHandling(freight.getCargoId())) {
-                  ok = placeMatcher.matchesAnyOf(getCargoHandling(freight.getCargoId()));
-                }
-
-                if (!ok) {
-                  freightMatch = false;
-                }
-              }
-
-              freight.setMatch(filterType, freightMatch);
-              if (freightMatch) {
-                freightCount++;
-              } else {
-                filtered = true;
-              }
-            }
-
-            if (freightCount <= 0) {
-              tripMatch = false;
-            }
-          }
-
-          trip.setMatch(filterType, tripMatch);
-          if (tripMatch) {
-            tripCount++;
-          } else {
-            filtered = true;
-          }
-        }
-
-        if (tripCount <= 0) {
-          driverMatch = false;
-        }
-      }
-
-      driver.setMatch(filterType, driverMatch);
-      if (!driverMatch) {
-        filtered = true;
-      }
-    }
-
-    return filtered;
+    FilterHelper.resetFilter(drivers, filterType);
+    FilterHelper.resetFilter(trips.values(), filterType);
+    FilterHelper.resetFilter(freights.values(), filterType);
   }
 
   @Override
@@ -949,9 +918,9 @@ class DriverTimeBoard extends ChartBase {
 
     for (int driverIndex = 0; driverIndex < drivers.size(); driverIndex++) {
       Driver driver = drivers.get(driverIndex);
-      Long driverId = driver.getId();
 
-      if (ChartHelper.isActive(driver, range) && driver.matched(FilterType.PERSISTENT)) {
+      if (isItemVisible(driver) && ChartHelper.isActive(driver, range)) {
+        Long driverId = driver.getId();
         ChartRowLayout layout = new ChartRowLayout(driverIndex);
 
         layout.addItems(driverId, getDriverTripsForLayout(driverId, range), range);
@@ -981,12 +950,8 @@ class DriverTimeBoard extends ChartBase {
     if (driverTrips.containsKey(driverId)) {
       if (isFiltered()) {
         for (DriverTrip driverTrip : driverTrips.get(driverId)) {
-          if (range != null && !BeeUtils.intersects(driverTrip.getRange(), range)) {
-            continue;
-          }
-          
-          Trip trip = trips.get(driverTrip.tripId);
-          if (trip != null && trip.matched(FilterType.PERSISTENT)) {
+          if (ChartHelper.hasRangeAndIsActive(driverTrip, range) 
+              && isItemVisible(trips.get(driverTrip.tripId))) {
             dts.add(driverTrip);
           }
         }

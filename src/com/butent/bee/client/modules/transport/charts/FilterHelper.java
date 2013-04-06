@@ -9,10 +9,10 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
@@ -21,6 +21,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -28,8 +29,13 @@ import java.util.List;
 
 class FilterHelper {
 
-  abstract static class DialogCallback extends Callback<DialogBox> {
-    abstract void onSelectionChange(HasWidgets dataContainer, ChartData.Type dataType);
+  interface DialogCallback {
+
+    void onClear();
+
+    void onFilter();
+
+    void onSelectionChange(HasWidgets dataContainer);
   }
 
   static final String STYLE_PREFIX = "bee-tr-chart-filter-";
@@ -58,6 +64,66 @@ class FilterHelper {
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
 
+  static void enableData(List<ChartData> allData, List<ChartData> tentativeData,
+      HasWidgets dataContainer) {
+
+    ChartData.Type typeOfSingleDataHavingSelection = null;
+    for (ChartData data : allData) {
+      if (data.hasSelection()) {
+        if (typeOfSingleDataHavingSelection == null) {
+          typeOfSingleDataHavingSelection = data.getType();
+        } else {
+          typeOfSingleDataHavingSelection = null;
+          break;
+        }
+      }
+    }
+    
+    FilterDataWidget dataWidget = null;
+
+    for (ChartData data : allData) {
+      ChartData.Type type = data.getType();
+
+      if (dataContainer != null) {
+        dataWidget = getDataWidget(dataContainer, type);
+      }
+
+      ChartData tentative = getDataByType(tentativeData, data.getType());
+
+      int size = data.getItems().size();
+      boolean changed = false;
+
+      for (int i = 0; i < size; i++) {
+        ChartData.Item item = data.getItems().get(i);
+
+        boolean itemEnabled;
+        if (typeOfSingleDataHavingSelection != null && typeOfSingleDataHavingSelection == type) {
+          itemEnabled = true;
+        } else if (tentative == null || tentative.isEmpty()) {
+          itemEnabled = false;
+        } else {
+          itemEnabled = tentative.contains(item.getName());
+        }
+
+        boolean selected = item.isSelected();
+
+        if (data.setItemEnabled(item, itemEnabled) && dataWidget != null) {
+          if (itemEnabled) {
+            dataWidget.addItem(item, i);
+          } else {
+            dataWidget.removeItem(i, selected);
+          }
+
+          changed = true;
+        }
+      }
+
+      if (changed && dataWidget != null) {
+        dataWidget.refresh();
+      }
+    }
+  }
+
   static ChartData getDataByType(Collection<ChartData> data, ChartData.Type type) {
     if (data != null && type != null) {
       for (ChartData cd : data) {
@@ -76,6 +142,22 @@ class FilterHelper {
       }
     }
     return null;
+  }
+
+  static <T extends Filterable & HasDateRange> List<HasDateRange> getPersistentItems(
+      Collection<T> items) {
+
+    List<HasDateRange> result = Lists.newArrayList();
+    if (items == null) {
+      return result;
+    }
+
+    for (T item : items) {
+      if (item != null && item.matched(FilterType.PERSISTENT)) {
+        result.add(item);
+      }
+    }
+    return result;
   }
 
   static List<ChartData> getSelectedData(Collection<ChartData> data) {
@@ -129,20 +211,16 @@ class FilterHelper {
     return result;
   }
 
-  static void openDialog(List<ChartData> filterData, final DialogCallback callback) {
-    boolean ok = false;
+  static void openDialog(final List<ChartData> filterData, final DialogCallback callback) {
     int dataCounter = 0;
 
     for (ChartData data : filterData) {
-      if (data.getNumberOfEnabledItems() > 1) {
-        ok = true;
-      }
       if (!data.isEmpty()) {
         dataCounter++;
       }
     }
 
-    if (!ok) {
+    if (dataCounter <= 0) {
       BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.tooLittleData());
       return;
     }
@@ -183,13 +261,15 @@ class FilterHelper {
     SelectionHandler<ChartData.Type> selectionHandler = new SelectionHandler<ChartData.Type>() {
       @Override
       public void onSelection(SelectionEvent<ChartData.Type> event) {
-        callback.onSelectionChange(dataContainer, event.getSelectedItem());
+        callback.onSelectionChange(dataContainer);
       }
     };
 
     int dataIndex = 0;
     for (ChartData data : filterData) {
       if (!data.isEmpty()) {
+        data.saveState();
+
         FilterDataWidget dataWidget = new FilterDataWidget(data);
         dataWidget.addSelectionHandler(selectionHandler);
 
@@ -208,7 +288,8 @@ class FilterHelper {
     BeeButton filter = new BeeButton(Global.CONSTANTS.doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        callback.onSuccess(dialog);
+        dialog.close();
+        callback.onFilter();
       }
     });
     filter.addStyleName(STYLE_COMMAND_FILTER);
@@ -222,10 +303,22 @@ class FilterHelper {
             ((FilterDataWidget) widget).reset(true);
           }
         }
+        callback.onClear();
       }
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
+
+    dialog.addCloseHandler(new CloseEvent.Handler() {
+      @Override
+      public void onClose(CloseEvent event) {
+        if (event.isUserCaused()) {
+          for (ChartData data : filterData) {
+            data.restoreState();
+          }
+        }
+      }
+    });
 
     Simple dataWrapper = new Simple(dataContainer);
     dataWrapper.addStyleName(STYLE_DATA_WRAPPER);
@@ -247,15 +340,26 @@ class FilterHelper {
     filter.setFocus(true);
   }
 
-  static void persistFilter(Collection<? extends Filterable> items) {
-    for (Filterable item : items) {
-      item.persistFilter();
+  static boolean persistFilter(Collection<? extends Filterable> items) {
+    boolean filtered = false;
+
+    if (items != null) {
+      for (Filterable item : items) {
+        if (item != null && !item.persistFilter()) {
+          filtered = true;
+        }
+      }
     }
+    return filtered;
   }
-  
+
   static void resetFilter(Collection<? extends Filterable> items, FilterType filterType) {
-    for (Filterable item : items) {
-      item.setMatch(filterType, true);
+    if (items != null && filterType != null) {
+      for (Filterable item : items) {
+        if (item != null) {
+          item.setMatch(filterType, true);
+        }
+      }
     }
   }
 }

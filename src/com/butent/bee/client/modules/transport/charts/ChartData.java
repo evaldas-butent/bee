@@ -22,6 +22,9 @@ class ChartData {
     private boolean selected = false;
     private boolean enabled = true;
 
+    private boolean wasSelected;
+    private boolean wasEnabled;
+
     private Item(String name, Long id) {
       this.name = name;
       this.id = id;
@@ -66,6 +69,16 @@ class ChartData {
 
     private void increment() {
       count++;
+    }
+
+    private void restoreState() {
+      selected = wasSelected;
+      enabled = wasEnabled;
+    }
+
+    private void saveState() {
+      wasSelected = selected;
+      wasEnabled = enabled;
     }
 
     private void setEnabled(boolean enabled) {
@@ -149,7 +162,7 @@ class ChartData {
       add(item.getCaption(), (long) item.ordinal());
     }
   }
-  
+
   void clear() {
     items.clear();
 
@@ -161,11 +174,11 @@ class ChartData {
     if (e == null) {
       return false;
     }
-    
+
     long id = e.ordinal();
     return contains(id);
   }
-  
+
   boolean contains(Long id) {
     if (id == null) {
       return false;
@@ -182,7 +195,7 @@ class ChartData {
   boolean contains(String name) {
     return find(name) != null;
   }
-  
+
   void deselectAll() {
     if (getNumberOfSelectedItems() > 0) {
       for (Item item : items) {
@@ -212,7 +225,21 @@ class ChartData {
       setNumberOfDisabledItems(0);
     }
   }
-  
+
+  Collection<String> getDisabledNames() {
+    List<String> names = Lists.newArrayList();
+
+    if (getNumberOfDisabledItems() > 0) {
+      for (Item item : items) {
+        if (!item.isEnabled()) {
+          names.add(item.name);
+        }
+      }
+    }
+
+    return names;
+  }
+
   List<Item> getItems() {
     return items;
   }
@@ -220,7 +247,7 @@ class ChartData {
   int getNumberOfEnabledItems() {
     return size() - getNumberOfDisabledItems();
   }
-  
+
   int getNumberOfEnabledUnselectedItems() {
     return size() - getNumberOfSelectedItems() - getNumberOfDisabledItems();
   }
@@ -260,7 +287,7 @@ class ChartData {
   Type getType() {
     return type;
   }
-  
+
   boolean hasSelection() {
     return getNumberOfSelectedItems() > 0;
   }
@@ -275,6 +302,33 @@ class ChartData {
     }
   }
 
+  void restoreState() {
+    if (!isEmpty()) {
+      int cntSelected = 0;
+      int cntDisabled = 0;
+
+      for (Item item : items) {
+        item.restoreState();
+
+        if (item.isSelected()) {
+          cntSelected++;
+        }
+        if (!item.isEnabled()) {
+          cntDisabled++;
+        }
+      }
+
+      setNumberOfSelectedItems(cntSelected);
+      setNumberOfDisabledItems(cntDisabled);
+    }
+  }
+
+  void saveState() {
+    for (Item item : items) {
+      item.saveState();
+    }
+  }
+
   void selectAll() {
     if (getNumberOfSelectedItems() < size()) {
       for (Item item : items) {
@@ -284,15 +338,19 @@ class ChartData {
     }
   }
 
+  boolean setEnabled(String name, boolean enabled) {
+    return setItemEnabled(find(name), enabled);
+  }
+
   boolean setItemEnabled(Item item, boolean enabled) {
     if (item != null && item.isEnabled() != enabled) {
       item.setEnabled(enabled);
       setNumberOfDisabledItems(getNumberOfDisabledItems() + (enabled ? -1 : 1));
-      
+
       if (!enabled) {
         setItemSelected(item, false);
       }
-      
+
       return true;
     } else {
       return false;
@@ -320,7 +378,7 @@ class ChartData {
   boolean setSelected(String name, boolean selected) {
     return setItemSelected(find(name), selected);
   }
-  
+
   private Item find(String name) {
     for (Item item : items) {
       if (Objects.equal(item.name, name)) {
