@@ -27,6 +27,7 @@
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" alias="OrderDate" editable="true" />
         <SimpleColumn name="OrderNo" />
+        <SimpleColumn name="Shipper" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
         <SimpleColumn name="Notes" alias="OrderNotes" label="Maršrutas" editable="true" />
       
@@ -53,8 +54,7 @@
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" />
         </SimpleJoin>
-        <SimpleColumn name="Place" alias="LoadingPlace" label="Pakrovimo vieta" editable="true" />
-        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="Pakrovimo terminalas" editable="true" />
+        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="Transporto Nr." editable="true" />
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
@@ -63,8 +63,7 @@
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
-        <SimpleColumn name="Place" alias="UnloadingPlace" label="Iškrovimo vieta" editable="true" />
-        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="Iškrovimo terminalas" editable="true" />
+        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="Transporto Nr.2" editable="true" />
       </SimpleJoin>
 
       <SimpleColumn name="Description" editable="true" />

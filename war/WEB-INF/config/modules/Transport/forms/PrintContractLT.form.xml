@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintContractLT">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" viewName="PrintContract" caption="Sutartis"
+  enabledActions="close" width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <TextLabel source="Number" style="text-align:center; &bold;">
+      <renderToken source="Number" prefix="Krovinio pervežimo sutartis Nr. " />
+    </TextLabel>
+    <DateLabel source="Date" style="text-align:center;" />
+
+    <Table class="&form;-table" style="&section;">
+      <row>
+      <cell style="vertical-align:top;">
+        <FlowPanel>
+          <TextLabel source="ForwarderName" style="&bold;">
+            <renderToken source="ForwarderName" prefix="Vežėjas: " />
+          </TextLabel>
+          <TextLabel source="ForwarderCode">
+            <renderToken source="ForwarderCode" prefix="Įmonės kodas: " />
+          </TextLabel>
+          <TextLabel source="ForwarderVATCode">
+            <renderToken source="ForwarderVATCode" prefix="PVM kodas: " />
+          </TextLabel>
+          <TextLabel source="ForwarderAddress">
+            <renderToken source="ForwarderAddress" prefix="Adresas: " />
+            <renderToken source="ForwarderCity" prefix=", " />
+            <renderToken source="ForwarderCountry" prefix=", " />
+            <renderToken source="ForwarderPostIndex" prefix=", " />
+          </TextLabel>
+          <TextLabel source="ForwarderPhone">
+            <renderToken source="ForwarderPhone" prefix="Tel: " suffix=" " />
+            <renderToken source="ForwarderMobile" prefix="Mob: " suffix=" " />
+            <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
+          </TextLabel>
+          <TextLabel source="ForwarderEmail">
+            <renderToken source="ForwarderEmail" prefix="El.paštas: " />
+          </TextLabel>
+        </FlowPanel>
+      </cell>
+        
+      <FlowPanel>
+        <TextLabel source="CompanyName" style="&bold;">
+          <renderToken source="CompanyName" />
+        </TextLabel>
+        <TextLabel source="CompanyCode">
+          <renderToken source="CompanyCode" prefix="Įmonės kodas: " />
+        </TextLabel>
+        <TextLabel source="CompanyVATCode">
+          <renderToken source="CompanyVATCode" prefix="PVM kodas: " />
+        </TextLabel>
+        <TextLabel source="CompanyAddress">
+          <renderToken source="CompanyAddress" prefix="Adresas: " />
+          <renderToken source="CompanyCity" prefix=", " />
+          <renderToken source="CompanyCountry" prefix=", " />
+          <renderToken source="CompanyPostIndex" prefix=", " />
+        </TextLabel>
+        <TextLabel source="CompanyPhone">
+          <renderToken source="CompanyPhone" prefix="Tel: " suffix=" " />
+          <renderToken source="CompanyMobile" prefix="Mob: " suffix=" " />
+          <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
+        </TextLabel>
+        <TextLabel source="CompanyEmail">
+          <renderToken source="CompanyEmail" prefix="El.paštas: " />
+        </TextLabel>
+      </FlowPanel>
+      </row>
+      <row>
+        <Label html="Krovinys" />
+        <TextLabel source="Description" style="white-space:pre-wrap;" />
+      </row>
+      <row>
+        <Label html="Pasikrovimo vieta" />
+        <TextLabel source="LoadingPlace" />
+      </row>
+      <row>
+        <Label html="Pasikrovimo data" />
+        <DateLabel source="LoadingDate" />
+      </row>
+      <row>
+        <Label html="Pristatymo vieta" />
+        <TextLabel source="UnloadingPlace" />
+      </row>
+      <row>
+        <Label html="Pristatymo data" />
+        <DateLabel source="UnloadingDate" />
+      </row>
+      <row>
+        <Label html="Automobilio numeris" />
+        <TextLabel source="ForwarderVehicle" />
+      </row>
+      <row>
+        <Label html="Kaina" />
+        <FlowPanel>
+          <TextLabel source="Amount">
+            <renderToken source="Amount" suffix=" " format="#.00" />
+            <renderToken source="CurrencyName" />
+          </TextLabel>
+          <TextLabel source="Note" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <FlowPanel>
+            <Label html="Papildomos instrukcijos:" />
+            <TextLabel source="Notes" style="white-space:pre-wrap;" />
+          </FlowPanel>
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <HtmlPanel style="&section;">
+            <span style="white-space:pre-wrap;">Šalių įsipareigojimai 
+1. Pervežimas vykdomas CMR Konvencijos sąlygomis. Vežėjas šios Pervežimo sutarties vykdymo metu privalo turėti galiojantį vežėjo CMR draudimo polisą, licenсijas ir leidimus, reikalingus teisėtam aukščiau nurodyto pervežimo vykdymui. 
+2. Užsakovas įsipareigoja organizuoti pakrovimą ir muitinės įforminimą (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į pakrovimo vietą momento, įskaitant krovinio tvirtinimo ir plombavimo darbus. 
+3. Užsakovas įsipareigoja įvykdyti iškrovimą ir muitinės formalumus (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į muitinės paskirties vietą arba pristatymo vietą momento. 
+4. Jeigu 2-3 p. nurodyti terminai yra viršijami, Užsakovas apmoka Vežėjui prastovas - po 100 eur už kiekvieną darbo dieną. 
+5. Vežėjas privalo nedelsiant pranešti Užsakovui apie visas pervežimo aplinkybes, kai įtaria grėsmę savalaikiam ir saugiam krovinio pristatymui.
+6. Vežėjas įsipareigoja pakrovimui/iškrovimui suteikti švarią, be šalutinių kvapų, geros techninės būklės transporto priemonę. Nepateikus transporto priemones pasikrovimui, Vežėjas sumoka bauda 20 % nuo pervežimo kainos. Vežėjas įsipareigoja turėti su savimi TIR Carnet (esant būtinybei), tarptautinį CMR važtaraštį, galiojantį CMR draudimo polisą, visus tarptautiniam pervežimui būtinus leidimus.
+7. Vežėjas įsipareigoja atvykti į iškrovimo/pakrovimo vietą nustatytu laiku. Vežėjas privalo kontroliuoti pakrovimą/iškrovimą. Krovinys turi atitikti CMR įrašus. Vežėjas atsako už sugadintą krovinį, neteisingą krovinio išdėstymą. Jeigu Vežėjas pavėluoja į pakrovimą, jis privalo sumokėti baudą 100 eur už kiekvieną darbo dieną. 
+8. Vežėjas yra atsakingas už krovinį nuo jo priėmimo iki perdavimo momento, o taip pat krovinio pristatymo vėlavimą pagal CMR Konvencijos sąlygas. Vežėjas nėra atsakingas už krovinio kiekį, jeigu jis pristatytas su nepažeistomis plombomis, už vidinę būklę ir krovinio vienetų kiekį, jeigu krovinio įpakavimas nepažeistas. 
+9. Užsakovas yra atsakingas už tinkamą krovinio pateikimą pakrovimui, pakrovimą, iškrovimą, transporto priemonės pažeidimą pakrovimo ar iškrovimo metu, muitinės ir kitų formalumų įvykdymą, dokumentų įforminimą, Vežėjo instruktavimą dėl krovinio savybių ir priemonių, užtikrinančių saugų krovinio transportavimą (krovinio tvirtinimas ir t.t.), Vežėjo darbo apmokėjimą ir t.t.
+10. Užsakovas turi teisę atšaukti užsakymą likus12 val. iki pasikrovimo. Kitu atveju už krovinio nepateikimą pakrovimui Užsakovas Vežėjui sumoka baudą 20 % nuo pervežimo kainos, jei nesutariama kitaip.
+11. Vežėjas neturi teisės vykdyti jokių apmokėjimų užsakovo vardu, negavęs įgaliojimo patvirtinančio fakso.</span>
+          </HtmlPanel>
+        </cell>
+      </row>
+    </Table>
+    
+    <Label html="Ši sutartis, pasirašyta faksu turi tokią pačią juridinę galią kaip ir originalas. Prašome patvirtinti sutartį."
+           style="&section; font-style:italic; font-size:x-small;" />
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Vežėjas" />
+        <Label html="Užsakovas" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+      </row>
+      <row>
+        <FlowPanel />
+        <TextLabel source="Position" style="margin-top:5px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+          <renderToken source="Position" prefix=", " />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

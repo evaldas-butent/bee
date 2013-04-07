@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintContractRU">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" viewName="PrintContract" caption="Договор"
+  enabledActions="close" width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <TextLabel source="Number" style="text-align:center; &bold;">
+      <renderToken source="Number" prefix="Договор перевозки Но. " />
+    </TextLabel>
+    <DateLabel source="Date" style="text-align:center;" />
+
+    <Table class="&form;-table" style="&section;">
+      <row>
+      <cell style="vertical-align:top;">
+        <FlowPanel>
+          <TextLabel source="ForwarderName" style="&bold;">
+            <renderToken source="ForwarderName" prefix="Перевозчик: " />
+          </TextLabel>
+          <TextLabel source="ForwarderCode">
+            <renderToken source="ForwarderCode" prefix="Код предприятия: " />
+          </TextLabel>
+          <TextLabel source="ForwarderVATCode">
+            <renderToken source="ForwarderVATCode" prefix="НДС код: " />
+          </TextLabel>
+          <TextLabel source="ForwarderAddress">
+            <renderToken source="ForwarderAddress" prefix="Адрес: " />
+            <renderToken source="ForwarderCity" prefix=", " />
+            <renderToken source="ForwarderCountry" prefix=", " />
+            <renderToken source="ForwarderPostIndex" prefix=", " />
+          </TextLabel>
+          <TextLabel source="ForwarderPhone">
+            <renderToken source="ForwarderPhone" prefix="Телефон: " suffix=" " />
+            <renderToken source="ForwarderMobile" prefix="Мобильный: " suffix=" " />
+            <renderToken source="ForwarderFax" prefix="Факс: " suffix=" " />
+          </TextLabel>
+          <TextLabel source="ForwarderEmail">
+            <renderToken source="ForwarderEmail" prefix="Эл. почта: " />
+          </TextLabel>
+        </FlowPanel>
+      </cell>
+        
+      <FlowPanel>
+        <TextLabel source="CompanyName" style="&bold;">
+          <renderToken source="CompanyName" />
+        </TextLabel>
+        <TextLabel source="CompanyCode">
+          <renderToken source="CompanyCode" prefix="Код: " />
+        </TextLabel>
+        <TextLabel source="CompanyVATCode">
+          <renderToken source="CompanyVATCode" prefix="НДС код: " />
+        </TextLabel>
+        <TextLabel source="CompanyAddress">
+          <renderToken source="CompanyAddress" prefix="Адрес: " />
+          <renderToken source="CompanyCity" prefix=", " />
+          <renderToken source="CompanyCountry" prefix=", " />
+          <renderToken source="CompanyPostIndex" prefix=", " />
+        </TextLabel>
+        <TextLabel source="CompanyPhone">
+          <renderToken source="CompanyPhone" prefix="Телефон: " suffix=" " />
+          <renderToken source="CompanyMobile" prefix="Мобильный: " suffix=" " />
+          <renderToken source="CompanyFax" prefix="Факс: " suffix=" " />
+        </TextLabel>
+        <TextLabel source="CompanyEmail">
+          <renderToken source="CompanyEmail" prefix="Эл. почта: " />
+        </TextLabel>
+      </FlowPanel>
+      </row>
+      <row>
+        <Label html="Груз" />
+        <TextLabel source="Description" style="white-space:pre-wrap;" />
+      </row>
+      <row>
+        <Label html="Место погрузки" />
+        <TextLabel source="LoadingPlace" />
+      </row>
+      <row>
+        <Label html="Дата погрузки" />
+        <DateLabel source="LoadingDate" />
+      </row>
+      <row>
+        <Label html="Место поставки" />
+        <TextLabel source="UnloadingPlace" />
+      </row>
+      <row>
+        <Label html="Дата поставки" />
+        <DateLabel source="UnloadingDate" />
+      </row>
+      <row>
+        <Label html="Номер автомобиля" />
+        <TextLabel source="ForwarderVehicle" />
+      </row>
+      <row>
+        <Label html="Цена" />
+        <FlowPanel>
+          <TextLabel source="Amount">
+            <renderToken source="Amount" suffix=" " format="#.00" />
+            <renderToken source="CurrencyName" />
+          </TextLabel>
+          <TextLabel source="Note" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <FlowPanel>
+            <Label html="Дополнительные инструкции:" />
+            <TextLabel source="Notes" style="white-space:pre-wrap;" />
+          </FlowPanel>
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <HtmlPanel style="&section;">
+            <span style="white-space:pre-wrap;">Обязательства и ответственность Клиента:
+1.Перевозка осуществляется на условиях Конвенции CMR. Перевозчик во время выполнения данного Договора обязан иметь действующий полис страхования ответственности перевозчика, лицензии и необходимые разрешения для законного выполнения вышеуказанной перевозки. 
+2. Заказчик обязывается организовать погрузку и таможенное оформление (при необходимости) в течение 24 часов (НВС 48 часов) с момента прибытия а/м на место погрузки, включая работы по креплению и пломбированию. 
+3. Заказчик обязывается осуществить выгрузку и таможенную очистку груза (при необходимости) в течение 24 часов (НВС 48 часов) с момента прибытия а/м на таможенный пост места назначения или на место доставки. 
+4. В случае превышения терминов, указанных в п. 2-3, Заказчик оплачивает простой Перевозчику в размере 100 еур. 
+5. Перевозчик обязан немедленно сообщать Заказчику обо всех возникших в течение перевозки обстоятельствах, которые влияют на своевременную и сохранную доставку груза.
+6. Перевозчик обязуется предоставить транспортное средство под загрузку/разгрузку в хорошем техническом состоянии, чистое, без посторонних запахов. В случае отказа от перевозки груза позднее, чем за 24 час. до момента погрузки груза, Перевозчик платит штраф в размере 20 % от договорной провозной платы, но не менее, чем 100 евро (EURО) и от отказа за заявку. Перевозчик обязуется иметь с собой TIR Carnet, CMR, действующий страховой полис, все требующиеся разрешения для международной перевозки. 
+7. Перевозчик обязуется прибыть на место загрузки/разгрузки в указанное время.. Перевозчик обязан следить за загрузкой/разгрузкой. Груз должен соответствовать записям в CMR. Перевозчик несёт ответственность за испорченный груз, неправильное расположение груза. В случае опоздания на загрузку перевозчик оплачивает штраф в размере 100 eur /рабочий день .
+8. Перевозчик несет ответственность за груз с момента его принятия к перевозке и до момента доставки, а также за просрочку в доставке согласно условиям Конвенции CMR. Перевозчик не несет ответственности за количество груза, если груз доставлен с исправными пломбами, за внутреннее состояние и количество мест груза, если упаковка груза не нарушена. 
+9. Заказчик несет ответственность за подачу груза к погрузке, погрузку, выгрузку, повреждение транспортного средства во время погрузки или выгрузки, выполнение таможенных и иных формальностей, оформление документов, инструктирование Перевозчика о свойствах груза и мерах, необходимых для сохранной перевозки груза (крепление и т.д.), оплату Перевозчику и т.д..
+10. Заказчик имеет право отказаться от поргузки не менее чем за 12 часов до назначенного времени. В другом случае за непредъявление груза к погрузке Заказчик уплачивает Перевозчику штраф в размере 20 % от фрахта, если небудет соглосована иначе. 
+11. Перевозчик не имеет права делать никаких платежей от лица заказчика, не получив факса, подтверждающего полномочия.</span>
+          </HtmlPanel>
+        </cell>
+      </row>
+    </Table>
+    
+    <Label html="ru tekstas apie pasirasyma faksu"
+           style="&section; font-style:italic; font-size:x-small;" />
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Перевозчик" />
+        <Label html="Заказчик" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(фамилия, имя, должность и подпись)" />
+        <Label html="(фамилия, имя, должность и подпись)" />
+      </row>
+      <row>
+        <FlowPanel />
+        <TextLabel source="Position" style="margin-top:5px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

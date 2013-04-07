@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="PrintContract" source="CargoTrips" caption="Sutartis"
+  >
+  <Columns>
+    <SimpleJoin joinType="LEFT" name="Assessor">
+      <SimpleJoin name="Manager" joinType="INNER">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleColumn name="Position" />
+
+          <SimpleJoin joinType="LEFT" name="Company">
+            <SimpleColumn name="Name" alias="CompanyName" />
+            <SimpleColumn name="Code" alias="CompanyCode" />
+            <SimpleColumn name="VATCode" alias="CompanyVATCode" />
+
+            <SimpleJoin name="Contact" joinType="LEFT">
+              <SimpleColumn name="Address" alias="CompanyAddress" />
+              <SimpleColumn name="PostIndex" alias="CompanyPostIndex" />
+              <SimpleJoin name="City" joinType="LEFT">
+                <SimpleColumn name="Name" alias="CompanyCity" />
+              </SimpleJoin>
+              <SimpleJoin name="Country" joinType="LEFT">
+                <SimpleColumn name="Name" alias="CompanyCountry" />
+              </SimpleJoin>
+              <SimpleColumn name="Phone" alias="CompanyPhone" />
+              <SimpleColumn name="Mobile" alias="CompanyMobile" />
+              <SimpleColumn name="Fax" alias="CompanyFax" />
+              <SimpleJoin name="Email" joinType="LEFT">
+                <SimpleColumn name="Email" alias="CompanyEmail" />
+              </SimpleJoin>
+            </SimpleJoin>
+          </SimpleJoin>
+
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+
+          <SimpleJoin name="Contact" joinType="LEFT">
+            <SimpleColumn name="Phone" />
+            <SimpleColumn name="Mobile" />
+            <SimpleJoin name="Email" joinType="LEFT">
+              <SimpleColumn name="Email" />
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleJoin joinType="LEFT" name="Cargo">
+      <SimpleColumn name="Description" />
+    </SimpleJoin>
+
+    <SimpleJoin joinType="LEFT" name="Trip">
+      <SimpleJoin joinType="LEFT" name="Forwarder">
+        <SimpleColumn name="Name" alias="ForwarderName" />
+        <SimpleColumn name="Code" alias="ForwarderCode" />
+        <SimpleColumn name="VATCode" alias="ForwarderVATCode" />
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Address" alias="ForwarderAddress" />
+          <SimpleColumn name="PostIndex" alias="ForwarderPostIndex" />
+          <SimpleJoin name="City" joinType="LEFT">
+            <SimpleColumn name="Name" alias="ForwarderCity" />
+          </SimpleJoin>
+          <SimpleJoin name="Country" joinType="LEFT">
+            <SimpleColumn name="Name" alias="ForwarderCountry" />
+          </SimpleJoin>
+          <SimpleColumn name="Phone" alias="ForwarderPhone" />
+          <SimpleColumn name="Mobile" alias="ForwarderMobile" />
+          <SimpleColumn name="Fax" alias="ForwarderFax" />
+          <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="ForwarderEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="ForwarderVehicle" />
+      <SimpleColumn name="Notes" />
+    </SimpleJoin>
+
+    <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Place" alias="LoadingPlace" />
+    </SimpleJoin>
+
+    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Place" alias="UnloadingPlace" />
+    </SimpleJoin>
+
+    <SimpleJoin joinType="LEFT" name="CargoService">
+      <SimpleColumn name="Amount" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+      <SimpleColumn name="Date" />
+      <SimpleColumn name="Number" />
+      <SimpleColumn name="Note" />
+    </SimpleJoin>
+  </Columns>
+</View>

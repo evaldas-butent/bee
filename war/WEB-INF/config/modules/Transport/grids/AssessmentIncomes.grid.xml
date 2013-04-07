@@ -8,7 +8,7 @@
   newRowCaption="Naujos pajamos"
   >
   <columns>
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="Data" width="80" />
     <RelColumn name="ServiceName" caption="Paslauga" />
     <DataColumn name="Amount" caption="Suma" format="#.00">
       <style>

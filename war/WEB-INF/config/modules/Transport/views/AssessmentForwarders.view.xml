@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AssessmentForwarders" source="CargoTrips" caption="Vežėjai"
+  >
+  <Columns>
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Trip" />
+    <SimpleColumn name="Assessor" />
+
+    <SimpleJoin joinType="LEFT" name="Trip">
+      <SimpleColumn name="Expedition" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Expedition">
+        <SimpleColumn name="Name" alias="ExpeditionType" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Forwarder" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Forwarder">
+        <SimpleColumn name="Name" alias="ForwarderName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="ForwarderVehicle" editable="true" />
+      <SimpleColumn name="Notes" editable="true" />
+    </SimpleJoin>
+
+    <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Place" alias="LoadingPlace" />
+      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+    </SimpleJoin>
+
+    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Place" alias="UnloadingPlace" />
+      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+    </SimpleJoin>
+
+    <SimpleJoin joinType="LEFT" name="CargoService">
+      <SimpleColumn name="Cargo" alias="ServiceCargo" />
+      <SimpleColumn name="Assessor" alias="ServiceAssessor" />
+      <SimpleColumn name="Expense" />
+
+      <SimpleColumn name="Service" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Service">
+        <SimpleColumn name="Name" alias="ServiceName" />
+      </SimpleJoin>
+      <SimpleColumn name="Amount" editable="true" />
+      <SimpleColumn name="Currency" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+      <SimpleColumn name="Company" editable="true" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+      </SimpleJoin>
+      <SimpleColumn name="Date" editable="true" />
+      <SimpleColumn name="Number" editable="true" />
+      <SimpleColumn name="Note" editable="true" />
+    </SimpleJoin>
+  </Columns>
+</View>

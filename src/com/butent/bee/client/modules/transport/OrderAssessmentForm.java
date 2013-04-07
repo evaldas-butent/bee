@@ -20,6 +20,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.ChildGrid;
@@ -30,6 +31,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -41,9 +43,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -88,6 +92,83 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     }
   }
 
+  private class ForwardersGrid extends AssessmentGrid {
+    private static final String SERVICE_CARGO = "ServiceCargo";
+    private static final String SERVICE_ASSESSOR = "ServiceAssessor";
+    private static final String COMPANY = "Company";
+    private static final String FORWARDER = "Forwarder";
+
+    @Override
+    public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
+      final String expeditionTrips = "ExpeditionTrips";
+      final long tripId = row.getLong(presenter.getGridView().getDataIndex(COL_TRIP));
+
+      Queries.deleteRow(expeditionTrips, tripId, 0, new IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(expeditionTrips, tripId));
+          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(), row.getId()));
+        }
+      });
+      return DeleteMode.CANCEL;
+    }
+
+    @Override
+    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+        Collection<RowInfo> selectedRows, DeleteMode defMode) {
+      return DeleteMode.SINGLE;
+    }
+
+    @Override
+    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+      List<BeeColumn> columns = event.getColumns();
+      List<String> values = event.getValues();
+
+      columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
+      values.add(values.get(DataUtils.getColumnIndex(COL_CARGO, columns)));
+
+      columns.add(DataUtils.getColumn(SERVICE_ASSESSOR, gridView.getDataColumns()));
+      values.add(values.get(DataUtils.getColumnIndex(COL_ASSESSOR, columns)));
+
+      columns.add(DataUtils.getColumn(COL_SERVICE_EXPENSE, gridView.getDataColumns()));
+      values.add(BooleanValue.S_TRUE);
+
+      if (DataUtils.getColumn(COMPANY, columns) == null) {
+        columns.add(DataUtils.getColumn(COMPANY, gridView.getDataColumns()));
+        values.add(values.get(DataUtils.getColumnIndex(FORWARDER, columns)));
+      }
+    }
+
+    @Override
+    public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
+      IsRow row = event.getNewRow();
+
+      if (!DataUtils.isId(row.getLong(gridView.getDataIndex(SERVICE_CARGO)))) {
+        List<BeeColumn> columns = event.getColumns();
+        List<String> oldValues = event.getOldValues();
+        List<String> newValues = event.getNewValues();
+
+        columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
+        oldValues.add(null);
+        newValues.add(row.getString(gridView.getDataIndex(COL_CARGO)));
+
+        columns.add(DataUtils.getColumn(SERVICE_ASSESSOR, gridView.getDataColumns()));
+        oldValues.add(null);
+        newValues.add(row.getString(gridView.getDataIndex(COL_ASSESSOR)));
+
+        columns.add(DataUtils.getColumn(COL_SERVICE_EXPENSE, gridView.getDataColumns()));
+        oldValues.add(null);
+        newValues.add(BooleanValue.S_TRUE);
+
+        if (DataUtils.getColumn(COMPANY, columns) == null) {
+          columns.add(DataUtils.getColumn(COMPANY, gridView.getDataColumns()));
+          oldValues.add(null);
+          newValues.add(row.getString(gridView.getDataIndex(FORWARDER)));
+        }
+      }
+    }
+  }
+
   private class ServicesGrid extends AssessmentGrid {
     final boolean expense;
 
@@ -104,7 +185,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     }
   }
 
-  private class AssessorGrid extends AssessmentGrid {
+  private class AssessorsGrid extends AssessmentGrid {
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, final IsRow activeRow,
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
@@ -154,6 +235,11 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
       newRow.setValue(gridView.getDataIndex(COL_ASSESSOR_NOTES),
           getFormView().getActiveRow().getString(getFormView().getDataIndex(COL_ASSESSOR_NOTES)));
 
+      int status = getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
+
+      if (AssessmentStatus.ACTIVE.is(status)) {
+        newRow.setValue(gridView.getDataIndex(COL_STATUS), status);
+      }
       return super.onStartNewRow(gridView, oldRow, newRow);
     }
 
@@ -276,8 +362,23 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
   }
 
   public static void doRowAction(final RowActionEvent event) {
-    if (BeeUtils.same(event.getOptions(), "open")) {
-      RowEditor.openRow(FORM_ORDER_ASSESSMENT, TBL_CARGO_ASSESSORS, event.getRow(), false, null);
+    if (event.hasView(TBL_CARGO_ASSESSORS)) {
+      // RowEditor.openRow(FORM_ORDER_ASSESSMENT, TBL_CARGO_ASSESSORS, event.getRow(), false, null);
+      RowEditor.openRow(FORM_ORDER_ASSESSMENT, Data.getDataInfo(TBL_CARGO_ASSESSORS),
+          event.getRowId(), false, null, null);
+
+    } else if (event.hasView("AssessmentForwarders")) {
+      Global.choice("Sutarties spausdinimas", "Pasirinkite kalbą",
+          Lists.newArrayList("LT", "RU", "EN"),
+          new ChoiceCallback() {
+            @Override
+            public void onSuccess(int value) {
+              String printView = "PrintContract";
+
+              RowEditor.openRow(printView + (value == 0 ? "LT" : (value == 1 ? "RU" : "EN")),
+                  Data.getDataInfo(printView), event.getRowId(), true, null, null);
+            }
+          });
     }
   }
 
@@ -336,14 +437,17 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     if (widget instanceof ChildGrid) {
       AssessmentGrid interceptor = null;
 
-      if (BeeUtils.same(name, "AssessmentExpenses")) {
+      if (BeeUtils.same(name, "AssessmentForwarders")) {
+        interceptor = new ForwardersGrid();
+
+      } else if (BeeUtils.same(name, "AssessmentExpenses")) {
         interceptor = new ServicesGrid(true);
 
       } else if (BeeUtils.same(name, "AssessmentIncomes")) {
         interceptor = new ServicesGrid(false);
 
       } else if (BeeUtils.same(name, TBL_CARGO_ASSESSORS)) {
-        interceptor = new AssessorGrid();
+        interceptor = new AssessorsGrid();
       }
       if (interceptor != null) {
         ChildGrid grid = ((ChildGrid) widget);
@@ -392,6 +496,13 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
         header.addCommandItem(cmdAnswered);
       }
       if (primary) {
+        if (AssessmentStatus.in(status, AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED)) {
+          header.addCommandItem(new BeeButton("Išankstinė S/F", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+            }
+          }));
+        }
         if (AssessmentStatus.in(status, AssessmentStatus.NEW, AssessmentStatus.ANSWERED)) {
           header.addCommandItem(cmdLost);
         }
@@ -425,18 +536,13 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
         cap.getElement().setInnerText(total != 0 ? BeeUtils.parenthesize(total) : "");
       }
     }
-    Widget tot = form.getWidgetByName("Total");
-    Widget curr = form.getWidgetByName("Currency");
-
-    if (tot != null) {
-      if (primary) {
-        updateTotal(form, row, tot);
-      } else {
-        tot.getElement().setInnerText(null);
-      }
+    if (primary) {
+      updateTotal(form, row, form.getWidgetByName("Total"));
     }
-    if (curr != null) {
-      curr.setVisible(primary);
+    Widget orderPanel = form.getWidgetByName("OrderPanel");
+
+    if (orderPanel != null) {
+      orderPanel.setVisible(primary);
     }
   }
 

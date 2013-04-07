@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintContractEN">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" viewName="PrintContract" caption="Contract"
+  enabledActions="close" width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <TextLabel source="Number" style="text-align:center; &bold;">
+      <renderToken source="Number" prefix="Freight transportation contract No. " />
+    </TextLabel>
+    <DateLabel source="Date" style="text-align:center;" />
+
+    <Table class="&form;-table" style="&section;">
+      <row>
+      <cell style="vertical-align:top;">
+        <FlowPanel>
+          <TextLabel source="ForwarderName" style="&bold;">
+            <renderToken source="ForwarderName" prefix="Carrier: " />
+          </TextLabel>
+          <TextLabel source="ForwarderCode">
+            <renderToken source="ForwarderCode" prefix="Company code: " />
+          </TextLabel>
+          <TextLabel source="ForwarderVATCode">
+            <renderToken source="ForwarderVATCode" prefix="VAT code: " />
+          </TextLabel>
+          <TextLabel source="ForwarderAddress">
+            <renderToken source="ForwarderAddress" prefix="Address: " />
+            <renderToken source="ForwarderCity" prefix=", " />
+            <renderToken source="ForwarderCountry" prefix=", " />
+            <renderToken source="ForwarderPostIndex" prefix=", " />
+          </TextLabel>
+          <TextLabel source="ForwarderPhone">
+            <renderToken source="ForwarderPhone" prefix="Phone: " suffix=" " />
+            <renderToken source="ForwarderMobile" prefix="Mobile: " suffix=" " />
+            <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
+          </TextLabel>
+          <TextLabel source="ForwarderEmail">
+            <renderToken source="ForwarderEmail" prefix="E-mail: " />
+          </TextLabel>
+        </FlowPanel>
+      </cell>
+        
+      <FlowPanel>
+        <TextLabel source="CompanyName" style="&bold;">
+          <renderToken source="CompanyName" />
+        </TextLabel>
+        <TextLabel source="CompanyCode">
+          <renderToken source="CompanyCode" prefix="Code: " />
+        </TextLabel>
+        <TextLabel source="CompanyVATCode">
+          <renderToken source="CompanyVATCode" prefix="VAT code: " />
+        </TextLabel>
+        <TextLabel source="CompanyAddress">
+          <renderToken source="CompanyAddress" prefix="Address: " />
+          <renderToken source="CompanyCity" prefix=", " />
+          <renderToken source="CompanyCountry" prefix=", " />
+          <renderToken source="CompanyPostIndex" prefix=", " />
+        </TextLabel>
+        <TextLabel source="CompanyPhone">
+          <renderToken source="CompanyPhone" prefix="Phone: " suffix=" " />
+          <renderToken source="CompanyMobile" prefix="Mobile: " suffix=" " />
+          <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
+        </TextLabel>
+        <TextLabel source="CompanyEmail">
+          <renderToken source="CompanyEmail" prefix="E-mail: " />
+        </TextLabel>
+      </FlowPanel>
+      </row>
+      <row>
+        <Label html="Load" />
+        <TextLabel source="Description" style="white-space:pre-wrap;" />
+      </row>
+      <row>
+        <Label html="Loading place" />
+        <TextLabel source="LoadingPlace" />
+      </row>
+      <row>
+        <Label html="Loading date" />
+        <DateLabel source="LoadingDate" />
+      </row>
+      <row>
+        <Label html="Delivery place" />
+        <TextLabel source="UnloadingPlace" />
+      </row>
+      <row>
+        <Label html="Delivery Date" />
+        <DateLabel source="UnloadingDate" />
+      </row>
+      <row>
+        <Label html="Car number" />
+        <TextLabel source="ForwarderVehicle" />
+      </row>
+      <row>
+        <Label html="Rates" />
+        <FlowPanel>
+          <TextLabel source="Amount">
+            <renderToken source="Amount" suffix=" " format="#.00" />
+            <renderToken source="CurrencyName" />
+          </TextLabel>
+          <TextLabel source="Note" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <FlowPanel>
+            <Label html="Additional instructions:" />
+            <TextLabel source="Notes" style="white-space:pre-wrap;" />
+          </FlowPanel>
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="2">
+          <HtmlPanel style="&section;">
+            <span style="white-space:pre-wrap;">1.Carriage is performed under conditions of CMR Convention. During performance of this Carriage Contract the Carrier must have a valid carrier’s CMR insurance policy, licenses and permits, necessary for the legal performance of above carriage.
+2. The Customer undertakes to organize loading and customs clearance (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at the loading place, including cargo fixing and sealing works. 
+3. The Customer undertakes to perform unloading and customs formalities (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at customs destination place or delivery place. 
+4. If the terms set out in clauses 2-3 ate exceeded, the Customer shall pay to the Carrier downtimes 100 eur for each working day. 
+5. The Carrier shall immediately inform the Customer about all circumstances of the carriage, when he suspects the threat to timely and safely delivery of cargo.
+6. The Carrier undertakes to provide for loading/unloading a clean, without additional smells vehicle of a good technical condition. Тhe Carrier will be obligated to pay fine of 20 % of trucking price, for not providig truck for loading. The Carrier must have TIR Carnet with him (if needed), international CMR consignment, valid CMR insurance policy, all permits necessary for international carriage.
+7. The carrier is obliged to arrive at the loading/unloading point at a specified time. Date and time must be specified in the CMR. The carrier is obliged to monitor loading/unloading. The cargo must match the records in the CMR. The carrier is responsible for damaged cargo, incorrect placement of the cargo. In case of delay to the loading point the carrier pays a fine in value of 100 eur for each working day.
+8. The Carrier undertakes to arrive at loading/unloading place on the indicated time. The date and time must be indicated in CMR consignment. The Carrier must supervise loading/unloading. Cargo must conform to the data written in CMR consignment. The Carrier is liable for damaged cargo, improper placement of cargo in a vehicle. 
+9. The Carrier is liable for cargo from the moment of its acceptance till transfer, as well as delay of cargo delivery under conditions of CMR Convention. The Carrier shall not be liable for quantity of cargo, if it is delivered without damaged seals, for internal state and quantity of units of cargo, if cargo packing is not damaged.
+10. The Customers may cancel order 12 hours before loading. Otherwise, the Customer shall pay a fine to the Carrier for non-submission of cargo for loading 20 % from the carriage price, unless otherwise agreed.
+11. The Carrier does not have the right to perform any payments on behalf of the Customer without receipt of fax, confirming such authority.</span>
+          </HtmlPanel>
+        </cell>
+      </row>
+    </Table>
+    
+    <Label html="en tekstas apie pasirasyma faksu"
+           style="&section; font-style:italic; font-size:x-small;" />
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Carrier" />
+        <Label html="Customer" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(name, surname, position and signature)" />
+        <Label html="(name, surname, position and signature)" />
+      </row>
+      <row>
+        <FlowPanel />
+        <TextLabel source="Position" style="margin-top:5px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

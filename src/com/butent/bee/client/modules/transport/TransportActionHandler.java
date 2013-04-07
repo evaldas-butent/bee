@@ -29,7 +29,8 @@ public class TransportActionHandler implements Handler {
 
         RowEditor.openRow(data.getEditForm(), data, tripId);
       }
-    } else if (event.hasView(TBL_CARGO_ASSESSORS)) {
+    } else if (BeeUtils.inListSame(event.getViewName(),
+        TBL_CARGO_ASSESSORS, "AssessmentForwarders")) {
       event.consume();
       OrderAssessmentForm.doRowAction(event);
     }

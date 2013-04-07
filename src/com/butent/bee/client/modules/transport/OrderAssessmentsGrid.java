@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -12,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -37,6 +39,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class OrderAssessmentsGrid extends AbstractGridInterceptor {
@@ -62,16 +65,40 @@ public class OrderAssessmentsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
-    final long orderId = row.getLong(presenter.getGridView().getDataIndex(COL_ORDER));
+  public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow activeRow) {
+    final String expeditionTrips = "ExpeditionTrips";
+    final long orderId = activeRow.getLong(presenter.getGridView().getDataIndex(COL_ORDER));
+    long cargoId = activeRow.getLong(presenter.getGridView().getDataIndex(COL_CARGO));
 
-    Queries.deleteRow(TBL_ORDERS, orderId, 0, new IntCallback() {
-      @Override
-      public void onSuccess(Integer result) {
-        BeeKeeper.getBus().fireEvent(new RowDeleteEvent(TBL_ORDERS, orderId));
-        BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(), row.getId()));
-      }
-    });
+    Queries.getRowSet(TBL_CARGO_TRIPS, Lists.newArrayList(COL_TRIP),
+        ComparisonFilter.isEqual(COL_CARGO, new LongValue(cargoId)), new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet rowSet) {
+            Queries.deleteRow(TBL_ORDERS, orderId, 0, new IntCallback() {
+              @Override
+              public void onSuccess(Integer result) {
+                BeeKeeper.getBus().fireEvent(new RowDeleteEvent(TBL_ORDERS, orderId));
+                BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(),
+                    activeRow.getId()));
+              }
+            });
+            if (!rowSet.isEmpty()) {
+              final List<RowInfo> rows = Lists.newArrayList();
+
+              for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+                rows.add(new RowInfo(rowSet.getLong(i, 0), 0, true));
+              }
+              Queries.deleteRows(expeditionTrips, rows, new IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  for (RowInfo row : rows) {
+                    BeeKeeper.getBus().fireEvent(new RowDeleteEvent(expeditionTrips, row.getId()));
+                  }
+                }
+              });
+            }
+          }
+        });
     return DeleteMode.CANCEL;
   }
 

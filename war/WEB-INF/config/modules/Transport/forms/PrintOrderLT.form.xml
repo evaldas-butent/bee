@@ -3,20 +3,20 @@
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY inline "display:inline-block;">
   <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintOrderLT">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude" 
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="PrintOrderLT" viewName="PrintOrder" caption="Užsakymo spausdinimas"
+  name="&form;" viewName="PrintOrder" caption="Užsakymo spausdinimas"
   enabledActions="close" width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
   <FlowPanel style="padding: 10px; background-color: white;">
-    <css id="PrintOrderLT">
-      .PrintOrderLT-table {border-collapse:collapse; width:100%;}
-      .PrintOrderLT-table td {border:1px solid black; padding:2px;}
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
     </css>
     <HorizontalPanel>
       <Table>
@@ -33,15 +33,13 @@
           <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
         </row>
       </Table>
-      <FlowPanel style="height: 100px; border:1px solid gray;">
-        <Label html="Ča yr paveiksliux" horizontalAlignment="center" />
-      </FlowPanel>
+      <Image  url="images/logo.gif" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
       <Label html="Kliento informacija" style="&bold;" />
 
-      <HorizontalPanel class="PrintOrderLT-table">
+      <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
           <FlowPanel>
             <TextLabel source="CustomerName" style="&bold;">
@@ -96,7 +94,7 @@
           </TextLabel>
           <br />
           <Label html="Ekspeditoriaus atstovas" style="&bold;" />
-          <TextLabel source="Manager">
+          <TextLabel source="Position">
             <renderToken source="FirstName" />
             <renderToken source="LastName" />
           </TextLabel>
@@ -112,15 +110,15 @@
     <FlowPanel style="&section;">
       <Label html="Siuntėjas" style="&bold;" />
 
-      <HorizontalPanel class="PrintOrderLT-table">
-        <TextLabel source="CargoNotes" />
+      <HorizontalPanel class="&form;-table">
+        <TextLabel source="Shipper" />
       </HorizontalPanel>
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Maršrutas" style="&bold;" />
 
-      <HorizontalPanel class="PrintOrderLT-table">
+      <HorizontalPanel class="&form;-table">
         <TextLabel source="OrderNotes" style="white-space:pre-wrap;" />
         
         <FlowPanel>
@@ -138,10 +136,9 @@
 
     <FlowPanel style="&section;">
       <InlineLabel html="Transporto rūšis:" style="&bold;" />
-      <TextLabel source="ValueCurrencyName" inline="true" style="margin-left:2px;" />
     </FlowPanel>
 
-    <Table class="PrintOrderLT-table" style="&section;">
+    <Table class="&form;-table" style="&section;">
       <row style="font-weight:bold; text-align:center;">
         <Label html="Krovinio pavadinimas" />
         <Label html="Kiekis vnt." />
@@ -154,30 +151,30 @@
         <DecimalLabel source="Quantity" />
         <DecimalLabel source="Weight" scale="1" />
         <DecimalLabel source="Volume" scale="3" />
-        <FlowPanel>
-          <DecimalLabel source="Value" scale="2" inline="true" />
-          <TextLabel source="ValueCurrencyName" inline="true" style="margin-left:2px;" />
-        </FlowPanel>
+        <TextLabel source="Value">
+          <renderToken source="Value" suffix=" " format="#.00" />
+          <renderToken source="ValueCurrencyName" />
+        </TextLabel>
       </row>
     </Table>
 
-    <HorizontalPanel class="PrintOrderLT-table" style="&section;">
+    <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Papildoma informacija:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
 
       <FlowPanel>
         <FlowPanel>
           <Label html="Transporto priemonės nr.:" style="&inline; width:160px; text-align:right;" />
-          <DateLabel source="LoadingDate" style="&inline; margin-left:5px;" />
+          <TextLabel source="LoadingTerminal" style="&inline; margin-left:5px;" />
         </FlowPanel>
         <FlowPanel>
           <Label html="Transporto priemonės nr.2:" style="&inline; width:160px; text-align:right;" />
-          <DateLabel source="UnloadingDate" style="&inline; margin-left:5px;" />
+          <TextLabel source="UnloadingTerminal" style="&inline; margin-left:5px;" />
         </FlowPanel>
       </FlowPanel>
     </HorizontalPanel>
 
-    <HorizontalPanel class="PrintOrderLT-table" style="&section;">
+    <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Kaina:" style="&bold;" />
         
       <FlowPanel>
@@ -232,7 +229,7 @@ originalas.
       </row>
       <row>
         <FlowPanel />
-        <TextLabel source="Manager" style="margin-top:5px;">
+        <TextLabel source="Position" style="margin-top:5px;">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
           <renderToken source="Position" prefix=", " />
