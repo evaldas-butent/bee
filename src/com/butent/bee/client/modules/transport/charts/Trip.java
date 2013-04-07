@@ -386,7 +386,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
                 Data.getColumns(viewName, Lists.newArrayList(COL_TRIP, COL_DRIVER));
             List<String> values = Queries.asList(getTripId(), driver.getId());
 
-            Queries.insert(viewName, columns, values, new RowInsertCallback(viewName));
+            Queries.insert(viewName, columns, values, null, new RowInsertCallback(viewName));
           }
         });
   }
@@ -433,7 +433,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       @Override
       public void onConfirm() {
         Queries.update(VIEW_NAME, getTripId(), getTripVersion(), columns,
-            Queries.asList(oldVehicleId), Queries.asList(newVehicleId),
+            Queries.asList(oldVehicleId), Queries.asList(newVehicleId), null,
             new RowUpdateCallback(VIEW_NAME));
       }
     });

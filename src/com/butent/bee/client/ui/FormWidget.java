@@ -426,7 +426,7 @@ public enum FormWidget {
   private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
 
   private static final String TAG_FACE = "face";
-  
+
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -519,11 +519,11 @@ public enum FormWidget {
         if (!BeeUtils.isEmpty(gridName) && !BeeUtils.isEmpty(relColumn)
             && !BeeConst.isUndef(sourceIndex)) {
           widget = new ChildGrid(gridName, sourceIndex, relColumn,
-              GridFactory.getGridOptions(attributes), 
+              GridFactory.getGridOptions(attributes),
               !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
         }
         break;
-        
+
       case CHILD_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
@@ -611,7 +611,7 @@ public enum FormWidget {
           ((Disclosure) widget).setOpen(true);
         }
         break;
-        
+
       case DIV:
         widget = new CustomDiv();
         break;
@@ -625,7 +625,7 @@ public enum FormWidget {
           widget = new DoubleLabel(format, inline);
         }
         break;
-        
+
       case FLAG:
         String country = attributes.get(Flag.ATTR_COUNTRY);
         if (BeeUtils.isEmpty(country)) {
@@ -634,7 +634,7 @@ public enum FormWidget {
           widget = new Flag(country);
         }
         break;
-        
+
       case FILE_COLLECTOR:
         IdentifiableWidget face = null;
         for (Iterator<Element> it = children.iterator(); it.hasNext();) {
@@ -647,7 +647,7 @@ public enum FormWidget {
         if (face == null) {
           face = FileCollector.getDefaultFace();
         }
-        
+
         widget = new FileCollector(face,
             FileCollector.parseColumns(attributes.get(ATTR_VISIBLE_COLUMNS)),
             FileCollector.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
@@ -657,7 +657,7 @@ public enum FormWidget {
         widget = new FileGroup(FileGroup.parseColumns(attributes.get(ATTR_VISIBLE_COLUMNS)),
             FileGroup.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
         break;
-        
+
       case FLOW_PANEL:
         widget = new Flow();
         break;
@@ -681,7 +681,7 @@ public enum FormWidget {
       case HEADER_CONTENT_FOOTER:
         widget = new HeaderContentFooter();
         break;
-        
+
       case HEADING:
         String rank = attributes.get(Heading.ATTR_RANK);
         if (BeeUtils.isPositiveInt(rank)) {
@@ -819,7 +819,7 @@ public enum FormWidget {
       case INPUT_TIME:
         widget = new InputTime();
         break;
-        
+
       case INPUT_TIME_OF_DAY:
         widget = new InputTimeOfDay();
         break;
@@ -920,7 +920,7 @@ public enum FormWidget {
           if (BeeUtils.isPositiveDouble(max)) {
             ((Progress) widget).setMax(BeeUtils.toDouble(max));
           }
-          
+
           String value = attributes.get(ATTR_VALUE);
           if (BeeUtils.isNonNegativeDouble(value)) {
             ((Progress) widget).setValue(BeeUtils.toDouble(value));
@@ -935,7 +935,7 @@ public enum FormWidget {
       case RESIZE_PANEL:
         widget = new ResizePanel();
         break;
-        
+
       case RICH_TEXT_EDITOR:
         widget = new RichTextEditor(true);
         break;
@@ -1016,7 +1016,7 @@ public enum FormWidget {
       case TABLE:
         widget = new HtmlTable();
         break;
-        
+
       case TEXT_LABEL:
         widget = new TextLabel(BeeUtils.toBoolean(attributes.get(ATTR_INLINE)));
         break;
@@ -1128,7 +1128,7 @@ public enum FormWidget {
           }
         }
       }
-      
+
       if (widget instanceof HasBounds) {
         column = getColumn(columns, attributes);
         if (column != null) {
@@ -1293,11 +1293,11 @@ public enum FormWidget {
 
     EventUtils.addDomHandler(widget.asWidget(), event, handler);
   }
-  
+
   private IdentifiableWidget createFace(Element element) {
     Pair<String, BeeImage> faceOptions = getFaceOptions(element);
     final IdentifiableWidget result;
-    
+
     if (faceOptions.getB() != null) {
       result = faceOptions.getB();
     } else if (!BeeUtils.isEmpty(faceOptions.getA())) {
@@ -1305,7 +1305,7 @@ public enum FormWidget {
     } else {
       result = null;
     }
-    
+
     if (result != null) {
       StyleUtils.updateAppearance(result.asWidget(), element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));
@@ -1417,7 +1417,7 @@ public enum FormWidget {
     String source = attributes.get(UiConstants.ATTR_SOURCE);
     List<String> renderColumns =
         NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
-    
+
     if (renderColumns.isEmpty() && !children.isEmpty()) {
       for (Element child : children) {
         if (BeeUtils.same(XmlUtils.getLocalName(child), RenderableToken.TAG_RENDER_TOKEN)) {
@@ -1734,7 +1734,7 @@ public enum FormWidget {
         } else if (Split.validDirection(direction, false)) {
           Integer size = XmlUtils.getAttributeInteger(child, ATTR_SIZE);
           Integer splitterSize = XmlUtils.getAttributeInteger(child, ATTR_SPLITTER_SIZE);
-        
+
           if (BeeUtils.isPositive(size)) {
             ((Split) parent).add(w, direction, size, splitterSize);
           }
@@ -1928,7 +1928,7 @@ public enum FormWidget {
 
       } else if (BeeUtils.same(name, ATTR_PLACEHOLDER)) {
         DomUtils.setPlaceholder(widget.asWidget(), value);
-        
+
       } else if (BeeUtils.same(name, HasCapsLock.ATTR_UPPER_CASE)) {
         if (widget instanceof HasCapsLock && BeeConst.isTrue(value)) {
           ((HasCapsLock) widget).setUpperCase(true);

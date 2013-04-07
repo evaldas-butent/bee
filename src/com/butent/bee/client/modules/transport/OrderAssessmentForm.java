@@ -204,7 +204,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
                     Lists.newArrayList(BeeUtils.toString(oldStatus),
                         activeRow.getString(Data.getColumnIndex(view, COL_ASSESSOR_NOTES))),
                     Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
-                        value),
+                        value), null,                        
                     new RowUpdateCallback(view));
               }
             });
@@ -319,7 +319,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
             newValues.add(BeeUtils.toString(status.getOrderStatus().ordinal()));
           }
           Queries.update(formView.getViewName(), newRow.getId(), newRow.getVersion(),
-              columns, oldValues, newValues, new RowCallback() {
+              columns, oldValues, newValues, formView.getChildrenForUpdate(), new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow result) {
                   rowCallback.onSuccess(result);

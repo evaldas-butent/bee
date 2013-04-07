@@ -383,24 +383,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
-    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        if (event.getCallback() == null) {
-          showFailure("Insert Row", reason);
-        } else {
-          event.getCallback().onFailure(reason);
-        }
-      }
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
+        new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            if (event.getCallback() == null) {
+              showFailure("Insert Row", reason);
+            } else {
+              event.getCallback().onFailure(reason);
+            }
+          }
 
-      @Override
-      public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
-        if (event.getCallback() != null) {
-          event.getCallback().onSuccess(result);
-        }
-      }
-    });
+          @Override
+          public void onSuccess(BeeRow result) {
+            BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+            if (event.getCallback() != null) {
+              event.getCallback().onSuccess(result);
+            }
+          }
+        });
   }
 
   @Override
@@ -461,7 +462,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void onSaveChanges(final SaveChangesEvent event) {
     Queries.update(getViewName(), event.getRowId(), event.getVersion(), event.getColumns(),
-        event.getOldValues(), event.getNewValues(), new RowCallback() {
+        event.getOldValues(), event.getNewValues(), event.getChildren(), new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             if (event.getCallback() == null) {

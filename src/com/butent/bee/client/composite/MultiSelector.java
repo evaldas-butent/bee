@@ -33,6 +33,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
@@ -54,22 +55,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MultiSelector extends DataSelector implements HandlesRendering {
-  
+public class MultiSelector extends DataSelector implements HandlesRendering, HandlesValueChange {
+
   private class ChoiceWidget extends Flow {
-    
+
     private final long rowId;
     private final String labelId;
 
     private ChoiceWidget(long rowId, String caption) {
       super();
       this.rowId = rowId;
-      
+
       addStyleName(STYLE_CHOICE);
-      
+
       InlineLabel label = new InlineLabel(caption);
       label.addStyleName(STYLE_LABEL);
-      
+
       if (MultiSelector.this.isEditEnabled()) {
         label.addStyleName(RowEditor.EDITABLE_RELATION_STYLE);
         label.addClickHandler(new ClickHandler() {
@@ -80,10 +81,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
           }
         });
       }
-      
+
       this.labelId = label.getId();
       add(label);
-      
+
       BeeImage close = new BeeImage(Global.getImages().closeSmall());
       close.addStyleName(STYLE_CLOSE);
       close.addClickHandler(new ClickHandler() {
@@ -93,7 +94,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
           MultiSelector.this.removeChoice(getRowId());
         }
       });
-      
+
       add(close);
     }
 
@@ -105,7 +106,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     private long getRowId() {
       return rowId;
     }
-    
+
     private void setCaption(String caption) {
       for (Widget child : this) {
         if (DomUtils.idEquals(child, labelId)) {
@@ -123,47 +124,47 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
   private static final String STYLE_INPUT = STYLE_PREFIX + "input";
-  
+
   private static final int MIN_INPUT_WIDTH = 25;
   private static final int MAX_INPUT_LENGTH = 30;
-  
+
   public static MultiSelector createAutonomous(Relation relation, AbstractCellRenderer renderer) {
     final MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
-    
+
     selector.addFocusHandler(new FocusHandler() {
       @Override
       public void onFocus(FocusEvent event) {
         selector.setEditing(true);
       }
     });
-    
+
     selector.addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
         selector.setEditing(false);
       }
     });
-    
+
     return selector;
   }
-  
+
   private final String rowProperty;
-  
+
   private AbstractCellRenderer renderer;
-  
+
   private final Map<Long, String> cache = Maps.newHashMap();
-  
+
   private String oldValue = null;
-  
+
   private final Consumer<InputText> inputResizer;
-  
+
   public MultiSelector(Relation relation, boolean embedded, String rowProperty) {
     super(relation, embedded);
     this.rowProperty = rowProperty;
-    
+
     this.inputResizer = UiHelper.getTextBoxResizer(MIN_INPUT_WIDTH);
-    
+
     SelectorEvent.fire(this, State.INITIALIZED);
   }
 
@@ -171,7 +172,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   public void clearValue() {
     super.clearValue();
     setOldValue(null);
-    
+
     clearChoices();
     setExclusions(null);
   }
@@ -187,10 +188,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   }
 
   @Override
+  public String getLabel() {
+    return super.getRelationLabel();
+  }
+
+  @Override
   public AbstractCellRenderer getRenderer() {
     return renderer;
   }
-  
+
   public String getRowLabel(long rowId) {
     if (cache.containsKey(rowId)) {
       return cache.get(rowId);
@@ -200,7 +206,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       if (DataUtils.isEmpty(data)) {
         return null;
       }
-      
+
       BeeRow row = data.getRowById(rowId);
       return (row == null) ? null : getRenderer().render(row);
     }
@@ -221,29 +227,34 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   }
 
   @Override
+  public boolean isValueChanged() {
+    return !DataUtils.sameIdSet(getValue(), getOldValue());
+  }
+
+  @Override
   public void render(IsRow row) {
     render((row == null) ? null : row.getProperty(rowProperty));
   }
-  
+
   public void render(String value) {
     setOldValue(value);
     setValue(value);
-    
+
     final List<Long> choices = DataUtils.parseIdList(value);
     if (choices.isEmpty()) {
       clearChoices();
       setExclusions(null);
       return;
     }
-    
+
     if (cache.keySet().containsAll(choices)) {
       renderChoices(choices);
       return;
     }
-    
+
     Set<Long> notCached = Sets.newHashSet(choices);
     notCached.removeAll(cache.keySet());
-    
+
     getData(notCached, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
@@ -256,7 +267,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       }
     });
   }
-  
+
   @Override
   public void setDisplayValue(String value) {
     if (!Objects.equal(getDisplayValue(), value)) {
@@ -269,35 +280,57 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   public void setRenderer(AbstractCellRenderer renderer) {
     this.renderer = renderer;
   }
-  
+
   @Override
   public void setSelection(BeeRow row) {
     hideSelector();
     reset();
     clearInput();
-    
+
     if (row != null) {
       String label = renderer.render(row);
       cache.put(row.getId(), label);
 
       InsertPanel container = getContainer();
       container.insert(new ChoiceWidget(row.getId(), label), container.getWidgetCount() - 1);
-      
+
       updateValue();
-      
+
       getElement().scrollIntoView();
       setFocus(true);
-      
+
       setRelatedRow(row);
       SelectorEvent.fire(this, State.INSERTED);
     }
   }
-  
+
   @Override
   public void startEdit(String oldV, char charCode, EditorAction onEntry, Element sourceElement) {
     SelectorEvent.fireExclusions(this, getOracle().getExclusions());
-    
+
     super.startEdit(oldV, charCode, onEntry, sourceElement);
+  }
+
+  @Override
+  public List<String> validate(boolean checkForNull) {
+    return validate(getNormalizedValue(), checkForNull);
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(normalizedValue, checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
+    }
+
+    if (BeeUtils.isEmpty(normalizedValue) && checkForNull && !isNullable()) {
+      if (!BeeUtils.isEmpty(getLabel())) {
+        messages.add(getLabel());
+      }
+      messages.add(Global.CONSTANTS.valueRequired());
+    }
+    return messages;
   }
 
   @Override
@@ -310,11 +343,11 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   protected void init(final InputWidget inputWidget, boolean embed) {
     final Flow container = new Flow();
     container.addStyleName(STYLE_CONTAINER);
-    
+
     inputWidget.setMaxLength(MAX_INPUT_LENGTH);
     inputWidget.addStyleName(STYLE_INPUT);
     container.add(inputWidget);
-    
+
     inputWidget.addFocusHandler(new FocusHandler() {
       @Override
       public void onFocus(FocusEvent event) {
@@ -328,7 +361,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         clearInput();
       }
     });
-    
+
     inputWidget.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
@@ -337,16 +370,16 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         }
       }
     });
-    
+
     inputWidget.addInputHandler(new InputHandler() {
       @Override
       public void onInput(InputEvent event) {
         inputResizer.accept(inputWidget);
       }
     });
-    
+
     StyleUtils.setWidth(inputWidget, MIN_INPUT_WIDTH);
-    
+
     DomUtils.makeFocusable(container);
 
     Binder.addClickHandler(container, new ClickHandler() {
@@ -358,10 +391,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         }
       }
     });
-    
+
     initWidget(container);
   }
-  
+
   private void clearChoices() {
     InsertPanel container = getContainer();
     int count = container.getWidgetCount();
@@ -382,10 +415,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     if (BeeUtils.isEmpty(formName)) {
       return;
     }
-    
+
     boolean modal = BeeUtils.isTrue(isEditModal()) || UiHelper.isModal(getWidget());
     RowCallback rowCallback;
-    
+
     if (modal) {
       rowCallback = new RowCallback() {
         @Override
@@ -396,21 +429,21 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     } else {
       rowCallback = null;
     }
-    
+
     RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
   }
-  
+
   private InsertPanel getContainer() {
     return (InsertPanel) getWidget();
   }
-  
+
   private void getData(Collection<Long> choices, Queries.RowSetCallback callback) {
     int size = choices.size();
-    
+
     BeeRowSet cached = getOracle().getViewData();
     if (cached != null && cached.getNumberOfRows() >= size) {
       BeeRowSet result = new BeeRowSet(cached.getViewName(), cached.getColumns());
-      
+
       for (BeeRow row : cached.getRows()) {
         if (choices.contains(row.getId())) {
           result.addRow(row);
@@ -429,7 +462,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private String getOldValue() {
     return oldValue;
   }
-  
+
   private void onBackSpace() {
     if (getInput().getCursorPos() == 0 && !BeeUtils.isEmpty(getValue())) {
       InsertPanel container = getContainer();
@@ -443,7 +476,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       }
     }
   }
-  
+
   private void removeChoice(long rowId) {
     if (!isEnabled()) {
       return;
@@ -455,7 +488,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
 
     InsertPanel container = getContainer();
     int count = container.getWidgetCount();
-    
+
     boolean removed = false;
 
     for (int i = 0; i < count - 1; i++) {
@@ -465,9 +498,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         break;
       }
     }
-    
+
     updateValue();
-    
+
     getElement().scrollIntoView();
     setFocus(true);
 
@@ -475,7 +508,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       SelectorEvent.fire(this, State.REMOVED);
     }
   }
-  
+
   private void renderChoices(List<Long> choices) {
     clearChoices();
     InsertPanel container = getContainer();
@@ -483,7 +516,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     for (Long rowId : choices) {
       container.insert(new ChoiceWidget(rowId, cache.get(rowId)), container.getWidgetCount() - 1);
     }
-    
+
     setExclusions(choices);
   }
 
@@ -493,11 +526,11 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       getOracle().setExclusions(exclusions);
     }
   }
-  
+
   private void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }
-  
+
   private void updateChoice(IsRow row) {
     long rowId = row.getId();
 
@@ -520,7 +553,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       }
     }
   }
-  
+
   private void updateValue() {
     List<Long> choices = Lists.newArrayList();
     InsertPanel container = getContainer();
@@ -532,7 +565,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         choices.add(((ChoiceWidget) child).getRowId());
       }
     }
-    
+
     setValue(DataUtils.buildIdList(choices));
     setExclusions(choices);
   }

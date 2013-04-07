@@ -333,7 +333,7 @@ public class RowEditor {
       final FormView formView, final RowCallback callback) {
 
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
-        callback);
+        formView.getChildrenForUpdate(), callback);
 
     formView.onSaveChanges(event);
     if (event.isConsumed() || event.isEmpty()) {
@@ -342,9 +342,14 @@ public class RowEditor {
     }
 
     BeeRowSet updated = DataUtils.getUpdated(dataInfo.getViewName(), oldRow.getId(),
-        oldRow.getVersion(), event.getColumns(), event.getOldValues(), event.getNewValues());
+        oldRow.getVersion(), event.getColumns(), event.getOldValues(), event.getNewValues(),
+        event.getChildren());
+    
+    if (DataUtils.isEmpty(updated) && BeeUtils.isEmpty(event.getChildren())) {
+      return;
+    }
 
-    Queries.updateRow(updated, new RowCallback() {
+    RowCallback updateCallback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         formView.notifySevere(reason);
@@ -355,7 +360,14 @@ public class RowEditor {
         BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
         callback.onSuccess(result);
       }
-    });
+    };
+    
+    if (DataUtils.isEmpty(updated)) {
+      Queries.updateChildren(dataInfo.getViewName(), oldRow.getId(), event.getChildren(),
+          updateCallback);
+    } else {
+      Queries.updateRow(updated, updateCallback);
+    }
   }
 
   private static boolean validate(FormView formView) {

@@ -179,7 +179,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         Lists.newArrayList(getDataColumns().get(parentIndex)),
         Lists.newArrayList(item.getString(parentIndex)),
         Lists.newArrayList(destination == null ? null : BeeUtils.toString(destination.getId())),
-        new CommitCallback(false));
+        null, new CommitCallback(false));
   }
 
   @Override
@@ -299,11 +299,12 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
             columns.add(new BeeColumn(relationName));
             values.add(BeeUtils.toString(relationId));
           }
-          Queries.insert(source, columns, values, new CommitCallback(true));
+          Queries.insert(source, columns, values, formView.getChildrenForInsert(),
+              new CommitCallback(true));
 
         } else {
-          Queries.update(source, row.getId(), row.getVersion(),
-              columns, oldValues, values, new CommitCallback(false));
+          Queries.update(source, row.getId(), row.getVersion(), columns, oldValues, values,
+              formView.getChildrenForUpdate(), new CommitCallback(false));
         }
       }
     });

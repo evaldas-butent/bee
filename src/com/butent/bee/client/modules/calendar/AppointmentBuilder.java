@@ -134,7 +134,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       List<String> changes = Lists.newArrayList();
 
       BeeRowSet rowSet = DataUtils.getUpdated(VIEW_APPOINTMENTS,
-          CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow);
+          CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow,
+          getFormView().getChildrenForUpdate());
       if (!DataUtils.isEmpty(rowSet)) {
         changes.addAll(rowSet.getColumnLabels());
       }

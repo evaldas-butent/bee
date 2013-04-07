@@ -10,8 +10,10 @@ import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> implements Consumable {
@@ -23,7 +25,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   private static final Type<Handler> TYPE = new Type<Handler>();
 
   public static SaveChangesEvent create(IsRow oldRow, IsRow newRow, List<BeeColumn> dataColumns,
-      RowCallback callback) {
+      Collection<RowChildren> children, RowCallback callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> oldValues = Lists.newArrayList();
     List<String> newValues = Lists.newArrayList();
@@ -44,7 +46,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
       }
     }
 
-    return new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues, callback);
+    return new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues, children, callback);
   }
 
   public static Type<Handler> getType() {
@@ -56,7 +58,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
 
     return new SaveChangesEvent(event.getRowValue(), DataUtils.cloneRow(event.getRowValue()),
         Lists.newArrayList(DataUtils.cloneColumn(event.getColumn())),
-        Lists.newArrayList(event.getOldValue()), Lists.newArrayList(event.getNewValue()),
+        Lists.newArrayList(event.getOldValue()), Lists.newArrayList(event.getNewValue()), null,
         event.getCallback());
   }
 
@@ -68,18 +70,22 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   private final List<String> oldValues;
   private final List<String> newValues;
   
+  private final Collection<RowChildren> children;
+  
   private final RowCallback callback;
   
   private boolean consumed = false;
   
-  public SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
-      List<String> oldValues, List<String> newValues, RowCallback callback) {
+  private SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
+      List<String> oldValues, List<String> newValues, Collection<RowChildren> children,
+      RowCallback callback) {
     super();
     this.oldRow = oldRow;
     this.newRow = newRow;
     this.columns = columns;
     this.oldValues = oldValues;
     this.newValues = newValues;
+    this.children = children;
     this.callback = callback;
   }
 
@@ -97,6 +103,10 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
     return callback;
   }
   
+  public Collection<RowChildren> getChildren() {
+    return children;
+  }
+
   public List<BeeColumn> getColumns() {
     return columns;
   }
@@ -131,7 +141,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   }
 
   public boolean isEmpty() {
-    return columns.isEmpty();
+    return columns.isEmpty() && BeeUtils.isEmpty(children);
   }
   
   @Override

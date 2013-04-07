@@ -1,5 +1,7 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -8,6 +10,8 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,8 @@ public class BeeRow extends StringRow implements BeeSerializable {
   private enum Serial {
     ID, VERSION, EDITABLE, VALUES, SHADOW, PROPERTIES
   }
+  
+  private static final String PROPERTY_CHILDREN = "_row_children";
 
   public static BeeRow restore(String s) {
     BeeRow row = new BeeRow(0, 0);
@@ -114,6 +120,24 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
   }
 
+  public Collection<RowChildren> getChildren() {
+    String serialized = getProperty(PROPERTY_CHILDREN);
+    if (BeeUtils.isEmpty(serialized)) {
+      return Collections.emptyList();
+    }
+    
+    Collection<RowChildren> children = Lists.newArrayList();
+    
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+    if (!ArrayUtils.isEmpty(arr)) {
+      for (String s : arr) {
+        children.add(RowChildren.restore(s));
+      }
+    }
+    
+    return children;
+  }
+
   public Map<Integer, String> getShadow() {
     return shadow;
   }
@@ -123,6 +147,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
       return shadow.get(col);
     }
     return null;
+  }
+
+  public boolean hasChildren() {
+    return !BeeUtils.isEmpty(getProperty(PROPERTY_CHILDREN));
   }
 
   public void preliminaryUpdate(int col, String value) {
@@ -149,7 +177,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
   public void reset() {
     setShadow(null);
   }
-
+  
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -185,7 +213,15 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
-
+  
+  public void setChildren(Collection<RowChildren> children) {
+    if (BeeUtils.isEmpty(children)) {
+      clearProperty(PROPERTY_CHILDREN);
+    } else {
+      setProperty(PROPERTY_CHILDREN, Codec.beeSerialize(children));
+    }
+  }
+  
   private void setShadow(Map<Integer, String> shadow) {
     this.shadow = shadow;
   }

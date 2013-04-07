@@ -110,18 +110,19 @@ public class DocumentHandler {
         return;
       }
 
-      Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(), new RowCallback() {
-        @Override
-        public void onFailure(String... reason) {
-          event.getCallback().onFailure(reason);
-        }
+      Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(),
+          event.getChildren(), new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              event.getCallback().onFailure(reason);
+            }
 
-        @Override
-        public void onSuccess(BeeRow result) {
-          event.getCallback().onSuccess(result);
-          sendFiles(result.getId(), getCollector().getFiles(), null);
-        }
-      });
+            @Override
+            public void onSuccess(BeeRow result) {
+              event.getCallback().onSuccess(result);
+              sendFiles(result.getId(), getCollector().getFiles(), null);
+            }
+          });
     }
 
     @Override
@@ -299,7 +300,7 @@ public class DocumentHandler {
   }
 
   private static class FileLinkRenderer extends AbstractCellRenderer {
-    
+
     private static final AnchorElement anchorElement = Document.get().createAnchorElement();
 
     private final int idIndex;
@@ -307,7 +308,7 @@ public class DocumentHandler {
 
     private FileLinkRenderer(int idIndex, int captionIndex) {
       super(null);
-      
+
       this.idIndex = idIndex;
       this.captionIndex = captionIndex;
     }
@@ -317,21 +318,21 @@ public class DocumentHandler {
       if (row == null) {
         return null;
       }
-      
+
       Long id = row.getLong(idIndex);
       String text = row.getString(captionIndex);
-      
+
       if (!DataUtils.isId(id) || BeeUtils.isEmpty(text)) {
         return null;
       }
-      
+
       anchorElement.setHref(FileUtils.getUrl(text, id));
       anchorElement.setInnerText(text);
-      
+
       return anchorElement.getString();
     }
   }
-  
+
   private static class FileSizeRenderer extends AbstractCellRenderer {
     private final int index;
 

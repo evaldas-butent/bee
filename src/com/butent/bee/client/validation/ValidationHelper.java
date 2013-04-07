@@ -2,6 +2,7 @@ package com.butent.bee.client.validation;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -142,7 +143,7 @@ public class ValidationHelper {
     }
 
     if (messages.isEmpty() && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      messages.add("Laukas negali būti tuščias");
+      messages.add(Global.CONSTANTS.valueRequired());
     }
 
     if (messages.isEmpty()) {

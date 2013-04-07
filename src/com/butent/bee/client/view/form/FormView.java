@@ -25,8 +25,10 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.ui.HasCaption;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,6 +53,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   
   boolean focus(String source);
 
+  Collection<RowChildren> getChildrenForInsert();
+
+  Collection<RowChildren> getChildrenForUpdate();
+  
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);

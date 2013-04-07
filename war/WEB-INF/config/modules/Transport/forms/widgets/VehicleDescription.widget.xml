@@ -13,7 +13,9 @@
     <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
       renderColumns="ParentModelName ModelName" decorator="flex-left" d:size="50" d:rootStyle="&MARGIN;"
       filter="parent" />
-    <DataSelector source="Type" caption="Tipas" renderColumns="TypeName" decorator="flex-left" d:size="40" />
+    <DataSelector source="Type" caption="Tipas" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
+    <Label html="Grupės:" class="bee-required" />
+    <ChildSelector viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="Grupės" />
   </FlowPanel>
     
   <FlowPanel class="flexBox-horizontal">

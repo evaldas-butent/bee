@@ -89,7 +89,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormPresenter.class);
-  
+
   private final FormContainerView formContainer;
   private final Provider dataProvider;
 
@@ -118,7 +118,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public String getCaption() {
     return formContainer.getCaption();
   }
-  
+
   @Override
   public Provider getDataProvider() {
     return dataProvider;
@@ -137,7 +137,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public View getMainView() {
     return formContainer;
   }
-  
+
   public NotificationListener getNotificationListener() {
     return formContainer.getContent();
   }
@@ -216,7 +216,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
           Printer.print(form);
         }
         break;
-        
+
       default:
         logger.info(action, "not implemented");
     }
@@ -228,24 +228,25 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
-    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        if (event.getCallback() == null) {
-          showFailure("Insert Row", reason);
-        } else {
-          event.getCallback().onFailure(reason);
-        }
-      }
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
+        new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            if (event.getCallback() == null) {
+              showFailure("Insert Row", reason);
+            } else {
+              event.getCallback().onFailure(reason);
+            }
+          }
 
-      @Override
-      public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
-        if (event.getCallback() != null) {
-          event.getCallback().onSuccess(result);
-        }
-      }
-    });
+          @Override
+          public void onSuccess(BeeRow result) {
+            BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+            if (event.getCallback() != null) {
+              event.getCallback().onSuccess(result);
+            }
+          }
+        });
   }
 
   @Override
@@ -281,7 +282,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         } else {
 
           CellSource source = CellSource.forColumn(event.getColumn(),
-              getDataProvider().getColumnIndex(columnId));          
+              getDataProvider().getColumnIndex(columnId));
           String value = row.getString(0);
 
           BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), rowId, row.getVersion(),
@@ -289,7 +290,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     };
-    
+
     if (rowMode) {
       Queries.updateRow(rs, rowCallback);
     } else {
@@ -310,7 +311,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getDataProvider() != null) {
       getDataProvider().onUnload();
     }
-    
+
     super.onViewUnload();
   }
 

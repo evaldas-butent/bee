@@ -6,7 +6,9 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.RowChildren;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,14 +34,17 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
 
   private final List<BeeColumn> columns;
   private final List<String> values;
+  private final Collection<RowChildren> children;
   private final RowCallback callback;
 
   private boolean consumed = false;
 
-  public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values, RowCallback callback) {
+  public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values,
+      Collection<RowChildren> children, RowCallback callback) {
     super();
     this.columns = columns;
     this.values = values;
+    this.children = children;
     this.callback = callback;
   }
 
@@ -55,6 +60,10 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
 
   public RowCallback getCallback() {
     return callback;
+  }
+
+  public Collection<RowChildren> getChildren() {
+    return children;
   }
 
   public List<BeeColumn> getColumns() {

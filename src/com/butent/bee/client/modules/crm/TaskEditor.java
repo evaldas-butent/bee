@@ -542,7 +542,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     IsRow oldRow = form.getOldRow();
 
-    BeeRowSet updated = DataUtils.getUpdated(viewName, form.getDataColumns(), oldRow, newRow);
+    BeeRowSet updated = DataUtils.getUpdated(viewName, form.getDataColumns(), oldRow, newRow,
+        form.getChildrenForUpdate());
 
     if (!DataUtils.isEmpty(updated)) {
       BeeRow updRow = updated.getRow(0);
@@ -1219,7 +1220,7 @@ class TaskEditor extends AbstractFormInterceptor {
           List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
               BeeUtils.toString(teId), BeeUtils.toString(result), fileInfo.getCaption());
 
-          Queries.insert(VIEW_TASK_FILES, columns, values, new RowCallback() {
+          Queries.insert(VIEW_TASK_FILES, columns, values, null, new RowCallback() {
             @Override
             public void onSuccess(BeeRow row) {
               counter.set(counter.get() + 1);

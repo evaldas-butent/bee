@@ -263,7 +263,7 @@ public class Favorites implements HandlesDeleteEvents {
     Queries.insert(VIEW_NAME,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
-            BeeUtils.toString(order), BeeUtils.trim(html)), null);
+            BeeUtils.toString(order), BeeUtils.trim(html)));
   }
 
   public void bookmark(final String viewName, final IsRow row, List<BeeColumn> sourceColumns,

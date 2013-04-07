@@ -1731,7 +1731,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
 
     Queries.update(getSettings().getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-        newValues, new RowCallback() {
+        newValues, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {

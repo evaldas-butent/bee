@@ -42,6 +42,10 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements Has
   public IsRow getRow() {
     return row;
   }
+  
+  public Long getRowId() {
+    return (row == null) ? null : row.getId();
+  }
 
   @Override
   public String getViewName() {

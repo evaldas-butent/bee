@@ -280,6 +280,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return itemType;
   }
 
+  public String getLabel() {
+    return getAttribute(UiConstants.ATTR_LABEL);
+  }
+  
   public String getNewRowCaption() {
     return getAttribute(UiConstants.ATTR_NEW_ROW_CAPTION);
   }

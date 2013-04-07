@@ -18,6 +18,13 @@
         <DataSelector source="CompanyPerson" style="&w2;" renderColumns="FirstName LastName"
           choiceColumns="FirstName LastName CompanyName" editEnabled="true" editSource="Person" />
 
+        <Label html="Grupės:" class="bee-required" style="&lbl;" />
+        <ChildSelector viewName="TransportGroups" childTable="DriverGroups" required="true"
+          label="Grupės" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel style="&row;">
         <Label html="Įmonė:" style="&lbl;" />
         <TextLabel source="CompanyName" />
       </FlowPanel>

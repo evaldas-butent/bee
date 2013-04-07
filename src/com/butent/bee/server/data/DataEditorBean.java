@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
@@ -131,6 +132,27 @@ public class DataEditorBean {
   @Resource
   EJBContext ctx;
 
+  public int commitChildren(Long parentId, Collection<RowChildren> descendants,
+      ResponseObject response) {
+    int count = 0;
+
+    if (DataUtils.isId(parentId) && !BeeUtils.isEmpty(descendants)) {
+      for (RowChildren children : descendants) {
+        if (parentId.equals(children.getRowId())) {
+          count += updateChildren(parentId, children, response);
+        } else if (!DataUtils.isId(children.getRowId())) {
+          count += insertChildren(parentId, children, response);
+        }
+
+        if (response.hasErrors()) {
+          break;
+        }
+      }
+    }
+    
+    return count;
+  }
+
   public ResponseObject commitRow(BeeRowSet rs, boolean returnAllFields) {
     Assert.notNull(rs);
     if (rs.getNumberOfRows() != 1) {
@@ -218,9 +240,14 @@ public class DataEditorBean {
           logger.warning("refreshUpdates:", view.getName(), updates);
         }
       }
+
       if (!response.hasErrors()) {
         id = commitTable(tblInfo, updates, view, response);
       }
+      if (!response.hasErrors() && row.hasChildren()) {
+        commitChildren(id, row.getChildren(), response);
+      }
+
       if (!response.hasErrors()) {
         if (RowInfo.class.equals(returnType)) {
           response.setResponse(new BeeRow(id, tblInfo.version));
@@ -808,6 +835,32 @@ public class DataEditorBean {
     return ResponseObject.response(c);
   }
 
+  private int insertChildren(long parentId, RowChildren children, ResponseObject response) {
+    int count = 0;
+    List<Long> idList = DataUtils.parseIdList(children.getChildrenIds());
+    if (idList.isEmpty()) {
+      return count;
+    }
+
+    String tableName = children.getRepository();
+    String parentColumn = children.getParentColumn();
+    String childColumn = children.getChildColumn();
+
+    for (long childId : idList) {
+      ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(tableName)
+          .addConstant(parentColumn, parentId).addConstant(childColumn, childId));
+
+      if (ro.hasErrors()) {
+        response.addErrorsFrom(ro);
+        return count;
+      }
+      count++;
+    }
+
+    response.addInfo(tableName, "inserted", count, "children");
+    return count;
+  }
+
   private boolean refreshUpdates(Map<String, TableInfo> updates, BeeView view) {
     long id = 0;
     SqlSelect ss = view.getQuery().resetFields();
@@ -925,5 +978,69 @@ public class DataEditorBean {
       }
     }
     return ok;
+  }
+
+  private int updateChildren(long parentId, RowChildren children, ResponseObject response) {
+    int count = 0;
+
+    String tableName = children.getRepository();
+    String parentColumn = children.getParentColumn();
+    String childColumn = children.getChildColumn();
+
+    List<Long> newValues = DataUtils.parseIdList(children.getChildrenIds());
+    Long[] oldValues = qs.getRelatedValues(tableName, parentColumn, parentId, childColumn);
+
+    List<Long> insert = Lists.newArrayList(newValues);
+    List<Long> delete = Lists.newArrayList();
+
+    if (oldValues != null) {
+      for (Long value : oldValues) {
+        if (DataUtils.isId(value)) {
+          if (newValues.contains(value)) {
+            insert.remove(value);
+          } else {
+            delete.add(value);
+          }
+        }
+      }
+    }
+
+    if (!delete.isEmpty()) {
+      int delCnt = 0;
+
+      for (long childId : delete) {
+        ResponseObject ro = qs.updateDataWithResponse(new SqlDelete(tableName)
+            .setWhere(SqlUtils.equals(tableName, parentColumn, parentId, childColumn, childId)));
+
+        if (ro.hasErrors()) {
+          response.addErrorsFrom(ro);
+          return count;
+        }
+        delCnt++;
+      }
+
+      response.addInfo(tableName, "deleted", delCnt, "children");
+      count += delCnt;
+    }
+
+    if (!insert.isEmpty()) {
+      int insCnt = 0;
+
+      for (long childId : insert) {
+        ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(tableName)
+            .addConstant(parentColumn, parentId).addConstant(childColumn, childId));
+
+        if (ro.hasErrors()) {
+          response.addErrorsFrom(ro);
+          return count;
+        }
+        insCnt++;
+      }
+
+      response.addInfo(tableName, "inserted", insCnt, "children");
+      count += insCnt;
+    }
+    
+    return count;
   }
 }

@@ -328,6 +328,16 @@ public class QueryServiceBean {
     return getSingleColumn(query).getLongColumn(0);
   }
 
+  public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,
+      String resultColumn) {
+
+    SqlSelect query = new SqlSelect().addFrom(tableName).addFields(tableName, resultColumn);
+    query.setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+    query.addOrder(tableName, sys.getIdName(tableName));
+    
+    return getLongColumn(query);
+  }
+  
   public SimpleRow getRow(IsQuery query) {
     SimpleRowSet res = getData(query);
     Assert.notNull(res);

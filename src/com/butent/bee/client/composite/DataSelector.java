@@ -673,6 +673,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final int editTargetIndex;
   private final int editSourceIndex;
+  
+  private final String relationLabel;
 
   private Long editRowId = null;
 
@@ -822,6 +824,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editTargetIndex = BeeConst.UNDEF;
       this.editSourceIndex = BeeConst.UNDEF;
     }
+    
+    this.relationLabel = relation.getLabel();
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
@@ -1186,6 +1190,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   protected InputWidget getInput() {
     return input;
+  }
+
+  protected String getRelationLabel() {
+    return relationLabel;
   }
 
   protected void hideSelector() {

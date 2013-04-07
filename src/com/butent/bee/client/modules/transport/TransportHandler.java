@@ -458,7 +458,7 @@ public class TransportHandler {
                     BeeUtils.toString(updValue));
 
                 Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
-                    new RowUpdateCallback(viewName));
+                    null, new RowUpdateCallback(viewName));
                 return null;
               }
             }

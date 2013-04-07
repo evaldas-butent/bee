@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.ui.FormWidget;
@@ -174,7 +175,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Laukas negali būti tuščias");
+        messages.add(Global.CONSTANTS.valueRequired());
       }
       return messages;
     }
@@ -211,7 +212,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Laukas negali būti tuščias");
+        messages.add(Global.CONSTANTS.valueRequired());
       }
       return messages;
     }

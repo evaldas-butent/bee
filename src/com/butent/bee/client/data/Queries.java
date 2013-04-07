@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -47,7 +48,10 @@ public class Queries {
 
   public abstract static class IdCallback extends Callback<Long> {
   }
-  
+
+  public abstract static class IdListCallback extends Callback<String> {
+  }
+
   public abstract static class IntCallback extends Callback<Integer> {
   }
 
@@ -75,11 +79,11 @@ public class Queries {
 
       } else if (value instanceof DateTime) {
         s = BeeUtils.toString(((DateTime) value).getTime());
-      
+
       } else {
         s = value.toString();
       }
-      
+
       result.add(s);
     }
 
@@ -282,6 +286,29 @@ public class Queries {
     });
   }
 
+  public static void getRelatedValues(final String tableName, String filterColumn,
+      long filterValue, String resultColumn, final IdListCallback callback) {
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(filterColumn);
+    Assert.isTrue(DataUtils.isId(filterValue));
+    Assert.notEmpty(resultColumn);
+    Assert.notNull(callback);
+
+    List<Property> params = PropertyUtils.createProperties(Service.VAR_TABLE, tableName,
+        Service.VAR_FILTER_COLUMN, filterColumn, Service.VAR_VALUE, filterValue,
+        Service.VAR_VALUE_COLUMN, resultColumn);
+
+    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.GET_RELATED_VALUES,
+        RpcParameter.Section.QUERY, params), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.GET_RELATED_VALUES, tableName, response, String.class, callback)) {
+          callback.onSuccess((String) response.getResponse());
+        }
+      }
+    });
+  }
+
   public static void getRow(final String viewName, final long rowId, List<String> columns,
       final RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -460,16 +487,25 @@ public class Queries {
     return rs.getNumberOfColumns();
   }
 
+  public static void insert(String viewName, List<BeeColumn> columns, List<String> values) {
+    insert(viewName, columns, values, null, null);
+  }
+  
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values,
-      final RowCallback callback) {
+      Collection<RowChildren> children, final RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(columns);
     Assert.notEmpty(values);
     Assert.isTrue(columns.size() == values.size());
+    
+    BeeRow row = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+    if (!BeeUtils.isEmpty(children)) {
+      row.setChildren(children);
+    }
 
     BeeRowSet rs = new BeeRowSet(columns);
     rs.setViewName(viewName);
-    rs.addRow(0, ArrayUtils.toArray(values));
+    rs.addRow(row);
 
     insertRow(rs, callback);
   }
@@ -507,24 +543,37 @@ public class Queries {
   }
 
   public static int update(String viewName, List<BeeColumn> columns, IsRow oldRow, IsRow newRow,
-      RowCallback callback) {
+      Collection<RowChildren> children, RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(columns);
 
     Assert.notNull(oldRow);
     Assert.notNull(newRow);
 
-    BeeRowSet rs = DataUtils.getUpdated(viewName, columns, oldRow, newRow);
-    if (rs == null) {
+    BeeRowSet rs = DataUtils.getUpdated(viewName, columns, oldRow, newRow, children);
+    
+    if (!DataUtils.isEmpty(rs)) {
+      updateRow(rs, callback);
+      return rs.getNumberOfColumns();
+
+    } else if (!BeeUtils.isEmpty(children)) {
+      updateChildren(viewName, oldRow.getId(), children, callback);
+      return children.size();
+      
+    } else {
       return 0;
     }
-
-    updateRow(rs, callback);
-    return rs.getNumberOfColumns();
   }
 
   public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
-      List<String> oldValues, List<String> newValues, RowCallback callback) {
+      List<String> oldValues, List<String> newValues, Collection<RowChildren> children,
+      RowCallback callback) {
+    
+    if (BeeUtils.isEmpty(columns) && !BeeUtils.isEmpty(children)) {
+      updateChildren(viewName, rowId, children, callback);
+      return;
+    }
+    
     Assert.notEmpty(viewName);
     Assert.notNull(columns);
     Assert.notNull(oldValues);
@@ -537,9 +586,14 @@ public class Queries {
 
     BeeRowSet rs = new BeeRowSet(columns);
     rs.setViewName(viewName);
-    rs.addRow(rowId, version, ArrayUtils.toArray(oldValues));
+    rs.addRow(rowId, version, oldValues);
+
     for (int i = 0; i < cc; i++) {
       rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
+    }
+
+    if (!BeeUtils.isEmpty(children)) {
+      rs.getRow(0).setChildren(children);
     }
 
     updateRow(rs, callback);
@@ -547,6 +601,32 @@ public class Queries {
 
   public static void updateCell(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.UPDATE_CELL, rowSet, callback);
+  }
+  
+  public static void updateChildren(final String viewName, long rowId,
+      Collection<RowChildren> children, final RowCallback callback) {
+
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(rowId));
+    Assert.notEmpty(children);
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_ROW_ID, rowId, Service.VAR_CHILDREN, Codec.beeSerialize(children));
+
+    ParameterList parameters = new ParameterList(Service.UPDATE_RELATED_VALUES, 
+        RpcParameter.Section.DATA, lst);
+
+    BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.UPDATE_RELATED_VALUES, viewName, response, BeeRow.class,
+            callback)) {
+          if (callback != null) {
+            callback.onSuccess(BeeRow.restore((String) response.getResponse()));
+          }
+        }
+      }
+    });
   }
 
   public static void updateRow(BeeRowSet rowSet, RowCallback callback) {

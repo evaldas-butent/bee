@@ -540,7 +540,7 @@ public class DataUtils {
   }
 
   public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
-      IsRow newRow) {
+      IsRow newRow, Collection<RowChildren> children) {
     String oldValue;
     String newValue;
 
@@ -568,12 +568,13 @@ public class DataUtils {
       return null;
     } else {
       return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
-          updatedColumns, oldValues, newValues);
+          updatedColumns, oldValues, newValues, children);
     }
   }
   
   public static BeeRowSet getUpdated(String viewName, Long rowId, long rowVersion,
-      List<BeeColumn> columns, List<String> oldValues, List<String> newValues) {
+      List<BeeColumn> columns, List<String> oldValues, List<String> newValues,
+      Collection<RowChildren> children) {
     if (columns.isEmpty()) {
       return null;
     }
@@ -584,6 +585,11 @@ public class DataUtils {
     for (int i = 0; i < columns.size(); i++) {
       rowSet.getRow(0).preliminaryUpdate(i, newValues.get(i));
     }
+    
+    if (!BeeUtils.isEmpty(children)) {
+      rowSet.getRow(0).setChildren(children);
+    }
+    
     return rowSet;
   }
 

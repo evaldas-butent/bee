@@ -94,6 +94,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -2232,7 +2233,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return;
     }
 
-    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
+    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
+        form.getChildrenForInsert(), callback);
 
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().onReadyForInsert(event);
@@ -2252,7 +2254,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   private void saveChanges(FormView form, IsRow oldRow, IsRow newRow, RowCallback callback) {
-    SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), callback);
+    Collection<RowChildren> children = (form == null) ? null : form.getChildrenForUpdate();
+    SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), children,
+        callback);
 
     if (form != null) {
       form.onSaveChanges(event);

@@ -98,7 +98,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       List<String> values = Lists.newArrayList(BeeUtils.toString(gridView.getRelId()),
           BeeUtils.toString(cargoId));
 
-      Queries.insert(gridView.getViewName(), columns, values, new RowCallback() {
+      Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
         @Override
         public void onSuccess(BeeRow row) {
           BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));

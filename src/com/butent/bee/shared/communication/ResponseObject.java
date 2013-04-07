@@ -41,6 +41,14 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().addInfo(obj);
   }
 
+  public static ResponseObject parameterNorFound(String paramName) {
+    return new ResponseObject().addError("parameter not found:", paramName);
+  }
+
+  public static ResponseObject parameterNorFound(String service, String paramName) {
+    return new ResponseObject().addError(service, "parameter not found:", paramName);
+  }
+
   public static ResponseObject response(Object response) {
     return new ResponseObject().setResponse(response);
   }
@@ -72,6 +80,13 @@ public class ResponseObject implements BeeSerializable {
       cause = cause.getCause();
     }
     addError(cause.toString());
+    return this;
+  }
+
+  public ResponseObject addErrorsFrom(ResponseObject other) {
+    for (String err : other.getErrors()) {
+      addError(err);
+    }
     return this;
   }
 

@@ -796,7 +796,7 @@ public class CalendarKeeper {
       @Override
       public void onSuccess() {
         int updCount = Queries.update(VIEW_USER_CALENDARS, rowSet.getColumns(), oldRow, newRow,
-            null);
+            getSettingsForm().getChildrenForUpdate(), null);
 
         if (updCount > 0) {
           cp.updateSettings(newRow, rowSet.getColumns());

@@ -172,7 +172,7 @@ class TaskBuilder extends AbstractFormInterceptor {
             for (long taskId : tasks) {
               List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
                   BeeUtils.toString(result), fileInfo.getCaption());
-              Queries.insert(VIEW_TASK_FILES, columns, values, null);
+              Queries.insert(VIEW_TASK_FILES, columns, values);
             }
           }
         });

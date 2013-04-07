@@ -66,10 +66,11 @@ public class Service {
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
-  public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
-
+  public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
+  public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
+  
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
   
@@ -145,8 +146,14 @@ public class Service {
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
   public static final String VAR_VIEW_LIST = RPC_VAR_PREFIX + "view_list";
 
+  public static final String VAR_TABLE = RPC_VAR_PREFIX + "table";
   public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
   public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";
+
+  public static final String VAR_FILTER_COLUMN = RPC_VAR_PREFIX + "filter_column";
+  public static final String VAR_VALUE_COLUMN = RPC_VAR_PREFIX + "value_column";
+
+  public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
   
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 

@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -142,7 +144,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
     } else {
       int upd = Queries.update(dataInfo.getViewName(), dataInfo.getColumns(), formView.getOldRow(),
-          row, new RowCallback() {
+          row, formView.getChildrenForUpdate(), new RowCallback() {
             @Override
             public void onFailure(String... reason) {
               formView.notifySevere(reason);
@@ -214,9 +216,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       callback.onFailure("New Row", "all columns cannot be empty");
       return;
     }
+    
+    Collection<RowChildren> children = formView.getChildrenForInsert();
 
     if (formView.getFormInterceptor() != null) {
-      ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
+      ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback);
       formView.getFormInterceptor().onReadyForInsert(event);
 
       if (event.isConsumed()) {
@@ -227,7 +231,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       }
     }
 
-    Queries.insert(dataInfo.getViewName(), columns, values, new RowCallback() {
+    Queries.insert(dataInfo.getViewName(), columns, values, children, new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         if (callback == null) {

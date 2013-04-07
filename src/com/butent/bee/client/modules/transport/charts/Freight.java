@@ -167,7 +167,7 @@ class Freight extends OrderCargo {
     RowCallback callback = fire ? new RowUpdateCallback(viewName) : null;
 
     Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
-        Queries.asList(getTripId()), Queries.asList(newTripId), callback);
+        Queries.asList(getTripId()), Queries.asList(newTripId), null, callback);
   }
 
   private void acceptDrop(Object data) {

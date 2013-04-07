@@ -693,7 +693,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
             Data.getColumn(viewName, COL_ATTENDEE));
         List<String> values = Lists.newArrayList(Long.toString(appId), Long.toString(newAttendee));
 
-        Queries.insert(viewName, columns, values, null);
+        Queries.insert(viewName, columns, values);
       }
       changed = true;
     }
@@ -713,7 +713,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     List<String> newValues = Lists.newArrayList(BeeUtils.toString(newStart.getTime()),
         BeeUtils.toString(newEnd.getTime()));
 
-    Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
+    Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues, null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {

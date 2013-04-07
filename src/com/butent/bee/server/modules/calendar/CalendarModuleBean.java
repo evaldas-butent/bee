@@ -396,7 +396,7 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject doReport(RequestInfo reqInfo) {
     Integer paramRep = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, paramRep)) {
-      return ResponseObject.error(SVC_DO_REPORT, PARAM_REPORT, "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_DO_REPORT, PARAM_REPORT);
     }
 
     BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
@@ -776,7 +776,7 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject getCalendarAppointments(RequestInfo reqInfo) {
     long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
     if (!DataUtils.isId(calendarId)) {
-      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID);
     }
 
     Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
@@ -883,16 +883,16 @@ public class CalendarModuleBean implements BeeModule {
 
     String start = reqInfo.getParameter(PARAM_APPOINTMENT_START);
     if (!BeeUtils.isLong(start)) {
-      return ResponseObject.error(svc, PARAM_APPOINTMENT_START, "parameter not found");
+      return ResponseObject.parameterNorFound(svc, PARAM_APPOINTMENT_START);
     }
     String end = reqInfo.getParameter(PARAM_APPOINTMENT_END);
     if (!BeeUtils.isLong(end)) {
-      return ResponseObject.error(svc, PARAM_APPOINTMENT_END, "parameter not found");
+      return ResponseObject.parameterNorFound(svc, PARAM_APPOINTMENT_END);
     }
 
     String attIds = reqInfo.getParameter(PARAM_ATTENDEES);
     if (BeeUtils.isEmpty(attIds)) {
-      return ResponseObject.error(svc, PARAM_ATTENDEES, "parameter not found");
+      return ResponseObject.parameterNorFound(svc, PARAM_ATTENDEES);
     }
 
     CompoundFilter filter = Filter.and();
@@ -966,7 +966,7 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject getReportOptions(RequestInfo reqInfo) {
     Integer report = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, report)) {
-      return ResponseObject.error(SVC_GET_REPORT_OPTIONS, PARAM_REPORT, "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_GET_REPORT_OPTIONS, PARAM_REPORT);
     }
 
     long userId = usr.getCurrentUserId();
@@ -1032,7 +1032,7 @@ public class CalendarModuleBean implements BeeModule {
 
     long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
     if (!DataUtils.isId(calendarId)) {
-      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID);
     }
 
     long userId = usr.getCurrentUserId();
@@ -1206,13 +1206,12 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject saveActiveView(RequestInfo reqInfo) {
     Long rowId = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_USER_CALENDAR_ID));
     if (!DataUtils.isId(rowId)) {
-      return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_USER_CALENDAR_ID,
-          "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_SAVE_ACTIVE_VIEW, PARAM_USER_CALENDAR_ID);
     }
 
     Integer activeView = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_ACTIVE_VIEW));
     if (!BeeUtils.isOrdinal(ViewType.class, activeView)) {
-      return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_ACTIVE_VIEW, "parameter not found");
+      return ResponseObject.parameterNorFound(SVC_SAVE_ACTIVE_VIEW, PARAM_ACTIVE_VIEW);
     }
 
     SqlUpdate update = new SqlUpdate(TBL_USER_CALENDARS).addConstant(COL_ACTIVE_VIEW, activeView)
@@ -1348,7 +1347,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
-        newRowSet.getRow(0));
+        newRowSet.getRow(0), null);
 
     ResponseObject response;
     if (updated == null) {

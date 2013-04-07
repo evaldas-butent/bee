@@ -199,7 +199,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
     RowCallback callback = fire ? new RowInsertCallback(viewName) : null;
 
-    Queries.insert(viewName, columns, values, callback);
+    Queries.insert(viewName, columns, values, null, callback);
   }
   
   String getCargoDescription() {

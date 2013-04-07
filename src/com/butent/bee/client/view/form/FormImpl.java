@@ -45,6 +45,8 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.HandlesValueChange;
+import com.butent.bee.client.ui.HasRowChildren;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetCreationCallback;
@@ -75,6 +77,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -90,6 +93,7 @@ import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -144,7 +148,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       DisplayWidget displayWidget = null;
 
-      if (type.isDisplay()) {
+      if (type.isDisplay() || widget instanceof HandlesRendering) {
         AbstractCellRenderer renderer = null;
         if (getFormInterceptor() != null) {
           renderer = getFormInterceptor().getRenderer(result);
@@ -159,12 +163,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         if (widget instanceof HandlesRendering) {
           ((HandlesRendering) widget).setRenderer(renderer);
-          displayWidget = new DisplayWidget(index, null, result);
-        } else {
-          displayWidget = new DisplayWidget(index, renderer, result);
+          renderer = null;
         }
 
-        getDisplayWidgets().add(displayWidget);
+        if (type.isDisplay()) {
+          displayWidget = new DisplayWidget(index, renderer, result);
+          getDisplayWidgets().add(displayWidget);
+        }
       }
 
       if (type.isEditable()) {
@@ -489,6 +494,38 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public Collection<RowChildren> getChildrenForInsert() {
+    Collection<RowChildren> result = Lists.newArrayList();
+    
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (editableWidget.getEditor() instanceof HasRowChildren) {
+        RowChildren children = ((HasRowChildren) editableWidget.getEditor()).getChildrenForInsert();
+        if (children != null) {
+          result.add(children);
+        }
+      }
+    }
+    
+    return result;
+  }
+
+  @Override
+  public Collection<RowChildren> getChildrenForUpdate() {
+    Collection<RowChildren> result = Lists.newArrayList();
+    
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (editableWidget.getEditor() instanceof HasRowChildren) {
+        RowChildren children = ((HasRowChildren) editableWidget.getEditor()).getChildrenForUpdate();
+        if (children != null) {
+          result.add(children);
+        }
+      }
+    }
+    
+    return result;
+  }
+
+  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
@@ -766,19 +803,34 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
-    List<String> messages = Lists.newArrayList();
-
-    final BeeRowSet rowSet =
-        DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow());
-
     boolean isNew = DataUtils.isNewRow(getActiveRow());
 
+    List<String> messages = Lists.newArrayList();
+    List<String> updatedLabels = Lists.newArrayList();
+
+    final BeeRowSet rowSet =
+        DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow(), null);
     if (!DataUtils.isEmpty(rowSet)) {
-      String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
-      messages.add(msg + BeeConst.STRING_SPACE
-          + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
+      updatedLabels.addAll(rowSet.getColumnLabels());
+    }
+    
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (editableWidget.getEditor() instanceof HandlesValueChange
+          && ((HandlesValueChange) editableWidget.getEditor()).isValueChanged()) {
+
+        String label = ((HandlesValueChange) editableWidget.getEditor()).getLabel();
+        if (!BeeUtils.isEmpty(label) && !updatedLabels.contains(label)) {
+          updatedLabels.add(label);
+        }
+      }
     }
 
+    if (!updatedLabels.isEmpty()) {
+      String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
+      messages.add(msg + BeeConst.STRING_SPACE
+          + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, updatedLabels));
+    }
+    
     if (getFormInterceptor() != null) {
       getFormInterceptor().onClose(messages, getOldRow(), getActiveRow());
     }
@@ -974,7 +1026,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
     };
 
-    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, callback);
+    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, getChildrenForInsert(),
+        callback);
     if (getFormInterceptor() != null) {
       getFormInterceptor().onReadyForInsert(event);
       if (event.isConsumed()) {
