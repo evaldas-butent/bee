@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
@@ -40,6 +41,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
       GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch,
       Order order);
 
+  void ensureRelId(IdCallback callback);
+  
   int estimatePageSize(int containerWidth, int containerHeight);
 
   void formCancel();

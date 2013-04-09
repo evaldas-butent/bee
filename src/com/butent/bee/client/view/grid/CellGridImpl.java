@@ -16,6 +16,8 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -954,6 +956,46 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     });
 
     return true;
+  }
+
+  @Override
+  public void ensureRelId(final IdCallback callback) {
+    Assert.notNull(callback);
+
+    if (DataUtils.isId(getRelId())) {
+      callback.onSuccess(getRelId());
+      return;
+    }
+
+    Assert.isTrue(isChild());
+
+    FormView parentForm = UiHelper.getForm(this);
+    if (parentForm == null) {
+      callback.onFailure("parent form not found");
+      return;
+    }
+
+    if (parentForm.getViewPresenter() instanceof ParentRowCreator) {
+      ((ParentRowCreator) parentForm.getViewPresenter()).createParentRow(this,
+          new Callback<IsRow>() {
+            @Override
+            public void onFailure(String... reason) {
+              callback.onFailure(reason);
+            }
+
+            @Override
+            public void onSuccess(IsRow result) {
+              if (DataUtils.isId(getRelId())) {
+                callback.onSuccess(getRelId());
+              } else {
+                callback.onFailure("parent row not created");
+              }
+            }
+          });
+
+    } else {
+      callback.onFailure("parent row creator not available");
+    }
   }
 
   @Override

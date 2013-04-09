@@ -8,7 +8,7 @@ import com.google.common.collect.Range;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.shared.BeeConst;
@@ -153,7 +153,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final Freight freight = (Freight) data;
       String title = freight.getCargoAndTripTitle();
 
-      Trip.createForCargo(this, freight, title, false, new Queries.IdCallback() {
+      Trip.createForCargo(this, freight, title, false, new IdCallback() {
         @Override
         public void onSuccess(Long result) {
           freight.updateTrip(result, true);
@@ -164,7 +164,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final OrderCargo orderCargo = (OrderCargo) data;
       String title = orderCargo.getTitle();
 
-      Trip.createForCargo(this, orderCargo, title, false, new Queries.IdCallback() {
+      Trip.createForCargo(this, orderCargo, title, false, new IdCallback() {
         @Override
         public void onSuccess(Long result) {
           orderCargo.assignToTrip(result, true);

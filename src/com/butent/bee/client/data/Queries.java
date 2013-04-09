@@ -46,9 +46,6 @@ public class Queries {
   public abstract static class DataCallback extends Callback<Collection<BeeRowSet>> {
   }
 
-  public abstract static class IdCallback extends Callback<Long> {
-  }
-
   public abstract static class IdListCallback extends Callback<String> {
   }
 

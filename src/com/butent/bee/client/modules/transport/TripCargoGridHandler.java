@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -86,17 +87,24 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
     }
 
-    private void addCargo(long cargoId) {
+    private void addCargo(final long cargoId) {
       if (!DataUtils.isId(cargoId)) {
         return;
       }
       dialog.close();
+      
+      gridView.ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          insertCargo(result, cargoId);
+        }
+      });
+    }
 
+    private void insertCargo(long tripId, long cargoId) {
       List<BeeColumn> columns = DataUtils.getColumns(gridView.getDataColumns(), tripIndex,
           cargoIndex);
-
-      List<String> values = Lists.newArrayList(BeeUtils.toString(gridView.getRelId()),
-          BeeUtils.toString(cargoId));
+      List<String> values = Queries.asList(tripId, cargoId);
 
       Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
         @Override
