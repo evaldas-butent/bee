@@ -147,6 +147,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     @Override
     public void onSuccess(BeeRow result) {
       closeEditForm();
+
+      if (getGridInterceptor() != null) {
+        getGridInterceptor().afterUpdateRow(result);
+      }
     }
   }
 
@@ -942,6 +946,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         if (callback != null) {
           callback.onSuccess(result);
         }
+
+        if (getGridInterceptor() != null) {
+          getGridInterceptor().afterInsertRow(result);
+        }
       }
     });
 
@@ -1003,6 +1011,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           @Override
           public void onSuccess(BeeRow result) {
             finishNewRow(result);
+
+            if (getGridInterceptor() != null) {
+              getGridInterceptor().afterInsertRow(result);
+            }
           }
         });
 
@@ -1021,6 +1033,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           @Override
           public void onSuccess(BeeRow result) {
             finishNewRow(null);
+
+            if (getGridInterceptor() != null) {
+              getGridInterceptor().afterUpdateRow(result);
+            }
           }
         });
       }
@@ -1235,7 +1251,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public void onEditStart(EditStartEvent event) {
     Assert.notNull(event);
-    
+
     if (getEditForm() != null || BeeUtils.isEmpty(getEditFormName())) {
       openEditor(event);
     } else {
@@ -1262,7 +1278,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return false;
     }
   }
-  
+
   @Override
   public void onResize() {
     pendingResize.clear();
@@ -1470,7 +1486,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
                   newRowPending = true;
                 }
               }
-              
+
               if (editPending) {
                 openEditor(getPendingEditStartEvent());
                 setPendingEditStartEvent(null);
@@ -2450,7 +2466,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
-      String oldValue, String newValue, boolean rowMode) {
+      String oldValue, String newValue, final boolean rowMode) {
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
 
@@ -2463,6 +2479,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       @Override
       public void onSuccess(BeeRow result) {
+        if (getGridInterceptor() != null) {
+          getGridInterceptor().afterUpdateCell(dataColumn, result, rowMode);
+        }
       }
     };
 

@@ -77,6 +77,18 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void afterInsertRow(IsRow result) {
+  }
+
+  @Override
+  public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
+  }
+
+  @Override
+  public void afterUpdateRow(IsRow result) {
+  }
+
+  @Override
   public boolean beforeAction(Action action, GridPresenter presenter) {
     return true;
   }

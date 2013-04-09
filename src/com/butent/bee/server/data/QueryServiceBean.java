@@ -334,10 +334,10 @@ public class QueryServiceBean {
     SqlSelect query = new SqlSelect().addFrom(tableName).addFields(tableName, resultColumn);
     query.setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
     query.addOrder(tableName, sys.getIdName(tableName));
-    
+
     return getLongColumn(query);
   }
-  
+
   public SimpleRow getRow(IsQuery query) {
     SimpleRowSet res = getData(query);
     Assert.notNull(res);
@@ -661,7 +661,7 @@ public class QueryServiceBean {
     long rowId = 0;
     boolean editable = (view != null)
         ? sys.getTable(view.getSourceName()).areRecordsEditable() : true;
-        
+
     int cc = result.getNumberOfColumns();
 
     while (rs.next()) {
@@ -686,9 +686,10 @@ public class QueryServiceBean {
           case DECIMAL:
             if (column.getScale() > 0) {
               values[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
-              break;
+            } else {
+              values[i] = rs.getString(colIndex);
             }
-            //$FALL-THROUGH$
+            break;
           default:
             values[i] = rs.getString(colIndex);
         }

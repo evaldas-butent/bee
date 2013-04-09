@@ -41,9 +41,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -71,7 +73,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public Map<String, Filter> getInitialFilters() {
-      IsRow row = getFormView().getActiveRow();
+      IsRow row = currentRow;
 
       if (row == null) {
         return super.getInitialFilters();
@@ -82,13 +84,12 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(gridView.getDataIndex(COL_ASSESSOR), getFormView().getActiveRow().getId());
+      newRow.setValue(gridView.getDataIndex(COL_ASSESSOR), currentRow.getId());
       return true;
     }
 
     protected Filter getFilter() {
-      return ComparisonFilter.isEqual(COL_ASSESSOR,
-          new LongValue(getFormView().getActiveRow().getId()));
+      return ComparisonFilter.isEqual(COL_ASSESSOR, new LongValue(currentRow.getId()));
     }
   }
 
@@ -97,6 +98,16 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     private static final String SERVICE_ASSESSOR = "ServiceAssessor";
     private static final String COMPANY = "Company";
     private static final String FORWARDER = "Forwarder";
+
+    @Override
+    public void afterInsertRow(IsRow result) {
+      refreshForm();
+    }
+
+    @Override
+    public void afterUpdateRow(IsRow result) {
+      refreshForm();
+    }
 
     @Override
     public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
@@ -177,6 +188,24 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     }
 
     @Override
+    public void afterDeleteRow(long rowId) {
+      refreshForm();
+    }
+
+    @Override
+    public void afterInsertRow(IsRow result) {
+      refreshForm();
+    }
+
+    @Override
+    public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
+      if (BeeUtils.inListSame(column.getId(),
+          COL_SERVICE_DATE, COL_SERVICE_AMOUNT, ExchangeUtils.FLD_CURRENCY)) {
+        refreshForm();
+      }
+    }
+
+    @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
       if (expense) {
         newRow.setValue(gridView.getDataIndex(COL_SERVICE_EXPENSE), true);
@@ -186,6 +215,11 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
   }
 
   private class AssessorsGrid extends AssessmentGrid {
+    @Override
+    public void afterDeleteRow(long rowId) {
+      getFormView().refresh(false);
+    }
+
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, final IsRow activeRow,
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
@@ -204,7 +238,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
                     Lists.newArrayList(BeeUtils.toString(oldStatus),
                         activeRow.getString(Data.getColumnIndex(view, COL_ASSESSOR_NOTES))),
                     Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
-                        value), null,                        
+                        value), null,
                     new RowUpdateCallback(view));
               }
             });
@@ -233,9 +267,9 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
       newRow.setValue(gridView.getDataIndex(COL_ASSESSOR_NOTES),
-          getFormView().getActiveRow().getString(getFormView().getDataIndex(COL_ASSESSOR_NOTES)));
+          currentRow.getString(getFormView().getDataIndex(COL_ASSESSOR_NOTES)));
 
-      int status = getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
+      int status = currentRow.getInteger(getFormView().getDataIndex(COL_STATUS));
 
       if (AssessmentStatus.ACTIVE.is(status)) {
         newRow.setValue(gridView.getDataIndex(COL_STATUS), status);
@@ -245,10 +279,8 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
 
     @Override
     protected Filter getFilter() {
-      IsRow row = getFormView().getActiveRow();
-
-      if (isPrimaryRequest(row)) {
-        return ComparisonFilter.compareId(Operator.NE, row.getId());
+      if (isPrimaryRequest(currentRow)) {
+        return ComparisonFilter.compareId(Operator.NE, currentRow.getId());
       } else {
         return super.getFilter();
       }
@@ -277,12 +309,10 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
         orderStatusIdx = formView.getDataIndex("OrderStatus");
         rowCallback = new RowUpdateCallback(formView.getViewName());
       }
-      IsRow row = getFormView().getActiveRow();
-
-      if (isPrimaryRequest(row) && !BeeUtils.isEmpty(preconditionError)) {
+      if (isPrimaryRequest(currentRow) && !BeeUtils.isEmpty(preconditionError)) {
         Queries.getRowCount(TBL_CARGO_ASSESSORS, Filter.and(ComparisonFilter.isEqual(COL_CARGO,
-            new LongValue(row.getLong(getFormView().getDataIndex(COL_CARGO)))),
-            ComparisonFilter.compareId(Operator.NE, row.getId()),
+            new LongValue(currentRow.getLong(getFormView().getDataIndex(COL_CARGO)))),
+            ComparisonFilter.compareId(Operator.NE, currentRow.getId()),
             ComparisonFilter.isNotEqual(COL_STATUS, new IntegerValue(status.ordinal()))),
             new IntCallback() {
               @Override
@@ -304,7 +334,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
         @Override
         public void onConfirm() {
           final IsRow oldRow = formView.getOldRow();
-          final IsRow newRow = formView.getActiveRow();
+          final IsRow newRow = currentRow;
 
           final List<Integer> indexes = Lists.newArrayList(statusIdx);
           List<BeeColumn> columns = Lists.newArrayList(DataUtils.getColumn(COL_STATUS,
@@ -410,6 +440,8 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     });
   }
 
+  private IsRow currentRow = null;
+
   private final BeeButton cmdNew = new BeeButton("Užklausimas",
       new StatusUpdater(AssessmentStatus.NEW, null));
 
@@ -460,8 +492,8 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
           @Override
           public void onClick(ClickEvent event) {
             String printView = "PrintOrder";
-            RowEditor.openRow(printView + name, Data.getDataInfo(printView),
-                getFormView().getActiveRow().getId(), true, null, null);
+            RowEditor.openRow(printView + name, Data.getDataInfo(printView), currentRow.getId(),
+                true, null, null);
           }
         });
       }
@@ -473,13 +505,13 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
-    if (row == null) {
+    if (currentRow == null) {
       return;
     }
-    boolean primary = isPrimaryRequest(row);
-    boolean owner = Objects.equal(row.getLong(form.getDataIndex(COL_ASSESSOR_MANAGER)),
+    boolean primary = isPrimaryRequest(currentRow);
+    boolean owner = Objects.equal(currentRow.getLong(form.getDataIndex(COL_ASSESSOR_MANAGER)),
         BeeKeeper.getUser().getUserId());
-    int status = row.getInteger(form.getDataIndex(COL_STATUS));
+    int status = currentRow.getInteger(form.getDataIndex(COL_STATUS));
 
     header.setCaption(AssessmentStatus.in(status,
         AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED, AssessmentStatus.CANCELED)
@@ -532,12 +564,13 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
       Widget cap = form.getWidgetByName(item + "Total");
 
       if (cap != null) {
-        double total = BeeUtils.round(BeeUtils.unbox(row.getDouble(form.getDataIndex(item))), 2);
+        double total =
+            BeeUtils.round(BeeUtils.unbox(currentRow.getDouble(form.getDataIndex(item))), 2);
         cap.getElement().setInnerText(total != 0 ? BeeUtils.parenthesize(total) : "");
       }
     }
     if (primary) {
-      updateTotal(form, row, form.getWidgetByName("Total"));
+      updateTotal(form, currentRow, form.getWidgetByName("Total"));
     }
     Widget orderPanel = form.getWidgetByName("OrderPanel");
 
@@ -551,7 +584,24 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
     return new OrderAssessmentForm();
   }
 
+  @Override
+  public void onSetActiveRow(IsRow row) {
+    currentRow = row;
+  }
+
   private boolean isPrimaryRequest(IsRow row) {
     return !DataUtils.isId(row.getLong(getFormView().getDataIndex(COL_ASSESSOR)));
+  }
+
+  private void refreshForm() {
+    final FormView form = getFormView();
+
+    Queries.getRow(form.getViewName(), currentRow.getId(), new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow row) {
+        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), row));
+        form.updateRow(row, false);
+      }
+    });
   }
 }

@@ -49,6 +49,12 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void afterDeleteRow(long rowId);
 
+  void afterInsertRow(IsRow result);
+
+  void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode);
+
+  void afterUpdateRow(IsRow result);
+
   boolean beforeAction(Action action, GridPresenter presenter);
 
   boolean beforeAddRow(GridPresenter presenter);

@@ -208,7 +208,8 @@ public class ParamHolderBean {
     for (SimpleRow row : data) {
       BeeParameter parameter = new BeeParameter(module, row.getValue(FLD_NAME),
           NameUtils.getEnumByName(ParameterType.class, row.getValue(FLD_TYPE)),
-          row.getValue(FLD_DESCRIPTION), row.getBoolean(FLD_USER_MODE), row.getValue(FLD_VALUE));
+          row.getValue(FLD_DESCRIPTION), BeeUtils.unbox(row.getBoolean(FLD_USER_MODE)),
+          row.getValue(FLD_VALUE));
       putModuleParameter(parameter);
 
       if (!hasUserParameters) {

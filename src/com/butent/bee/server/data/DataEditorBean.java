@@ -149,7 +149,7 @@ public class DataEditorBean {
         }
       }
     }
-    
+
     return count;
   }
 
@@ -906,14 +906,16 @@ public class DataEditorBean {
             SqlDataType type = view.getColumnType(fldInfo.fieldAlias);
 
             switch (type) {
-              case DATE:
-                value = res.getDate(fldInfo.fieldAlias).serialize();
-                break;
-
               case BOOLEAN:
                 value = BooleanValue.pack(res.getBoolean(fldInfo.fieldAlias));
                 break;
-
+              case DATE:
+                value = res.getDate(fldInfo.fieldAlias).serialize();
+                break;
+              case DECIMAL:
+              case DOUBLE:
+                value = BeeUtils.removeTrailingZeros(value);
+                break;
               default:
                 break;
             }
@@ -1040,7 +1042,7 @@ public class DataEditorBean {
       response.addInfo(tableName, "inserted", insCnt, "children");
       count += insCnt;
     }
-    
+
     return count;
   }
 }

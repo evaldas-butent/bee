@@ -7,8 +7,7 @@ name="TransportClassifiers" label="Transporto klasifikatoriai" parent="Transport
   <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
   <Item name="AbsenceTypes" label="Nebuvimo darbe tipai" service="grid" parameters="AbsenceTypes" />
 
-  <Item name="ExpeditionTrips" label="Ekspedijavimo reisai" service="grid" parameters="ExpeditionTrips" separator="true" />
-  <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" />
+  <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" separator="true" />
   
   <Item name="VehicleTypes" label="Transporto priemonių tipai" service="grid" parameters="VehicleTypes" separator="true" />
   <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
