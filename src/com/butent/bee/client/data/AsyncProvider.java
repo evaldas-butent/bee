@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -39,7 +40,7 @@ import java.util.Map;
 public class AsyncProvider extends Provider {
 
   private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
-  
+
   private class QueryCallback extends Queries.RowSetCallback {
 
     private final Range<Integer> queryRange;
@@ -329,24 +330,45 @@ public class AsyncProvider extends Provider {
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
-      getDisplay().onMultiDelete(event);
+      if (hasPaging()) {
+        refresh(false);
+        getDisplay().onMultiDelete(event);
 
-      int rowCount = Math.max(getRowCount() - event.getSize(), 0);
-      getDisplay().setRowCount(rowCount, true);
+      } else {
+        resetRequests();
+        int rowCount = getRowCount();
+        int delCount = 0;
 
-      onRequest(false);
+        for (RowInfo rowInfo : event.getRows()) {
+          if (getDisplay().removeRowById(rowInfo.getId())) {
+            delCount++;
+          }
+        }
+
+        if (delCount > 0) {
+          getDisplay().setRowCount(Math.max(rowCount - delCount, 0), true);
+          getDisplay().refresh();
+        }
+      }
     }
   }
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    if (BeeUtils.same(event.getViewName(), getViewName())) {
-      getDisplay().onRowDelete(event);
+    if (BeeUtils.same(event.getViewName(), getViewName()) && getRowCount() > 0) {
+      if (hasPaging()) {
+        refresh(false);
+        getDisplay().onRowDelete(event);
 
-      int rowCount = Math.max(getRowCount() - 1, 0);
-      getDisplay().setRowCount(rowCount, true);
+      } else {
+        resetRequests();
+        int rowCount = getRowCount();
 
-      onRequest(false);
+        if (getDisplay().removeRowById(event.getRowId())) {
+          getDisplay().setRowCount(Math.max(rowCount - 1, 0), true);
+          getDisplay().refresh();
+        }
+      }
     }
   }
 

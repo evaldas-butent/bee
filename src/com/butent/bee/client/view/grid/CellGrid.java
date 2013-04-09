@@ -2061,6 +2061,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  @Override
   public void refresh() {
     if (getRowData().isEmpty()) {
       wasLayoutDone = false;
@@ -2085,6 +2086,19 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     List<Integer> colIndexes = getColumnIndexBySourceName(sourceName);
     for (int col : colIndexes) {
       updateCellContent(row, col);
+    }
+  }
+
+  @Override
+  public boolean removeRowById(long rowId) {
+    deleteRow(rowId);
+    
+    int rowIndex = getRowIndex(rowId);
+    if (isRowWithinBounds(rowIndex)) {
+      getRowData().remove(rowIndex);
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -2716,7 +2730,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     Assert.isTrue(isRowWithinBounds(row), "row index " + row + " out of bounds: page size "
         + getPageSize() + ", row count " + getRowCount() + ", data size " + getDataSize());
   }
-
+  
   private void deleteRow(long rowId) {
     if (getRenderedRows().contains(rowId)) {
       getRenderedRows().clear();

@@ -137,7 +137,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   private final List<String> originalRenderColumns = Lists.newArrayList();
 
   private RenderMode renderMode = null;
-  
+
   private String targetViewName = null;
 
   private Relation() {
@@ -199,7 +199,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public void enableEdit() {
     getAttributes().put(UiConstants.ATTR_EDIT_ENABLED, BeeConst.STRING_TRUE);
   }
-  
+
   public Map<String, String> getAttributes() {
     return attributes;
   }
@@ -215,7 +215,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public String getEditForm() {
     return getAttribute(UiConstants.ATTR_EDIT_FORM);
   }
-  
+
   public Integer getEditKey() {
     return BeeUtils.toIntOrNull(getAttribute(UiConstants.ATTR_EDIT_KEY));
   }
@@ -227,7 +227,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public String getEditViewName() {
     return getAttribute(UiConstants.ATTR_EDIT_VIEW_NAME);
   }
-  
+
   public Filter getFilter() {
     return filter;
   }
@@ -246,7 +246,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
         "Item Key", getItemKey(),
         "Render Mode", getRenderMode(),
         "Target View Name", getTargetViewName());
-    
+
     if (!getChoiceColumns().isEmpty()) {
       PropertyUtils.addProperties(info, "Choice Columns", getChoiceColumns());
     }
@@ -281,9 +281,13 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   public String getLabel() {
-    return getAttribute(UiConstants.ATTR_LABEL);
+    String label = getAttribute(UiConstants.ATTR_LABEL);
+    if (BeeUtils.isEmpty(label)) {
+      label = getAttribute(UiConstants.ATTR_CAPTION);
+    }
+    return label;
   }
-  
+
   public String getNewRowCaption() {
     return getAttribute(UiConstants.ATTR_NEW_ROW_CAPTION);
   }
@@ -349,10 +353,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return getRowRendererDescription() != null || getRowRender() != null
         || !BeeUtils.isEmpty(getRowRenderTokens()) || !BeeUtils.isEmpty(getItemKey());
   }
-  
+
   public void initialize(DataInfo.Provider provider, String targetView, Holder<String> target,
       Holder<List<String>> renderColumns, RenderMode mode) {
-    
+
     setTargetViewName(targetView);
 
     setOriginalTarget(target.get());
@@ -507,7 +511,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       setSearchableColumns(getChoiceColumns());
     }
   }
-  
+
   public boolean isEditEnabled() {
     return BeeConst.isTrue(getAttribute(UiConstants.ATTR_EDIT_ENABLED));
   }
@@ -699,7 +703,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
         return Lists.newArrayList(original);
       }
     }
-    
+
     return RelationUtils.getRenderColumns(targetInfo, resolved);
   }
 

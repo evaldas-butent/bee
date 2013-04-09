@@ -41,11 +41,11 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().addInfo(obj);
   }
 
-  public static ResponseObject parameterNorFound(String paramName) {
+  public static ResponseObject parameterNotFound(String paramName) {
     return new ResponseObject().addError("parameter not found:", paramName);
   }
 
-  public static ResponseObject parameterNorFound(String service, String paramName) {
+  public static ResponseObject parameterNotFound(String service, String paramName) {
     return new ResponseObject().addError(service, "parameter not found:", paramName);
   }
 

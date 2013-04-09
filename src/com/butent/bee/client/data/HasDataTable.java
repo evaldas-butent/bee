@@ -22,15 +22,19 @@ import java.util.List;
 public interface HasDataTable extends HasSortHandlers, HandlesDeleteEvents, HandlesUpdateEvents,
     HasSelectionCountChangeHandlers, HasEditState, HasActiveRowChangeHandlers, HasDataRows {
 
-  HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler);
-  
   HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler);
+  
+  HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler);
   
   int getPageSize();
   
   int getPageStart();
 
   int getRowCount();
+  
+  void refresh();
+  
+  boolean removeRowById(long rowId);
 
   void reset();
   

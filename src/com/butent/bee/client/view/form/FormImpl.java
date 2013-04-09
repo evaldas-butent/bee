@@ -1049,6 +1049,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void refresh() {
+    refresh(true);
+  }
+  
+  @Override
   public void refresh(boolean refreshChildren) {
     refreshData(refreshChildren, getActiveRow() != null);
   }
@@ -1089,6 +1094,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public void refreshChildWidgets(IsRow rowValue) {
     BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), rowValue,
         isRowEnabled(rowValue)), getId());
+  }
+
+  @Override
+  public boolean removeRowById(long rowId) {
+    if (getActiveRow() != null && getActiveRow().getId() == rowId) {
+      setActiveRow(null);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Override
@@ -1173,7 +1188,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       fireScopeChange();
     }
   }
-
+  
   @Override
   public void setRowData(List<? extends IsRow> values, boolean refresh) {
     if (BeeUtils.isEmpty(values)) {

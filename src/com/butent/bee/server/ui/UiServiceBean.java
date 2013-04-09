@@ -382,7 +382,7 @@ public class UiServiceBean {
   private ResponseObject getData(RequestInfo reqInfo) {
     String viewList = reqInfo.getParameter(Service.VAR_VIEW_LIST);
     if (BeeUtils.isEmpty(viewList)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VIEW_LIST);
+      return ResponseObject.parameterNotFound(Service.VAR_VIEW_LIST);
     }
 
     List<String> viewNames = NameUtils.toList(viewList);
@@ -492,22 +492,22 @@ public class UiServiceBean {
   private ResponseObject getRelatedValues(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(Service.VAR_TABLE);
     if (BeeUtils.isEmpty(tableName)) {
-      return ResponseObject.parameterNorFound(Service.VAR_TABLE);
+      return ResponseObject.parameterNotFound(Service.VAR_TABLE);
     }
     
     String filterColumn = reqInfo.getParameter(Service.VAR_FILTER_COLUMN);
     if (BeeUtils.isEmpty(filterColumn)) {
-      return ResponseObject.parameterNorFound(Service.VAR_FILTER_COLUMN);
+      return ResponseObject.parameterNotFound(Service.VAR_FILTER_COLUMN);
     }
     
     Long filterValue = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_VALUE));
     if (!DataUtils.isId(filterValue)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VALUE);
+      return ResponseObject.parameterNotFound(Service.VAR_VALUE);
     }
 
     String resultColumn = reqInfo.getParameter(Service.VAR_VALUE_COLUMN);
     if (BeeUtils.isEmpty(resultColumn)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VALUE_COLUMN);
+      return ResponseObject.parameterNotFound(Service.VAR_VALUE_COLUMN);
     }
     
     Long[] values = qs.getRelatedValues(tableName, filterColumn, filterValue, resultColumn);
@@ -709,22 +709,22 @@ public class UiServiceBean {
   private ResponseObject update(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(viewName)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VIEW_NAME);
+      return ResponseObject.parameterNotFound(Service.VAR_VIEW_NAME);
     }
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     if (BeeUtils.isEmpty(where)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VIEW_WHERE);
+      return ResponseObject.parameterNotFound(Service.VAR_VIEW_WHERE);
     }
 
     String column = reqInfo.getParameter(Service.VAR_COLUMN);
     if (BeeUtils.isEmpty(column)) {
-      return ResponseObject.parameterNorFound(Service.VAR_COLUMN);
+      return ResponseObject.parameterNotFound(Service.VAR_COLUMN);
     }
 
     String value = reqInfo.getParameter(Service.VAR_VALUE);
     if (BeeUtils.isEmpty(value)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VALUE);
+      return ResponseObject.parameterNotFound(Service.VAR_VALUE);
     }
 
     BeeView view = sys.getView(viewName);
@@ -761,17 +761,17 @@ public class UiServiceBean {
   private ResponseObject updateRelatedValues(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(viewName)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VIEW_NAME);
+      return ResponseObject.parameterNotFound(Service.VAR_VIEW_NAME);
     }
 
     Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_VIEW_ROW_ID));
     if (!DataUtils.isId(parentId)) {
-      return ResponseObject.parameterNorFound(Service.VAR_VIEW_ROW_ID);
+      return ResponseObject.parameterNotFound(Service.VAR_VIEW_ROW_ID);
     }
 
     String serialized = reqInfo.getParameter(Service.VAR_CHILDREN);
     if (BeeUtils.isEmpty(serialized)) {
-      return ResponseObject.parameterNorFound(Service.VAR_CHILDREN);
+      return ResponseObject.parameterNotFound(Service.VAR_CHILDREN);
     }
     
     Collection<RowChildren> children = Lists.newArrayList();
