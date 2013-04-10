@@ -39,6 +39,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 public class RowEditor {
@@ -171,8 +172,8 @@ public class RowEditor {
               result.setEditing(true);
               result.start(null);
 
-              openForm(result, dataInfo, row, modal || Popup.getActivePopup() != null, target,
-                  rowCallback, presenterCallback);
+              openForm(formDescription, result, dataInfo, row,
+                  modal || Popup.getActivePopup() != null, target, rowCallback, presenterCallback);
             }
           }
         });
@@ -215,12 +216,30 @@ public class RowEditor {
     });
   }
 
-  private static void openForm(final FormView formView, final DataInfo dataInfo,
-      final IsRow oldRow, final boolean modal, UIObject target, final RowCallback callback,
-      PresenterCallback presenterCallback) {
+  private static void openForm(FormDescription formDescription, final FormView formView,
+      final DataInfo dataInfo, final IsRow oldRow, final boolean modal, UIObject target,
+      final RowCallback callback, PresenterCallback presenterCallback) {
+    
+    Set<Action> enabledActions = EnumSet.of(Action.SAVE, Action.PRINT, Action.CLOSE);
+    Set<Action> disabledActions = Sets.newHashSet();
+    
+    if (formDescription != null) {
+      Set<Action> actions = formDescription.getEnabledActions();
+      if (!BeeUtils.isEmpty(actions)) {
+        disabledActions.addAll(enabledActions);
+        disabledActions.removeAll(actions);
+        enabledActions.retainAll(actions);
+      }
+      
+      actions = formDescription.getDisabledActions();
+      if (!BeeUtils.isEmpty(actions)) {
+        enabledActions.removeAll(actions);
+        disabledActions.addAll(actions);
+      }
+    }
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
-        DataUtils.getRowCaption(dataInfo, oldRow));
+        DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);
     final ModalForm dialog =
         modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false) : null;
 

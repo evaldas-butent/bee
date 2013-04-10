@@ -20,7 +20,7 @@ import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.EnumSet;
+import java.util.Set;
 
 public class RowPresenter extends AbstractPresenter implements Printable {
   
@@ -84,8 +84,10 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   
   private HandlesActions actionDelegate = null;
   
-  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption) {
-    HeaderView headerView = createHeader(formView.getCaption());
+  public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption,
+      Set<Action> enabledActions, Set<Action> disabledActions) {
+
+    HeaderView headerView = createHeader(formView.getCaption(), enabledActions, disabledActions);
 
     this.container = new Container(dataInfo, rowId, initialCaption);
     container.addStyleName(STYLE_CONTAINER);
@@ -149,12 +151,13 @@ public class RowPresenter extends AbstractPresenter implements Printable {
     this.actionDelegate = actionDelegate;
   }
 
-  private HeaderView createHeader(String caption) {
+  private HeaderView createHeader(String caption, Set<Action> enabledActions,
+      Set<Action> disabledActions) {
+
     HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, EnumSet.of(Action.SAVE, Action.CLOSE),
-        Action.NO_ACTIONS);
+    formHeader.create(caption, false, false, null, enabledActions, disabledActions);
     formHeader.addCaptionStyle(STYLE_CAPTION);
     
     return formHeader; 
