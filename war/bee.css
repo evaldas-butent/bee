@@ -281,7 +281,7 @@ body {
   right: 5%;
   top: 5%;
   bottom : 5%;
-  padding-left: -webkit-calc(45% - 70px);
+  padding-left: calc(45% - 70px);
   border: 2px dashed #aaa;
   border-radius: 50%;
 }
@@ -725,7 +725,7 @@ body {
 }
 
 .bee-DataSelector-editableInput {
-  width: -webkit-calc(100% - 16px);
+  width: calc(100% - 16px);
   border: none !important;
 }
 .bee-DataSelector-editableInput:focus {
@@ -1440,7 +1440,7 @@ body {
 }
 
 .bee-CentralScrutinizer > .bee-StackHeader {
-  width: -webkit-calc(100% - 15px);
+  width: calc(100% - 15px);
   border: 1px solid WhiteSmoke;
   border-left: 5px solid white;
 }
@@ -1451,11 +1451,11 @@ body {
 
 .bee-CentralScrutinizer > .bee-StackContent {
   background-color: white;
-  width: -webkit-calc(100% - 11px);
+  width: calc(100% - 11px);
   border: 1px solid WhiteSmoke;
 }
 .bee-CentralScrutinizer > .bee-FavoritesDisplay {
-  width: -webkit-calc(100% - 9px) !important;
+  width: calc(100% - 9px) !important;
 }
 
 .bee-Appliance-icon {
@@ -1595,7 +1595,7 @@ body {
   background-color: #eee;
 }
 .bee-FilterSupplier-selected {
-  background-image: -webkit-linear-gradient(top, #4D90FE, #357AE8);
+  background-image: linear-gradient(to bottom, #4D90FE, #357AE8);
   color: white;
 }
 .bee-FilterSupplier-display td {

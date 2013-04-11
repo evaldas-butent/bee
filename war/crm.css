@@ -88,7 +88,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  background-image: -webkit-linear-gradient(right, #D14836, white);
+  background-image: linear-gradient(to left, #D14836, white);
 }
 .bee-crm-SlackLate-label {
   position: absolute;
@@ -103,7 +103,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  background-image: -webkit-linear-gradient(right, yellow, white);  
+  background-image: linear-gradient(to left, yellow, white);  
 }
 .bee-crm-SlackScheduled-label {
   position: absolute;
@@ -132,10 +132,10 @@
   margin-bottom: 5px;
 }
 .bee-crm-FilterSupplier-Slack-late {
-  background-image: -webkit-linear-gradient(top, #DD4B39, #D14836);
+  background-image: linear-gradient(to bottom, #DD4B39, #D14836);
 }
 .bee-crm-FilterSupplier-Slack-scheduled {
-  background-image: -webkit-linear-gradient(top, #4D90FE, #4787ED);  
+  background-image: linear-gradient(to bottom, #4D90FE, #4787ED);  
 }
 
 .bee-crm-Mode-new,

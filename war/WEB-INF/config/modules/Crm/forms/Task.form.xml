@@ -131,6 +131,6 @@
     </FlowPanel>
 
     <FlowPanel name="TaskEvents" class="flexible bee-crm-taskEvent-container" 
-      style="margin-left: 15px; overflow: auto; height: -webkit-calc(100% - 5px);" />
+      style="margin-left: 15px; overflow: auto; height: calc(100% - 5px);" />
   </FlowPanel>
 </f:Form>

@@ -539,7 +539,7 @@
   position: absolute;
   left: 35px;
   top: 20px;
-  -webkit-transition: top 200ms;
+  transition: top 200ms;
 }
 .bee-cal-Controller-closed .bee-cal-Controller-datePicker {
   top: -300px;
@@ -556,7 +556,7 @@
   top: 250px;
   bottom: 80px;
   overflow: auto;
-  -webkit-transition: top 200ms;
+  transition: top 200ms;
 }
 
 .bee-cal-Controller-table {
