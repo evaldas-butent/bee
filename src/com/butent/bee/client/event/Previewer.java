@@ -8,6 +8,7 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -17,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class Previewer implements NativePreviewHandler, HasInfo {
+  
+  public interface PreviewConsumer extends Consumer<NativePreviewEvent> {
+  }
   
   private static class ComparableHandler implements Comparable<ComparableHandler> {
     private final int index;

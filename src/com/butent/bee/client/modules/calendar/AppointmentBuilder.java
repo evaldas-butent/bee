@@ -109,7 +109,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private class ModalCallback extends InputCallback {
     @Override
     public String getErrorMessage() {
-      if (getFormView().checkOnSave() && AppointmentBuilder.this.validate()) {
+      if (getFormView().checkOnSave(null) && AppointmentBuilder.this.validate()) {
         return null;
       } else {
         return InputBoxes.SILENT_ERROR;
@@ -119,7 +119,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     @Override
     public void onClose(final CloseCallback closeCallback) {
       Assert.notNull(closeCallback);
-      if (!getFormView().checkOnClose()) {
+      if (!getFormView().checkOnClose(null)) {
         return;
       }
 

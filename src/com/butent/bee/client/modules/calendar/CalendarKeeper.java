@@ -778,7 +778,7 @@ public class CalendarKeeper {
     Global.inputWidget(caption, getSettingsForm(), new InputCallback() {
       @Override
       public String getErrorMessage() {
-        if (getSettingsForm().checkOnSave()
+        if (getSettingsForm().checkOnSave(null)
             && getSettingsForm().validate(getSettingsForm(), true)) {
           return null;
         } else {
@@ -788,7 +788,7 @@ public class CalendarKeeper {
 
       @Override
       public void onClose(CloseCallback closeCallback) {
-        if (getSettingsForm().checkOnClose()) {
+        if (getSettingsForm().checkOnClose(null)) {
           getSettingsForm().onClose(closeCallback);
         }
       }

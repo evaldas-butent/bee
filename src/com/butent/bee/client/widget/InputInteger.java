@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -104,6 +105,11 @@ public class InputInteger extends InputNumber {
     return BeeUtils.isInt(v);
   }
 
+  @Override
+  protected CharMatcher getDefaultCharMatcher() {
+    return InputNumber.intCharMatcher;
+  }
+  
   protected void initAttributes(String type, int min, int max, int step) {
     if (!BeeUtils.isEmpty(type)) {
       DomUtils.setInputType(this, type);

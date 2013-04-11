@@ -1,14 +1,15 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
@@ -309,24 +310,28 @@ public class RowEditor {
     };
 
     if (modal) {
-      dialog.setOnSave(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          if (formView.checkOnSave()) {
-            presenter.handleAction(Action.SAVE);
+      if (enabledActions.contains(Action.SAVE)) {
+        dialog.setOnSave(new PreviewConsumer() {
+          @Override
+          public void accept(NativePreviewEvent input) {
+            if (formView.checkOnSave(input)) {
+              presenter.handleAction(Action.SAVE);
+            }
           }
-        }
-      });
+        });
+      }
 
-      dialog.setOnEscape(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          if (formView.checkOnClose()) {
-            presenter.handleAction(Action.CLOSE);
+      if (enabledActions.contains(Action.CLOSE)) {
+        dialog.setOnEscape(new PreviewConsumer() {
+          @Override
+          public void accept(NativePreviewEvent input) {
+            if (formView.checkOnClose(input)) {
+              presenter.handleAction(Action.CLOSE);
+            }
           }
-        }
-      });
-
+        });
+      }
+      
       dialog.addOpenHandler(new OpenEvent.Handler() {
         @Override
         public void onOpen(OpenEvent event) {

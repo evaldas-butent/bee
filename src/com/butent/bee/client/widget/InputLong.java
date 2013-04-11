@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.ui.FormWidget;
@@ -37,6 +38,11 @@ public class InputLong extends InputNumber {
   @Override
   protected boolean checkType(String v) {
     return BeeUtils.isLong(v);
+  }
+
+  @Override
+  protected CharMatcher getDefaultCharMatcher() {
+    return InputNumber.intCharMatcher;
   }
 
   @Override

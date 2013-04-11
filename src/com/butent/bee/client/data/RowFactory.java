@@ -1,7 +1,7 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -11,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.NewRowPresenter;
@@ -132,11 +133,11 @@ public class RowFactory {
     if (dataInfo == null) {
       return;
     }
-    
+
     BeeRow row = createEmptyRow(dataInfo, true);
     createRow(dataInfo, row, BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()));
   }
-  
+
   public static void createRow(DataInfo dataInfo, BeeRow row) {
     Assert.notNull(dataInfo);
     createRow(dataInfo, row, dataInfo.getNewRowCaption());
@@ -146,7 +147,7 @@ public class RowFactory {
     Assert.notNull(dataInfo);
     createRow(dataInfo.getNewRowForm(), caption, dataInfo, row, null, null);
   }
-  
+
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       UIObject target, FormInterceptor formInterceptor, RowCallback rowCallback) {
     Assert.notEmpty(formName);
@@ -297,7 +298,8 @@ public class RowFactory {
     return result;
   }
 
-  private static void getForm(String formName, final String caption, FormInterceptor formInterceptor,
+  private static void getForm(String formName, final String caption,
+      FormInterceptor formInterceptor,
       final DataInfo dataInfo, final BeeRow row, final UIObject target,
       final RowCallback rowCallback) {
 
@@ -368,19 +370,19 @@ public class RowFactory {
       }
     });
 
-    dialog.setOnSave(new Scheduler.ScheduledCommand() {
+    dialog.setOnSave(new PreviewConsumer() {
       @Override
-      public void execute() {
-        if (formView.checkOnSave()) {
+      public void accept(NativePreviewEvent input) {
+        if (formView.checkOnSave(input)) {
           presenter.handleAction(Action.SAVE);
         }
       }
     });
 
-    dialog.setOnEscape(new Scheduler.ScheduledCommand() {
+    dialog.setOnEscape(new PreviewConsumer() {
       @Override
-      public void execute() {
-        if (formView.checkOnClose()) {
+      public void accept(NativePreviewEvent input) {
+        if (formView.checkOnClose(input)) {
           presenter.handleAction(Action.CLOSE);
         }
       }

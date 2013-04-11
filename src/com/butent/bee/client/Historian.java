@@ -255,7 +255,7 @@ public class Historian implements HasInfo {
       if (popup.hideOnEscape()) {
         popup.close();
       }
-      popup.getOnEscape().execute();
+      popup.getOnEscape().accept(null);
     }
     return true;
   }

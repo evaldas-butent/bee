@@ -113,7 +113,7 @@ public class NewMessageHandler extends AbstractFormInterceptor {
         public void onClick(ClickEvent ev) {
           Popup dialog = DomUtils.getParentPopup(getFormView().asWidget());
           saveMode = false;
-          dialog.getOnSave().execute();
+          dialog.getOnSave().accept(null);
           saveMode = true;
         }
       });

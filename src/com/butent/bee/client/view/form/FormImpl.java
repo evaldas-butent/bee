@@ -365,13 +365,27 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public boolean checkOnClose() {
-    return checkForUpdate(false) && !isChildEditing();
+  public boolean checkOnClose(NativePreviewEvent event) {
+    if (isChildEditing()) {
+      return false;
+    } else {
+      if (event != null) {
+        event.cancel();
+      }
+      return checkForUpdate(false);
+    }
   }
 
   @Override
-  public boolean checkOnSave() {
-    return checkForUpdate(false) && !isChildEditing();
+  public boolean checkOnSave(NativePreviewEvent event) {
+    if (isChildEditing()) {
+      return false;
+    } else {
+      if (event != null) {
+        event.cancel();
+      }
+      return checkForUpdate(false);
+    }
   }
 
   @Override

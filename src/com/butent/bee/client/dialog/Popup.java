@@ -31,6 +31,7 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.layout.Simple;
@@ -259,8 +260,9 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private boolean hideOnEscape = false;
   private boolean hideOnSave = false;
-  private ScheduledCommand onSave = null;
-  private ScheduledCommand onEscape = null;
+
+  private PreviewConsumer onSave = null;
+  private PreviewConsumer onEscape = null;
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
@@ -367,11 +369,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return keyboardPartner;
   }
 
-  public ScheduledCommand getOnEscape() {
+  public PreviewConsumer getOnEscape() {
     return onEscape;
   }
 
-  public ScheduledCommand getOnSave() {
+  public PreviewConsumer getOnSave() {
     return onSave;
   }
 
@@ -441,8 +443,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
             hide(CloseEvent.Cause.KEYBOARD, target, true);
           }
           if (getOnEscape() != null) {
-            event.cancel();
-            getOnEscape().execute();
+            getOnEscape().accept(event);
           }
 
         } else if (UiHelper.isSave(nativeEvent)) {
@@ -451,8 +452,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
             hide(CloseEvent.Cause.KEYBOARD, target, true);
           }
           if (getOnSave() != null) {
-            event.cancel();
-            getOnSave().execute();
+            getOnSave().accept(event);
           }
 
         } else if (nativeEvent.getKeyCode() == KeyCodes.KEY_TAB) {
@@ -510,11 +510,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     this.keyboardPartner = keyboardPartner;
   }
 
-  public void setOnEscape(ScheduledCommand onEscape) {
+  public void setOnEscape(PreviewConsumer onEscape) {
     this.onEscape = onEscape;
   }
 
-  public void setOnSave(ScheduledCommand onSave) {
+  public void setOnSave(PreviewConsumer onSave) {
     this.onSave = onSave;
   }
 

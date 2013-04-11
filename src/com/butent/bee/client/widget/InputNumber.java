@@ -28,6 +28,15 @@ import java.util.List;
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
 
+  public static final CharMatcher intCharMatcher =
+      CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
+          .or(CharMatcher.is(BeeConst.CHAR_SPACE))
+          .or(CharMatcher.is(BeeConst.CHAR_MINUS));
+
+  public static final CharMatcher numCharMatcher = intCharMatcher
+      .or(CharMatcher.is(BeeConst.CHAR_POINT))
+      .or(CharMatcher.is(BeeConst.CHAR_COMMA));
+  
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
@@ -229,7 +238,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   @Override
   protected CharMatcher getDefaultCharMatcher() {
-    return CharMatcher.anyOf("0123456789 ,.-eE");
+    return InputNumber.numCharMatcher;
   }
 
   @Override

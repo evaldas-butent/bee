@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -26,6 +27,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -460,8 +462,25 @@ public class InputBoxes {
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);
 
-    dialog.setOnSave(onSave);
-    dialog.setOnEscape(onClose);
+    dialog.setOnSave(new PreviewConsumer() {
+      @Override
+      public void accept(NativePreviewEvent input) {
+        if (input != null) {
+          input.cancel();
+        }
+        onSave.execute();
+      }
+    });
+
+    dialog.setOnEscape(new PreviewConsumer() {
+      @Override
+      public void accept(NativePreviewEvent input) {
+        if (input != null) {
+          input.cancel();
+        }
+        onClose.execute();
+      }
+    });
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 

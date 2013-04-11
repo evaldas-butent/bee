@@ -9,6 +9,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -25,6 +26,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -1563,24 +1565,24 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (asPopup) {
       ModalForm popup = new ModalForm(container, formView, true);
 
-      popup.setOnSave(new ScheduledCommand() {
+      popup.setOnSave(new PreviewConsumer() {
         @Override
-        public void execute() {
-          if (gfp.isActionEnabled(Action.SAVE) && formView.checkOnSave()) {
+        public void accept(NativePreviewEvent input) {
+          if (gfp.isActionEnabled(Action.SAVE) && formView.checkOnSave(input)) {
             gfp.handleAction(Action.SAVE);
           }
         }
       });
 
-      popup.setOnEscape(new ScheduledCommand() {
+      popup.setOnEscape(new PreviewConsumer() {
         @Override
-        public void execute() {
-          if (formView.checkOnClose()) {
+        public void accept(NativePreviewEvent input) {
+          if (formView.checkOnClose(input)) {
             gfp.handleAction(Action.CLOSE);
           }
         }
       });
-
+      
       if (edit) {
         setEditPopup(popup);
       } else {
