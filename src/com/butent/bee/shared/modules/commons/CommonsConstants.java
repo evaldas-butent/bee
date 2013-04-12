@@ -185,6 +185,8 @@ public class CommonsConstants {
 
   public static final String COL_THEME = "Theme";
 
+  public static final String ALS_COMPANY_NAME = "CompanyName";
+  
   public static final String FORM_NEW_COMPANY = "Company";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";

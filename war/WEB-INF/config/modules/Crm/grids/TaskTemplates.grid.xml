@@ -10,7 +10,9 @@
     <DataColumn name="Name" />
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
-    <DataColumn name="ExpectedDuration" caption="Trukmė" flexBasis="5" flexBasisUnit="em" />
+    <DataColumn name="ExpectedDuration" caption="Trukmė" flexBasis="5" flexBasisUnit="em">
+      <editor type="time" />
+    </DataColumn>
     <DataColumn name="Description" />
     <RelColumn name="Company" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"

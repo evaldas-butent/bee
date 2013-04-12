@@ -101,13 +101,14 @@
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
         <ChildSelector viewName="Companies" childTable="Relationships" renderColumns="Name"
-          editEnabled="true" style="&inp2x;" disablable="true" />
+          editEnabled="true" style="&inp2x;" disablable="true" label="Įmonės" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
         <ChildSelector viewName="Persons" childTable="Relationships"
-          renderColumns="FirstName LastName" editEnabled="true" style="&inp2x;" disablable="true" />
+          renderColumns="FirstName LastName" editEnabled="true" style="&inp2x;" disablable="true"
+          label="Asmenys" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -115,7 +116,7 @@
         <ChildSelector viewName="Appointments" childTable="Relationships"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" editEnabled="true"
-          style="&inp2x;" disablable="true" />
+          style="&inp2x;" disablable="true" label="Įvykiai" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
