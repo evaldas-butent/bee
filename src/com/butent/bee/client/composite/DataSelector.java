@@ -65,6 +65,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -72,6 +73,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.menu.MenuConstants;
@@ -673,7 +675,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final int editTargetIndex;
   private final int editSourceIndex;
-  
+
   private final String relationLabel;
 
   private Long editRowId = null;
@@ -725,8 +727,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
     int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
-    CellSource cellSource = BeeConst.isUndef(dataIndex) ?
-        null : CellSource.forColumn(dataInfo.getColumns().get(dataIndex), dataIndex);
+    BeeColumn dataColumn =
+        BeeConst.isUndef(dataIndex) ? null : dataInfo.getColumns().get(dataIndex);
+
+    CellSource cellSource =
+        (dataColumn == null) ? null : CellSource.forColumn(dataColumn, dataIndex);
 
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
         relation.getRowRender(), relation.getRowRenderTokens(), relation.getItemKey(),
@@ -824,10 +829,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editTargetIndex = BeeConst.UNDEF;
       this.editSourceIndex = BeeConst.UNDEF;
     }
-    
+
     this.relationLabel = relation.getLabel();
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
+    
+    if (dataColumn != null && ValueType.isString(dataColumn.getType())
+        && dataColumn.getPrecision() > 0) {
+      input.setMaxLength(dataColumn.getPrecision());
+    }
 
     init(input, embedded);
   }
@@ -1395,15 +1405,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
             if (row == null && BeeUtils.isLong(getEditorValue())) {
               row = getOracle().getCachedRow(BeeUtils.toLong(getEditorValue()));
             }
-            
+
             if (row != null && !BeeConst.isUndef(getEditSourceIndex())) {
-              RelationUtils.updateRow(getOracle().getDataInfo(), 
+              RelationUtils.updateRow(getOracle().getDataInfo(),
                   getOracle().getDataInfo().getColumnId(getEditSourceIndex()), row,
                   Data.getDataInfo(getEditViewName()), result, false);
               setRelatedRow(row);
             }
           }
-          
+
           if (getRelatedRow() != null) {
             fireEvent(new EditStopEvent(State.EDITED));
           }

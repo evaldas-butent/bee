@@ -82,8 +82,11 @@ public class RowFactory {
     if (!event.isConsumed() && !BeeUtils.isEmpty(value)) {
       for (String colName : selector.getChoiceColumns()) {
         BeeColumn column = dataInfo.getColumn(colName);
+
         if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
-          Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
+          String v = (column.getPrecision() > 0) 
+              ? BeeUtils.left(value.trim(), column.getPrecision()) : value.trim();
+          Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
           break;
         }
       }
