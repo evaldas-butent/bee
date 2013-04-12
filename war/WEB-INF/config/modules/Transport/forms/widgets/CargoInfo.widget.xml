@@ -11,29 +11,8 @@
            xmlns:ui="http://www.butent.com/ui"
 >
   <FlowPanel style="&section;">
-    <Label html="Būsena" style="&labelLeft;" />
-    <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
-    <Label html="Užsakovas" class="bee-required" style="&labelRight; width:120px;" />
-    <DataSelector source="Customer" style="&input; width:200px;" />
-  </FlowPanel>
-  <FlowPanel style="&section;">
-    <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
-    <InputDateTime source="OrderDate" style="&input;" />
-    <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-    <DataSelector source="CustomerPerson" style="&input; width:200px;" />
-  </FlowPanel>
-    
-  <FlowPanel style="&section;">
-    <Label html="Ref numeris" style="&labelLeft;" />
-    <InputText source="Number" style="&input;" />
-    <Label html="Siuntėjas" style="&labelRight; width:120px;" />
-    <InputText source="Shipper" style="&input; width:200px;" />
-  </FlowPanel>
-    
-  &separator;
-  <FlowPanel style="&section;">
     <Label html="Maršrutas" class="bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="OrderNotes" required="true" visibleLines="8" style="width:400px;" />
+    <InputArea source="Route" required="true" visibleLines="8" style="width:400px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -104,21 +83,5 @@
     <Label html="Vertė" style="&labelRight;" />
     <InputCurrency source="Value" style="&input;" />
     <DataSelector source="ValueCurrency" style="&inline; width:40px; margin-left:5px;" />
-  </FlowPanel>
-
-  &separator;
-  <FlowPanel style="&section;">
-    <Label html="Vadybininkas" class="bee-required" style="&labelLeft;" />
-    <DataSelector source="Manager" style="&input; width:200px;" />
-  </FlowPanel>
-  <FlowPanel style="&section;">
-    <Label html="Komentaras" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Notes" style="width:400px;" />
-  </FlowPanel>
-  <FlowPanel style="&section;">
-    <Label html="Transporto nr." style="&labelLeft;" />
-    <InputText source="LoadingTerminal" style="&inline; width:130px;" />
-    <Label html="Transporto nr.2" style="&labelRight; width:100px;" />
-    <InputText source="UnloadingTerminal" style="&inline; width:130px;" />
   </FlowPanel>
 </FlowPanel>

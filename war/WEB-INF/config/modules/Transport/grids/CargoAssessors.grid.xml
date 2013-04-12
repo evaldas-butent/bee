@@ -17,8 +17,5 @@
     <DataColumn name="Income" caption="Pajamos" format="#.00" />
     <DataColumn name="Expenses" caption="Sąnaudos" format="#.00" />
     <DataColumn name="Status" itemKey="AssessmentStatus" readOnly="true" />
-    <CalcColumn type="boolean" name="Ok" width="20">
-      <render><ui:expression>row.Status == 1</ui:expression></render>
-    </CalcColumn>
   </columns>
 </Grid>

@@ -14,17 +14,18 @@
       <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InputDateTime source="Date" style="width: 10em;" caption="Data" />
-          <Button name="profit" html="Pelnas" />
+          <ListBox source="Status" itemKey="TripStatus" caption="Būsena" />
           <InputText source="TripNo" caption="Reiso.Nr." />
+          <Button name="profit" html="Pelnas" />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel  class="flexBox-vertical flexible" style="margin-bottom: 1ex">
             <DataSelector source="Forwarder" caption="Vežėjas" style="width: 120px"
                 decorator="flex-left" d:unit="px" d:align="left" required="true" d:size="75"/>
-            <SimplePanel style="margin-top: 10px"> 
+            <FlowPanel style="margin-top: 10px"> 
               <InputText source="ForwarderDriver" caption="Vairuotojas" style="width: 120px" 
-                 decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
-            </SimplePanel>     
+                 decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
+            </FlowPanel>     
             <SimplePanel style="margin-top: 10px"> 
               <InputText source="ForwarderVehicle" caption="Transportas" style="width: 120px"
                 decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
@@ -46,7 +47,8 @@
           </FlowPanel>
         </FlowPanel> 
       </FlowPanel>
-      <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true" decorator="flex-left" d:size="115" />
+      <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true"
+        decorator="flex-left" d:size="115" />
      </FlowPanel>
     
      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">

@@ -9,7 +9,7 @@ public class PrintOrderForm extends AbstractFormInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    OrderAssessmentForm.updateTotal(form, row, form.getWidgetByName("Total"));
+    AssessmentForm.updateTotal(form, row, form.getWidgetByName("Total"));
   }
 
   @Override

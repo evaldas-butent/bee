@@ -29,7 +29,7 @@
         <SimpleColumn name="OrderNo" />
         <SimpleColumn name="Shipper" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
-        <SimpleColumn name="Notes" alias="OrderNotes" label="Maršrutas" editable="true" />
+        <SimpleColumn name="Notes" alias="Route" label="Maršrutas" editable="true" />
       
         <SimpleColumn name="Customer" editable="true" />
         <SimpleJoin joinType="LEFT" name="Customer">

@@ -156,7 +156,7 @@ public class UserServiceBean {
     return p.getName().toLowerCase();
   }
 
-  public long getCurrentUserId() {
+  public Long getCurrentUserId() {
     return getUserId(getCurrentUser());
   }
 
@@ -169,9 +169,9 @@ public class UserServiceBean {
     return roleCache.keySet();
   }
 
-  public long getUserId(String user) {
+  public Long getUserId(String user) {
     if (!userCache.inverse().containsKey(key(user))) {
-      return 0;
+      return null;
     }
     return userCache.inverse().get(key(user));
   }

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="CargoRequests" source="Relationships"
+  >
+  <Columns>
+    <SimpleColumn name="Request" />
+    <SimpleJoin name="Request" joinType="INNER">
+      <SimpleColumn name="Date" editable="true" />
+      <SimpleColumn name="Request" alias="Route" label="Maršrutas" editable="true" />
+      <SimpleColumn name="Contacts" editable="true" />
+      <SimpleColumn name="Created" />
+      <SimpleColumn name="Finished" editable="true" />
+      <SimpleColumn name="Result" editable="true" />
+      
+      <SimpleColumn name="Customer" label="Užsakovas" editable="true" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+      
+      <SimpleColumn name="CustomerPerson" editable="true" />
+      <SimpleJoin name="CustomerPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PersonFirstName" name="FirstName" />
+          <SimpleColumn alias="PersonLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Manager" editable="true" />
+      <SimpleJoin name="Manager" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleColumn name="Creator" />
+      <SimpleJoin name="Creator" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+            <SimpleColumn name="LastName" alias="CreatorLastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Cargo" />
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleColumn name="Order" />
+      <SimpleJoin name="Order" joinType="LEFT">
+        <SimpleColumn name="OrderNo" />
+        <SimpleColumn name="Notes" alias="OrderRoute" editable="true" />
+        <SimpleColumn name="Customer" alias="OrderCustomer" editable="true" />
+        <SimpleColumn name="CustomerPerson" alias="OrderCustomerPerson" editable="true" />
+        <SimpleColumn name="Manager" alias="OrderManager" editable="true" />
+      </SimpleJoin>
+      <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
+
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
+        
+        <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="LoadingCountryName" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
+        
+        <SimpleColumn name="Country" alias="UnloadingCountry" label="Iškrovimo šalis" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="UnloadingCountryName" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Description" editable="true" />
+      <SimpleColumn name="Weight" editable="true" />
+      <SimpleColumn name="Volume" editable="true" />
+      <SimpleColumn name="Quantity" editable="true" />
+      <SimpleColumn name="Value" editable="true" />
+
+      <SimpleColumn name="ValueCurrency" editable="true" />
+      <SimpleJoin joinType="LEFT" name="ValueCurrency">
+        <SimpleColumn name="Name" alias="ValueCurrencyName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Partial" editable="true" />
+      <SimpleColumn name="Outsized" editable="true" />
+      <SimpleColumn name="Dangerous" editable="true" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="LoadingDate" />
+  </Order>
+</View>

@@ -11,11 +11,48 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="OrderAssessment" viewName="CargoAssessors" caption="Užklausimas"
+  name="AssessmentRequest" viewName="CargoAssessors" caption="Vertinimo užklausimas"
   showRowId="true"
   >
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="bee-tr-assessment-form">
-    <xi:include href="widgets/AssessmentInfo.widget.xml" />
+    <FlowPanel style="&section;">
+      <Label html="Būsena" style="&labelLeft;" />
+      <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
+      <Label html="Užsakovas" class="bee-required" style="&labelRight; width:120px;" />
+      <DataSelector source="Customer" style="&input; width:200px;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
+      <InputDateTime source="OrderDate" style="&input;" />
+      <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
+      <DataSelector source="CustomerPerson" style="&input; width:200px;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;">
+      <Label html="Ref numeris" style="&labelLeft;" />
+      <InputText source="Number" style="&input;" />
+      <Label html="Siuntėjas" style="&labelRight; width:120px;" />
+      <InputText source="Shipper" style="&input; width:200px;" />
+    </FlowPanel>
+    
+    &separator;
+    <xi:include href="widgets/CargoInfo.widget.xml" />
+
+    &separator;
+    <FlowPanel style="&section;">
+    <Label html="Vadybininkas" class="bee-required" style="&labelLeft;" />
+      <DataSelector source="Manager" style="&input; width:200px;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label html="Komentaras" style="&labelLeft; vertical-align:top;" />
+      <InputArea source="Notes" style="width:400px;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label html="Transporto nr." style="&labelLeft;" />
+      <InputText source="LoadingTerminal" style="&inline; width:130px;" />
+      <Label html="Transporto nr.2" style="&labelRight; width:100px;" />
+      <InputText source="UnloadingTerminal" style="&inline; width:130px;" />
+    </FlowPanel>
 
     <FlowPanel name="OrderPanel" style="&section;">
       &separator;

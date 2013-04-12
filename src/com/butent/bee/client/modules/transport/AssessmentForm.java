@@ -63,7 +63,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class OrderAssessmentForm extends AbstractFormInterceptor {
+public class AssessmentForm extends AbstractFormInterceptor {
 
   private abstract class AssessmentGrid extends AbstractGridInterceptor {
     @Override
@@ -394,7 +394,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
   public static void doRowAction(final RowActionEvent event) {
     if (event.hasView(TBL_CARGO_ASSESSORS)) {
       // RowEditor.openRow(FORM_ORDER_ASSESSMENT, TBL_CARGO_ASSESSORS, event.getRow(), false, null);
-      RowEditor.openRow(FORM_ORDER_ASSESSMENT, Data.getDataInfo(TBL_CARGO_ASSESSORS),
+      RowEditor.openRow(FORM_ASSESSMENT_REQUEST, Data.getDataInfo(TBL_CARGO_ASSESSORS),
           event.getRowId(), false, null, null);
 
     } else if (event.hasView("AssessmentForwarders")) {
@@ -581,7 +581,7 @@ public class OrderAssessmentForm extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new OrderAssessmentForm();
+    return new AssessmentForm();
   }
 
   @Override

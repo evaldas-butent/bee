@@ -6,6 +6,7 @@
   x="0" y="0"
   >
   <Fields>
+    <Integer name="Status" notNull="true" label="Būsena" defValue="0" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
     <String name="TripNo" precision="20" unique="true" notNull="true"
       defExpr="NEXT_NUMBER" defValue="R/" label="Reiso Nr." />

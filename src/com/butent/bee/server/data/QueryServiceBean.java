@@ -331,9 +331,12 @@ public class QueryServiceBean {
   public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,
       String resultColumn) {
 
-    SqlSelect query = new SqlSelect().addFrom(tableName).addFields(tableName, resultColumn);
-    query.setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
-    query.addOrder(tableName, sys.getIdName(tableName));
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, resultColumn)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.and(SqlUtils.equals(tableName, filterColumn, filterValue),
+            SqlUtils.notNull(tableName, resultColumn)))
+        .addOrder(tableName, sys.getIdName(tableName));
 
     return getLongColumn(query);
   }

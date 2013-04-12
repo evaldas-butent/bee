@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="OrderAssessments" viewName="CargoAssessors" caption="Užklausimai"
+  name="AssessmentRequests" viewName="CargoAssessors" caption="Vertinimų užklausimai"
   flexGrow="1" flexShrink="1"
-  newRowForm="NewOrderAssessment" editForm="OrderAssessment"
+  newRowForm="NewAssessmentRequest" editForm="AssessmentRequest"
   >
   <north size="40">
     <w:HorizontalPanel>

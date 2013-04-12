@@ -463,6 +463,6 @@
 .bee-tr-orderTrips-cell {
 }
 
-.bee-tr-assessment-form .bee-disabled {
+.bee-tr-assessment-form .bee-disabled, .bee-tr-request-form .bee-disabled {
   background-color: #f3f3eb;
 }

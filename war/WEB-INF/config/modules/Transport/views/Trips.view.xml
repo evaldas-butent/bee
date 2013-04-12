@@ -9,6 +9,7 @@
   >
   <Columns>
     <HiddenColumn name="Expedition" />
+    <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
     <SimpleColumn name="Vehicle" />

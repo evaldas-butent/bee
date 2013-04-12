@@ -12,19 +12,23 @@
           <InputDateTime source="Date" />
           <Label html="Būsena:" horizontalAlignment="right" />
           <TextLabel source="Status" itemKey="OrderStatus" />
+          <Label html="Pastabos" />
         </row>
         <row>
           <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
-          <Button name="profit" html="Pelnas" />
+          <cell colSpan="2">
+            <Button name="profit" html="Pelnas" />
+          </cell>
+          <cell rowSpan="3">
+            <InputArea source="Notes" visibleLines="5" style="width:150px;" />
+          </cell>
         </row>
         <row>
           <Label html="Užsakovas:" horizontalAlignment="right" class="bee-required" />
           <DataSelector source="Customer" />
           <Label html="Mokėtojas:" horizontalAlignment="right" />
-          <cell colSpan="3">
-            <DataSelector source="Payer" />
-          </cell>
+          <DataSelector source="Payer" />
         </row>
         <row>
           <Label html="Kontaktas:" horizontalAlignment="right" />

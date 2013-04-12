@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -26,8 +27,8 @@ import java.util.List;
 public class CrmKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
-    
-    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME, 
+
+    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME,
         COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME);
 
     private DataInfo taskViewInfo = null;
@@ -39,13 +40,13 @@ public class CrmKeeper {
             taskColumns, BeeConst.STRING_SPACE), getTaskStatus(event.getRow())));
       }
     }
-    
+
     private String getTaskStatus(BeeRow row) {
       TaskStatus status = NameUtils.getEnumByIndex(TaskStatus.class,
           row.getInteger(getTaskViewInfo().getColumnIndex(COL_STATUS)));
       return (status == null) ? null : status.getCaption();
     }
-    
+
     private DataInfo getTaskViewInfo() {
       if (this.taskViewInfo == null) {
         this.taskViewInfo = Data.getDataInfo(VIEW_TASKS);
@@ -53,7 +54,7 @@ public class CrmKeeper {
       return this.taskViewInfo;
     }
   }
-  
+
   public static void register() {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
@@ -66,25 +67,25 @@ public class CrmKeeper {
     });
 
     SelectorEvent.register(new TaskSelectorHandler());
-    
+
     DocumentHandler.register();
-    
+
     String key = Captions.register(CrmConstants.TaskPriority.class);
     Captions.registerColumn(VIEW_TASKS, COL_PRIORITY, key);
     Captions.registerColumn(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
     Captions.registerColumn(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
-    
+
     key = Captions.register(CrmConstants.TaskEvent.class);
     Captions.registerColumn(VIEW_TASK_EVENTS, COL_EVENT, key);
-    
+
     key = Captions.register(CrmConstants.TaskStatus.class);
     Captions.registerColumn(VIEW_TASKS, COL_STATUS, key);
 
     Captions.register(CrmConstants.ProjectEvent.class);
-    
+
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
-  
+
   static ParameterList createTaskRequestParameters(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CRM_MODULE);
     args.addQueryItem(CRM_METHOD, method);

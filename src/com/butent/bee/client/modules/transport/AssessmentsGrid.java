@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class OrderAssessmentsGrid extends AbstractGridInterceptor {
+public class AssessmentsGrid extends AbstractGridInterceptor {
 
   private final Map<AssessmentStatus, InputBoolean> checks = Maps.newHashMap();
 
@@ -135,7 +135,7 @@ public class OrderAssessmentsGrid extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return new OrderAssessmentsGrid();
+    return new AssessmentsGrid();
   }
 
   @Override

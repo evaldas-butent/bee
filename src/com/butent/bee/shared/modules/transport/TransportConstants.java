@@ -77,28 +77,48 @@ public class TransportConstants {
     }
   }
 
+  public enum TripStatus implements HasCaption {
+    NEW("Naujas"),
+    ACTIVE("Vykdomas"),
+    CANCELED("Atšauktas"),
+    COMPLETED("Baigtas");
+
+    private final String caption;
+
+    private TripStatus(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+
   public enum VehicleType {
     TRUCK {
       @Override
       public String getTripVehicleIdColumnName() {
         return COL_VEHICLE;
       }
+
       @Override
       public String getTripVehicleNumberColumnName() {
         return COL_VEHICLE_NUMBER;
       }
-    }, 
+    },
     TRAILER {
       @Override
       public String getTripVehicleIdColumnName() {
         return COL_TRAILER;
       }
+
       @Override
       public String getTripVehicleNumberColumnName() {
         return COL_TRAILER_NUMBER;
       }
     };
-    
+
     public abstract String getTripVehicleIdColumnName();
 
     public abstract String getTripVehicleNumberColumnName();
@@ -291,7 +311,7 @@ public class TransportConstants {
 
   public static final String COL_FX_COUNTRY_FLAGS = "FxCountryFlags";
   public static final String COL_FX_PLACE_INFO = "FxPlaceInfo";
-  
+
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
   public static final String COL_FX_PIXELS_PER_ROW = "FxPixelsPerRow";
 
@@ -308,7 +328,7 @@ public class TransportConstants {
 
   public static final String COL_SS_SEPARATE_TRIPS = "SsSeparateTrips";
   public static final String COL_SS_SEPARATE_CARGO = "SsSeparateCargo";
-  
+
   public static final String COL_SS_COUNTRY_FLAGS = "SsCountryFlags";
   public static final String COL_SS_PLACE_INFO = "SsPlaceInfo";
 
@@ -327,7 +347,7 @@ public class TransportConstants {
 
   public static final String COL_DTB_COUNTRY_FLAGS = "DtbCountryFlags";
   public static final String COL_DTB_PLACE_INFO = "DtbPlaceInfo";
-  
+
   public static final String COL_DTB_PIXELS_PER_DAY = "DtbPixelsPerDay";
   public static final String COL_DTB_PIXELS_PER_ROW = "DtbPixelsPerRow";
 
@@ -335,7 +355,7 @@ public class TransportConstants {
   public static final String COL_DTB_FOOTER_HEIGHT = "DtbFooterHeight";
 
   public static final String COL_DTB_COLOR = "DtbColor";
-  
+
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
 
@@ -380,7 +400,7 @@ public class TransportConstants {
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
-  public static final String FORM_ORDER_ASSESSMENT = "OrderAssessment";
+  public static final String FORM_ASSESSMENT_REQUEST = "AssessmentRequest";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";
@@ -426,7 +446,7 @@ public class TransportConstants {
   public static String defaultUnloadingColumnAlias(String colName) {
     return "DefUnload" + colName;
   }
-  
+
   public static String loadingColumnAlias(String colName) {
     return "Loading" + colName;
   }

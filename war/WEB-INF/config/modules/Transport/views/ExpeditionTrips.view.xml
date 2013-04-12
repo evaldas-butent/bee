@@ -7,6 +7,7 @@
   editForm="ExpeditionTrip" newRowForm="ExpeditionTrip" newRowCaption="Naujas ekspedijavimo reisas"
   >
   <Columns>
+    <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
     <SimpleColumn name="Expedition" />

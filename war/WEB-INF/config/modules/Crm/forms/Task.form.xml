@@ -100,19 +100,19 @@
       &separator;
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
-        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+        <ChildSelector viewName="Companies" childTable="Relationships" renderColumns="Name"
           editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
-        <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" disablable="true" />
+        <ChildSelector viewName="Persons" childTable="Relationships"
+          renderColumns="FirstName LastName" editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Įvykiai:" style="&top1;" />
-        <MultiSelector viewName="Appointments" property="Appointments"
+        <ChildSelector viewName="Appointments" childTable="Relationships"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" editEnabled="true"
           style="&inp2x;" disablable="true" />

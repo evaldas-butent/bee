@@ -32,7 +32,7 @@ public class TransportActionHandler implements Handler {
     } else if (BeeUtils.inListSame(event.getViewName(),
         TBL_CARGO_ASSESSORS, "AssessmentForwarders")) {
       event.consume();
-      OrderAssessmentForm.doRowAction(event);
+      AssessmentForm.doRowAction(event);
     }
   }
 }

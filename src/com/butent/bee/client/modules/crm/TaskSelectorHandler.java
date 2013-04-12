@@ -40,7 +40,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     if (taskRow == null) {
       return;
     }
-    
+
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_TASK_TEMPLATES)) {
       handleTemplate(event, form, taskRow);
 
@@ -52,31 +52,12 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       } else if (BeeUtils.same(rowProperty, PROP_OBSERVERS)) {
         handleObservers(event, taskRow);
 
-      } else if (BeeUtils.same(rowProperty, PROP_COMPANIES)) {
-        handleCompanies(event, taskRow);
       } else if (BeeUtils.same(rowProperty, PROP_TASKS)) {
         handleTasks(event, taskRow);
       }
     }
   }
 
-  private void handleCompanies(SelectorEvent event, IsRow taskRow) {
-    Long company = Data.getLong(VIEW_TASKS, taskRow, COL_COMPANY);
-    if (company == null) {
-      return;
-    }
-
-    Set<Long> exclusions = Sets.newHashSet(company);
-    if (!BeeUtils.isEmpty(event.getExclusions())) {
-      exclusions.addAll(event.getExclusions());
-    }
-
-    event.consume();
-    event.getSelector().getOracle().setExclusions(exclusions);
-
-//    LogUtils.getLogger("").debug(PROP_COMPANIES, exclusions);
-  }
-  
   private void handleExecutors(SelectorEvent event, IsRow taskRow) {
     Set<Long> exclusions = DataUtils.parseIdSet(taskRow.getProperty(PROP_OBSERVERS));
     if (!BeeUtils.isEmpty(event.getExclusions())) {
@@ -86,9 +67,9 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
 
-//    LogUtils.getLogger("").debug(PROP_EXECUTORS, exclusions);
+    // LogUtils.getLogger("").debug(PROP_EXECUTORS, exclusions);
   }
-  
+
   private void handleObservers(SelectorEvent event, IsRow taskRow) {
     Long owner = Data.getLong(VIEW_TASKS, taskRow, COL_OWNER);
     if (owner == null) {
@@ -112,7 +93,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
 
-//    LogUtils.getLogger("").debug(PROP_OBSERVERS, exclusions);
+    // LogUtils.getLogger("").debug(PROP_OBSERVERS, exclusions);
   }
 
   private void handleTasks(SelectorEvent event, IsRow taskRow) {
@@ -128,7 +109,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
 
-//    LogUtils.getLogger("").debug(PROP_TASKS, exclusions);
+    // LogUtils.getLogger("").debug(PROP_TASKS, exclusions);
   }
 
   private void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow) {

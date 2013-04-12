@@ -62,7 +62,7 @@ public class CrmConstants {
       return caption;
     }
   }
-  
+
   public enum TaskStatus implements HasCaption {
     NOT_VISITED("Neperžiūrėta"),
     ACTIVE("Vykdoma"),
@@ -71,7 +71,7 @@ public class CrmConstants {
     COMPLETED("Įvykdyta"),
     APPROVED("Baigta"),
     CANCELED("Nutraukta");
-    
+
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {
         if (ts.ordinal() == status) {
@@ -80,7 +80,7 @@ public class CrmConstants {
       }
       return false;
     }
-    
+
     private final String caption;
 
     private TaskStatus(String caption) {
@@ -96,7 +96,7 @@ public class CrmConstants {
       return status != null && ordinal() == status;
     }
   }
-  
+
   public static final String CRM_MODULE = "Crm";
   public static final String CRM_METHOD = CRM_MODULE + "Method";
 
@@ -125,6 +125,8 @@ public class CrmConstants {
   public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
   public static final String VAR_PROJECT_OBSERVERS = Service.RPC_VAR_PREFIX + "project_observers";
 
+  public static final String TBL_REQUESTS = "Requests";
+
   public static final String TBL_TASKS = "Tasks";
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_TASK_EVENTS = "TaskEvents";
@@ -147,7 +149,7 @@ public class CrmConstants {
 
   public static final String VIEW_DOCUMENTS = "Documents";
   public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
-  
+
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -230,18 +232,20 @@ public class CrmConstants {
 
   public static final String COL_COMPLETED = "Completed";
   public static final String COL_APPROVED = "Approved";
-  
+
   public static final String COL_PERSON = "Person";
   public static final String COL_PERSON_FIRST_NAME = "PersonFirstName";
   public static final String COL_PERSON_LAST_NAME = "PersonLastName";
   public static final String COL_PERSON_COMPANY_NAME = "PersonCompanyName";
 
+  public static final String COL_REQUEST = "Request";
+  public static final String COL_REQUEST_MANAGER = "Manager";
+  public static final String COL_REQUEST_RESULT = "Result";
+  public static final String COL_REQUEST_FINISHED = "Finished";
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
 
-  public static final String PROP_COMPANIES = "Companies";
-  public static final String PROP_PERSONS = "Persons";
-  public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";
@@ -255,7 +259,7 @@ public class CrmConstants {
   public static final String PROP_LAST_EVENT_ID = "LastEventId";
 
   public static final String PROP_ICON = "Icon";
-  
+
   public static final String GRID_TASKS = "Tasks";
 
   public static final String FORM_NEW_TASK = "NewTask";
@@ -264,7 +268,7 @@ public class CrmConstants {
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
   public static final String LABEL_OBSERVERS = "Stebėtojai";
-  
+
   private CrmConstants() {
   }
 }

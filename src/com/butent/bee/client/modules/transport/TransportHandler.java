@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -76,8 +77,7 @@ public class TransportHandler {
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget)
-            .addClickHandler(new Profit(VAR_CARGO_ID));
+        ((HasClickHandlers) widget).addClickHandler(new Profit(VAR_CARGO_ID));
       }
     }
 
@@ -585,6 +585,7 @@ public class TransportHandler {
   public static void register() {
     Captions.register(OrderStatus.class);
     Captions.register(AssessmentStatus.class);
+    Captions.register(TripStatus.class);
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
@@ -601,15 +602,18 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
     GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
 
-    GridFactory.registerGridInterceptor("OrderAssessments", new OrderAssessmentsGrid());
-    GridFactory.registerGridInterceptor("AssessmentOrders", new OrderAssessmentsGrid());
+    GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
+    FormFactory.registerFormInterceptor("CargoRequest", new CargoRequestForm());
+
+    GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
+    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
-    FormFactory.registerFormInterceptor(FORM_ORDER_ASSESSMENT, new OrderAssessmentForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_REQUEST, new AssessmentForm());
 
     FormFactory.registerFormInterceptor("PrintOrderLT", new PrintOrderForm());
     FormFactory.registerFormInterceptor("PrintOrderRU", new PrintOrderForm());

@@ -107,6 +107,7 @@ public class CommonsConstants {
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_RELATIONS = "Relations";
+  public static final String TBL_RELATIONSHIPS = "Relationships";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -121,6 +122,8 @@ public class CommonsConstants {
 
   public static final String VIEW_ITEMS = "Items";
   public static final String VIEW_COUNTRIES = "Countries";
+
+  public static final String COL_RELATIONSHIP = "Relationship";
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";

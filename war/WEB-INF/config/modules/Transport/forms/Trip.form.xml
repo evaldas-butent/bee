@@ -14,7 +14,7 @@
       <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InputDateTime source="Date" style="width: 10em;" caption="Data" />
-          <Button name="profit" html="Pelnas" />
+          <ListBox source="Status" itemKey="TripStatus" caption="Būsena" />
           <InputText source="TripNo" caption="Reiso Nr." />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
@@ -22,7 +22,8 @@
             <DataSelector source="Vehicle" caption="Vilkikas" renderColumns="VehicleNumber"
               filter="IsTruck" d:size="75" d:unit="px" d:align="right" required="true" />
             <DataSelector source="Trailer" caption="Puspriekabė" filter="IsTrailer" 
-              d:size="75" d:unit="px" d:align="right" />
+              d:size="75" d:unit="px" d:align="right" d:rootStyle="display:inline-block;" />
+            <Button name="profit" html="Pelnas" style="display:inline-block;" />
           </FlowPanel>
         </FlowPanel>
       </FlowPanel>

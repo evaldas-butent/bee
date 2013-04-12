@@ -10,6 +10,7 @@
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="TripNo" caption="Reiso Nr." />
+    <DataColumn name="Status" caption="Būsena" itemKey="TripStatus" />
     <DataColumn name="ForwarderName" caption="Vežėjas" flexGrow="1" flexShrink="1" />
     <DataColumn name="ForwarderVehicle" caption="Transportas" flexGrow="1" flexShrink="1" />
     <DataColumn name="ForwarderDriver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />

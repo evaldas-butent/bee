@@ -3,31 +3,29 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="AssessmentOrders" viewName="CargoAssessors" caption="Vertinimo užsakymai"
-  flexGrow="1" flexShrink="1" disabledActions="add"
-  editForm="AssessmentRequest"
+  name="CargoRequests" viewName="CargoRequests" caption="Pervežimo užklausimai"
+  flexGrow="1" flexShrink="1"
+  newRowForm="NewCargoRequest" editForm="CargoRequest"
   >
   <north size="40">
     <w:HorizontalPanel>
-      <w:CheckBox name="Active" html="Vykdomi" checked="true" />
-      <w:CheckBox name="Completed" html="Įvykdyti" />
-      <w:CheckBox name="Canceled" html="Atšaukti" checked="true" />
+      <w:CheckBox name="Owned" html="Tik priklausantys man" checked="true" />
+      <w:CheckBox name="Finished" html="Rodyti baigtus" />
     </w:HorizontalPanel>
   </north>
   <columns>
-    <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="PID" width="40" />
-    <DataColumn name="Status" itemKey="AssessmentStatus" width="70" />
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." width="70" />
-    <DataColumn name="LoadingDate" caption="Krov.data" width="70" />
+    <DataColumn name="Date" caption="Data" width="100" />
+    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" />
     
-    <DataColumn name="CustomerName" caption="Užsakovas" minWidth="100">
+    <RelColumn name="Customer" caption="Užsakovas" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
         </bodyStyle>
       </style>
-    </DataColumn>
+    </RelColumn>
+
+    <DataColumn name="LoadingDate" caption="Krov.data" width="70" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       caption="Iš" horizontalAlignment="center">
@@ -39,7 +37,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="CargoNotes" caption="Maršrutas" minWidth="100">
+    <DataColumn name="Route" caption="Maršrutas" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
@@ -59,7 +57,12 @@
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
 
-    <DataColumn name="Number" caption="Ref numeris" width="70" />
-    <DataColumn name="Cmr" caption="CMR" width="70" />
+    <RelColumn name="Manager" caption="Vadybininkas" minWidth="100">
+      <style>
+        <bodyStyle>
+          <ui:inline>white-space: nowrap;</ui:inline>
+        </bodyStyle>
+      </style>
+    </RelColumn>
   </columns>
 </Grid>
