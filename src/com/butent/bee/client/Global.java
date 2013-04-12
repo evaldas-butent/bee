@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
@@ -20,6 +21,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
@@ -99,8 +101,11 @@ public class Global implements Module {
     String value = text.trim();
 
     if (!value.equals(STYLE_SHEETS.get(key))) {
-      StyleInjector.inject(value);
       STYLE_SHEETS.put(key, value);
+      
+      String css = CharMatcher.BREAKING_WHITESPACE.collapseFrom(value, BeeConst.CHAR_SPACE);
+      StyleInjector.inject(css);
+      Printer.onInjectStyleSheet(css);
     }
   }
 
@@ -134,13 +139,13 @@ public class Global implements Module {
       ConfirmationCallback callback) {
     MSG_BOXEN.confirm(caption, icon, messages, callback, null, null, null);
   }
-
+  
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
     MSG_BOXEN.confirm(caption, icon, messages, callback, null,
         StyleUtils.FontSize.LARGE.getClassName(), StyleUtils.FontSize.MEDIUM.getClassName());
   }
-  
+
   public static void createVar(String name, String caption) {
     createVar(name, caption, BeeType.STRING, BeeConst.STRING_EMPTY);
   }
@@ -151,7 +156,7 @@ public class Global implements Module {
 
     VARS.put(name, new Variable(caption, type, value));
   }
-
+  
   public static void createVar(String name, String caption, BeeType type, String value,
       BeeWidget widget, String... items) {
     Assert.notEmpty(name);
@@ -159,11 +164,11 @@ public class Global implements Module {
 
     VARS.put(name, new Variable(caption, type, value, widget, items));
   }
-  
+
   public static void debug(String s) {
     logger.debug(s);
   }
-
+  
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
     MSG_BOXEN.decide(caption, messages, callback, defaultValue, null, null, null);
@@ -172,7 +177,7 @@ public class Global implements Module {
   public static CacheManager getCache() {
     return CACHE;
   }
-  
+
   public static Defaults getDefaults() {
     return DEFAULTS;
   }
@@ -188,11 +193,11 @@ public class Global implements Module {
   public static InputBoxes getInpBoxen() {
     return INP_BOXEN;
   }
-
+  
   public static MessageBoxes getMsgBoxen() {
     return MSG_BOXEN;
   }
-  
+
   public static Reports getReports() {
     return REPORTS;
   }
@@ -200,11 +205,11 @@ public class Global implements Module {
   public static Search getSearch() {
     return SEARCH;
   }
-
+  
   public static Widget getSearchWidget() {
     return SEARCH.ensureSearchWidget();
   }
-  
+
   public static Map<String, String> getStylesheets() {
     return STYLE_SHEETS;
   }
@@ -297,12 +302,12 @@ public class Global implements Module {
   public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
     inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
   }
-
+  
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle) {
     inputWidget(caption, input, callback, dialogStyle, null, Action.NO_ACTIONS);
   }
-  
+
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, UIObject target) {
     inputWidget(caption, input, callback, dialogStyle, target, Action.NO_ACTIONS);
@@ -320,17 +325,17 @@ public class Global implements Module {
   public static boolean isVar(String name) {
     return VARS.containsKey(name);
   }
-
+  
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     MSG_BOXEN.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
         null, null, null, null);
   }
-  
+
   public static boolean nativeConfirm(String... lines) {
     return MSG_BOXEN.nativeConfirm(lines);
   }
-
+  
   public static void sayHuh(String... messages) {
     int n = (messages == null) ? 0 : messages.length;
     String[] arr = new String[n + 1];
@@ -345,7 +350,7 @@ public class Global implements Module {
   public static void setDebug(boolean debug) {
     Global.debug = debug;
   }
-  
+
   public static void setVar(String name, Variable var) {
     Assert.notEmpty(name);
     Assert.notNull(var);
@@ -368,9 +373,13 @@ public class Global implements Module {
   public static void setVarValue(String name, String value) {
     getVar(name).setValue(value);
   }
-
+  
   public static void setVarWidth(String name, String width) {
     getVar(name).setWidth(width);
+  }
+
+  public static void showError(List<String> messages) {
+    showError(null, messages, null, null);
   }
 
   public static void showError(String message) {
@@ -382,10 +391,6 @@ public class Global implements Module {
     showError(messages);
   }
   
-  public static void showError(List<String> messages) {
-    showError(null, messages, null, null);
-  }
-
   public static void showError(String caption, List<String> messages) {
     showError(caption, messages, null, null);
   }
@@ -393,7 +398,7 @@ public class Global implements Module {
   public static void showError(String caption, List<String> messages, String dialogStyle) {
     showError(caption, messages, dialogStyle, null);
   }
-  
+
   public static void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
     MSG_BOXEN.showError(caption, messages, dialogStyle, closeHtml);

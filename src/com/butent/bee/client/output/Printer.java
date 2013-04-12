@@ -30,6 +30,12 @@ public class Printer {
 
   private static BeeFrame frame = null;
   
+  public static void onInjectStyleSheet(String css) {
+    if (frame != null && !BeeUtils.isEmpty(css)) {
+      frame.injectStyleSheet(css);
+    }
+  }
+  
   public static void print(Element element, Printable widget) {
     Assert.notNull(element);
     

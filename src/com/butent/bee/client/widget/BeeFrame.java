@@ -5,7 +5,12 @@ import com.google.gwt.user.client.ui.Frame;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+
+import elemental.html.StyleElement;
+
+import elemental.html.HeadElement;
 
 import elemental.html.Window;
 
@@ -50,6 +55,21 @@ public class BeeFrame extends Frame implements IdentifiableWidget {
   @Override
   public String getIdPrefix() {
     return "frame";
+  }
+  
+  public void injectStyleSheet(String css) {
+    Assert.notEmpty(css);
+    
+    Document document = getContentDocument();
+    Assert.notNull(document);
+    HeadElement head = document.getHead();
+    Assert.notNull(head);
+    
+    StyleElement style = document.createStyleElement();
+    style.setType("text/css");
+    style.setInnerText(css);
+    
+    head.appendChild(style);
   }
 
   public boolean isEmpty() {
