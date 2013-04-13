@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
@@ -368,7 +369,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   private static final List<Column> DEFAULT_VISIBLE_COLUMNS = Lists.newArrayList(Column.NAME,
       Column.SIZE, Column.EDIT, Column.DELETE);
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
-  
+
   public static IdentifiableWidget getDefaultFace() {
     return new BeeButton("Pasirinkite bylas");
   }
@@ -513,7 +514,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   @Override
   public void onDragEnter(DragEnterEvent event) {
     setDndCounter(getDndCounter() + 1);
-    if (getDndCounter() <= 1) {
+    if (getDndCounter() <= 1 && DndHelper.hasFiles(event)) {
       showDropArea();
     }
   }

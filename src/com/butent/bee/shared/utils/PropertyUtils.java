@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.logging.LogUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -380,6 +381,15 @@ public class PropertyUtils {
       addProperty(lst, entry.getKey(), entry.getValue());
     }
     return lst;
+  }
+  
+  public static void debugProperties(Collection<Property> properties) {
+    if (!BeeUtils.isEmpty(properties)) {
+      for (Property property : properties) {
+        LogUtils.getRootLogger().debug(property.getName(), property.getValue());
+      }
+      LogUtils.getRootLogger().addSeparator();
+    }
   }
   
   /**
