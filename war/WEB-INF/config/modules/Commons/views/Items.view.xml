@@ -16,10 +16,6 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    <ExternalJoin source="ItemCategories" joinType="LEFT" name="Item">
-      <HiddenColumn name="Category" />
-      <AggregateColumn aggregate="COUNT" name="Category" alias="Categories" />
-    </ExternalJoin>
     <SimpleColumn name="IsService"/>
   </Columns>
   <Order>

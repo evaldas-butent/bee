@@ -121,6 +121,8 @@ public class CommonsConstants {
   public static final String VIEW_THEME_COLORS = "ThemeColors";
 
   public static final String VIEW_ITEMS = "Items";
+  public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
+
   public static final String VIEW_COUNTRIES = "Countries";
 
   public static final String COL_RELATIONSHIP = "Relationship";

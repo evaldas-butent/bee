@@ -7,7 +7,12 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -32,12 +37,23 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   
   private static final String FILTER_KEY = "f1";
   private final boolean services;
+
+  private TreePresenter categoryTree = null;
   private IsRow selectedCategory = null;
 
   ItemGridHandler(boolean showServices) {
     this.services = showServices;
   }
 
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
+      ((TreeView) widget).addSelectionHandler(this);
+      categoryTree = ((TreeView) widget).getTreePresenter();
+    }
+  }
+  
   @Override
   public String getCaption() {
     if (showServices()) {
@@ -118,10 +134,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
 
   @Override
   public void onSelection(SelectionEvent<IsRow> event) {
-    if (event == null) {
-      return;
-    }
-    if (getGridPresenter() != null) {
+    if (event != null && getGridPresenter() != null) {
       Long category = null;
       setSelectedCategory(event.getSelectedItem());
 
@@ -150,7 +163,9 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
     if (category == null) {
       return null;
     } else {
-      return ComparisonFilter.isEqual(CommonsConstants.COL_CATEGORY, new LongValue(category));
+      return Filter.in(Data.getIdColumn(CommonsConstants.VIEW_ITEMS),
+          CommonsConstants.VIEW_ITEM_CATEGORIES, CommonsConstants.COL_ITEM,
+          ComparisonFilter.isEqual(CommonsConstants.COL_CATEGORY, new LongValue(category)));
     }
   }
 
