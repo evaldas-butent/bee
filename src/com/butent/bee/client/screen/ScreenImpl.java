@@ -207,6 +207,11 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public boolean hasNotifications() {
+    return getNotification() != null && getNotification().isActive();
+  }
+
+  @Override
   public void init() {
   }
 

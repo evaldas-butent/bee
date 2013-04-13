@@ -693,6 +693,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean hasNotifications() {
+    return getNotification() != null && getNotification().isActive();
+  }
+  
+  @Override
   public boolean isEditing() {
     return editing;
   }

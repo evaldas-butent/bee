@@ -1205,6 +1205,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public boolean hasNotifications() {
+    return getNotification() != null && getNotification().isActive();
+  }
+  
+  @Override
   public boolean isAdding() {
     return adding;
   }

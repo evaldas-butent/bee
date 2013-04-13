@@ -306,6 +306,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
+    if (getGridView().hasNotifications()) {
+      return;
+    }
     if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(action, this)) {
       return;
     }

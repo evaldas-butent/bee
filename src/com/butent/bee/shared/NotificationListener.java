@@ -6,6 +6,8 @@ package com.butent.bee.shared;
  */
 
 public interface NotificationListener {
+  
+  boolean hasNotifications();
 
   void notifyInfo(String... messages);
 

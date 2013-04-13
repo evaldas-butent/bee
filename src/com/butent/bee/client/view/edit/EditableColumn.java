@@ -373,7 +373,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   @Override
   public void onBlur(BlurEvent event) {
     if (State.OPEN.equals(getState())) {
-      closeEditor(null, false);
+      if (!endEdit(null, false)) {
+        closeEditor(null, false);
+      }
     }
   }
 

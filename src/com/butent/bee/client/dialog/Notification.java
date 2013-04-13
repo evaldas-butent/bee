@@ -213,6 +213,10 @@ public class Notification extends Composite implements PreviewHandler, Identifia
   public void info(String... lines) {
     show(LogLevel.INFO, lines);
   }
+  
+  public boolean isActive() {
+    return getState() == State.OPENING || getState() == State.SHOWING;
+  }
 
   @Override
   public boolean isModal() {
