@@ -9,7 +9,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.TreeView;
@@ -38,7 +37,6 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   private static final String FILTER_KEY = "f1";
   private final boolean services;
 
-  private TreePresenter categoryTree = null;
   private IsRow selectedCategory = null;
 
   ItemGridHandler(boolean showServices) {
@@ -50,7 +48,6 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
       WidgetDescriptionCallback callback) {
     if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
       ((TreeView) widget).addSelectionHandler(this);
-      categoryTree = ((TreeView) widget).getTreePresenter();
     }
   }
   

@@ -54,11 +54,8 @@
           	 <row>
           	   <Label html="Įmonės veiklos:" />
           	   <cell colSpan="3">
-          	     <!--  TODO: MultiSelector require implementation
-          	     <MultiSelector viewName="CompanyActivities" property="Activities" renderColumns="ActivityName"
-       			   editEnabled="true" editPopup="true" style="width: 100%;" />
-       			 -->
-       			  <Label html="TODO: MultiSelector require implementation" />
+                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
+                   label="Įmonės veiklos" />
           	   </cell>
           	 </row>
           	 <row>
