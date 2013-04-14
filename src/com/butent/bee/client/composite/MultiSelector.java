@@ -390,7 +390,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       public void onClick(ClickEvent event) {
         if (!isEditing() && isEnabled()) {
           inputWidget.setFocus(true);
-          inputWidget.onMouseClick();
+          inputWidget.onMouseClick(true);
         }
       }
     });

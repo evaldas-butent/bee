@@ -181,26 +181,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONCLICK:
-          onMouseClick();
+          onMouseClick(false);
           break;
 
         case Event.ONKEYDOWN:
-          if (isEmbedded() && !isActive()) {
-            int keyCode = event.getKeyCode();
+          if (isEmbedded() && event.getKeyCode() == KeyCodes.KEY_DELETE && isNullable()
+              && !BeeUtils.isEmpty(getDisplayValue())) {
+            setSelection(null);
+            consumed = true;
 
-            switch (keyCode) {
-              case KeyCodes.KEY_BACKSPACE:
-                if (!BeeUtils.isEmpty(getDisplayValue())) {
-                  start(SHOW_SELECTOR);
-                  consumed = true;
-                }
-                break;
-              case KeyCodes.KEY_DELETE:
-                if (isNullable() && !BeeUtils.isEmpty(getDisplayValue())) {
-                  setSelection(null);
-                  consumed = true;
-                }
-                break;
+          } else if (isEmbedded() && !isActive()) {
+            if (event.getKeyCode() == KeyCodes.KEY_BACKSPACE
+                && !BeeUtils.isEmpty(getDisplayValue())) {
+              start(SHOW_SELECTOR);
+              consumed = true;
             }
 
           } else {
@@ -236,10 +230,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
 
-    protected void onMouseClick() {
+    protected void onMouseClick(boolean alwaysAsk) {
       if (isEmbedded() && !isActive()) {
         start(EditStartEvent.CLICK);
+        if (!alwaysAsk) {
+          return;
+        }
       }
+
       if (!getSelector().isShowing()) {
         clearDisplay();
         askOracle();
@@ -833,7 +831,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.relationLabel = relation.getLabel();
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
-    
+
     if (dataColumn != null && ValueType.isString(dataColumn.getType())
         && dataColumn.getPrecision() > 0) {
       input.setMaxLength(dataColumn.getPrecision());

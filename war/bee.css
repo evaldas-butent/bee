@@ -1432,8 +1432,9 @@ body {
 }
 
 .bee-EditableRelation:hover {
+  text-decoration: underline;
+  color: #00e;
   cursor: pointer;
-  background-color: #FCCED0;  
 }
 .bee-CellGridActiveCell.bee-EditableRelation {
   text-decoration: underline;
