@@ -58,6 +58,16 @@ public class Data {
     return getDataInfo(viewName).getColumnLabel(colName);
   }
 
+  public static List<String> getColumnLabels(String viewName, List<String> colNames) {
+    List<String> result = Lists.newArrayList();
+    
+    for (BeeColumn column : getColumns(viewName, colNames)) {
+      result.add(column.getLabel());
+    }
+    
+    return result;
+  }
+  
   public static ColumnMapper getColumnMapper() {
     return COLUMN_MAPPER;
   }

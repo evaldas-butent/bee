@@ -11,5 +11,10 @@
     <Relation name="Company" relation="Companies" label="Įmonė" cascade="DELETE" />
     <Relation name="Person" relation="Persons" label="Asmuo" cascade="DELETE" />
     <Relation name="Appointment" relation="Appointments" label="Įvykis" cascade="DELETE" />
+    <Relation name="Document" relation="Documents" label="Dokumentas" cascade="DELETE" />
+    <Relation name="Vehicle" relation="Vehicles" label="Transporto priemonė" cascade="DELETE" />
+    <Relation name="Driver" relation="Drivers" label="Vairuotojas" cascade="DELETE" />
+    <Relation name="TransportationOrder" relation="TransportationOrders" label="Pervežimo užsakymas" cascade="DELETE" />
+    <Relation name="Trip" relation="Trips" label="Reisas" cascade="DELETE" />
   </Fields>
 </Table>

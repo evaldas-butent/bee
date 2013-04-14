@@ -5,6 +5,8 @@
   idName="DocumentID"
   >
   <Fields>
+    <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
+
     <DateTime name="DocumentDate" label="Dokumento data" />
     <DateTime name="Expires" label="Galioja iki" />
 
@@ -13,14 +15,9 @@
 
     <Relation name="Type" relation="DocumentTypes" label="Tipas" />
     <Relation name="Group" relation="DocumentGroups" label="Grupė" />
-    <Relation name="Category" notNull="true" relation="DocumentTree" label="Kategorija" />
+    <Relation name="Category" relation="DocumentTree" label="Kategorija" />
     <Relation name="Place" relation="DocumentPlaces" label="Vieta" />
 
-    <Relation name="Company" relation="Companies" label="Įmonė" />
-    <Relation name="CompanyPerson" relation="CompanyPersons" label="Asmuo" />
-    <Relation name="Project" relation="Projects" label="Projektas" />
-
-    <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
     <Text name="Description" label="Aprašymas" />
   </Fields>
 </Table>

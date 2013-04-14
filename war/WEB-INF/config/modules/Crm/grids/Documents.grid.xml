@@ -24,7 +24,6 @@
     <DataColumn name="Name" source="Name" caption="Pavadinimas" />
     <DataColumn name="TypeName" source="TypeName" caption="Tipas" />
     <DataColumn name="GroupName" source="GroupName" caption="Grupė" />
-    <RelColumn name="Company" caption="Įmonė" editEnabled="true" />
     <DataColumn name="Expires" source="Expires" caption="Galioja iki" />
   </columns>
 </Grid>

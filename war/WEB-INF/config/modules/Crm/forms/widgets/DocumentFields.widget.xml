@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget" style="border-spacing: 10px;">
+<Table xmlns="http://www.butent.com/widget" style="border-spacing: 5px;">
+
+  <row>
+    <Label html="Pavadinimas:" class="bee-required" />
+    <cell colSpan="3">
+      <InputText source="Name" style="width: 100%;" />
+    </cell>
+  </row>
 
   <row>
     <Label html="Dokumento data:" class="bee-required" />
@@ -11,38 +18,22 @@
   <row>
     <Label html="Numeris:" />
     <InputText source="Number" />
-    <Label html="Registracijos numeris:" horizontalAlignment="right" />
+    <Label html="Reg. nr.:" horizontalAlignment="right" />
     <InputText source="RegistrationNumber" />
   </row>
 
   <row>
-    <Label html="Kategorija:" class="bee-required" />
+    <Label html="Kategorija:" />
     <DataSelector source="Category" />
     <Label html="Vieta:" horizontalAlignment="right" />
     <DataSelector source="Place" />
   </row>
 
   <row>
-    <Label html="Tipas:" class="bee-required" />
+    <Label html="Tipas:" />
     <DataSelector source="Type" />
-    <Label html="Įmonė:" horizontalAlignment="right" />
-    <DataSelector source="Company" editEnabled="true" />
-  </row>
-
-  <row>
-    <Label html="Grupė:" class="bee-required" />
+    <Label html="Grupė:" horizontalAlignment="right" />
     <DataSelector source="Group" />
-    <Label html="Asmuo:" horizontalAlignment="right" />
-    <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
-      choiceColumns="FirstName LastName CompanyName" editEnabled="true" editSource="Person"
-      options="Company" />
-  </row>
-
-  <row>
-    <Label html="Pavadinimas:" class="bee-required" />
-    <cell colSpan="3">
-      <InputText source="Name" style="width: 100%;" />
-    </cell>
   </row>
 
   <row>

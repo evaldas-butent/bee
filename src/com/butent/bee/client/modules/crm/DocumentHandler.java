@@ -95,21 +95,6 @@ public class DocumentHandler {
         return;
       }
 
-      List<String> required = Lists.newArrayList(COL_DOCUMENT_DATE, COL_TYPE, COL_GROUP,
-          COL_CATEGORY, COL_NAME);
-      List<String> empty = Lists.newArrayList();
-
-      for (String colName : required) {
-        if (!DataUtils.contains(event.getColumns(), colName)) {
-          empty.add(colName);
-        }
-      }
-
-      if (!empty.isEmpty()) {
-        event.getCallback().onFailure(empty.toString(), "value required");
-        return;
-      }
-
       Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(),
           event.getChildren(), new RowCallback() {
             @Override
@@ -216,7 +201,7 @@ public class DocumentHandler {
 
     private Filter getFilter(Long category) {
       if (category == null) {
-        return null;
+        return Filter.isEmpty(COL_CATEGORY);
       } else {
         return ComparisonFilter.isEqual(COL_CATEGORY, new LongValue(category));
       }

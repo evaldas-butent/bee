@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY chlabel "text-align: right;">
+  <!ENTITY chselect "width: 300px;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -6,7 +10,75 @@
   name="Document" caption="Dokumentas">
 
   <FlowPanel class="flexBox-vertical">
-    <xi:include href="widgets/DocumentFields.widget.xml" />
+    <FlowPanel class="flexBox-horizontal" style="-webkit-justify-content: space-between;">
+      <xi:include href="widgets/DocumentFields.widget.xml" />
+      
+      <Table style="margin-top: 5px; margin-right: 5px;">
+        <row>
+          <Label html="Įmonės:" style="&chlabel;" />
+          <ChildSelector viewName="Companies" childTable="Relationships" renderColumns="Name"
+            editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Asmenys:" style="&chlabel;" />
+          <ChildSelector viewName="Persons" childTable="Relationships"
+            renderColumns="FirstName LastName" editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Įvykiai:" style="&chlabel;" />
+          <ChildSelector viewName="Appointments" childTable="Relationships"
+            renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+            newRowEnabled="false" editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Užduotys:" style="&chlabel;" />
+          <ChildSelector viewName="Tasks" childTable="Relationships" 
+            renderColumns="Summary"
+            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+            editEnabled="true" style="&chselect;" />
+        </row>
+        
+        <row>
+          <Label html="Transp. priem.:" style="&chlabel;" />
+          <ChildSelector viewName="Vehicles" childTable="Relationships" 
+            renderColumns="Number" choiceColumns="Number ParentModelName ModelName"
+            editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Vairuotojai:" style="&chlabel;" />
+          <ChildSelector viewName="Drivers" childTable="Relationships" 
+            renderColumns="FirstName LastName" newRowEnabled="false" editEnabled="true"
+            style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Užsakymai:" style="&chlabel;" />
+          <ChildSelector viewName="TransportationOrders" childTable="Relationships" 
+            renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo"
+            editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Kroviniai:" style="&chlabel;" />
+          <ChildSelector viewName="OrderCargo" childTable="Relationships" 
+            renderColumns="Description"
+            choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode"
+            newRowEnabled="false" editEnabled="true" style="&chselect;" />
+        </row>
+
+        <row>
+          <Label html="Reisai:" style="&chlabel;" />
+          <ChildSelector viewName="Trips" childTable="Relationships" 
+            renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber"
+            editEnabled="true" style="&chselect;" />
+        </row>
+        
+      </Table>
+    </FlowPanel>
     
     <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin-top: 1ex;" />
   </FlowPanel>
