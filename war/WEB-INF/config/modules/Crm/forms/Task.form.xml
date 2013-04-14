@@ -44,7 +44,7 @@
         <DataSelector source="Contact" style="&inp4;" disablable="true"
           editEnabled="true" editSource="ContactPerson"
           renderColumns="ContactFirstName ContactLastName"
-          choiceColumns="FirstName LastName CompanyName" />
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
       </FlowPanel>
 
       &separator;

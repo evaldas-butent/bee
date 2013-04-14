@@ -196,6 +196,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
   private final Set<Consumer<Integer>> rowCountChangeHandlers = Sets.newHashSet();
+  private final Set<Consumer<BeeRowSet>> dataReceivedHandlers = Sets.newHashSet();
 
   private boolean dataInitialized = false;
 
@@ -225,10 +226,25 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
   }
 
+  public void addDataReceivedHandler(Consumer<BeeRowSet> handler) {
+    if (handler != null) {
+      dataReceivedHandlers.add(handler);
+    }
+  }
+ 
   public void addRowCountChangeHandler(Consumer<Integer> handler) {
     if (handler != null) {
       rowCountChangeHandlers.add(handler);
     }
+  }
+  
+  public void clearData() {
+    if (isFullCaching()) {
+      setViewData(null);
+      setDataInitialized(false);
+    }
+
+    resetState();
   }
   
   public void clearExclusions() {
@@ -333,7 +349,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         entry.removeHandler();
       }
     }
+
     rowCountChangeHandlers.clear();
+    dataReceivedHandlers.clear();
   }
 
   public void requestSuggestions(Request request, Callback callback) {
@@ -358,12 +376,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return;
     }
     this.additionalFilter = additionalFilter;
-
-    if (isFullCaching()) {
-      setViewData(null);
-      setDataInitialized(false);
-    }
-    resetState();
+    
+    clearData();
   }
 
   public void setExclusions(Collection<Long> rowIds) {
@@ -453,6 +467,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
           @Override
           public void onSuccess(BeeRowSet result) {
             setViewData(result);
+            onDataReceived(getViewData());
             checkPendingRequest();
           }
         });
@@ -473,6 +488,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private boolean isFullCaching() {
     return Relation.Caching.LOCAL.equals(caching) || Relation.Caching.GLOBAL.equals(caching);
+  }
+
+  private void onDataReceived(BeeRowSet rowSet) {
+    for (Consumer<BeeRowSet> handler : dataReceivedHandlers) {
+      handler.accept(rowSet);
+    }
   }
 
   private void onRowCountChange(int count) {

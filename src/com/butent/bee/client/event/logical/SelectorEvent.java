@@ -139,6 +139,10 @@ public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Co
     return consumed;
   }
 
+  public boolean isDataLoaded() {
+    return State.LOADED.equals(getState());
+  }
+  
   public boolean isExclusions() {
     return State.UPDATING.equals(getState());
   }
@@ -151,6 +155,10 @@ public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Co
     return State.OPEN.equals(getState());
   }
 
+  public boolean isUnloading() {
+    return State.UNLOADING.equals(getState());
+  }
+  
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;

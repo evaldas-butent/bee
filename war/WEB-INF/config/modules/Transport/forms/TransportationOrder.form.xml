@@ -32,7 +32,8 @@
         </row>
         <row>
           <Label html="Kontaktas:" horizontalAlignment="right" />
-          <DataSelector source="CustomerPerson" />
+          <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
+            choiceColumns="FirstName LastName CompanyName" options="Customer" />
           <Label html="Vadybininkas:" horizontalAlignment="right" />
           <DataSelector source="Manager" />
         </row>

@@ -31,6 +31,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     this.values = values;
   }
 
+  @Override
   public void clear() {
     values.setLength(0);
   }
@@ -44,11 +45,13 @@ public class JsStringSequence extends AbstractSequence<String> {
     return new JsStringSequence(arr);
   }
 
+  @Override
   public String get(int index) {
     assertIndex(index);
     return values.get(index);
   }
 
+  @Override
   public Pair<String[], Integer> getArray(String[] a) {
     String[] arr = new String[getLength()];
     for (int i = 0; i < getLength(); i++) {
@@ -57,10 +60,12 @@ public class JsStringSequence extends AbstractSequence<String> {
     return Pair.of(arr, getLength());
   }
 
+  @Override
   public int getLength() {
     return values.length();
   }
 
+  @Override
   public List<String> getList() {
     List<String> lst = Lists.newArrayListWithCapacity(getLength());
     for (int i = 0; i < getLength(); i++) {
@@ -69,21 +74,25 @@ public class JsStringSequence extends AbstractSequence<String> {
     return lst;
   }
 
+  @Override
   public void insert(int index, String value) {
     assertInsert(index);
     JsUtils.insert(values, index, value);
   }
 
+  @Override
   public void remove(int index) {
     assertIndex(index);
     JsUtils.remove(values, index);
   }
 
+  @Override
   public void set(int index, String value) {
     assertIndex(index);
     values.set(index, value);
   }
 
+  @Override
   public void setValues(List<String> lst) {
     Assert.notNull(lst);
     if (getLength() != lst.size()) {
@@ -94,6 +103,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     }
   }
 
+  @Override
   public void setValues(String[] arr) {
     Assert.notNull(arr);
     if (getLength() != arr.length) {

@@ -22,6 +22,9 @@
         <SimpleColumn alias="PersonFirstName" name="FirstName" />
         <SimpleColumn alias="PersonLastName" name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="PersonCompanyName" name="Name" />
+      </SimpleJoin>
     </SimpleJoin>
     
     <SimpleColumn name="Payer" />

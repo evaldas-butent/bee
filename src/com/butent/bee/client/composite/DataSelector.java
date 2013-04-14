@@ -67,6 +67,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -746,6 +747,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         DataSelector.this.setAlive(parameter > 0);
       }
     });
+    
+    oracle.addDataReceivedHandler(new Consumer<BeeRowSet>() {
+      @Override
+      public void accept(BeeRowSet rowSet) {
+        if (!DataUtils.isEmpty(rowSet)) {
+          SelectorEvent.fire(DataSelector.this, State.LOADED);
+        }
+      }
+    });
 
     if (tableMode) {
       initCellRenderers(dataInfo);
@@ -1264,6 +1274,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   @Override
   protected void onUnload() {
+    SelectorEvent.fire(this, State.UNLOADING);
+    
     getOracle().onUnload();
     super.onUnload();
   }

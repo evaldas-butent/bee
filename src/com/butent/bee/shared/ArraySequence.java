@@ -28,6 +28,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
   /**
    * Clear the array of object.
    */
+  @Override
   public void clear() {
     this.length = 0;
   }
@@ -38,6 +39,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * @param index the object index of array
    * @return the object of array contains of the index.
    */
+  @Override
   public T get(int index) {
     assertIndex(index);
     return values[index];
@@ -48,10 +50,12 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @return the array of objects
    */
+  @Override
   public Pair<T[], Integer> getArray(T[] a) {
     return Pair.of(values, getLength());
   }
 
+  @Override
   public int getLength() {
     return length;
   }
@@ -61,6 +65,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @return the list of objects
    */
+  @Override
   public List<T> getList() {
     List<T> list = Lists.newArrayListWithCapacity(getLength());
     if (getLength() > 0) {
@@ -77,6 +82,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * @param index index of object array
    * @param value the object inserts to array
    */
+  @Override
   public void insert(int index, T value) {
     assertInsert(index);
     List<T> list = getList();
@@ -89,6 +95,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @param index the index of object array
    */
+  @Override
   public void remove(int index) {
     assertIndex(index);
     List<T> list = getList();
@@ -101,6 +108,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @param index the index of object array.
    */
+  @Override
   public void set(int index, T value) {
     assertIndex(index);
     values[index] = value;
@@ -112,6 +120,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @param lst the new value to set
    */
+  @Override
   public void setValues(List<T> lst) {
     Assert.notNull(lst);
     values = lst.toArray(values);
@@ -123,6 +132,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * 
    * @param arr the new value to set
    */
+  @Override
   public void setValues(T[] arr) {
     Assert.notNull(arr);
     values = arr;

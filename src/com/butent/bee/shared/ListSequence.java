@@ -28,6 +28,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
   /**
    * Removes all values of the list.
    */
+  @Override
   public void clear() {
     values.clear();
   }
@@ -45,6 +46,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * @param index index of the list field
    * @return the value of the list by index
    */
+  @Override
   public T get(int index) {
     return values.get(index);
   }
@@ -54,11 +56,13 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * 
    * @return converted array of list
    */
+  @Override
   public Pair<T[], Integer> getArray(T[] a) {
     Assert.notNull(a);
     return Pair.of(values.toArray(a), getLength());
   }
 
+  @Override
   public int getLength() {
     return values.size();
   }
@@ -68,6 +72,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * 
    * @return list of {@code java.util.List} type
    */
+  @Override
   public List<T> getList() {
     return values;
   }
@@ -79,6 +84,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * @param index index of value in the list;
    * @param value value there will be insert
    */
+  @Override
   public void insert(int index, T value) {
     assertInsert(index);
     values.add(index, value);
@@ -89,6 +95,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * 
    * @param index index of value of the list;
    */
+  @Override
   public void remove(int index) {
     assertIndex(index);
     values.remove(index);
@@ -100,6 +107,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * @param index index of value in the list
    * @param value a new value
    */
+  @Override
   public void set(int index, T value) {
     assertIndex(index);
     values.set(index, value);
@@ -110,6 +118,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * 
    * @param lst the list of new values
    */
+  @Override
   public void setValues(List<T> lst) {
     BeeUtils.overwrite(values, lst);
   }
@@ -119,6 +128,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * 
    * @param arr the array of values
    */
+  @Override
   public void setValues(T[] arr) {
     Assert.notNull(arr);
     setValues(Arrays.asList(arr));
