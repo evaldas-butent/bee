@@ -3,7 +3,7 @@
 
 name="ContactsClassifiers" label="Kontaktų klasifikatoriai" parent="Contacts" order="3" 
 >
-  <Item name="CompanyTypes" label="Klientų tipai" service="grid" parameters="CompanyTypes" separator="true" />
+  <Item name="CompanyTypes" label="Klientų statusai" service="grid" parameters="CompanyTypes" separator="true" />
   <Item name="CompanyGroups" label="Klientų grupės" service="grid" parameters="CompanyGroups" />
   <Item name="CompanyPriorities" label="Klientų prioritetai" service="grid" parameters="CompanyPriorities" />
   <Item name="CompanySizes" label="Klientų įmonių dydžiai" service="grid" parameters="CompanySizes" />

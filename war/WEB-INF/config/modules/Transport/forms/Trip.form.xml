@@ -11,33 +11,61 @@
   width="900" widthUnit="px" height="600" heightUnit="px"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <InputDateTime source="Date" style="width: 10em;" caption="Data" />
-          <ListBox source="Status" itemKey="TripStatus" caption="Būsena" />
-          <InputText source="TripNo" caption="Reiso Nr." />
-        </FlowPanel>
-        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <FlowPanel>
-            <DataSelector source="Vehicle" caption="Vilkikas" renderColumns="VehicleNumber"
-              filter="IsTruck" d:size="75" d:unit="px" d:align="right" required="true" />
-            <DataSelector source="Trailer" caption="Puspriekabė" filter="IsTrailer" 
-              d:size="75" d:unit="px" d:align="right" d:rootStyle="display:inline-block;" />
-            <Button name="profit" html="Pelnas" style="display:inline-block;" />
+  
+    <FlowPanel class="flexBox-horizontal" style="margin-bottom: 1ex;">
+      <Table>
+        <row> 
+          <FlowPanel  class="flexBox-vertical">
+            <SimplePanel style="margin-top: 10px;"> 
+              <InputDateTime source="Date" caption="Data" style="width: 120px;" 
+                  decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
+            </SimplePanel>  
+            <SimplePanel style="margin-top: 10px"> 
+              <DataSelector source="Vehicle" caption="Vilkikas"  style="width: 140px;"  renderColumns="VehicleNumber"
+                filter="IsTruck" d:size="75" d:unit="px" d:align="left" required="true" />
+            </SimplePanel>    
           </FlowPanel>
-        </FlowPanel>
-      </FlowPanel>
-
-      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-        <Label html="Pastabos" />
-        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-          <InputArea source="Notes" class="occupy" />
-        </SimplePanel>
-      </FlowPanel>
-    </FlowPanel>
-
-
+        </row>
+      </Table>
+     
+      <Table>
+        <row> 
+          <FlowPanel  class="flexBox-vertical" style="margin-left: 1em;">
+            <SimplePanel style="margin-top: 10px"> 
+              <InputDate source="PlannedEndDate" caption="Planuojama pabaigos data " style="width: 7em; margin: 0 2px" />
+            </SimplePanel>
+            <SimplePanel style="margin-top: 12px">   
+              <DataSelector source="Trailer" caption="Puspriekabė" filter="IsTrailer"
+                d:size="90" d:unit="px" d:align="right" />
+            </SimplePanel>    
+          </FlowPanel>  
+        </row>
+      </Table>  
+ 
+      <Table>
+        <row>
+          <FlowPanel  class="flexBox-vertical" style="margin-left: 1em;">   
+            <SimplePanel style="margin-top: 10px"> 
+              <InputText source="TripNo" caption="Reiso Nr."  style="width: 100px;"/>
+            </SimplePanel>  
+            <Label html="Pastabos" style="margin-top: 10px"/>
+            <SimplePanel style="position: relative; min-width: 10em;" class="flexible">
+              <InputArea source="Notes" style="height: 80px; width: 200px;"/>
+            </SimplePanel>
+          </FlowPanel>
+        </row>
+      </Table>  
+               
+      <Table>
+        <row>
+          <FlowPanel  class="flexBox-vertical" style="margin-top: 10px">
+            <ListBox source="Status" itemKey="TripStatus" caption="Būsena" style="margin-bottom: 20px;"/>
+            <Button name="profit" html="Pelnas" style="width: 80px;" />
+          </FlowPanel>  
+        </row>  
+      </Table>
+    </FlowPanel>   
+    
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>Pagrindiniai duomenys</text>
@@ -77,8 +105,7 @@
                 <InputDecimal source="FuelAfter" style="width: 4em;" />
               </SimplePanel>
             </FlowPanel>
-
-            <InputDate source="PlannedEndDate" caption="Planuojama pabaigos data " style="width: 7em; margin: 0 3px" />
+           
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
@@ -87,12 +114,10 @@
           </FlowPanel>
         </FlowPanel>
       </page>
-
       <page>
         <text>Kroviniai</text>
         <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
-
       <page>
         <text>Išlaidos</text>
         <ComplexPanel>
@@ -104,7 +129,6 @@
           </layer>
         </ComplexPanel>
       </page>
-
       <page>
         <text>Kelionės lapai</text>
         <ComplexPanel>
@@ -116,11 +140,11 @@
           </layer>
         </ComplexPanel>
       </page>
-
       <page>
         <text>Dokumentai</text>
         <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
     </TabbedPages>
   </FlowPanel>
+ 
 </f:Form>

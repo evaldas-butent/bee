@@ -10,57 +10,78 @@
   width="900" widthUnit="px" height="600" heightUnit="px"
   >
   <FlowPanel class="flexBox-vertical">
+
     <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <InputDateTime source="Date" style="width: 10em;" caption="Data" />
-          <ListBox source="Status" itemKey="TripStatus" caption="Būsena" />
-          <InputText source="TripNo" caption="Reiso.Nr." />
-          <Button name="profit" html="Pelnas" />
-        </FlowPanel>
-        <FlowPanel class="flexBox-horizontal">
-          <FlowPanel  class="flexBox-vertical flexible" style="margin-bottom: 1ex">
-            <DataSelector source="Forwarder" caption="Vežėjas" style="width: 120px"
-                decorator="flex-left" d:unit="px" d:align="left" required="true" d:size="75"/>
-            <FlowPanel style="margin-top: 10px"> 
+      <Table>
+        <row>
+          <FlowPanel  class="flexBox-vertical" style="margin-bottom: 1ex">
+            <SimplePanel style="margin-top: 10px"> 
+              <InputDateTime source="Date" caption="Data" style="width: 120px;" 
+                  decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
+            </SimplePanel>      
+            <SimplePanel style="margin-top: 10px"> 
+              <DataSelector source="Forwarder" caption="Vežėjas" style="width: 120px"
+                  decorator="flex-left" d:unit="px" d:align="left" required="true" d:size="75"/>
+            </SimplePanel>      
+            <SimplePanel style="margin-top: 10px"> 
               <InputText source="ForwarderDriver" caption="Vairuotojas" style="width: 120px" 
-                 decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
-            </FlowPanel>     
+                  decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
+            </SimplePanel>     
             <SimplePanel style="margin-top: 10px"> 
               <InputText source="ForwarderVehicle" caption="Transportas" style="width: 120px"
-                decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
+                  decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
             </SimplePanel>    
           </FlowPanel>
-        <FlowPanel class="flexBox-vertical" style="&ROW_STYLE; margin-left: 1em">
-          <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;  margin-left: 4em">
-             <Label html="Išvykimas" style="font-weight: bold; margin-left: 20px" />
-             <Label html="Sugrįžimas" style="font-weight: bold; margin-left: 50px" />
-          </FlowPanel>
-          <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE; margin-left: 4em">
-            <SimplePanel>
-              <InputDate source="DateFrom" style="width: 7em;" />
+        </row>  
+      </Table>   
+         
+      <Table>
+        <row>   
+          <FlowPanel class="flexBox-vertical"  style="margin-left: 11em;">
+            <SimplePanel style="margin-top: 10px; margin-bottom: 10px;"> 
+              <InputText source="TripNo" style="width: 10em;" caption="Reiso.Nr." />
+            </SimplePanel>  
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+              <Label html="Išvykimas" style="font-weight: bold; margin-left: 20px" />
+              <Label html="Sugrįžimas" style="font-weight: bold; margin-left: 50px" />
+            </FlowPanel>
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+              <SimplePanel>
+                <InputDate source="DateFrom" style="width: 7em;" />
+              </SimplePanel>
+                <Label html="Data" style="margin: 0 5px 0 5px"/>
+              <SimplePanel>
+                <InputDate source="DateTo" style="width: 7em;" />
+              </SimplePanel>
+            </FlowPanel>
+          </FlowPanel> 
+        </row>
+      </Table>  
+      
+      <Table>
+        <row>
+          <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;"> 
+            <SimplePanel style="margin-bottom: 10px;"> 
+              <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true"
+                  style="width: 120px"  d:unit="px" d:align="left" d:size="125" />
+            </SimplePanel>  
+            <Label html="Pastabos" />
+            <SimplePanel  style="position: relative; min-width: 5em;" class="flexible"> 
+              <InputArea source="Notes" style="height: 80px; width:250px;"/>
             </SimplePanel>
-             <Label html="Data"  style="margin: 0 5px 0 5px"/>
-            <SimplePanel>
-              <InputDate source="DateTo" style="width: 7em;" />
-            </SimplePanel>
           </FlowPanel>
-        </FlowPanel> 
-      </FlowPanel>
-      <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true"
-        decorator="flex-left" d:size="115" />
-     </FlowPanel>
-    
-     <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-       <Label html="Pastabos" />
-       <SimplePanel  style="position: relative; min-width: 5em;" class="flexible">
-         <Table>
-           <row>
-             <InputArea source="Notes" class="occupy" />
-           </row>
-         </Table> 
-       </SimplePanel>
-     </FlowPanel>
+        </row>
+      </Table>   
+      
+      <Table>
+        <row>    
+          <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;">
+            <ListBox source="Status" itemKey="TripStatus" caption="Būsena" style="margin-bottom: 20px"/>
+            <Button name="profit"  html="Pelnas" style="width: 80px" />
+          </FlowPanel>  
+        </row>
+      </Table>
+   
     </FlowPanel>
     
     <TabbedPages class="flexible" style="margin-top: 1ex;">
