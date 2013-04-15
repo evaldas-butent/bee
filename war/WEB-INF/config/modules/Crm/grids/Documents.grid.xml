@@ -19,11 +19,12 @@
   
   <columns>
     <IdColumn name="Id" />
-    <DataColumn name="DocumentDate" source="DocumentDate" caption="Data" />
-    <DataColumn name="Number" source="Number" caption="Numeris" />
-    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <DataColumn name="TypeName" source="TypeName" caption="Tipas" />
-    <DataColumn name="GroupName" source="GroupName" caption="Grupė" />
-    <DataColumn name="Expires" source="Expires" caption="Galioja iki" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="DocumentDate" caption="Data" />
+    <DataColumn name="Expires" caption="Galioja iki" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="GroupName" caption="Grupė" />
+    <DataColumn name="PlaceName" caption="Vieta" />
   </columns>
 </Grid>

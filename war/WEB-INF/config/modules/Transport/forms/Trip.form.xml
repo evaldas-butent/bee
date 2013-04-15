@@ -5,6 +5,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form" 
   xmlns:d="http://www.butent.com/decorator" 
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Trip" viewName="Trips" caption="Reisas"
   width="900" widthUnit="px" height="600" heightUnit="px"
@@ -86,10 +87,12 @@
           </FlowPanel>
         </FlowPanel>
       </page>
+
       <page>
         <text>Kroviniai</text>
         <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
+
       <page>
         <text>Išlaidos</text>
         <ComplexPanel>
@@ -101,6 +104,7 @@
           </layer>
         </ComplexPanel>
       </page>
+
       <page>
         <text>Kelionės lapai</text>
         <ComplexPanel>
@@ -111,6 +115,11 @@
             <ChildGrid name="TripFuelConsumptions" relColumn="Trip" />
           </layer>
         </ComplexPanel>
+      </page>
+
+      <page>
+        <text>Dokumentai</text>
+        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
     </TabbedPages>
   </FlowPanel>

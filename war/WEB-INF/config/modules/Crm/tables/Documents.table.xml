@@ -7,7 +7,7 @@
   <Fields>
     <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
 
-    <DateTime name="DocumentDate" label="Dokumento data" />
+    <DateTime name="DocumentDate" label="Dokumento data" defExpr="CURRENT_TIME" />
     <DateTime name="Expires" label="Galioja iki" />
 
     <String name="Number" precision="30" label="Numeris" />

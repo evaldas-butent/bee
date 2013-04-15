@@ -8,6 +8,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Driver" viewName="Drivers" caption="Vairuotojas"
   >
@@ -66,7 +67,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>Dokumentai</text>
-        <ChildGrid name="DriverDocuments" relColumn="Driver" />
+        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
       <page>
         <text>Reisai</text>

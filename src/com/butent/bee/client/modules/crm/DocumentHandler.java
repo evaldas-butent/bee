@@ -48,7 +48,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -115,8 +114,6 @@ public class DocumentHandler {
       if (getCollector() != null) {
         getCollector().clear();
       }
-
-      newRow.setValue(form.getDataIndex(COL_DOCUMENT_DATE), TimeUtils.nowHours());
 
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,

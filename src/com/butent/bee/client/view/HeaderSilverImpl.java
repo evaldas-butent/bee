@@ -20,6 +20,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -119,7 +120,9 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     addStyleName(STYLE_CONTAINER);
 
     captionWidget.addStyleName(STYLE_CAPTION);
-    setCaption(caption);
+    if (!BeeUtils.isEmpty(caption) && !BeeConst.STRING_MINUS.equals(caption)) {
+      setCaption(caption);
+    }
     add(captionWidget);
 
     messageWidget.addStyleName(STYLE_MESSAGE);

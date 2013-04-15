@@ -9,7 +9,7 @@
   </row>
 
   <row>
-    <Label html="Dokumento data:" class="bee-required" />
+    <Label html="Dokumento data:" />
     <InputDateTime source="DocumentDate" />
     <Label html="Galioja iki:" horizontalAlignment="right" />
     <InputDateTime source="Expires" />

@@ -97,7 +97,7 @@
       </page>
       <page>
         <text>Dokumentai</text>
-        <Label />
+        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
       <page>
         <text>Pastabos</text>

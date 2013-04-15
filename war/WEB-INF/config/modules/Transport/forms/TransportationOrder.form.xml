@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
   >
@@ -42,6 +43,16 @@
       <FlowPanel name="TripInfo" class="flexible" style="margin: 10px; margin-left: 0; overflow: auto;" />
     </FlowPanel>
 
-    <ChildGrid class="flexible" name="OrderCargo" relColumn="Order" />
+    <TabbedPages class="flexible" style="margin-top: 1ex;" >
+      <page>
+        <text>Kroviniai</text>
+        <ChildGrid name="OrderCargo" relColumn="Order" caption="-" />
+      </page>
+      <page>
+        <text>Dokumentai</text>
+        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
+      </page>
+    </TabbedPages>
+
   </FlowPanel>
 </f:Form>

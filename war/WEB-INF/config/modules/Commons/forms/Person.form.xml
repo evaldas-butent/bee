@@ -22,6 +22,16 @@
       </row>
     </Table>
 
-    <ChildGrid class="flexible" name="PersonCompanies" relColumn="Person" />
+    <TabbedPages class="flexible" style="margin-top: 1ex;" >
+      <page>
+        <text>Įmonių kontaktai</text>
+        <ChildGrid name="PersonCompanies" relColumn="Person" />
+      </page>
+      <page>
+        <text>Dokumentai</text>
+        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
+      </page>
+    </TabbedPages>
+
   </FlowPanel>
 </f:Form>  

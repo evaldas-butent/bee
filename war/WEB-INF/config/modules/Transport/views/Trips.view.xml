@@ -5,7 +5,8 @@
   name="Trips"
   source="Trips"
   filter="!(Expedition)"
-  editForm="Trip" newRowForm="Trip" newRowCaption="Naujas reisas"
+  editForm="Trip" newRowForm="Trip"
+  caption="Reisai" newRowCaption="Naujas reisas"
   >
   <Columns>
     <HiddenColumn name="Expedition" />

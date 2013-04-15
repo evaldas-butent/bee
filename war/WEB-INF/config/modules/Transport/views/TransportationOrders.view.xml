@@ -2,8 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TransportationOrders" source="TransportationOrders"
-  newRowForm="TransportationOrder" newRowCaption="Naujas pervežimo užsakymas"
-  editForm="TransportationOrder"
+  caption="Pervežimo užsakymai" newRowCaption="Naujas pervežimo užsakymas"
+  editForm="TransportationOrder" newRowForm="TransportationOrder"
   >
   <Columns>
     <SimpleColumn name="Status" />

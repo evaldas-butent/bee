@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Documents" source="Documents" caption="Dokumentai" newRowCaption="Naujas dokumentas"
-  editForm="Document"
+  name="Documents" source="Documents"
+  caption="Dokumentai" newRowCaption="Naujas dokumentas"
+  editForm="Document" newRowForm="NewDocument"
   >
   <Columns>
     <SimpleColumn name="Name" />

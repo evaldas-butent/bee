@@ -97,6 +97,7 @@
         <InputInteger source="Palettes" />        
       </row>
     </Table>
+
       <TabbedPages class="flexible" style="&section;">
         <page>
           <text>Reisai</text>
@@ -105,6 +106,10 @@
         <page>
           <text>Kitos sąnaudos</text>
           <ChildGrid name="CargoExpenses" relColumn="Cargo" />
+        </page>
+        <page>
+          <text>Dokumentai</text>
+          <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
         </page>
       </TabbedPages>
   </FlowPanel>
