@@ -22,6 +22,7 @@
 
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="OwnerPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="OwnerFirstName" name="FirstName" />
@@ -32,6 +33,7 @@
 
     <SimpleColumn name="Executor" />
     <SimpleJoin name="Executor" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ExecutorPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="ExecutorFirstName" name="FirstName" />

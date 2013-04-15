@@ -13,6 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -73,7 +74,8 @@ public class ChildSelector extends MultiSelector implements HasFosterParent,
       }
     }
 
-    if (BeeUtils.same(targetColumn, sourceColumn)) {
+    if (!BeeUtils.same(table, CommonsConstants.TBL_RELATIONS)
+        && BeeUtils.same(targetColumn, sourceColumn)) {
       return null;
     }
 
@@ -199,7 +201,7 @@ public class ChildSelector extends MultiSelector implements HasFosterParent,
   private void setTargetRowId(Long targetRowId) {
     this.targetRowId = targetRowId;
   }
-  
+
   private void unregister() {
     if (getParentRowReg() != null) {
       getParentRowReg().removeHandler();

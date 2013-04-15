@@ -5,7 +5,7 @@
   name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
   newRowForm="NewOrderCargo" newRowCaption="Naujas krovinys" newRowPopup="true"
   editForm="OrderCargo" editPopup="true"
-  flexGrow="1" flexShrink="1" minColumnWidth="60"
+  flexGrow="1" flexShrink="1"
   >
 
   <body height="68" />
@@ -17,8 +17,10 @@
     <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas"
       minWidth="115" flexBasis="120" />
 
-    <DataColumn name="Partial" caption="Dalinis" />
-    <CalcColumn name="Expedition" type="boolean" caption="Ekspedicija">
+    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
+    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <CalcColumn name="Expedition" type="boolean" caption="E" width="15" sortable="false">
       <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
     </CalcColumn>
 

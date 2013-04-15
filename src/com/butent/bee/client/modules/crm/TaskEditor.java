@@ -345,7 +345,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
-  private final List<String> relations = Lists.newArrayList(PROP_TASKS);
+  private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
+      PROP_APPOINTMENTS, PROP_TASKS);
 
   private final long userId;
 

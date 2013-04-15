@@ -165,7 +165,6 @@ public class CrmConstants {
   public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
   public static final String COL_PROJECT = "Project";
-  public static final String COL_PROJECT_NAME = "ProjectName";
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
 
@@ -246,6 +245,9 @@ public class CrmConstants {
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
 
+  public static final String PROP_COMPANIES = "Companies";
+  public static final String PROP_PERSONS = "Persons";
+  public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";

@@ -10,11 +10,13 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class CrmUtils {
 
@@ -28,8 +30,8 @@ public class CrmUtils {
     return BeeUtils.join(": ", label, BeeUtils.joinWords("įtraukta", value));
   }
 
-  public static String[] getRelations() {
-    return ensureTaskPropertyToRelation().inverse().keySet().toArray(new String[0]);
+  public static Set<String> getRelations() {
+    return ensureTaskPropertyToRelation().inverse().keySet();
   }
 
   public static List<Long> getTaskUsers(IsRow row, List<BeeColumn> columns) {
@@ -114,6 +116,9 @@ public class CrmUtils {
 
   private static BiMap<String, String> ensureTaskPropertyToRelation() {
     if (taskPropertyToRelation.isEmpty()) {
+      taskPropertyToRelation.put(PROP_COMPANIES, COL_COMPANY);
+      taskPropertyToRelation.put(PROP_PERSONS, COL_PERSON);
+      taskPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);
     }
     return taskPropertyToRelation;

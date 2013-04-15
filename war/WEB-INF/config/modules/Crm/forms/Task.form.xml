@@ -32,17 +32,17 @@
 
       <FlowPanel style="&section;">
         <Label html="Vadovas:" style="&lbl1;" />
-        <DataSelector source="Owner" editEnabled="true" style="&inp2;" readOnly="true" />
+        <DataSelector source="Owner" editEnabled="true" editSource="OwnerPerson" style="&inp2;" readOnly="true" />
         <Label html="Įmonė:" style="&lbl3;" />
         <DataSelector source="Company" editEnabled="true" style="&inp4;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vykdytojas:" style="&lbl1;" />
-        <DataSelector source="Executor" editEnabled="true" style="&inp2;" readOnly="true" />
+        <DataSelector source="Executor" editEnabled="true" editSource="ExecutorPerson" style="&inp2;" readOnly="true" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
         <DataSelector source="Contact" style="&inp4;" disablable="true"
-          editEnabled="true" editSource="ContactPerson"
+          editEnabled="true"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
       </FlowPanel>
@@ -100,23 +100,22 @@
       &separator;
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
-        <ChildSelector viewName="Companies" childTable="Relationships" renderColumns="Name"
-          editEnabled="true" style="&inp2x;" disablable="true" label="Įmonės" />
+        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+          editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
-        <ChildSelector viewName="Persons" childTable="Relationships"
-          renderColumns="FirstName LastName" editEnabled="true" style="&inp2x;" disablable="true"
-          label="Asmenys" />
+        <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+          editEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Įvykiai:" style="&top1;" />
-        <ChildSelector viewName="Appointments" childTable="Relationships"
+        <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" editEnabled="true"
-          style="&inp2x;" disablable="true" label="Įvykiai" />
+          style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

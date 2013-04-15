@@ -178,10 +178,8 @@
       <Label html="Kaina:" style="&bold;" />
         
       <FlowPanel>
-        <DecimalLabel name="Total" scale="2" inline="true" />
-        <TextLabel source="CurrencyName" inline="true" style="margin-left:2px;">
-          <render><ui:expression>row.CurrencyName ? row.CurrencyName : 'Lt'</ui:expression></render>
-        </TextLabel>
+        <DecimalLabel name="Total" scale="2" inline="true" style="margin-right:2px;" />
+        <TextLabel source="CurrencyName" inline="true" />
       </FlowPanel>
     </HorizontalPanel>
 

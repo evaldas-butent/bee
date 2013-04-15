@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -41,12 +42,10 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -91,10 +90,7 @@ public class CrmModuleBean implements BeeModule {
 
     List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
         Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
-            COL_TYPE_NAME, COL_GROUP_NAME, COL_CATEGORY_NAME, COL_PLACE_NAME, COL_PROJECT_NAME,
-            COL_COMPANY_NAME, COL_PERSON_FIRST_NAME, COL_PERSON_LAST_NAME,
-            COL_PERSON_COMPANY_NAME),
-            query));
+            COL_TYPE_NAME, COL_GROUP_NAME, COL_CATEGORY_NAME, COL_PLACE_NAME), query));
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_COMPANY_NAME,
@@ -340,34 +336,21 @@ public class CrmModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(properties)) {
       return ResponseObject.response(count);
     }
+    ResponseObject response = new ResponseObject();
+    List<RowChildren> children = Lists.newArrayList();
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String relation = CrmUtils.translateTaskPropertyToRelation(entry.getKey());
-      if (BeeUtils.isEmpty(relation)) {
-        continue;
-      }
 
-      List<Long> idList = DataUtils.parseIdList(entry.getValue());
-      if (idList.isEmpty()) {
-        continue;
-      }
-
-      for (long value : idList) {
-        long id = qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONSHIPS)
-            .addConstant(CrmConstants.COL_TASK, taskId));
-
-        long relId = qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONSHIPS)
-            .addConstant(CommonsConstants.COL_RELATIONSHIP, id)
-            .addConstant(CrmConstants.COL_TASK, value));
-
-        qs.updateData(new SqlUpdate(CommonsConstants.TBL_RELATIONSHIPS)
-            .addConstant(CommonsConstants.COL_RELATIONSHIP, relId)
-            .setWhere(sys.idEquals(CommonsConstants.TBL_RELATIONSHIPS, id)));
-
-        count++;
+      if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
+        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, null,
+            relation, entry.getValue()));
       }
     }
-    return ResponseObject.response(count);
+    if (!BeeUtils.isEmpty(children)) {
+      count = deb.commitChildren(taskId, children, response);
+    }
+    return response.setResponse(count);
   }
 
   private ResponseObject createTaskUser(long taskId, long userId, Long millis) {
@@ -648,27 +631,15 @@ public class CrmModuleBean implements BeeModule {
   private Multimap<String, Long> getTaskRelations(long taskId) {
     Multimap<String, Long> res = HashMultimap.create();
 
-    if (ArrayUtils.isEmpty(CrmUtils.getRelations())) {
-      return res;
-    }
-    String als = SqlUtils.uniqueName();
+    for (String relation : CrmUtils.getRelations()) {
+      Long[] ids =
+          qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId, relation);
 
-    SqlSelect query = new SqlSelect()
-        .addFields(CommonsConstants.TBL_RELATIONSHIPS, COL_TASK)
-        .addFrom(CommonsConstants.TBL_RELATIONSHIPS)
-        .addFromInner(CommonsConstants.TBL_RELATIONSHIPS, als,
-            SqlUtils.and(sys.joinTables(CommonsConstants.TBL_RELATIONSHIPS,
-                als, CommonsConstants.COL_RELATIONSHIP),
-                SqlUtils.notNull(CommonsConstants.TBL_RELATIONSHIPS, COL_TASK),
-                SqlUtils.equals(als, COL_TASK, taskId)));
+      if (ids != null) {
+        String property = CrmUtils.translateRelationToTaskProperty(relation);
 
-    for (SimpleRow row : qs.getData(query)) {
-      for (String relation : CrmUtils.getRelations()) {
-        Long value = row.getLong(relation);
-
-        if (value != null) {
-          res.put(CrmUtils.translateRelationToTaskProperty(relation), value);
-          break;
+        for (Long id : ids) {
+          res.put(property, id);
         }
       }
     }
@@ -764,71 +735,24 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(where));
   }
 
-  private void updateTaskRelation(long taskId, String property, Collection<Long> oldValues,
-      Collection<Long> newValues) {
-    if (BeeUtils.sameElements(oldValues, newValues)) {
-      return;
-    }
+  private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations, BeeRow row) {
+    ResponseObject response = new ResponseObject();
+    List<RowChildren> children = Lists.newArrayList();
 
-    List<Long> insert = Lists.newArrayList(newValues);
-    insert.removeAll(oldValues);
+    for (String property : updatedRelations) {
+      String relation = CrmUtils.translateTaskPropertyToRelation(property);
 
-    List<Long> delete = Lists.newArrayList(oldValues);
-    delete.removeAll(newValues);
-
-    String relation = CrmUtils.translateTaskPropertyToRelation(property);
-    if (BeeUtils.isEmpty(relation)) {
-      return;
-    }
-    for (Long value : insert) {
-      logger.debug("add task relation", taskId, relation, value);
-
-      long id = qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONSHIPS)
-          .addConstant(CrmConstants.COL_TASK, taskId));
-
-      long relId = qs.insertData(new SqlInsert(CommonsConstants.TBL_RELATIONSHIPS)
-          .addConstant(CommonsConstants.COL_RELATIONSHIP, id)
-          .addConstant(CrmConstants.COL_TASK, value));
-
-      qs.updateData(new SqlUpdate(CommonsConstants.TBL_RELATIONSHIPS)
-          .addConstant(CommonsConstants.COL_RELATIONSHIP, relId)
-          .setWhere(sys.idEquals(CommonsConstants.TBL_RELATIONSHIPS, id)));
-    }
-    if (!delete.isEmpty()) {
-      logger.debug("delete task relation", taskId, relation, delete);
-      String als = SqlUtils.uniqueName();
-
-      SqlSelect subquery = new SqlSelect()
-          .addFields(CommonsConstants.TBL_RELATIONSHIPS,
-              sys.getIdName(CommonsConstants.TBL_RELATIONSHIPS))
-          .addFrom(CommonsConstants.TBL_RELATIONSHIPS)
-          .addFromInner(CommonsConstants.TBL_RELATIONSHIPS, als,
-              SqlUtils.and(sys.joinTables(CommonsConstants.TBL_RELATIONSHIPS,
-                  als, CommonsConstants.COL_RELATIONSHIP),
-                  SqlUtils.inList(CommonsConstants.TBL_RELATIONSHIPS, COL_TASK, delete),
-                  SqlUtils.equals(als, COL_TASK, taskId)));
-
-      qs.updateData(new SqlDelete(CommonsConstants.TBL_RELATIONSHIPS)
-          .setWhere(SqlUtils.and(
-              SqlUtils.equals(CommonsConstants.TBL_RELATIONSHIPS, COL_TASK, taskId),
-              SqlUtils.in(CommonsConstants.TBL_RELATIONSHIPS,
-                  CommonsConstants.COL_RELATIONSHIP, subquery))));
-    }
-  }
-
-  private void updateTaskRelations(long taskId, Set<String> updatedRelations, BeeRow row) {
-    Multimap<String, Long> oldRelations = getTaskRelations(taskId);
-
-    for (String relation : updatedRelations) {
-      List<Long> oldValues = Lists.newArrayList();
-
-      if (oldRelations.containsKey(relation)) {
-        oldValues.addAll(oldRelations.get(relation));
+      if (!BeeUtils.isEmpty(relation)) {
+        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId,
+            relation, row.getProperty(property)));
       }
-      List<Long> newValues = DataUtils.parseIdList(row.getProperty(relation));
-
-      updateTaskRelation(taskId, relation, oldValues, newValues);
     }
+    int count = 0;
+
+    if (!BeeUtils.isEmpty(children)) {
+      count = deb.commitChildren(taskId, children, response);
+    }
+    return response.setResponse(count);
   }
 
   private void updateTaskUsers(long taskId, Collection<Long> oldUsers, Collection<Long> newUsers) {

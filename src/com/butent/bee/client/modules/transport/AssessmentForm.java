@@ -421,7 +421,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTAL);
     args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
 
-    Long currency = row.getLong(form.getDataIndex(ExchangeUtils.FLD_CURRENCY));
+    final Long currency = row.getLong(form.getDataIndex(ExchangeUtils.FLD_CURRENCY));
 
     if (currency != null) {
       args.addDataItem(ExchangeUtils.FLD_CURRENCY, currency);
@@ -435,7 +435,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
           return;
         }
         double total = BeeUtils.round(BeeUtils.toDouble((String) response.getResponse()), 2);
-        tot.getElement().setInnerText(total != 0 ? Double.toString(total) : null);
+        tot.getElement().setInnerText(total != 0
+            ? BeeUtils.joinWords(total, currency != null ? null : "LTL") : null);
       }
     });
   }

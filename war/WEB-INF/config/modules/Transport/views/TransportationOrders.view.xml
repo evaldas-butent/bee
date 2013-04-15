@@ -48,6 +48,8 @@
       <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
       
       <AggregateColumn aggregate="MAX" name="Partial" />
+      <AggregateColumn aggregate="MAX" name="Outsized" />
+      <AggregateColumn aggregate="MAX" name="Dangerous" />
       
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <AggregateJoin name="Trip" joinType="LEFT">

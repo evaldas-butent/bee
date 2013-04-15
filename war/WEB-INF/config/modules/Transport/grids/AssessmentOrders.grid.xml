@@ -39,7 +39,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="CargoNotes" caption="Maršrutas" minWidth="100">
+    <DataColumn name="Route" caption="Maršrutas" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>

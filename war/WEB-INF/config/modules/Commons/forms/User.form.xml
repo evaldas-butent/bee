@@ -8,7 +8,7 @@
   <FlowPanel class="flexBox-vertical">
     <Table style="border-spacing: 10px;">
       <row>
-        <Label html="Prisijungimo vardas" />
+        <Label html="Prisijungimo vardas" class="bee-required" />
         <InputText source="Login" style="width:150px" />
         <cell horizontalAlignment="center" colSpan="2">
           <Button html="Pakeisti slaptažodį" name="ChangePassword" />
@@ -16,10 +16,10 @@
         <Label html="Parametrai" />
       </row>
       <row>
-        <Label html="Vardas, pavardė" />
+        <Label html="Vardas, pavardė" class="bee-required" />
         <DataSelector source="CompanyPerson" style="width:150px"
-          renderColumns="FirstName Lastname" searchableColumns="FirstName Lastname CompanyName"
-          editEnabled="true" editSource="Person" />
+          renderColumns="FirstName Lastname" choiceColumns="FirstName Lastname CompanyName"
+          editEnabled="true" />
         <Label html="Įmonė" horizontalAlignment="right" />
         <TextLabel source="CompanyName" style="width:150px" />
         <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
@@ -30,8 +30,12 @@
         <Label html="Pareigos" horizontalAlignment="right" />
         <TextLabel source="Position" />
       </row>
+      <row>
+        <cell colSpan="4">
+          <ChildSelector childTable="UserRoles" viewName="Roles" style="width:400px"
+            caption="Rolės" required="true" />
+        </cell>
+      </row>
     </Table>
-
-    <ChildGrid class="flexible" name="UserRoles" relColumn="User" style="width:300px" />
   </FlowPanel>
 </f:Form>  

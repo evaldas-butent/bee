@@ -334,10 +334,22 @@ public class QueryServiceBean {
     SqlSelect query = new SqlSelect()
         .addFields(tableName, resultColumn)
         .addFrom(tableName)
-        .setWhere(SqlUtils.and(SqlUtils.equals(tableName, filterColumn, filterValue),
-            SqlUtils.notNull(tableName, resultColumn)))
         .addOrder(tableName, sys.getIdName(tableName));
 
+    boolean selfRelationsMode = BeeUtils.same(filterColumn, resultColumn)
+        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
+
+    if (selfRelationsMode) {
+      String als = SqlUtils.uniqueName();
+
+      query.addFromInner(tableName, als,
+          SqlUtils.and(sys.joinTables(tableName, als, CommonsConstants.COL_RELATION),
+              SqlUtils.notNull(tableName, resultColumn),
+              SqlUtils.equals(als, filterColumn, filterValue)));
+    } else {
+      query.setWhere(SqlUtils.and(SqlUtils.equals(tableName, filterColumn, filterValue),
+          SqlUtils.notNull(tableName, resultColumn)));
+    }
     return getLongColumn(query);
   }
 

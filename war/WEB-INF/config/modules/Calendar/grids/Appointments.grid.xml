@@ -22,8 +22,7 @@
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
 
-    <RelColumn name="Organizer" caption="Atsakingas darbuotojas" editEnabled="true"
-      editSource="OrganizerPerson">
+    <RelColumn name="Organizer" caption="Atsakingas darbuotojas" editEnabled="true">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />

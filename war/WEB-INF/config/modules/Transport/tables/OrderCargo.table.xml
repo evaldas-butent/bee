@@ -26,9 +26,9 @@
     <String name="Cmr" precision="20" />
     <Integer name="LoadedKilometers" />
     <Integer name="EmptyKilometers" />
-    <Boolean name="Partial" />
-    <Boolean name="Outsized" />
-    <Boolean name="Dangerous" />
+    <Boolean name="Partial" label="Dalinis" />
+    <Boolean name="Outsized" label="Negabaritinis" />
+    <Boolean name="Dangerous" label="Pavojingas" />
     <Numeric name="ExchangeOfPalettes" precision="2" />
 
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Pakrovimas" />

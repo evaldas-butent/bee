@@ -4,6 +4,8 @@ import com.google.common.base.Objects;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -17,6 +19,7 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -63,12 +66,21 @@ public class CargoRequestsGrid extends AbstractGridInterceptor {
 
   @Override
   public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow activeRow) {
+    final Long cargoId;
     final long requestId = activeRow.getLong(presenter.getGridView()
         .getDataIndex(CrmConstants.COL_REQUEST));
 
+    if (DataUtils.isId(activeRow.getLong(presenter.getGridView().getDataIndex(COL_ORDER)))) {
+      cargoId = null;
+    } else {
+      cargoId = activeRow.getLong(presenter.getGridView().getDataIndex(COL_CARGO));
+    }
     Queries.deleteRow(CrmConstants.TBL_REQUESTS, requestId, 0, new IntCallback() {
       @Override
       public void onSuccess(Integer result) {
+        if (DataUtils.isId(cargoId)) {
+          Queries.deleteRow(TBL_ORDER_CARGO, cargoId, 0);
+        }
         BeeKeeper.getBus().fireEvent(new RowDeleteEvent(CrmConstants.TBL_REQUESTS, requestId));
         BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(),
             activeRow.getId()));

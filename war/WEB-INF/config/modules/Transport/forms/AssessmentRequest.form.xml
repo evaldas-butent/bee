@@ -14,7 +14,8 @@
   name="AssessmentRequest" viewName="CargoAssessors" caption="Vertinimo užklausimas"
   showRowId="true"
   >
-  <FlowPanel style="padding: 10px 2px 2px 10px;" class="bee-tr-assessment-form">
+  <FlowPanel style="padding: 10px 2px 2px 10px;" class="flexBox-vertical bee-tr-assessment-form">
+    <FlowPanel style="height:70%; overflow:auto;">
     <FlowPanel style="&section;">
       <Label html="Būsena" style="&labelLeft;" />
       <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
@@ -25,7 +26,8 @@
       <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
       <InputDateTime source="OrderDate" style="&input;" />
       <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-      <DataSelector source="CustomerPerson" style="&input; width:200px;" />
+      <DataSelector source="CustomerPerson" style="&input; width:200px;" editEnabled="true"
+        choiceColumns="FirstName LastName CompanyName" options="Customer" />
     </FlowPanel>
     
     <FlowPanel style="&section;">
@@ -57,40 +59,39 @@
     <FlowPanel name="OrderPanel" style="&section;">
       &separator;
       <Label html="Kaina klientui" style="&labelLeft;" />
-      <Label name="Total" style="&inline; width:70px; font-weight:bold;" />
+      <Label name="Total" style="&inline; font-weight:bold; margin-right:5px;" />
       <DataSelector name="Currency" source="Currency" style="&inline; width:40px; margin-right:10px;" />
       <Label html="Spausdinti" style="&labelRight;" />
       <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
       <Button name="RU" html="RU" style="&inline; margin-right:10px;" disablable="false" />
       <Button name="EN" html="EN" style="&inline; margin-right:10px;" disablable="false" />
     </FlowPanel>
+    </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <TabbedPages style="&section; height:150px;">
-        <page>
-          <text>Vežėjai</text>
-          <ChildGrid name="AssessmentForwarders" relColumn="Cargo" source="Cargo" disablable="false" />
-        </page>
-        <page>
-          <FlowPanel>
-            <Label html="Pajamos" style="&inline;" />
-            <FlowPanel name="IncomeTotal" style="&inline;" />
-          </FlowPanel>
-          <ChildGrid name="AssessmentIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
-        </page>
-        <page>
-          <FlowPanel>
-            <Label html="Sąnaudos" style="&inline;" />
-            <FlowPanel name="ExpensesTotal" style="&inline;" />
-          </FlowPanel>
-          <ChildGrid name="AssessmentExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
-        </page>
-      </TabbedPages>
-
-      &separator;
-      <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" style="&section; height:150px;"
-        disablable="false" />
-    </FlowPanel>
+    <TabbedPages class="flexible" style="&section; min-height:100px;">
+      <page>
+        <text>Vertinimai</text>
+        <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+      <page>
+        <text>Vežėjai</text>
+        <ChildGrid name="AssessmentForwarders" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+      <page>
+        <FlowPanel>
+          <Label html="Pajamos" style="&inline;" />
+          <FlowPanel name="IncomeTotal" style="&inline;" />
+        </FlowPanel>
+        <ChildGrid name="AssessmentIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+      <page>
+        <FlowPanel>
+          <Label html="Sąnaudos" style="&inline;" />
+          <FlowPanel name="ExpensesTotal" style="&inline;" />
+        </FlowPanel>
+        <ChildGrid name="AssessmentExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>

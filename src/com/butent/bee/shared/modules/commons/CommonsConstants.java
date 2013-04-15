@@ -107,7 +107,6 @@ public class CommonsConstants {
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_RELATIONS = "Relations";
-  public static final String TBL_RELATIONSHIPS = "Relationships";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -125,7 +124,7 @@ public class CommonsConstants {
 
   public static final String VIEW_COUNTRIES = "Countries";
 
-  public static final String COL_RELATIONSHIP = "Relationship";
+  public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";
@@ -174,11 +173,6 @@ public class CommonsConstants {
   public static final String COL_CITY_NAME = "CityName";
   public static final String COL_COUNTRY_NAME = "CountryName";
 
-  public static final String COL_TABLE_1 = "Table1";
-  public static final String COL_ROW_1 = "Row1";
-  public static final String COL_TABLE_2 = "Table2";
-  public static final String COL_ROW_2 = "Row2";
-
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
@@ -191,7 +185,7 @@ public class CommonsConstants {
   public static final String COL_THEME = "Theme";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
-  
+
   public static final String FORM_NEW_COMPANY = "Company";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";

@@ -25,7 +25,7 @@
 
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
         d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;"
-        editEnabled="true" editSource="Person">
+        editEnabled="true">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />

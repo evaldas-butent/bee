@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -838,25 +839,37 @@ public class DataEditorBean {
   private int insertChildren(long parentId, RowChildren children, ResponseObject response) {
     int count = 0;
     List<Long> idList = DataUtils.parseIdList(children.getChildrenIds());
+
     if (idList.isEmpty()) {
       return count;
     }
-
     String tableName = children.getRepository();
     String parentColumn = children.getParentColumn();
     String childColumn = children.getChildColumn();
 
-    for (long childId : idList) {
-      ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(tableName)
-          .addConstant(parentColumn, parentId).addConstant(childColumn, childId));
+    boolean selfRelationsMode = BeeUtils.same(parentColumn, childColumn)
+        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
 
-      if (ro.hasErrors()) {
-        response.addErrorsFrom(ro);
-        return count;
+    for (long childId : idList) {
+      if (selfRelationsMode) {
+        long id = qs.insertData(new SqlInsert(tableName)
+            .addConstant(parentColumn, parentId));
+
+        long relId = qs.insertData(new SqlInsert(tableName)
+            .addConstant(CommonsConstants.COL_RELATION, id)
+            .addConstant(childColumn, childId));
+
+        qs.updateData(new SqlUpdate(tableName)
+            .addConstant(CommonsConstants.COL_RELATION, relId)
+            .setWhere(sys.idEquals(tableName, id)));
+
+      } else {
+        qs.insertData(new SqlInsert(tableName)
+            .addConstant(parentColumn, parentId)
+            .addConstant(childColumn, childId));
       }
       count++;
     }
-
     response.addInfo(tableName, "inserted", count, "children");
     return count;
   }
@@ -1006,43 +1019,56 @@ public class DataEditorBean {
         }
       }
     }
+    boolean selfRelationsMode = BeeUtils.same(parentColumn, childColumn)
+        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
 
     if (!delete.isEmpty()) {
-      int delCnt = 0;
+      IsCondition wh;
 
-      for (long childId : delete) {
-        ResponseObject ro = qs.updateDataWithResponse(new SqlDelete(tableName)
-            .setWhere(SqlUtils.equals(tableName, parentColumn, parentId, childColumn, childId)));
+      if (selfRelationsMode) {
+        String als = SqlUtils.uniqueName();
 
-        if (ro.hasErrors()) {
-          response.addErrorsFrom(ro);
-          return count;
-        }
-        delCnt++;
+        wh = SqlUtils.in(tableName, CommonsConstants.COL_RELATION, new SqlSelect()
+            .addFields(tableName, sys.getIdName(tableName))
+            .addFrom(tableName)
+            .addFromInner(tableName, als,
+                SqlUtils.and(sys.joinTables(tableName, als, CommonsConstants.COL_RELATION),
+                    SqlUtils.inList(tableName, childColumn, delete),
+                    SqlUtils.equals(als, parentColumn, parentId))));
+      } else {
+        wh = SqlUtils.inList(tableName, childColumn, delete);
       }
+      int delCnt = qs.updateData(new SqlDelete(tableName)
+          .setWhere(SqlUtils.and(SqlUtils.equals(tableName, parentColumn, parentId), wh)));
 
       response.addInfo(tableName, "deleted", delCnt, "children");
       count += delCnt;
     }
-
     if (!insert.isEmpty()) {
       int insCnt = 0;
 
       for (long childId : insert) {
-        ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(tableName)
-            .addConstant(parentColumn, parentId).addConstant(childColumn, childId));
+        if (selfRelationsMode) {
+          long id = qs.insertData(new SqlInsert(tableName)
+              .addConstant(parentColumn, parentId));
 
-        if (ro.hasErrors()) {
-          response.addErrorsFrom(ro);
-          return count;
+          long relId = qs.insertData(new SqlInsert(tableName)
+              .addConstant(CommonsConstants.COL_RELATION, id)
+              .addConstant(childColumn, childId));
+
+          qs.updateData(new SqlUpdate(tableName)
+              .addConstant(CommonsConstants.COL_RELATION, relId)
+              .setWhere(sys.idEquals(tableName, id)));
+        } else {
+          qs.insertData(new SqlInsert(tableName)
+              .addConstant(parentColumn, parentId)
+              .addConstant(childColumn, childId));
         }
         insCnt++;
       }
-
       response.addInfo(tableName, "inserted", insCnt, "children");
       count += insCnt;
     }
-
     return count;
   }
 }

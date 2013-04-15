@@ -10,8 +10,10 @@
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="OrderNo" caption="Užsakymo Nr." />
     <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />
-    <DataColumn name="Partial" caption="Dalinis" />
-    <CalcColumn name="Expedition" type="boolean" caption="Ekspedicija">
+    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
+    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <CalcColumn name="Expedition" type="boolean" caption="E" width="15" sortable="false">
       <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
     </CalcColumn>
     

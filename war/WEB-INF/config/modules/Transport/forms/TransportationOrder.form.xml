@@ -12,7 +12,7 @@
           <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputDateTime source="Date" />
           <Label html="Būsena:" horizontalAlignment="right" />
-          <TextLabel source="Status" itemKey="OrderStatus" />
+          <ListBox source="Status" itemKey="OrderStatus" />
           <Label html="Pastabos" />
         </row>
         <row>

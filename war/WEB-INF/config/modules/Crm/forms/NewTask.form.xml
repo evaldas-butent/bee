@@ -56,7 +56,7 @@
         style="&inp2;" />
       <Label html="Kontaktinis asmuo:" style="&lbl3;" />
       <DataSelector source="Contact" style="&inp4; width: 202px;"
-        editEnabled="true" editPopup="true" editSource="ContactPerson"
+        editEnabled="true" editPopup="true"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" options="Company" />
     </FlowPanel>

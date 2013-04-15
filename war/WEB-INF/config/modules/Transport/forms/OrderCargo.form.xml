@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
-  height="75" heightUnit="%" width="80" widthUnit="%"
+  height="750" width="900"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
@@ -42,15 +42,19 @@
       	<Table>
       	  <row>
       	    <DataSelector source="ShippingTerm" caption="Pristatymo sąlygos"
-              d:size="120" d:unit="px" style="width:50px;float:right"/>
-            <CheckBox source="Partial" html="Dalinis krovinys" style="margin:3px;"/>
+              d:size="120" d:unit="px" style="width:50px; float:right;"/>
+            <CheckBox source="Partial" html="Dalinis" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	  	<InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:50px;float:right" />
+      	  	<InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:50px; float:right;" />
+            <CheckBox source="Outsized" html="Negabaritinis" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	    <InputCurrency source="Value" caption="Vertė" style="width:50px;float:right" />
-      	    <DataSelector source="ValueCurrency" style="width: 40px; font-weight: bold; display: inline-block;" />
+      	    <FlowPanel>
+        	  <InputCurrency source="Value" caption="Krovinio vertė" style="width:60px;" d:rootStyle="display:inline-block;" />
+        	  <DataSelector source="ValueCurrency" style="width:40px; display:inline-block; margin-left:3px;" />
+      	    </FlowPanel>
+            <CheckBox source="Dangerous" html="Pavojingas" style="margin:3px;"/>
       	  </row>
       	</Table>
       </FlowPanel>

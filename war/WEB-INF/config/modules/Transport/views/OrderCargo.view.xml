@@ -58,6 +58,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Partial" />
+    <SimpleColumn name="Outsized" />
+    <SimpleColumn name="Dangerous" />
     <SimpleColumn name="ExchangeOfPalettes" />
 
     <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">

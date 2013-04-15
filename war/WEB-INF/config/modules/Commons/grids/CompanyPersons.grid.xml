@@ -5,7 +5,10 @@
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
-    <RelColumn name="Person" editEnabled="true" />
+    <RelColumn name="Person" editEnabled="true" readOnly="true">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+    </RelColumn>
     <DataColumn name="Position" flexBasis="50" />
     <DataColumn name="Phone" />
 
