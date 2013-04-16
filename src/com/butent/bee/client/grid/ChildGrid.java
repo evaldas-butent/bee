@@ -46,7 +46,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private final String relSource;
 
   private final GridFactory.GridOptions gridOptions;
-  
+
   private final boolean disablable;
 
   private GridInterceptor gridInterceptor = null;
@@ -115,7 +115,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     setPendingRow(event.getRow());
     if (isDisablable()) {
       setPendingEnabled(event.isEnabled());
-    } else { 
+    } else {
       setPendingEnabled(event.getRow() != null);
     }
 
@@ -193,7 +193,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
-  
+
   private GridDescription getGridDescription() {
     return gridDescription;
   }
@@ -247,7 +247,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     if (row == null) {
       return 0;
     } else if (getParentIndex() >= 0) {
-      return row.getLong(getParentIndex());
+      return BeeUtils.unbox(row.getLong(getParentIndex()));
     } else {
       return row.getId();
     }
@@ -272,7 +272,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private boolean hasParentValue(IsRow row) {
     return getParentValue(row) != 0;
   }
-  
+
   private boolean isDisablable() {
     return disablable;
   }
@@ -304,7 +304,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
       getPresenter().getGridView().getGrid().deactivate();
 
       updateFilter(getPendingRow());
-      
+
       if (!getPresenter().getGridView().isAdding()) {
         if (hasParentValue(getPendingRow())) {
           getPresenter().refresh(false);

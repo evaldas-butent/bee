@@ -83,9 +83,9 @@ public class AssessmentForm extends AbstractFormInterceptor {
     }
 
     @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(gridView.getDataIndex(COL_ASSESSOR), currentRow.getId());
-      return true;
+    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+      event.getColumns().add(DataUtils.getColumn(COL_ASSESSOR, gridView.getDataColumns()));
+      event.getValues().add(BeeUtils.toString(currentRow.getId()));
     }
 
     protected Filter getFilter() {
@@ -132,6 +132,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+      super.onReadyForInsert(gridView, event);
+
       List<BeeColumn> columns = event.getColumns();
       List<String> values = event.getValues();
 
@@ -210,7 +212,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
       if (expense) {
         newRow.setValue(gridView.getDataIndex(COL_SERVICE_EXPENSE), true);
       }
-      return super.onStartNewRow(gridView, oldRow, newRow);
+      return true;
     }
   }
 
@@ -250,6 +252,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+      super.onReadyForInsert(gridView, event);
+
       int idx = 0;
 
       for (Iterator<BeeColumn> iterator = event.getColumns().iterator(); iterator.hasNext();) {
@@ -274,7 +278,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
       if (AssessmentStatus.ACTIVE.is(status)) {
         newRow.setValue(gridView.getDataIndex(COL_STATUS), status);
       }
-      return super.onStartNewRow(gridView, oldRow, newRow);
+      return true;
     }
 
     @Override
@@ -509,17 +513,21 @@ public class AssessmentForm extends AbstractFormInterceptor {
     if (currentRow == null) {
       return;
     }
+    boolean newRecord = !DataUtils.isId(currentRow.getId());
     boolean primary = isPrimaryRequest(currentRow);
     boolean owner = Objects.equal(currentRow.getLong(form.getDataIndex(COL_ASSESSOR_MANAGER)),
         BeeKeeper.getUser().getUserId());
     int status = currentRow.getInteger(form.getDataIndex(COL_STATUS));
 
-    header.setCaption(AssessmentStatus.in(status,
+    String caption = AssessmentStatus.in(status,
         AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED, AssessmentStatus.CANCELED)
         ? (primary ? "Užsakymas" : "Antrinis užsakymas")
-        : (primary ? form.getCaption() : "Vertinimas"));
+        : (primary ? null : "Vertinimas");
 
-    if (owner) {
+    if (!BeeUtils.isEmpty(caption)) {
+      header.setCaption(caption);
+    }
+    if (owner && !newRecord) {
       header.addCommandItem(new BeeButton("Rašyti laišką", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -570,13 +578,13 @@ public class AssessmentForm extends AbstractFormInterceptor {
         cap.getElement().setInnerText(total != 0 ? BeeUtils.parenthesize(total) : "");
       }
     }
-    if (primary) {
+    if (primary && !newRecord) {
       updateTotal(form, currentRow, form.getWidgetByName("Total"));
     }
     Widget orderPanel = form.getWidgetByName("OrderPanel");
 
     if (orderPanel != null) {
-      orderPanel.setVisible(primary);
+      orderPanel.setVisible(primary && !newRecord);
     }
   }
 

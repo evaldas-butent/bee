@@ -4,6 +4,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
+  width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">

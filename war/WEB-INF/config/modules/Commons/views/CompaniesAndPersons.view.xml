@@ -2,9 +2,7 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
   
-  name="CompanyPersons" source="CompanyPersons"
-  newRowForm="CompanyAndPerson" newRowCaption="Naujas įmonės asmuo"
-  editForm="CompanyAndPerson"
+  name="CompaniesAndPersons" source="CompanyPersons"
   >
   <Columns>
     <SimpleColumn name="Position" />
@@ -16,8 +14,8 @@
 
     <SimpleColumn name="Person" />
     <SimpleJoin name="Person" joinType="LEFT">
-      <SimpleColumn name="FirstName" editable="true" />
-      <SimpleColumn name="LastName" editable="true" />
+      <SimpleColumn name="FirstName" />
+      <SimpleColumn name="LastName" />
     </SimpleJoin>
 
     <SimpleJoin name="Contact" joinType="LEFT">

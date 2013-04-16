@@ -8,7 +8,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Trip" viewName="Trips" caption="Reisas"
-  width="900" widthUnit="px" height="600" heightUnit="px"
+  width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
   

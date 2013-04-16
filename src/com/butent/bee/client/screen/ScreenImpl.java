@@ -29,6 +29,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
@@ -470,23 +471,18 @@ public class ScreenImpl implements Screen {
   }
 
   private IdentifiableWidget createLogo() {
-    BeeImage logo = new BeeImage(Global.getImages().logo2().getSafeUri());
-    logo.addStyleName("bee-Logo");
+    CustomDiv container = new CustomDiv("bee-LogoContainer");
 
     String ver = Settings.getVersion();
     if (!BeeUtils.isEmpty(ver)) {
-      logo.setTitle(ver);
+      container.setTitle(ver);
     }
-    logo.addClickHandler(new ClickHandler() {
+    container.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         Window.open("http://www.butent.com", "", "");
       }
     });
-
-    Simple container = new Simple();
-    container.addStyleName("bee-LogoContainer");
-
-    container.setWidget(logo);
     return container;
   }
 

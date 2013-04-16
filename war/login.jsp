@@ -27,13 +27,14 @@ body {
 
 .bee-SignIn-Logo-container {
   position: absolute;
-  left: 160px;
   top: 0;
-}
-
-.bee-SignIn-Logo {
-  width: 55px;
-  height: 76px;  
+  left: 100px;
+  width: 185px;
+  height: 80px;
+  background-image: url("images/logo.gif");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .bee-SignIn-Label {
@@ -126,9 +127,7 @@ body {
 <body>
   <div class="bee-SignIn-Panel">
     <form method="post" action="j_security_check" accept-charset="UTF-8">
-      <div class="bee-SignIn-Logo-container">
-        <img src="images/logo.gif" class="bee-SignIn-Logo" />
-      </div>
+      <div class="bee-SignIn-Logo-container"></div>
 
       <div class="bee-SignIn-Label bee-SignIn-Label-user">Prisijungimo vardas</div>
       <input type="text" class="bee-SignIn-Input bee-SignIn-Input-user" name="j_username" id="user"
