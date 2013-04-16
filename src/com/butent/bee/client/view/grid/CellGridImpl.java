@@ -869,10 +869,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     setEditMode(BeeUtils.unbox(gridDescr.getEditMode()));
     setEditSave(BeeUtils.unbox(gridDescr.getEditSave()));
 
-    setEditFormName(BeeUtils.notEmpty(gridDescr.getEditForm(),
-        (getDataInfo() == null) ? null : getDataInfo().getEditForm()));
-    setNewRowFormName(BeeUtils.notEmpty(gridDescr.getNewRowForm(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowForm()));
+    setEditFormName(normalizeFormName(BeeUtils.notEmpty(gridDescr.getEditForm(),
+        (getDataInfo() == null) ? null : getDataInfo().getEditForm())));
+    setNewRowFormName(normalizeFormName(BeeUtils.notEmpty(gridDescr.getNewRowForm(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowForm())));
 
     setShowEditPopup(BeeUtils.nvl(gridDescr.getEditPopup(), isChild()));
     setShowNewRowPopup(BeeUtils.nvl(gridDescr.getNewRowPopup(), isChild()));
@@ -2053,6 +2053,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
   }
 
+  private String normalizeFormName(String formName) {
+    if (BeeUtils.isEmpty(formName) || formName.trim().equals(BeeConst.STRING_MINUS)) {
+      return null;
+    } else {
+      return formName.trim();
+    }
+  }
+
   private void openEditor(EditStartEvent event) {
     if (!isEnabled()) {
       return;
@@ -2574,7 +2582,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
     return !BeeUtils.containsSame(getEditInPlace(), columnId);
   }
-
+  
   private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
       String newValue, boolean tab) {
     Boolean ok = editableColumn.validate(oldValue, newValue, row, ValidationOrigin.CELL,

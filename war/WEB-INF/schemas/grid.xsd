@@ -52,13 +52,13 @@
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
     <xs:attribute name="initialRowSetSize" type="xs:int" />
     <xs:attribute name="readOnly" type="xs:boolean" />
-    <xs:attribute name="newRowForm" type="type:nameType" />
+    <xs:attribute name="newRowForm" type="xs:normalizedString" />
     <xs:attribute name="newRowColumns" type="type:nameList" />
     <xs:attribute name="newRowDefaults" type="xs:normalizedString" />
     <xs:attribute name="newRowCaption" type="xs:string" />
     <xs:attribute name="newRowPopup" type="xs:boolean" />
     <xs:attribute name="newRowFormImmediate" type="xs:boolean" />
-    <xs:attribute name="editForm" type="type:nameType" />
+    <xs:attribute name="editForm" type="xs:normalizedString" />
     <xs:attribute name="editMode" type="xs:boolean" />
     <xs:attribute name="editSave" type="xs:boolean" default="true" />
     <xs:attribute name="editShowId" type="xs:boolean" />

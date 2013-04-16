@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="PersonCompanies" viewName="CompanyPersons"
+  editForm="-" newRowForm="-"
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
