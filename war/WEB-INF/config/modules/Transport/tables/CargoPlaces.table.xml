@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <Date name="Date" label="Data" />
+    <DateTime name="Date" label="Data" />
     <Relation name="Country" relation="Countries" label="Šalis" />
     <String name="Place" precision="50" label="Vieta" />
     <String name="Terminal" precision="30" label="Terminalas" />

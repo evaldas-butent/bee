@@ -10,7 +10,7 @@
     </row>
     <row>
       <Label html="Data" horizontalAlignment="right" />
-      <InputDate source="LoadingDate" style="max-width: 6em;" />
+      <InputDateTime source="LoadingDate" style="max-width: 6em;" format="DATE_SHORT" />
     </row>
     <row>
       <Label html="Šalis" horizontalAlignment="right" />
@@ -45,7 +45,7 @@
     </row>
     <row>
       <Label html="Data" horizontalAlignment="right" />
-      <InputDate source="UnloadingDate" style="max-width: 6em;" />
+      <InputDateTime source="UnloadingDate" style="max-width: 6em;" format="DATE_SHORT" />
     </row>
     <row>
       <Label html="Šalis" horizontalAlignment="right" />

@@ -52,7 +52,7 @@
     <FlowPanel style="&section;">
       <Label html="Pakrovimas" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
       <Label html="Data" style="&labelRight;" />
-      <InputDate source="LoadingDate" style="&input;" />
+      <InputDateTime source="LoadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label html="Vieta" style="&labelLeft;" />
@@ -67,7 +67,7 @@
     <FlowPanel style="&section;">
       <Label html="Iškrovimas" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
       <Label html="Data" style="&labelRight;" />
-      <InputDate source="UnloadingDate" style="&input;" />
+      <InputDateTime source="UnloadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label html="Vieta" style="&labelLeft;" />

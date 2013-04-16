@@ -58,7 +58,7 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
       StringBuilder sb = new StringBuilder();
 
       if (!row.isNull(dateIndex)) {
-        sb.append(renderTr("Data", row.getDate(dateIndex).toString()));
+        sb.append(renderTr("Data", row.getDateTime(dateIndex).getDate().toString()));
       }
       if (!row.isNull(countryIndex)) {
         String s = row.getString(countryIndex);

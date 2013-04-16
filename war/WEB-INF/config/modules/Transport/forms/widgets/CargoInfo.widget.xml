@@ -22,9 +22,9 @@
 
   <FlowPanel style="&section;">
     <Label html="Data" style="&labelLeft;" />
-    <InputDate source="LoadingDate" style="&inline; width:70px; margin-right:80px;" />
+    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:80px;" />
     <Label html="Data" style="&labelRight;" />
-    <InputDate source="UnloadingDate" style="&inline; width:70px;" />
+    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">

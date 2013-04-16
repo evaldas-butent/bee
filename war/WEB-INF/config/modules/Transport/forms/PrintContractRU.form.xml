@@ -89,7 +89,7 @@
       </row>
       <row>
         <Label html="Дата погрузки" />
-        <DateLabel source="LoadingDate" />
+        <DateTimeLabel source="LoadingDate" />
       </row>
       <row>
         <Label html="Место поставки" />
@@ -97,7 +97,7 @@
       </row>
       <row>
         <Label html="Дата поставки" />
-        <DateLabel source="UnloadingDate" />
+        <DateTimeLabel source="UnloadingDate" />
       </row>
       <row>
         <Label html="Номер автомобиля" />

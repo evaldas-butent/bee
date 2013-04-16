@@ -124,11 +124,11 @@
         <FlowPanel>
           <FlowPanel>
             <Label html="Date load:" style="&inline; width:100px; text-align:right;" />
-            <DateLabel source="LoadingDate" style="&inline; margin-left:5px;" />
+            <DateTimeLabel source="LoadingDate" style="&inline; margin-left:5px;" />
           </FlowPanel>
           <FlowPanel>
             <Label html="Date offload:" style="&inline; width:100px; text-align:right;" />
-            <DateLabel source="UnloadingDate" style="&inline; margin-left:5px;" />
+            <DateTimeLabel source="UnloadingDate" style="&inline; margin-left:5px;" />
           </FlowPanel>
         </FlowPanel>
       </HorizontalPanel>

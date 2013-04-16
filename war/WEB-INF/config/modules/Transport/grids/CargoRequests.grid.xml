@@ -25,7 +25,7 @@
       </style>
     </RelColumn>
 
-    <DataColumn name="LoadingDate" caption="Krov.data" width="70" />
+    <DataColumn name="LoadingDate" caption="Krov.data" width="70" format="DATE_SHORT" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       caption="Iš" horizontalAlignment="center">

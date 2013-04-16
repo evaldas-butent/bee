@@ -89,7 +89,7 @@
       </row>
       <row>
         <Label html="Pasikrovimo data" />
-        <DateLabel source="LoadingDate" />
+        <DateTimeLabel source="LoadingDate" />
       </row>
       <row>
         <Label html="Pristatymo vieta" />
@@ -97,7 +97,7 @@
       </row>
       <row>
         <Label html="Pristatymo data" />
-        <DateLabel source="UnloadingDate" />
+        <DateTimeLabel source="UnloadingDate" />
       </row>
       <row>
         <Label html="Automobilio numeris" />

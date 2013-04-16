@@ -89,7 +89,7 @@
       </row>
       <row>
         <Label html="Loading date" />
-        <DateLabel source="LoadingDate" />
+        <DateTimeLabel source="LoadingDate" />
       </row>
       <row>
         <Label html="Delivery place" />
@@ -97,7 +97,7 @@
       </row>
       <row>
         <Label html="Delivery Date" />
-        <DateLabel source="UnloadingDate" />
+        <DateTimeLabel source="UnloadingDate" />
       </row>
       <row>
         <Label html="Car number" />
