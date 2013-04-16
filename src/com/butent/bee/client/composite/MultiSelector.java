@@ -38,14 +38,15 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -347,7 +348,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   protected void init(final InputWidget inputWidget, boolean embed) {
     final Flow container = new Flow();
     container.addStyleName(STYLE_CONTAINER);
-    
+
     int maxLength = inputWidget.getMaxLength();
     maxLength = (maxLength > 0) ? Math.min(maxLength, MAX_INPUT_LENGTH) : MAX_INPUT_LENGTH;
     inputWidget.setMaxLength(maxLength);
@@ -415,29 +416,77 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   private void editChoice(long rowId) {
-    String viewName = getOracle().getViewName();
-    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (BeeConst.isUndef(getEditSourceIndex())) {
+      boolean modal = isEditModal();
+      RowCallback rowCallback;
 
-    String formName = BeeUtils.notEmpty(getEditForm(), dataInfo.getEditForm());
-    if (BeeUtils.isEmpty(formName)) {
+      if (modal) {
+        rowCallback = new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            updateChoice(result);
+          }
+        };
+      } else {
+        rowCallback = null;
+      }
+
+      RowEditor.openRow(getEditForm(), getOracle().getDataInfo(), rowId, modal, getWidget(),
+          rowCallback);
+
+    } else {
+      BeeRow row = getOracle().getCachedRow(rowId);
+
+      if (row == null) {
+        Queries.getRow(getOracle().getViewName(), rowId, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            editChoiceSource(result);
+          }
+        });
+
+      } else {
+        editChoiceSource(row);
+      }
+    }
+  }
+
+  private void editChoiceSource(final BeeRow choiceRow) {
+    if (choiceRow == null) {
       return;
     }
 
-    boolean modal = BeeUtils.isTrue(isEditModal()) || UiHelper.isModal(getWidget());
+    final int sourceIndex = getEditSourceIndex();
+    if (BeeConst.isUndef(sourceIndex)) {
+      return;
+    }
+
+    Long sourceId = choiceRow.getLong(sourceIndex);
+    if (!DataUtils.isId(sourceId)) {
+      return;
+    }
+
+    boolean modal = isEditModal();
     RowCallback rowCallback;
 
     if (modal) {
       rowCallback = new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
-          updateChoice(result);
+          if (result != null && !BeeUtils.same(getEditViewName(), getOracle().getViewName())) {
+            RelationUtils.updateRow(getOracle().getDataInfo(),
+                getOracle().getDataInfo().getColumnId(sourceIndex), choiceRow,
+                Data.getDataInfo(getEditViewName()), result, false);
+            updateChoice(choiceRow);
+          }
         }
       };
     } else {
       rowCallback = null;
     }
 
-    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
+    RowEditor.openRow(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, modal,
+        getWidget(), rowCallback);
   }
 
   private InsertPanel getContainer() {

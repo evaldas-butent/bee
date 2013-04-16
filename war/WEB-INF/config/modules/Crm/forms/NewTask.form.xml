@@ -84,13 +84,14 @@
     <FlowPanel style="&section;">
       <Label html="Vykdytojai:" class="bee-required" style="&top1;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
-        editEnabled="true" editPopup="true" style="&inp2x;" />
+        editEnabled="true" editPopup="true" editSource="CompanyPerson" style="&inp2x;"
+        label="Vykdytojai" required="true" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Stebėtojai:" style="&top1;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-        editEnabled="true" editPopup="true" style="&inp2x;" />
+        editEnabled="true" editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
     </FlowPanel>
 
     &separator;

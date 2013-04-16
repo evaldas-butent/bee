@@ -388,29 +388,6 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
-    List<String> captions = Lists.newArrayList();
-
-    if (!CrmUtils.sameObservers(oldRow, newRow)) {
-      captions.add(LABEL_OBSERVERS);
-    }
-
-    List<String> updatedRelations = getUpdatedRelations(oldRow, newRow);
-    for (String relation : updatedRelations) {
-      captions.add(Data.getLocalizedCaption(relation));
-    }
-
-    if (!captions.isEmpty()) {
-      String join = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, captions);
-      if (messages.isEmpty()) {
-        messages.add(BeeUtils.joinWords(Global.CONSTANTS.changedValues(), join));
-      } else {
-        messages.add(join);
-      }
-    }
-  }
-
-  @Override
   public void onSaveChanges(SaveChangesEvent event) {
     IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();

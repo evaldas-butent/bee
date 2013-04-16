@@ -94,7 +94,7 @@
       <FlowPanel style="&section;">
         <Label html="Stebėtojai:" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" disablable="true" />
+          editEnabled="true" editSource="CompanyPerson" style="&inp2x;" disablable="true" label="Stebėtojai" />
       </FlowPanel>
 
       &separator;

@@ -95,8 +95,6 @@
         </xs:sequence>
         <xs:attribute name="viewName" type="type:nameType" />
         <xs:attributeGroup ref="ui:relation" />
-        <xs:attribute name="editSource" type="type:nameType" />
-        <xs:attribute name="editViewName" type="type:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
