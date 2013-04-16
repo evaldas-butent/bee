@@ -26,7 +26,7 @@
         <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
         <InputDateTime source="OrderDate" style="&input;" />
         <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-        <DataSelector source="CustomerPerson" style="&input; width:200px;" editEnabled="true"
+        <DataSelector source="CustomerPerson" style="&input; width:200px;" 
           choiceColumns="FirstName LastName CompanyName" options="Customer" />
       </FlowPanel>
     

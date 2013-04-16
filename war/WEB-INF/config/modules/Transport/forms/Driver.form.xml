@@ -16,7 +16,7 @@
     <FlowPanel style="margin-top: 1ex;">
       <FlowPanel style="&row;">
         <Label html="Vardas, pavardė:" class="bee-required" style="&lbl;" />
-        <DataSelector source="CompanyPerson" style="&w2;" editEnabled="true"
+        <DataSelector source="CompanyPerson" style="&w2;" 
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 
         <Label html="Grupės:" class="bee-required" style="&lbl;" />

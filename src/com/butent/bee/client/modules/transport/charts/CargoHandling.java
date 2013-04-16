@@ -30,12 +30,12 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   private final Range<JustDate> range;
 
   CargoHandling(SimpleRow row) {
-    this.loadingDate = row.getDate(loadingColumnAlias(COL_PLACE_DATE));
+    this.loadingDate = Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE));
     this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
     this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
     this.loadingTerminal = row.getValue(loadingColumnAlias(COL_TERMINAL));
 
-    this.unloadingDate = row.getDate(unloadingColumnAlias(COL_PLACE_DATE));
+    this.unloadingDate = Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE));
     this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_COUNTRY));
     this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_NAME));
     this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_TERMINAL));

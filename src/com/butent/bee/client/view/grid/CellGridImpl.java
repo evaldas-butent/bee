@@ -610,7 +610,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         }
 
         originalSource = columnDescr.getRelation().getOriginalTarget();
-        relationEditable = columnDescr.getRelation().isEditEnabled();
+        relationEditable = columnDescr.getRelation().isEditEnabled(false);
 
       } else {
         originalSource = null;
@@ -1959,7 +1959,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       int charCode) {
 
     if (editableColumn == null || !editableColumn.hasRelation()
-        || !editableColumn.getRelation().isEditEnabled() || row == null) {
+        || !editableColumn.getRelation().isEditEnabled(false) || row == null) {
       return false;
     }
 

@@ -17,20 +17,20 @@
         <row>
           <Label html="Įmonės:" style="&chlabel;" />
           <ChildSelector viewName="Companies" childTable="Relations" renderColumns="Name"
-            editEnabled="true" style="&chselect;" />
+            style="&chselect;" />
         </row>
 
         <row>
           <Label html="Asmenys:" style="&chlabel;" />
           <ChildSelector viewName="Persons" childTable="Relations"
-            renderColumns="FirstName LastName" editEnabled="true" style="&chselect;" />
+            renderColumns="FirstName LastName" style="&chselect;" />
         </row>
 
         <row>
           <Label html="Įvykiai:" style="&chlabel;" />
           <ChildSelector viewName="Appointments" childTable="Relations"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-            newRowEnabled="false" editEnabled="true" style="&chselect;" />
+            newRowEnabled="false" style="&chselect;" />
         </row>
 
         <row>
@@ -38,28 +38,26 @@
           <ChildSelector viewName="Tasks" childTable="Relations" 
             renderColumns="Summary"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-            editEnabled="true" style="&chselect;" />
+            style="&chselect;" />
         </row>
         
         <row>
           <Label html="Transp. priem.:" style="&chlabel;" />
           <ChildSelector viewName="Vehicles" childTable="Relations" 
             renderColumns="Number" choiceColumns="Number ParentModelName ModelName"
-            editEnabled="true" style="&chselect;" />
+            style="&chselect;" />
         </row>
 
         <row>
           <Label html="Vairuotojai:" style="&chlabel;" />
           <ChildSelector viewName="Drivers" childTable="Relations" 
-            renderColumns="FirstName LastName" newRowEnabled="false" editEnabled="true"
-            style="&chselect;" />
+            renderColumns="FirstName LastName" newRowEnabled="false" style="&chselect;" />
         </row>
 
         <row>
           <Label html="Užsakymai:" style="&chlabel;" />
           <ChildSelector viewName="TransportationOrders" childTable="Relations" 
-            renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo"
-            editEnabled="true" style="&chselect;" />
+            renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" style="&chselect;" />
         </row>
 
         <row>
@@ -67,14 +65,14 @@
           <ChildSelector viewName="OrderCargo" childTable="Relations" 
             renderColumns="Description"
             choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode"
-            newRowEnabled="false" editEnabled="true" style="&chselect;" />
+            newRowEnabled="false" style="&chselect;" />
         </row>
 
         <row>
           <Label html="Reisai:" style="&chlabel;" />
           <ChildSelector viewName="Trips" childTable="Relations" 
             renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber"
-            editEnabled="true" style="&chselect;" />
+            style="&chselect;" />
         </row>
         
       </Table>

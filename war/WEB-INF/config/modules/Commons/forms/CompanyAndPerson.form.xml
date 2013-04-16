@@ -16,7 +16,7 @@
       </row>
       <row>
         <Label html="Įmonė" class="bee-required" />
-        <DataSelector source="Company" style="width: 200px" editEnabled="true" />
+        <DataSelector source="Company" style="width: 200px" />
         <Label html="Pareigos" />
         <InputText style="width: 200px" source="Position" />
       </row>

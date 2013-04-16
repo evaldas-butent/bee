@@ -32,6 +32,7 @@
     <SimpleColumn name="Created" />
     <SimpleColumn name="Creator" />
     <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="CreatorFirstName" name="FirstName" />

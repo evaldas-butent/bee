@@ -46,8 +46,7 @@
       <InputDate name="End_Date" style="&dateStyle;" />
       <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
       <Label html="Įmonė:" style="&lbl3;" />
-      <DataSelector source="Company" editEnabled="true" editPopup="true"
-        style="&inp4; width: 202px;" />
+      <DataSelector source="Company" editPopup="true" style="&inp4; width: 202px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
@@ -55,8 +54,7 @@
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
         style="&inp2;" />
       <Label html="Kontaktinis asmuo:" style="&lbl3;" />
-      <DataSelector source="Contact" style="&inp4; width: 202px;"
-        editEnabled="true" editPopup="true"
+      <DataSelector source="Contact" style="&inp4; width: 202px;" editPopup="true"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" options="Company" />
     </FlowPanel>
@@ -84,14 +82,14 @@
     <FlowPanel style="&section;">
       <Label html="Vykdytojai:" class="bee-required" style="&top1;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
-        editEnabled="true" editPopup="true" editSource="CompanyPerson" style="&inp2x;"
+        editPopup="true" editSource="CompanyPerson" style="&inp2x;"
         label="Vykdytojai" required="true" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Stebėtojai:" style="&top1;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-        editEnabled="true" editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
+        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
     </FlowPanel>
 
     &separator;
@@ -102,20 +100,20 @@
     <FlowPanel style="&section;">
       <Label html="Įmonės:" style="&top1;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-        editEnabled="true" editPopup="true" style="&inp2x;" />
+        editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Asmenys:" style="&top1;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-        editEnabled="true" editPopup="true" style="&inp2x;" />
+        editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
       <Label html="Įvykiai:" style="&top1;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-        newRowEnabled="false" editEnabled="true" editPopup="true" style="&inp2x;" />
+        newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
@@ -123,7 +121,7 @@
       <MultiSelector viewName="Tasks" property="Tasks" 
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-        newRowEnabled="false" editEnabled="true" editPopup="true" style="&inp2x;" />
+        newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
   </FlowPanel>

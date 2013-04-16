@@ -773,7 +773,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
 
-    if (relation.isEditEnabled()) {
+    if (relation.isEditEnabled(true)) {
       String es = relation.getEditSource();
       String ev = relation.getEditViewName();
 

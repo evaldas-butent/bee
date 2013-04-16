@@ -6,10 +6,10 @@
   newRowForm="Appointment" editForm="Appointment"
   >
   <columns>
-    <RelColumn name="CompanyName" caption="Klientas" editEnabled="true" />
+    <RelColumn name="CompanyName" caption="Klientas" />
     <RelColumn name="CompanyPhone" caption="Telefonas" />
 
-    <RelColumn name="VehicleNumber" caption="Valst. Nr." editEnabled="true" />
+    <RelColumn name="VehicleNumber" caption="Valst. Nr." />
     <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
 
     <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
@@ -22,7 +22,7 @@
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
 
-    <RelColumn name="Organizer" caption="Atsakingas darbuotojas" editEnabled="true">
+    <RelColumn name="Organizer" caption="Atsakingas darbuotojas">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />

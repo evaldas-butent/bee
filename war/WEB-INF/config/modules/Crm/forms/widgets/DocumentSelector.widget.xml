@@ -2,4 +2,4 @@
 <ChildSelector xmlns="http://www.butent.com/widget" viewName="Documents" childTable="Relations"
   renderColumns="Name DocumentDate Expires Number TypeName GroupName CategoryName PlaceName"
   choiceColumns="Name DocumentDate Expires Number TypeName GroupName CategoryName PlaceName"
-  editEnabled="true" class="bee-crm-DocumentSelector" />
+  class="bee-crm-DocumentSelector" />

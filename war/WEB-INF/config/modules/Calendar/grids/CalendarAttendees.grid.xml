@@ -6,6 +6,6 @@
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />
-    <RelColumn name="AttendeeName" caption="Pavadinimas" editEnabled="true" />
+    <RelColumn name="AttendeeName" caption="Pavadinimas" />
   </columns>
 </Grid>

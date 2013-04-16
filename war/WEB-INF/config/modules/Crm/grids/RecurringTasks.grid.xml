@@ -13,7 +13,7 @@
     <DataColumn name="Summary" />
     <DataColumn name="Description" />
 
-    <RelColumn name="Company" editEnabled="true" />
+    <RelColumn name="Company" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />

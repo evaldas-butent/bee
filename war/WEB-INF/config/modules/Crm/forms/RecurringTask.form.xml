@@ -28,17 +28,16 @@
 
       <FlowPanel style="&section;">
         <Label html="Vadovas:" style="&lbl1;" />
-        <DataSelector source="Owner" editEnabled="true" style="&inp2;" />
+        <DataSelector source="Owner" style="&inp2;" />
         <Label html="Įmonė:" style="&lbl3;" />
-        <DataSelector source="Company" editEnabled="true" style="&inp4; width: 140px;" />
+        <DataSelector source="Company" style="&inp4; width: 140px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vykdytojas:" style="&lbl1;" />
-        <DataSelector source="Executor" editEnabled="true" style="&inp2;" />
+        <DataSelector source="Executor" style="&inp2;" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
         <DataSelector source="Contact" style="&inp4; width: 140px;"
-          editEnabled="true"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" />
       </FlowPanel>
@@ -87,7 +86,7 @@
       <FlowPanel style="&section;">
         <Label html="Stebėtojai:" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" />
+          style="&inp2x;" />
       </FlowPanel>
 
       &separator;
@@ -98,13 +97,13 @@
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-          editEnabled="true" style="&inp2x;" />
+          style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          editEnabled="true" style="&inp2x;" />
+          style="&inp2x;" />
       </FlowPanel>
     </FlowPanel>
   </FlowPanel>

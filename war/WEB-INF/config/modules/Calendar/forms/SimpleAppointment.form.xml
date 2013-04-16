@@ -19,7 +19,7 @@
     <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
 
     <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
-      renderColumns="Name" choiceColumns="Name TypeName" editEnabled="true" newRowEnabled="false"
+      renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
       style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
 
     <InputArea source="Description" placeholder="Aprašymas" visibleLines="5"
@@ -52,11 +52,10 @@
 
     <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 240px;"
-       choiceColumns="Name Phone Email" editEnabled="true" />
+       choiceColumns="Name Phone Email" />
 
     <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
-      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;"
-      editEnabled="true">
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />

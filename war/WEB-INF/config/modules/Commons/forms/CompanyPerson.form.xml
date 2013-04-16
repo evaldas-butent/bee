@@ -10,7 +10,7 @@
     <Table style="border-spacing: 10px;">
       <row>
         <Label html="Asmuo" class="bee-required" />
-        <DataSelector source="Person" style="width: 200px" editEnabled="true" />
+        <DataSelector source="Person" style="width: 200px" />
         <Label html="Pareigos" />
         <InputText style="width: 200px" source="Position" />
       </row>

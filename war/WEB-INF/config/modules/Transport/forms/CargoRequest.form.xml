@@ -23,7 +23,7 @@
       <Label html="Kontaktai" style="&labelLeft;" />
       <InputText source="Contacts" style="&inline; width:110px;" />
       <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;" editEnabled="true"
+      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
         choiceColumns="FirstName LastName CompanyName" options="Customer" />
     </FlowPanel>
     

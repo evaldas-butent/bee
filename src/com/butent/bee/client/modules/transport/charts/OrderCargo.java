@@ -40,11 +40,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
         row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
         row.getLong(COL_CARGO_ID), row.getValue(COL_CARGO_DESCRIPTION),
         row.getValue(COL_CARGO_NOTES),
-        BeeUtils.nvl(row.getDate(loadingColumnAlias(COL_PLACE_DATE)), minLoad),
+        BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)), minLoad),
         row.getLong(loadingColumnAlias(COL_COUNTRY)),
         row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
         row.getValue(loadingColumnAlias(COL_TERMINAL)),
-        BeeUtils.nvl(row.getDate(unloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
+        BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
         row.getLong(unloadingColumnAlias(COL_COUNTRY)),
         row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
         row.getValue(unloadingColumnAlias(COL_TERMINAL)));
