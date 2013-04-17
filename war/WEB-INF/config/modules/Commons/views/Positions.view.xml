@@ -4,7 +4,7 @@
   name="Positions"
   source="Positions"
   caption="Pareigos"
-  newRowCaption="Nauja pareiga"
+  newRowCaption="Naujos pareigos"
   >
   <Columns>
     <SimpleColumn name="Name" />

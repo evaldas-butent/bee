@@ -12,7 +12,7 @@
         <Label html="Įmonė" class="bee-required" />
         <DataSelector source="Company" style="width: 200px" />
         <Label html="Pareigos" />
-        <InputText style="width: 200px" source="Position" />
+        <DataSelector source="Position" style="width: 200px" />
       </row>
       <row>
         <cell colSpan="4">

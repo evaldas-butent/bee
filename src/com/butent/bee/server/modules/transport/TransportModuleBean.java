@@ -16,7 +16,6 @@ import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
-import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
@@ -41,6 +40,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -332,13 +332,11 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isId(cargoId)) {
       return ResponseObject.error("Cargo ID is not valid:", cargoId);
     }
-    HasConditions wh = SqlUtils.and(SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId));
+    IsCondition wh = SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId);
 
     if (DataUtils.isId(assessorId)) {
-      wh.add(SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId));
+      wh = SqlUtils.and(wh, SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId));
     }
-    wh.add(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE));
-
     SqlSelect ss = new SqlSelect()
         .addFrom(TBL_CARGO_SERVICES)
         .addFromInner(TBL_ORDER_CARGO,
@@ -346,21 +344,27 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .setWhere(wh);
 
+    IsExpression xpr;
+
     if (DataUtils.isId(currencyId)) {
-      ss.addSum(ExchangeUtils.exchangeFieldTo(ss,
+      xpr = ExchangeUtils.exchangeFieldTo(ss,
           SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
           SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
-              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currencyId)),
-          COL_SERVICE_AMOUNT);
+              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currencyId));
     } else {
-      ss.addSum(ExchangeUtils.exchangeField(ss,
+      xpr = ExchangeUtils.exchangeField(ss,
           SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
           SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
-              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE))), COL_SERVICE_AMOUNT);
+              SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)));
     }
-    return ResponseObject.response(qs.getDouble(ss));
+    wh = SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE);
+
+    ss.addSum(SqlUtils.sqlIf(wh, xpr, null), "Income")
+        .addSum(SqlUtils.sqlIf(wh, null, xpr), "Expense");
+
+    return ResponseObject.response(qs.getData(ss));
   }
 
   /**
@@ -554,7 +558,7 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-    
+
     BeeRowSet drivers = qs.getViewData(VIEW_DRIVERS);
     if (DataUtils.isEmpty(drivers)) {
       logger.warning(SVC_GET_DTB_DATA, "drivers not available");
@@ -568,7 +572,7 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isEmpty(absence)) {
       settings.setTableProperty(PROP_ABSENCE, absence.serialize());
     }
-    
+
     IsCondition tripDriverWhere = SqlUtils.inList(TBL_TRIP_DRIVERS, COL_DRIVER, driverIds);
 
     SimpleRowSet tripDrivers = getTripDrivers(tripDriverWhere);
@@ -576,7 +580,7 @@ public class TransportModuleBean implements BeeModule {
       return ResponseObject.response(settings);
     }
     settings.setTableProperty(PROP_TRIP_DRIVERS, tripDrivers.serialize());
-    
+
     IsCondition tripWhere = SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
         TBL_TRIP_DRIVERS, COL_TRIP, tripDriverWhere);
 
@@ -612,7 +616,7 @@ public class TransportModuleBean implements BeeModule {
     String unlAlias = "unl_" + SqlUtils.uniqueName();
 
     String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-    
+
     IsCondition handlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
         SqlUtils.notNull(unlAlias, COL_PLACE_DATE));
 
@@ -1351,7 +1355,7 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
-    
+
     Order vehicleOrder = new Order(COL_NUMBER, true);
     BeeRowSet vehicles = qs.getViewData(VIEW_VEHICLES, vehicleFilter, vehicleOrder);
     if (DataUtils.isEmpty(vehicles)) {

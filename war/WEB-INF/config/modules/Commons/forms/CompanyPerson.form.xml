@@ -3,21 +3,15 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="CompanyPerson" viewName="CompanyPersons" caption="Įmonės asmuo"
+  name="CompanyPerson" viewName="CompaniesAndPersons" caption="Įmonės asmuo"
   height="300" width="800"
   >
   <FlowPanel class="flexBox-vertical">
     <Table style="border-spacing: 10px;">
       <row>
-        <Label html="Vardas" class="bee-required" />
-        <InputText style="width: 200px" source="FirstName" />
-        <Label html="Pavardė" />
-        <InputText style="width: 200px" source="LastName" />
-      </row>
-      <row>
-        <Label html="Įmonė" class="bee-required" />
-        <DataSelector source="Company" style="width: 200px" />
-        <Label html="Pareigos"/>
+        <Label html="Asmuo" class="bee-required" />
+        <DataSelector source="Person" style="width: 200px" />
+        <Label html="Pareigos" />
         <DataSelector source="Position" style="width: 200px" />
       </row>
       <row>

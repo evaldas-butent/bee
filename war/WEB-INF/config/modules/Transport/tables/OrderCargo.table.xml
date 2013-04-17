@@ -8,32 +8,32 @@
   <Fields>
     <Relation name="Order" relation="TransportationOrders" cascade="DELETE" />
     <Text name="Description" notNull="true" label="Krovinys" />
-    <Numeric name="Price" precision="12" scale="2" />
-    <Relation name="Currency" relation="Currencies" />
+    <Numeric name="Price" precision="12" scale="2" label="Pervežimo kaina" />
+    <Relation name="Currency" relation="Currencies" label="Valiuta" />
 
-    <Numeric name="Weight" precision="7" scale="3" />
-    <Numeric name="Volume" precision="7" scale="3" />
+    <Numeric name="Weight" precision="7" scale="3" label="Svoris" />
+    <Numeric name="Volume" precision="7" scale="3" label="Tūris" />
     <Numeric name="LDM" precision="5" scale="2" />
-    <Numeric name="Length" precision="6" scale="2" />
-    <Numeric name="Width" precision="6" scale="2" />
-    <Numeric name="Height" precision="6" scale="2" />
-    <Integer name="Quantity" />
-    <Integer name="Palettes" />
-    <Numeric name="Value" precision="12" scale="2" />
-    <Relation name="ValueCurrency" relation="Currencies" />
+    <Numeric name="Length" precision="6" scale="2" label="Ilgis" />
+    <Numeric name="Width" precision="6" scale="2" label="Plotis" />
+    <Numeric name="Height" precision="6" scale="2" label="Aukštis" />
+    <Integer name="Quantity" label="Kiekis" />
+    <Integer name="Palettes" label="Palečių sk." />
+    <Numeric name="Value" precision="12" scale="2" label="Vertė" />
+    <Relation name="ValueCurrency" relation="Currencies" label="Vertės val." />
 
-    <String name="Number" precision="20" />
+    <String name="Number" precision="20" label="Numeris" />
     <String name="Cmr" precision="20" />
-    <Integer name="LoadedKilometers" />
-    <Integer name="EmptyKilometers" />
+    <Integer name="LoadedKilometers" label="Pakrauti km" />
+    <Integer name="EmptyKilometers" label="Tušti km" />
     <Boolean name="Partial" label="Dalinis" />
     <Boolean name="Outsized" label="Negabaritinis" />
     <Boolean name="Dangerous" label="Pavojingas" />
-    <Numeric name="ExchangeOfPalettes" precision="2" />
+    <Numeric name="ExchangeOfPalettes" precision="2" label="Palečių keitimas" />
 
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Pakrovimas" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="Iškrovimas" />
-    <Relation name="ShippingTerm"  relation="ShippingTerms" />
+    <Relation name="ShippingTerm"  relation="ShippingTerms" label="Pristatymo sąlygos" />
     <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>

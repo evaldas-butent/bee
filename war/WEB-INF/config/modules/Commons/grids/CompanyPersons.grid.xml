@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CompanyPersons" viewName="CompanyPersons"
+  name="CompanyPersons" viewName="CompaniesAndPersons"
+  newRowForm="CompanyPerson" newRowCaption="Naujas įmonės asmuo"
+  editForm="CompanyPerson"
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
-    <RelColumn name="Person" editEnabled="true" readOnly="true">
-      <renderToken source="FirstName" />
-      <renderToken source="LastName" />
-    </RelColumn>
-    <RelColumn name="Position" editEnabled="true" readOnly="true" />
+    <RelColumn name="Person" editEnabled="true" />
+    <RelColumn name="Position" />
     <DataColumn name="Phone" />
 
     <RelColumn name="EmailId">

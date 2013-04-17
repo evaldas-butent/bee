@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -416,12 +417,21 @@ public class AssessmentForm extends AbstractFormInterceptor {
     }
   }
 
-  public static void updateTotal(final FormView form, IsRow row, final Widget tot) {
-    if (tot == null) {
+  public static void updateTotals(final FormView form, IsRow row,
+      final Widget incomeWidget, final Widget expenseWidget, final Widget profitWidget) {
+
+    if (!BeeUtils.anyNotNull(incomeWidget, expenseWidget, profitWidget)) {
       return;
     }
-    tot.getElement().setInnerText(null);
-
+    if (incomeWidget != null) {
+      incomeWidget.getElement().setInnerText(null);
+    }
+    if (expenseWidget != null) {
+      expenseWidget.getElement().setInnerText(null);
+    }
+    if (profitWidget != null) {
+      profitWidget.getElement().setInnerText(null);
+    }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTAL);
     args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
 
@@ -438,9 +448,22 @@ public class AssessmentForm extends AbstractFormInterceptor {
         if (response.hasErrors()) {
           return;
         }
-        double total = BeeUtils.round(BeeUtils.toDouble((String) response.getResponse()), 2);
-        tot.getElement().setInnerText(total != 0
-            ? BeeUtils.joinWords(total, currency != null ? null : "LTL") : null);
+        SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+        double income = BeeUtils.round(rs.getDouble(0, "Income"), 2);
+        double expense = BeeUtils.round(rs.getDouble(0, "Expense"), 2);
+
+        if (incomeWidget != null) {
+          incomeWidget.getElement().setInnerText(income != 0
+              ? BeeUtils.joinWords(income, currency != null ? null : "LTL") : null);
+        }
+        if (expenseWidget != null) {
+          expenseWidget.getElement().setInnerText(BeeUtils.toString(expense));
+        }
+        if (profitWidget != null) {
+          profitWidget.getElement()
+              .setInnerText(BeeUtils.toString(BeeUtils.round(income - expense, 2)));
+        }
       }
     });
   }
@@ -579,9 +602,10 @@ public class AssessmentForm extends AbstractFormInterceptor {
       }
     }
     if (primary && !newRecord) {
-      updateTotal(form, currentRow, form.getWidgetByName("Total"));
+      updateTotals(form, currentRow, form.getWidgetByName("Income"),
+          form.getWidgetByName("Expense"), form.getWidgetByName("Profit"));
     }
-    Widget orderPanel = form.getWidgetByName("OrderPanel");
+    Widget orderPanel = form.getWidgetByName("AmountsPanel");
 
     if (orderPanel != null) {
       orderPanel.setVisible(primary && !newRecord);

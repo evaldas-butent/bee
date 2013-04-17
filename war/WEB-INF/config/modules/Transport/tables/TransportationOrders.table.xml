@@ -15,6 +15,6 @@
     <Relation name="Payer" relation="Companies" label="Mokėtojas" />
     <String name="Shipper" precision="50" label="Siuntėjas" />
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
-    <Text name="Notes" />
+    <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>

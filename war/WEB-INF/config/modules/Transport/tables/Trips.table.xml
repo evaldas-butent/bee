@@ -7,22 +7,22 @@
   >
   <Fields>
     <Integer name="Status" notNull="true" label="Būsena" defValue="0" />
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
     <String name="TripNo" precision="20" unique="true" notNull="true"
       defExpr="NEXT_NUMBER" defValue="R/" label="Reiso Nr." />
     <Relation name="Vehicle" relation="Vehicles" label="Vilkikas" />
     <Relation name="Trailer" relation="Vehicles" label="Puspriekabė" />
-    <Date name="DateFrom" />
-    <Date name="DateTo" />
-    <Date name="PlannedEndDate" />
-    <Double name="SpeedometerBefore" />
-    <Double name="SpeedometerAfter" />
-    <Numeric name="FuelBefore" precision="7" scale="2" />
-    <Numeric name="FuelAfter" precision="7" scale="2" />
-    <Relation name="Expedition" relation="ExpeditionTypes" />
-    <Relation name="Forwarder" relation="Companies" />
-    <String name="ForwarderVehicle" precision="50" />
-    <String name="ForwarderDriver" precision="50" />
+    <Date name="DateFrom" label="Data nuo" />
+    <Date name="DateTo" label="Data iki" />
+    <Date name="PlannedEndDate" label="Planuojama pabaigos data" />
+    <Double name="SpeedometerBefore" label="Spidomentras prieš" />
+    <Double name="SpeedometerAfter" label="Spidomentras po" />
+    <Numeric name="FuelBefore" precision="7" scale="2" label="Kuro likutis prieš" />
+    <Numeric name="FuelAfter" precision="7" scale="2" label="Kuro likutis po" />
+    <Relation name="Expedition" relation="ExpeditionTypes" label="Ekspedijavimo rūšis" />
+    <Relation name="Forwarder" relation="Companies" label="Vežėjas" />
+    <String name="ForwarderVehicle" precision="50" label="Vežėjo transportas" />
+    <String name="ForwarderDriver" precision="50" label="Vežėjo vairuotojas" />
     <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>
