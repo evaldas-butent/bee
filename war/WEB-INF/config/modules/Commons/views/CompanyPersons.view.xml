@@ -3,12 +3,15 @@
   xmlns:xpr="http://www.butent.com/expression"
   
   name="CompanyPersons" source="CompanyPersons"
-  newRowForm="CompanyAndPerson" newRowCaption="Naujas įmonės asmuo"
-  editForm="CompanyAndPerson"
+  newRowForm="CompanyPerson" newRowCaption="Naujas įmonės asmuo"
+  editForm="CompanyPerson" caption="Įmonės asmuo"
   >
   <Columns>
     <SimpleColumn name="Position" />
-
+    <SimpleJoin name="Position" joinType="LEFT">
+      <SimpleColumn alias="PositionName" name="Name" />
+    </SimpleJoin>
+      
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />

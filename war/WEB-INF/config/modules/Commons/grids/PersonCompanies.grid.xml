@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="PersonCompanies" viewName="CompaniesAndPersons"
-  newRowForm="PersonCompany" newRowCaption="Nauja asmens įmonė"
-  editForm="PersonCompany"
+  name="PersonCompanies" viewName="CompanyPersons"
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
     <RelColumn name="Company" editEnabled="true" />
-    <DataColumn name="Position" />
+    <RelColumn name="Position" editEnabled="true" />
     <DataColumn name="Phone" />
 
     <RelColumn name="EmailId">

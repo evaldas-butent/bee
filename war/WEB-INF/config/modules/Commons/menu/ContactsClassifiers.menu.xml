@@ -11,6 +11,7 @@ name="ContactsClassifiers" label="Kontaktų klasifikatoriai" parent="Contacts" o
   <Item name="InformationSources" label="Klientų informacijos šaltiniai" service="grid" parameters="InformationSources" />
   <Item name="CompanyActivities" label="Klientų įmonių veiklos" service="grid" parameters="CompanyActivities" />
   <Item name="Responsibilities" label="Atsakomybės" service="grid" parameters="Responsibilities" />
+  <Item name="Positions" label="Pareigos" service="grid" parameters="Positions" />
 
   <Item name="CompanyRelationTypes" label="Klientų sąryšio tipai" service="grid" parameters="CompanyRelationTypes" separator="true" />
   <Item name="CompanyRelationTypeStates" label="Klientų sąryšio būsenos" service="grid" parameters="CompanyRelationTypeStates" />
