@@ -291,7 +291,7 @@ public class UserServiceBean {
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_PROPERTIES)
+        .addFields(TBL_USERS, userIdName, COL_LOGIN, UserData.FLD_COMPANY_PERSON, COL_PROPERTIES)
         .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
@@ -306,10 +306,11 @@ public class UserServiceBean {
       String login = key(row.getValue(COL_LOGIN));
 
       userCache.put(userId, login);
+      
+      UserData userData = new UserData(userId, login, row.getValue(UserData.FLD_FIRST_NAME),
+          row.getValue(UserData.FLD_LAST_NAME), row.getLong(UserData.FLD_COMPANY_PERSON));      
 
-      UserInfo user = new UserInfo(new UserData(userId, login,
-          row.getValue(UserData.FLD_FIRST_NAME),
-          row.getValue(UserData.FLD_LAST_NAME)))
+      UserInfo user = new UserInfo(userData)
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_PROPERTIES));
 
@@ -366,7 +367,7 @@ public class UserServiceBean {
 
     } else if (BeeUtils.isEmpty(getUsers())) {
       response.setResponse(
-          new UserData(-1, user, null, null)
+          new UserData(-1, user, null, null, null)
               .setProperty("dsn", SqlBuilderFactory.getDsn()))
           .addWarning("Anonymous user logged in:", user);
 

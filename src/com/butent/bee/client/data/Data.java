@@ -8,6 +8,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.ColumnMapper;
@@ -31,6 +32,10 @@ public class Data {
   
   public static void clearCell(String viewName, IsRow row, String colName) {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
+  }
+  
+  public static BeeRowSet createRowSet(String viewName) {
+    return new BeeRowSet(viewName, getColumns(viewName));
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {

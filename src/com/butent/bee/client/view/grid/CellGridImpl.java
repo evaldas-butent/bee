@@ -178,7 +178,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private List<BeeColumn> dataColumns = null;
 
   private final String relColumn;
-  private long relId = BeeConst.UNDEF;
+  private Long relId = null;
 
   private final List<String> newRowDefaults = Lists.newArrayList();
   private String newRowCaption = null;
@@ -1165,7 +1165,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public long getRelId() {
+  public Long getRelId() {
     return relId;
   }
 
@@ -1383,7 +1383,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public void setRelId(long relId) {
+  public void setRelId(Long relId) {
     this.relId = relId;
   }
 
@@ -2285,6 +2285,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     for (int i = 0; i < getDataColumns().size(); i++) {
       BeeColumn dataColumn = getDataColumns().get(i);
       if (!BeeUtils.isEmpty(getRelColumn()) && BeeUtils.same(getRelColumn(), dataColumn.getId())) {
+        if (!DataUtils.isId(getRelId())) {
+          callback.onFailure(getViewName(), "invalid rel id");
+          return;
+        }
+
         columns.add(dataColumn);
         values.add(BeeUtils.toString(getRelId()));
         continue;

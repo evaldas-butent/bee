@@ -6,8 +6,8 @@
 
   name="Appointment" viewName="Appointments" caption="=appointment">
 
-  <FlowPanel style="margin-left: 1em; margin-right: 1em; margin-top: 2ex;">
-    <AbsolutePanel style="height: 255px; left: 0; right: 0;">
+  <FlowPanel>
+    <AbsolutePanel style="top: 5px; height: 240px; left: 1em; right: 1em;">
       <layer top="0" bottom="0" width="240">
         <FlowPanel>
           <DataSelector source="CompanyName" caption="Įmonė:" style="width: 140px;"
@@ -85,7 +85,7 @@
       </layer>
     </AbsolutePanel>
 
-    <TabbedPages style="position: absolute; left: 0; right: 0; top: 256px; bottom: 1ex;">
+    <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 250px; bottom: 1ex;">
       <page>
         <text>Resursai</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />

@@ -20,6 +20,7 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -214,10 +215,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 
-    if (row == null) {
+    if (!hasParentValue(row)) {
       DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
       if (dataInfo != null) {
-        BeeRowSet rowSet = new BeeRowSet(dataInfo.getColumns());
+        BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
         createPresenter(row, rowSet, immutableFilter, initialFilters, order);
         return;
       }
@@ -243,11 +244,11 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return parentRowReg;
   }
 
-  private long getParentValue(IsRow row) {
+  private Long getParentValue(IsRow row) {
     if (row == null) {
-      return 0;
+      return null;
     } else if (getParentIndex() >= 0) {
-      return BeeUtils.unbox(row.getLong(getParentIndex()));
+      return row.getLong(getParentIndex());
     } else {
       return row.getId();
     }
@@ -270,7 +271,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private boolean hasParentValue(IsRow row) {
-    return getParentValue(row) != 0;
+    return DataUtils.isId(getParentValue(row));
   }
 
   private boolean isDisablable() {

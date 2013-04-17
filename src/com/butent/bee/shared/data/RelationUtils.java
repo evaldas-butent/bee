@@ -80,6 +80,9 @@ public class RelationUtils {
         } else if (BeeUtils.same(vc.getField(), UserData.FLD_LAST_NAME)) {
           row.setValue(index, userData.getLastName());
           result++;
+        } else if (BeeUtils.same(vc.getField(), UserData.FLD_COMPANY_PERSON)) {
+          row.setValue(index, userData.getCompanyPerson());
+          result++;
         }
       }
     }

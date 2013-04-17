@@ -61,7 +61,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   String getGridName();
 
-  long getRelId();
+  Long getRelId();
 
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
@@ -77,7 +77,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void refreshCellContent(long rowId, String columnSource);
 
-  void setRelId(long relId);
+  void setRelId(Long relId);
 
   boolean validateFormData(FormView form, NotificationListener notificationListener,
       boolean focusOnError);

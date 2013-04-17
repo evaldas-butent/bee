@@ -35,11 +35,12 @@ public class UserData implements BeeSerializable, HasInfo {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, COMPANY_PERSON, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
   }
 
   public static final String FLD_FIRST_NAME = "FirstName";
   public static final String FLD_LAST_NAME = "LastName";
+  public static final String FLD_COMPANY_PERSON = "CompanyPerson";
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
 
@@ -53,6 +54,7 @@ public class UserData implements BeeSerializable, HasInfo {
   private long userId;
   private String firstName;
   private String lastName;
+  private Long companyPerson;
   private String locale;
   private Map<String, String> properties;
 
@@ -60,11 +62,13 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private Map<String, String> constants;
 
-  public UserData(long userId, String login, String firstName, String lastName) {
+  public UserData(long userId, String login, String firstName, String lastName,
+      Long companyPerson) {
     this.userId = userId;
     this.login = login;
     this.firstName = firstName;
     this.lastName = lastName;
+    this.companyPerson = companyPerson;
   }
 
   private UserData() {
@@ -92,6 +96,9 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case LAST_NAME:
           this.lastName = value;
+          break;
+        case COMPANY_PERSON:
+          this.companyPerson = BeeUtils.toLongOrNull(value);
           break;
         case LOCALE:
           this.locale = value;
@@ -139,6 +146,10 @@ public class UserData implements BeeSerializable, HasInfo {
     }
   }
 
+  public Long getCompanyPerson() {
+    return companyPerson;
+  }
+
   public String getConstant(String name) {
     return (constants == null) ? null : constants.get(name);
   }
@@ -157,6 +168,7 @@ public class UserData implements BeeSerializable, HasInfo {
         "User Id", getUserId(),
         "First Name", getFirstName(),
         "Last Name", getLastName(),
+        "Company Person ID", getCompanyPerson(),
         "Locale", getLocale());
 
     if (!BeeUtils.isEmpty(properties)) {
@@ -249,6 +261,9 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case LAST_NAME:
           arr[i++] = lastName;
+          break;
+        case COMPANY_PERSON:
+          arr[i++] = companyPerson;
           break;
         case LOCALE:
           arr[i++] = locale;

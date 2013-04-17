@@ -223,7 +223,7 @@ public class DocumentHandler {
     @Override
     public boolean beforeAction(Action action, final GridPresenter presenter) {
       if (Action.ADD.equals(action)) {
-        final long docId = presenter.getGridView().getRelId();
+        final Long docId = presenter.getGridView().getRelId();
         if (!DataUtils.isId(docId)) {
           return false;
         }
@@ -343,7 +343,7 @@ public class DocumentHandler {
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
   }
 
-  private static void sendFiles(final long docId, List<NewFileInfo> files,
+  private static void sendFiles(final Long docId, List<NewFileInfo> files,
       final ScheduledCommand onComplete) {
 
     final String viewName = VIEW_DOCUMENT_FILES;
