@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Users" caption="Sistemos vartotojai" source="Users"
-  newRowCaption="Naujas vartotojas" editForm="User" rowCaption="Login"
+  editForm="User" newRowForm="User" newRowCaption="Naujas vartotojas" rowCaption="Login"
   >
   <Columns>
     <SimpleColumn name="Login" />

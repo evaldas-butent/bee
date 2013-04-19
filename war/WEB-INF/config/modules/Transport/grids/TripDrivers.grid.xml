@@ -10,7 +10,7 @@
       <carry><ui:expression>row.DateTo</ui:expression></carry>
     </DataColumn>
     <DataColumn name="DateTo" source="DateTo" caption="Data iki" minWidth="80" />
-    <RelColumn name="Driver" caption="Vardas, Pavardė" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Driver" caption="Vardas, Pavardė" newRowEnabled="false" flexGrow="1" flexShrink="1" />
     <DataColumn name="Note" source="Note" caption="Pastaba" flexGrow="2" flexShrink="2" />
   </columns>
 </Grid>

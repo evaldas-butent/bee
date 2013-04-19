@@ -10,7 +10,7 @@
     <SimpleColumn name="Date" />
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Notes" label="Komentaras" />
+    <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="INNER">
@@ -22,87 +22,14 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin name="Cargo" joinType="INNER">
-      <SimpleColumn name="Order" />
-      <SimpleJoin name="Order" joinType="INNER">
-        <SimpleColumn name="Date" alias="OrderDate" editable="true" />
-        <SimpleColumn name="OrderNo" />
-        <SimpleColumn name="Shipper" editable="true" />
-        <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
-        <SimpleColumn name="Notes" alias="Route" label="Maršrutas" editable="true" />
-      
-        <SimpleColumn name="Customer" editable="true" />
-        <SimpleJoin joinType="LEFT" name="Customer">
-          <SimpleColumn name="Name" alias="CustomerName" />
-        </SimpleJoin>
-      
-        <SimpleColumn name="CustomerPerson" editable="true" />
-        <SimpleJoin name="CustomerPerson" joinType="LEFT">
-          <SimpleJoin name="Person" joinType="LEFT">
-            <SimpleColumn alias="PersonFirstName" name="FirstName" />
-            <SimpleColumn alias="PersonLastName" name="LastName" />
-          </SimpleJoin>
-        </SimpleJoin>
-      </SimpleJoin>
-
-      <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
-
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
-        <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
-        </SimpleJoin>
-        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="Transporto Nr." editable="true" />
-      </SimpleJoin>
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="Iškrovimo šalis" editable="true" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
-        </SimpleJoin>
-        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="Transporto Nr.2" editable="true" />
-      </SimpleJoin>
-
-      <SimpleColumn name="Description" editable="true" />
-
-      <SimpleColumn name="Weight" editable="true" />
-      <SimpleColumn name="Volume" editable="true" />
-      <SimpleColumn name="Quantity" editable="true" />
-      <SimpleColumn name="Value" editable="true" />
-      <SimpleColumn name="ValueCurrency" editable="true" />
-      <SimpleJoin joinType="LEFT" name="ValueCurrency">
-        <SimpleColumn name="Name" alias="ValueCurrencyName" />
-      </SimpleJoin>
-
-      <SimpleColumn name="Number" editable="true" />
-      <SimpleColumn name="Cmr" editable="true" />
-
-      <SimpleColumn name="Partial" editable="true" />
-      <SimpleColumn name="Outsized" editable="true" />
-      <SimpleColumn name="Dangerous" editable="true" />
-
-      <SimpleColumn name="Price" editable="true" />
-      <SimpleColumn name="Currency" editable="true" />
-      <SimpleJoin joinType="LEFT" name="Currency">
-        <SimpleColumn name="Name" alias="CurrencyName" />
-      </SimpleJoin>
-    </SimpleJoin>
-    
-    <ExternalJoin source="CargoServices" name="Assessor" joinType="LEFT">
-      <AggregateColumn name="Assessor" alias="Cnt" aggregate="COUNT" />
-    </ExternalJoin>
-
     <SimpleColumn name="Income">
       <x:number>0</x:number>
     </SimpleColumn>
-    <SimpleColumn name="Expenses">
+    <SimpleColumn name="Expense">
       <x:number>0</x:number>
     </SimpleColumn>
   </Columns>
   <Order>
-    <OrderBy column="LoadingDate" />
+    <OrderBy column="Date" />
   </Order>
 </View>

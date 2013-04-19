@@ -3,9 +3,8 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="AssessmentOrders" viewName="CargoAssessors" caption="Vertinimo užsakymai"
+  name="AssessmentOrders" viewName="Assessments" caption="Vertinimo užsakymai"
   flexGrow="1" flexShrink="1" disabledActions="add"
-  editForm="AssessmentRequest"
   >
   <north size="40">
     <w:HorizontalPanel>

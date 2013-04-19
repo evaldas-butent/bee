@@ -4,7 +4,7 @@
 
   name="CargoAssessors" viewName="CargoAssessors"
   newRowCaption="Naujas vertinimas"
-  flexGrow="1" flexShrink="1" order="Date"
+  flexGrow="1" flexShrink="1"
   >
   <columns>
     <DataColumn name="Date" caption="Sukūrimo data" width="110" readOnly="true" />
@@ -15,7 +15,7 @@
     <RelColumn name="Manager" caption="Vadybininkas" />
     <DataColumn name="Notes" caption="Pastabos" />
     <DataColumn name="Income" caption="Pajamos" format="#.00" />
-    <DataColumn name="Expenses" caption="Sąnaudos" format="#.00" />
+    <DataColumn name="Expense" caption="Sąnaudos" format="#.00" />
     <DataColumn name="Status" itemKey="AssessmentStatus" readOnly="true" />
   </columns>
 </Grid>

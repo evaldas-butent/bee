@@ -121,8 +121,7 @@ public class CargoRequestsGrid extends AbstractGridInterceptor {
 
   @Override
   public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-    return new BeeRowSet(gridDescription.getViewName(),
-        Data.getColumns(gridDescription.getViewName()));
+    return Data.createRowSet(gridDescription.getViewName());
   }
 
   @Override

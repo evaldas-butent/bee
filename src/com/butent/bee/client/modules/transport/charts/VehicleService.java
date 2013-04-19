@@ -30,11 +30,11 @@ class VehicleService implements HasDateRange {
     this.vehicleId = row.getLong(COL_VEHICLE);
     this.vehicleNumber = row.getValue(COL_NUMBER);
 
-    this.name = row.getValue(COL_SERVICE_NAME);
-    this.notes = row.getValue(COL_SERVICE_NOTES);
+    this.name = row.getValue(COL_VEHICLE_SERVICE_NAME);
+    this.notes = row.getValue(COL_VEHICLE_SERVICE_NOTES);
 
-    JustDate start = row.getDate(COL_SERVICE_DATE);
-    JustDate end = row.getDate(COL_SERVICE_DATE_TO);
+    JustDate start = row.getDate(COL_VEHICLE_SERVICE_DATE);
+    JustDate end = row.getDate(COL_VEHICLE_SERVICE_DATE_TO);
 
     this.range = Range.closed(start, BeeUtils.max(start, end));
   }

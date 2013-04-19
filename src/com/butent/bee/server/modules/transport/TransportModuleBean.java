@@ -18,7 +18,6 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
-import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -141,9 +140,9 @@ public class TransportModuleBean implements BeeModule {
       response = getCargoUsage(reqInfo.getParameter("ViewName"),
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
 
-    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTAL)) {
-      response = getAssessmentTotal(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
-          BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
+      response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CARGO)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.FLD_CURRENCY)));
 
     } else {
@@ -177,43 +176,33 @@ public class TransportModuleBean implements BeeModule {
         SqlSelect query = event.getQuery();
 
         if (BeeUtils.same(event.getViewName(), TBL_CARGO_ASSESSORS) && event.isBefore()) {
-          String servicesAlias = null;
-          String ordersAlias = null;
-
-          for (IsFrom from : query.getFrom()) {
-            Object source = from.getSource();
-
-            if (source instanceof String) {
-              if (BeeUtils.same((String) source, TBL_CARGO_SERVICES)) {
-                servicesAlias = BeeUtils.notEmpty(from.getAlias(), TBL_CARGO_SERVICES);
-              } else if (BeeUtils.same((String) source, TBL_ORDERS)) {
-                ordersAlias = BeeUtils.notEmpty(from.getAlias(), TBL_ORDERS);
-              }
-            }
-          }
-          if (!BeeUtils.allNotNull(servicesAlias, ordersAlias)) {
-            return;
-          }
-          String colIncome = "Income";
-          String colExpenses = "Expenses";
+          query.addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_ASSESSORS, COL_CARGO))
+              .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+              .addFromLeft(TBL_CARGO_SERVICES,
+                  sys.joinTables(TBL_CARGO_ASSESSORS, TBL_CARGO_SERVICES, COL_ASSESSOR));
 
           for (Iterator<IsExpression[]> it = query.getFields().iterator(); it.hasNext();) {
-            IsExpression als = it.next()[SqlSelect.FIELD_ALIAS];
+            IsExpression[] xpr = it.next();
+            IsExpression als = xpr[SqlSelect.FIELD_ALIAS];
 
-            if (als != null && BeeUtils.inListSame((String) als.getValue(), colIncome, colExpenses)) {
+            if (als != null
+                && BeeUtils.inListSame((String) als.getValue(), VAR_INCOME, VAR_EXPENSE)) {
               it.remove();
+            } else {
+              query.addGroup(xpr[SqlSelect.FIELD_EXPR]);
             }
           }
           IsExpression xpr = ExchangeUtils.exchangeField(query,
-              SqlUtils.field(servicesAlias, COL_SERVICE_AMOUNT),
-              SqlUtils.field(servicesAlias, ExchangeUtils.FLD_CURRENCY),
-              SqlUtils.nvl(SqlUtils.field(servicesAlias, COL_SERVICE_DATE),
-                  SqlUtils.field(ordersAlias, COL_ORDER_DATE)));
+              SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_AMOUNT),
+              SqlUtils.field(TBL_CARGO_SERVICES, ExchangeUtils.FLD_CURRENCY),
+              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
+                  SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)));
 
-          query.addSum(SqlUtils.sqlIf(SqlUtils.isNull(servicesAlias, COL_SERVICE_EXPENSE),
-              xpr, null), colIncome)
-              .addSum(SqlUtils.sqlIf(SqlUtils.isNull(servicesAlias, COL_SERVICE_EXPENSE),
-                  null, xpr), colExpenses);
+          query.addSum(SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE),
+              xpr, null), VAR_INCOME)
+              .addSum(SqlUtils.sqlIf(SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE),
+                  null, xpr), VAR_EXPENSE);
         }
       }
 
@@ -328,22 +317,18 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject getAssessmentTotal(Long assessorId, long cargoId, Long currencyId) {
+  private ResponseObject getAssessmentTotals(Long assessorId, Long cargoId, Long currencyId) {
     if (!DataUtils.isId(cargoId)) {
       return ResponseObject.error("Cargo ID is not valid:", cargoId);
-    }
-    IsCondition wh = SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId);
-
-    if (DataUtils.isId(assessorId)) {
-      wh = SqlUtils.and(wh, SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId));
     }
     SqlSelect ss = new SqlSelect()
         .addFrom(TBL_CARGO_SERVICES)
         .addFromInner(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_SERVICES, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .setWhere(wh);
+        .setWhere(SqlUtils.equals(TBL_CARGO_SERVICES, COL_CARGO, cargoId));
 
+    IsCondition wh = SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE);
     IsExpression xpr;
 
     if (DataUtils.isId(currencyId)) {
@@ -359,10 +344,18 @@ public class TransportModuleBean implements BeeModule {
           SqlUtils.nvl(SqlUtils.field(TBL_CARGO_SERVICES, COL_SERVICE_DATE),
               SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)));
     }
-    wh = SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE);
+    ss.addSum(SqlUtils.sqlIf(wh, xpr, null), VAR_INCOME + VAR_TOTAL)
+        .addSum(SqlUtils.sqlIf(wh, null, xpr), VAR_EXPENSE + VAR_TOTAL);
 
-    ss.addSum(SqlUtils.sqlIf(wh, xpr, null), "Income")
-        .addSum(SqlUtils.sqlIf(wh, null, xpr), "Expense");
+    if (DataUtils.isId(assessorId)) {
+      wh = SqlUtils.equals(TBL_CARGO_SERVICES, COL_ASSESSOR, assessorId);
+    } else {
+      wh = null;
+    }
+    ss.addSum(SqlUtils.sqlIf(SqlUtils.and(wh,
+        SqlUtils.isNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE)), xpr, null), VAR_INCOME)
+        .addSum(SqlUtils.sqlIf(SqlUtils.and(wh,
+            SqlUtils.notNull(TBL_CARGO_SERVICES, COL_SERVICE_EXPENSE)), xpr, null), VAR_EXPENSE);
 
     return ResponseObject.response(qs.getData(ss));
   }
@@ -809,8 +802,8 @@ public class TransportModuleBean implements BeeModule {
     query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
     query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
 
-    Set<Integer> statuses = Sets.newHashSet(OrderStatus.CREATED.ordinal(),
-        OrderStatus.ACTIVATED.ordinal(), OrderStatus.CONFIRMED.ordinal());
+    Set<Integer> statuses = Sets.newHashSet(OrderStatus.NEW.ordinal(),
+        OrderStatus.ACTIVE.ordinal());
     IsCondition cargoWhere = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
         SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
 
@@ -1321,18 +1314,21 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private SimpleRowSet getVehicleServices(IsCondition condition) {
-    SqlSelect query = new SqlSelect()
-        .addFrom(TBL_VEHICLE_SERVICES)
-        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE))
-        .addFromLeft(TBL_SERVICE_TYPES, sys.joinTables(TBL_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
-            COL_SERVICE_TYPE));
+    SqlSelect query =
+        new SqlSelect()
+            .addFrom(TBL_VEHICLE_SERVICES)
+            .addFromLeft(TBL_VEHICLES,
+                sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE))
+            .addFromLeft(TBL_VEHICLE_SERVICE_TYPES,
+                sys.joinTables(TBL_VEHICLE_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
+                    COL_VEHICLE_SERVICE_TYPE));
 
-    query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE, COL_SERVICE_DATE_TO,
-        COL_SERVICE_NOTES);
+    query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_VEHICLE_SERVICE_DATE,
+        COL_VEHICLE_SERVICE_DATE_TO, COL_VEHICLE_SERVICE_NOTES);
     query.addFields(TBL_VEHICLES, COL_NUMBER);
-    query.addFields(TBL_SERVICE_TYPES, COL_SERVICE_NAME);
+    query.addFields(TBL_VEHICLE_SERVICE_TYPES, COL_VEHICLE_SERVICE_NAME);
 
-    query.addOrder(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_SERVICE_DATE);
+    query.addOrder(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_VEHICLE_SERVICE_DATE);
 
     if (condition != null) {
       query.setWhere(condition);

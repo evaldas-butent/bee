@@ -129,8 +129,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
 
   @Override
   public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-    return new BeeRowSet(gridDescription.getViewName(),
-        Data.getColumns(gridDescription.getViewName()));
+    return Data.createRowSet(gridDescription.getViewName());
   }
 
   @Override
@@ -152,7 +151,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    newRow.setValue(gridView.getDataIndex("OrderStatus"), OrderStatus.REQUESTED.ordinal());
+    newRow.setValue(gridView.getDataIndex("OrderStatus"), OrderStatus.REQUEST.ordinal());
     return true;
   }
 

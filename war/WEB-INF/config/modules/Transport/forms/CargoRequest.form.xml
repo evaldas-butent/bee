@@ -33,7 +33,8 @@
     &separator;
     <FlowPanel style="&section;">
       <Label html="Vadybininkas" style="&labelLeft;" />
-      <DataSelector source="Manager" style="&inline; width:200px;" />
+      <DataSelector source="Manager" style="&inline; width:200px;" editSource="ManagerPerson"
+        newRowEnabled="false" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

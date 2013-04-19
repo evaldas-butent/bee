@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="Users" viewName="Users" caption="Vartotojai"
-  editForm="User" newRowForm="User" newRowPopup="true"
+  newRowPopup="true"
   flexGrow="1" flexShrink="1"
   >
   <columns>

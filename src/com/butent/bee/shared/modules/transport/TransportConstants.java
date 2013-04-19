@@ -6,12 +6,11 @@ import com.butent.bee.shared.ui.HasCaption;
 public class TransportConstants {
 
   public enum OrderStatus implements HasCaption {
-    CREATED("Naujas"),
-    ACTIVATED("Aktyvus"),
-    CONFIRMED("Patvirtintas"),
+    NEW("Naujas"),
+    ACTIVE("Vykdomas"),
     CANCELED("Atšauktas"),
     COMPLETED("Baigtas"),
-    REQUESTED("Užklausimas");
+    REQUEST("Užklausimas");
 
     private final String caption;
 
@@ -26,12 +25,12 @@ public class TransportConstants {
   }
 
   public enum AssessmentStatus implements HasCaption {
-    NEW("Naujas", "Grąžinti į užklausimus?", OrderStatus.REQUESTED, true),
+    NEW("Naujas", "Grąžinti į užklausimus?", OrderStatus.REQUEST, true),
     ANSWERED("Atsakytas", "Pažymėti kaip atsakytą?", null, false),
     LOST("Pralaimėtas", "Pažymėti kaip pralaimėtą?", OrderStatus.CANCELED, false),
-    ACTIVE("Vykdomas", "Perkelti į užsakymus?", OrderStatus.ACTIVATED, true),
-    COMPLETED("Įvykdytas", "Pažymėti kaip įvykdytą?", OrderStatus.COMPLETED, false),
-    CANCELED("Atšauktas", "Atšaukti užsakymą?", OrderStatus.CANCELED, false);
+    ACTIVE("Vykdomas", "Perkelti į užsakymus?", OrderStatus.ACTIVE, true),
+    CANCELED("Atšauktas", "Atšaukti užsakymą?", OrderStatus.CANCELED, false),
+    COMPLETED("Įvykdytas", "Pažymėti kaip įvykdytą?", OrderStatus.COMPLETED, false);
 
     public static boolean in(int status, AssessmentStatus... statuses) {
       for (AssessmentStatus ts : statuses) {
@@ -137,18 +136,22 @@ public class TransportConstants {
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
-  public static final String SVC_GET_ASSESSMENT_TOTAL = "GetAssessmentTotal";
+  public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
+
+  public static final String VAR_INCOME = "Income";
+  public static final String VAR_EXPENSE = "Expense";
+  public static final String VAR_TOTAL = "Total";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
-  public static final String TBL_SERVICE_TYPES = "ServiceTypes";
+  public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
 
   public static final String TBL_TRIPS = "Trips";
@@ -249,6 +252,7 @@ public class TransportConstants {
   public static final String COL_CUSTOMER_NAME = "CustomerName";
 
   public static final String COL_SERVICE = "Service";
+  public static final String COL_SERVICE_DATE = "Date";
   public static final String COL_SERVICE_EXPENSE = "Expense";
   public static final String COL_SERVICE_AMOUNT = "Amount";
 
@@ -288,11 +292,11 @@ public class TransportConstants {
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
   public static final String COL_TRIP_DRIVER_NOTE = "Note";
 
-  public static final String COL_SERVICE_DATE = "Date";
-  public static final String COL_SERVICE_DATE_TO = "DateTo";
-  public static final String COL_SERVICE_TYPE = "Type";
-  public static final String COL_SERVICE_NAME = "Name";
-  public static final String COL_SERVICE_NOTES = "Notes";
+  public static final String COL_VEHICLE_SERVICE_DATE = "Date";
+  public static final String COL_VEHICLE_SERVICE_DATE_TO = "DateTo";
+  public static final String COL_VEHICLE_SERVICE_TYPE = "Type";
+  public static final String COL_VEHICLE_SERVICE_NAME = "Name";
+  public static final String COL_VEHICLE_SERVICE_NOTES = "Notes";
 
   public static final String COL_ABSENCE_NAME = "Name";
   public static final String COL_ABSENCE_LABEL = "Label";
@@ -400,7 +404,7 @@ public class TransportConstants {
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
-  public static final String FORM_ASSESSMENT_REQUEST = "AssessmentRequest";
+  public static final String FORM_ASSESSMENT = "Assessment";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";

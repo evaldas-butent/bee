@@ -29,6 +29,7 @@
 
       <SimpleColumn name="Manager" editable="true" />
       <SimpleJoin name="Manager" joinType="LEFT">
+        <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
             <SimpleColumn name="FirstName" />

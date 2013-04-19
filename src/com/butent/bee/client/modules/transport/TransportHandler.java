@@ -613,7 +613,7 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
-    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_REQUEST, new AssessmentForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
 
     FormFactory.registerFormInterceptor("PrintOrderLT", new PrintOrderForm());
     FormFactory.registerFormInterceptor("PrintOrderRU", new PrintOrderForm());

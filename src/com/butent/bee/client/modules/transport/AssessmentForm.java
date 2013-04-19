@@ -46,7 +46,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -60,7 +59,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -74,9 +72,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public Map<String, Filter> getInitialFilters() {
-      IsRow row = currentRow;
-
-      if (row == null) {
+      if (currentRow == null) {
         return super.getInitialFilters();
       } else {
         return ImmutableMap.of(COL_ASSESSOR, getFilter());
@@ -102,12 +98,12 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void afterInsertRow(IsRow result) {
-      refreshForm();
+      refreshTotals();
     }
 
     @Override
     public void afterUpdateRow(IsRow result) {
-      refreshForm();
+      refreshTotals();
     }
 
     @Override
@@ -192,19 +188,19 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void afterDeleteRow(long rowId) {
-      refreshForm();
+      refreshTotals();
     }
 
     @Override
     public void afterInsertRow(IsRow result) {
-      refreshForm();
+      refreshTotals();
     }
 
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(),
           COL_SERVICE_DATE, COL_SERVICE_AMOUNT, ExchangeUtils.FLD_CURRENCY)) {
-        refreshForm();
+        refreshTotals();
       }
     }
 
@@ -220,7 +216,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
   private class AssessorsGrid extends AssessmentGrid {
     @Override
     public void afterDeleteRow(long rowId) {
-      getFormView().refresh(false);
+      refreshTotals();
     }
 
     @Override
@@ -248,24 +244,6 @@ public class AssessmentForm extends AbstractFormInterceptor {
         return DeleteMode.CANCEL;
       } else {
         return DeleteMode.SINGLE;
-      }
-    }
-
-    @Override
-    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
-      super.onReadyForInsert(gridView, event);
-
-      int idx = 0;
-
-      for (Iterator<BeeColumn> iterator = event.getColumns().iterator(); iterator.hasNext();) {
-        BeeColumn column = iterator.next();
-
-        if (column.getLevel() > 0) {
-          iterator.remove();
-          event.getValues().remove(idx);
-        } else {
-          idx++;
-        }
       }
     }
 
@@ -398,8 +376,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
   public static void doRowAction(final RowActionEvent event) {
     if (event.hasView(TBL_CARGO_ASSESSORS)) {
-      // RowEditor.openRow(FORM_ORDER_ASSESSMENT, TBL_CARGO_ASSESSORS, event.getRow(), false, null);
-      RowEditor.openRow(FORM_ASSESSMENT_REQUEST, Data.getDataInfo(TBL_CARGO_ASSESSORS),
+      RowEditor.openRow(FORM_ASSESSMENT, Data.getDataInfo("Assessments"),
           event.getRowId(), false, null, null);
 
     } else if (event.hasView("AssessmentForwarders")) {
@@ -418,22 +395,24 @@ public class AssessmentForm extends AbstractFormInterceptor {
   }
 
   public static void updateTotals(final FormView form, IsRow row,
-      final Widget incomeWidget, final Widget expenseWidget, final Widget profitWidget) {
+      final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
+      final Widget incomeWidget, final Widget expenseWidget) {
 
-    if (!BeeUtils.anyNotNull(incomeWidget, expenseWidget, profitWidget)) {
+    boolean ok = false;
+
+    for (Widget widget : new Widget[] {incomeTotalWidget, expenseTotalWidget, profitWidget,
+        incomeWidget, expenseWidget}) {
+      if (widget != null) {
+        ok = true;
+        widget.getElement().setInnerText(null);
+      }
+    }
+    if (!ok) {
       return;
     }
-    if (incomeWidget != null) {
-      incomeWidget.getElement().setInnerText(null);
-    }
-    if (expenseWidget != null) {
-      expenseWidget.getElement().setInnerText(null);
-    }
-    if (profitWidget != null) {
-      profitWidget.getElement().setInnerText(null);
-    }
-    ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTAL);
+    ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
     args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
+    args.addDataItem(COL_ASSESSOR, row.getId());
 
     final Long currency = row.getLong(form.getDataIndex(ExchangeUtils.FLD_CURRENCY));
 
@@ -450,19 +429,31 @@ public class AssessmentForm extends AbstractFormInterceptor {
         }
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
-        double income = BeeUtils.round(rs.getDouble(0, "Income"), 2);
-        double expense = BeeUtils.round(rs.getDouble(0, "Expense"), 2);
+        double incomeTotal =
+            BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_INCOME + VAR_TOTAL)), 2);
+        double expenseTotal =
+            BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_EXPENSE + VAR_TOTAL)), 2);
+        double income = BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_INCOME)), 2);
+        double expense = BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_EXPENSE)), 2);
 
-        if (incomeWidget != null) {
-          incomeWidget.getElement().setInnerText(income != 0
-              ? BeeUtils.joinWords(income, currency != null ? null : "LTL") : null);
+        if (incomeTotalWidget != null) {
+          incomeTotalWidget.getElement()
+              .setInnerText(BeeUtils.joinWords(incomeTotal, currency != null ? null : "LTL"));
         }
-        if (expenseWidget != null) {
-          expenseWidget.getElement().setInnerText(BeeUtils.toString(expense));
+        if (expenseTotalWidget != null) {
+          expenseTotalWidget.getElement().setInnerText(BeeUtils.toString(expenseTotal));
         }
         if (profitWidget != null) {
           profitWidget.getElement()
-              .setInnerText(BeeUtils.toString(BeeUtils.round(income - expense, 2)));
+              .setInnerText(BeeUtils.toString(BeeUtils.round(incomeTotal - expenseTotal, 2)));
+        }
+        if (incomeWidget != null) {
+          incomeWidget.getElement()
+              .setInnerText(income != 0 ? BeeUtils.parenthesize(income) : null);
+        }
+        if (expenseWidget != null) {
+          expenseWidget.getElement()
+              .setInnerText(expense != 0 ? BeeUtils.parenthesize(expense) : null);
         }
       }
     });
@@ -592,24 +583,12 @@ public class AssessmentForm extends AbstractFormInterceptor {
     for (ChildGrid grid : grids) {
       grid.setEnabled(ok);
     }
-    for (String item : new String[] {"Income", "Expenses"}) {
-      Widget cap = form.getWidgetByName(item + "Total");
-
-      if (cap != null) {
-        double total =
-            BeeUtils.round(BeeUtils.unbox(currentRow.getDouble(form.getDataIndex(item))), 2);
-        cap.getElement().setInnerText(total != 0 ? BeeUtils.parenthesize(total) : "");
-      }
-    }
-    if (primary && !newRecord) {
-      updateTotals(form, currentRow, form.getWidgetByName("Income"),
-          form.getWidgetByName("Expense"), form.getWidgetByName("Profit"));
-    }
     Widget orderPanel = form.getWidgetByName("AmountsPanel");
 
     if (orderPanel != null) {
       orderPanel.setVisible(primary && !newRecord);
     }
+    refreshTotals();
   }
 
   @Override
@@ -626,15 +605,11 @@ public class AssessmentForm extends AbstractFormInterceptor {
     return !DataUtils.isId(row.getLong(getFormView().getDataIndex(COL_ASSESSOR)));
   }
 
-  private void refreshForm() {
+  private void refreshTotals() {
     final FormView form = getFormView();
 
-    Queries.getRow(form.getViewName(), currentRow.getId(), new RowCallback() {
-      @Override
-      public void onSuccess(BeeRow row) {
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), row));
-        form.updateRow(row, false);
-      }
-    });
+    updateTotals(form, currentRow, form.getWidgetByName(VAR_INCOME + VAR_TOTAL),
+        form.getWidgetByName(VAR_EXPENSE + VAR_TOTAL), form.getWidgetByName("Profit"),
+        form.getWidgetByName(VAR_INCOME), form.getWidgetByName(VAR_EXPENSE));
   }
 }
