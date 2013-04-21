@@ -356,6 +356,10 @@ public class UiHelper {
   }
 
   public static boolean moveFocus(Widget parent, boolean forward) {
+    return moveFocus(parent, DomUtils.getActiveElement(), forward);
+  }
+
+  public static boolean moveFocus(Widget parent, Element activeElement, boolean forward) {
     if (parent == null) {
       return false;
     }
@@ -366,9 +370,8 @@ public class UiHelper {
     }
     int count = children.size();
 
-    Element activeElement = DomUtils.getActiveElement();
     int index;
-
+    
     if (activeElement == null) {
       index = forward ? 0 : count - 1;
 
@@ -380,7 +383,7 @@ public class UiHelper {
 
     } else {
       index = BeeConst.UNDEF;
-      for (int i = 0; i < children.size(); i++) {
+      for (int i = 0; i < count; i++) {
         if (isOrHasChild(children.get(i), activeElement)) {
           index = i;
           break;
@@ -397,7 +400,7 @@ public class UiHelper {
     children.get(index).setFocus(true);
     return true;
   }
-
+  
   public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
     if (BeeUtils.isEmpty(text)) {
       return null;

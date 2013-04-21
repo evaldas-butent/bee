@@ -17,7 +17,8 @@
         style="font-weight: bold; color: blue;" d:size="60" d:unit="px" />
       <HorizontalPanel>
         <InputCurrency source="Price" caption="Pervežimo kaina" style="width: 70px; font-weight: bold; color: green;" />
-        <DataSelector source="Currency" style="width: 40px; font-weight: bold; display: inline-block;" />
+        <DataSelector source="Currency" editEnabled="false"
+          style="width: 40px; font-weight: bold; display: inline-block;" />
       </HorizontalPanel>
     </FlowPanel>
     &separator;
@@ -52,7 +53,8 @@
       	  <row>
       	    <FlowPanel>
         	  <InputCurrency source="Value" caption="Krovinio vertė" style="width:60px;" d:rootStyle="display:inline-block;" />
-        	  <DataSelector source="ValueCurrency" style="width:40px; display:inline-block; margin-left:3px;" />
+        	  <DataSelector source="ValueCurrency" editEnabled="false"
+                style="width:40px; display:inline-block; margin-left:3px;" />
       	    </FlowPanel>
             <CheckBox source="Dangerous" html="Pavojingas" style="margin:3px;"/>
       	  </row>

@@ -239,12 +239,16 @@ public class CachedProvider extends Provider {
         setTable(rowSet);
 
         applyFilter(getUserFilter());
-        getDisplay().setRowCount(getRowCount(), true);
 
         int newTableSize = rowSet.getNumberOfRows();
-        if (newTableSize != oldTableSize && oldPageSize > 0 && oldPageSize >= oldTableSize) {
-          getDisplay().setPageSize(newTableSize, true);
+
+        int oldRc = getDisplay().getRowCount();
+        int newRc = getRowCount();
+        
+        if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
+          getDisplay().setPageSize(newTableSize, oldRc == newRc);
         }
+        getDisplay().setRowCount(newRc, true);
 
         updateDisplay(updateActiveRow);
       }

@@ -1635,7 +1635,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       nr = getDataSize() - 1;
     }
 
-    if (ps > 0 && ps == rc) {
+    if (ps >= 0 && ps == rc) {
       setPageSize(ps + 1, false);
     }
     setRowCount(rc + 1, true);
@@ -2467,33 +2467,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public boolean updatePageSize() {
-    int oldPageSize = getPageSize();
-    if (oldPageSize > 0) {
-      int newPageSize = estimatePageSize();
-
-      if (newPageSize > 0 && newPageSize != oldPageSize) {
-        int rc = getRowCount();
-        boolean fire = (rc > 0) && (oldPageSize < rc || newPageSize < rc);
-
-        if (getPageStart() + newPageSize > rc) {
-          int start = Math.max(rc - newPageSize, 0);
-          if (start != getPageStart()) {
-            setPageStart(start, false, false, NavigationOrigin.SYSTEM);
-            fire = (rc > 0);
-          }
-        }
-
-        setPageSize(newPageSize, true);
-        if (fire) {
-          fireDataRequest(NavigationOrigin.SYSTEM);
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-
   @Override
   protected void onUnload() {
     getResizerShowTimer().cancel();
@@ -2730,7 +2703,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     Assert.isTrue(isRowWithinBounds(row), "row index " + row + " out of bounds: page size "
         + getPageSize() + ", row count " + getRowCount() + ", data size " + getDataSize());
   }
-  
+
   private void deleteRow(long rowId) {
     if (getRenderedRows().contains(rowId)) {
       getRenderedRows().clear();
@@ -2748,7 +2721,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       getResizedCells().rowKeySet().remove(rowId);
     }
   }
-
+  
   private int estimateBodyCellWidth(int rowIndex, int col, IsRow rowValue,
       AbstractColumn<?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
@@ -4965,7 +4938,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizerMoveTimer().reset();
     setResizing(true);
   }
-  
+
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
@@ -4973,7 +4946,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     setResizerModifiers(null);
   }
-
+  
   private void updateCellContent(int rowIndex, int col) {
     IsRow rowValue = getDataItem(rowIndex);
     Assert.notNull(rowValue);
@@ -5070,5 +5043,32 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     } else {
       ord.clear();
     }
+  }
+
+  private boolean updatePageSize() {
+    int oldPageSize = getPageSize();
+    if (oldPageSize > 0) {
+      int newPageSize = estimatePageSize();
+
+      if (newPageSize > 0 && newPageSize != oldPageSize) {
+        int rc = getRowCount();
+        boolean fire = (rc > 0) && (oldPageSize < rc || newPageSize < rc);
+
+        if (getPageStart() + newPageSize > rc) {
+          int start = Math.max(rc - newPageSize, 0);
+          if (start != getPageStart()) {
+            setPageStart(start, false, false, NavigationOrigin.SYSTEM);
+            fire = (rc > 0);
+          }
+        }
+
+        setPageSize(newPageSize, true);
+        if (fire) {
+          fireDataRequest(NavigationOrigin.SYSTEM);
+        }
+        return true;
+      }
+    }
+    return false;
   }
 }

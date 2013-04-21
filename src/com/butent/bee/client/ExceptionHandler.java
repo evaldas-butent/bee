@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 
 import com.butent.bee.client.logging.LogFormatter;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 
 /**
@@ -24,6 +25,9 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
       logger.error(cause);
       cause = cause.getCause();
     }
+    
+    LogUtils.logStack(logger, LogLevel.ERROR, err);
+    
     logger.info(LogFormatter.LOG_SEPARATOR_TAG);
   }
 }

@@ -156,7 +156,7 @@ public class SimplePager extends AbstractPager {
     if (event == null) {
       return;
     }
-
+    
     int start = BeeUtils.toNonNegativeInt(event.getStart());
     int length = BeeUtils.toNonNegativeInt(event.getLength());
     int rowCount = BeeUtils.toNonNegativeInt(event.getTotal());

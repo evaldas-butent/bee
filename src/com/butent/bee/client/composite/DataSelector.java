@@ -60,7 +60,6 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.Consumer;
@@ -100,60 +99,6 @@ import java.util.Map;
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
     HasRelatedRow, HasCapsLock {
-
-  public class SimpleHandler implements FocusHandler, BlurHandler, EditStopEvent.Handler {
-
-    private final AbstractCellRenderer renderer;
-
-    private String text = null;
-
-    public SimpleHandler(AbstractCellRenderer renderer) {
-      this.renderer = renderer;
-    }
-
-    public SimpleHandler(CellSource cellSource) {
-      this(new SimpleRenderer(cellSource));
-    }
-
-    @Override
-    public void onBlur(BlurEvent event) {
-      updateDisplay(getText());
-      setEditing(false);
-    }
-
-    @Override
-    public void onEditStop(EditStopEvent event) {
-      if (renderer != null) {
-        if (event.isChanged()) {
-          setText(getRelatedRow() == null ? null : renderer.render(getRelatedRow()));
-        }
-        updateDisplay(getText());
-        UiHelper.moveFocus(getParent(), true);
-      }
-    }
-
-    @Override
-    public void onFocus(FocusEvent event) {
-      setText(getDisplayValue());
-      setEditing(true);
-    }
-
-    private String getText() {
-      return text;
-    }
-
-    private void setText(String text) {
-      this.text = text;
-    }
-
-    private void updateDisplay(String value) {
-      if (BeeUtils.isEmpty(value)) {
-        clearDisplay();
-      } else {
-        setDisplayValue(value.trim());
-      }
-    }
-  }
 
   protected class InputWidget extends InputText {
 
@@ -879,20 +824,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return addHandler(handler, SelectorEvent.getType());
   }
 
-  public Collection<HandlerRegistration> addSimpleHandler(AbstractCellRenderer renderer) {
-    return addSimpleHandler(new SimpleHandler(renderer));
-  }
-
-  public Collection<HandlerRegistration> addSimpleHandler(CellSource cellSource) {
-    return addSimpleHandler(new SimpleHandler(cellSource));
-  }
-
-  public Collection<HandlerRegistration> addSimpleHandler(SimpleHandler handler) {
-    Assert.notNull(handler);
-    return Lists.newArrayList(addBlurHandler(handler), addFocusHandler(handler),
-        addEditStopHandler(handler));
-  }
-
   @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
@@ -1317,6 +1248,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.relatedRow = relatedRow;
   }
 
+  protected void updateDisplay(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      clearDisplay();
+    } else {
+      setDisplayValue(value.trim());
+    }
+  }
+  
   private void addCells(Element rowElement, BeeRow row) {
     for (int i = 0; i < getColumnCount(); i++) {
       String cellContent = getCellRenderers().get(i).render(row);

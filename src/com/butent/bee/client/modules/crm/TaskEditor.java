@@ -26,6 +26,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -35,7 +36,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -71,7 +71,6 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -152,7 +151,7 @@ class TaskEditor extends AbstractFormInterceptor {
       BeeLabel label = new BeeLabel(caption);
       label.addStyleName(styleName);
       if (required) {
-        label.setStyleName(StyleUtils.NAME_REQUIRED);
+        label.addStyleName(StyleUtils.NAME_REQUIRED);
       }
 
       table.setWidget(row, col, label);
@@ -224,7 +223,7 @@ class TaskEditor extends AbstractFormInterceptor {
       BeeLabel label = new BeeLabel(caption);
       label.addStyleName(styleName);
       if (required) {
-        label.setStyleName(StyleUtils.NAME_REQUIRED);
+        label.addStyleName(StyleUtils.NAME_REQUIRED);
       }
 
       table.setWidget(row, col, label);
@@ -232,8 +231,7 @@ class TaskEditor extends AbstractFormInterceptor {
       col++;
 
       styleName = STYLE_DIALOG + "-selectorInput";
-      DataSelector selector = new DataSelector(Relation.create(relView, relColumns), true);
-      selector.addSimpleHandler(RendererFactory.createRenderer(relView, relColumns));
+      UnboundSelector selector = UnboundSelector.create(relView, relColumns);
       selector.addStyleName(styleName);
 
       if (!BeeUtils.isEmpty(exclusions)) {

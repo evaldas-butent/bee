@@ -11,6 +11,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -48,7 +49,6 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.EditorDescription;
-import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -113,7 +113,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
     this.validation = Evaluator.create(columnDescr.getValidation(), source, dataColumns);
     this.carry = Evaluator.create(columnDescr.getCarry(), source, dataColumns);
-    
+
     String value = columnDescr.getMinValue();
     if (BeeUtils.isEmpty(value) && columnDescr.getRelation() == null) {
       value = DataUtils.getMinValue(this.dataColumn);
@@ -145,8 +145,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     String format = null;
     if (getEditorDescription() != null) {
-      result = EditorFactory.getEditor(getEditorDescription(), getItemKey(), getDataType(),
-          getRelation());
+      result = EditorFactory.createEditor(getEditorDescription(), getItemKey(), getDataType(),
+          getRelation(), embedded);
       format = getEditorDescription().getFormat();
 
     } else if (getRelation() != null) {
@@ -158,7 +158,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       if (result instanceof AcceptsCaptions && !BeeUtils.isEmpty(getItemKey())) {
         ((AcceptsCaptions) result).addCaptions(getItemKey());
       }
-    
+
     } else if (embedded && ValueType.isBoolean(getDataType())) {
       result = new InputBoolean(null);
 
@@ -453,14 +453,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   public Boolean validate(String oldValue, String newValue, IsRow row, ValidationOrigin origin,
       EditorValidation editorValidation) {
-    
+
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getEditor(),
         editorValidation, getValidation(), row, getDataColumn(), getColIndex(), getDataType(),
         isNullable(), getCaption(), getNotificationListener());
 
     return ValidationHelper.validateCell(cellValidation, this, origin);
   }
-  
+
   private void adjustEditor(Element sourceElement, Element editorElement, Element adjustElement) {
     if (sourceElement != null) {
       if (getEditor() instanceof AdjustmentListener) {
@@ -481,54 +481,24 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     int vertMargins = 10;
 
     if (getEditorDescription() != null) {
-      int editorWidth = BeeConst.UNDEF;
-      int editorHeight = BeeConst.UNDEF;
-      int editorMinWidth = BeeConst.UNDEF;
-      int editorMinHeight = BeeConst.UNDEF;
+      Dimensions defaultDimensions = EditorAssistant.getDefaultDimensions(getEditorDescription());
 
-      EditorType editorType = getEditorDescription().getType();
-      if (editorType != null) {
-        if (BeeUtils.isPositive(editorType.getDefaultWidth())) {
-          editorWidth = editorType.getDefaultWidth();
+      if (defaultDimensions != null && !defaultDimensions.isEmpty()) {
+        if (defaultDimensions.hasWidth() && defaultDimensions.getIntWidth() > width) {
+          width = defaultDimensions.getIntWidth();
+          StyleUtils.setWidth(editorElement, width);
+        } else if (defaultDimensions.hasMinWidth() && defaultDimensions.getIntMinWidth() > width) {
+          width = defaultDimensions.getIntMinWidth();
+          StyleUtils.setWidth(editorElement, width);
         }
-        if (BeeUtils.isPositive(editorType.getDefaultHeight())) {
-          editorHeight = editorType.getDefaultHeight();
-        }
-        if (BeeUtils.isPositive(editorType.getMinWidth())) {
-          editorMinWidth = editorType.getMinWidth();
-        }
-        if (BeeUtils.isPositive(editorType.getMinHeight())) {
-          editorMinHeight = editorType.getMinHeight();
-        }
-      }
 
-      if (BeeUtils.isPositive(getEditorDescription().getWidth())) {
-        editorWidth = getEditorDescription().getWidth();
-      }
-      if (BeeUtils.isPositive(getEditorDescription().getHeight())) {
-        editorHeight = getEditorDescription().getHeight();
-      }
-      if (BeeUtils.isPositive(getEditorDescription().getMinWidth())) {
-        editorMinWidth = getEditorDescription().getMinWidth();
-      }
-      if (BeeUtils.isPositive(getEditorDescription().getMinHeight())) {
-        editorMinHeight = getEditorDescription().getMinHeight();
-      }
-
-      if (editorWidth > width) {
-        StyleUtils.setWidth(editorElement, editorWidth);
-        width = editorWidth;
-      } else if (editorMinWidth > width) {
-        StyleUtils.setWidth(editorElement, editorMinWidth);
-        width = editorMinWidth;
-      }
-
-      if (editorHeight > height) {
-        StyleUtils.setHeight(editorElement, editorHeight);
-        height = editorHeight;
-      } else if (editorMinHeight > height) {
-        StyleUtils.setHeight(editorElement, editorMinHeight);
-        height = editorMinHeight;
+        if (defaultDimensions.hasHeight() && defaultDimensions.getIntHeight() > height) {
+          height = defaultDimensions.getIntHeight();
+          StyleUtils.setHeight(editorElement, height);
+        } else if (defaultDimensions.hasMinHeight() && defaultDimensions.getIntMinHeight() > height) {
+          height = defaultDimensions.getIntMinHeight();
+          StyleUtils.setHeight(editorElement, height);
+        }
       }
     }
 

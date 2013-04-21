@@ -35,7 +35,8 @@
       <InputText source="Number" style="&input;" />
       <Label html="Suma" class="bee-required" style="&labelRight;" />
       <InputCurrency source="Amount" style="&input; width:70px;" />
-      <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" />
+      <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
+        editEnabled="false" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

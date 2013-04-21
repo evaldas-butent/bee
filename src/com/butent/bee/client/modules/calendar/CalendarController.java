@@ -434,6 +434,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private DataSelector createSelector() {
     Relation relation = Relation.create(VIEW_ATTENDEES,
         Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
+    relation.disableEdit();
 
     DataSelector dataSelector = new DataSelector(relation, true);
     dataSelector.setEditing(true);
@@ -488,6 +489,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       public void onEditStop(EditStopEvent event) {
         if (event.isChanged() && attSelector.getRelatedRow() != null) {
           addAttendee(attSelector.getRelatedRow());
+          attSelector.clearValue();
         }
       }
     });

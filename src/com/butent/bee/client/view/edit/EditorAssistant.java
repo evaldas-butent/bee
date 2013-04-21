@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -15,6 +16,8 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class EditorAssistant {
@@ -164,6 +167,43 @@ public class EditorAssistant {
     }
 
     event.consume();
+  }
+  
+  public static Dimensions getDefaultDimensions(EditorDescription editorDescription) {
+    Assert.notNull(editorDescription);
+    
+    Dimensions dimensions = new Dimensions();
+
+    EditorType editorType = editorDescription.getType();
+    if (editorType != null) {
+      if (BeeUtils.isPositive(editorType.getDefaultWidth())) {
+        dimensions.setWidth(editorType.getDefaultWidth());
+      }
+      if (BeeUtils.isPositive(editorType.getDefaultHeight())) {
+        dimensions.setHeight(editorType.getDefaultHeight());
+      }
+      if (BeeUtils.isPositive(editorType.getMinWidth())) {
+        dimensions.setMinWidth(editorType.getMinWidth());
+      }
+      if (BeeUtils.isPositive(editorType.getMinHeight())) {
+        dimensions.setMinHeight(editorType.getMinHeight());
+      }
+    }
+
+    if (BeeUtils.isPositive(editorDescription.getWidth())) {
+      dimensions.setWidth(editorDescription.getWidth());
+    }
+    if (BeeUtils.isPositive(editorDescription.getHeight())) {
+      dimensions.setHeight(editorDescription.getHeight());
+    }
+    if (BeeUtils.isPositive(editorDescription.getMinWidth())) {
+      dimensions.setMinWidth(editorDescription.getMinWidth());
+    }
+    if (BeeUtils.isPositive(editorDescription.getMinHeight())) {
+      dimensions.setMinHeight(editorDescription.getMinHeight());
+    }
+    
+    return dimensions;
   }
   
   public static String getValue(Widget widget) {

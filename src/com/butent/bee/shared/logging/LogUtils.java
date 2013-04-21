@@ -32,18 +32,14 @@ public class LogUtils {
     return null;
   }
 
-  /**
-   * Log an error stack trace with {@code logger} using INFO message level.
-   * 
-   * @param logger the Logger to log to
-   * @param err the error's stack trace to log
-   */
-  public static void logStack(BeeLogger logger, Throwable err) {
+  public static void logStack(BeeLogger logger, LogLevel level, Throwable err) {
+    Assert.notNull(logger);
+    Assert.notNull(level);
     Assert.notNull(err);
-    int i = 0;
 
+    int i = 0;
     for (StackTraceElement el : err.getStackTrace()) {
-      logger.debug(BeeUtils.bracket(++i), el);
+      logger.log(level, BeeUtils.bracket(++i), el);
     }
   }
 

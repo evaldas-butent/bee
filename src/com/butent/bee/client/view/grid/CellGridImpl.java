@@ -24,6 +24,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
@@ -77,6 +78,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
@@ -1208,7 +1210,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   public boolean hasNotifications() {
     return getNotification() != null && getNotification().isActive();
   }
-  
+
   @Override
   public boolean isAdding() {
     return adding;
@@ -1587,7 +1589,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           }
         }
       });
-      
+
       if (edit) {
         setEditPopup(popup);
       } else {
@@ -1655,6 +1657,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       Editor editor = editableColumn.createEditor(true);
       editor.asWidget().addStyleName(RowFactory.STYLE_NEW_ROW_INPUT);
+
+      if (editableColumn.getEditorDescription() != null) {
+        Dimensions defaultDimensions =
+            EditorAssistant.getDefaultDimensions(editableColumn.getEditorDescription());
+        if (defaultDimensions != null) {
+          defaultDimensions.applyTo(editor.asWidget());
+        }
+      }
 
       container.setWidget(r, 1, editor.asWidget());
       container.getCellFormatter().setStyleName(r, 1, RowFactory.STYLE_NEW_ROW_INPUT_CELL);
@@ -2587,7 +2597,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
     return !BeeUtils.containsSame(getEditInPlace(), columnId);
   }
-  
+
   private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
       String newValue, boolean tab) {
     Boolean ok = editableColumn.validate(oldValue, newValue, row, ValidationOrigin.CELL,

@@ -29,6 +29,7 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -238,6 +239,7 @@ public enum FormWidget {
   TABLE("Table", EnumSet.of(Type.IS_TABLE)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
   TOGGLE("Toggle", EnumSet.of(Type.EDITABLE)),
+  UNBOUND_SELECTOR("UnboundSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   UNORDERED_LIST("UnorderedList", null),
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
@@ -1023,6 +1025,13 @@ public enum FormWidget {
 
       case TOGGLE:
         widget = new Toggle();
+        break;
+        
+      case UNBOUND_SELECTOR:
+        relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
+        if (relation != null) {
+          widget = new UnboundSelector(relation);
+        }
         break;
 
       case UNORDERED_LIST:

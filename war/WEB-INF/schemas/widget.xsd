@@ -741,6 +741,16 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="UnboundSelector" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="selectorType">
+          <xs:attribute name="viewName" type="type:nameType" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="HtmlPanel" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>

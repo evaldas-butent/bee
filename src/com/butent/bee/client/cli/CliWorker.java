@@ -411,9 +411,6 @@ public class CliWorker {
     } else if (z.equals("sql")) {
       doSql(args);
 
-    } else if (z.equals("stack")) {
-      showStack();
-
     } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
       showPropData(Stacking.getInfo());
 
@@ -2746,13 +2743,6 @@ public class CliWorker {
     }
 
     BeeKeeper.getScreen().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
-  }
-
-  private static void showStack() {
-    Throwable err = new Throwable();
-    err.fillInStackTrace();
-    logger.debug(err);
-    logger.addSeparator();
   }
 
   private static void showSupport() {

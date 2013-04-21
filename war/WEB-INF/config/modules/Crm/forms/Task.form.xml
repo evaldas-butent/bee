@@ -20,7 +20,7 @@
   name="Task" viewName="Tasks" caption="Užduotis" showRowId="true" printHeader="true"
   >
 
-  <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form" style="margin-top: 1ex;">
+  <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
         <Label html="Būsena:" style="&lbl1;" />

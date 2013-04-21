@@ -1088,14 +1088,12 @@ body {
   visibility: visible;
 }
 
-.bee-NewRow-table {
-  margin: 1ex 1em;
-}
 .bee-NewRow-labelCell {
   vertical-align: top;
 }
 .bee-NewRow-label {
   padding-top: 1px;
+  padding-left: 1em;
   padding-right: 1em;
 }
 
@@ -1627,7 +1625,6 @@ body {
   position: relative;
   width: 200px;
   height: 23px;
-  margin-left: 2px;
 }
 .bee-ColorEditor-textBox {
   position: absolute;

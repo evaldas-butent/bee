@@ -155,8 +155,8 @@ public class EditorFactory {
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description, String itemKey,
-      ValueType valueType, Relation relation) {
+  public static Editor createEditor(EditorDescription description, String itemKey,
+      ValueType valueType, Relation relation, boolean embedded) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -201,7 +201,7 @@ public class EditorFactory {
         break;
 
       case RICH:
-        editor = new RichTextEditor(false);
+        editor = new RichTextEditor(embedded);
         break;
 
       case SLIDER:
@@ -214,7 +214,7 @@ public class EditorFactory {
 
       case SELECTOR:
         if (relation != null) {
-          editor = new DataSelector(relation, false);
+          editor = new DataSelector(relation, embedded);
         }
         break;
 

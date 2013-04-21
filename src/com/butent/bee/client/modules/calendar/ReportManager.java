@@ -235,7 +235,7 @@ class ReportManager {
 
     Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
     attRel.disableNewRow();
-    attRel.enableEdit();
+
     final MultiSelector attSelector = MultiSelector.createAutonomous(attRel,
         RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME)));
 

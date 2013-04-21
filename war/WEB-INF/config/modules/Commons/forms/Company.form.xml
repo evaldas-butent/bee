@@ -88,7 +88,8 @@
           <InputDecimal source="CreditLimit2" caption="Kredito tolerancija:" style="width: 100px;"
             d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 20px;" />
           <DataSelector source="LimitCurrency" caption="Limito valiuta:" style="width: 40px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 60px;" />
+            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 60px;"
+            editEnabled="false" />
           <InputInteger source="CreditDays" caption="Kredito dienos:" style="width: 40px;"
             d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 60px;" />
           <DataSelector source="FinancialState" caption="Mokumas:" style="width: 100px;"

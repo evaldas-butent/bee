@@ -61,7 +61,8 @@
         &separator;
         <Label html="Kaina klientui" style="&labelLeft;" />
         <Label name="IncomeTotal" style="&inline; font-weight:bold; margin-right:5px;" />
-        <DataSelector name="Currency" source="Currency" style="&inline; width:40px; margin-right:10px;" />
+        <DataSelector name="Currency" source="Currency"
+          style="&inline; width:40px; margin-right:10px;" editEnabled="false" />
         <Label html="Spausdinti" style="&labelRight;" />
         <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
         <Button name="RU" html="RU" style="&inline; margin-right:10px;" disablable="false" />

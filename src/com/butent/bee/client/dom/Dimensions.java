@@ -196,6 +196,30 @@ public class Dimensions implements HasInfo, HasDimensions {
     return info;
   }
 
+  public int getIntHeight() {
+    return BeeUtils.toInt(getHeightValue());
+  }
+
+  public int getIntMaxHeight() {
+    return BeeUtils.toInt(getMaxHeightValue());
+  }
+
+  public int getIntMaxWidth() {
+    return BeeUtils.toInt(getMaxWidthValue());
+  }
+
+  public int getIntMinHeight() {
+    return BeeUtils.toInt(getMinHeightValue());
+  }
+
+  public int getIntMinWidth() {
+    return BeeUtils.toInt(getMinWidthValue());
+  }
+
+  public int getIntWidth() {
+    return BeeUtils.toInt(getWidthValue());
+  }
+
   public CssUnit getMaxHeightUnit() {
     return maxHeightUnit;
   }
@@ -207,7 +231,7 @@ public class Dimensions implements HasInfo, HasDimensions {
   public CssUnit getMaxWidthUnit() {
     return maxWidthUnit;
   }
-
+  
   public Double getMaxWidthValue() {
     return maxWidthValue;
   }
@@ -219,11 +243,11 @@ public class Dimensions implements HasInfo, HasDimensions {
   public Double getMinHeightValue() {
     return minHeightValue;
   }
-
+  
   public CssUnit getMinWidthUnit() {
     return minWidthUnit;
   }
-
+  
   public Double getMinWidthValue() {
     return minWidthValue;
   }
@@ -232,7 +256,7 @@ public class Dimensions implements HasInfo, HasDimensions {
   public CssUnit getWidthUnit() {
     return widthUnit;
   }
-  
+
   @Override
   public Double getWidthValue() {
     return widthValue;
@@ -241,7 +265,23 @@ public class Dimensions implements HasInfo, HasDimensions {
   public boolean hasHeight() {
     return BeeUtils.isPositive(getHeightValue());
   }
+  
+  public boolean hasMaxHeight() {
+    return BeeUtils.isPositive(getMaxHeightValue());
+  }
 
+  public boolean hasMaxWidth() {
+    return BeeUtils.isPositive(getMaxWidthValue());
+  }
+
+  public boolean hasMinHeight() {
+    return BeeUtils.isPositive(getMinHeightValue());
+  }
+
+  public boolean hasMinWidth() {
+    return BeeUtils.isPositive(getMinWidthValue());
+  }
+  
   public boolean hasWidth() {
     return BeeUtils.isPositive(getWidthValue());
   }
@@ -287,6 +327,15 @@ public class Dimensions implements HasInfo, HasDimensions {
     removeFrom(obj.getElement());
   }
 
+  public void setHeight(Double value, CssUnit unit) {
+    setHeightValue(value);
+    setHeightUnit(unit);
+  }
+  
+  public void setHeight(int value) {
+    setHeight((double) value, DEFAULT_UNIT);
+  }
+  
   @Override
   public void setHeightUnit(CssUnit heightUnit) {
     this.heightUnit = heightUnit;
@@ -297,6 +346,15 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.heightValue = heightValue;
   }
 
+  public void setMaxHeight(Double value, CssUnit unit) {
+    setMaxHeightValue(value);
+    setMaxHeightUnit(unit);
+  }
+  
+  public void setMaxHeight(int value) {
+    setMaxHeight((double) value, DEFAULT_UNIT);
+  }
+  
   public void setMaxHeightUnit(CssUnit maxHeightUnit) {
     this.maxHeightUnit = maxHeightUnit;
   }
@@ -305,12 +363,30 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.maxHeightValue = maxHeightValue;
   }
 
+  public void setMaxWidth(Double value, CssUnit unit) {
+    setMaxWidthValue(value);
+    setMaxWidthUnit(unit);
+  }
+
+  public void setMaxWidth(int value) {
+    setMaxWidth((double) value, DEFAULT_UNIT);
+  }
+
   public void setMaxWidthUnit(CssUnit maxWidthUnit) {
     this.maxWidthUnit = maxWidthUnit;
   }
-
+  
   public void setMaxWidthValue(Double maxWidthValue) {
     this.maxWidthValue = maxWidthValue;
+  }
+  
+  public void setMinHeight(Double value, CssUnit unit) {
+    setMinHeightValue(value);
+    setMinHeightUnit(unit);
+  }
+
+  public void setMinHeight(int value) {
+    setMinHeight((double) value, DEFAULT_UNIT);
   }
 
   public void setMinHeightUnit(CssUnit minHeightUnit) {
@@ -321,14 +397,32 @@ public class Dimensions implements HasInfo, HasDimensions {
     this.minHeightValue = minHeightValue;
   }
 
+  public void setMinWidth(Double value, CssUnit unit) {
+    setMinWidthValue(value);
+    setMinWidthUnit(unit);
+  }
+  
+  public void setMinWidth(int value) {
+    setMinWidth((double) value, DEFAULT_UNIT);
+  }
+
   public void setMinWidthUnit(CssUnit minWidthUnit) {
     this.minWidthUnit = minWidthUnit;
   }
-
+  
   public void setMinWidthValue(Double minWidthValue) {
     this.minWidthValue = minWidthValue;
   }
-
+  
+  public void setWidth(Double value, CssUnit unit) {
+    setWidthValue(value);
+    setWidthUnit(unit);
+  }
+  
+  public void setWidth(int value) {
+    setWidth((double) value, DEFAULT_UNIT);
+  }
+  
   @Override
   public void setWidthUnit(CssUnit widthUnit) {
     this.widthUnit = widthUnit;
