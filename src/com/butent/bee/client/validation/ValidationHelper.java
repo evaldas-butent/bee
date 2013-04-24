@@ -52,7 +52,7 @@ public class ValidationHelper {
     if (BeeUtils.isEmpty(messages)) {
       notificationListener.notifySevere(caption);
     
-    } else if (BeeUtils.isEmpty(caption)) {
+    } else if (BeeUtils.isEmpty(caption) || messages.contains(caption)) {
       notificationListener.notifySevere(ArrayUtils.toArray(messages));
 
     } else {

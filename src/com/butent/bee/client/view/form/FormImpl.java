@@ -1362,9 +1362,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (!editableWidget.validate(ValidationOrigin.FORM)) {
-        Widget widget = getWidgetById(editableWidget.getWidgetId());
-        if (widget != null && focusOnError) {
-          DomUtils.setFocus(widget, true);
+        if (focusOnError && editableWidget.getEditor() != null) {
+          editableWidget.getEditor().setFocus(true);
         }
 
         ok = false;

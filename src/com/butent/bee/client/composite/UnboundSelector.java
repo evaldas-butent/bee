@@ -1,10 +1,12 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
@@ -16,6 +18,7 @@ import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -105,6 +108,28 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
   }
 
   @Override
+  public List<String> validate(boolean checkForNull) {
+    return validate(getNormalizedValue(), checkForNull);
+  }
+
+  @Override
+  public List<String> validate(String normalizedValue, boolean checkForNull) {
+    List<String> messages = Lists.newArrayList();
+    messages.addAll(super.validate(normalizedValue, checkForNull));
+    if (!messages.isEmpty()) {
+      return messages;
+    }
+
+    if (BeeUtils.isEmpty(normalizedValue) && checkForNull && !isNullable()) {
+      if (!BeeUtils.isEmpty(getRelationLabel())) {
+        messages.add(getRelationLabel());
+      }
+      messages.add(Global.CONSTANTS.valueRequired());
+    }
+    return messages;
+  }
+
+  @Override
   protected void onLoad() {
     super.onLoad();
 
@@ -143,7 +168,7 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
       }
     });
   }
-
+  
   private String getRenderedValue() {
     return renderedValue;
   }
