@@ -16,6 +16,7 @@ import com.butent.bee.client.widget.BeeLabel;
  */
 
 public class LineDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
 
     Options options = Options.create();

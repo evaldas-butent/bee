@@ -44,6 +44,7 @@ public class LeftTabPanel extends Composite implements IdentifiableWidget {
     main.add(right);
 
     left.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent event) {
         String name = left.getValue(left.getSelectedIndex());
         setWidget(right, cogs.get(name));

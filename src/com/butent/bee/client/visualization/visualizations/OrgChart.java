@@ -93,6 +93,7 @@ public class OrgChart extends Visualization<OrgChart.Options> implements Selecta
     Handler.addHandler(this, "ready", handler);
   }
 
+  @Override
   public final void addSelectHandler(SelectHandler handler) {
     Selection.addSelectHandler(this, handler);
   }
@@ -109,10 +110,12 @@ public class OrgChart extends Visualization<OrgChart.Options> implements Selecta
     return this.getCollapsedNodes(getJso());
   }
 
+  @Override
   public final JsArray<Selection> getSelections() {
     return Selection.getSelections(this);
   }
 
+  @Override
   public final void setSelections(JsArray<Selection> sel) {
     Selection.setSelections(this, sel);
   }

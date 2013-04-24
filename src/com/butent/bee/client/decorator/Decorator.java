@@ -74,6 +74,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       this.appearanceDeep = appearanceDeep;
     }
 
+    @Override
     public List<ExtendedProperty> getExtendedInfo() {
       List<ExtendedProperty> result = Lists.newArrayList();
 
@@ -251,6 +252,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         eventTarget, appearanceTarget, appearanceDeep);
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> result = Lists.newArrayList();
     PropertyUtils.addProperties(result, false,
@@ -268,10 +270,12 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     return result;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }

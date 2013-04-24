@@ -250,6 +250,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     return editing;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -428,6 +429,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     if (enabled) {

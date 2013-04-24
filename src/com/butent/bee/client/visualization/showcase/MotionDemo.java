@@ -72,6 +72,7 @@ public class MotionDemo implements LeftTabPanel.WidgetProvider {
     widget = new MotionChart(data, options);
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

@@ -41,6 +41,7 @@ public class IntensityDemo implements LeftTabPanel.WidgetProvider {
     widget = new IntensityMap(data, options);
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

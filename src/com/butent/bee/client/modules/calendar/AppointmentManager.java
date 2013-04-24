@@ -57,6 +57,7 @@ public class AppointmentManager {
     }
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         if (Queries.checkResponse(SVC_GET_CALENDAR_APPOINTMENTS, VIEW_APPOINTMENTS, response,
             BeeRowSet.class, callback)) {

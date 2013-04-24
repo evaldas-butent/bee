@@ -50,6 +50,7 @@ public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> implements Dat
     return getRow().getId();
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }

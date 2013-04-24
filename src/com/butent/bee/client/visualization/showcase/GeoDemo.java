@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class GeoDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
     final Options options = Options.create();
     options.setHeight(300);

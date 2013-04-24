@@ -92,6 +92,7 @@ public class CanvasDemo {
 
   void initHandlers() {
     canvas.addMouseMoveHandler(new MouseMoveHandler() {
+      @Override
       public void onMouseMove(MouseMoveEvent event) {
         mouseX = event.getRelativeX(canvas.getElement());
         mouseY = event.getRelativeY(canvas.getElement());
@@ -99,6 +100,7 @@ public class CanvasDemo {
     });
 
     canvas.addMouseOutHandler(new MouseOutHandler() {
+      @Override
       public void onMouseOut(MouseOutEvent event) {
         mouseX = -200;
         mouseY = -200;
@@ -106,6 +108,7 @@ public class CanvasDemo {
     });
 
     canvas.addTouchMoveHandler(new TouchMoveHandler() {
+      @Override
       public void onTouchMove(TouchMoveEvent event) {
         event.preventDefault();
         if (event.getTouches().length() > 0) {
@@ -118,6 +121,7 @@ public class CanvasDemo {
     });
 
     canvas.addTouchEndHandler(new TouchEndHandler() {
+      @Override
       public void onTouchEnd(TouchEndEvent event) {
         event.preventDefault();
         mouseX = -200;
@@ -126,6 +130,7 @@ public class CanvasDemo {
     });
 
     canvas.addGestureStartHandler(new GestureStartHandler() {
+      @Override
       public void onGestureStart(GestureStartEvent event) {
         event.preventDefault();
       }

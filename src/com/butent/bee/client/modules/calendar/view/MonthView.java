@@ -48,6 +48,7 @@ public class MonthView extends CalendarView {
 
   public static final Comparator<Appointment> APPOINTMENT_COMPARATOR =
       new Comparator<Appointment>() {
+        @Override
         public int compare(Appointment a1, Appointment a2) {
           int compare = Boolean.valueOf(a2.isMultiDay()).compareTo(a1.isMultiDay());
           if (compare == BeeConst.COMPARE_EQUAL) {

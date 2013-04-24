@@ -42,27 +42,33 @@ public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWid
     setWidget(w);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "simple-inline";
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }
 
+  @Override
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
       boolean hasElement = widget != null;
       Widget returned = null;
 
+      @Override
       public boolean hasNext() {
         return hasElement;
       }
 
+      @Override
       public Widget next() {
         if (!hasElement || (widget == null)) {
           throw new NoSuchElementException();
@@ -71,6 +77,7 @@ public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWid
         return (returned = widget);
       }
 
+      @Override
       public void remove() {
         if (returned != null) {
           SimpleInline.this.remove(returned);
@@ -94,14 +101,17 @@ public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWid
     return true;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setWidget(IsWidget w) {
     setWidget(asWidgetOrNull(w));
   }
 
+  @Override
   public void setWidget(Widget w) {
     if (w == widget) {
       return;

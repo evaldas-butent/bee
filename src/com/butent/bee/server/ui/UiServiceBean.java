@@ -480,12 +480,10 @@ public class UiServiceBean {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
 
-    String options = reqInfo.getParameter(Service.VAR_OPTIONS);
-
     Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
 
     SimpleRowSet res = qs.getHistogram(viewName, filter, NameUtils.toList(columns),
-        NameUtils.toList(order), options);
+        NameUtils.toList(order));
     return ResponseObject.response(res);
   }
 

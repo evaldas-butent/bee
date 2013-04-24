@@ -42,10 +42,12 @@ public class DefinitionList extends Widget implements IdentifiableWidget {
     items.clear();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "d-list";
   }
@@ -94,6 +96,7 @@ public class DefinitionList extends Widget implements IdentifiableWidget {
     items.remove(index);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

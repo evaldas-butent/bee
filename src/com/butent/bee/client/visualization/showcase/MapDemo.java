@@ -42,6 +42,7 @@ public class MapDemo implements LeftTabPanel.WidgetProvider {
     widget = new MapVisualization(data, options, "400px", "300px");
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

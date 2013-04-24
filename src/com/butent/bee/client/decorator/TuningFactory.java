@@ -122,6 +122,7 @@ public class TuningFactory {
 
   public static void getTools() {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DECORATORS, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {
           parseXml((String) response.getResponse());

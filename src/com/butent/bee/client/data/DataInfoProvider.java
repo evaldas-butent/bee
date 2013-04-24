@@ -34,11 +34,13 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     super();
   }
 
+  @Override
   public ImmutableList<String> getColumnNames(String viewName) {
     DataInfo dataInfo = getDataInfo(viewName, true);
     return (dataInfo == null) ? null : ImmutableList.copyOf(dataInfo.getColumnNames(false));
   }
 
+  @Override
   public DataInfo getDataInfo(String viewName, boolean warn) {
     DataInfo dataInfo = views.get(BeeUtils.normalize(viewName));
     if (dataInfo == null && warn) {
@@ -53,6 +55,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
 
   public void load(final Callback<Integer> callback) {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DATA_INFO, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
         String[] info = Codec.beeDeserializeCollection((String) response.getResponse());
@@ -73,6 +76,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     });
   }
 
+  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     DataInfo dataInfo = getDataInfo(event.getViewName(), false);
     if (dataInfo != null) {
@@ -80,6 +84,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     }
   }
 
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
     DataInfo dataInfo = getDataInfo(event.getViewName(), false);
     if (dataInfo != null) {
@@ -87,6 +92,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     }
   }
 
+  @Override
   public void onRowInsert(RowInsertEvent event) {
     DataInfo dataInfo = getDataInfo(event.getViewName(), false);
     if (dataInfo != null) {

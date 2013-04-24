@@ -31,6 +31,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
     return ColType.ID;
   }
   
+  @Override
   public NumberFormat getNumberFormat() {
     if (getCell() instanceof HasNumberFormat) {
       return ((HasNumberFormat) getCell()).getNumberFormat();
@@ -59,6 +60,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
     return ValueType.LONG;
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     if (getCell() instanceof HasNumberFormat) {
       ((HasNumberFormat) getCell()).setNumberFormat(format);

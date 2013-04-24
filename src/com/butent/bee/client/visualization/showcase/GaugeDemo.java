@@ -38,6 +38,7 @@ public class GaugeDemo implements LeftTabPanel.WidgetProvider {
     widget = new Gauge(data, options);
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

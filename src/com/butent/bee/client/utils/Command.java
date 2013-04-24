@@ -28,12 +28,11 @@ public abstract class Command implements Scheduler.ScheduledCommand, HasService 
     this.parameters = parameters;
   }
 
-  public abstract void execute();
-
   public String getParameters() {
     return parameters;
   }
 
+  @Override
   public String getService() {
     return service;
   }
@@ -42,6 +41,7 @@ public abstract class Command implements Scheduler.ScheduledCommand, HasService 
     this.parameters = parameters;
   }
 
+  @Override
   public void setService(String service) {
     this.service = service;
   }

@@ -101,6 +101,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private DataInfo() {
   }
 
+  @Override
   public int compareTo(DataInfo o) {
     if (o == null) {
       return BeeConst.COMPARE_MORE;
@@ -137,6 +138,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 15);
@@ -384,6 +386,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return editForm;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> result = Lists.newArrayList();
     PropertyUtils.addProperties(result, false,
@@ -548,6 +551,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return result;
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }
@@ -582,6 +586,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return Order.parse(input, getColumnNames(true));
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(
         new Object[] {getViewName(), getTableName(), getIdColumn(), getVersionColumn(),

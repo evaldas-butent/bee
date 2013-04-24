@@ -61,6 +61,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public void addItem(String item) {
     Assert.notEmpty(item);
     
@@ -73,6 +74,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     list.add(new Item(index, dataColumns.get(index).getType()));
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     for (String item : items) {
@@ -80,10 +82,12 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     }
   }
 
+  @Override
   public int getItemCount() {
     return list.size();
   }
 
+  @Override
   public List<String> getItems() {
     List<String> result = Lists.newArrayList();
     for (Item item : list) {
@@ -92,10 +96,12 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     return result;
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -119,6 +125,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     return sb.toString();
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (!list.isEmpty()) {
       list.clear();

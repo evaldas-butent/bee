@@ -38,10 +38,12 @@ public class Meter extends Widget implements IdentifiableWidget {
     return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_HIGH);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "meter";
   }
@@ -70,6 +72,7 @@ public class Meter extends Widget implements IdentifiableWidget {
     getElement().setPropertyDouble(DomUtils.ATTRIBUTE_HIGH, high);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

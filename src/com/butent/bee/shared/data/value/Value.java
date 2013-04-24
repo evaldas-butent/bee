@@ -130,8 +130,6 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
     return parseValue(type, data, false);
   }
 
-  public abstract int compareTo(Value o);
-
   @Override
   public void deserialize(String s) {
     Assert.unsupported();

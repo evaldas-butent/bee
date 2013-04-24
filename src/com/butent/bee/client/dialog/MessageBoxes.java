@@ -148,6 +148,7 @@ public class MessageBoxes {
     final Holder<Integer> selectedIndex = Holder.absent();
 
     group.addSelectionHandler(new SelectionHandler<Integer>() {
+      @Override
       public void onSelection(SelectionEvent<Integer> event) {
         selectedIndex.set(event.getSelectedItem());
         dialog.close();
@@ -157,6 +158,7 @@ public class MessageBoxes {
     dialog.setHideOnEscape(true);
 
     dialog.addCloseHandler(new CloseEvent.Handler() {
+      @Override
       public void onClose(CloseEvent event) {
         if (timer != null) {
           timer.cancel();
@@ -366,6 +368,7 @@ public class MessageBoxes {
     popup.setHideOnEscape(true);
 
     popup.addCloseHandler(new CloseEvent.Handler() {
+      @Override
       public void onClose(CloseEvent event) {
         if (timer != null) {
           timer.cancel();
@@ -434,6 +437,7 @@ public class MessageBoxes {
     final Holder<Integer> selectedIndex = Holder.absent();
 
     cluster.addSelectionHandler(new SelectionHandler<Integer>() {
+      @Override
       public void onSelection(SelectionEvent<Integer> event) {
         selectedIndex.set(event.getSelectedItem());
         popup.close();
@@ -443,6 +447,7 @@ public class MessageBoxes {
     popup.setHideOnEscape(true);
 
     popup.addCloseHandler(new CloseEvent.Handler() {
+      @Override
       public void onClose(CloseEvent event) {
         if (selectedIndex.isNotNull()) {
           callback.onSuccess(selectedIndex.get());

@@ -22,6 +22,7 @@ public class NumberCell<C extends Number> extends AbstractCell<C> implements Has
     this.format = format;
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return format;
   }
@@ -33,6 +34,7 @@ public class NumberCell<C extends Number> extends AbstractCell<C> implements Has
     }
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     this.format = format;
   }

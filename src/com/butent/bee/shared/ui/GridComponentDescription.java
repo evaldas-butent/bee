@@ -67,6 +67,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   private GridComponentDescription() {
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -107,6 +108,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     return height;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     if (getStyle() != null) {
@@ -141,6 +143,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     return style;
   }
 
+  @Override
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];

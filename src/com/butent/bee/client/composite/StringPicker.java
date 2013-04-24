@@ -394,6 +394,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
 
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      @Override
       public void execute() {
         refocus();
         setSelectionPending(false);

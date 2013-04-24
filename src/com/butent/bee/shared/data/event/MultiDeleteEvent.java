@@ -54,6 +54,7 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> implements
     return rows.size();
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }

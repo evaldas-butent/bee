@@ -51,6 +51,7 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
     }
   }
 
+  @Override
   public int compare(RowType row1, RowType row2) {
     if (row1 == row2) {
       return BeeConst.COMPARE_EQUAL;

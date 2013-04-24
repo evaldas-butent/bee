@@ -43,6 +43,7 @@ public class Showcase {
     injectPom();
 
     VisualizationUtils.loadVisualizationApi(new Runnable() {
+      @Override
       public void run() {
         logger.info(TimeUtils.elapsedSeconds(start), "api loaded");
         LeftTabPanel panel = new LeftTabPanel();

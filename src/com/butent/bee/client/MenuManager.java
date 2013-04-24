@@ -151,6 +151,7 @@ public class MenuManager implements Module {
     BeeKeeper.getScreen().updateActivePanel(tree);
   }
 
+  @Override
   public void start() {
     clear();
   }

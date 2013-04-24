@@ -15,6 +15,7 @@ public abstract class StringCallback implements Validator<String> {
     this.required = required;
   }
 
+  @Override
   public String getMessage(String value) {
     if (validate(value)) {
       return null;
@@ -25,6 +26,7 @@ public abstract class StringCallback implements Validator<String> {
     }
   }
 
+  @Override
   public boolean isRequired() {
     return required;
   }
@@ -42,10 +44,12 @@ public abstract class StringCallback implements Validator<String> {
     }
   }
 
+  @Override
   public void setRequired(boolean required) {
     this.required = required;
   }
 
+  @Override
   public boolean validate(String value) {
     if (isRequired()) {
       return !BeeUtils.isEmpty(value);

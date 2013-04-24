@@ -26,10 +26,12 @@ public class NumberRenderer extends AbstractRenderer<Number> implements HasNumbe
     this.format = BeeUtils.isEmpty(pattern) ? null : Format.getNumberFormat(pattern);
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return format;
   }
 
+  @Override
   public String render(Number object) {
     if (object == null) {
       return BeeConst.STRING_EMPTY;
@@ -40,6 +42,7 @@ public class NumberRenderer extends AbstractRenderer<Number> implements HasNumbe
     }
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     this.format = format;
   }

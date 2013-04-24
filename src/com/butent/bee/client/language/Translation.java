@@ -34,6 +34,7 @@ public class Translation {
       detectLanguage(text, callback);
     } else {
       LanguageUtils.loadTranslation(new Runnable() {
+        @Override
         public void run() {
           detectLanguage(text, callback);
         }
@@ -106,6 +107,7 @@ public class Translation {
       translate(text, codeFrom, codeTo, key, callback);
     } else {
       LanguageUtils.loadTranslation(new Runnable() {
+        @Override
         public void run() {
           translate(text, codeFrom, codeTo, key, callback);
         }

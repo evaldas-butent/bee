@@ -126,6 +126,7 @@ public class AjaxLoader {
     options.setCallback(onLoad);
 
     Runnable apiLoad = new Runnable() {
+      @Override
       public void run() {
         nativeLoadApi(api, version, options);
       }

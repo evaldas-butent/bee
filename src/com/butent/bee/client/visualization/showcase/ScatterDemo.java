@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements demonstration of a scatter chart visualization.
  */
 public class ScatterDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
 
     Options options = Options.create();

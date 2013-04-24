@@ -1,7 +1,6 @@
 package com.butent.bee.server.i18n;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 /**
@@ -15,8 +14,6 @@ public abstract class GwtLocalizable implements InvocationHandler {
   GwtLocalizable(Properties properties) {
     this.properties = properties;
   }
-
-  public abstract Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
 
   protected String getProperty(String key) {
     return properties.getProperty(key);

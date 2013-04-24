@@ -81,6 +81,7 @@ public class InputBoxes {
       this.callback = callback;
     }
 
+    @Override
     public void onKeyDown(KeyDownEvent event) {
       switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_ESCAPE:
@@ -194,12 +195,14 @@ public class InputBoxes {
     final Holder<Widget> errorDisplay = new Holder<Widget>(errorLabel);
 
     final Supplier<String> errorSupplier = new Supplier<String>() {
+      @Override
       public String get() {
         return callback.getMessage(EditorAssistant.getValue(input.get()));
       }
     };
 
     box.addKeyDownHandler(new KeyDownHandler() {
+      @Override
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
           event.preventDefault();
@@ -234,6 +237,7 @@ public class InputBoxes {
         errorSupplier);
 
     dialog.addCloseHandler(new CloseEvent.Handler() {
+      @Override
       public void onClose(CloseEvent event) {
         if (timer != null) {
           timer.cancel();
@@ -511,6 +515,7 @@ public class InputBoxes {
       confirm.addStyleName(STYLE_INPUT_CONFIRM);
 
       confirm.addClickHandler(new ClickHandler() {
+        @Override
         public void onClick(ClickEvent event) {
           String message = errorSupplier.get();
           if (BeeUtils.isEmpty(message)) {
@@ -531,6 +536,7 @@ public class InputBoxes {
       cancel.addStyleName(STYLE_INPUT_CANCEL);
 
       cancel.addClickHandler(new ClickHandler() {
+        @Override
         public void onClick(ClickEvent event) {
           state.set(State.CANCELED);
           dialog.close();

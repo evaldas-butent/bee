@@ -11,6 +11,7 @@ import com.butent.bee.client.tree.TreeItem;
 
 public class MenuSelectionHandler implements SelectionHandler<TreeItem> {
 
+  @Override
   public void onSelection(SelectionEvent<TreeItem> event) {
     Object obj = event.getSelectedItem().getUserObject();
     if (obj instanceof MenuCommand) {

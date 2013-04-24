@@ -467,6 +467,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return enabledActions;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
@@ -706,6 +707,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return versionName;
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }

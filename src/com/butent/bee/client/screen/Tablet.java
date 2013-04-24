@@ -63,6 +63,7 @@ public class Tablet extends Mobile {
     StyleUtils.setHorizontalPadding(toggle, 2);
 
     toggle.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         ClientLogManager.setPanelVisible(toggle.isDown());
         toggle.invert();

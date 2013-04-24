@@ -55,14 +55,17 @@ public abstract class CoreChart extends Visualization<Options> implements Select
     Handler.addHandler(this, "ready", handler);
   }
 
+  @Override
   public final void addSelectHandler(SelectHandler handler) {
     Selection.addSelectHandler(this, handler);
   }
 
+  @Override
   public final JsArray<Selection> getSelections() {
     return Selection.getSelections(this);
   }
 
+  @Override
   public final void setSelections(JsArray<Selection> sel) {
     Selection.setSelections(this, sel);
   }

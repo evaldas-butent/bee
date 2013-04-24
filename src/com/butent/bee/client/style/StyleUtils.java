@@ -206,26 +206,31 @@ public class StyleUtils {
 
   public enum WhiteSpace implements HasCssName {
     NORMAL {
+      @Override
       public String getCssName() {
         return WHITE_SPACE_NORMAL;
       }
     },
     NOWRAP {
+      @Override
       public String getCssName() {
         return WHITE_SPACE_NOWRAP;
       }
     },
     PRE {
+      @Override
       public String getCssName() {
         return WHITE_SPACE_PRE;
       }
     },
     PRE_LINE {
+      @Override
       public String getCssName() {
         return WHITE_SPACE_PRE_LINE;
       }
     },
     PRE_WRAP {
+      @Override
       public String getCssName() {
         return WHITE_SPACE_PRE_WRAP;
       }

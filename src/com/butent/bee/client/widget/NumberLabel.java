@@ -21,10 +21,12 @@ public class NumberLabel<T extends Number> extends ValueLabel<T> implements HasN
     init();
   }
 
+  @Override
   public NumberFormat getNumberFormat() {
     return ((NumberRenderer) getRenderer()).getNumberFormat();
   }
 
+  @Override
   public void setNumberFormat(NumberFormat format) {
     ((NumberRenderer) getRenderer()).setNumberFormat(format);
   }

@@ -11,6 +11,7 @@ import com.butent.bee.client.visualization.visualizations.ImageBarChart.Options;
 
 public class ImageBarDemo implements LeftTabPanel.WidgetProvider {
 
+  @Override
   public Widget getWidget() {
     Options options = Options.create();
     options.setValueLabelsInterval(300);

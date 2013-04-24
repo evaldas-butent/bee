@@ -48,10 +48,12 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     return dataTable;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "viz";
   }
@@ -72,6 +74,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     this.dataTable = dataTable;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

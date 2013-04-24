@@ -53,6 +53,7 @@ public class Calculation implements BeeSerializable, HasInfo {
   protected Calculation() {
   }
 
+  @Override
   public void deserialize(String s) {
     deserializeMembers(Codec.beeDeserializeCollection(s));
   }
@@ -65,6 +66,7 @@ public class Calculation implements BeeSerializable, HasInfo {
     return function;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
 
@@ -86,6 +88,7 @@ public class Calculation implements BeeSerializable, HasInfo {
     return !BeeUtils.isEmpty(getExpression()) || !BeeUtils.isEmpty(getFunction());
   }
 
+  @Override
   public String serialize() {
     String expr = BeeUtils.isEmpty(getExpression()) ? null : Codec.encodeBase64(getExpression());
     String func = BeeUtils.isEmpty(getFunction()) ? null : Codec.encodeBase64(getFunction());

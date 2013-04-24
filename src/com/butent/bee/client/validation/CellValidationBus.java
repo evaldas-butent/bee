@@ -16,6 +16,7 @@ public class CellValidationBus implements HasCellValidationHandlers {
     super();
   }
 
+  @Override
   public HandlerRegistration addCellValidationHandler(final CellValidateEvent.Handler handler) {
     Assert.notNull(handler);
     if (handlers == null) {
@@ -27,12 +28,14 @@ public class CellValidationBus implements HasCellValidationHandlers {
     }
 
     return new HandlerRegistration() {
+      @Override
       public void removeHandler() {
         handlers.remove(handler);
       }
     };
   }
 
+  @Override
   public Boolean fireCellValidation(CellValidateEvent event) {
     Assert.notNull(event);
     Boolean ok = true;

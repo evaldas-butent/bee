@@ -21,14 +21,17 @@ public class BeeRadioButton extends RadioButton implements IdentifiableWidget {
     init();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "rb";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

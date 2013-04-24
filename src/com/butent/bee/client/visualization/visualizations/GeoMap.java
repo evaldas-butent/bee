@@ -121,6 +121,7 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
     Handler.addHandler(this, "regionClick", handler);
   }
 
+  @Override
   public final void addSelectHandler(SelectHandler handler) {
     Selection.addSelectHandler(this, handler);
   }
@@ -129,10 +130,12 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
     Handler.addHandler(this, "zoomOut", handler);
   }
 
+  @Override
   public final JsArray<Selection> getSelections() {
     return Selection.getSelections(this);
   }
 
+  @Override
   public final void setSelections(JsArray<Selection> sel) {
     Selection.setSelections(this, sel);
   }

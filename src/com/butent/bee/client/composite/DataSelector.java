@@ -341,6 +341,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       popup.setKeyboardPartner(partner);
 
       popup.addCloseHandler(new CloseEvent.Handler() {
+        @Override
         public void onClose(CloseEvent event) {
           if (event.isUserCaused()) {
             getMenu().clearItems();

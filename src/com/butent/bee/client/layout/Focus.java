@@ -16,6 +16,7 @@ public class Focus extends FocusPanel implements IdentifiableWidget {
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -25,6 +26,7 @@ public class Focus extends FocusPanel implements IdentifiableWidget {
     return "focus";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

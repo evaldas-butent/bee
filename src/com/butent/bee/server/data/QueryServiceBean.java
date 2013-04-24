@@ -287,7 +287,7 @@ public class QueryServiceBean {
   }
 
   public SimpleRowSet getHistogram(String viewName, Filter filter, List<String> columns,
-      List<String> order, String options) {
+      List<String> order) {
 
     BeeView view = sys.getView(viewName);
     SqlSelect viewQuery = view.getQuery(filter, null, columns, sys.getViewFinder());

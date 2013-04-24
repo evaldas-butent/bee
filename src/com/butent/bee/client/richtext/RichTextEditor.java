@@ -273,6 +273,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
     if (!isEmbedded()) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+        @Override
         public void execute() {
           StyleUtils.setSize(getArea(), getArea().getParent().getOffsetWidth(),
               getArea().getParent().getOffsetHeight());

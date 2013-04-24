@@ -51,14 +51,17 @@ public class Html extends HTML implements IdentifiableWidget, HasCommand {
     init();
   }
 
+  @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "html";
   }
@@ -71,6 +74,7 @@ public class Html extends HTML implements IdentifiableWidget, HasCommand {
     super.onBrowserEvent(event);
   }
 
+  @Override
   public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
     if (command != null) {
@@ -78,6 +82,7 @@ public class Html extends HTML implements IdentifiableWidget, HasCommand {
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

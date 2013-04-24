@@ -11,6 +11,7 @@ import com.butent.bee.client.visualization.visualizations.ImagePieChart.Options;
 
 public class ImagePieDemo implements LeftTabPanel.WidgetProvider {
 
+  @Override
   public Widget getWidget() {
     Options options = Options.create();
     options.setLabels("value");

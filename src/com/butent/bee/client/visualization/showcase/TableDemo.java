@@ -22,6 +22,7 @@ public class TableDemo implements LeftTabPanel.WidgetProvider {
     Query query = Query.create(dataUrl);
 
     query.send(new Callback() {
+      @Override
       public void onResponse(QueryResponse response) {
         if (response.isError()) {
           Window.alert("Error in query: " + response.getMessage() + ' '
@@ -41,6 +42,7 @@ public class TableDemo implements LeftTabPanel.WidgetProvider {
     });
   }
 
+  @Override
   public Widget getWidget() {
     return panel;
   }

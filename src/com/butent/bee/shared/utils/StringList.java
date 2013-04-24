@@ -75,6 +75,7 @@ public class StringList implements List<String> {
     return (predicate == null) ? true : predicate.apply(element);
   }
 
+  @Override
   public void add(int index, String element) {
     if (!accepts(element)) {
       return;
@@ -86,6 +87,7 @@ public class StringList implements List<String> {
     list.add(index, trim(element));
   }
 
+  @Override
   public boolean add(String e) {
     if (!accepts(e)) {
       return false;
@@ -97,6 +99,7 @@ public class StringList implements List<String> {
     return list.add(trim(e));
   }
 
+  @Override
   public boolean addAll(Collection<? extends String> c) {
     boolean changed = false;
     for (String s : c) {
@@ -105,6 +108,7 @@ public class StringList implements List<String> {
     return changed;
   }
 
+  @Override
   public boolean addAll(int index, Collection<? extends String> c) {
     int z = size();
     for (String s : c) {
@@ -113,14 +117,17 @@ public class StringList implements List<String> {
     return size() > z;
   }
 
+  @Override
   public void clear() {
     list.clear();
   }
 
+  @Override
   public boolean contains(Object o) {
     return indexOf(o) >= 0;
   }
 
+  @Override
   public boolean containsAll(Collection<?> c) {
     for (Object o : c) {
       if (!contains(o)) {
@@ -130,10 +137,12 @@ public class StringList implements List<String> {
     return true;
   }
 
+  @Override
   public String get(int index) {
     return list.get(index);
   }
 
+  @Override
   public int indexOf(Object o) {
     int index = list.indexOf(o);
     if (index >= 0 || !(o instanceof String) || isEmpty()) {
@@ -160,6 +169,7 @@ public class StringList implements List<String> {
     return index;
   }
 
+  @Override
   public boolean isEmpty() {
     return list.isEmpty();
   }
@@ -172,10 +182,12 @@ public class StringList implements List<String> {
     return trimRight;
   }
 
+  @Override
   public Iterator<String> iterator() {
     return list.iterator();
   }
 
+  @Override
   public int lastIndexOf(Object o) {
     int index = list.lastIndexOf(o);
     if (index >= 0 || !(o instanceof String) || isEmpty()) {
@@ -202,18 +214,22 @@ public class StringList implements List<String> {
     return index;
   }
 
+  @Override
   public ListIterator<String> listIterator() {
     return list.listIterator();
   }
 
+  @Override
   public ListIterator<String> listIterator(int index) {
     return list.listIterator(index);
   }
 
+  @Override
   public String remove(int index) {
     return list.remove(index);
   }
 
+  @Override
   public boolean remove(Object o) {
     int index = indexOf(o);
     if (index >= 0) {
@@ -224,6 +240,7 @@ public class StringList implements List<String> {
     }
   }
 
+  @Override
   public boolean removeAll(Collection<?> c) {
     boolean changed = false;
     for (Object o : c) {
@@ -232,6 +249,7 @@ public class StringList implements List<String> {
     return changed;
   }
 
+  @Override
   public boolean retainAll(Collection<?> c) {
     boolean modified = false;
     Iterator<String> it = iterator();
@@ -244,6 +262,7 @@ public class StringList implements List<String> {
     return modified;
   }
 
+  @Override
   public String set(int index, String element) {
     if (!accepts(element)) {
       return null;
@@ -270,18 +289,22 @@ public class StringList implements List<String> {
     return this;
   }
 
+  @Override
   public int size() {
     return list.size();
   }
 
+  @Override
   public List<String> subList(int fromIndex, int toIndex) {
     return list.subList(fromIndex, toIndex);
   }
 
+  @Override
   public Object[] toArray() {
     return list.toArray();
   }
 
+  @Override
   public <T> T[] toArray(T[] a) {
     return list.toArray(a);
   }

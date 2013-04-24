@@ -45,6 +45,7 @@ public class RowDeleteEvent extends Event<RowDeleteEvent.Handler> implements Dat
     return rowId;
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }

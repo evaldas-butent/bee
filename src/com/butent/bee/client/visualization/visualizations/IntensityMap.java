@@ -82,14 +82,17 @@ public class IntensityMap extends Visualization<IntensityMap.Options> implements
     super(data, options);
   }
 
+  @Override
   public final void addSelectHandler(SelectHandler handler) {
     Selection.addSelectHandler(this, handler);
   }
 
+  @Override
   public final JsArray<Selection> getSelections() {
     return Selection.getSelections(this);
   }
 
+  @Override
   public final void setSelections(JsArray<Selection> sel) {
     Selection.setSelections(this, sel);
   }

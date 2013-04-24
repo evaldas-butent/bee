@@ -74,6 +74,7 @@ public class SimpleCache<K, V> implements HasInfo {
     }
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties("Size", impl.getSize(),
         "Max Size", impl.getMaxSize(),

@@ -16,6 +16,7 @@ import com.butent.bee.client.widget.BeeLabel;
  */
 
 public class ColumnDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
     Options options = CoreChart.createOptions();
     options.setHeight(240);

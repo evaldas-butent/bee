@@ -12,6 +12,7 @@ import com.butent.bee.client.visualization.visualizations.ImageAreaChart.Options
 
 public class ImageAreaDemo implements LeftTabPanel.WidgetProvider {
 
+  @Override
   public Widget getWidget() {
     Options options = Options.create();
     options.setTitle("BŪTENT");

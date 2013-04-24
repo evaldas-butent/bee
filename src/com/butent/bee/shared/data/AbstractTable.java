@@ -44,6 +44,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       this.rowOrdering = rowOrdering;
     }
 
+    @Override
     public int compare(Integer idx1, Integer idx2) {
       return rowOrdering.compare(getRow(idx1), getRow(idx2));
     }
@@ -60,6 +61,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       this.ascending = ascending;
     }
 
+    @Override
     public int compare(RowType row1, RowType row2) {
       if (row1 == row2) {
         return BeeConst.COMPARE_EQUAL;

@@ -42,6 +42,7 @@ public class I18nUtils {
    */
 
   public static class LocaleComparator implements Comparator<Locale> {
+    @Override
     public int compare(Locale o1, Locale o2) {
       if (o1 == o2) {
         return BeeConst.COMPARE_EQUAL;

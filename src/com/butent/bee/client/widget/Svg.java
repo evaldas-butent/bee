@@ -17,14 +17,17 @@ public class Svg extends Widget implements IdentifiableWidget {
     init();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "svg";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

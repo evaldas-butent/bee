@@ -12,6 +12,7 @@ import com.butent.bee.client.visualization.visualizations.ImageLineChart.Options
 
 public class ImageLineDemo implements LeftTabPanel.WidgetProvider {
 
+  @Override
   public Widget getWidget() {
     Options options = Options.create();
     options.setLegend(LegendPosition.LEFT);

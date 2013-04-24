@@ -568,6 +568,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super.onLoad();
 
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      @Override
       public void execute() {
         CellGrid grid = getGridView().getGrid();
         if (!hasPaging()) {

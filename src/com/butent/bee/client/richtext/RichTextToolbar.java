@@ -85,6 +85,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
   private class EventHandler implements ClickHandler, ChangeHandler, KeyDownHandler, KeyUpHandler {
 
+    @Override
     public void onChange(ChangeEvent event) {
       Widget sender = (Widget) event.getSource();
 
@@ -103,6 +104,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       }
     }
 
+    @Override
     public void onClick(ClickEvent event) {
       Widget sender = (Widget) event.getSource();
 
@@ -182,6 +184,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       }
     }
 
+    @Override
     public void onKeyDown(KeyDownEvent event) {
       if (accept != null && UiHelper.isSave(event.getNativeEvent())) {
         event.preventDefault();
@@ -189,6 +192,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       }
     }
 
+    @Override
     public void onKeyUp(KeyUpEvent event) {
       Widget sender = (Widget) event.getSource();
       if (sender == area) {

@@ -3,7 +3,6 @@ package com.butent.bee.client.view.search;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -192,13 +191,20 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
         @Override
         public void onClick(ClickEvent event) {
           Element target = EventUtils.getEventTargetElement(event);
-
-          TableCellElement cellElement = DomUtils.getParentCell(target, true);
           TableRowElement rowElement = DomUtils.getParentRow(target, true);
 
           if (rowElement != null && display.getElement().isOrHasChild(rowElement)) {
-            onDisplayClick(rowElement, cellElement,
-                EventUtils.hasModifierKey(event.getNativeEvent()));
+            int rc = display.getRowCount();
+            if (EventUtils.hasModifierKey(event.getNativeEvent()) && rc > 1) {
+              for (int i = 0; i < rc; i++) {
+                invertSelection(i, display.getRow(i));
+              }
+              
+            } else {
+              invertSelection(rowElement.getRowIndex(), rowElement);
+            }
+
+            countSelection();
           }
         }
       });
@@ -363,14 +369,6 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     return Lists.newArrayList(getColumnId());
   }
 
-  protected Element getItemElement(TableRowElement rowElement, TableCellElement cellElement) {
-    return rowElement;
-  }
-
-  protected int getItemIndex(TableRowElement rowElement, TableCellElement cellElement) {
-    return rowElement.getRowIndex();
-  }
-
   protected List<Integer> getSelectedItems() {
     return selectedItems;
   }
@@ -381,6 +379,18 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   protected void incrementCounter() {
     setCounter(getCounterValue() + 1);
+  }
+
+  protected void invertSelection(int index, Element element) {
+    boolean wasSelected = isSelected(index);
+
+    if (wasSelected) {
+      element.removeClassName(getStyleSelected());
+      deselect(index);
+    } else {
+      element.addClassName(getStyleSelected());
+      select(index);
+    }
   }
 
   protected boolean isSelected(Integer item) {
@@ -399,25 +409,6 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   protected String messageOneValue(String value, String count) {
     return BeeUtils.joinWords(getColumnLabel() + ":", "visos reikšmės lygios", value,
         BeeUtils.bracket(count));
-  }
-
-  protected void onDisplayClick(TableRowElement rowElement, TableCellElement cellElement,
-      boolean hasModifiers) {
-
-    int row = getItemIndex(rowElement, cellElement);
-    boolean wasSelected = isSelected(row);
-
-    Element itemElement = getItemElement(rowElement, cellElement);
-
-    if (wasSelected) {
-      itemElement.removeClassName(getStyleSelected());
-      deselect(row);
-    } else {
-      itemElement.addClassName(getStyleSelected());
-      select(row);
-    }
-
-    countSelection();
   }
 
   protected void openDialog(Element target, Widget widget, final Callback<Boolean> callback) {

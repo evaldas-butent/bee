@@ -54,6 +54,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     }
   }
 
+  @Override
   public boolean getBoolean() {
     return BeeUtils.toBoolean(getValue());
   }
@@ -62,10 +63,12 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     return caption;
   }
 
+  @Override
   public double getDouble() {
     return BeeUtils.toDouble(getValue());
   }
 
+  @Override
   public int getInt() {
     return BeeUtils.toInt(getValue());
   }
@@ -74,10 +77,12 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     return items;
   }
 
+  @Override
   public long getLong() {
     return BeeUtils.toLong(getValue());
   }
 
+  @Override
   public String getString() {
     return getValue();
   }
@@ -106,22 +111,27 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     this.items = items;
   }
 
+  @Override
   public void setValue(Boolean value) {
     setValue(BeeUtils.toString(value));
   }
 
+  @Override
   public void setValue(double value) {
     setValue(BeeUtils.toString(value));
   }
 
+  @Override
   public void setValue(int value) {
     setValue(BeeUtils.toString(value));
   }
 
+  @Override
   public void setValue(long value) {
     setValue(BeeUtils.toString(value));
   }
 
+  @Override
   public void setValue(String value) {
     this.value = value;
   }

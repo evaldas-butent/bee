@@ -88,6 +88,7 @@ class ReportManager {
     rowSet.addRow(row);
 
     BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         BeeRowSet rs = null;
         if (response.hasResponse(BeeRowSet.class)) {
@@ -136,6 +137,7 @@ class ReportManager {
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         BeeRow row = null;
         if (response.hasResponse(BeeRow.class)) {

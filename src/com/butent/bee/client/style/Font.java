@@ -434,6 +434,7 @@ public class Font implements HasInfo {
     return family;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
 

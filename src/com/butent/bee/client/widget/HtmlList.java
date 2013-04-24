@@ -42,10 +42,12 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     this.ordered = ordered;
   }
 
+  @Override
   public void addItem(String item) {
     insertItem(item, INSERT_AT_END);
   }
 
+  @Override
   public void addItems(Collection<String> col) {
     for (String item : col) {
       addItem(item);
@@ -59,10 +61,12 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     items.clear();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "html-list";
   }
@@ -72,6 +76,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     return items.get(index);
   }
 
+  @Override
   public int getItemCount() {
     return items.size();
   }
@@ -81,6 +86,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     return getItem(index).getInnerHTML();
   }
 
+  @Override
   public List<String> getItems() {
     List<String> result = Lists.newArrayList();
     for (int i = 0; i < getItemCount(); i++) {
@@ -107,10 +113,12 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     }
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
@@ -126,6 +134,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     items.remove(index);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -137,6 +146,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
     getItem(index).setInnerHTML(html);
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (getItemCount() > 0) {
       clear();

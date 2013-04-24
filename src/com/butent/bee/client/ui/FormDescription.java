@@ -116,6 +116,7 @@ public class FormDescription implements HasViewName {
     return searchThreshold;
   }
 
+  @Override
   public String getViewName() {
     return getFormElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
   }

@@ -49,6 +49,7 @@ public class Resource implements BeeSerializable {
    * 
    * @param src the String to deserialize
    */
+  @Override
   public void deserialize(String src) {
     Assert.notNull(src);
 
@@ -106,6 +107,7 @@ public class Resource implements BeeSerializable {
    * 
    * @return a serializes String for deserialization.
    */
+  @Override
   public String serialize() {
     int[] arr = new int[] {
         BeeUtils.length(uri),

@@ -41,6 +41,7 @@ public class LanguageUtils {
   private static void loadTranslationApi(String version) {
     AjaxLoader.loadApi(TRANSLATION_API_NAME, version,
         new Runnable() {
+          @Override
           public void run() {
             translationLoaded = true;
             for (Runnable r : queue) {

@@ -60,22 +60,27 @@ public class Evaluator extends Calculation {
       this.rowValues = EvalHelper.createJso(dataColumns);
     }
 
+    @Override
     public JavaScriptObject getCellValues() {
       return cellValues;
     }
 
+    @Override
     public double getColIndex() {
       return colIndex;
     }
 
+    @Override
     public String getColName() {
       return colName;
     }
 
+    @Override
     public List<? extends IsColumn> getDataColumns() {
       return dataColumns;
     }
 
+    @Override
     public Integer getInteger(String columnId) {
       if (getLastRow() == null) {
         return null;
@@ -87,22 +92,27 @@ public class Evaluator extends Calculation {
       return getLastRow().getInteger(index);
     }
 
+    @Override
     public String getLastCellValue() {
       return lastCellValue;
     }
 
+    @Override
     public String getLastNewValue() {
       return lastNewValue;
     }
 
+    @Override
     public String getLastOldValue() {
       return lastOldValue;
     }
 
+    @Override
     public IsRow getLastRow() {
       return lastRow;
     }
 
+    @Override
     public Long getLong(String columnId) {
       if (getLastRow() == null) {
         return null;
@@ -114,22 +124,27 @@ public class Evaluator extends Calculation {
       return getLastRow().getLong(index);
     }
 
+    @Override
     public double getRowId() {
       return rowId;
     }
 
+    @Override
     public double getRowIndex() {
       return rowIndex;
     }
 
+    @Override
     public JavaScriptObject getRowValues() {
       return rowValues;
     }
 
+    @Override
     public JsDate getRowVersion() {
       return rowVersion;
     }
 
+    @Override
     public String getString(String columnId) {
       if (getLastRow() == null) {
         return null;
@@ -141,29 +156,35 @@ public class Evaluator extends Calculation {
       return getLastRow().getString(index);
     }
 
+    @Override
     public void setCellNewValue(ValueType type, String newValue) {
       setLastNewValue(newValue);
       EvalHelper.setJsoProperty(cellValues, PROPERTY_NEW_VALUE, type, newValue);
     }
 
+    @Override
     public void setCellOldValue(ValueType type, String oldValue) {
       setLastOldValue(oldValue);
       EvalHelper.setJsoProperty(cellValues, PROPERTY_OLD_VALUE, type, oldValue);
     }
 
+    @Override
     public void setCellValue(ValueType type, String value) {
       setLastCellValue(value);
       EvalHelper.setJsoProperty(cellValues, PROPERTY_VALUE, type, value);
     }
 
+    @Override
     public void setColIndex(double colIndex) {
       this.colIndex = colIndex;
     }
 
+    @Override
     public void setRowIndex(double rowIndex) {
       this.rowIndex = rowIndex;
     }
 
+    @Override
     public void updateRow(IsRow row) {
       setLastRow(row);
       if (row == null) {

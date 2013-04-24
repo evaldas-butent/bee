@@ -151,10 +151,12 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "menubar";
   }
@@ -425,6 +427,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
   }
   
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

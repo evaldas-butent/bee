@@ -49,6 +49,7 @@ public class OrgDemo implements LeftTabPanel.WidgetProvider {
     panel.add(status);
   }
 
+  @Override
   public Widget getWidget() {
     return panel;
   }

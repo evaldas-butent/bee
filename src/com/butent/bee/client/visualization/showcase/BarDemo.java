@@ -15,6 +15,7 @@ import com.butent.bee.client.widget.BeeLabel;
  */
 
 public class BarDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
     Options options = Options.create();
     options.setHeight(300);

@@ -3988,6 +3988,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+        @Override
         public void execute() {
           Element cellElement = getActiveCellElement();
           if (cellElement != null) {

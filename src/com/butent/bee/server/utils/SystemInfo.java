@@ -27,6 +27,7 @@ public class SystemInfo {
    */
 
   private static class PackageComparator implements Comparator<Package> {
+    @Override
     public int compare(Package p1, Package p2) {
       return p1.getName().compareTo(p2.getName());
     }

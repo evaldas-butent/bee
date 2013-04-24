@@ -696,6 +696,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private void addColorHandlers() {
     colorWidget.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
+      @Override
       public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
         Widget widget = colorWidget.getSelectedWidget();
         if (widget != null) {
@@ -705,6 +706,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     });
 
     colorWidget.addSelectionHandler(new SelectionHandler<Integer>() {
+      @Override
       public void onSelection(SelectionEvent<Integer> event) {
         Widget widget = colorWidget.getSelectedWidget();
         if (widget != null) {
@@ -767,6 +769,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     params.addQueryItem(PARAM_ATTENDEES, DataUtils.buildIdList(opaqueResources));
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         overlappingAppointments.clear();
 

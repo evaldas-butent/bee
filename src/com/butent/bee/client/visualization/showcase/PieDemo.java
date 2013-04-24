@@ -14,6 +14,7 @@ import com.butent.bee.client.widget.BeeLabel;
  */
 
 public class PieDemo implements LeftTabPanel.WidgetProvider {
+  @Override
   public Widget getWidget() {
     PieChart.PieOptions options = PieChart.createPieOptions();
     options.setWidth(400);

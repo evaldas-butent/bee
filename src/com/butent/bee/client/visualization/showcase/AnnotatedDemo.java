@@ -82,6 +82,7 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     chart.addReadyHandler(new ReadyDemo(status));
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

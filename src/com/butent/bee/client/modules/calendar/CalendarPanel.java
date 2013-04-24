@@ -131,12 +131,14 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     this.calendar = new CalendarWidget(calendarId, settings);
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
+      @Override
       public void onOpen(OpenEvent<Appointment> event) {
         CalendarKeeper.openAppointment(event.getTarget(), getCalendarId());
       }
     });
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
+      @Override
       public void onTimeBlockClick(TimeBlockClickEvent event) {
         CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId());
       }
@@ -161,6 +163,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     dateBox.addStyleName(STYLE_DATE);
 
     dateBox.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         pickDate();
       }
@@ -169,6 +172,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     int viewIndex = updateViews(settings);
 
     viewTabs.addSelectionHandler(new SelectionHandler<Integer>() {
+      @Override
       public void onSelection(SelectionEvent<Integer> event) {
         Integer index = event.getSelectedItem();
         if (BeeUtils.isIndex(views, index)) {
@@ -191,6 +195,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     today.addStyleName(STYLE_TODAY);
 
     today.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         setDate(TimeUtils.today(), true);
       }
@@ -201,6 +206,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     prev.addStyleName(STYLE_NAV_PREV);
 
     prev.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         navigate(false);
       }
@@ -211,6 +217,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     next.addStyleName(STYLE_NAV_NEXT);
 
     next.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         navigate(true);
       }

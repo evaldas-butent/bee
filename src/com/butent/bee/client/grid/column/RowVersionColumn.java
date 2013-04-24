@@ -32,6 +32,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
     return ColType.VERSION;
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     if (getCell() instanceof HasDateTimeFormat) {
       return ((HasDateTimeFormat) getCell()).getDateTimeFormat();
@@ -60,6 +61,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
     return ValueType.DATE_TIME;
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     if (getCell() instanceof HasDateTimeFormat) {
       ((HasDateTimeFormat) getCell()).setDateTimeFormat(format);

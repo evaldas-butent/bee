@@ -16,14 +16,17 @@ public class HeaderContentFooter extends HeaderPanel implements IdentifiableWidg
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "hcf";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

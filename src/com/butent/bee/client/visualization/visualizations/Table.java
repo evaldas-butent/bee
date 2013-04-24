@@ -178,6 +178,7 @@ public class Table extends Visualization<Table.Options> implements Selectable {
     Handler.addHandler(this, "page", handler);
   }
 
+  @Override
   public final void addSelectHandler(SelectHandler handler) {
     Selection.addSelectHandler(this, handler);
   }
@@ -186,10 +187,12 @@ public class Table extends Visualization<Table.Options> implements Selectable {
     Handler.addHandler(this, "sort", handler);
   }
 
+  @Override
   public final JsArray<Selection> getSelections() {
     return Selection.getSelections(this);
   }
 
+  @Override
   public final void setSelections(JsArray<Selection> sel) {
     Selection.setSelections(this, sel);
   }

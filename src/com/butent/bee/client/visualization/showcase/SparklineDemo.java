@@ -44,6 +44,7 @@ public class SparklineDemo implements LeftTabPanel.WidgetProvider {
     widget = new ImageSparklineChart(data, options);
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

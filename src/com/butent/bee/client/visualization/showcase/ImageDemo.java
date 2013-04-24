@@ -60,6 +60,7 @@ public class ImageDemo implements LeftTabPanel.WidgetProvider {
     widget = new ImageChart(dataTable, options);
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }

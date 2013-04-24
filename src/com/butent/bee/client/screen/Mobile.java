@@ -124,6 +124,7 @@ public class Mobile extends ScreenImpl {
     final BeeCheckBox toggle = new BeeCheckBox("Log");
 
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      @Override
       public void onValueChange(ValueChangeEvent<Boolean> event) {
         ClientLogManager.setPanelVisible(event.getValue());
       }

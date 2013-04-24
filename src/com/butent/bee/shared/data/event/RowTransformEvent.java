@@ -45,6 +45,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
     return row;
   }
   
+  @Override
   public String getViewName() {
     return viewName;
   }

@@ -30,6 +30,7 @@ public class TimeOfDay implements Comparable<TimeOfDay> {
     setMillisecond(millisecond);
   }
 
+  @Override
   public int compareTo(TimeOfDay that) {
     return millis() - that.millis();
   }

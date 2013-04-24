@@ -40,11 +40,12 @@ public class MoneyDemo implements LeftTabPanel.WidgetProvider {
     widget = new Visualization<AbstractDrawOptions>(data, options) {
       @Override
       protected native JavaScriptObject createJso(Element div) /*-{
-    return new $wnd.PilesOfMoney(div);
-  }-*/;
+        return new $wnd.PilesOfMoney(div);
+      }-*/;
     };
   }
 
+  @Override
   public Widget getWidget() {
     return widget;
   }
