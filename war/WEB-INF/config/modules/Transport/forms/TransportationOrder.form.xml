@@ -37,7 +37,7 @@
           <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
           <Label html="Vadybininkas:" horizontalAlignment="right" />
-          <DataSelector source="Manager" />
+          <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
         </row>
       </Table>
       

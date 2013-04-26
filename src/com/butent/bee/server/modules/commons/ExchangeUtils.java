@@ -68,6 +68,20 @@ public class ExchangeUtils {
     return xpr;
   }
 
+  public static IsExpression exchangeFieldTo(SqlSelect query, IsExpression amount,
+      IsExpression date, IsExpression currencyTo) {
+
+    Assert.notNull(currencyTo);
+    String ratesTo = SqlUtils.uniqueName();
+
+    IsExpression xpr = SqlUtils.multiply(amount,
+        SqlUtils.divide(SqlUtils.field(ratesTo, FLD_QUANTITY), SqlUtils.field(ratesTo, FLD_RATE)));
+
+    addExchangeFrom(query, ratesTo, currencyTo, date);
+
+    return xpr;
+  }
+
   private static void addExchangeFrom(SqlSelect query, String ratesAlias, IsExpression currency,
       IsExpression date) {
 

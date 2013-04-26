@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="CargoServices"
-  idName="ServiceID"
-  x="741" y="101"
+  name="CargoExpenses"
+  idName="ExpenseID"
   >
   <Fields>
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
-    <Boolean name="Expense" />
     <Date name="Date" label="Data" />
     <Relation name="Service" notNull="true" relation="Services" label="Paslauga" />
     <Numeric name="Amount" precision="12" scale="2" notNull="true" label="Suma" />
-    <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
+    <Relation name="Currency" relation="Currencies" notNull="true" label="Val." />
     <String name="Number" precision="20" label="Numeris" />
-    <Relation name="Company" relation="Companies" label="Įmonė" />
+    <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
     <String name="Note" precision="50" label="Pastaba" />
   </Fields>
 </Table>

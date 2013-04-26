@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="SaleItems"
+  idName="SaleItemID"
+  >
+  <Fields>
+    <Relation name="Sale" notNull="true" relation="Sales" cascade="DELETE" />
+    <Relation name="Item" notNull="true" relation="Items" label="Prekė" />
+    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="Kiekis" />
+    <Numeric name="Price" precision="12" scale="2" label="Kaina" />
+    <String name="Note" precision="50" label="Pastaba" />
+  </Fields>
+  <Triggers>
+    <Trigger events="INSERT UPDATE DELETE" scope="ROW" timing="AFTER">
+      <PostgreSql>
+        <![CDATA[
+DECLARE _id BIGINT;
+BEGIN
+  IF (TG_OP='INSERT') THEN
+    _id:=NEW."Sale";
+  ELSE
+    _id:=OLD."Sale";
+  END IF;
+
+  UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price") FROM "SaleItems" WHERE "Sale"=_id) WHERE "SaleID"=_id;
+  RETURN NULL;
+END;
+        ]]>
+      </PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Trigger>
+  </Triggers>
+</Table>

@@ -35,10 +35,9 @@
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
 
-    <SimpleJoin joinType="LEFT" name="CargoService">
+    <SimpleJoin joinType="LEFT" name="CargoExpense">
       <SimpleColumn name="Cargo" alias="ServiceCargo" />
       <SimpleColumn name="Assessor" alias="ServiceAssessor" />
-      <SimpleColumn name="Expense" />
 
       <SimpleColumn name="Service" editable="true" />
       <SimpleJoin joinType="LEFT" name="Service">
@@ -49,9 +48,9 @@
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
-      <SimpleColumn name="Company" editable="true" />
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleColumn name="Supplier" editable="true" />
+      <SimpleJoin name="Supplier" joinType="LEFT">
+        <SimpleColumn name="Name" alias="SupplierName" />
       </SimpleJoin>
       <SimpleColumn name="Date" editable="true" />
       <SimpleColumn name="Number" editable="true" />

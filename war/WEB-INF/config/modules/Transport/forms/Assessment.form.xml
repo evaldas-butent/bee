@@ -61,7 +61,7 @@
         &separator;
         <Label html="Kaina klientui" style="&labelLeft;" />
         <Label name="IncomeTotal" style="&inline; font-weight:bold; margin-right:5px;" />
-        <DataSelector name="Currency" source="Currency"
+        <DataSelector name="Currency" source="Currency" placeholder="Val."
           style="&inline; width:40px; margin-right:10px;" editEnabled="false" />
         <Label html="Spausdinti" style="&labelRight;" />
         <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
@@ -92,14 +92,14 @@
           <Label html="Pajamos" style="&inline;" />
           <FlowPanel name="Income" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="AssessmentIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
         <FlowPanel>
           <Label html="Sąnaudos" style="&inline;" />
           <FlowPanel name="Expense" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="AssessmentExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
+        <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
     </TabbedPages>
   </FlowPanel>

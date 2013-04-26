@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Sales"
+  idName="SaleID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
+    <String name="InvoicePrefix" precision="10" label="Serija" />
+    <String name="InvoiceNo" precision="20" label="Sąskaitos Nr." />
+    <String name="Number" precision="30" label="Numeris" />
+    <Numeric name="Amount" precision="12" scale="2" label="Suma" />
+    <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
+    <Relation name="Customer" relation="Companies" label="Klientas" />
+    <Relation name="Manager" relation="Users" label="Vadybininkas" />
+    <Text name="Notes" label="Pastabos" />
+  </Fields>
+</Table>

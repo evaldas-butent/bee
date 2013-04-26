@@ -87,14 +87,6 @@ public class TransportHandler {
     }
   }
 
-  private static class CargoExpensesHandler extends AbstractGridInterceptor {
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(gridView.getDataIndex(COL_SERVICE_EXPENSE), true);
-      return true;
-    }
-  }
-
   private static class CargoGridHandler extends CargoPlaceRenderer {
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
@@ -590,7 +582,6 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
-    GridFactory.registerGridInterceptor("CargoExpenses", new CargoExpensesHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGridHandler());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
@@ -607,6 +598,8 @@ public class TransportHandler {
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
+
+    GridFactory.registerGridInterceptor(VIEW_CARGO_INCOME_LIST, new CargoIncomeListGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());

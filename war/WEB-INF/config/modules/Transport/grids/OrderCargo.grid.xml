@@ -33,10 +33,10 @@
         </bodyStyle>
       </style>
     </DataColumn>
-    <DataColumn name="Income" caption="Pajamos" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
-    </DataColumn>
+    </PropColumn>
   </columns>
 </Grid>

@@ -32,11 +32,11 @@
       minWidth="115" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta"
       minWidth="115" flexBasis="120" />
-    <DataColumn name="Income" caption="Pajamos" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
-    </DataColumn>
+    </PropColumn>
   </columns>
 </Grid>

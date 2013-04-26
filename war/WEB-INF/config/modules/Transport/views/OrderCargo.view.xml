@@ -74,9 +74,6 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    <SimpleColumn name="Income">
-      <xpr:number>0</xpr:number>
-    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

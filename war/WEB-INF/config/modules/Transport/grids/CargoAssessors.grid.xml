@@ -14,8 +14,8 @@
     <DataColumn name="Assessor" caption="PID" readOnly="true" width="40" />
     <RelColumn name="Manager" caption="Vadybininkas" />
     <DataColumn name="Notes" caption="Pastabos" />
-    <DataColumn name="Income" caption="Pajamos" format="#.00" />
-    <DataColumn name="Expense" caption="Sąnaudos" format="#.00" />
+    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00" />
+    <PropColumn name="Expense" type="decimal" caption="Sąnaudos" format="#.00" />
     <DataColumn name="Status" itemKey="AssessmentStatus" readOnly="true" />
   </columns>
 </Grid>

@@ -21,13 +21,6 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-
-    <SimpleColumn name="Income">
-      <x:number>0</x:number>
-    </SimpleColumn>
-    <SimpleColumn name="Expense">
-      <x:number>0</x:number>
-    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="Date" />

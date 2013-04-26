@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY row "display: -webkit-flex; -webkit-align-items: flex-start;">
+  <!ENTITY separator "<br/>">
+  <!ENTITY lbl "width: 120px; margin-right: 1em; text-align: right;">
+  <!ENTITY w2 "width: 160px;">
+  <!ENTITY inpdt "width: 7em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="NewCargoInvoice" viewName="Sales" caption="Nauja sąskaita"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel>
+      <FlowPanel style="&row;">
+        <Label html="Data" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" style="&w2;" />
+
+        <Label html="Numeris" style="&lbl;" />
+        <InputText source="Number" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel style="&row;">
+        <InputText source="InvoicePrefix" caption="Sąskaitos ser." required="true" upperCase="true" />
+        <InputText source="InvoiceNo" caption="Nr." />
+      </FlowPanel>
+      &separator;
+
+      <DataSelector name="Currency" source="Currency" caption="Valiuta"
+        style="width:40px; margin-right:10px;" editEnabled="false" />
+      &separator;
+
+      <DataSelector source="Customer" caption="Klientas" required="true" />
+      &separator;
+
+      <FlowPanel style="&row;">
+        <Label html="Vadybininkas" style="&lbl;" />
+        <DataSelector source="Manager" editSource="CustomerPerson" style="&w2;" />
+      </FlowPanel>
+      
+      <FlowPanel style="&row;">
+        <Label name="MainItemCaption" html="Suminė apskaitos prekė" style="&lbl;" />
+        <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" 
+          label="Suminė apskaitos prekė" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>Pastabos</text>
+        <InputArea source="Notes" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

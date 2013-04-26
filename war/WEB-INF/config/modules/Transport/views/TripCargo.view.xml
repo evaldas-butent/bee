@@ -53,10 +53,6 @@
         <SimpleColumn name="Code" alias="UnloadingCountryCode" />
       </SimpleJoin>
     </SimpleJoin>
-
-    <SimpleColumn name="Income">
-      <x:number>0</x:number>
-    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="CargoOrder" />

@@ -7,6 +7,7 @@ import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
@@ -26,6 +27,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -326,6 +328,41 @@ public class QueryServiceBean {
 
   public Long[] getLongColumn(IsQuery query) {
     return getSingleColumn(query).getLongColumn(0);
+  }
+
+  public String getNextNumber(String tblName, String fldName, String prefix, String prefixFld) {
+    Object value = null;
+
+    if (!BeeUtils.allEmpty(tblName, fldName)) {
+      IsCondition clause = null;
+      IsExpression xpr = null;
+
+      if (BeeUtils.isEmpty(prefix)) {
+        xpr = SqlUtils.field(tblName, fldName);
+      } else {
+        if (!BeeUtils.isEmpty(prefixFld)) {
+          xpr = SqlUtils.field(tblName, fldName);
+          clause = SqlUtils.equals(tblName, prefixFld, prefix);
+        } else {
+          xpr = SqlUtils.substring(tblName, fldName, prefix.length() + 1);
+          clause = SqlUtils.startsWith(tblName, fldName, prefix);
+        }
+      }
+      clause = SqlUtils.and(clause,
+          SqlUtils.compare(SqlUtils.length(xpr), Operator.EQ,
+              new SqlSelect()
+                  .addMax(SqlUtils.length(xpr), "length")
+                  .addFrom(tblName)
+                  .setWhere(clause)));
+
+      String maxValue = getValue(new SqlSelect()
+          .addMax(xpr, "value")
+          .addFrom(tblName)
+          .setWhere(clause));
+
+      value = BeeUtils.nextString(maxValue);
+    }
+    return BeeUtils.join(BeeConst.STRING_EMPTY, BeeUtils.isEmpty(prefixFld) ? prefix : null, value);
   }
 
   public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,

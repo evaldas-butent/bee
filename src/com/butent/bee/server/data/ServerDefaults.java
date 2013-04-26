@@ -1,13 +1,6 @@
 package com.butent.bee.server.data;
 
-import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.IsExpression;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.Defaults;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -40,7 +33,7 @@ public class ServerDefaults extends Defaults {
 
         case NEXT_NUMBER:
           String prefix = (defValue == null) ? null : defValue.toString().trim();
-          value = getNextNumber(tblName, fldName, prefix);
+          value = qs.getNextNumber(tblName, fldName, prefix, null);
           break;
 
         default:
@@ -49,35 +42,5 @@ public class ServerDefaults extends Defaults {
       }
     }
     return value;
-  }
-
-  private String getNextNumber(String tblName, String fldName, String prefix) {
-    Object value = null;
-
-    if (!BeeUtils.allEmpty(tblName, fldName)) {
-      IsCondition clause = null;
-      IsExpression xpr = null;
-
-      if (BeeUtils.isEmpty(prefix)) {
-        xpr = SqlUtils.field(tblName, fldName);
-      } else {
-        xpr = SqlUtils.substring(tblName, fldName, prefix.length() + 1);
-        clause = SqlUtils.startsWith(tblName, fldName, prefix);
-      }
-      clause = SqlUtils.and(clause,
-          SqlUtils.compare(SqlUtils.length(xpr), Operator.EQ,
-              new SqlSelect()
-                  .addMax(SqlUtils.length(xpr), "length")
-                  .addFrom(tblName)
-                  .setWhere(clause)));
-
-      String maxValue = qs.getValue(new SqlSelect()
-          .addMax(xpr, "value")
-          .addFrom(tblName)
-          .setWhere(clause));
-
-      value = BeeUtils.nextString(maxValue);
-    }
-    return BeeUtils.join(BeeConst.STRING_EMPTY, prefix, value);
   }
 }

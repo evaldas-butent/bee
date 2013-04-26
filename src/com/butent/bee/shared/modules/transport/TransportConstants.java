@@ -137,6 +137,7 @@ public class TransportConstants {
   public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
+  public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
@@ -163,7 +164,8 @@ public class TransportConstants {
   public static final String TBL_ORDER_CARGO = "OrderCargo";
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
-  public static final String TBL_CARGO_SERVICES = "CargoServices";
+  public static final String TBL_CARGO_INCOMES = "CargoIncomes";
+  public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_CARGO_ASSESSORS = "CargoAssessors";
   public static final String TBL_SERVICES = "Services";
@@ -176,10 +178,11 @@ public class TransportConstants {
   public static final String VIEW_ORDERS = "TransportationOrders";
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
-  public static final String VIEW_CARGO_SERVICES = "CargoServices";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
+
   public static final String VIEW_CARGO_LIST = "CargoList";
+  public static final String VIEW_CARGO_INCOME_LIST = "CargoIncomeList";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
@@ -252,9 +255,8 @@ public class TransportConstants {
   public static final String COL_CUSTOMER_NAME = "CustomerName";
 
   public static final String COL_SERVICE = "Service";
-  public static final String COL_SERVICE_DATE = "Date";
-  public static final String COL_SERVICE_EXPENSE = "Expense";
-  public static final String COL_SERVICE_AMOUNT = "Amount";
+  public static final String COL_DATE = "Date";
+  public static final String COL_AMOUNT = "Amount";
 
   public static final String COL_DESCRIPTION = "Description";
 

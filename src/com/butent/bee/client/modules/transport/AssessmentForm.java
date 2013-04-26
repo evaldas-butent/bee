@@ -49,7 +49,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -93,7 +92,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
   private class ForwardersGrid extends AssessmentGrid {
     private static final String SERVICE_CARGO = "ServiceCargo";
     private static final String SERVICE_ASSESSOR = "ServiceAssessor";
-    private static final String COMPANY = "Company";
+    private static final String SUPPLIER = "Supplier";
     private static final String FORWARDER = "Forwarder";
 
     @Override
@@ -140,11 +139,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
       columns.add(DataUtils.getColumn(SERVICE_ASSESSOR, gridView.getDataColumns()));
       values.add(values.get(DataUtils.getColumnIndex(COL_ASSESSOR, columns)));
 
-      columns.add(DataUtils.getColumn(COL_SERVICE_EXPENSE, gridView.getDataColumns()));
-      values.add(BooleanValue.S_TRUE);
-
-      if (DataUtils.getColumn(COMPANY, columns) == null) {
-        columns.add(DataUtils.getColumn(COMPANY, gridView.getDataColumns()));
+      if (DataUtils.getColumn(SUPPLIER, columns) == null) {
+        columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
         values.add(values.get(DataUtils.getColumnIndex(FORWARDER, columns)));
       }
     }
@@ -166,12 +162,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
         oldValues.add(null);
         newValues.add(row.getString(gridView.getDataIndex(COL_ASSESSOR)));
 
-        columns.add(DataUtils.getColumn(COL_SERVICE_EXPENSE, gridView.getDataColumns()));
-        oldValues.add(null);
-        newValues.add(BooleanValue.S_TRUE);
-
-        if (DataUtils.getColumn(COMPANY, columns) == null) {
-          columns.add(DataUtils.getColumn(COMPANY, gridView.getDataColumns()));
+        if (DataUtils.getColumn(SUPPLIER, columns) == null) {
+          columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
           oldValues.add(null);
           newValues.add(row.getString(gridView.getDataIndex(FORWARDER)));
         }
@@ -180,11 +172,6 @@ public class AssessmentForm extends AbstractFormInterceptor {
   }
 
   private class ServicesGrid extends AssessmentGrid {
-    final boolean expense;
-
-    public ServicesGrid(boolean expense) {
-      this.expense = expense;
-    }
 
     @Override
     public void afterDeleteRow(long rowId) {
@@ -199,17 +186,9 @@ public class AssessmentForm extends AbstractFormInterceptor {
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(),
-          COL_SERVICE_DATE, COL_SERVICE_AMOUNT, ExchangeUtils.FLD_CURRENCY)) {
+          COL_DATE, COL_AMOUNT, ExchangeUtils.FLD_CURRENCY)) {
         refreshTotals();
       }
-    }
-
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      if (expense) {
-        newRow.setValue(gridView.getDataIndex(COL_SERVICE_EXPENSE), true);
-      }
-      return true;
     }
   }
 
@@ -407,7 +386,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
         widget.getElement().setInnerText(null);
       }
     }
-    if (!ok) {
+    if (!ok || !DataUtils.isId(row.getId())) {
       return;
     }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
@@ -429,12 +408,14 @@ public class AssessmentForm extends AbstractFormInterceptor {
         }
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
-        double incomeTotal =
-            BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_INCOME + VAR_TOTAL)), 2);
-        double expenseTotal =
-            BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_EXPENSE + VAR_TOTAL)), 2);
-        double income = BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_INCOME)), 2);
-        double expense = BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_EXPENSE)), 2);
+        double incomeTotal = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, VAR_TOTAL)), 2);
+        double expenseTotal = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, VAR_TOTAL)), 2);
+        double income = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, COL_AMOUNT)), 2);
+        double expense = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
 
         if (incomeTotalWidget != null) {
           incomeTotalWidget.getElement()
@@ -491,11 +472,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
       if (BeeUtils.same(name, "AssessmentForwarders")) {
         interceptor = new ForwardersGrid();
 
-      } else if (BeeUtils.same(name, "AssessmentExpenses")) {
-        interceptor = new ServicesGrid(true);
-
-      } else if (BeeUtils.same(name, "AssessmentIncomes")) {
-        interceptor = new ServicesGrid(false);
+      } else if (BeeUtils.inListSame(name, TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES)) {
+        interceptor = new ServicesGrid();
 
       } else if (BeeUtils.same(name, TBL_CARGO_ASSESSORS)) {
         interceptor = new AssessorsGrid();

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CargoIncomes" source="CargoIncomes"
+  >
+  <Columns>
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Assessor" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Service" />
+    <SimpleJoin joinType="LEFT" name="Service">
+      <SimpleColumn name="Name" alias="ServiceName" />
+    </SimpleJoin>
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Customer" />
+    <SimpleJoin name="Customer" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CustomerName" />
+    </SimpleJoin>
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Note" />
+    <SimpleColumn name="Sale" />
+  </Columns>
+</View>

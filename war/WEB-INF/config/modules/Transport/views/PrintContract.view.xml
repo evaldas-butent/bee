@@ -90,7 +90,7 @@
       <SimpleColumn name="Place" alias="UnloadingPlace" />
     </SimpleJoin>
 
-    <SimpleJoin joinType="LEFT" name="CargoService">
+    <SimpleJoin joinType="LEFT" name="CargoExpense">
       <SimpleColumn name="Amount" />
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="CurrencyName" />

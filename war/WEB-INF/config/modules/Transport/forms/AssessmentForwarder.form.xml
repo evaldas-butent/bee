@@ -41,7 +41,7 @@
 
     <FlowPanel style="&section;">
       <Label html="Tiekėjas" style="&labelLeft;" />
-      <DataSelector source="Company" style="&input; width:200px;" />
+      <DataSelector source="Supplier" style="&input; width:200px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

@@ -139,7 +139,7 @@ public class CommonsConstants {
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_PERSON = "Person";
-  
+
   public static final String COL_OBJECT_TYPE = "Type";
   public static final String COL_OBJECT = "Object";
   public static final String COL_OBJECT_NAME = "Name";

@@ -22,7 +22,7 @@
 
   <FlowPanel style="&section;">
     <Label html="Data" style="&labelLeft;" />
-    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:80px;" />
+    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:40px;" />
     <Label html="Data" style="&labelRight;" />
     <InputDateTime source="UnloadingDate" style="&inline; width:110px;" />
   </FlowPanel>
@@ -82,6 +82,6 @@
     <InputDecimal source="Volume" format="#.000" style="&input;" />
     <Label html="Vertė" style="&labelRight;" />
     <InputCurrency source="Value" style="&input;" />
-    <DataSelector source="ValueCurrency" style="&inline; width:40px; margin-left:5px;" />
+    <DataSelector source="ValueCurrency" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
 </FlowPanel>
