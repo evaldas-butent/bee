@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/widget" style="border-spacing: 10px;">
+
+  <row>
+    <Label html="Laikotarpis" horizontalAlignment="right"/>
+    <FlowPanel class="flexBox-horizontal">
+      <InputDate name="dateFrom" style="width:100px;"  />
+      <Label html="—"  style="margin-left:8px; margin-right:8px"/>
+      <InputDate name="dateTill"  style="width:100px;" />
+    </FlowPanel>
+    <Label html="Vartotojas" horizontalAlignment="left" />
+    <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName" newRowEnabled="false" style="width:200px"/>
+  </row>
+  <row>
+    <Label html="Klientas" horizontalAlignment="right" />
+    <MultiSelector name="Company" viewName="Companies" choiceColumns="Name TypeName" newRowEnabled="false" style="width:230px" />
+    <Label html="Tipas" horizontalAlignment="right" />
+    <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name" newRowEnabled="false" style="width:200px"/>   
+  </row>
+  <row>
+    <cell colSpan="4">
+    <FlowPanel class="flexBox-horizontal">
+      <Button name="Filter" html="Filtruoti" horizontalAlignment="right" style="margin:4px"/>
+      <Button name="ClearFilter" html="Išvalyti" horizontalAlignment="right" style="margin:4px"/>
+    </FlowPanel>
+    </cell>
+  </row>
+</Table>
+  

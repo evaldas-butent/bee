@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
@@ -25,6 +26,10 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 
 public class CrmKeeper {
+
+  private static final String COMPANY_TIMES_REPORT = "companytimes";
+  private static final String TYPE_HOURS_REPORT = "typehours";
+  private static final String USERS_HOURS_REPORT = "usershours";
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
@@ -63,6 +68,26 @@ public class CrmKeeper {
       @Override
       public void onSelection(String parameters) {
         TaskList.open(parameters);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback("tasks_reports", new MenuManager.MenuCallback() {
+
+      @Override
+      public void onSelection(String parameters) {
+
+        if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
+          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
+              TasksReportsInterceptor.ReportType.COMPANY_TIMES));
+        } else if (BeeUtils.startsSame(parameters, TYPE_HOURS_REPORT)) {
+          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
+              TasksReportsInterceptor.ReportType.TYPE_HOURS));
+        } else if (BeeUtils.startsSame(parameters, USERS_HOURS_REPORT)) {
+          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
+              TasksReportsInterceptor.ReportType.USERS_HOURS));
+        } else {
+          Global.showError("Service type '" + parameters + "' not found");
+        }
       }
     });
 

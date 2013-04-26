@@ -24,6 +24,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -126,6 +128,15 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
+
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_COMPANY_TIMES)) {
+      response = getCompanyTimesReport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_TYPE_HOURS)) {
+      response = getTypeHoursReport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_USERS_HOURS)) {
+      response = getUsersHoursReport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
@@ -573,6 +584,115 @@ public class CrmModuleBean implements BeeModule {
     return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
   }
 
+  private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
+    SqlSelect companiesListQuery =
+        new SqlSelect()
+            .addFields(CommonsConstants.TBL_COMPANIES,
+                sys.getIdName(CommonsConstants.TBL_COMPANIES))
+            .addFields(CommonsConstants.TBL_COMPANIES, COL_NAME)
+            .addField(CommonsConstants.TBL_COMPANY_TYPES, COL_NAME,
+                CommonsConstants.ALS_COMPANY_TYPE)
+            .addFrom(CommonsConstants.TBL_COMPANIES)
+            .addFromLeft(
+                CommonsConstants.TBL_COMPANY_TYPES,
+                sys.joinTables(CommonsConstants.TBL_COMPANY_TYPES,
+                    CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_TYPE))
+            .setWhere(SqlUtils.sqlTrue())
+            .addOrder(CommonsConstants.TBL_COMPANIES, COL_NAME);
+    
+    if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+      companiesListQuery.setWhere(SqlUtils.and(companiesListQuery.getWhere(), SqlUtils.inList(
+          CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES), DataUtils
+              .parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+    }
+    
+    SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+    long totalTimeMls = 0;
+    
+    result.addRow(new String[] {"Klientas", "Sugaištas laikas"});
+
+    /* Register times in tasks without company */
+    companiesListSet.addRow(new String[] {null, "—", null});
+
+    for (int i = 0; i < companiesListSet.getNumberOfRows(); i++) {
+      String compFullName =
+          companiesListSet.getValue(i, COL_NAME)
+              + (!BeeUtils.isEmpty(companiesListSet.getValue(i, CommonsConstants.ALS_COMPANY_TYPE))
+                  ? ", " + companiesListSet.getValue(i, CommonsConstants.ALS_COMPANY_TYPE) : "");
+      String dTime = "0:00";
+
+      SqlSelect companyTimesQuery = new SqlSelect()
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(CommonsConstants.TBL_COMPANIES,
+              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(CommonsConstants.TBL_USERS,
+              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .setWhere(
+                  SqlUtils.equals(CommonsConstants.TBL_COMPANIES, sys
+                  .getIdName(CommonsConstants.TBL_COMPANIES), companiesListSet.getValue(i, sys
+                  .getIdName(CommonsConstants.TBL_COMPANIES))));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_TYPE))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      SimpleRowSet companyTimes = qs.getData(companyTimesQuery);
+      long dTimeMls = TimeUtils.parseTime(dTime);
+
+      for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
+            .getColumnIndex(COL_DURATION)));
+        dTimeMls += timeMls;
+      }
+
+      totalTimeMls += dTimeMls;
+      dTime = new DateTime(dTimeMls).toUtcTimeString();
+
+      result.addRow(new String[] {compFullName, dTime});
+    }
+
+    result.addRow(new String[] {"Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
+  }
+  
   private ResponseObject getTaskData(long taskId, Long eventId) {
     BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, ComparisonFilter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
@@ -658,6 +778,216 @@ public class CrmModuleBean implements BeeModule {
         .addOrder(TBL_TASK_USERS, sys.getIdName(TBL_TASK_USERS));
 
     return Lists.newArrayList(qs.getLongColumn(query));
+  }
+
+  private ResponseObject getTypeHoursReport(RequestInfo reqInfo) {
+    SqlSelect durationTypes = new SqlSelect()
+        .addFrom(TBL_DURATION_TYPES)
+        .addFields(TBL_DURATION_TYPES, COL_NAME)
+        .setWhere(SqlUtils.sqlTrue())
+        .addOrder(TBL_DURATION_TYPES, COL_NAME);
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+      durationTypes.setWhere(SqlUtils.and(durationTypes.getWhere(), SqlUtils.inList(
+          TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils.parseIdList(reqInfo
+              .getParameter(VAR_TASK_DURATION_TYPE)))));
+    }
+
+    SimpleRowSet dTypesList = qs.getData(durationTypes);
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+
+    result.addRow(new String[] {"Tipas", "Sugaištas laikas"});
+    Assert.notNull(dTypesList);
+
+    long totalTimeMls = 0;
+
+    for (int i = 0; i < dTypesList.getNumberOfRows(); i++) {
+      String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_NAME));
+      String dTime = "0:00";
+
+      SqlSelect dTypeTime = new SqlSelect()
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(CommonsConstants.TBL_COMPANIES,
+              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(CommonsConstants.TBL_USERS,
+              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .addFields(TBL_DURATION_TYPES, COL_NAME)
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+          .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_NAME, dType));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
+              DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+        }
+      }
+      
+      if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+        }
+      }
+
+      SimpleRowSet dTypeTimes = qs.getData(dTypeTime);
+      Assert.notNull(dTypeTimes);
+
+      long dTimeMls = TimeUtils.parseTime(dTime);
+
+      for (int j = 0; j < dTypeTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, dTypeTimes
+            .getColumnIndex(COL_DURATION)));
+        dTimeMls += timeMls;
+      }
+
+      totalTimeMls += dTimeMls;
+
+      dTime = new DateTime(dTimeMls).toUtcTimeString();
+      result.addRow(new String[] {dType, dTime});
+    }
+    
+    result.addRow(new String[] {
+        "Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
+  }
+
+  private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {
+    SqlSelect userListQuery =
+        new SqlSelect()
+            .addFields(CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS))
+            .addFields(CommonsConstants.TBL_PERSONS,
+                CommonsConstants.COL_FIRST_NAME,
+                CommonsConstants.COL_LAST_NAME)
+            .addFrom(CommonsConstants.TBL_USERS)
+            .addFromLeft(
+                CommonsConstants.TBL_COMPANY_PERSONS,
+                sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                    CommonsConstants.COL_COMPANY_PERSON))
+            .addFromLeft(
+                CommonsConstants.TBL_PERSONS,
+                sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                    CommonsConstants.COL_PERSON)).setWhere(SqlUtils.sqlTrue())
+            .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+                CommonsConstants.COL_LAST_NAME);
+
+    if (reqInfo.hasParameter(VAR_TASK_USERS)) {
+      userListQuery.setWhere(SqlUtils.and(userListQuery.getWhere(), SqlUtils.inList(
+          CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+              .parseIdList(reqInfo.getParameter(VAR_TASK_USERS)))));
+    }
+
+    SimpleRowSet usersListSet = qs.getData(userListQuery);
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+    long totalTimeMls = 0;
+
+    result.addRow(new String[] {
+        "Vartotojo vardas, pavardė", "Sugaištas laikas"});
+
+    for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
+      String userFullName =
+          (!BeeUtils.isEmpty(usersListSet.getValue(i, CommonsConstants.COL_FIRST_NAME))
+              ? usersListSet.getValue(i, CommonsConstants.COL_FIRST_NAME) : "") + " "
+              + (!BeeUtils.isEmpty(usersListSet.getValue(i, CommonsConstants.COL_LAST_NAME))
+                  ? usersListSet.getValue(i, CommonsConstants.COL_LAST_NAME) : "");
+
+      userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
+      String dTime = "0:00";
+
+      SqlSelect userTimesQuery = new SqlSelect()
+          .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+          .addFrom(TBL_TASK_EVENTS)
+          .addFromRight(TBL_EVENT_DURATIONS,
+              sys.joinTables(TBL_EVENT_DURATIONS, TBL_TASK_EVENTS, COL_EVENT_DURATION))
+          .addFromLeft(TBL_DURATION_TYPES,
+              sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
+          .addFromLeft(TBL_TASKS,
+              sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
+          .addFromLeft(CommonsConstants.TBL_COMPANIES,
+              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(CommonsConstants.TBL_USERS,
+              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+              .setWhere(
+                  SqlUtils.equals(CommonsConstants.TBL_USERS, sys
+                      .getIdName(CommonsConstants.TBL_USERS), usersListSet.getValue(i, sys
+                      .getIdName(CommonsConstants.TBL_USERS))));
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils
+              .moreEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_FROM))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_TO)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_TO))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils
+              .lessEqual(TBL_EVENT_DURATIONS, COL_DURATION_DATE, reqInfo
+                  .getParameter(VAR_TASK_DURATION_DATE_TO))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
+              DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_TYPE))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      SimpleRowSet companyTimes = qs.getData(userTimesQuery);
+      long dTimeMls = TimeUtils.parseTime(dTime);
+
+      for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
+        Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
+            .getColumnIndex(COL_DURATION)));
+        dTimeMls += timeMls;
+      }
+
+      totalTimeMls += dTimeMls;
+      dTime = new DateTime(dTimeMls).toUtcTimeString();
+
+      result.addRow(new String[] {userFullName, dTime});
+    }
+
+    result.addRow(new String[] {"Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+
+    ResponseObject resp = ResponseObject.response(result);
+    return resp;
   }
 
   private ResponseObject registerTaskDuration(long durationType, RequestInfo reqInfo) {

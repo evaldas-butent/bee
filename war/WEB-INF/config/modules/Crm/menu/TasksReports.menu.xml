@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="TasksReports" label="=tasksReports" order="6" parent="Tasks"
+>
+	<Item name="TypeHoursReport" label="=hoursByTypes" service="tasks_reports" parameters="typehours" />
+	<Item name="CompanyTimesReport" label="=hoursByCompanies" service="tasks_reports" parameters="companytimes" />
+	<Item name="UsersHoursReport" label="=hoursByUsers" service="tasks_reports" parameters="usershours" />
+</Entry>

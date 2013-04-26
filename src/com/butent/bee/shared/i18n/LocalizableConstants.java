@@ -12,10 +12,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String changedValues();
   String changePassword();
   String clear();
+  String company();
   String createNewRow();
   String deselectAll();
   String doFilter();
+  String durationType();
   String filter();
+  String hoursByCompanies();
+  String hoursByTypes();
+  String hoursByUsers();
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
@@ -33,7 +38,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String saveChanges();
   String selectAll();
   String sorry();
+  String spentTime();
   String tooLittleData();
+  String total();
+  String totalOf();
+  String usersFullName();
   String valueRequired();
   String yes();
 }

@@ -105,6 +105,12 @@ public class CrmConstants {
 
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
+  public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
+  public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX
+      + "company_times";
+  public static final String SVC_TASKS_REPORTS_TYPE_HOURS = SVC_TASKS_REPORTS_PREFIX + "type_hours";
+  public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
+      + "users_hours";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
@@ -112,10 +118,14 @@ public class CrmConstants {
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
   public static final String VAR_TASK_NOTES = Service.RPC_VAR_PREFIX + "task_notes";
   public static final String VAR_TASK_FINISH_TIME = Service.RPC_VAR_PREFIX + "task_finish_time";
+  public static final String VAR_TASK_PUBLISHER = Service.RPC_VAR_PREFIX + "task_publisher";
+  public static final String VAR_TASK_COMPANY = Service.RPC_VAR_PREFIX + "task_company";
 
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
+  public static final String VAR_TASK_DURATION_DATE_FROM = VAR_TASK_DURATION_DATE + "_from";
+  public static final String VAR_TASK_DURATION_DATE_TO = VAR_TASK_DURATION_DATE + "_to";
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
@@ -131,6 +141,7 @@ public class CrmConstants {
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_TASK_EVENTS = "TaskEvents";
   public static final String TBL_TASK_FILES = "TaskFiles";
+  public static final String TBL_DURATION_TYPES = "DurationTypes";
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
 
@@ -263,9 +274,11 @@ public class CrmConstants {
   public static final String PROP_ICON = "Icon";
 
   public static final String GRID_TASKS = "Tasks";
+  public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+  public static final String FORM_TASKS_REPORT = "TasksReport";
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
