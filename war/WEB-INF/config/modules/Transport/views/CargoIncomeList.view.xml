@@ -35,6 +35,12 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    
+    <SimpleColumn name="Customer" alias="Company" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CompanyName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     <SimpleColumn name="Sale" />

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
@@ -19,6 +19,6 @@
     <RelColumn name="Customer" caption="Mokėtojas" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Note" caption="Pastaba" />
-    <RelColumn name="Sale" caption="Sąsk.ID" readOnly="true" editEnabled="true" />
+    <RelColumn name="Sale" caption="Sąsk.ID" readOnly="true" editEnabled="true" editViewName="CargoIncomes" />
   </columns>
 </Grid>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "text-align: right;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="Invoice" viewName="Sales" caption="Sąskaita"
+  width="800" height="600"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label html="Data" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" style="width:110px;" />
+
+        <Label html="Numeris" style="&lbl;" />
+        <InputText source="Number" />
+      </row>
+      <row>
+        <Label html="Suma" style="&lbl;" />
+        <HorizontalPanel>
+          <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
+          <DataSelector name="Currency" source="Currency" placeholder="Val."
+            style="width:40px;" editEnabled="false" />
+        </HorizontalPanel>
+
+        <Label html="Sąskaita" style="&lbl;" />
+        <FlowPanel>
+          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;"
+          caption="Ser." d:style="width:30px; text-align:right;" />
+          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;" />
+        </FlowPanel>
+      </row>
+      <row>
+        <Label html="Klientas" style="&lbl;" />
+        <DataSelector source="Customer" />
+        <Label html="Vadybininkas" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" />
+      </row>
+    </Table>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>Prekės/Paslaugos</text>
+        <ChildGrid name="SaleItems" relColumn="Sale" />
+      </page>
+      <page>
+        <text>Pastabos</text>
+        <InputArea source="Notes" />
+      </page>
+      <page>
+        <text>Transporto pajamos</text>
+        <ChildGrid name="CargoIncomes" relColumn="Sale" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

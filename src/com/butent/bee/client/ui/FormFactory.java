@@ -59,7 +59,7 @@ public class FormFactory {
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
       HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain {
 
-    void afterAction(Action action, FormPresenter presenter);
+    void afterAction(Action action, Presenter presenter);
 
     void afterCreate(FormView form);
 
@@ -67,7 +67,7 @@ public class FormFactory {
 
     void afterRefresh(FormView form, IsRow row);
 
-    boolean beforeAction(Action action, FormPresenter presenter);
+    boolean beforeAction(Action action, Presenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
 
@@ -85,7 +85,7 @@ public class FormFactory {
 
     void onSetActiveRow(IsRow row);
 
-    void onShow(FormPresenter presenter);
+    void onShow(Presenter presenter);
 
     void onStart(FormView form);
 

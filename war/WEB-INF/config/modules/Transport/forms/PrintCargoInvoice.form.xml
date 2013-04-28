@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY inline "display:inline-block;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintCargoInvoice">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="&form;" viewName="&form;" caption="Sąskaitos spausdinimas" disabledActions="save"
+  width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+    <HorizontalPanel>
+      <Table>
+        <row>
+          <Label html="Užsakymų Nr.:" style="text-align:right; &bold;" />
+          <TextLabel source="Number" />
+        </row>
+        <row>
+          <Label html="PVM sąskaita-faktūra:" style="text-align:right; &bold;" />
+          <TextLabel source="InvoiceNo">
+            <renderToken source="InvoicePrefix" prefix="Serija " suffix=" " />
+            <renderToken source="InvoiceNo" prefix="Nr. " />
+          </TextLabel>
+        </row>
+        <row>
+          <Label html="Data:" style="text-align:right; &bold;" />
+          <DateTimeLabel source="Date" format="DATE_SHORT" />
+        </row>
+      </Table>
+      <Image  url="images/logo.gif" />
+    </HorizontalPanel>
+
+    <FlowPanel style="&section;">
+      <Table style="border-collapse:collapse; width:100%;">
+        <row>
+          <cell style="vertical-align:top;">
+            <Label html="Tiekėjas:" />
+          </cell>
+          <cell style="vertical-align:top; width:50%;">
+            <xi:include href="../../widgets/CompanyInfo.widget.xml" />
+          </cell>
+          <cell style="vertical-align:top;">
+            <Label html="Pirkėjas:" />
+          </cell>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel>
+              <TextLabel source="CustomerName" style="&bold;">
+                <renderToken source="CustomerName" />
+              </TextLabel>
+              <TextLabel source="CustomerCode">
+                <renderToken source="CustomerCode" prefix="Įmonės kodas: " />
+              </TextLabel>
+              <TextLabel source="CustomerVATCode">
+                <renderToken source="CustomerVATCode" prefix="PVM kodas: " />
+              </TextLabel>
+              <TextLabel source="CustomerAddress">
+                <renderToken source="CustomerAddress" prefix="Adresas: " />
+                <renderToken source="CustomerCity" prefix=", " />
+                <renderToken source="CustomerCountry" prefix=", " />
+                <renderToken source="CustomerPostIndex" prefix=", " />
+              </TextLabel>
+              <TextLabel source="CustomerPhone">
+                <renderToken source="CustomerPhone" prefix="Tel: " suffix=" " />
+                <renderToken source="CustomerMobile" prefix="Mob: " suffix=" " />
+                <renderToken source="CustomerFax" prefix="Fax: " suffix=" " />
+              </TextLabel>
+              <TextLabel source="CustomerEmail">
+                <renderToken source="CustomerEmail" prefix="El.paštas: " />
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+        </row>
+      </Table>
+    </FlowPanel>
+    
+    <Table name="InvoiceDetails" class="&form;-table" style="&section;">
+      <row style="font-weight:bold; text-align:center;">
+        <Label html="Prekės/paslaugos pavadinimas" />
+        <Label html="Kiekis" />
+        <Label html="Mato.v" />
+        <Label html="Kaina" />
+        <Label html="Val." />
+        <Label html="Suma be PVM" />
+      </row>
+    </Table>
+
+    <HorizontalPanel class="&form;-table" style="&section;">
+      <Label html="Papildoma informacija:" style="&bold;" />
+      <TextLabel source="Notes" style="white-space:pre-wrap;" />
+    </HorizontalPanel>
+
+    <HtmlPanel style="&section;">
+      <span style="font-size:smaller; &bold; display:block;">
+Ši sutartis, Kliento pateikta Ekspeditoriui, bei abiejų pusių patvirtinta faksu ar elektroniniu būdu turi tokią pačią juridinę galią kaip ir 
+originalas.
+      </span>
+    </HtmlPanel>
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Sąskaitą priėmė" />
+        <Label html="Sąskaitą išrašė" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+      </row>
+      <row>
+        <FlowPanel />
+        <TextLabel source="Position" style="margin-top:5px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+          <renderToken source="Position" prefix=", " />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

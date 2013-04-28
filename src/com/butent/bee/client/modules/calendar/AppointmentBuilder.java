@@ -52,7 +52,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
-import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -539,7 +539,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   @Override
-  public boolean beforeAction(Action action, FormPresenter presenter) {
+  public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case SAVE:
         if (!isSaving() && validate() && save(null)) {
@@ -576,7 +576,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     if (event.isOpened()) {
       Set<Long> include = Sets.newHashSet(ucAttendees);
       Set<Long> exclude = Sets.newHashSet();
-      
+
       if (!serviceResources.isEmpty() && !BeeUtils.isEmpty(getServiceTypeWidgetId())) {
         Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
         if (serviceType != null) {
@@ -598,7 +598,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
           }
         }
       }
-      
+
       Filter filter;
       if (include.isEmpty()) {
         filter = exclude.isEmpty() ? null : Filter.idNotIn(exclude);
@@ -608,9 +608,9 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       } else {
         include.removeAll(exclude);
-        filter = include.isEmpty() ? ComparisonFilter.isFalse() : Filter.idIn(include); 
+        filter = include.isEmpty() ? ComparisonFilter.isFalse() : Filter.idIn(include);
       }
-      
+
       event.getSelector().setAdditionalFilter(filter);
     }
   }

@@ -51,8 +51,8 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -606,7 +606,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onShow(FormPresenter presenter) {
+  public void onShow(Presenter presenter) {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 

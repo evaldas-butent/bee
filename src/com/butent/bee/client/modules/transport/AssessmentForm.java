@@ -97,11 +97,13 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void afterInsertRow(IsRow result) {
+      refreshExpenses();
       refreshTotals();
     }
 
     @Override
     public void afterUpdateRow(IsRow result) {
+      refreshExpenses();
       refreshTotals();
     }
 
@@ -166,6 +168,18 @@ public class AssessmentForm extends AbstractFormInterceptor {
           columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
           oldValues.add(null);
           newValues.add(row.getString(gridView.getDataIndex(FORWARDER)));
+        }
+      }
+    }
+
+    private void refreshExpenses() {
+      Widget w = getFormView().getWidgetByName(TBL_CARGO_EXPENSES);
+
+      if (w != null && w instanceof ChildGrid) {
+        GridPresenter presenter = ((ChildGrid) w).getPresenter();
+
+        if (presenter != null) {
+          presenter.refresh(false);
         }
       }
     }

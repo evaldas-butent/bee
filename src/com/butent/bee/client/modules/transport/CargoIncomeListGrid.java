@@ -81,9 +81,11 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
 
             Map<Long, String> currencies = Maps.newHashMap();
             int customerId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, COL_CUSTOMER);
-            int payerId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, "Payer");
             int customerName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, COL_CUSTOMER_NAME);
+            int payerId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, "Payer");
             int payerName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, "PayerName");
+            int companyId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, "Company");
+            int companyName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, "CompanyName");
             Long clientId = null;
             String clientName = null;
             boolean clientUnique = true;
@@ -100,13 +102,11 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
                 itemEmpty = (row.getLong(item) == null);
               }
               if (clientUnique) {
-                Long id = row.getLong(payerId);
-                String name = row.getString(payerName);
+                Long id = BeeUtils.nvl(row.getLong(companyId), row.getLong(payerId),
+                    row.getLong(customerId));
+                String name = BeeUtils.nvl(row.getString(companyName), row.getString(payerName),
+                    row.getString(customerName));
 
-                if (id == null) {
-                  id = row.getLong(customerId);
-                  name = row.getString(customerName);
-                }
                 if (clientId == null || Objects.equal(clientId, id)) {
                   clientId = id;
                   clientName = name;

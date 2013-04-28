@@ -7,7 +7,9 @@
     <SimpleJoin joinType="LEFT" name="Assessor">
       <SimpleJoin name="Manager" joinType="INNER">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
-          <SimpleColumn name="Position" />
+          <SimpleJoin name="Position" joinType="LEFT">
+            <SimpleColumn name="Name" alias="Position" />
+          </SimpleJoin>
 
           <SimpleJoin joinType="LEFT" name="Company">
             <SimpleColumn name="Name" alias="CompanyName" />

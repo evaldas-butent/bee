@@ -17,6 +17,7 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetFactory;
@@ -220,10 +221,10 @@ public class RowEditor {
   private static void openForm(FormDescription formDescription, final FormView formView,
       final DataInfo dataInfo, final IsRow oldRow, final boolean modal, UIObject target,
       final RowCallback callback, PresenterCallback presenterCallback) {
-    
+
     Set<Action> enabledActions = EnumSet.of(Action.SAVE, Action.PRINT, Action.CLOSE);
     Set<Action> disabledActions = Sets.newHashSet();
-    
+
     if (formDescription != null) {
       Set<Action> actions = formDescription.getEnabledActions();
       if (!BeeUtils.isEmpty(actions)) {
@@ -231,7 +232,7 @@ public class RowEditor {
         disabledActions.removeAll(actions);
         enabledActions.retainAll(actions);
       }
-      
+
       actions = formDescription.getDisabledActions();
       if (!BeeUtils.isEmpty(actions)) {
         enabledActions.removeAll(actions);
@@ -286,6 +287,11 @@ public class RowEditor {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
+        FormInterceptor interceptor = formView.getFormInterceptor();
+
+        if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
+          return;
+        }
         if (Action.CLOSE.equals(action)) {
           formView.onClose(close);
 
@@ -298,6 +304,9 @@ public class RowEditor {
           } else {
             Printer.print(formView);
           }
+        }
+        if (interceptor != null) {
+          interceptor.afterAction(action, presenter);
         }
       }
     });
@@ -331,7 +340,7 @@ public class RowEditor {
           }
         });
       }
-      
+
       dialog.addOpenHandler(new OpenEvent.Handler() {
         @Override
         public void onOpen(OpenEvent event) {
@@ -368,7 +377,7 @@ public class RowEditor {
     BeeRowSet updated = DataUtils.getUpdated(dataInfo.getViewName(), oldRow.getId(),
         oldRow.getVersion(), event.getColumns(), event.getOldValues(), event.getNewValues(),
         event.getChildren());
-    
+
     if (DataUtils.isEmpty(updated) && BeeUtils.isEmpty(event.getChildren())) {
       return;
     }
@@ -385,7 +394,7 @@ public class RowEditor {
         callback.onSuccess(result);
       }
     };
-    
+
     if (DataUtils.isEmpty(updated)) {
       Queries.updateChildren(dataInfo.getViewName(), oldRow.getId(), event.getChildren(),
           updateCallback);

@@ -50,7 +50,7 @@
 
       <FlowPanel style="&row;">
         <Label html="Vadybininkas" style="&lbl;" />
-        <DataSelector source="Manager" editSource="CustomerPerson" style="&w2;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" style="&w2;" />
       </FlowPanel>
     </FlowPanel>
 

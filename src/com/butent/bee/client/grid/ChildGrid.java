@@ -85,6 +85,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return parentId;
   }
 
+  public GridPresenter getPresenter() {
+    return presenter;
+  }
+
   @Override
   public boolean isEnabled() {
     if (getPresenter() == null) {
@@ -260,10 +264,6 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   private IsRow getPendingRow() {
     return pendingRow;
-  }
-
-  private GridPresenter getPresenter() {
-    return presenter;
   }
 
   private String getRelSource() {

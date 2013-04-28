@@ -70,7 +70,7 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
+    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE, TradeConstants.TRADE_MODULE);
   }
 
   @Override

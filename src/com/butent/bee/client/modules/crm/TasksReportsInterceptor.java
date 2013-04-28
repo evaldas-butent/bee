@@ -12,12 +12,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
@@ -135,7 +135,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       }
 
       MultiSelector userId = (MultiSelector) form.getWidgetByName(WIDGET_USER_NAME);
-    
+
       if (userId != null) {
         if (!BeeUtils.isEmpty(userId.getValue())) {
           params.addQueryItem(CrmConstants.VAR_TASK_PUBLISHER, userId.getValue().trim());
@@ -182,8 +182,8 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           }
         }
 
-        private void doReport(FormView form, SimpleRowSet rowSet) {
-          FlowPanel reportPanel = (FlowPanel) form.getWidgetByName(WIDGET_REPORT_TABLE_NAME);
+        private void doReport(FormView formView, SimpleRowSet rowSet) {
+          FlowPanel reportPanel = (FlowPanel) formView.getWidgetByName(WIDGET_REPORT_TABLE_NAME);
           reportPanel.clear();
 
           int gridRows = rowSet.getNumberOfRows();
@@ -249,7 +249,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onShow(FormPresenter presenter) {
+  public void onShow(Presenter presenter) {
   }
 
   @Override

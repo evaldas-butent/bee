@@ -7,6 +7,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="&form;" viewName="PrintContract" caption="Sutartis" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
@@ -25,59 +26,35 @@
 
     <Table class="&form;-table" style="&section;">
       <row>
-      <cell style="vertical-align:top;">
-        <FlowPanel>
-          <TextLabel source="ForwarderName" style="&bold;">
-            <renderToken source="ForwarderName" prefix="Vežėjas: " />
-          </TextLabel>
-          <TextLabel source="ForwarderCode">
-            <renderToken source="ForwarderCode" prefix="Įmonės kodas: " />
-          </TextLabel>
-          <TextLabel source="ForwarderVATCode">
-            <renderToken source="ForwarderVATCode" prefix="PVM kodas: " />
-          </TextLabel>
-          <TextLabel source="ForwarderAddress">
-            <renderToken source="ForwarderAddress" prefix="Adresas: " />
-            <renderToken source="ForwarderCity" prefix=", " />
-            <renderToken source="ForwarderCountry" prefix=", " />
-            <renderToken source="ForwarderPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="ForwarderPhone">
-            <renderToken source="ForwarderPhone" prefix="Tel: " suffix=" " />
-            <renderToken source="ForwarderMobile" prefix="Mob: " suffix=" " />
-            <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="ForwarderEmail">
-            <renderToken source="ForwarderEmail" prefix="El.paštas: " />
-          </TextLabel>
-        </FlowPanel>
-      </cell>
+        <cell style="vertical-align:top;">
+          <FlowPanel>
+            <TextLabel source="ForwarderName" style="&bold;">
+              <renderToken source="ForwarderName" prefix="Vežėjas: " />
+            </TextLabel>
+            <TextLabel source="ForwarderCode">
+              <renderToken source="ForwarderCode" prefix="Įmonės kodas: " />
+            </TextLabel>
+            <TextLabel source="ForwarderVATCode">
+              <renderToken source="ForwarderVATCode" prefix="PVM kodas: " />
+            </TextLabel>
+            <TextLabel source="ForwarderAddress">
+              <renderToken source="ForwarderAddress" prefix="Adresas: " />
+              <renderToken source="ForwarderCity" prefix=", " />
+              <renderToken source="ForwarderCountry" prefix=", " />
+              <renderToken source="ForwarderPostIndex" prefix=", " />
+            </TextLabel>
+            <TextLabel source="ForwarderPhone">
+              <renderToken source="ForwarderPhone" prefix="Tel: " suffix=" " />
+              <renderToken source="ForwarderMobile" prefix="Mob: " suffix=" " />
+              <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
+            </TextLabel>
+            <TextLabel source="ForwarderEmail">
+              <renderToken source="ForwarderEmail" prefix="El.paštas: " />
+            </TextLabel>
+          </FlowPanel>
+        </cell>
         
-      <FlowPanel>
-        <TextLabel source="CompanyName" style="&bold;">
-          <renderToken source="CompanyName" />
-        </TextLabel>
-        <TextLabel source="CompanyCode">
-          <renderToken source="CompanyCode" prefix="Įmonės kodas: " />
-        </TextLabel>
-        <TextLabel source="CompanyVATCode">
-          <renderToken source="CompanyVATCode" prefix="PVM kodas: " />
-        </TextLabel>
-        <TextLabel source="CompanyAddress">
-          <renderToken source="CompanyAddress" prefix="Adresas: " />
-          <renderToken source="CompanyCity" prefix=", " />
-          <renderToken source="CompanyCountry" prefix=", " />
-          <renderToken source="CompanyPostIndex" prefix=", " />
-        </TextLabel>
-        <TextLabel source="CompanyPhone">
-          <renderToken source="CompanyPhone" prefix="Tel: " suffix=" " />
-          <renderToken source="CompanyMobile" prefix="Mob: " suffix=" " />
-          <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
-        </TextLabel>
-        <TextLabel source="CompanyEmail">
-          <renderToken source="CompanyEmail" prefix="El.paštas: " />
-        </TextLabel>
-      </FlowPanel>
+        <xi:include href="../../widgets/CompanyInfo.widget.xml" />
       </row>
       <row>
         <Label html="Krovinys" />

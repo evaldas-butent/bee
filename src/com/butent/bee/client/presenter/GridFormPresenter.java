@@ -10,6 +10,7 @@ import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderSilverImpl;
@@ -112,7 +113,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     if (action == null) {
       return;
     }
+    FormInterceptor interceptor = getForm().getFormInterceptor();
 
+    if (interceptor != null && !interceptor.beforeAction(action, this)) {
+      return;
+    }
     switch (action) {
       case CLOSE:
         getForm().onClose(new CloseCallback() {
@@ -149,6 +154,9 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       default:
+    }
+    if (interceptor != null) {
+      interceptor.afterAction(action, this);
     }
   }
 

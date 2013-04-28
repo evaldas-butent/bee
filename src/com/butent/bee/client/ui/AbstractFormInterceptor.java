@@ -3,7 +3,7 @@ package com.butent.bee.client.ui;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -26,7 +26,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   private FormView formView;
 
   @Override
-  public void afterAction(Action action, FormPresenter presenter) {
+  public void afterAction(Action action, Presenter presenter) {
   }
 
   @Override
@@ -47,7 +47,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public boolean beforeAction(Action action, FormPresenter presenter) {
+  public boolean beforeAction(Action action, Presenter presenter) {
     return true;
   }
 
@@ -124,7 +124,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public void onShow(FormPresenter presenter) {
+  public void onShow(Presenter presenter) {
   }
 
   @Override
