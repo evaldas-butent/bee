@@ -16,6 +16,7 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasFilterHandler {
@@ -45,6 +46,10 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
 
   public Filter getFilter() {
     return filterSupplier.getFilter();
+  }
+  
+  public String getFilterLabel() {
+    return isEmpty() ? null : getFooterCell().getHtml();
   }
 
   public String getId() {
@@ -99,6 +104,15 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
   @Override
   public void setFilterHandler(FilterHandler filterHandler) {
     this.filterHandler = filterHandler;
+  }
+  
+  public void update(FilterInfo filterInfo) {
+    if (filterInfo == null || filterInfo.getFilter() == null) {
+      reset();
+    } else {
+      filterSupplier.setFilter(filterInfo.getFilter());
+      getFooterCell().setHtml(filterInfo.getLabel());
+    }
   }
 
   private void close() {

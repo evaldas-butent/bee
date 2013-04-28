@@ -57,7 +57,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,
           DATA_TYPE_DRIVER);
-  
+
   static void createForCargo(final Vehicle truck, final HasShipmentInfo cargo, String cargoTitle,
       final boolean fire, final IdCallback callback) {
 
@@ -97,7 +97,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           }
         });
   }
-  
+
   static String getVehicleLabel(VehicleType vehicleType) {
     switch (vehicleType) {
       case TRUCK:
@@ -174,16 +174,18 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     return result;
   }
-  
-  static void maybeAssignCargo(String cargoMessage, String tripMessage, 
+
+  static void maybeAssignCargo(String cargoMessage, String tripMessage,
       final ConfirmationCallback callback) {
     if (BeeUtils.isEmpty(cargoMessage) || BeeUtils.isEmpty(tripMessage) || callback == null) {
       return;
     }
 
-    Global.confirm(Global.CONSTANTS.assignCargoToTripCaption(), Icon.QUESTION,
-        Lists.newArrayList(cargoMessage, tripMessage, Global.CONSTANTS.assignCargoToTripQuestion()),
-        callback);
+    Global
+        .confirm(Global.CONSTANTS.assignCargoToTripCaption(), Icon.QUESTION,
+            Lists.newArrayList(cargoMessage, tripMessage, Global.CONSTANTS
+                .assignCargoToTripQuestion()),
+            callback);
   }
 
   private final Long tripId;
@@ -203,13 +205,17 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private final String notes;
 
   private final Range<JustDate> range;
-  
+
   private final Collection<Driver> drivers;
   private final String title;
 
   private final String itemName;
 
-  Trip(SimpleRow row, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
+  Trip(SimpleRow row, Collection<Driver> drivers, int cargoCount) {
+    this(row, null, null, drivers, cargoCount);
+  }
+  
+  Trip(SimpleRow row, JustDate minDate, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
@@ -226,13 +232,13 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     this.notes = row.getValue(COL_TRIP_NOTES);
 
-    JustDate start = BeeUtils.nvl(this.dateFrom, this.date.getDate());
-    JustDate end = BeeUtils.nvl(this.dateTo, this.plannedEndDate, maxDate);
+    JustDate start = BeeUtils.nvl(this.dateFrom, BeeUtils.min(this.date.getDate(), minDate));
+    JustDate end = BeeUtils.nvl(this.dateTo, BeeUtils.max(this.plannedEndDate, maxDate));
 
     this.range = Range.closed(start, BeeUtils.max(start, end));
-    
+
     this.drivers = drivers;
-    
+
     String rangeLabel = ChartHelper.getRangeLabel(this.range);
 
     this.title = ChartHelper.buildTitle(
@@ -243,10 +249,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         driversLabel, Driver.getNames(BeeConst.DEFAULT_LIST_SEPARATOR, drivers),
         cargosLabel, cargoCount,
         notesLabel, this.notes);
-    
+
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
   }
-  
+
   @Override
   public Long getColorSource() {
     return tripId;
@@ -277,7 +283,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   String getTrailerNumber() {
     return trailerNumber;
   }
-  
+
   Long getTripId() {
     return tripId;
   }
@@ -297,7 +303,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   String getTruckNumber() {
     return truckNumber;
   }
-  
+
   Long getVehicleId(VehicleType vehicleType) {
     switch (vehicleType) {
       case TRUCK:
@@ -328,9 +334,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         }
       }
     }
-    return false; 
+    return false;
   }
-  
+
   boolean hasDrivers() {
     return !BeeUtils.isEmpty(drivers);
   }
@@ -350,7 +356,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           }
         });
   }
-  
+
   boolean matchesDrivers(ChartData driverData) {
     if (driverData == null) {
       return true;
@@ -363,7 +369,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         }
       }
     }
-    
+
     return false;
   }
 
@@ -371,18 +377,18 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     if (driver == null) {
       return;
     }
-    
+
     final String viewName = VIEW_TRIP_DRIVERS;
-    
+
     String driverTitle = ChartHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
         driver.getItemName());
-    
+
     Global.confirm(Global.CONSTANTS.assignDriverToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(driverTitle, getTitle(), Global.CONSTANTS.assignDriverToTripQuestion()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            List<BeeColumn> columns = 
+            List<BeeColumn> columns =
                 Data.getColumns(viewName, Lists.newArrayList(COL_TRIP, COL_DRIVER));
             List<String> values = Queries.asList(getTripId(), driver.getId());
 
@@ -390,7 +396,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           }
         });
   }
-  
+
   void maybeUpdateVehicle(VehicleType vehicleType, Vehicle vehicle) {
     if (vehicleType == null || vehicle == null) {
       return;
@@ -438,7 +444,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       }
     });
   }
-  
+
   private void acceptDrop(Object data) {
     if (DndHelper.isDataType(DATA_TYPE_TRUCK)) {
       maybeUpdateVehicle(VehicleType.TRUCK, (Vehicle) data);
@@ -472,7 +478,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       maybeAddDriver((Driver) data);
     }
   }
-  
+
   private boolean isTarget(Object data) {
     if (DndHelper.isDataType(DATA_TYPE_TRUCK) && data instanceof Vehicle) {
       return !Objects.equal(getTruckId(), ((Vehicle) data).getId());

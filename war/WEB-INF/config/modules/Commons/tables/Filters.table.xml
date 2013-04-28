@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Filters"
+  idName="FilterID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" />
+    <String name="Key" precision="100" notNull="true" />
+    <Boolean name="Initial" />
+    <Integer name="Order" />
+    <String name="Name" precision="100" notNull="true" />
+    <Text name="Filter" notNull="true" />
+  </Fields>
+</Table>

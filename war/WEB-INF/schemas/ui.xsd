@@ -241,6 +241,7 @@
       <xs:enumeration value="silverConfigure" />
       <xs:enumeration value="silverDelete" />
       <xs:enumeration value="silverEdit" />
+      <xs:enumeration value="silverFilter" />
       <xs:enumeration value="silverFilterRemove" />
       <xs:enumeration value="silverMinus" />
       <xs:enumeration value="silverPlus" />

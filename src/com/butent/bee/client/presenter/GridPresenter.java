@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -62,6 +63,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -70,6 +72,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
@@ -320,6 +323,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case BOOKMARK:
+        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
+            gridContainer.getFavorite());
+        break;
+
       case CLOSE:
         close();
         break;
@@ -351,19 +359,18 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
-      case REFRESH:
-        refresh(true);
-        break;
-
-      case BOOKMARK:
-        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
-            gridContainer.getFavorite());
+      case FILTER:
+        handleFilter();
         break;
 
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
           Printer.print(gridContainer);
         }
+        break;
+
+      case REFRESH:
+        refresh(true);
         break;
 
       case REMOVE_FILTER:
@@ -657,6 +664,43 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private Filter getLastFilter() {
     return lastFilter;
+  }
+
+  private void handleFilter() {
+    String label;
+    String serialized;
+
+    List<FilterInfo> columnFilters = getGridView().getColumnFilters();
+    if (BeeUtils.isEmpty(columnFilters)) {
+      label = null;
+      serialized = null;
+
+    } else {
+      List<String> labels = Lists.newArrayList();
+      for (FilterInfo filterInfo : columnFilters) {
+        labels.add(BeeUtils.joinWords(filterInfo.getCaption(), filterInfo.getLabel()));
+      }
+
+      label = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, labels);
+      serialized = Codec.beeSerialize(columnFilters);
+    }
+
+    Element relativeTo = (getHeader() == null) ? null : getHeader().asWidget().getElement();
+
+    Global.getFilters().handle(gridContainer.getSupplierKey(), label, serialized, relativeTo,
+        new Consumer<String>() {
+          @Override
+          public void accept(String input) {
+            String arr[] = Codec.beeDeserializeCollection(input);
+            List<FilterInfo> filters = Lists.newArrayList();
+            for (String s : arr) {
+              filters.add(FilterInfo.restore(s));
+            }
+
+            getGridView().setColumnFilters(filters);
+            updateFilter(null);
+          }
+        });
   }
 
   private void setLastFilter(Filter lastFilter) {

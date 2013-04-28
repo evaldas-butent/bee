@@ -401,13 +401,16 @@ abstract class VehicleTimeBoard extends ChartBase {
         int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
+          JustDate minDate = null;
           JustDate maxDate = null;
+
           for (Freight freight : freights.get(tripId)) {
+            minDate = BeeUtils.min(minDate, freight.getMinDate());
             maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
             cargoCount++;
           }
 
-          Trip trip = new Trip(row, maxDate, tripDrivers, cargoCount);
+          Trip trip = new Trip(row, minDate, maxDate, tripDrivers, cargoCount);
           trips.put(row.getLong(index), trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -416,7 +419,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(row.getLong(index), new Trip(row, null, tripDrivers, cargoCount));
+          trips.put(row.getLong(index), new Trip(row, tripDrivers, cargoCount));
         }
       }
     }

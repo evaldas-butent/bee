@@ -140,6 +140,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
       Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
       Set<Action> disabledActions = Sets.newHashSet(gridDescription.getDisabledActions());
+      
+      if (hasSearch() && !disabledActions.contains(Action.FILTER)) {
+        enabledActions.add(Action.FILTER);
+      }
 
       boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
       if (fav) {

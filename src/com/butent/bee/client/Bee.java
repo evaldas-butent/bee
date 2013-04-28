@@ -53,6 +53,7 @@ public class Bee implements EntryPoint {
           @Override
           public void onSuccess(Integer result) {
             Global.getFavorites().load();
+            Global.getFilters().load();
           }
         });
 

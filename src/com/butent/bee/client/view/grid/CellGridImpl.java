@@ -83,6 +83,7 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
@@ -102,6 +103,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterInfo;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -487,7 +489,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
     }
   }
-
+  
   @Override
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
@@ -818,12 +820,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             && (columnDescr.getFilterSupplierType() != null
             || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
 
-          filterSupplier =
-              FilterSupplierFactory.getSupplier(getViewName(),
-                  (dataIndex >= 0) ? dataCols.get(dataIndex) : null, columnDescr
-                      .getFilterSupplierType(),
-                  renderColumns, column.getSortBy(), columnDescr.getItemKey(),
-                  columnDescr.getRelation(), columnDescr.getFilterOptions());
+          filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
+              (dataIndex >= 0) ? dataCols.get(dataIndex) : null,
+              columnDescr.getFilterSupplierType(), renderColumns, column.getSortBy(),
+              columnDescr.getItemKey(), columnDescr.getRelation(),
+              columnDescr.getFilterOptions());
         }
 
         if (filterSupplier != null) {
@@ -1102,6 +1103,21 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public List<FilterInfo> getColumnFilters() {
+    List<FilterInfo> filters = Lists.newArrayList();
+
+    for (ColumnInfo columnInfo : getGrid().getColumns()) {
+      ColumnFooter footer = columnInfo.getFooter();
+      if (footer != null && footer.getFilter() != null) {
+        filters.add(new FilterInfo(columnInfo.getColumnId(), columnInfo.getCaption(),
+            footer.getFilterLabel(), footer.getFilter()));
+      }
+    }
+    
+    return filters;
+  }
+
+  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
@@ -1112,7 +1128,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
+  public Filter getFilter(List<? extends IsColumn> columnsa, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
 
     if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
@@ -1369,6 +1385,34 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public void refreshCellContent(long rowId, String columnSource) {
     getGrid().refreshCellContent(rowId, columnSource);
+  }
+
+  @Override
+  public void setColumnFilters(Collection<FilterInfo> filters) {
+    if (BeeUtils.isEmpty(filters)) {
+      clearFilter();
+
+    } else {
+      for (ColumnInfo columnInfo : getGrid().getColumns()) {
+        ColumnFooter footer = columnInfo.getFooter();
+
+        if (footer != null) {
+          boolean updated = false;
+
+          for (FilterInfo filterInfo : filters) {
+            if (columnInfo.getColumnId().equals(filterInfo.getId())) {
+              footer.update(filterInfo);
+              updated = true;
+              break;
+            }
+          }
+          
+          if (!updated && !footer.isEmpty()) {
+            footer.reset();
+          }
+        }
+      }
+    }
   }
 
   @Override

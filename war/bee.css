@@ -376,7 +376,7 @@ body {
 
 .bee-Header-commandPanel {
   margin-left: auto;
-  margin-right: 8px;
+  margin-right: 3em;
   border-collapse: collapse;
 }
 .bee-Header-commandPanel .bee-Button {
@@ -1615,6 +1615,20 @@ body {
 }
 .bee-FilterSupplier-dateTime-time {
   width: 40px;
+}
+
+.bee-Filters-dialog {
+  background-color: white;
+}
+
+.bee-Filters-name {
+  min-width: 120px;
+  max-width: 300px;
+  cursor: pointer; 
+}
+.bee-Filters-name:hover {
+  color: #00e;
+  text-decoration: underline;
 }
 
 .bee-resizable {

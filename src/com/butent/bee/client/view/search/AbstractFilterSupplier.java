@@ -145,6 +145,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     this.effectiveFilter = effectiveFilter;
   }
 
+  public void setFilter(Filter filter) {
+    this.filter = filter;
+  }
+
   @Override
   public void setOptions(String options) {
     this.options = options;
@@ -507,10 +511,6 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   private void setDialog(Popup dialog) {
     this.dialog = dialog;
-  }
-
-  private void setFilter(Filter filter) {
-    this.filter = filter;
   }
 
   private void setFilterChanged(boolean filterChanged) {

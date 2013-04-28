@@ -222,6 +222,10 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return BeeUtils.max(loadingDate, unloadingDate);
   }
   
+  JustDate getMinDate() {
+    return BeeUtils.min(loadingDate, unloadingDate);
+  }
+
   DateTime getOrderDate() {
     return orderDate;
   }

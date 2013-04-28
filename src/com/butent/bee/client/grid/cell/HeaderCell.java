@@ -17,13 +17,14 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements header cells rendering and behavior management.
  */
 
-public class HeaderCell extends AbstractCell<String> {
+public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
   /**
    * Specifies header cell's templates for safeHtml usage.
@@ -64,6 +65,11 @@ public class HeaderCell extends AbstractCell<String> {
 
     sortInfoId = DomUtils.createUniqueId("sort-info");
     captionId = DomUtils.createUniqueId("caption");
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   @Override

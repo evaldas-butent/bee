@@ -83,6 +83,7 @@ import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridComponentDescription;
@@ -129,76 +130,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     SafeHtml resizerHandle(String id);
   }
 
-  private class CellInfo {
-    private int width;
-    private int height;
-
-    private Edges nextRowPadding = null;
-    private Edges nextRowBorders = null;
-
-    private Edges nextColumnPadding = null;
-    private Edges nextColumnBorders = null;
-
-    private CellInfo(int width, int height) {
-      this.width = width;
-      this.height = height;
-    }
-
-    private int getHeight() {
-      return height;
-    }
-
-    private Edges getNextColumnBorders() {
-      return nextColumnBorders;
-    }
-
-    private Edges getNextColumnPadding() {
-      return nextColumnPadding;
-    }
-
-    private Edges getNextRowBorders() {
-      return nextRowBorders;
-    }
-
-    private Edges getNextRowPadding() {
-      return nextRowPadding;
-    }
-
-    private int getWidth() {
-      return width;
-    }
-
-    private void setHeight(int height) {
-      this.height = height;
-    }
-
-    private void setNextColumnBorders(Edges nextColumnBorders) {
-      this.nextColumnBorders = nextColumnBorders;
-    }
-
-    private void setNextColumnPadding(Edges nextColumnPadding) {
-      this.nextColumnPadding = nextColumnPadding;
-    }
-
-    private void setNextRowBorders(Edges nextRowBorders) {
-      this.nextRowBorders = nextRowBorders;
-    }
-
-    private void setNextRowPadding(Edges nextRowPadding) {
-      this.nextRowPadding = nextRowPadding;
-    }
-
-    private void setSize(int width, int height) {
-      setWidth(width);
-      setHeight(height);
-    }
-
-    private void setWidth(int width) {
-      this.width = width;
-    }
-  }
-
-  private class ColumnInfo implements HasValueType, Flexible {
+  class ColumnInfo implements HasValueType, Flexible, HasCaption {
     private final String columnId;
 
     private final CellSource source;
@@ -261,6 +193,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     @Override
+    public String getCaption() {
+      return (getHeader() == null) ? caption : getHeader().getCaption();
+    }
+
+    @Override
     public Flexibility getFlexibility() {
       return flexibility;
     }
@@ -307,6 +244,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
     }
 
+    String getColumnId() {
+      return columnId;
+    }
+
+    ColumnFooter getFooter() {
+      return footer;
+    }
+
+    ColumnHeader getHeader() {
+      return header;
+    }
+
     private void buildSafeStyles(SafeStylesBuilder stylesBuilder, ComponentType componentType) {
       StyleDescriptor sd = getStyleDescriptor(componentType);
       if (sd == null) {
@@ -350,10 +299,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return bodyWidth;
     }
 
-    private String getCaption() {
-      return caption;
-    }
-
     private String getClassName(ComponentType componentType) {
       StyleDescriptor sd = getStyleDescriptor(componentType);
       if (sd == null) {
@@ -366,10 +311,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return column;
     }
 
-    private String getColumnId() {
-      return columnId;
-    }
-
     private ConditionalStyle getDynStyles() {
       return dynStyles;
     }
@@ -378,20 +319,12 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return flexWidth;
     }
 
-    private ColumnFooter getFooter() {
-      return footer;
-    }
-
     private StyleDescriptor getFooterStyle() {
       return footerStyle;
     }
 
     private int getFooterWidth() {
       return footerWidth;
-    }
-
-    private ColumnHeader getHeader() {
-      return header;
     }
 
     private Font getHeaderFont() {
@@ -595,6 +528,75 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       } else {
         return false;
       }
+    }
+  }
+
+  private class CellInfo {
+    private int width;
+    private int height;
+
+    private Edges nextRowPadding = null;
+    private Edges nextRowBorders = null;
+
+    private Edges nextColumnPadding = null;
+    private Edges nextColumnBorders = null;
+
+    private CellInfo(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    private int getHeight() {
+      return height;
+    }
+
+    private Edges getNextColumnBorders() {
+      return nextColumnBorders;
+    }
+
+    private Edges getNextColumnPadding() {
+      return nextColumnPadding;
+    }
+
+    private Edges getNextRowBorders() {
+      return nextRowBorders;
+    }
+
+    private Edges getNextRowPadding() {
+      return nextRowPadding;
+    }
+
+    private int getWidth() {
+      return width;
+    }
+
+    private void setHeight(int height) {
+      this.height = height;
+    }
+
+    private void setNextColumnBorders(Edges nextColumnBorders) {
+      this.nextColumnBorders = nextColumnBorders;
+    }
+
+    private void setNextColumnPadding(Edges nextColumnPadding) {
+      this.nextColumnPadding = nextColumnPadding;
+    }
+
+    private void setNextRowBorders(Edges nextRowBorders) {
+      this.nextRowBorders = nextRowBorders;
+    }
+
+    private void setNextRowPadding(Edges nextRowPadding) {
+      this.nextRowPadding = nextRowPadding;
+    }
+
+    private void setSize(int width, int height) {
+      setWidth(width);
+      setHeight(height);
+    }
+
+    private void setWidth(int width) {
+      this.width = width;
     }
   }
 
@@ -2485,6 +2487,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.resizerShowSensitivityMillis = resizerShowSensitivityMillis;
   }
 
+  List<ColumnInfo> getColumns() {
+    return columns;
+  }
+
   private void activateCell(int row, int col) {
     if (getActiveRowIndex() == row) {
       setActiveColumnIndex(col);
@@ -2703,7 +2709,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     Assert.isTrue(isRowWithinBounds(row), "row index " + row + " out of bounds: page size "
         + getPageSize() + ", row count " + getRowCount() + ", data size " + getDataSize());
   }
-
+  
   private void deleteRow(long rowId) {
     if (getRenderedRows().contains(rowId)) {
       getRenderedRows().clear();
@@ -2721,7 +2727,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       getResizedCells().rowKeySet().remove(rowId);
     }
   }
-  
+
   private int estimateBodyCellWidth(int rowIndex, int col, IsRow rowValue,
       AbstractColumn<?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
@@ -4939,7 +4945,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizerMoveTimer().reset();
     setResizing(true);
   }
-
+  
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
@@ -4947,7 +4953,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     setResizerModifiers(null);
   }
-  
+
   private void updateCellContent(int rowIndex, int col) {
     IsRow rowValue = getDataItem(rowIndex);
     Assert.notNull(rowValue);

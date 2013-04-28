@@ -227,6 +227,9 @@ public class Images {
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
 
+    @Source("silver/filter_17x14.png")
+    ImageResource silverFilter();
+
     @Source("silver/filter_remove_25x14.png")
     ImageResource silverFilterRemove();
     
@@ -426,6 +429,7 @@ public class Images {
     map.put(key("silverConfigure"), resources.silverConfigure());
     map.put(key("silverDelete"), resources.silverDelete());
     map.put(key("silverEdit"), resources.silverEdit());
+    map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());
     map.put(key("silverMinus"), resources.silverMinus());
     map.put(key("silverPlus"), resources.silverPlus());

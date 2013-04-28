@@ -34,6 +34,11 @@ public class FooterCell extends AbstractCell<AbstractFilterSupplier> {
     this.contentId = DomUtils.createUniqueId("fc");
   }
 
+  public String getHtml() {
+    Element content = DomUtils.getElementQuietly(contentId);
+    return (content == null) ? null : content.getInnerHTML();
+  }
+  
   @Override
   public void render(Context context, AbstractFilterSupplier fs, SafeHtmlBuilder sb) {
     String html = BeeUtils.trim(fs.getDisplayHtml());
@@ -45,13 +50,19 @@ public class FooterCell extends AbstractCell<AbstractFilterSupplier> {
     sb.append(TEMPLATE.content(contentId, classes, title, html));
   }
   
+  public void setHtml(String html) {
+    update(null, html, html);
+  }
+  
   public void update(Element container, AbstractFilterSupplier fs) {
+    update(container, fs.getDisplayHtml(), fs.getDisplayTitle());
+  }
+  
+  private void update(Element container, String html, String title) {
     Element content = (container == null) ? null : DomUtils.getChildById(container, contentId);
     if (content == null) {
       content = DomUtils.getElement(contentId);
     }
-    
-    String html = fs.getDisplayHtml();
     
     boolean wasEmpty = BeeUtils.isEmpty(content.getInnerHTML());
     content.setInnerHTML(BeeUtils.trim(html));
@@ -62,6 +73,6 @@ public class FooterCell extends AbstractCell<AbstractFilterSupplier> {
       content.addClassName(isEmpty ? STYLE_EMPTY : STYLE_FILTER);
     }
     
-    content.setTitle(BeeUtils.trim(fs.getDisplayTitle()));
+    content.setTitle(BeeUtils.trim(title));
   }
 }

@@ -1,5 +1,6 @@
 package com.butent.bee.client.dialog;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.shared.Validator;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -20,7 +21,7 @@ public abstract class StringCallback implements Validator<String> {
     if (validate(value)) {
       return null;
     } else if (isRequired() && BeeUtils.isEmpty(value)) {
-      return "Value required";
+      return Global.CONSTANTS.valueRequired();
     } else {
       return "No way!";
     }

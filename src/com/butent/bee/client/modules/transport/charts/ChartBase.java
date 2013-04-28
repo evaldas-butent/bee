@@ -54,7 +54,6 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
@@ -129,7 +128,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_START_SLIDER_LABEL = STYLE_SELECTOR_START_SLIDER + "-label";
   private static final String STYLE_END_SLIDER_LABEL = STYLE_SELECTOR_END_SLIDER + "-label";
 
-  private static final String STYLE_ACTION_FILTER = STYLE_PREFIX + "actionFilter";
   private static final String STYLE_FILTER_LABEL = STYLE_PREFIX + "filterLabel";
   private static final String STYLE_ACTION_REMOVE_FILTER = STYLE_PREFIX + "actionRemoveFilter";
 
@@ -204,16 +202,6 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         Action.NO_ACTIONS);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {
-      BeeButton filter = new BeeButton(Global.CONSTANTS.filter(), new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          handleAction(Action.FILTER);
-        }
-      });
-      filter.addStyleName(STYLE_ACTION_FILTER);
-
-      headerView.addCommandItem(filter);
-
       this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);
       headerView.addCommandItem(filterLabel);
 
@@ -224,6 +212,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         }
       });
       removeFilter.addStyleName(STYLE_ACTION_REMOVE_FILTER);
+      removeFilter.setTitle(Action.REMOVE_FILTER.getCaption());
       removeFilter.setVisible(false);
 
       headerView.addCommandItem(removeFilter);
@@ -532,8 +521,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       ok = true;
 
     } else if (headerView.asWidget().getElement().isOrHasChild(source)) {
-      if (StyleUtils.hasClassName(source, STYLE_ACTION_FILTER)
-          || StyleUtils.hasClassName(source, STYLE_ACTION_REMOVE_FILTER)) {
+      if (StyleUtils.hasClassName(source, STYLE_ACTION_REMOVE_FILTER)) {
         ok = false;
       } else {
         ok = headerView.onPrint(source, target);
