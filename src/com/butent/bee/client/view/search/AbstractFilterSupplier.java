@@ -22,6 +22,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.Html;
@@ -272,7 +273,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   }
 
   protected String getColumnLabel() {
-    return (getColumn() == null) ? null : getColumn().getLabel();
+    return (getColumn() == null) ? null : LocaleUtils.getLabel(getColumn());
   }
 
   protected ValueType getColumnType() {

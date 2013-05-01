@@ -51,8 +51,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private static final String trailerLabel = Data.getColumnLabel(VIEW_NAME, COL_TRAILER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_NAME, COL_TRIP_NOTES);
 
-  private static final String driversLabel = Data.getLocalizedCaption(VIEW_DRIVERS);
-  private static final String cargosLabel = Data.getLocalizedCaption(VIEW_CARGO_TRIPS);
+  private static final String driversLabel = Data.getViewCaption(VIEW_DRIVERS);
+  private static final String cargosLabel = Data.getViewCaption(VIEW_CARGO_TRIPS);
 
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,

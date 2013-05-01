@@ -43,6 +43,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -789,7 +790,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editSourceIndex = BeeConst.UNDEF;
     }
 
-    this.relationLabel = relation.getLabel();
+    this.relationLabel = LocaleUtils.maybeLocalize(relation.getLabel());
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 

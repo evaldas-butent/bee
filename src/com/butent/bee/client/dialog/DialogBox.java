@@ -65,7 +65,7 @@ public class DialogBox extends Popup implements Printable {
     CustomDiv captionWidget = new CustomDiv(STYLE_CAPTION);
     String text = LocaleUtils.maybeLocalize(caption);
     if (!BeeUtils.isEmpty(text)) {
-      captionWidget.getElement().setInnerText(text);
+      captionWidget.setText(text);
     }
 
     header.add(captionWidget);

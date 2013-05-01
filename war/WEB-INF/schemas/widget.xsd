@@ -21,6 +21,7 @@
     <xs:attribute name="parent" type="xs:normalizedString" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="text" type="xs:string" />
     <xs:attribute name="options" type="xs:normalizedString" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
     <xs:attribute name="disablable" type="xs:boolean" default="true" />
@@ -197,6 +198,7 @@
 
   <xs:complexType name="buttonFace">
     <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="text" type="xs:string" />
     <xs:attribute name="resource" type="ui:imageResource" />
     <xs:attribute name="url" type="xs:anyURI" />
     <xs:attributeGroup ref="ui:appearance" />
@@ -824,6 +826,7 @@
         <xs:element ref="TreeItem" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
       <xs:attribute name="html" type="xs:normalizedString" use="required" />
+      <xs:attribute name="text" type="xs:string" />
     </xs:complexType>
   </xs:element>
 

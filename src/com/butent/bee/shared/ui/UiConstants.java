@@ -27,6 +27,7 @@ public class UiConstants {
   public static final String ATTR_CACHE_DESCRIPTION = "cacheDescription";
   
   public static final String ATTR_HTML = "html";
+  public static final String ATTR_TEXT = "text";
   
   public static final String ATTR_NEW_ROW_FORM = "newRowForm";
   public static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";

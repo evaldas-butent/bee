@@ -51,7 +51,7 @@ public class Favorites implements HandlesDeleteEvents {
     ROW {
       @Override
       String getCaption(String key) {
-        return BeeUtils.notEmpty(Data.getViewCaption(key), key);
+        return Data.getViewCaption(key);
       }
 
       @Override

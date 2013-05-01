@@ -468,7 +468,8 @@ public enum FormWidget {
     Map<String, String> attributes = XmlUtils.getAttributes(element, false);
     List<Element> children = XmlUtils.getChildrenElements(element);
 
-    String html = attributes.get(UiConstants.ATTR_HTML);
+    String html = getTextOrHtml(element);
+    
     String url;
     String format;
     String min;
@@ -616,6 +617,9 @@ public enum FormWidget {
 
       case DIV:
         widget = new CustomDiv();
+        if (!BeeUtils.isEmpty(html)) {
+          ((CustomDiv) widget).setHTML(html);
+        }
         break;
 
       case DOUBLE_LABEL:
@@ -1515,7 +1519,7 @@ public enum FormWidget {
   }
 
   private Pair<String, BeeImage> getFaceOptions(Element element) {
-    String html = element.getAttribute(UiConstants.ATTR_HTML);
+    String html = getTextOrHtml(element);
     BeeImage image = null;
 
     String name = element.getAttribute(ATTR_RESOURCE);
@@ -1532,6 +1536,15 @@ public enum FormWidget {
       }
     }
     return Pair.of(html, image);
+  }
+
+  private String getTextOrHtml(Element element) {
+    String text = element.getAttribute(UiConstants.ATTR_TEXT);
+    if (BeeUtils.isEmpty(text)) {
+      return element.getAttribute(UiConstants.ATTR_HTML);
+    } else {
+      return LocaleUtils.maybeLocalize(text);
+    }
   }
 
   private Set<Type> getTypes() {
@@ -1840,7 +1853,7 @@ public enum FormWidget {
     if (!XmlUtils.tagIs(child, TAG_TREE_ITEM)) {
       return;
     }
-    TreeItem item = new TreeItem(child.getAttribute(UiConstants.ATTR_HTML));
+    TreeItem item = new TreeItem(getTextOrHtml(child));
     parent.addItem(item);
 
     for (Element chld : XmlUtils.getChildrenElements(child)) {

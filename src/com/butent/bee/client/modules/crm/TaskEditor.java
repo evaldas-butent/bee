@@ -34,6 +34,7 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
@@ -64,6 +65,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -543,7 +545,7 @@ class TaskEditor extends AbstractFormInterceptor {
       params.addDataItem(VAR_TASK_COMMENT, comment);
     }
 
-    List<String> notes = CrmUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
+    List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
     if (form.isEnabled()) {
       if (!CrmUtils.sameObservers(oldRow, newRow)) {
@@ -556,7 +558,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(CrmUtils.getDeleteNote(LABEL_OBSERVERS, label));
+            notes.add(getDeleteNote(LABEL_OBSERVERS, label));
           }
         }
 
@@ -564,7 +566,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(CrmUtils.getInsertNote(LABEL_OBSERVERS, label));
+            notes.add(getInsertNote(LABEL_OBSERVERS, label));
           }
         }
       }
@@ -574,7 +576,7 @@ class TaskEditor extends AbstractFormInterceptor {
         params.addDataItem(VAR_TASK_RELATIONS, NameUtils.join(updatedRelations));
 
         for (String relation : updatedRelations) {
-          String caption = Data.getLocalizedCaption(relation);
+          String caption = Data.getViewCaption(relation);
           MultiSelector selector = getMultiSelector(form, relation);
           if (selector == null) {
             continue;
@@ -587,7 +589,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : removed) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(CrmUtils.getDeleteNote(caption, label));
+              notes.add(getDeleteNote(caption, label));
             }
           }
 
@@ -595,7 +597,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : added) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(CrmUtils.getInsertNote(caption, label));
+              notes.add(getInsertNote(caption, label));
             }
           }
         }
@@ -1015,8 +1017,16 @@ class TaskEditor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
 
+  private String getDeleteNote(String label, String value) {
+    return BeeUtils.join(": ", label, BeeUtils.joinWords("pašalinta", value));
+  }
+
   private Long getExecutor() {
     return getLong(COL_EXECUTOR);
+  }
+
+  private String getInsertNote(String label, String value) {
+    return BeeUtils.join(": ", label, BeeUtils.joinWords("įtraukta", value));
   }
 
   private Long getLong(String colName) {
@@ -1078,6 +1088,43 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     }
     return updatedRelations;
+  }
+
+  private String getUpdateNote(String label, String oldValue, String newValue) {
+    return BeeUtils.join(": ", label, BeeUtils.join(" -> ", oldValue, newValue));
+  }
+
+  private List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
+    List<String> notes = Lists.newArrayList();
+    if (dataInfo == null || oldRow == null || newRow == null) {
+      return notes;
+    }
+
+    List<BeeColumn> columns = dataInfo.getColumns();
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+
+      String oldValue = oldRow.getString(i);
+      String newValue = newRow.getString(i);
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isEditable()) {
+        String label = LocaleUtils.getLabel(column);
+        String note;
+
+        if (BeeUtils.isEmpty(oldValue)) {
+          note = getInsertNote(label, DataUtils.render(dataInfo, newRow, column, i));
+        } else if (BeeUtils.isEmpty(newValue)) {
+          note = getDeleteNote(label, DataUtils.render(dataInfo, oldRow, column, i));
+        } else {
+          note = getUpdateNote(label, DataUtils.render(dataInfo, oldRow, column, i),
+              DataUtils.render(dataInfo, newRow, column, i));
+        }
+
+        notes.add(note);
+      }
+    }
+
+    return notes;
   }
 
   private boolean isEventEnabled(TaskEvent event, Integer status, Long owner, Long executor) {
@@ -1342,7 +1389,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     panel.add(display);
   }
-
+  
   private void showError(String message) {
     Global.showError("Klaida", Lists.newArrayList(message));
   }
@@ -1463,7 +1510,7 @@ class TaskEditor extends AbstractFormInterceptor {
       });
     }
   }
-
+  
   private void showExtensions(FormView form, BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return;

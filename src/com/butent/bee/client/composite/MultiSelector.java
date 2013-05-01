@@ -192,7 +192,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   public String getLabel() {
     String label = super.getRelationLabel();
     if (BeeUtils.isEmpty(label)) {
-      label = Data.getLocalizedCaption(getOracle().getViewName());
+      label = Data.getViewCaption(getOracle().getViewName());
     }
     return label;
   }

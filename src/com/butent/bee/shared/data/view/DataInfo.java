@@ -254,11 +254,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return index;
   }
 
-  public String getColumnLabel(String columnId) {
-    BeeColumn column = getColumn(columnId);
-    return (column == null) ? null : column.getLabel();
-  }
-  
   public List<String> getColumnNames(boolean includeIdAndVersion) {
     if (includeIdAndVersion) {
       return DataUtils.getColumnNames(getColumns(), getIdColumn(), getVersionColumn());

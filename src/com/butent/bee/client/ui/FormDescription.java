@@ -3,6 +3,7 @@ package com.butent.bee.client.ui;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.dom.Dimensions;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasOptions;
@@ -63,7 +64,7 @@ public class FormDescription implements HasViewName {
 
   public String getCaption() {
     String caption = getFormElement().getAttribute(UiConstants.ATTR_CAPTION);
-    return BeeUtils.trim(caption);
+    return LocaleUtils.maybeLocalize(BeeUtils.trim(caption));
   }
 
   public Dimensions getDimensions() {

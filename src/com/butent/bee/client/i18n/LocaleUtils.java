@@ -9,6 +9,7 @@ import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -175,6 +176,10 @@ public class LocaleUtils {
           "Zero Digit", nc.zeroDigit());
     }
     return lst;
+  }
+  
+  public static String getLabel(IsColumn column) {
+    return maybeLocalize(column.getLabel());
   }
 
   public static String getLanguageCode(LocaleInfo locale) {

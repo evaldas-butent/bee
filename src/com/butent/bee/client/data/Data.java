@@ -60,14 +60,14 @@ public class Data {
   }
 
   public static String getColumnLabel(String viewName, String colName) {
-    return getDataInfo(viewName).getColumnLabel(colName);
+    return LocaleUtils.getLabel(getColumn(viewName, colName));
   }
 
   public static List<String> getColumnLabels(String viewName, List<String> colNames) {
     List<String> result = Lists.newArrayList();
     
     for (BeeColumn column : getColumns(viewName, colNames)) {
-      result.add(column.getLabel());
+      result.add(LocaleUtils.getLabel(column));
     }
     
     return result;
@@ -140,11 +140,6 @@ public class Data {
     return COLUMN_MAPPER.getInteger(viewName, row, colName);
   }
   
-  public static String getLocalizedCaption(String viewName) {
-    String caption = getViewCaption(viewName);
-    return BeeUtils.notEmpty(LocaleUtils.maybeLocalize(caption), viewName);
-  }
-
   public static Long getLong(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getLong(viewName, row, colName);
   }
@@ -155,7 +150,7 @@ public class Data {
 
   public static String getViewCaption(String viewName) {
     DataInfo dataInfo = getDataInfo(viewName);
-    return (dataInfo == null) ? null : dataInfo.getCaption(); 
+    return BeeUtils.notEmpty(LocaleUtils.maybeLocalize(dataInfo.getCaption()), viewName);
   }
   
   public static void init(Callback<Integer> callback) {

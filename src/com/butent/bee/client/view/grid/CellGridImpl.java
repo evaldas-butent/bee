@@ -489,7 +489,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
     }
   }
-  
+
   @Override
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
@@ -637,16 +637,19 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       String caption = LocaleUtils.maybeLocalize(columnDescr.getCaption());
       if (BeeUtils.isEmpty(caption)) {
+        int index;
         if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
-          caption = DataUtils.getColumnLabel(originalSource, dataCols);
-        } else if (!BeeConst.isUndef(dataIndex)) {
-          caption = dataCols.get(dataIndex).getLabel();
+          index = DataUtils.getColumnIndex(originalSource, dataCols);
+        } else {
+          index = dataIndex;
+        }
+
+        if (!BeeConst.isUndef(index)) {
+          caption = LocaleUtils.getLabel(dataCols.get(index));
         }
 
         if (BeeUtils.isEmpty(caption)) {
           caption = columnName;
-        } else {
-          caption = LocaleUtils.maybeLocalize(caption);
         }
       }
 
@@ -1113,7 +1116,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             footer.getFilterLabel(), footer.getFilter()));
       }
     }
-    
+
     return filters;
   }
 
@@ -1406,7 +1409,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
               break;
             }
           }
-          
+
           if (!updated && !footer.isEmpty()) {
             footer.reset();
           }

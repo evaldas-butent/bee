@@ -18,6 +18,7 @@ import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
@@ -166,7 +167,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (!BeeUtils.isEmpty(getWidgetDescription().getCaption())) {
       return getWidgetDescription().getCaption();
     } else if (hasColumn()) {
-      return getDataColumn().getLabel();
+      return LocaleUtils.getLabel(getDataColumn());
     } else {
       return null;
     }
