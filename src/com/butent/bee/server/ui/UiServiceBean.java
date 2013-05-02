@@ -349,7 +349,8 @@ public class UiServiceBean {
 
     if (res instanceof BeeRowSet) {
       ResponseObject resp = ResponseObject.response(res);
-      resp.addWarning(usr.localMesssages().rowsRetrieved(((BeeRowSet) res).getNumberOfRows()));
+      int rc = ((BeeRowSet) res).getNumberOfRows();
+      resp.addWarning(usr.getLocalizableMesssages().rowsRetrieved(rc));
       return resp;
     } else if (res instanceof Number) {
       return ResponseObject.warning("Affected rows:", res);

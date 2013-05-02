@@ -160,6 +160,14 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
+  public LocalizableConstants getLocalizableConstants() {
+    return Localized.getConstants(getCurrentUserInfo().getLocale());
+  }
+
+  public LocalizableMessages getLocalizableMesssages() {
+    return Localized.getMessages(getCurrentUserInfo().getLocale());
+  }
+
   public String getRoleName(long roleId) {
     Assert.contains(roleCache, roleId);
     return roleCache.get(roleId);
@@ -334,14 +342,6 @@ public class UserServiceBean {
 
   public boolean isUserTable(String tblName) {
     return BeeUtils.inList(tblName, TBL_USERS, TBL_ROLES, TBL_USER_ROLES);
-  }
-
-  public LocalizableConstants localConstants() {
-    return Localized.getConstants(getCurrentUserInfo().getLocale());
-  }
-
-  public LocalizableMessages localMesssages() {
-    return Localized.getMessages(getCurrentUserInfo().getLocale());
   }
 
   @Lock(LockType.WRITE)

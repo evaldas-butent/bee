@@ -371,10 +371,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.id = id;
   }
 
-  public void setLocale(String locale) {
-    this.locale = locale;
-  }
-
   @Override
   public void setOptions(String options) {
     this.options = options;

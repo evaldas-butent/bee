@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -585,6 +586,8 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
+    LocalizableConstants constants = usr.getLocalizableConstants();
+
     SqlSelect companiesListQuery =
         new SqlSelect()
             .addFields(CommonsConstants.TBL_COMPANIES,
@@ -610,7 +613,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
     long totalTimeMls = 0;
     
-    result.addRow(new String[] {"Klientas", "Sugaištas laikas"});
+    result.addRow(new String[] {"Klientas", constants.spentTime()});
 
     /* Register times in tasks without company */
     companiesListSet.addRow(new String[] {null, "—", null});
@@ -687,7 +690,8 @@ public class CrmModuleBean implements BeeModule {
       result.addRow(new String[] {compFullName, dTime});
     }
 
-    result.addRow(new String[] {"Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+    result.addRow(new String[] {constants.totalOf() + ":",
+        new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
