@@ -34,7 +34,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
   public static enum ReportType {
     TYPE_HOURS, COMPANY_TIMES, USERS_HOURS
-  };
+  }
 
   public static final ReportType DEFAULT_REPORT_TYPE = ReportType.TYPE_HOURS;
   private static final String WIDGET_DATE_FROM_NAME = "dateFrom";

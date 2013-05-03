@@ -10,7 +10,7 @@
     <Integer name="Priority" notNull="true" defValue="1" label="Prioritetas" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="Įkelta" />
-    <DateTime name="StartTime" defExpr="CURRENT_DATE" label="Pradžios data" />
+    <DateTime name="StartTime" label="Pradžios data" />
     <DateTime name="FinishTime" notNull="true" label="Pabaigos data" />
     <DateTime name="Completed" label="Įvykdymo data" />
     <DateTime name="Approved" label="Patvirtinimo data" />

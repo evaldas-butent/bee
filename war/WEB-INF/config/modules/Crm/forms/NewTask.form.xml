@@ -35,7 +35,7 @@
 
     <FlowPanel style="&section;">
       <Label html="Pradžios data:" style="&lbl1;" />
-      <InputDate name="Start_Date" source="StartTime" style="&dateStyle;" />
+      <InputDate name="Start_Date" style="&dateStyle;" />
       <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
       <Label html="Numatoma trukmė:" style="&lbl3;" />
       <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />

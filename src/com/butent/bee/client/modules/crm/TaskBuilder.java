@@ -34,6 +34,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -59,6 +60,11 @@ class TaskBuilder extends AbstractFormInterceptor {
       WidgetDescriptionCallback callback) {
     if (widget instanceof FileCollector) {
       ((FileCollector) widget).bindDnd(getFormView(), getFormView().asWidget().getElement());
+    }
+
+    if (BeeUtils.same(name, NAME_START_DATE) && (widget instanceof InputDate)) {
+      InputDate startDate = (InputDate) widget;
+      startDate.setDate(new JustDate());
     }
   }
 
