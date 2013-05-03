@@ -2,7 +2,6 @@
 <View xmlns="http://www.butent.com/view"
 
   name="CargoIncomeList" source="CargoIncomes"
-  filter="!(Sale)"
   >
   <Columns>
     <SimpleColumn name="Cargo" />

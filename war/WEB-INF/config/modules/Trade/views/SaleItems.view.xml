@@ -13,8 +13,11 @@
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="Article" />
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
     <SimpleColumn name="Note" />
   </Columns>
 </View>

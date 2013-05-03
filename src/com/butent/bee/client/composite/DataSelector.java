@@ -1257,7 +1257,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       setDisplayValue(value.trim());
     }
   }
-  
+
   private void addCells(Element rowElement, BeeRow row) {
     for (int i = 0; i < getColumnCount(); i++) {
       String cellContent = getCellRenderers().get(i).render(row);
@@ -1389,7 +1389,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     RowEditor.openRow(getEditForm(), Data.getDataInfo(getEditViewName()), rowId, modal,
-        getWidget(), rowCallback);
+        getWidget(), rowCallback, null);
   }
 
   private void exit(boolean hideSelector, State state) {

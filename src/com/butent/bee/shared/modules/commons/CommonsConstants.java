@@ -83,6 +83,8 @@ public class CommonsConstants {
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
 
+  public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
+
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
@@ -96,6 +98,7 @@ public class CommonsConstants {
   public static final String TBL_FILES = "Files";
 
   public static final String TBL_ITEMS = "Items";
+  public static final String TBL_UNITS = "Units";
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
   public static final String TBL_CONTACTS = "Contacts";
@@ -104,6 +107,8 @@ public class CommonsConstants {
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
+  public static final String TBL_CITIES = "Cities";
+  public static final String TBL_COUNTRIES = "Countries";
 
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
@@ -162,18 +167,23 @@ public class CommonsConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_SERVICE = "IsService";
 
+  public static final String COL_UNIT = "Unit";
   public static final String COL_ARTICLE = "Article";
   public static final String COL_BARCODE = "Barcode";
 
   public static final String COL_CODE = "Code";
+  public static final String COL_VAT_CODE = "VATCode";
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
+  public static final String COL_MOBILE = "Mobile";
+  public static final String COL_FAX = "Fax";
   public static final String COL_EMAIL = "Email";
   public static final String COL_ADDRESS = "Address";
+  public static final String COL_POST_INDEX = "PostIndex";
 
-  public static final String COL_CITY_NAME = "CityName";
-  public static final String COL_COUNTRY_NAME = "CountryName";
+  public static final String COL_CITY = "City";
+  public static final String COL_COUNTRY = "Country";
 
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";

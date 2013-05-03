@@ -23,8 +23,9 @@
         <Label html="Suma" style="&lbl;" />
         <HorizontalPanel>
           <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
-          <DataSelector name="Currency" source="Currency" placeholder="Val."
-            style="width:40px;" editEnabled="false" />
+          <DataSelector name="Currency" source="CurrencyName" placeholder="Val."
+            style="width:40px; margin-right:5px;" editEnabled="false" />
+          <CheckBox source="VatIncluded" html="PVM tame sk." />
         </HorizontalPanel>
 
         <Label html="Sąskaita" style="&lbl;" />
@@ -37,6 +38,10 @@
       <row>
         <Label html="Klientas" style="&lbl;" />
         <DataSelector source="Customer" />
+      </row>
+      <row>
+        <Label html="Tiekėjas" style="&lbl;" />
+        <DataSelector source="Supplier" />
         <Label html="Vadybininkas" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
       </row>
@@ -53,7 +58,7 @@
       </page>
       <page>
         <text>Transporto pajamos</text>
-        <ChildGrid name="CargoIncomes" relColumn="Sale" />
+        <ChildGrid name="CargoInvoiceIncomes" relColumn="Sale" />
       </page>
     </TabbedPages>
   </FlowPanel>

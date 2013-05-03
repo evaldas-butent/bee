@@ -5,7 +5,7 @@
   idName="EmailID"
   >
   <Fields>
-    <String name="Email" precision="255" unique="true" notNull="true" label="El.paštas" />
+    <String name="Email" precision="255" unique="true" notNull="true" label="=email" />
     <String name="Label" precision="255" label="Vardas" />
   </Fields>
 </Table>

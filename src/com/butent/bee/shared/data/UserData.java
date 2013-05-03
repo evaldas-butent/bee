@@ -35,7 +35,8 @@ public class UserData implements BeeSerializable, HasInfo {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, COMPANY_PERSON, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, COMPANY_PERSON, COMPANY,
+    LOCALE, PROPERTIES, RIGHTS, CONSTANTS
   }
 
   public static final String FLD_FIRST_NAME = "FirstName";
@@ -55,6 +56,7 @@ public class UserData implements BeeSerializable, HasInfo {
   private String firstName;
   private String lastName;
   private Long companyPerson;
+  private Long company;
   private String locale;
   private Map<String, String> properties;
 
@@ -63,12 +65,13 @@ public class UserData implements BeeSerializable, HasInfo {
   private Map<String, String> constants;
 
   public UserData(long userId, String login, String firstName, String lastName,
-      Long companyPerson) {
+      Long companyPerson, Long company) {
     this.userId = userId;
     this.login = login;
     this.firstName = firstName;
     this.lastName = lastName;
     this.companyPerson = companyPerson;
+    this.company = company;
   }
 
   private UserData() {
@@ -99,6 +102,9 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case COMPANY_PERSON:
           this.companyPerson = BeeUtils.toLongOrNull(value);
+          break;
+        case COMPANY:
+          this.company = BeeUtils.toLongOrNull(value);
           break;
         case LOCALE:
           this.locale = value;
@@ -144,6 +150,10 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
       }
     }
+  }
+
+  public Long getCompany() {
+    return company;
   }
 
   public Long getCompanyPerson() {
@@ -264,6 +274,9 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case COMPANY_PERSON:
           arr[i++] = companyPerson;
+          break;
+        case COMPANY:
+          arr[i++] = company;
           break;
         case LOCALE:
           arr[i++] = locale;

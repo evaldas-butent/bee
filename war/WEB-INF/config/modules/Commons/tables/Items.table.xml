@@ -11,6 +11,8 @@
     <String name="Barcode" precision="30" unique="true" label="Barkodas" />
     <Numeric name="Price" precision="15" scale="5" label="Pard.kaina" />
     <Relation name="Currency" relation="Currencies" label="Valiuta" />
+    <Boolean name="Vat" label="PVM" />
+    <Numeric name="VatPercent" precision="3" label="PVM %" />
     <Boolean name="IsService" />
   </Fields>
   <Keys>

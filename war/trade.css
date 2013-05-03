@@ -1,0 +1,21 @@
+.itemsInfo-table {
+  border-collapse:collapse;
+}
+.itemsInfo-table td {
+  padding:2px;
+}
+.itemsInfo-label {
+  font-weight:bold;
+  border:1px solid black;
+}
+.itemsInfo-data {
+  border-bottom:1px solid silver;
+}
+.itemsInfo-quantity, .itemsInfo-price, .itemsInfo-vat, .itemsInfo-amount,
+  .itemsInfo-totalAmount-label, .itemsInfo-totalVat-label, .itemsInfo-total-label,
+  .itemsInfo-totalQuantity, .itemsInfo-totalAmount, .itemsInfo-totalVat, .itemsInfo-total {
+  text-align:right;
+}
+.itemsInfo-totalAmount-label:after, .itemsInfo-totalVat-label:after, .itemsInfo-total-label:after {
+  content:":";
+}

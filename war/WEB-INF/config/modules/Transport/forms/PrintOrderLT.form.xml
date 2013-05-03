@@ -8,7 +8,6 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
-  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="&form;" viewName="PrintOrder" caption="Užsakymo spausdinimas" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
@@ -18,6 +17,7 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .companyInfo-name .companyInfo-item:before {content: "Ekspeditorius: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
       <Table>
@@ -42,35 +42,11 @@
 
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel>
-            <TextLabel source="CustomerName" style="&bold;">
-              <renderToken source="CustomerName" />
-            </TextLabel>
-            <TextLabel source="CustomerCode">
-              <renderToken source="CustomerCode" prefix="Įmonės kodas: " />
-            </TextLabel>
-            <TextLabel source="CustomerVATCode">
-              <renderToken source="CustomerVATCode" prefix="PVM kodas: " />
-            </TextLabel>
-            <TextLabel source="CustomerAddress">
-              <renderToken source="CustomerAddress" prefix="Adresas: " />
-              <renderToken source="CustomerCity" prefix=", " />
-              <renderToken source="CustomerCountry" prefix=", " />
-              <renderToken source="CustomerPostIndex" prefix=", " />
-            </TextLabel>
-            <TextLabel source="CustomerPhone">
-              <renderToken source="CustomerPhone" prefix="Tel: " suffix=" " />
-              <renderToken source="CustomerMobile" prefix="Mob: " suffix=" " />
-              <renderToken source="CustomerFax" prefix="Fax: " suffix=" " />
-            </TextLabel>
-            <TextLabel source="CustomerEmail">
-              <renderToken source="CustomerEmail" prefix="El.paštas: " />
-            </TextLabel>
-          </FlowPanel>
+          <FlowPanel name="CustomerInfo" />
         </cell>
         
         <FlowPanel>
-          <xi:include href="../../widgets/CompanyInfo.widget.xml" />
+          <FlowPanel name="ForwarderInfo" class="&form;-forwarder" />
           <br />
           <Label html="Ekspeditoriaus atstovas" style="&bold;" />
           <TextLabel source="Position">

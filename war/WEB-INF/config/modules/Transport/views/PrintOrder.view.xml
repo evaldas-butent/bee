@@ -14,7 +14,7 @@
         <SimpleJoin name="Position" joinType="LEFT">
           <SimpleColumn name="Name" alias="Position" />
         </SimpleJoin>
-
+        <SimpleColumn name="Company" alias="Forwarder" />
         <SimpleJoin joinType="LEFT" name="Company">
           <SimpleColumn name="Name" alias="CompanyName" />
           <SimpleColumn name="Code" alias="CompanyCode" />
@@ -60,6 +60,7 @@
         <SimpleColumn name="Shipper" />
         <SimpleColumn name="Notes" alias="OrderNotes" />
       
+        <SimpleColumn name="Customer" />
         <SimpleJoin joinType="LEFT" name="Customer">
           <SimpleColumn name="Name" alias="CustomerName" />
           <SimpleColumn name="Code" alias="CustomerCode" />

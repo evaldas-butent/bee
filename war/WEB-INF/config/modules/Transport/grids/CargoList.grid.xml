@@ -9,7 +9,7 @@
   <body height="68" />
 
   <columns>
-    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" />
+    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />    
     <DataColumn name="CustomerName" caption="Užsakovas" flexGrow="1" />
 

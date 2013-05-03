@@ -171,7 +171,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
                   @Override
                   public void onSuccess(final BeeRow row) {
                     ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
-                    args.addDataItem("Account", row.getId());
+                    args.addDataItem(TradeConstants.COL_SALE, row.getId());
                     args.addDataItem(ExchangeUtils.FLD_CURRENCY,
                         row.getLong(Data.getColumnIndex(turnovers, ExchangeUtils.FLD_CURRENCY)));
                     args.addDataItem("IdList", Codec.beeSerialize(idList));
@@ -189,7 +189,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
                         }
                         presenter.refresh(true);
                         presenter.getGridView().getGrid().reset();
-                        RowEditor.openRow(turnovers, row.getId(), true, null);
+                        RowEditor.openRow("CargoInvoice", Data.getDataInfo(turnovers), row.getId());
                       }
                     });
                     mainItem = null;

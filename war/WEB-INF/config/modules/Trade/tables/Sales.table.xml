@@ -11,6 +11,8 @@
     <String name="Number" precision="30" label="Numeris" />
     <Numeric name="Amount" precision="12" scale="2" label="Suma" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
+    <Boolean name="VatIncluded" label="PVM tame sk." />
+    <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
     <Relation name="Customer" relation="Companies" label="Klientas" />
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
     <Text name="Notes" label="Pastabos" />

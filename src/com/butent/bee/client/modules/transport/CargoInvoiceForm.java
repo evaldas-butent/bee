@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.data.Data;
@@ -23,8 +21,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CargoInvoiceForm extends AbstractFormInterceptor {
-
-  private Widget detailsWidget = null;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -60,18 +56,14 @@ public class CargoInvoiceForm extends AbstractFormInterceptor {
           });
         }
       });
-    } else if (BeeUtils.same(name, "InvoiceDetails")) {
-      detailsWidget = widget.asWidget();
     }
   }
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      String view = "PrintCargoInvoice";
-
-      RowEditor.openRow(view, Data.getDataInfo(view),
-          getFormView().getActiveRow().getId(), true, null, null);
+      RowEditor.openRow("PrintCargoInvoice", Data.getDataInfo(getFormView().getViewName()),
+          getFormView().getActiveRow(), true, null, null, null, new PrintCargoInvoiceForm());
       return false;
     }
     return super.beforeAction(action, presenter);

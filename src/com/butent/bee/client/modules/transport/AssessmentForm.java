@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -24,6 +25,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -62,6 +64,25 @@ import java.util.List;
 import java.util.Map;
 
 public class AssessmentForm extends AbstractFormInterceptor {
+
+  private static class PrintForm extends AbstractFormInterceptor {
+    @Override
+    public void beforeRefresh(FormView form, IsRow row) {
+      Widget w = form.getWidgetByName("CustomerInfo");
+      if (w instanceof HasWidgets) {
+        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), (HasWidgets) w);
+      }
+      w = form.getWidgetByName("ForwarderInfo");
+      if (w instanceof HasWidgets) {
+        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), (HasWidgets) w);
+      }
+    }
+
+    @Override
+    public FormInterceptor getInstance() {
+      return null;
+    }
+  }
 
   private abstract class AssessmentGrid extends AbstractGridInterceptor {
     @Override
@@ -370,7 +391,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
   public static void doRowAction(final RowActionEvent event) {
     if (event.hasView(TBL_CARGO_ASSESSORS)) {
       RowEditor.openRow(FORM_ASSESSMENT, Data.getDataInfo("Assessments"),
-          event.getRowId(), false, null, null);
+          event.getRowId(), false, null, null, null);
 
     } else if (event.hasView("AssessmentForwarders")) {
       Global.choice("Sutarties spausdinimas", "Pasirinkite kalbą",
@@ -381,7 +402,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
               String printView = "PrintContract";
 
               RowEditor.openRow(printView + (value == 0 ? "LT" : (value == 1 ? "RU" : "EN")),
-                  Data.getDataInfo(printView), event.getRowId(), true, null, null);
+                  Data.getDataInfo(printView), event.getRowId(), true, null, null, new PrintForm());
             }
           });
     }
@@ -504,7 +525,14 @@ public class AssessmentForm extends AbstractFormInterceptor {
           public void onClick(ClickEvent event) {
             String printView = "PrintOrder";
             RowEditor.openRow(printView + name, Data.getDataInfo(printView), currentRow.getId(),
-                true, null, null);
+                true, null, null, new PrintForm() {
+                  @Override
+                  public void beforeRefresh(FormView form, IsRow row) {
+                    super.beforeRefresh(form, row);
+                    updateTotals(form, row, form.getWidgetByName(VAR_TOTAL),
+                        null, null, null, null);
+                  }
+                });
           }
         });
       }

@@ -432,7 +432,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       }
 
       RowEditor.openRow(getEditForm(), getOracle().getDataInfo(), rowId, modal, getWidget(),
-          rowCallback);
+          rowCallback, null);
 
     } else {
       BeeRow row = getOracle().getCachedRow(rowId);
@@ -486,7 +486,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
 
     RowEditor.openRow(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, modal,
-        getWidget(), rowCallback);
+        getWidget(), rowCallback, null);
   }
 
   private InsertPanel getContainer() {

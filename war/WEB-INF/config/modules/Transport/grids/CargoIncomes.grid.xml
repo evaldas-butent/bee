@@ -19,6 +19,6 @@
     <RelColumn name="Customer" caption="Mokėtojas" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Note" caption="Pastaba" />
-    <RelColumn name="Sale" caption="Sąsk.ID" readOnly="true" editEnabled="true" editViewName="CargoIncomes" />
+    <RelColumn name="Sale" caption="Sąsk.ID" readOnly="true" editEnabled="true" editForm="CargoInvoice" />
   </columns>
 </Grid>

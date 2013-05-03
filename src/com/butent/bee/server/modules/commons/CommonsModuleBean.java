@@ -25,6 +25,7 @@ import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
@@ -34,6 +35,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -86,12 +88,11 @@ public class CommonsModuleBean implements BeeModule {
 
     List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
         Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-            COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
-    
-    List<SearchResult> personsSr =
-        qs.getSearchResults(VIEW_PERSONS,
-            Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-                COL_EMAIL_ADDRESS, COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
+            COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
+
+    List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
+        Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
+            COL_EMAIL_ADDRESS, COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
 
     List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
@@ -118,6 +119,9 @@ public class CommonsModuleBean implements BeeModule {
 
     } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = doParameterEvent(svc, reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
+      response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -324,6 +328,26 @@ public class CommonsModuleBean implements BeeModule {
       ctx.setRollbackOnly();
     }
     return response;
+  }
+
+  private ResponseObject getCompanyInfo(Long companyId) {
+    if (!DataUtils.isId(companyId)) {
+      return ResponseObject.error("Wrong company ID");
+    }
+    SimpleRowSet res = qs.getRow(new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_NAME, COL_CODE, COL_VAT_CODE)
+        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addField(TBL_CITIES, COL_NAME, COL_CITY)
+        .addField(TBL_COUNTRIES, COL_NAME, COL_COUNTRY)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+        .setWhere(sys.idEquals(TBL_COMPANIES, companyId))).getRowSet();
+
+    return ResponseObject.response(res);
   }
 
   private Collection<? extends BeeParameter> getSqlEngineParameters() {

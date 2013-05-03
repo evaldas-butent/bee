@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
-  <!ENTITY inline "display:inline-block;">
   <!ENTITY bold "font-weight:bold;">
   <!ENTITY form "PrintCargoInvoice">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
-  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="&form;" viewName="&form;" caption="Sąskaitos spausdinimas" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
@@ -16,8 +14,7 @@
 
   <FlowPanel style="padding: 10px; background-color: white;">
     <css id="&form;">
-      .&form;-table {border-collapse:collapse; width:100%;}
-      .&form;-table td {border:1px solid black; padding:2px;}
+      .&form; .itemsInfo-table {width:100%;}
     </css>
     <HorizontalPanel>
       <Table>
@@ -41,68 +38,60 @@
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
-      <Table style="border-collapse:collapse; width:100%;">
+      <Table style="width:100%;">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Tiekėjas:" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
-            <xi:include href="../../widgets/CompanyInfo.widget.xml" />
+            <FlowPanel name="SupplierInfo" />
           </cell>
           <cell style="vertical-align:top;">
             <Label html="Pirkėjas:" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
-            <FlowPanel>
-              <TextLabel source="CustomerName" style="&bold;">
-                <renderToken source="CustomerName" />
-              </TextLabel>
-              <TextLabel source="CustomerCode">
-                <renderToken source="CustomerCode" prefix="Įmonės kodas: " />
-              </TextLabel>
-              <TextLabel source="CustomerVATCode">
-                <renderToken source="CustomerVATCode" prefix="PVM kodas: " />
-              </TextLabel>
-              <TextLabel source="CustomerAddress">
-                <renderToken source="CustomerAddress" prefix="Adresas: " />
-                <renderToken source="CustomerCity" prefix=", " />
-                <renderToken source="CustomerCountry" prefix=", " />
-                <renderToken source="CustomerPostIndex" prefix=", " />
-              </TextLabel>
-              <TextLabel source="CustomerPhone">
-                <renderToken source="CustomerPhone" prefix="Tel: " suffix=" " />
-                <renderToken source="CustomerMobile" prefix="Mob: " suffix=" " />
-                <renderToken source="CustomerFax" prefix="Fax: " suffix=" " />
-              </TextLabel>
-              <TextLabel source="CustomerEmail">
-                <renderToken source="CustomerEmail" prefix="El.paštas: " />
-              </TextLabel>
-            </FlowPanel>
+            <FlowPanel name="CustomerInfo" />
           </cell>
         </row>
       </Table>
     </FlowPanel>
     
-    <Table name="InvoiceDetails" class="&form;-table" style="&section;">
-      <row style="font-weight:bold; text-align:center;">
-        <Label html="Prekės/paslaugos pavadinimas" />
-        <Label html="Kiekis" />
-        <Label html="Mato.v" />
-        <Label html="Kaina" />
-        <Label html="Val." />
-        <Label html="Suma be PVM" />
+    <FlowPanel name="InvoiceDetails" class="&form;" style="&section;" />
+
+    <Table style="&section;">
+      <row>
+        <Label html="Suma žodžiais:" />
+        <FlowPanel name="TotalInWords" />
+      </row>
+      <row>
+        <Label html="Total in words:" />
+        <FlowPanel name="TotalInWords2" options="en" />
+      </row>
+      <row>
+        <Label html="Całkowita ilość:" />
+        <FlowPanel name="TotalInWords3" options="pl" />
       </row>
     </Table>
 
-    <HorizontalPanel class="&form;-table" style="&section;">
-      <Label html="Papildoma informacija:" style="&bold;" />
+    <HorizontalPanel style="&section;">
+      <cell style="vertical-align:top;">
+        <Label html="Papildoma informacija:" style="&bold;" />
+      </cell>
       <TextLabel source="Notes" style="white-space:pre-wrap;" />
     </HorizontalPanel>
 
     <HtmlPanel style="&section;">
-      <span style="font-size:smaller; &bold; display:block;">
-Ši sutartis, Kliento pateikta Ekspeditoriui, bei abiejų pusių patvirtinta faksu ar elektroniniu būdu turi tokią pačią juridinę galią kaip ir 
-originalas.
+      <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
+Pastaba: Šios nuorodos negalioja sąskaitoms su 21% PVM
+0% PVM tarifais: pagal PVM įst. 45 str.
+Be PVM: Pagal PVM įst. 13 (1) str.
+Without VAT: "Reverse Charge Regime" - according Directive 2006/112/EB
+      </span>
+      <span style="font-size:smaller; display:block; white-space:pre-wrap;">
+Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /
+After the due period of payment the fine of 0.2% will be calculated for each day.
+Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
+Please fax teh copy of Your banking documents after the transaction will be made.
       </span>
     </HtmlPanel>
 
@@ -117,10 +106,9 @@ originalas.
       </row>
       <row>
         <FlowPanel />
-        <TextLabel source="Position" style="margin-top:5px;">
-          <renderToken source="FirstName" />
-          <renderToken source="LastName" />
-          <renderToken source="Position" prefix=", " />
+        <TextLabel source="Manager" style="margin-top:5px;">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
         </TextLabel>
       </row>
     </Table>

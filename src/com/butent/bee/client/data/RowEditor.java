@@ -93,11 +93,12 @@ public class RowEditor {
     }
 
     String formName = getFormName(null, dataInfo);
-    openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
+    openRow(formName, dataInfo, row, modal, target, rowCallback, presenterCallback, null);
   }
 
   public static void openRow(String formName, DataInfo dataInfo, IsRow row, boolean modal,
-      UIObject target, RowCallback rowCallback, PresenterCallback presenterCallback) {
+      UIObject target, RowCallback rowCallback, PresenterCallback presenterCallback,
+      FormInterceptor formInteceptor) {
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
@@ -113,17 +114,18 @@ public class RowEditor {
       return;
     }
 
-    createForm(formName, dataInfo, row, modal, target, rowCallback, presenterCallback);
+    createForm(formName, dataInfo, row, modal, target, rowCallback, presenterCallback,
+        formInteceptor);
   }
 
   public static void openRow(String formName, DataInfo dataInfo, long rowId) {
-    openRow(formName, dataInfo, rowId, false, null, null);
+    openRow(formName, dataInfo, rowId, false, null, null, null);
   }
 
   public static void openRow(String formName, DataInfo dataInfo, long rowId,
-      boolean modal, UIObject target, RowCallback rowCallback) {
+      boolean modal, UIObject target, RowCallback rowCallback, FormInterceptor formInteceptor) {
     Assert.notNull(dataInfo);
-    getRow(formName, dataInfo, rowId, modal, target, rowCallback);
+    getRow(formName, dataInfo, rowId, modal, target, rowCallback, formInteceptor);
   }
 
   public static boolean openRow(String viewName, Long rowId, boolean modal,
@@ -142,7 +144,7 @@ public class RowEditor {
       return false;
     }
 
-    getRow(formName, dataInfo, rowId, modal, null, rowCallback);
+    getRow(formName, dataInfo, rowId, modal, null, rowCallback, null);
     return true;
   }
 
@@ -155,7 +157,8 @@ public class RowEditor {
       return;
     }
 
-    openRow(formName, dataInfo, row, modal, null, rowCallback, PresenterCallback.SHOW_IN_NEW_TAB);
+    openRow(formName, dataInfo, row, modal, null, rowCallback, PresenterCallback.SHOW_IN_NEW_TAB,
+        null);
   }
 
   public static void registerHasDelegate(String viewName) {
@@ -164,9 +167,10 @@ public class RowEditor {
 
   private static void createForm(String formName, final DataInfo dataInfo, final IsRow row,
       final boolean modal, final UIObject target, final RowCallback rowCallback,
-      final PresenterCallback presenterCallback) {
+      final PresenterCallback presenterCallback, FormInterceptor formInterceptor) {
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true,
+        (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor,
         new FormFactory.FormViewCallback() {
           @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
@@ -182,7 +186,8 @@ public class RowEditor {
   }
 
   private static void getRow(final String formName, final DataInfo dataInfo, final long rowId,
-      final boolean modal, final UIObject target, final RowCallback rowCallback) {
+      final boolean modal, final UIObject target, final RowCallback rowCallback,
+      final FormInterceptor formInteceptor) {
 
     String supplierKey = getSupplierKey(dataInfo.getViewName(), rowId);
 
@@ -195,7 +200,7 @@ public class RowEditor {
             public void onCreate(Presenter presenter) {
               callback.onSuccess(presenter.getWidget());
             }
-          });
+          }, formInteceptor);
         }
       };
 
@@ -203,17 +208,18 @@ public class RowEditor {
     }
 
     getRow(formName, dataInfo, rowId, modal, target, rowCallback,
-        PresenterCallback.SHOW_IN_NEW_TAB);
+        PresenterCallback.SHOW_IN_NEW_TAB, formInteceptor);
   }
 
   private static void getRow(final String formName, final DataInfo dataInfo, long rowId,
       final boolean modal, final UIObject target, final RowCallback rowCallback,
-      final PresenterCallback presenterCallback) {
+      final PresenterCallback presenterCallback, final FormInterceptor formInteceptor) {
 
     Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        openRow(formName, dataInfo, result, modal, target, rowCallback, presenterCallback);
+        openRow(formName, dataInfo, result, modal, target, rowCallback, presenterCallback,
+            formInteceptor);
       }
     });
   }

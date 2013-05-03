@@ -1790,3 +1790,16 @@ div:focus,
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
   border-top : 1px solid #edede1;
 }
+
+.companyInfo-label, .companyInfo-item {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.companyInfo-label:after {
+  content: ":";
+}
+
+.companyInfo-name .companyInfo-item {
+  font-weight: bold;
+}

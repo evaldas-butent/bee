@@ -35,71 +35,75 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     }
 
     public Boolean getBoolean(int colIndex) {
-      return SimpleRowSet.this.getBoolean(rowIndex, colIndex);
+      return getRowSet().getBoolean(rowIndex, colIndex);
     }
 
     public Boolean getBoolean(String colName) {
-      return SimpleRowSet.this.getBoolean(rowIndex, colName);
+      return getRowSet().getBoolean(rowIndex, colName);
     }
 
     public String[] getColumnNames() {
-      return SimpleRowSet.this.getColumnNames();
+      return getRowSet().getColumnNames();
     }
 
     public JustDate getDate(int colIndex) {
-      return SimpleRowSet.this.getDate(rowIndex, colIndex);
+      return getRowSet().getDate(rowIndex, colIndex);
     }
 
     public JustDate getDate(String colName) {
-      return SimpleRowSet.this.getDate(rowIndex, colName);
+      return getRowSet().getDate(rowIndex, colName);
     }
 
     public DateTime getDateTime(int colIndex) {
-      return SimpleRowSet.this.getDateTime(rowIndex, colIndex);
+      return getRowSet().getDateTime(rowIndex, colIndex);
     }
 
     public DateTime getDateTime(String colName) {
-      return SimpleRowSet.this.getDateTime(rowIndex, colName);
+      return getRowSet().getDateTime(rowIndex, colName);
     }
 
     public BigDecimal getDecimal(int colIndex) {
-      return SimpleRowSet.this.getDecimal(rowIndex, colIndex);
+      return getRowSet().getDecimal(rowIndex, colIndex);
     }
 
     public BigDecimal getDecimal(String colName) {
-      return SimpleRowSet.this.getDecimal(rowIndex, colName);
+      return getRowSet().getDecimal(rowIndex, colName);
     }
 
     public Double getDouble(int colIndex) {
-      return SimpleRowSet.this.getDouble(rowIndex, colIndex);
+      return getRowSet().getDouble(rowIndex, colIndex);
     }
 
     public Double getDouble(String colName) {
-      return SimpleRowSet.this.getDouble(rowIndex, colName);
+      return getRowSet().getDouble(rowIndex, colName);
     }
 
     public Integer getInt(int colIndex) {
-      return SimpleRowSet.this.getInt(rowIndex, colIndex);
+      return getRowSet().getInt(rowIndex, colIndex);
     }
 
     public Integer getInt(String colName) {
-      return SimpleRowSet.this.getInt(rowIndex, colName);
+      return getRowSet().getInt(rowIndex, colName);
     }
 
     public Long getLong(int colIndex) {
-      return SimpleRowSet.this.getLong(rowIndex, colIndex);
+      return getRowSet().getLong(rowIndex, colIndex);
     }
 
     public Long getLong(String colName) {
-      return SimpleRowSet.this.getLong(rowIndex, colName);
+      return getRowSet().getLong(rowIndex, colName);
+    }
+
+    public SimpleRowSet getRowSet() {
+      return SimpleRowSet.this;
     }
 
     public String getValue(int colIndex) {
-      return SimpleRowSet.this.getValue(rowIndex, colIndex);
+      return getRowSet().getValue(rowIndex, colIndex);
     }
 
     public String getValue(String colName) {
-      return SimpleRowSet.this.getValue(rowIndex, colName);
+      return getRowSet().getValue(rowIndex, colName);
     }
   }
 
@@ -120,7 +124,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     }
     return null;
   }
-  
+
   public static SimpleRowSet restore(String s) {
     SimpleRowSet rs = new SimpleRowSet();
     rs.deserialize(s);

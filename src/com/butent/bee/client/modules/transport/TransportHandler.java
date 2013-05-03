@@ -609,10 +609,6 @@ public class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor("CargoInvoice", new CargoInvoiceForm());
 
-    FormFactory.registerFormInterceptor("PrintOrderLT", new PrintOrderForm());
-    FormFactory.registerFormInterceptor("PrintOrderRU", new PrintOrderForm());
-    FormFactory.registerFormInterceptor("PrintOrderEN", new PrintOrderForm());
-
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 
     ChartHelper.register();

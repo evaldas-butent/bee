@@ -34,6 +34,12 @@
     &separator;
 
     <FlowPanel style="&row;">
+      <CheckBox source="Vat" html="PVM" style="margin-right:3px;" />
+      <InputDecimal source="VatPercent" caption="%" decorator="caption-right" style="width: 30px;" />
+    </FlowPanel>
+    &separator;
+
+    <FlowPanel style="&row;">
       <Label html="Kategorijos:" style="&lbl;" />
       <MultiSelector viewName="CategoryTree" property="CategList" renderColumns="ParentName Name"
         style="width: 500px;" />

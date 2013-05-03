@@ -2100,7 +2100,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       rowCallback = null;
     }
 
-    RowEditor.openRow(formName, editDataInfo, id, modal, null, rowCallback);
+    RowEditor.openRow(formName, editDataInfo, id, modal, null, rowCallback, null);
     return true;
   }
 

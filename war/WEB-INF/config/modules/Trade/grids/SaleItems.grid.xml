@@ -7,11 +7,14 @@
   newRowCaption="Nauja prekė"
   >
   <columns>
-    <RelColumn name="Item" />
-    <DataColumn name="Quantity" format="#.000" />
+    <RelColumn name="Item" renderColumns="ItemName" />
+    <DataColumn name="Article" />
+    <DataColumn name="Quantity" />
     <DataColumn name="UnitName" />
-    <DataColumn name="Price" format="#.00" />
-    <CalcColumn name="Amount" type="decimal" caption="Suma" format="#.00">
+    <DataColumn name="Price" />
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" caption="%" width="20" sortable="false" />
+    <CalcColumn name="Amount" type="decimal" caption="Suma" format="#.##">
       <render>
         <ui:expression>row.Quantity * row.Price</ui:expression>
       </render>

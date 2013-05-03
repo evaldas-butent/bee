@@ -26,6 +26,6 @@
     </CalcColumn>
     <RelColumn name="Customer" flexGrow="1" flexShrink="1" />
     <DataColumn name="Amount" />
-    <RelColumn name="Currency" />
+    <DataColumn name="CurrencyName" />
   </columns>
 </Grid>

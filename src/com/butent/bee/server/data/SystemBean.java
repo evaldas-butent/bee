@@ -414,7 +414,12 @@ public class SystemBean {
   }
 
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
-    return SqlUtils.join(tblName, getIdName(tblName), dstTable, dstField);
+    return joinTables(tblName, null, dstTable, dstField);
+  }
+
+  public IsCondition joinTables(String tblName, String tblAlias, String dstTable, String dstField) {
+    return SqlUtils.join(BeeUtils.notEmpty(tblAlias, tblName), getIdName(tblName),
+        dstTable, dstField);
   }
 
   public String joinTranslationField(HasFrom<?> query, String tblName, String tblAlias,

@@ -6,15 +6,15 @@
   x="313" y="493"
   >
   <Fields>
-    <String name="Phone" precision="50" label="Tel." />
-    <String name="Mobile" precision="50" label="Mob." />
-    <String name="Fax" precision="50" label="Fax" />
-    <Relation name="Email" relation="Emails" unique="true" label="El.paštas" />
+    <String name="Phone" precision="50" label="=phone" />
+    <String name="Mobile" precision="50" label="=mobile" />
+    <String name="Fax" precision="50" label="=fax" />
+    <Relation name="Email" relation="Emails" unique="true" label="=email" />
     <String name="Website" precision="100" label="Interneto svetainė" />
-    <String name="Address" precision="100" label="Adresas" />
-    <String name="PostIndex" precision="20" label="Pašto indeksas" />
+    <String name="Address" precision="100" label="=address" />
+    <String name="PostIndex" precision="20" label="=postIndex" />
     <String name="SocialContacts" precision="100" label="Socialiniai kontaktai" />
-    <Relation name="City" relation="Cities" label="Miestas" />
-    <Relation name="Country" relation="Countries" label="Šalis" />
+    <Relation name="City" relation="Cities" label="=city" />
+    <Relation name="Country" relation="Countries" label="=country" />
   </Fields>
 </Table>

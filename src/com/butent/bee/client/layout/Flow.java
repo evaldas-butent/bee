@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.State;
 
 /**
@@ -33,10 +34,11 @@ import com.butent.bee.shared.State;
  */
 
 public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, ProvidesResize,
-    RequiresResize, HasClickHandlers {
+    RequiresResize, HasClickHandlers, HasOptions {
 
   private State targetState = null;
-  
+  private String options = null;
+
   public Flow() {
     DomUtils.createId(this, getIdPrefix());
   }
@@ -92,6 +94,11 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   }
 
   @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
   public State getTargetState() {
     return targetState;
   }
@@ -113,6 +120,11 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

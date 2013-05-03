@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -15,6 +16,7 @@ import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -67,6 +69,8 @@ public class TransportModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  ParamHolderBean prm;
 
   @Override
   public Collection<String> dependsOn() {
@@ -146,7 +150,8 @@ public class TransportModuleBean implements BeeModule {
           BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.FLD_CURRENCY)));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
-      response = createInvoiceItems(BeeUtils.toLongOrNull(reqInfo.getParameter("Account")),
+      response = createInvoiceItems(
+          BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_SALE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.FLD_CURRENCY)),
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")),
           BeeUtils.toLongOrNull(reqInfo.getParameter(CommonsConstants.COL_ITEM)));
@@ -312,9 +317,9 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject createInvoiceItems(Long account, Long currency, String[] idList,
+  private ResponseObject createInvoiceItems(Long saleId, Long currency, String[] idList,
       Long mainItem) {
-    if (!DataUtils.isId(account)) {
+    if (!DataUtils.isId(saleId)) {
       return ResponseObject.error("Wrong account ID");
     }
     if (!DataUtils.isId(currency)) {
@@ -327,19 +332,39 @@ public class TransportModuleBean implements BeeModule {
           BeeUtils.toLong(id)));
     }
     SqlSelect ss = new SqlSelect()
+        .addField(CommonsConstants.TBL_ITEMS, sys.getIdName(CommonsConstants.TBL_ITEMS),
+            CommonsConstants.COL_ITEM)
+        .addFields(CommonsConstants.TBL_ITEMS, TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
+        .addField("LoadingCountries", CommonsConstants.COL_CODE, COL_LOADING_PLACE)
+        .addField("UnloadingCountries", CommonsConstants.COL_CODE, COL_UNLOADING_PLACE)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES, sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
         .addFromInner(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
-        .addFromInner(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .setWhere(wh);
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_PLACES, "LoadingPlaces",
+            sys.joinTables(TBL_CARGO_PLACES, "LoadingPlaces", TBL_ORDER_CARGO, COL_LOADING_PLACE))
+        .addFromLeft(CommonsConstants.TBL_COUNTRIES, "LoadingCountries",
+            sys.joinTables(CommonsConstants.TBL_COUNTRIES, "LoadingCountries",
+                "LoadingPlaces", CommonsConstants.COL_COUNTRY))
+        .addFromLeft(TBL_CARGO_PLACES, "UnloadingPlaces",
+            sys.joinTables(TBL_CARGO_PLACES, "UnloadingPlaces",
+                TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
+        .addFromLeft(CommonsConstants.TBL_COUNTRIES, "UnloadingCountries",
+            sys.joinTables(CommonsConstants.TBL_COUNTRIES, "UnloadingCountries",
+                "UnloadingPlaces", CommonsConstants.COL_COUNTRY))
+        .setWhere(wh)
+        .addGroup(CommonsConstants.TBL_ITEMS, sys.getIdName(CommonsConstants.TBL_ITEMS),
+            TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
+        .addGroup("LoadingCountries", CommonsConstants.COL_CODE)
+        .addGroup("UnloadingCountries", CommonsConstants.COL_CODE);
 
     if (DataUtils.isId(mainItem)) {
-      ss.addConstant(mainItem, CommonsConstants.COL_ITEM);
+      ss.addFromLeft(CommonsConstants.TBL_ITEMS,
+          sys.idEquals(CommonsConstants.TBL_ITEMS, mainItem));
     } else {
-      ss.addFields(TBL_SERVICES, CommonsConstants.COL_ITEM)
-          .addGroup(TBL_SERVICES, CommonsConstants.COL_ITEM);
+      ss.addFromLeft(CommonsConstants.TBL_ITEMS,
+          sys.joinTables(CommonsConstants.TBL_ITEMS, TBL_SERVICES, CommonsConstants.COL_ITEM));
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
@@ -357,15 +382,25 @@ public class TransportModuleBean implements BeeModule {
         response.addWarning("Pajamos, nesurištos su apskaitos prekėmis, "
             + "nebus įtrauktos į sąskaitą");
       } else {
-        qs.insertData(new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
-            .addConstant(TradeConstants.COL_SALE, account)
+        SqlInsert insert = new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
+            .addConstant(TradeConstants.COL_SALE, saleId)
             .addConstant(CommonsConstants.COL_ITEM, item)
+            .addConstant(CommonsConstants.COL_ARTICLE, BeeUtils.join("-",
+                row.getValue(COL_LOADING_PLACE), row.getValue(COL_UNLOADING_PLACE)))
             .addConstant(TradeConstants.COL_QUANTITY, 1)
-            .addConstant(TradeConstants.COL_PRICE, row.getDouble(COL_AMOUNT)));
+            .addConstant(TradeConstants.COL_PRICE, row.getDouble(COL_AMOUNT));
+
+        if (BeeUtils.unbox(row.getBoolean(TradeConstants.COL_VAT))) {
+          insert.addConstant(TradeConstants.COL_VAT,
+              Objects.firstNonNull(row.getDouble(TradeConstants.COL_VAT_PERC),
+                  prm.getNumber(TradeConstants.TRADE_MODULE, TradeConstants.PRM_VAT_PERCENT)))
+              .addConstant(TradeConstants.COL_VAT_PERC, true);
+        }
+        qs.insertData(insert);
       }
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_INCOMES)
-        .addConstant(TradeConstants.COL_SALE, account)
+        .addConstant(TradeConstants.COL_SALE, saleId)
         .setWhere(wh)));
   }
 
