@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -41,18 +42,18 @@ public class PasswordService extends CompositeService {
         oldPass = formView.getActiveRow().getString(formView.getDataIndex(PASSWORD));
 
         if (!BeeUtils.isEmpty(oldPass)) {
-          varOld = new Variable(Global.CONSTANTS.oldPassword(), BeeType.STRING, "",
+          varOld = new Variable(Localized.constants.oldPassword(), BeeType.STRING, "",
               BeeWidget.PASSWORD);
           vars.add(varOld);
         }
-        varNew = new Variable(Global.CONSTANTS.newPassword(), BeeType.STRING, "",
+        varNew = new Variable(Localized.constants.newPassword(), BeeType.STRING, "",
             BeeWidget.PASSWORD);
         vars.add(varNew);
-        varNew2 = new Variable(Global.CONSTANTS.repeatNewPassword(), BeeType.STRING, "",
+        varNew2 = new Variable(Localized.constants.repeatNewPassword(), BeeType.STRING, "",
             BeeWidget.PASSWORD);
         vars.add(varNew2);
 
-        Global.getInpBoxen().inputVars(Global.CONSTANTS.changePassword(), vars,
+        Global.getInpBoxen().inputVars(Localized.constants.changePassword(), vars,
             new DialogCallback() {
               @Override
               public boolean onConfirm(Popup popup) {
@@ -71,11 +72,11 @@ public class PasswordService extends CompositeService {
 
         if (BeeUtils.isEmpty(oPass)) {
           ok = false;
-          Global.showError(Global.CONSTANTS.oldPasswordIsRequired());
+          Global.showError(Localized.constants.oldPasswordIsRequired());
 
         } else if (!Objects.equal(Codec.md5(oPass), oldPass)) {
           ok = false;
-          Global.showError(Global.CONSTANTS.oldPasswordIsInvalid());
+          Global.showError(Localized.constants.oldPasswordIsInvalid());
         }
       }
       if (ok) {
@@ -83,11 +84,11 @@ public class PasswordService extends CompositeService {
 
         if (BeeUtils.isEmpty(nPass)) {
           ok = false;
-          Global.showError(Global.CONSTANTS.newPasswordIsRequired());
+          Global.showError(Localized.constants.newPasswordIsRequired());
 
         } else if (!Objects.equal(nPass, varNew2.getValue())) {
           ok = false;
-          Global.showError(Global.CONSTANTS.newPasswordsDoesNotMatch());
+          Global.showError(Localized.constants.newPasswordsDoesNotMatch());
 
         } else {
           formView.updateCell(PASSWORD, Codec.md5(nPass));

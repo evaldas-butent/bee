@@ -22,6 +22,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -55,7 +56,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                   BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
             }
           }, null, BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
-              Global.CONSTANTS.ok(), Global.CONSTANTS.cancel(), new WidgetInitializer() {
+              Localized.constants.ok(), Localized.constants.cancel(), new WidgetInitializer() {
                 @Override
                 public Widget initialize(Widget inputWidget, String widgetName) {
                   if (BeeUtils.same(widgetName, DialogConstants.WIDGET_INPUT)) {

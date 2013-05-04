@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
@@ -66,9 +67,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     }
 
     List<String> messages = Lists.newArrayList(cargoTitle, truck.getMessage(truckLabel),
-        Global.CONSTANTS.createTripForCargoQuestion());
+        Localized.constants.createTripForCargoQuestion());
 
-    Global.confirm(Global.CONSTANTS.createTripForCargoCaption(), Icon.QUESTION, messages,
+    Global.confirm(Localized.constants.createTripForCargoCaption(), Icon.QUESTION, messages,
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -181,11 +182,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       return;
     }
 
-    Global
-        .confirm(Global.CONSTANTS.assignCargoToTripCaption(), Icon.QUESTION,
-            Lists.newArrayList(cargoMessage, tripMessage, Global.CONSTANTS
-                .assignCargoToTripQuestion()),
-            callback);
+    Global.confirm(Localized.constants.assignCargoToTripCaption(), Icon.QUESTION,
+        Lists.newArrayList(cargoMessage, tripMessage,
+            Localized.constants.assignCargoToTripQuestion()), callback);
   }
 
   private final Long tripId;
@@ -214,7 +213,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   Trip(SimpleRow row, Collection<Driver> drivers, int cargoCount) {
     this(row, null, null, drivers, cargoCount);
   }
-  
+
   Trip(SimpleRow row, JustDate minDate, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
@@ -242,7 +241,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String rangeLabel = ChartHelper.getRangeLabel(this.range);
 
     this.title = ChartHelper.buildTitle(
-        Global.CONSTANTS.tripDuration(), rangeLabel,
+        Localized.constants.tripDuration(), rangeLabel,
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
@@ -383,8 +382,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String driverTitle = ChartHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
         driver.getItemName());
 
-    Global.confirm(Global.CONSTANTS.assignDriverToTripCaption(), Icon.QUESTION,
-        Lists.newArrayList(driverTitle, getTitle(), Global.CONSTANTS.assignDriverToTripQuestion()),
+    Global.confirm(Localized.constants.assignDriverToTripCaption(), Icon.QUESTION,
+        Lists.newArrayList(driverTitle, getTitle(),
+            Localized.constants.assignDriverToTripQuestion()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -417,15 +417,15 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     switch (vehicleType) {
       case TRUCK:
-        caption = Global.CONSTANTS.assignTruckToTripCaption();
-        messages.add(Global.CONSTANTS.assignTruckToTripQuestion());
+        caption = Localized.constants.assignTruckToTripCaption();
+        messages.add(Localized.constants.assignTruckToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_VEHICLE));
         break;
 
       case TRAILER:
-        caption = Global.CONSTANTS.assignTrailerToTripCaption();
-        messages.add(Global.CONSTANTS.assignTrailerToTripQuestion());
+        caption = Localized.constants.assignTrailerToTripCaption();
+        messages.add(Localized.constants.assignTrailerToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_TRAILER));
         break;

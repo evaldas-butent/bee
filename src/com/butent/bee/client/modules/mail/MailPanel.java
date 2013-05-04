@@ -89,6 +89,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -909,7 +910,7 @@ public class MailPanel extends AbstractFormInterceptor {
         final Long folderId = getCurrentFolderId();
         final boolean purge = (account.getSystemFolder(folderId) == SystemFolder.Trash);
 
-        options.add(Global.CONSTANTS.cancel());
+        options.add(Localized.constants.cancel());
         Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
         Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,

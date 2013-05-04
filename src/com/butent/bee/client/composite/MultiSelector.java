@@ -47,6 +47,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -333,7 +334,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       if (!BeeUtils.isEmpty(getLabel())) {
         messages.add(getLabel());
       }
-      messages.add(Global.CONSTANTS.valueRequired());
+      messages.add(Localized.constants.valueRequired());
     }
     return messages;
   }

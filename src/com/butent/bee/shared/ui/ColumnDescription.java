@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -72,9 +73,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
-    SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE,
-    DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE, AUTO_FIT, FLEXIBILITY, OPTIONS,
-    ELEMENT_TYPE
+    SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, PREDEFINED_FILTERS, SORT_BY,
+    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -136,6 +137,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private String searchBy = null;
   private FilterSupplierType filterSupplierType = null;
   private String filterOptions = null;
+  private List<FilterDescription> predefinedFilters = null;
 
   private StyleDeclaration headerStyle = null;
   private StyleDeclaration bodyStyle = null;
@@ -220,6 +222,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case FILTER_OPTIONS:
           setFilterOptions(value);
+          break;
+        case PREDEFINED_FILTERS:
+          setPredefinedFilters(FilterDescription.restoreList(value));
           break;
         case SORT_BY:
           setSortBy(value);
@@ -486,12 +491,27 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     if (getDynStyles() != null && !getDynStyles().isEmpty()) {
       int cnt = getDynStyles().size();
       info.add(new Property("Dyn Styles", BeeUtils.bracket(cnt)));
+
       int i = 0;
       for (ConditionalStyleDeclaration conditionalStyle : getDynStyles()) {
         i++;
         if (conditionalStyle != null) {
           PropertyUtils.appendChildrenToProperties(info, "Dyn Style " + BeeUtils.progress(i, cnt),
               conditionalStyle.getInfo());
+        }
+      }
+    }
+    
+    if (!BeeUtils.isEmpty(getPredefinedFilters())) {
+      int cnt = getPredefinedFilters().size();
+      info.add(new Property("Predefined Filters", BeeUtils.bracket(cnt)));
+      
+      int i = 0;
+      for (FilterDescription filterDescription : getPredefinedFilters()) {
+        i++;
+        if (filterDescription != null) {
+          PropertyUtils.appendChildrenToProperties(info, "Filter " + BeeUtils.progress(i, cnt),
+              filterDescription.getInfo());
         }
       }
     }
@@ -533,6 +553,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Integer getPrecision() {
     return precision;
+  }
+
+  public List<FilterDescription> getPredefinedFilters() {
+    return predefinedFilters;
   }
 
   public String getProperty() {
@@ -666,6 +690,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case FILTER_OPTIONS:
           arr[i++] = getFilterOptions();
+          break;
+        case PREDEFINED_FILTERS:
+          arr[i++] = getPredefinedFilters();
           break;
         case SORT_BY:
           arr[i++] = getSortBy();
@@ -866,6 +893,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setPrecision(Integer precision) {
     this.precision = precision;
+  }
+
+  public void setPredefinedFilters(List<FilterDescription> predefinedFilters) {
+    this.predefinedFilters = predefinedFilters;
   }
 
   public void setProperty(String property) {

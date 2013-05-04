@@ -14,7 +14,7 @@ import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
-import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsExpression;
@@ -174,7 +174,7 @@ public class TradeModuleBean implements BeeModule {
     Locale loc = I18nUtils.toLocale(locale);
 
     if (loc == null) {
-      loc = Localized.defaultLocale;
+      loc = Localizations.defaultLocale;
     }
     return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
         .format(number));

@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.layout.Flow;
@@ -17,6 +16,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -50,11 +50,11 @@ public class CommonsUtils {
 
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, null);
-        cols.put(COL_CODE, Global.CONSTANTS.companyCode());
-        cols.put(COL_VAT_CODE, Global.CONSTANTS.companyVATCode());
-        cols.put(COL_ADDRESS, Global.CONSTANTS.address());
+        cols.put(COL_CODE, Localized.constants.companyCode());
+        cols.put(COL_VAT_CODE, Localized.constants.companyVATCode());
+        cols.put(COL_ADDRESS, Localized.constants.address());
         cols.put(COL_PHONE, null);
-        cols.put(COL_EMAIL_ADDRESS, Global.CONSTANTS.email());
+        cols.put(COL_EMAIL_ADDRESS, Localized.constants.email());
 
         for (String col : cols.keySet()) {
           Object value;
@@ -65,9 +65,9 @@ public class CommonsUtils {
 
           } else if (BeeUtils.same(col, COL_PHONE)) {
             Map<String, String> phones = Maps.newLinkedHashMap();
-            phones.put(COL_PHONE, Global.CONSTANTS.phone());
-            phones.put(COL_MOBILE, Global.CONSTANTS.mobile());
-            phones.put(COL_FAX, Global.CONSTANTS.fax());
+            phones.put(COL_PHONE, Localized.constants.phone());
+            phones.put(COL_MOBILE, Localized.constants.mobile());
+            phones.put(COL_FAX, Localized.constants.fax());
 
             value = new Flow();
 

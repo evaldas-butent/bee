@@ -4,9 +4,9 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 
@@ -91,8 +91,8 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo) {
-    return ChartHelper.buildTitle(Global.CONSTANTS.intermediateLoading(), loadInfo,
-        Global.CONSTANTS.intermediateUnloading(), unloadInfo,
+    return ChartHelper.buildTitle(Localized.constants.intermediateLoading(), loadInfo,
+        Localized.constants.intermediateUnloading(), unloadInfo,
         notesLabel, notes);
   }
 }

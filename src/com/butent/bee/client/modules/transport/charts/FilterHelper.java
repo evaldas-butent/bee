@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
@@ -19,6 +18,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
@@ -221,7 +221,7 @@ class FilterHelper {
     }
 
     if (dataCounter <= 0) {
-      BeeKeeper.getScreen().notifyWarning(Global.CONSTANTS.tooLittleData());
+      BeeKeeper.getScreen().notifyWarning(Localized.constants.tooLittleData());
       return;
     }
 
@@ -252,7 +252,7 @@ class FilterHelper {
     int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
 
-    final DialogBox dialog = DialogBox.create(Global.CONSTANTS.filter(), STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
 
     final Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
@@ -285,7 +285,7 @@ class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
-    BeeButton filter = new BeeButton(Global.CONSTANTS.doFilter(), new ClickHandler() {
+    BeeButton filter = new BeeButton(Localized.constants.doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         dialog.close();
@@ -295,7 +295,7 @@ class FilterHelper {
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    BeeButton clear = new BeeButton(Global.CONSTANTS.clear(), new ClickHandler() {
+    BeeButton clear = new BeeButton(Localized.constants.clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         for (Widget widget : dataContainer) {

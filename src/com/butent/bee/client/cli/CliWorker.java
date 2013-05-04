@@ -131,6 +131,7 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -2170,8 +2171,8 @@ public class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = Global.CONSTANTS.ok();
-    String cancelHtml = Global.CONSTANTS.cancel();
+    String confirmHtml = Localized.constants.ok();
+    String cancelHtml = Localized.constants.cancel();
 
     boolean required = true;
 
@@ -3111,7 +3112,7 @@ public class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
-          showError(Global.MESSAGES.keyNotFound(key));
+          showError(Localized.messages.keyNotFound(key));
         } else {
           Global.inform(key, z);
         }

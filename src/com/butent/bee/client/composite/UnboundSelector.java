@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
@@ -17,6 +16,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -124,7 +124,7 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
       if (!BeeUtils.isEmpty(getRelationLabel())) {
         messages.add(getRelationLabel());
       }
-      messages.add(Global.CONSTANTS.valueRequired());
+      messages.add(Localized.constants.valueRequired());
     }
     return messages;
   }

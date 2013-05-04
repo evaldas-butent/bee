@@ -9,7 +9,6 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
@@ -21,6 +20,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -56,13 +56,13 @@ public class TradeUtils {
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
         Map<String, String> cols = Maps.newLinkedHashMap();
-        cols.put(COL_NAME, Global.CONSTANTS.item());
-        cols.put(COL_ARTICLE, Global.CONSTANTS.article());
-        cols.put(COL_QUANTITY, Global.CONSTANTS.quantity());
-        cols.put(COL_UNIT, Global.CONSTANTS.unit());
-        cols.put(COL_PRICE, Global.CONSTANTS.price());
-        cols.put(COL_AMOUNT, Global.CONSTANTS.amount());
-        cols.put(COL_VAT, Global.CONSTANTS.vat());
+        cols.put(COL_NAME, Localized.constants.item());
+        cols.put(COL_ARTICLE, Localized.constants.article());
+        cols.put(COL_QUANTITY, Localized.constants.quantity());
+        cols.put(COL_UNIT, Localized.constants.unit());
+        cols.put(COL_PRICE, Localized.constants.price());
+        cols.put(COL_AMOUNT, Localized.constants.amount());
+        cols.put(COL_VAT, Localized.constants.vat());
 
         HtmlTable table = new HtmlTable();
         table.setStyleName(STYLE_ITEMS_TABLE);
@@ -158,7 +158,7 @@ public class TradeUtils {
 
           if (sumIdx > 0) {
             cell = new CustomDiv(STYLE_ITEMS + "totalAmount-label");
-            cell.getElement().setInnerText(Global.CONSTANTS.amount());
+            cell.getElement().setInnerText(Localized.constants.amount());
             table.setWidget(c, sumIdx - 1, cell);
           }
           if (vatExists) {
@@ -168,7 +168,7 @@ public class TradeUtils {
 
             if (sumIdx > 0) {
               cell = new CustomDiv(STYLE_ITEMS + "totalVat-label");
-              cell.getElement().setInnerText(Global.CONSTANTS.vatSum());
+              cell.getElement().setInnerText(Localized.constants.vatSum());
               table.setWidget(c, sumIdx - 1, cell);
             }
             cell = new CustomDiv(STYLE_ITEMS + "total");
@@ -177,7 +177,7 @@ public class TradeUtils {
 
             if (sumIdx > 0) {
               cell = new CustomDiv(STYLE_ITEMS + "total-label");
-              cell.getElement().setInnerText(Global.CONSTANTS.total());
+              cell.getElement().setInnerText(Localized.constants.total());
               table.setWidget(c, sumIdx - 1, cell);
             }
           }

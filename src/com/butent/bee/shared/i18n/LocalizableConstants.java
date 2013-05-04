@@ -3,11 +3,12 @@ package com.butent.bee.shared.i18n;
 import com.google.gwt.i18n.client.Constants;
 
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
+import com.butent.bee.shared.modules.crm.LocalizableCrmConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
-    LocalizableTransportConstants, LocalizableTradeConstants {
+    LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants {
 
   String address();
 
@@ -33,19 +34,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String doFilter();
 
-  String durationType();
-
   String email();
 
   String fax();
 
   String filter();
-
-  String hoursByCompanies();
-
-  String hoursByTypes();
-
-  String hoursByUsers();
 
   String item();
 
@@ -86,8 +79,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String sorry();
-
-  String spentTime();
 
   String tooLittleData();
 

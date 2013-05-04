@@ -3,7 +3,7 @@ package com.butent.bee.server;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
-import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.utils.Checksum;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.MxUtils;
@@ -62,52 +62,52 @@ public class Invocation {
         }
       }
       if (lc == null) {
-        lc = Localized.defaultLocale;
+        lc = Localizations.defaultLocale;
       }
 
       List<Property> lst = PropertyUtils.createProperties(
-          BeeUtils.joinWords("Locale", mode), Localized.transform(lc),
-          "no", Localized.getConstants(lc).no(),
-          "keyNotFound", Localized.getMessages(lc).keyNotFound("test"));
+          BeeUtils.joinWords("Locale", mode), I18nUtils.toString(lc),
+          "no", Localizations.getConstants(lc).no(),
+          "keyNotFound", Localizations.getMessages(lc).keyNotFound("test"));
 
-      Map<Locale, File> avail = Localized.getAvailableConstants();
+      Map<Locale, File> avail = Localizations.getAvailableConstants();
       int idx = 0;
       if (avail != null) {
         PropertyUtils.addProperty(lst, "Available Constants", avail.size());
         for (Map.Entry<Locale, File> entry : avail.entrySet()) {
-          PropertyUtils.addProperty(lst,
-              BeeUtils.joinWords(++idx, Localized.transform(entry.getKey())), entry.getValue());
+          PropertyUtils.addProperty(lst, 
+              BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
         }
         PropertyUtils.addProperty(lst, "Normalized",
-            Localized.transform(Localized.normalize(lc, avail)));
+            I18nUtils.toString(Localizations.normalize(lc, avail)));
       }
 
-      avail = Localized.getAvailableMessages();
+      avail = Localizations.getAvailableMessages();
       idx = 0;
       if (avail != null) {
         PropertyUtils.addProperty(lst, "Available Messages", avail.size());
         for (Map.Entry<Locale, File> entry : avail.entrySet()) {
           PropertyUtils.addProperty(lst,
-              BeeUtils.joinWords(++idx, Localized.transform(entry.getKey())), entry.getValue());
+              BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
         }
         PropertyUtils.addProperty(lst, "Normalized",
-            Localized.transform(Localized.normalize(lc, avail)));
+            I18nUtils.toString(Localizations.normalize(lc, avail)));
       }
 
-      Collection<Locale> locales = Localized.getCachedConstantLocales();
+      Collection<Locale> locales = Localizations.getCachedConstantLocales();
       PropertyUtils.addProperty(lst, "Loaded Constants", locales.size());
       idx = 0;
       for (Locale z : locales) {
         PropertyUtils.addProperty(lst,
-            BeeUtils.progress(++idx, locales.size()), Localized.transform(z));
+            BeeUtils.progress(++idx, locales.size()), I18nUtils.toString(z));
       }
 
-      locales = Localized.getCachedMessageLocales();
+      locales = Localizations.getCachedMessageLocales();
       PropertyUtils.addProperty(lst, "Loaded Messages", locales.size());
       idx = 0;
       for (Locale z : locales) {
         PropertyUtils.addProperty(lst,
-            BeeUtils.progress(++idx, locales.size()), Localized.transform(z));
+            BeeUtils.progress(++idx, locales.size()), I18nUtils.toString(z));
       }
       buff.addProperties(lst);
 

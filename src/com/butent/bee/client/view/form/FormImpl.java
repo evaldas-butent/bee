@@ -84,6 +84,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -845,7 +846,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (!updatedLabels.isEmpty()) {
-      String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
+      String msg = isNew ? Localized.constants.newValues() : Localized.constants.changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, updatedLabels));
     }
@@ -859,7 +860,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
-    messages.add(isNew ? Global.CONSTANTS.createNewRow() : Global.CONSTANTS.saveChanges());
+    messages.add(isNew ? Localized.constants.createNewRow() : Localized.constants.saveChanges());
 
     DecisionCallback callback = new DecisionCallback() {
       @Override

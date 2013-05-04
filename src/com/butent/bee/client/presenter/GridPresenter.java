@@ -66,6 +66,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -231,7 +232,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.onConfirm();
 
     } else {
-      options.add(Global.CONSTANTS.cancel());
+      options.add(Localized.constants.cancel());
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
           options, 2, new ChoiceCallback() {

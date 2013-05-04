@@ -2,13 +2,13 @@ package com.butent.bee.client.validation;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -143,7 +143,7 @@ public class ValidationHelper {
     }
 
     if (messages.isEmpty() && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      messages.add(Global.CONSTANTS.valueRequired());
+      messages.add(Localized.constants.valueRequired());
     }
 
     if (messages.isEmpty()) {

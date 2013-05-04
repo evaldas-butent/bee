@@ -12,6 +12,9 @@ import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 
 /**
@@ -31,6 +34,9 @@ public class Bee implements EntryPoint {
   public void onModuleLoad() {
     BeeConst.setClient();
     LogUtils.setLoggerFactory(new ClientLogManager());
+    
+    Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
+    Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
 
     Bee.keeper = new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
 

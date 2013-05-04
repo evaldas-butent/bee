@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.ui.FormWidget;
@@ -16,6 +15,7 @@ import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.HasStringValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -184,7 +184,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Global.CONSTANTS.valueRequired());
+        messages.add(Localized.constants.valueRequired());
       }
       return messages;
     }
@@ -221,7 +221,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Global.CONSTANTS.valueRequired());
+        messages.add(Localized.constants.valueRequired());
       }
       return messages;
     }

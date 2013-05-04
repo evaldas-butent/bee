@@ -191,6 +191,16 @@ public class I18nUtils {
     }
     return null;
   }
+  
+  public static String toString(Locale locale) {
+    if (locale == null) {
+      return BeeConst.NULL;
+    } else if (locale.equals(Locale.ROOT)) {
+      return "ROOT";
+    } else {
+      return locale.toString();
+    }
+  }
 
   @SuppressWarnings("unchecked")
   private static <T> T createProxy(Class<T> itf, InvocationHandler ih) {

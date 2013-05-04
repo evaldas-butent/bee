@@ -26,6 +26,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -103,7 +104,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
     selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    selectAllWidget.setTitle(Global.CONSTANTS.selectAll());
+    selectAllWidget.setTitle(Localized.constants.selectAll());
 
     selectAllWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -147,7 +148,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
     deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    deselectAllWidget.setTitle(Global.CONSTANTS.deselectAll());
+    deselectAllWidget.setTitle(Localized.constants.deselectAll());
 
     deselectAllWidget.addClickHandler(new ClickHandler() {
       @Override

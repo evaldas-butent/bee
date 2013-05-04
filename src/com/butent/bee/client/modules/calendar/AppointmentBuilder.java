@@ -81,6 +81,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -205,12 +206,12 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       List<String> messages = Lists.newArrayList();
 
-      String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
+      String msg = isNew ? Localized.constants.newValues() : Localized.constants.changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, changes));
 
       messages.add(isNew ?
-          Global.CONSTANTS.createNewAppointment() : Global.CONSTANTS.saveChanges());
+          Localized.constants.createNewAppointment() : Localized.constants.saveChanges());
 
       DecisionCallback callback = new DecisionCallback() {
         @Override
@@ -249,7 +250,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
-          Lists.newArrayList(Global.CONSTANTS.deleteAppointment()), new ConfirmationCallback() {
+          Lists.newArrayList(Localized.constants.deleteAppointment()), new ConfirmationCallback() {
             @Override
             public void onConfirm() {
               dialog.close();
@@ -1508,7 +1509,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       panel.add(widget);
     }
 
-    DialogBox dialog = DialogBox.create(Global.CONSTANTS.overlappingAppointments(),
+    DialogBox dialog = DialogBox.create(Localized.constants.overlappingAppointments(),
         CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
 

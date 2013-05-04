@@ -5,7 +5,6 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -13,6 +12,7 @@ import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -253,9 +253,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   
   String getTitle() {
     return ChartHelper.buildTitle(cargoLabel, cargoDescription,
-        Global.CONSTANTS.cargoLoading(), Places.getLoadingInfo(this),
-        Global.CONSTANTS.cargoUnloading(), Places.getUnloadingInfo(this),
-        Global.CONSTANTS.transportationOrder(), orderName,
+        Localized.constants.cargoLoading(), Places.getLoadingInfo(this),
+        Localized.constants.cargoUnloading(), Places.getUnloadingInfo(this),
+        Localized.constants.transportationOrder(), orderName,
         customerLabel, customerName, notesLabel, notes);
   }
   

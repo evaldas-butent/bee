@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -613,6 +614,23 @@ public class GridLoaderBean {
       
       if (hasFlexibility) {
         dst.setFlexibility(Flexibility.createIfDefined(attributes));
+      }
+    }
+    
+    List<Element> filterDescriptionElements = XmlUtils.getElementsByLocalName(src,
+        FilterDescription.TAG_FILTER);
+    if (!filterDescriptionElements.isEmpty()) {
+      List<FilterDescription> predefinedFilters = Lists.newArrayList();
+
+      for (Element fdElement : filterDescriptionElements) {
+        FilterDescription fd = FilterDescription.create(XmlUtils.getAttributes(fdElement));
+        if (fd != null) {
+          predefinedFilters.add(fd);
+        }
+      }
+      
+      if (!predefinedFilters.isEmpty()) {
+        dst.setPredefinedFilters(predefinedFilters);
       }
     }
 

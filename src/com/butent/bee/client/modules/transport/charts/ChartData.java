@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.Global;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -91,21 +91,21 @@ class ChartData {
   }
 
   enum Type implements HasCaption {
-    DRIVER(Global.CONSTANTS.drivers()),
-    DRIVER_GROUP(Global.CONSTANTS.driverGroupsShort()),
-    CARGO(Global.CONSTANTS.cargos()),
-    CUSTOMER(Global.CONSTANTS.transportationCustomers()),
-    LOADING(Global.CONSTANTS.cargoLoading()),
-    ORDER(Global.CONSTANTS.transportationOrders()),
-    ORDER_STATUS(Global.CONSTANTS.transportationOrderStatuses()),
-    PLACE(Global.CONSTANTS.cargoHandlingPlaces()),
-    TRAILER(Global.CONSTANTS.trailers()),
-    TRIP(Global.CONSTANTS.trips()),
-    TRUCK(Global.CONSTANTS.trucks()),
-    UNLOADING(Global.CONSTANTS.cargoUnloading()),
-    VEHICLE_GROUP(Global.CONSTANTS.vehicleGroupsShort()),
-    VEHICLE_MODEL(Global.CONSTANTS.vehicleModelsShort()),
-    VEHICLE_TYPE(Global.CONSTANTS.vehicleTypesShort());
+    DRIVER(Localized.constants.drivers()),
+    DRIVER_GROUP(Localized.constants.driverGroupsShort()),
+    CARGO(Localized.constants.cargos()),
+    CUSTOMER(Localized.constants.transportationCustomers()),
+    LOADING(Localized.constants.cargoLoading()),
+    ORDER(Localized.constants.transportationOrders()),
+    ORDER_STATUS(Localized.constants.transportationOrderStatuses()),
+    PLACE(Localized.constants.cargoHandlingPlaces()),
+    TRAILER(Localized.constants.trailers()),
+    TRIP(Localized.constants.trips()),
+    TRUCK(Localized.constants.trucks()),
+    UNLOADING(Localized.constants.cargoUnloading()),
+    VEHICLE_GROUP(Localized.constants.vehicleGroupsShort()),
+    VEHICLE_MODEL(Localized.constants.vehicleModelsShort()),
+    VEHICLE_TYPE(Localized.constants.vehicleTypesShort());
 
     private final String caption;
 

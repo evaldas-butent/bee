@@ -29,6 +29,7 @@ public class FilterInfo implements BeeSerializable, HasCaption {
   }
 
   private FilterInfo() {
+    super();
   }
 
   @Override

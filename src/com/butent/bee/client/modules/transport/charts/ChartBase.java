@@ -75,6 +75,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -1006,7 +1007,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (setData(response)) {
       callback.onSuccess(this);
     } else {
-      callback.onFailure(getCaption(), Global.CONSTANTS.nothingFound());
+      callback.onFailure(getCaption(), Localized.constants.nothingFound());
     }
   }
 

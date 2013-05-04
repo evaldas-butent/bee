@@ -10,7 +10,7 @@ import com.google.common.primitives.Longs;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.i18n.I18nUtils;
-import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -60,7 +60,7 @@ public class UserServiceBean {
     private final UserData userData;
     private Collection<Long> userRoles;
     private boolean online = false;
-    private Locale locale = Localized.defaultLocale;
+    private Locale locale = Localizations.defaultLocale;
 
     private UserInfo(UserData userData) {
       this.userData = userData;
@@ -94,11 +94,11 @@ public class UserServiceBean {
         }
       }
       if (loc == null) {
-        loc = Localized.defaultLocale;
+        loc = Localizations.defaultLocale;
       }
       data.setLocale(loc.toString());
 
-      data.setConstants(Localized.getDictionary(loc));
+      data.setConstants(Localizations.getDictionary(loc));
 
       this.locale = loc;
       return this;
@@ -161,11 +161,11 @@ public class UserServiceBean {
   }
 
   public LocalizableConstants getLocalizableConstants() {
-    return Localized.getConstants(getCurrentUserInfo().getLocale());
+    return Localizations.getConstants(getCurrentUserInfo().getLocale());
   }
 
   public LocalizableMessages getLocalizableMesssages() {
-    return Localized.getMessages(getCurrentUserInfo().getLocale());
+    return Localizations.getMessages(getCurrentUserInfo().getLocale());
   }
 
   public String getRoleName(long roleId) {

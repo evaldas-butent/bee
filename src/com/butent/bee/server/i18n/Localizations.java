@@ -8,7 +8,6 @@ import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -27,7 +26,7 @@ import java.util.Properties;
  * Initializes or makes available particular localizations.
  */
 
-public class Localized {
+public class Localizations {
   /**
    * Contains a list of types, that can be translated into a local language.
    */
@@ -37,7 +36,7 @@ public class Localized {
 
   public static Locale defaultLocale = Locale.getDefault();
 
-  private static BeeLogger logger = LogUtils.getLogger(Localized.class);
+  private static BeeLogger logger = LogUtils.getLogger(Localizations.class);
 
   private static Locale rootLocale = Locale.ROOT;
 
@@ -79,7 +78,7 @@ public class Localized {
 
     Locale z = normalize(locale, availableConstants);
     if (z == null) {
-      logger.severe(LocalizableType.CONSTANTS, transform(locale), "not available");
+      logger.severe(LocalizableType.CONSTANTS, I18nUtils.toString(locale), "not available");
       return null;
     }
 
@@ -129,23 +128,13 @@ public class Localized {
     return null;
   }
 
-  public static String transform(Locale locale) {
-    if (locale == null) {
-      return BeeConst.NULL;
-    }
-    if (rootLocale.equals(locale)) {
-      return "ROOT";
-    }
-    return locale.toString();
-  }
-
   private static LocalizableConstants ensureConstants(Locale locale) {
     if (availableConstants == null) {
       Assert.isTrue(init(LocalizableType.CONSTANTS));
     }
 
     Locale z = normalize(locale, availableConstants);
-    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.CONSTANTS, transform(locale),
+    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.CONSTANTS, I18nUtils.toString(locale),
         "not available"));
 
     LocalizableConstants constants = localizedConstants.get(z);
@@ -154,7 +143,7 @@ public class Localized {
           FileUtils.readProperties(availableConstants.get(z)));
       Assert.notNull(constants);
       localizedConstants.put(z, constants);
-      logger.debug(LocalizableType.CONSTANTS, transform(z), "loaded");
+      logger.debug(LocalizableType.CONSTANTS, I18nUtils.toString(z), "loaded");
     }
     return constants;
   }
@@ -165,7 +154,7 @@ public class Localized {
     }
 
     Locale z = normalize(locale, availableMessages);
-    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.MESSAGES, transform(locale),
+    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.MESSAGES, I18nUtils.toString(locale),
         "not available"));
 
     LocalizableMessages messages = localizedMessages.get(z);
@@ -174,7 +163,7 @@ public class Localized {
           FileUtils.readProperties(availableMessages.get(z)));
       Assert.notNull(messages);
       localizedMessages.put(z, messages);
-      logger.debug(LocalizableType.MESSAGES, transform(z), "loaded");
+      logger.debug(LocalizableType.MESSAGES, I18nUtils.toString(z), "loaded");
     }
     return messages;
   }
@@ -250,9 +239,9 @@ public class Localized {
       default:
         Assert.untouchable();
     }
-    logger.debug(type, "found localization", transform(locale), file.getPath());
+    logger.debug(type, "found localization", I18nUtils.toString(locale), file.getPath());
   }
 
-  private Localized() {
+  private Localizations() {
   }
 }

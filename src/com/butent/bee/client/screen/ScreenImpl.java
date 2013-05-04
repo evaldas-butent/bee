@@ -34,6 +34,7 @@ import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -415,8 +416,8 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.getMsgBoxen().confirm(Global.MESSAGES.endSession(Settings.getAppName()),
-            Icon.QUESTION, Lists.newArrayList(Global.CONSTANTS.questionLogout()),
+        Global.getMsgBoxen().confirm(Localized.messages.endSession(Settings.getAppName()),
+            Icon.QUESTION, Lists.newArrayList(Localized.constants.questionLogout()),
             new ConfirmationCallback() {
               @Override
               public void onConfirm() {

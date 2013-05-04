@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.UIObject;
@@ -38,8 +37,7 @@ import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -60,9 +58,6 @@ public class Global implements Module {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
   
-  public static final LocalizableConstants CONSTANTS = GWT.create(LocalizableConstants.class);
-  public static final LocalizableMessages MESSAGES = GWT.create(LocalizableMessages.class);
-
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();
 
@@ -283,7 +278,7 @@ public class Global implements Module {
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, CssUnit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        BeeConst.UNDEF, CONSTANTS.ok(), CONSTANTS.cancel(), null);
+        BeeConst.UNDEF, Localized.constants.ok(), Localized.constants.cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,

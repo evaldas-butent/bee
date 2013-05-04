@@ -55,6 +55,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -559,7 +560,7 @@ public class Search {
           }
 
           if (results.isEmpty()) {
-            BeeKeeper.getScreen().notifyWarning(value, Global.CONSTANTS.nothingFound());
+            BeeKeeper.getScreen().notifyWarning(value, Localized.constants.nothingFound());
           } else {
             ModuleManager.maybeInitialize(new Command() {
               @Override

@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -48,9 +49,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   protected enum SupplierAction implements HasCaption {
     ALL("Visi"),
-    CLEAR(Global.CONSTANTS.clear()),
-    COMMIT(Global.CONSTANTS.doFilter()),
-    CANCEL(Global.CONSTANTS.cancel());
+    CLEAR(Localized.constants.clear()),
+    COMMIT(Localized.constants.doFilter()),
+    CANCEL(Localized.constants.cancel());
 
     private final String caption;
 

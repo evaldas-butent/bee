@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
@@ -25,6 +24,7 @@ import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -260,16 +260,16 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     switch (reportType) {
       case TYPE_HOURS:
-        reportCaption = Global.CONSTANTS.hoursByTypes();
+        reportCaption = Localized.constants.hoursByTypes();
         break;
       case COMPANY_TIMES:
-        reportCaption = Global.CONSTANTS.hoursByCompanies();
+        reportCaption = Localized.constants.hoursByCompanies();
         break;
       case USERS_HOURS:
-        reportCaption = Global.CONSTANTS.hoursByUsers();
+        reportCaption = Localized.constants.hoursByUsers();
         break;
       default:
-        reportCaption = Global.CONSTANTS.hoursByTypes();
+        reportCaption = Localized.constants.hoursByTypes();
         break;
     }
 

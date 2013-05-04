@@ -16,7 +16,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -41,6 +40,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Orientation;
@@ -218,7 +218,7 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Global.CONSTANTS.yes(), Global.CONSTANTS.no());
+    List<String> options = Lists.newArrayList(Localized.constants.yes(), Localized.constants.no());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -250,8 +250,8 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Global.CONSTANTS.yes(), Global.CONSTANTS.no(),
-        Global.CONSTANTS.cancel());
+    List<String> options = Lists.newArrayList(Localized.constants.yes(), Localized.constants.no(),
+        Localized.constants.cancel());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -482,7 +482,8 @@ public class MessageBoxes {
   public void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
 
-    List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml, Global.CONSTANTS.ok()));
+    List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
+        Localized.constants.ok()));
 
     display(caption, Icon.ERROR, messages, options, 0, null, BeeConst.UNDEF, dialogStyle, null,
         null, null);
@@ -496,7 +497,7 @@ public class MessageBoxes {
       panel.add(new BeeLabel(s));
     }
 
-    CloseButton close = new CloseButton(Global.CONSTANTS.ok());
+    CloseButton close = new CloseButton(Localized.constants.ok());
 
     panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     panel.add(close);
@@ -557,7 +558,7 @@ public class MessageBoxes {
       index++;
     }
 
-    CloseButton close = new CloseButton(Global.CONSTANTS.ok());
+    CloseButton close = new CloseButton(Localized.constants.ok());
     grid.setWidget(index, 0, close);
     grid.alignCenter(index, 0);
     if (c > 1) {

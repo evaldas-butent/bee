@@ -9,7 +9,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.layout.Flow;
@@ -21,6 +20,7 @@ import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 
@@ -63,7 +63,7 @@ class ShippingSchedule extends VehicleTimeBoard  {
 
   @Override
   public String getCaption() {
-    return Global.CONSTANTS.shippingSchedule();
+    return Localized.constants.shippingSchedule();
   }
 
   @Override

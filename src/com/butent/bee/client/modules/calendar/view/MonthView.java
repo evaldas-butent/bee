@@ -10,7 +10,6 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -33,6 +32,7 @@ import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -514,7 +514,7 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final DialogBox dialog = DialogBox.create(Global.CONSTANTS.selectAppointment(),
+    final DialogBox dialog = DialogBox.create(Localized.constants.selectAppointment(),
         CalendarStyleManager.MORE_POPUP);
     
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {

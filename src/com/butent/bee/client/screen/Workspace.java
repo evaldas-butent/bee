@@ -33,6 +33,7 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -521,7 +522,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private void insertEmptyPanel(int before) {
     TilePanel panel = new TilePanel(this);
-    TabWidget tab = new TabWidget(Global.CONSTANTS.newTab());
+    TabWidget tab = new TabWidget(Localized.constants.newTab());
 
     if (getPageCount() == 1) {
       setStyleOne(false);
@@ -643,7 +644,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     if (BeeUtils.isEmpty(caption)) {
-      caption = Global.CONSTANTS.newTab();
+      caption = Localized.constants.newTab();
     }
 
     int index = getPageIndex(tile);

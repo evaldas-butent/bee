@@ -54,6 +54,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -348,9 +349,9 @@ public class InputBoxes {
 
     DialogBox dialog = DialogBox.create(caption);
 
-    BeeButton confirm = new BeeButton(Global.CONSTANTS.ok(),
+    BeeButton confirm = new BeeButton(Localized.constants.ok(),
         DialogCallback.getConfirmCommand(dialog, callback));
-    BeeButton cancel = new BeeButton(Global.CONSTANTS.cancel(),
+    BeeButton cancel = new BeeButton(Localized.constants.cancel(),
         DialogCallback.getCancelCommand(dialog, callback));
 
     table.setWidget(r, 0, confirm);
