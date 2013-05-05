@@ -1,10 +1,13 @@
 package com.butent.bee.client.utils;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 /**
  * Contains methods for transforming data into and from {@code JSON} type data structure.
@@ -48,6 +51,23 @@ public class JsonUtils {
       return null;
     }
     return value.isObject();
+  }
+  
+  public static List<String> toList(JSONValue json) {
+    List<String> result = Lists.newArrayList();
+    if (json == null) {
+      return result;
+    }
+    
+    if (json.isArray() == null) {
+      result.add(toString(json));
+    } else {
+      for (int i = 0; i < json.isArray().size(); i++) {
+        result.add(toString(json.isArray().get(i)));
+      }
+    }
+    
+    return result;
   }
 
   public static String toString(JSONValue value) {

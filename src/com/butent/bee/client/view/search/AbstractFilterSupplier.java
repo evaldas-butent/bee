@@ -130,6 +130,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   public abstract void onRequest(Element target, NotificationListener notificationListener,
       Callback<Boolean> callback);
+  
+  public abstract Filter parse(String values);
 
   public boolean reset() {
     clearSelection();

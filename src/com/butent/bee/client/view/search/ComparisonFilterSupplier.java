@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.Callback;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.filter.Filter;
 
 import java.util.List;
 
@@ -28,5 +29,10 @@ public class ComparisonFilterSupplier extends AbstractFilterSupplier {
   @Override
   public void onRequest(Element target, NotificationListener notificationListener, 
       Callback<Boolean> callback) {
+  }
+
+  @Override
+  public Filter parse(String values) {
+    return null;
   }
 }

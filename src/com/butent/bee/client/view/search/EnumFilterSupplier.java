@@ -18,6 +18,7 @@ import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class EnumFilterSupplier extends AbstractFilterSupplier {
@@ -119,6 +120,15 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public Filter parse(String values) {
+    if (BeeUtils.isEmpty(values)) {
+      return null;
+    } else {
+      return buildFilter(BeeUtils.toInts(values));
+    }
+  }
+
+  @Override
   public boolean reset() {
     data.clear();
     return super.reset();
@@ -132,31 +142,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected void doCommit() {
-    CompoundFilter compoundFilter = Filter.or();
-
-    for (int i = 0; i < data.size(); i++) {
-      boolean selected = isSelected(i);
-
-      if (selected) {
-        int value = data.get(i).getIndex();
-        if (value == nullIndex) {
-          compoundFilter.add(Filter.isEmpty(getColumnId()));
-        } else {
-          compoundFilter.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(value)));
-        }
-      }
-    }
-
-    Filter newFilter;
-    if (compoundFilter.isEmpty()) {
-      newFilter = null;
-    } else if (compoundFilter.size() == 1) {
-      newFilter = compoundFilter.getSubFilters().get(0);
-    } else {
-      newFilter = compoundFilter;
-    }
-
-    update(newFilter);
+    update(buildFilter(getSelectedItems()));
   }
 
   @Override
@@ -164,6 +150,32 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
   }
 
+  private Filter buildFilter(Collection<Integer> ordinals) {
+    if (BeeUtils.isEmpty(ordinals)) {
+      return null;
+    }
+
+    CompoundFilter compoundFilter = Filter.or();
+
+    for (Integer ordinal : ordinals) {
+      if (ordinal != null) {
+        if (ordinal.equals(nullIndex)) {
+          compoundFilter.add(Filter.isEmpty(getColumnId()));
+        } else {
+          compoundFilter.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(ordinal)));
+        }
+      }
+    }
+
+    if (compoundFilter.isEmpty()) {
+      return null;
+    } else if (compoundFilter.size() == 1) {
+      return compoundFilter.getSubFilters().get(0);
+    } else {
+      return compoundFilter;
+    }
+  }
+  
   private Widget createWidget() {
     HtmlTable display = createDisplay(true);
     

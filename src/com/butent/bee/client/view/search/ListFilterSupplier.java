@@ -2,10 +2,12 @@ package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -19,6 +21,7 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ListFilterSupplier extends AbstractFilterSupplier {
@@ -100,6 +103,15 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public Filter parse(String values) {
+    if (BeeUtils.isEmpty(values)) {
+      return null;
+    } else {
+      return buildFilter(JsonUtils.toList(JSONParser.parseStrict(values)));
+    }
+  }
+
+  @Override
   protected void doClear() {
     clearDisplay();
     super.doClear();
@@ -112,42 +124,21 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       return;
     }
 
-    CompoundFilter compoundFilter = Filter.or();
+    List<String> values = Lists.newArrayList();
 
     int colIndex = (relIndex > 0) ? relIndex : 0;
     for (int row : getSelectedItems()) {
-      String value = data.getValue(row, colIndex);
-      Filter rowFilter;
-
-      if (value == null || value.isEmpty()) {
-        rowFilter = Filter.isEmpty(getColumnId());
-      } else if (colIndex == relIndex) {
-        rowFilter = ComparisonFilter.isEqual(getColumnId(),
-            new LongValue(BeeUtils.toLongOrNull(value)));
-      } else {
-        rowFilter = ComparisonFilter.isEqual(getColumnId(),
-            Value.parseValue(getColumnType(), value, false));
-      }
-      compoundFilter.add(rowFilter);
+      values.add(data.getValue(row, colIndex));
     }
 
-    Filter newFilter;
-    if (compoundFilter.isEmpty()) {
-      newFilter = null;
-    } else if (compoundFilter.size() == 1) {
-      newFilter = compoundFilter.getSubFilters().get(0);
-    } else {
-      newFilter = compoundFilter;
-    }
-
-    update(newFilter);
+    update(buildFilter(values));
   }
-
+  
   @Override
   protected List<SupplierAction> getActions() {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
   }
-  
+
   @Override
   protected List<String> getHistogramColumns() {
     List<String> columns = Lists.newArrayList(renderColumns);
@@ -160,6 +151,34 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   @Override
   protected List<String> getHistogramOrder() {
     return orderColumns;
+  }
+  
+  private Filter buildFilter(Collection<String> values) {
+    if (BeeUtils.isEmpty(values)) {
+      return null;
+    }
+
+    CompoundFilter filter = Filter.or();
+
+    for (String value : values) {
+      if (value == null || value.isEmpty()) {
+        filter.add(Filter.isEmpty(getColumnId()));
+      } else if (relIndex >= 0) {
+        filter.add(ComparisonFilter.isEqual(getColumnId(),
+            new LongValue(BeeUtils.toLongOrNull(value))));
+      } else {
+        filter.add(ComparisonFilter.isEqual(getColumnId(),
+            Value.parseValue(getColumnType(), value, false)));
+      }
+    }
+
+    if (filter.isEmpty()) {
+      return null;
+    } else if (filter.size() == 1) {
+      return filter.getSubFilters().get(0);
+    } else {
+      return filter;
+    }
   }
 
   private Widget createWidget() {

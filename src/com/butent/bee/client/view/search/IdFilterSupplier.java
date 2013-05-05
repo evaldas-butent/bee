@@ -15,6 +15,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -66,6 +67,11 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public Filter parse(String values) {
+    return BeeUtils.isLong(values) ? ComparisonFilter.compareId(BeeUtils.toLong(values)) : null;
+  }
+
+  @Override
   public boolean reset() {
     editor.clearValue();
     return super.reset();
@@ -82,11 +88,12 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
       return;
     }
     
-    if (!BeeUtils.isLong(value)) {
-      Global.showError("Neteisinga ID reikšmė");
-      return;
+    Filter filter = parse(value);
+    if (filter == null) {
+      Global.showError(Lists.newArrayList("Neteisinga ID reikšmė", value));
+    } else {
+      update(filter);
     }
-    update(ComparisonFilter.compareId(BeeUtils.toLong(value)));
   }
 
   private void setLastWidth(int lastWidth) {

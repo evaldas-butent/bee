@@ -289,6 +289,22 @@ class TaskList {
     }
 
     @Override
+    public Filter parse(String values) {
+      if (BeeUtils.isDigit(values)) {
+        switch (BeeUtils.toInt(values)) {
+          case 0:
+            return getNewFilter();
+          case 1:
+            return getUpdFilter();
+          case 2:
+            return Filter.or(getNewFilter(), getUpdFilter());
+        }
+      }
+
+      return null;
+    }
+
+    @Override
     public boolean reset() {
       setCaption(null);
       return super.reset();
@@ -478,6 +494,17 @@ class TaskList {
     public void onRequest(Element target, NotificationListener notificationListener,
         Callback<Boolean> callback) {
       openDialog(target, createWidget(), callback);
+    }
+
+    @Override
+    public Filter parse(String values) {
+      if (BeeUtils.same(values, "late")) {
+        return getLateFilter();
+      } else if (BeeUtils.same(values, "scheduled")) {
+        return getScheduledFilter();
+      } else {
+        return null;
+      }
     }
 
     @Override

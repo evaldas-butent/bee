@@ -24,6 +24,9 @@ import java.util.Set;
  */
 public class BeeUtils {
 
+  public static final Splitter numberSplitter =
+      Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
+  
   public static boolean addNotEmpty(Collection<String> col, String item) {
     if (isEmpty(item)) {
       return false;
@@ -171,8 +174,8 @@ public class BeeUtils {
     }
   }
 
-  public static String buildLines(String... lines) {
-    if (lines == null) {
+  public static String buildLines(Collection<String> lines) {
+    if (lines == null || lines.isEmpty()) {
       return null;
     }
 
@@ -190,8 +193,8 @@ public class BeeUtils {
     return sb.toString();
   }
 
-  public static String buildLines(Collection<String> lines) {
-    if (lines == null || lines.isEmpty()) {
+  public static String buildLines(String... lines) {
+    if (lines == null) {
       return null;
     }
 
@@ -2388,7 +2391,30 @@ public class BeeUtils {
     if (isEmpty(s)) {
       return null;
     }
-    return toInt(s);
+
+    try {
+      return Integer.parseInt(s.trim());
+    } catch (NumberFormatException ex) {
+      if (isDouble(s)) {
+        return toInt(toDouble(s));
+      } else {
+        return null;
+      }
+    }
+  }
+
+  public static List<Integer> toInts(String input) {
+    List<Integer> result = Lists.newArrayList();
+    
+    if (!isEmpty(input)) {
+      for (String s : numberSplitter.split(input)) {
+        Integer x = toIntOrNull(s);
+        if (x != null) {
+          result.add(x);
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -2449,7 +2475,30 @@ public class BeeUtils {
     if (isEmpty(s)) {
       return null;
     }
-    return toLong(s);
+
+    try {
+      return Long.parseLong(s.trim());
+    } catch (NumberFormatException ex) {
+      if (isDouble(s)) {
+        return toLong(toDouble(s));
+      } else {
+        return null;
+      }
+    }
+  }
+
+  public static List<Long> toLongs(String input) {
+    List<Long> result = Lists.newArrayList();
+    
+    if (!isEmpty(input)) {
+      for (String s : numberSplitter.split(input)) {
+        Long x = toLongOrNull(s);
+        if (x != null) {
+          result.add(x);
+        }
+      }
+    }
+    return result;
   }
 
   public static int toNonNegativeInt(Double d) {
@@ -2685,7 +2734,7 @@ public class BeeUtils {
 
     return toInt(s.substring(start, end));
   }
-
+  
   /**
    * Transforms an Object {@code x} to a String representation. In general, this method returns a
    * string that "textually represents" this object. String type Objects are trimmed.
@@ -2733,7 +2782,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+  
   private BeeUtils() {
   }
 }

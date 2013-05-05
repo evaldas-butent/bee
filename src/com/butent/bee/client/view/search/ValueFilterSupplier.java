@@ -68,20 +68,19 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public Filter parse(String values) {
+    return BeeUtils.isEmpty(values) ? null : buildFilter(BeeUtils.trim(values));
+  }
+
+  @Override
   public boolean reset() {
     editor.clearValue();
     return super.reset();
   }
-  
-  private int getLastWidth() {
-    return lastWidth;
-  }
 
-  private void onSave() {
-    String value = BeeUtils.trim(editor.getValue());
+  private Filter buildFilter(String value) {
     if (BeeUtils.isEmpty(value)) {
-      update(null);
-      return;
+      return null;
     }
     
     Filter filter;
@@ -106,7 +105,15 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       filter = ColumnValueFilter.compareWithValue(getColumn(), operator, value);
     }
     
-    update(filter);
+    return filter;
+  }
+  
+  private int getLastWidth() {
+    return lastWidth;
+  }
+
+  private void onSave() {
+    update(buildFilter(BeeUtils.trim(editor.getValue())));
   }
 
   private void setLastWidth(int lastWidth) {

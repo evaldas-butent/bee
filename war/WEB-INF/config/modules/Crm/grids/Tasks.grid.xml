@@ -33,8 +33,8 @@
     </DataColumn>
 
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan.">
-      <filter label="=taskFilterLate" values="0" />
-      <filter label="=taskFilterScheduled" values="1" />
+      <filter label="=taskFilterLate" values="late" />
+      <filter label="=taskFilterScheduled" values="scheduled" />
     </CalcColumn>
     
 
