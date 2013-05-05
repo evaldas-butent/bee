@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -314,7 +315,7 @@ class TaskList {
       int row = 0;
 
       if (!newTasks.isEmpty()) {
-        BeeButton bNew = new BeeButton("Tik naujos");
+        BeeButton bNew = new BeeButton(Localized.constants.taskFilterNew());
         bNew.addStyleName(getStylePrefix() + "new");
 
         bNew.addClickHandler(new ClickHandler() {
@@ -336,7 +337,7 @@ class TaskList {
       }
 
       if (!updTasks.isEmpty()) {
-        BeeButton bUpd = new BeeButton("Tik pasikeitusios");
+        BeeButton bUpd = new BeeButton(Localized.constants.taskFilterUpdated());
         bUpd.addStyleName(getStylePrefix() + "upd");
 
         bUpd.addClickHandler(new ClickHandler() {
@@ -358,7 +359,7 @@ class TaskList {
       }
 
       if (!newTasks.isEmpty() && !updTasks.isEmpty()) {
-        BeeButton both = new BeeButton("Naujos ir pasikeitusios");
+        BeeButton both = new BeeButton(Localized.constants.taskFilterNewOrUpdated());
         both.addStyleName(getStylePrefix() + "both");
 
         both.addClickHandler(new ClickHandler() {
@@ -382,7 +383,7 @@ class TaskList {
         row++;
       }
 
-      BeeButton all = new BeeButton("Visos");
+      BeeButton all = new BeeButton(Localized.constants.taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -395,7 +396,7 @@ class TaskList {
 
       container.setWidget(row, 0, all);
 
-      BeeButton cancel = new BeeButton("Atsisakyti");
+      BeeButton cancel = new BeeButton(Localized.constants.cancel());
       cancel.addStyleName(getStylePrefix() + "cancel");
 
       cancel.addClickHandler(new ClickHandler() {
@@ -499,33 +500,33 @@ class TaskList {
       Flow container = new Flow();
       container.addStyleName(getStylePrefix() + "container");
 
-      BeeButton late = new BeeButton("Tik vėluojančios");
+      BeeButton late = new BeeButton(Localized.constants.taskFilterLate());
       late.addStyleName(getStylePrefix() + "late");
 
       late.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption("Vėluojančios");
+          setCaption(Localized.constants.taskLabelLate());
           update(getLateFilter());
         }
       });
 
       container.add(late);
 
-      BeeButton scheduled = new BeeButton("Tik planuojamos");
+      BeeButton scheduled = new BeeButton(Localized.constants.taskFilterScheduled());
       scheduled.addStyleName(getStylePrefix() + "scheduled");
 
       scheduled.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption("Planuojamos");
+          setCaption(Localized.constants.taskLabelScheduled());
           update(getScheduledFilter());
         }
       });
 
       container.add(scheduled);
 
-      BeeButton all = new BeeButton("Visos");
+      BeeButton all = new BeeButton(Localized.constants.taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -538,7 +539,7 @@ class TaskList {
 
       container.add(all);
 
-      BeeButton cancel = new BeeButton("Atsisakyti");
+      BeeButton cancel = new BeeButton(Localized.constants.cancel());
       cancel.addStyleName(getStylePrefix() + "cancel");
 
       cancel.addClickHandler(new ClickHandler() {

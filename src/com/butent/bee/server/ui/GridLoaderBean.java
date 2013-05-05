@@ -99,8 +99,6 @@ public class GridLoaderBean {
   private static final String ATTR_CACHE_DATA = "cacheData";
 
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
-  private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
-  private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
@@ -777,15 +775,6 @@ public class GridLoaderBean {
     if (asyncThreshold != null) {
       dst.setAsyncThreshold(asyncThreshold);
     }
-    Integer pagingThreshold = XmlUtils.getAttributeInteger(src, ATTR_PAGING_THRESHOLD);
-    if (pagingThreshold != null) {
-      dst.setPagingThreshold(pagingThreshold);
-    }
-    Integer searchThreshold = XmlUtils.getAttributeInteger(src, ATTR_SEARCH_THRESHOLD);
-    if (searchThreshold != null) {
-      dst.setSearchThreshold(searchThreshold);
-    }
-
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
     if (initialRowSetSize != null) {
       dst.setInitialRowSetSize(initialRowSetSize);

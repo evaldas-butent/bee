@@ -16,12 +16,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputDate;
@@ -44,6 +46,7 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -329,9 +332,13 @@ class ReportManager {
       gridDescription.addColumn(columnDescription);
     }
 
-    GridPresenter presenter = new GridPresenter(gridDescription,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE,
-        EnumSet.of(UiOption.REPORT));
+    Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
+    
+    GridView gridView = GridFactory.createGridView(gridDescription, rowSet.getColumns(), uiOptions);
+    gridView.initData(rowSet.getNumberOfRows(), rowSet);
+    
+    GridPresenter presenter = new GridPresenter(gridDescription, gridView,
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE, uiOptions);
 
     BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }

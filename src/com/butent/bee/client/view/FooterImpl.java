@@ -53,9 +53,9 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   }
 
   @Override
-  public void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
+  public void create(int maxRowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
     if (addPaging) {
-      SimplePager pager = new SimplePager(rowCount, showPageSize);
+      SimplePager pager = new SimplePager(maxRowCount, showPageSize);
       pager.addStyleName(STYLE_PAGER);
       add(pager);
       setPagerId(pager.getWidgetId());

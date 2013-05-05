@@ -62,6 +62,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
@@ -246,6 +247,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     String getColumnId() {
       return columnId;
+    }
+    
+    AbstractFilterSupplier getFilterSupplier() {
+      return (getFooter() == null) ? null : getFooter().getValue();
     }
 
     ColumnFooter getFooter() {

@@ -221,11 +221,11 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  protected void setUserFilter(Filter userFilter) {
-    this.userFilter = userFilter;
-  }
-
   private Map<String, Filter> getParentFilters() {
     return parentFilters;
+  }
+
+  private void setUserFilter(Filter userFilter) {
+    this.userFilter = userFilter;
   }
 }

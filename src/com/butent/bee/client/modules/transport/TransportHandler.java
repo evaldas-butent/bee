@@ -462,8 +462,7 @@ public class TransportHandler {
     }
 
     @Override
-    public void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
-        GridDescription gridDescription, boolean hasSearch) {
+    public void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription) {
 
       viewName = gridDescription.getViewName();
       speedFromIndex = Data.getColumnIndex(viewName, "SpeedometerFrom");

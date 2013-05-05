@@ -11,6 +11,30 @@ public interface LocalizableCrmConstants {
   String hoursByUsers();
 
   String spentTime();
+
+  String taskFilterAll();
+
+  String taskFilterLate();
+
+  String taskFilterNew();
+  
+  String taskFilterNewOrUpdated();
+  
+  String taskFilterNotVisitedOrActive();
+  
+  String taskFilterNotVisitedOrActiveOrCompleted(); 
+  
+  String taskFilterScheduled();
+
+  String taskFilterStarred();
+  
+  String taskFilterUpdated();
+
+  String taskLabelLate();
+  
+  String taskLabelScheduled();
+  
+  String taskLabelStarred();
   
   String taskStatusActive();
   

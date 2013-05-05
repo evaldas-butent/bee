@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.crm;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -64,13 +65,13 @@ public class CrmConstants {
   }
 
   public enum TaskStatus implements HasCaption {
-    NOT_VISITED("Neperžiūrėta"),
-    ACTIVE("Vykdoma"),
-    SCHEDULED("Suplanuota"),
-    SUSPENDED("Sustabdyta"),
-    COMPLETED("Įvykdyta"),
-    APPROVED("Baigta"),
-    CANCELED("Nutraukta");
+    NOT_VISITED(Localized.constants.taskStatusNotVisited()),
+    ACTIVE(Localized.constants.taskStatusActive()),
+    SCHEDULED(Localized.constants.taskStatusScheduled()),
+    SUSPENDED(Localized.constants.taskStatusSuspended()),
+    COMPLETED(Localized.constants.taskStatusCompleted()),
+    APPROVED(Localized.constants.taskStatusApproved()),
+    CANCELED(Localized.constants.taskStatusCanceled());
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {

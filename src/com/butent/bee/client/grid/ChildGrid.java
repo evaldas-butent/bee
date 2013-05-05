@@ -17,6 +17,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -40,6 +42,8 @@ import java.util.Map;
 
 public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
     ParentRowEvent.Handler {
+  
+  private static final Collection<UiOption> uiOptions = EnumSet.of(UiOption.CHILD);
 
   private final String gridName;
 
@@ -166,12 +170,12 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     super.onUnload();
   }
 
-  private void createPresenter(IsRow row, BeeRowSet rowSet, Filter immutableFilter,
-      Map<String, Filter> initialFilters, Order order) {
+  private void createPresenter(GridView gridView, IsRow row, BeeRowSet rowSet,
+      Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
 
-    GridPresenter gp = new GridPresenter(getGridDescription(), getRelSource(),
+    GridPresenter gp = new GridPresenter(getGridDescription(), gridView,
         rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
-        EnumSet.of(UiOption.CHILD), getGridInterceptor(), immutableFilter, initialFilters, order,
+        uiOptions, getGridInterceptor(), immutableFilter, initialFilters, order,
         getGridOptions());
 
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
@@ -219,13 +223,19 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 
+    DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
+    if (dataInfo == null) {
+      return;
+    }
+
+    final GridView gridView = GridFactory.createGridView(getGridDescription(), getRelSource(),
+        dataInfo.getColumns(), uiOptions, gridInterceptor, order);
+    
     if (!hasParentValue(row)) {
-      DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
-      if (dataInfo != null) {
-        BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
-        createPresenter(row, rowSet, immutableFilter, initialFilters, order);
-        return;
-      }
+      BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
+      gridView.initData(rowSet.getNumberOfRows(), rowSet);
+      createPresenter(gridView, row, rowSet, immutableFilter, initialFilters, order);
+      return;
     }
 
     Filter queryFilter = Filter.and(getFilter(row),
@@ -235,7 +245,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
         getCachingPolicy(), new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet rowSet) {
-            createPresenter(row, rowSet, immutableFilter, initialFilters, order);
+            gridView.initData(rowSet.getNumberOfRows(), rowSet);
+            createPresenter(gridView, row, rowSet, immutableFilter, initialFilters, order);
           }
         });
   }

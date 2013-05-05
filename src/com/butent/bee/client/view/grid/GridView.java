@@ -38,9 +38,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void applyOptions(String options);
 
-  void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription, GridInterceptor gridInterceptor, boolean hasSearch,
-      Order order);
+  void create(List<BeeColumn> dataColumns, GridDescription gridDescription,
+      GridInterceptor gridInterceptor, boolean hasSearch, Order order);
 
   void ensureRelId(IdCallback callback);
   
@@ -68,6 +67,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
+  void initData(int rowCount, BeeRowSet rowSet);
+  
   boolean isAdding();
 
   boolean isReadOnly();

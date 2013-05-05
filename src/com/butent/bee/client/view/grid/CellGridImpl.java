@@ -491,15 +491,15 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridInterceptor interceptor, boolean hasSearch, Order order) {
+  public void create(final List<BeeColumn> dataCols, GridDescription gridDescr,
+      GridInterceptor interceptor, boolean hasSearch, Order order) {
 
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
 
     setGridInterceptor(interceptor);
     if (interceptor != null) {
-      interceptor.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
+      interceptor.beforeCreate(dataCols, gridDescr);
     }
 
     setDataColumns(dataCols);
@@ -860,11 +860,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     getGrid().setDefaultFlexibility(gridDescr.getFlexibility());
 
-    getGrid().setRowCount(rowCount, false);
-    if (rowSet != null && !rowSet.isEmpty()) {
-      getGrid().setRowData(rowSet.getRows().getList(), false);
-    }
-
     initOrder(order);
 
     getGrid().addEditStartHandler(this);
@@ -911,6 +906,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     if (interceptor != null) {
       interceptor.afterCreate(this);
+    }
+  }
+  
+  @Override
+  public void initData(int rowCount, BeeRowSet rowSet) {
+    getGrid().setRowCount(rowCount, false);
+    if (rowSet != null && !rowSet.isEmpty()) {
+      getGrid().setRowData(rowSet.getRows().getList(), false);
     }
   }
 

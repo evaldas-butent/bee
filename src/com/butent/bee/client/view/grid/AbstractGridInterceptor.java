@@ -99,8 +99,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
-      GridDescription gridDescription, boolean hasSearch) {
+  public void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription) {
   }
 
   @Override

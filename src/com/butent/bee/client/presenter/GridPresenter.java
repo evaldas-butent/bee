@@ -169,13 +169,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private Filter lastFilter = null;
 
-  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
-      Provider.Type providerType, CachingPolicy cachingPolicy, Collection<UiOption> uiOptions) {
-    this(gridDescription, null, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
+  public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      Collection<UiOption> uiOptions) {
+    this(gridDescription, gridView, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
         null, null, null, null, null);
   }
 
-  public GridPresenter(GridDescription gridDescription, String relColumn, int rowCount,
+  public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor, Filter immutableFilter,
       Map<String, Filter> initialFilters, Order order, GridFactory.GridOptions gridOptions) {
@@ -184,8 +185,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       gridInterceptor.setGridPresenter(this);
     }
 
-    this.gridContainer = createView(gridDescription, rowSet.getColumns(), relColumn,
-        rowCount, rowSet, order, gridInterceptor, uiOptions, gridOptions);
+    this.gridContainer = createView(gridDescription, gridView, rowCount, gridInterceptor,
+        uiOptions, gridOptions);
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
@@ -631,14 +632,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return provider;
   }
 
-  private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
-      String relColumn, int rowCount, BeeRowSet rowSet, Order order,
-      GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
+  private GridContainerView createView(GridDescription gridDescription, GridView gridView,
+      int rowCount, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, columns, relColumn, rowCount, rowSet, order, gridInterceptor,
-        uiOptions, gridOptions);
+    view.create(gridDescription, gridView, rowCount, gridInterceptor, uiOptions, gridOptions);
 
     return view;
   }

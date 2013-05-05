@@ -100,7 +100,7 @@ public class FilterSupplierFactory {
     
     return supplier;
   }
-
+  
   private FilterSupplierFactory() {
   }
 }

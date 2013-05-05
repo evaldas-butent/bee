@@ -91,7 +91,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     setHasData(!BeeUtils.isEmpty(dataColumns));
     setInitialRowCount(rowCount);
 
-    setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
+    setHasSearch(hasData());
 
     HeaderView header = new HeaderSilverImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),

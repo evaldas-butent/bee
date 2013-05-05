@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
@@ -35,7 +34,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE, HAS_FOOTERS,
-    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
+    ASYNC_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_POPUP,
@@ -78,9 +77,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean cacheDescription = null;
 
   private Integer asyncThreshold = null;
-  private Integer pagingThreshold = null;
-  private Integer searchThreshold = null;
-
   private Integer initialRowSetSize = null;
 
   private Boolean readOnly = null;
@@ -232,9 +228,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case NEW_ROW_CAPTION:
           setNewRowCaption(value);
           break;
-        case PAGING_THRESHOLD:
-          setPagingThreshold(BeeUtils.toIntOrNull(value));
-          break;
         case ROW_EDITABLE:
           setRowEditable(Calculation.restore(value));
           break;
@@ -259,9 +252,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           }
           break;
 
-        case SEARCH_THRESHOLD:
-          setSearchThreshold(BeeUtils.toIntOrNull(value));
-          break;
         case NEW_ROW_FORM:
           setNewRowForm(value);
           break;
@@ -485,8 +475,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Cache Data", getCacheData(),
         "Cache Description", getCacheDescription(),
         "Async Threshold", getAsyncThreshold(),
-        "Paging Threshold", getPagingThreshold(),
-        "Search Threshold", getSearchThreshold(),
         "Initial Row Set Size", getInitialRowSetSize(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
@@ -663,10 +651,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return order;
   }
 
-  public Integer getPagingThreshold() {
-    return pagingThreshold;
-  }
-
   public String getParent() {
     return parent;
   }
@@ -693,10 +677,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Calculation getRowValidation() {
     return rowValidation;
-  }
-
-  public Integer getSearchThreshold() {
-    return searchThreshold;
   }
 
   public Map<String, String> getStyleSheets() {
@@ -818,9 +798,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case NEW_ROW_CAPTION:
           arr[i++] = getNewRowCaption();
           break;
-        case PAGING_THRESHOLD:
-          arr[i++] = getPagingThreshold();
-          break;
         case ROW_EDITABLE:
           arr[i++] = getRowEditable();
           break;
@@ -832,9 +809,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case ROW_STYLES:
           arr[i++] = getRowStyles();
-          break;
-        case SEARCH_THRESHOLD:
-          arr[i++] = getSearchThreshold();
           break;
         case NEW_ROW_FORM:
           arr[i++] = getNewRowForm();
@@ -960,9 +934,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
     setCacheData(true);
     setCacheDescription(true);
-
-    setSearchThreshold(DataUtils.getDefaultSearchThreshold());
-    setPagingThreshold(DataUtils.getDefaultPagingThreshold());
   }
 
   public void setDisabledActions(Set<Action> disabledActions) {
@@ -1081,10 +1052,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.order = order;
   }
 
-  public void setPagingThreshold(Integer pagingThreshold) {
-    this.pagingThreshold = pagingThreshold;
-  }
-
   public void setParent(String parent) {
     this.parent = parent;
   }
@@ -1115,10 +1082,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
-  }
-
-  public void setSearchThreshold(Integer searchThreshold) {
-    this.searchThreshold = searchThreshold;
   }
 
   public void setStyleSheets(Map<String, String> styleSheets) {

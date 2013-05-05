@@ -73,9 +73,6 @@ public class DataUtils {
       Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
   private static int defaultAsyncThreshold = 100;
-  private static int defaultSearchThreshold = 2;
-  private static int defaultPagingThreshold = 2;
-
   private static int maxInitialRowSetSize = 50;
 
   public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
@@ -345,14 +342,6 @@ public class DataUtils {
 
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
-  }
-
-  public static int getDefaultPagingThreshold() {
-    return defaultPagingThreshold;
-  }
-
-  public static int getDefaultSearchThreshold() {
-    return defaultSearchThreshold;
   }
 
   public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {

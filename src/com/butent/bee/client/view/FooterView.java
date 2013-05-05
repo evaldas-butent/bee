@@ -5,7 +5,7 @@ import com.butent.bee.client.output.Printable;
 
 public interface FooterView extends View, SelectionCountChangeEvent.Handler, Printable {
 
-  void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch);
+  void create(int maxRowCount, boolean addPaging, boolean showPageSize, boolean addSearch);
   
   int getHeight();
   

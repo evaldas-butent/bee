@@ -32,7 +32,6 @@ import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.ExtWidget;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -40,11 +39,8 @@ import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -113,16 +109,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
-  public void create(GridDescription gridDescription, List<BeeColumn> dataColumns,
-      String relColumn, int rowCount, BeeRowSet rowSet, Order order,
-      GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
+  public void create(GridDescription gridDescription, GridView gridView,
+      int rowCount, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
-    int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
-    setHasPaging(UiOption.hasPaging(uiOptions) && rowCount >= minRows);
-
-    minRows = BeeUtils.unbox(gridDescription.getSearchThreshold());
-    setHasSearch(UiOption.hasSearch(uiOptions) && rowCount >= minRows);
+    setHasPaging(UiOption.hasPaging(uiOptions));
+    setHasSearch(UiOption.hasSearch(uiOptions));
 
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
@@ -176,10 +168,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     String name = gridDescription.getName();
     setGridName(name);
 
-    GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
-    content.create(dataColumns, rowCount, rowSet, gridDescription, gridInterceptor, hasSearch(),
-        order);
-
     FooterView footer;
     ScrollPager scroller;
 
@@ -203,8 +191,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
 
       for (String xml : gridDescription.getWidgets()) {
-        ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(), dataColumns,
-            getExtCreation(), gridInterceptor);
+        ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(), 
+            gridView.getDataColumns(), getExtCreation(), gridInterceptor);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
         }
@@ -232,10 +220,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       sinkEvents(Event.ONMOUSEWHEEL);
     }
 
-    add(content);
+    add(gridView);
 
     if (gridDescription.getRowMessage() != null) {
-      setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null, dataColumns));
+      setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null,
+          gridView.getDataColumns()));
     }
 
     if (getExtCreation() != null) {

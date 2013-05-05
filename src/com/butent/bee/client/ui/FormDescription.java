@@ -30,7 +30,6 @@ public class FormDescription implements HasViewName {
   private static final String TAG_ROW_VALIDATION = "rowValidation";
 
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
-  private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
 
   private static final String ATTR_SHOW_ROW_ID = "showRowId";
 
@@ -107,14 +106,6 @@ public class FormDescription implements HasViewName {
 
   public Calculation getRowValidation() {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_VALIDATION);
-  }
-
-  public int getSearchThreshold() {
-    Integer searchThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_SEARCH_THRESHOLD);
-    if (searchThreshold == null) {
-      searchThreshold = DataUtils.getDefaultSearchThreshold();
-    }
-    return searchThreshold;
   }
 
   @Override

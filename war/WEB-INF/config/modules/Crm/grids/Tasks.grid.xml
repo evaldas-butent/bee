@@ -9,9 +9,14 @@
   >
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" />
+      caption="-">
+      <filter label="=taskFilterNew" values="0" />
+      <filter label="=taskFilterUpdated" values="1" />
+      <filter label="=taskFilterNewOrUpdated" values="2" />
+    </CalcColumn>
 
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20">
+      <filter label="=taskFilterStarred" values="*" />
       <renderer type="star" />
     </PropColumn>
 
@@ -22,8 +27,16 @@
 
     <RelColumn name="Company" editEnabled="true" flexGrow="1" />
 
-    <DataColumn name="Status" itemKey="TaskStatus" />
-    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />
+    <DataColumn name="Status" itemKey="TaskStatus">
+      <filter label="=taskFilterNotVisitedOrActive" values="0,1" />
+      <filter label="=taskFilterNotVisitedOrActiveOrCompleted" values="0,1,4" />
+    </DataColumn>
+
+    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan.">
+      <filter label="=taskFilterLate" values="0" />
+      <filter label="=taskFilterScheduled" values="1" />
+    </CalcColumn>
+    
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
