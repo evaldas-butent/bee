@@ -51,32 +51,32 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Pakrovimas" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
-      <Label html="Data" style="&labelRight;" />
+      <Label text="=loading" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
+      <Label text="=date" style="&labelRight;" />
       <InputDateTime source="LoadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Vieta" style="&labelLeft;" />
-      <InputText source="LoadingPlace" style="&input; width:310px;" />
+      <Label text="=address" style="&labelLeft;" />
+      <InputText source="LoadingAddress" style="&input; width:310px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Kontaktas" style="&labelLeft;" />
-      <InputText source="LoadingTerminal" style="&input; width:310px;" />
+      <Label text="=contact" style="&labelLeft;" />
+      <InputText source="LoadingContact" style="&input; width:310px;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Iškrovimas" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
-      <Label html="Data" style="&labelRight;" />
+      <Label text="=unloading" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
+      <Label text="=date" style="&labelRight;" />
       <InputDateTime source="UnloadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Vieta" style="&labelLeft;" />
-      <InputText source="UnloadingPlace" style="&input; width:310px;" />
+      <Label text="=address" style="&labelLeft;" />
+      <InputText source="UnloadingAddress" style="&input; width:310px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Kontaktas" style="&labelLeft;" />
-      <InputText source="UnloadingTerminal" style="&input; width:310px;" />
+      <Label text="=contact" style="&labelLeft;" />
+      <InputText source="UnloadingContact" style="&input; width:310px;" />
     </FlowPanel>
 
     &separator;

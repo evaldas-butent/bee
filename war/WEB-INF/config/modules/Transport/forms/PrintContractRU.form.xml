@@ -85,7 +85,7 @@
       </row>
       <row>
         <Label html="Место погрузки" />
-        <TextLabel source="LoadingPlace" />
+        <TextLabel source="LoadingAddress" />
       </row>
       <row>
         <Label html="Дата погрузки" />
@@ -93,7 +93,7 @@
       </row>
       <row>
         <Label html="Место поставки" />
-        <TextLabel source="UnloadingPlace" />
+        <TextLabel source="UnloadingAddress" />
       </row>
       <row>
         <Label html="Дата поставки" />

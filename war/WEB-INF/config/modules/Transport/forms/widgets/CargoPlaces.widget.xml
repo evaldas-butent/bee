@@ -5,15 +5,31 @@
   <Table>
     <row>
       <cell colSpan="2">
-        <Label html="Pakrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+        <Label text="=loading" horizontalAlignment="center" style="font-weight: bold;" />
       </cell>
     </row>
     <row>
-      <Label html="Data" horizontalAlignment="right" />
-      <InputDateTime source="LoadingDate" style="max-width: 6em;" format="DATE_SHORT" />
+      <Label text="=date" horizontalAlignment="right" />
+      <InputDateTime source="LoadingDate" style="width: 70px;" format="DATE_SHORT" />
     </row>
     <row>
-      <Label html="Šalis" horizontalAlignment="right" />
+      <Label text="=contact" horizontalAlignment="right" />
+      <InputText source="LoadingContact" />
+    </row>
+    <row>
+      <Label text="=address" horizontalAlignment="right" />
+      <InputText source="LoadingAddress" />
+    </row>
+    <row>
+      <Label text="=city" horizontalAlignment="right" />
+      <DataSelector source="LoadingCity" style="width:135px;" />
+    </row>
+    <row>
+      <Label text="=postIndex" horizontalAlignment="right" />
+      <InputText source="LoadingPostIndex" style="width:90px;" />
+    </row>
+    <row>
+      <Label text="=country" horizontalAlignment="right" />
       <FlowPanel>
         <DataSelector source="LoadingCountry" style="width:135px;" >
           <renderToken source="LoadingCountryName" />
@@ -28,11 +44,7 @@
       </FlowPanel>
     </row>
     <row>
-      <Label html="Vieta" horizontalAlignment="right" />
-      <InputText source="LoadingPlace" />
-    </row>
-    <row>
-      <Label html="Terminalas" horizontalAlignment="right" />
+      <Label text="=terminal" horizontalAlignment="right" />
       <InputText source="LoadingTerminal" />
     </row>
   </Table>
@@ -40,15 +52,31 @@
   <Table>
     <row>
       <cell colSpan="2">
-        <Label html="Iškrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+        <Label text="=unloading" horizontalAlignment="center" style="font-weight: bold;" />
       </cell>
     </row>
     <row>
-      <Label html="Data" horizontalAlignment="right" />
-      <InputDateTime source="UnloadingDate" style="max-width: 6em;" format="DATE_SHORT" />
+      <Label text="=date" horizontalAlignment="right" />
+      <InputDateTime source="UnloadingDate" style="width: 70px;" format="DATE_SHORT" />
     </row>
     <row>
-      <Label html="Šalis" horizontalAlignment="right" />
+      <Label text="=contact" horizontalAlignment="right" />
+      <InputText source="UnloadingContact" />
+    </row>
+    <row>
+      <Label text="=address" horizontalAlignment="right" />
+      <InputText source="UnloadingAddress" />
+    </row>
+    <row>
+      <Label text="=city" horizontalAlignment="right" />
+      <DataSelector source="UnloadingCity" style="width:135px;" />
+    </row>
+    <row>
+      <Label text="=postIndex" horizontalAlignment="right" />
+      <InputText source="UnloadingPostIndex" style="width:90px;" />
+    </row>
+    <row>
+      <Label text="=country" horizontalAlignment="right" />
       <FlowPanel>
         <DataSelector source="UnloadingCountry" style="width:135px;" >
           <renderToken source="UnloadingCountryName" />
@@ -63,11 +91,7 @@
       </FlowPanel>
     </row>
     <row>
-      <Label html="Vieta" horizontalAlignment="right" />
-      <InputText source="UnloadingPlace" />
-    </row>
-    <row>
-      <Label html="Terminalas" horizontalAlignment="right" />
+      <Label text="=terminal" horizontalAlignment="right" />
       <InputText source="UnloadingTerminal" />
     </row>
   </Table>

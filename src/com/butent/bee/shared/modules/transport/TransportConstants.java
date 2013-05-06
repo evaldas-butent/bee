@@ -264,11 +264,12 @@ public class TransportConstants {
   public static final String COL_LOADING_PLACE = "LoadingPlace";
 
   public static final String COL_PLACE_DATE = "Date";
-  public static final String COL_COUNTRY = "Country";
-  public static final String COL_PLACE = "Place";
-  public static final String COL_TERMINAL = "Terminal";
-
-  public static final String COL_PLACE_NAME = "PlaceName";
+  public static final String COL_PLACE_CONTACT = "Contact";
+  public static final String COL_PLACE_CITY = "City";
+  public static final String COL_PLACE_COUNTRY = "Country";
+  public static final String COL_PLACE_ADDRESS = "Address";
+  public static final String COL_PLACE_POST_INDEX = "PostIndex";
+  public static final String COL_PLACE_TERMINAL = "Terminal";
 
   public static final String COL_USER = "User";
 

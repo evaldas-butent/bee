@@ -39,7 +39,7 @@
       </row>
       <row>
         <Label html="Pasikrovimo vieta" />
-        <TextLabel source="LoadingPlace" />
+        <TextLabel source="LoadingAddress" />
       </row>
       <row>
         <Label html="Pasikrovimo data" />
@@ -47,7 +47,7 @@
       </row>
       <row>
         <Label html="Pristatymo vieta" />
-        <TextLabel source="UnloadingPlace" />
+        <TextLabel source="UnloadingAddress" />
       </row>
       <row>
         <Label html="Pristatymo data" />

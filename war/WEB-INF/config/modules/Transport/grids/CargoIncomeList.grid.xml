@@ -8,11 +8,11 @@
   filter="!(Sale)"
   >
   <columns>
-    <SelectionColumn name="Select" caption="-" />
+    <SelectionColumn name="Select" caption="-" width="20" />
     <DataColumn name="OrderDate" caption="Užsakymo data" />
     <RelColumn name="OrderNo" minWidth="100" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" itemKey="OrderStatus" />    
-    <DataColumn name="Customer" />
+    <DataColumn name="CustomerName" />
     <DataColumn name="Payer" caption="Mokėtojas">
       <render>
         <ui:expression>row.Company ? row.CompanyName : row.PayerName</ui:expression>

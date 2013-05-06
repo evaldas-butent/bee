@@ -712,13 +712,13 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
-        .addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY))
-        .addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME))
-        .addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL))
+        .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
-        .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
-        .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
-        .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
+        .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
         .setWhere(SqlUtils.and(tripWhere, handlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
   }
@@ -752,22 +752,22 @@ public class TransportModuleBean implements BeeModule {
         .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID)
         .addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
-        .addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY))
-        .addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME))
-        .addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL))
+        .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
-        .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
-        .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
-        .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
+        .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
         .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION, COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
-        .addField(defLoadAlias, COL_COUNTRY, defaultLoadingColumnAlias(COL_COUNTRY))
-        .addField(defLoadAlias, COL_PLACE, defaultLoadingColumnAlias(COL_PLACE_NAME))
-        .addField(defLoadAlias, COL_TERMINAL, defaultLoadingColumnAlias(COL_TERMINAL))
+        .addField(defLoadAlias, COL_PLACE_COUNTRY, defaultLoadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(defLoadAlias, COL_PLACE_ADDRESS, defaultLoadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(defLoadAlias, COL_PLACE_TERMINAL, defaultLoadingColumnAlias(COL_PLACE_TERMINAL))
         .addField(defUnlAlias, COL_PLACE_DATE, defaultUnloadingColumnAlias(COL_PLACE_DATE))
-        .addField(defUnlAlias, COL_COUNTRY, defaultUnloadingColumnAlias(COL_COUNTRY))
-        .addField(defUnlAlias, COL_PLACE, defaultUnloadingColumnAlias(COL_PLACE_NAME))
-        .addField(defUnlAlias, COL_TERMINAL, defaultUnloadingColumnAlias(COL_TERMINAL))
+        .addField(defUnlAlias, COL_PLACE_COUNTRY, defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(defUnlAlias, COL_PLACE_ADDRESS, defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(defUnlAlias, COL_PLACE_TERMINAL, defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))
         .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
         .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
         .addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME)
@@ -879,14 +879,14 @@ public class TransportModuleBean implements BeeModule {
         COL_CARGO_NOTES);
 
     query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
-    query.addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY));
-    query.addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME));
-    query.addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL));
+    query.addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY));
+    query.addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS));
+    query.addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL));
 
     query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
-    query.addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY));
-    query.addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME));
-    query.addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL));
+    query.addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY));
+    query.addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS));
+    query.addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL));
 
     Set<Integer> statuses = Sets.newHashSet(OrderStatus.NEW.ordinal(),
         OrderStatus.ACTIVE.ordinal());
@@ -922,13 +922,13 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
-        .addField(loadAlias, COL_COUNTRY, loadingColumnAlias(COL_COUNTRY))
-        .addField(loadAlias, COL_PLACE, loadingColumnAlias(COL_PLACE_NAME))
-        .addField(loadAlias, COL_TERMINAL, loadingColumnAlias(COL_TERMINAL))
+        .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
-        .addField(unlAlias, COL_COUNTRY, unloadingColumnAlias(COL_COUNTRY))
-        .addField(unlAlias, COL_PLACE, unloadingColumnAlias(COL_PLACE_NAME))
-        .addField(unlAlias, COL_TERMINAL, unloadingColumnAlias(COL_TERMINAL))
+        .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
+        .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
+        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
         .setWhere(SqlUtils.and(cargoWhere, cargoHandlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
 

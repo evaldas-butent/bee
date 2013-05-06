@@ -6,8 +6,7 @@
   editForm="CargoPlace" editPopup="true" editInPlace="CargoOrder CargoPercent"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
-
-  <body height="68" />
+  <body height="50" />
 
   <columns>
     <DataColumn name="CargoOrder" caption="Eil.Nr." />
@@ -28,10 +27,10 @@
       </style>
     </DataColumn>
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrauta"
-      minWidth="115" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrauta"
-      minWidth="115" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
+      minWidth="140" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
+      minWidth="140" flexBasis="120" />
     <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>

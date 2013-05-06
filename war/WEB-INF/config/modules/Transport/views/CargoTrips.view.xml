@@ -32,27 +32,39 @@
     </SimpleJoin>
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+      <SimpleColumn name="Contact" alias="LoadingContact" />
+      <SimpleColumn name="Address" alias="LoadingAddress" />
+      <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
+
+      <SimpleColumn name="City" alias="LoadingCity" />
+      <SimpleJoin joinType="LEFT" name="City">
+        <SimpleColumn name="Name" alias="LoadingCityName" />
+      </SimpleJoin>
+      <SimpleColumn name="Country" alias="LoadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="LoadingCountryName" />
         <SimpleColumn name="Code" alias="LoadingCountryCode" />
       </SimpleJoin>
-
-      <SimpleColumn name="Date" alias="LoadingDate" />
-      <SimpleColumn name="Country" alias="LoadingCountry" />
-      <SimpleColumn name="Place" alias="LoadingPlace" />
-      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
     </SimpleJoin>
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+      <SimpleColumn name="Contact" alias="UnloadingContact" />
+      <SimpleColumn name="Address" alias="UnloadingAddress" />
+      <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
+
+      <SimpleColumn name="City" alias="UnloadingCity" />
+      <SimpleJoin joinType="LEFT" name="City">
+        <SimpleColumn name="Name" alias="UnloadingCityName" />
+      </SimpleJoin>
+      <SimpleColumn name="Country" alias="UnloadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="UnloadingCountryName" />
         <SimpleColumn name="Code" alias="UnloadingCountryCode" />
       </SimpleJoin>
-
-      <SimpleColumn name="Date" alias="UnloadingDate" />
-      <SimpleColumn name="Country" alias="UnloadingCountry" />
-      <SimpleColumn name="Place" alias="UnloadingPlace" />
-      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
   </Columns>
 </View>

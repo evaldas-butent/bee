@@ -31,14 +31,14 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
 
   CargoHandling(SimpleRow row) {
     this.loadingDate = Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE));
-    this.loadingCountry = row.getLong(loadingColumnAlias(COL_COUNTRY));
-    this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_NAME));
-    this.loadingTerminal = row.getValue(loadingColumnAlias(COL_TERMINAL));
+    this.loadingCountry = row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY));
+    this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS));
+    this.loadingTerminal = row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL));
 
     this.unloadingDate = Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE));
-    this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_COUNTRY));
-    this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_NAME));
-    this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_TERMINAL));
+    this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY));
+    this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS));
+    this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL));
 
     this.notes = row.getValue(COL_CARGO_HANDLING_NOTES);
 

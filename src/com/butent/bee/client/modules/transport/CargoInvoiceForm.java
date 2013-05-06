@@ -40,7 +40,7 @@ public class CargoInvoiceForm extends AbstractFormInterceptor {
 
         @Override
         public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
-          if (BeeUtils.inListSame(column.getId(), COL_QUANTITY, COL_PRICE)) {
+          if (BeeUtils.inListSame(column.getId(), COL_QUANTITY, COL_PRICE, COL_VAT, COL_VAT_PERC)) {
             refreshTotals();
           }
         }

@@ -7,8 +7,11 @@
   >
   <Fields>
     <DateTime name="Date" label="Data" />
-    <Relation name="Country" relation="Countries" label="Šalis" />
-    <String name="Place" precision="50" label="Vieta" />
-    <String name="Terminal" precision="30" label="Terminalas" />
+    <String name="Terminal" precision="30" label="=terminal" />
+    <String name="Contact" precision="50" label="=contact" />
+    <String name="Address" precision="100" label="=address" />
+    <String name="PostIndex" precision="20" label="=postIndex" />
+    <Relation name="City" relation="Cities" label="=city" />
+    <Relation name="Country" relation="Countries" label="=country" />
   </Fields>
 </Table>

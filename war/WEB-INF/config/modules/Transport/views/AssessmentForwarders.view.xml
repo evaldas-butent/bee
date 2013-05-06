@@ -25,14 +25,14 @@
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" />
-      <SimpleColumn name="Place" alias="LoadingPlace" />
-      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+      <SimpleColumn name="Contact" alias="LoadingContact" />
+      <SimpleColumn name="Address" alias="LoadingAddress" />
     </SimpleJoin>
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="UnloadingDate" />
-      <SimpleColumn name="Place" alias="UnloadingPlace" />
-      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+      <SimpleColumn name="Contact" alias="UnloadingContact" />
+      <SimpleColumn name="Address" alias="UnloadingAddress" />
     </SimpleJoin>
 
     <SimpleJoin joinType="LEFT" name="CargoExpense">

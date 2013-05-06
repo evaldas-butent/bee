@@ -26,7 +26,12 @@ BEGIN
     _id:=OLD."Sale";
   END IF;
 
-  UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price") FROM "SaleItems" WHERE "Sale"=_id) WHERE "SaleID"=_id;
+  UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
+      CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
+           WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
+           ELSE "Vat" END)
+    FROM "SaleItems" INNER JOIN "Sales" ON "SaleItems"."Sale"="Sales"."SaleID"
+    WHERE "Sale"=_id) WHERE "SaleID"=_id;
   RETURN NULL;
 END;
         ]]>

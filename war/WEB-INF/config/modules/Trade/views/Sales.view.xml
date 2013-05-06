@@ -10,6 +10,7 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="InvoicePrefix" />
     <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="Term" />
     <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Amount" />

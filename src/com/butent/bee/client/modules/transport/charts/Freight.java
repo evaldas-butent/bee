@@ -19,6 +19,8 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,20 +43,20 @@ class Freight extends OrderCargo {
         row.getValue(COL_CARGO_NOTES),
         BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)),
             Places.getLoadingDate(row, defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad),
-        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_COUNTRY)),
-            row.getLong(defaultLoadingColumnAlias(COL_COUNTRY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NAME)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_NAME))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_TERMINAL)),
-            row.getValue(defaultLoadingColumnAlias(COL_TERMINAL))),
+        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY)),
+            row.getLong(defaultLoadingColumnAlias(COL_PLACE_COUNTRY))),
+        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
+            row.getValue(defaultLoadingColumnAlias(COL_PLACE_ADDRESS))),
+        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL)),
+            row.getValue(defaultLoadingColumnAlias(COL_PLACE_TERMINAL))),
         BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
             Places.getUnloadingDate(row, defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
-        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_COUNTRY)),
-            row.getLong(defaultUnloadingColumnAlias(COL_COUNTRY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NAME)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NAME))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_TERMINAL)),
-            row.getValue(defaultUnloadingColumnAlias(COL_TERMINAL))),
+        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
+            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))),
+        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
+            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))),
+        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL)),
+            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))),
         row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
         row.getLong(COL_CARGO_TRIP_ID), row.getLong(ALS_CARGO_TRIP_VERSION));
   }
@@ -79,11 +81,11 @@ class Freight extends OrderCargo {
     super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, cargoId,
         cargoDescription, notes, loadingDate, loadingCountry, loadingPlace, loadingTerminal,
         unloadingDate, unloadingCountry, unloadingPlace, unloadingTerminal);
-    
+
     this.tripId = tripId;
     this.truckId = truckId;
     this.trailerId = trailerId;
-    
+
     this.cargoTripId = cargoTripId;
     this.cargoTripVersion = cargoTripVersion;
   }

@@ -8,13 +8,13 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
 import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
 import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
-import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsExpression;
@@ -53,6 +53,8 @@ public class TradeModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  UserServiceBean usr;
 
   @Override
   public Collection<String> dependsOn() {
@@ -174,7 +176,7 @@ public class TradeModuleBean implements BeeModule {
     Locale loc = I18nUtils.toLocale(locale);
 
     if (loc == null) {
-      loc = Localizations.defaultLocale;
+      loc = usr.getLocale();
     }
     return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
         .format(number));

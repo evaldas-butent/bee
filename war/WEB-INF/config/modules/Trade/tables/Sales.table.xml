@@ -15,6 +15,32 @@
     <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
     <Relation name="Customer" relation="Companies" label="Klientas" />
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
+    <Date name="Term" />
     <Text name="Notes" label="Pastabos" />
   </Fields>
+  <Triggers>
+    <Trigger events="UPDATE" scope="ROW" timing="AFTER">
+      <PostgreSql>
+        <![CDATA[
+DECLARE _id BIGINT;
+BEGIN
+  IF ((OLD."VatIncluded" IS NULL)!=(NEW."VatIncluded" IS NULL) OR
+      OLD."VatIncluded"!=NEW."VatIncluded") THEN
+    _id:=OLD."SaleID";
+    
+    UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
+        CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
+             WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
+             ELSE "Vat" END)
+      FROM "SaleItems" INNER JOIN "Sales" ON "SaleItems"."Sale"="Sales"."SaleID"
+      WHERE "Sale"=_id) WHERE "SaleID"=_id;
+  END IF;
+  RETURN NULL;
+END;
+        ]]>
+      </PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Trigger>
+  </Triggers>
 </Table>

@@ -868,6 +868,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           }
           join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
         } else {
+          Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
+              "Unknown field name:", table.getName(), col.name));
           field = table.getField(col.name);
           Assert.state(field instanceof BeeRelation);
 
@@ -913,6 +915,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           addColumn(null, null, colName, null, aggregate, hidden, null, col.expr, col.label,
               col.editable);
         } else {
+          Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
+              "Unknown field name:", table.getName(), col.name));
           addColumn(alias, table.getField(col.name), colName, col.locale, aggregate, hidden,
               parent, null, col.label, col.editable);
         }

@@ -83,7 +83,7 @@ public class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return this;
+      return new CargoFormHandler();
     }
   }
 

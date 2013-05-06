@@ -38,6 +38,8 @@
       <row>
         <Label html="Klientas" style="&lbl;" />
         <DataSelector source="Customer" />
+        <Label html="Terminas" style="&lbl;" />
+        <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
         <Label html="Tiekėjas" style="&lbl;" />

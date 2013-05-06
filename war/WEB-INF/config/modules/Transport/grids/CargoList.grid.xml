@@ -6,7 +6,7 @@
   editPopup="true"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
-  <body height="68" />
+  <body height="50" />
 
   <columns>
     <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true" editSource="Order" />
@@ -15,10 +15,10 @@
 
     <DataColumn name="Description" caption="Krovinys" minWidth="100" />
 
-    <CalcColumn name="Loading" type="string" cellType="html" caption="Pakrovimas"
-      minWidth="115" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="Iškrovimas"
-      minWidth="115" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
+      minWidth="140" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
+      minWidth="140" flexBasis="120" />
 
     <DataColumn name="Partial" caption="Dalinis" />
     <CalcColumn name="Expedition" type="boolean" caption="Ekspedicija">

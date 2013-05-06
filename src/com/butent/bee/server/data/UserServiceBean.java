@@ -160,12 +160,16 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
+  public Locale getLocale() {
+    return getCurrentUserInfo().getLocale();
+  }
+
   public LocalizableConstants getLocalizableConstants() {
-    return Localizations.getConstants(getCurrentUserInfo().getLocale());
+    return Localizations.getConstants(getLocale());
   }
 
   public LocalizableMessages getLocalizableMesssages() {
-    return Localizations.getMessages(getCurrentUserInfo().getLocale());
+    return Localizations.getMessages(getLocale());
   }
 
   public String getRoleName(long roleId) {

@@ -4,7 +4,7 @@
 
   name="CargoInvoiceIncomes" viewName="CargoIncomeList"
   flexGrow="1" flexShrink="1"
-  readOnly="true" caption="Transporto užsakymų pajamos"
+  readOnly="true"
   >
   <columns>
     <DataColumn name="OrderDate" caption="Užsakymo data" />

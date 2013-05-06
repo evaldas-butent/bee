@@ -20,6 +20,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String changePassword();
 
+  String city();
+
   String clear();
 
   String company();
@@ -28,7 +30,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String companyVATCode();
 
+  String contact();
+
+  String country();
+
   String createNewRow();
+
+  String date();
 
   String deselectAll();
 
@@ -67,6 +75,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String oldPasswordIsRequired();
 
   String phone();
+
+  String postIndex();
 
   String questionLogout();
 

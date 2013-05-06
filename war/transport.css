@@ -350,10 +350,10 @@
   word-wrap: break-word;
 }
 
-.bee-tr-PlaceRenderer-table {
+.bee-places-table {
   border-spacing: 0;
 }
-.bee-tr-PlaceRenderer-labelCell {
+.bee-places-caption {
   text-align: right;
   font-weight: bold;
   padding-right: 3px;

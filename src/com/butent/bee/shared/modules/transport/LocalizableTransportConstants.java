@@ -37,8 +37,12 @@ public interface LocalizableTransportConstants {
   String intermediateLoading();
   String intermediateUnloading();
   
+  String loading();
+  
   String shippingSchedule();
 
+  String terminal();
+  
   String trailers();
   String trailerTimeBoard();
   
@@ -53,6 +57,8 @@ public interface LocalizableTransportConstants {
   String trucks();
   String truckTimeBoard();
 
+  String unloading();
+  
   String vehicleGroups();
   String vehicleGroupsShort();
   String vehicleModels();
