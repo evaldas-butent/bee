@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <DateTime name="Date" label="Data" />
+    <DateTime name="Date" label="=date" />
     <String name="Terminal" precision="30" label="=terminal" />
     <String name="Contact" precision="50" label="=contact" />
     <String name="Address" precision="100" label="=address" />

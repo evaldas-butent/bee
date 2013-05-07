@@ -10,7 +10,7 @@
     </row>
     <row>
       <Label text="=date" horizontalAlignment="right" />
-      <InputDateTime source="LoadingDate" style="width: 70px;" format="DATE_SHORT" />
+      <InputDateTime source="LoadingDate" style="width: 110px;" />
     </row>
     <row>
       <Label text="=contact" horizontalAlignment="right" />
@@ -22,7 +22,13 @@
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="LoadingCity" style="width:135px;" />
+      <DataSelector source="LoadingCity" style="width:135px;">
+        <selectorColumn source="Name" />
+        <selectorColumn source="CountryName" />
+        <selectorColumn source="CountryCode">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />
@@ -57,7 +63,7 @@
     </row>
     <row>
       <Label text="=date" horizontalAlignment="right" />
-      <InputDateTime source="UnloadingDate" style="width: 70px;" format="DATE_SHORT" />
+      <InputDateTime source="UnloadingDate" style="width: 110px;" />
     </row>
     <row>
       <Label text="=contact" horizontalAlignment="right" />
@@ -69,7 +75,13 @@
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="UnloadingCity" style="width:135px;" />
+      <DataSelector source="UnloadingCity" style="width:135px;">
+        <selectorColumn source="Name" />
+        <selectorColumn source="CountryName" />
+        <selectorColumn source="CountryCode">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />

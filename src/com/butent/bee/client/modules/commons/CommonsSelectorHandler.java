@@ -15,6 +15,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Iterator;
@@ -34,6 +36,9 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
       handleEmails(event);
 
+    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CITIES)) {
+      handleCities(event);
+
     } else if (event.isNewRow() &&
         BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
       handleNewPersons(event);
@@ -42,6 +47,33 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
       if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
         handleCompanyPersons(event);
       }
+    }
+  }
+
+  private void handleCities(SelectorEvent event) {
+    if (!event.isChanged()) {
+      return;
+    }
+    DataInfo sourceInfo = Data.getDataInfo(event.getRelatedViewName());
+    IsRow source = event.getRelatedRow();
+
+    if (source == null) {
+      return;
+    }
+    DataView dataView = UiHelper.getDataView(event.getSelector());
+    if (dataView == null) {
+      return;
+    }
+    DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
+    IsRow target = dataView.getActiveRow();
+    String targetColumn = COL_COUNTRY;
+    int targetIndex = targetInfo.getColumnIndex(targetColumn);
+
+    if (targetIndex != BeeConst.UNDEF) {
+      target.setValue(targetIndex, source.getLong(sourceInfo.getColumnIndex(COL_COUNTRY)));
+
+      RelationUtils.updateRow(targetInfo, targetColumn, target, sourceInfo, source, false);
+      dataView.refresh(false);
     }
   }
 

@@ -57,7 +57,6 @@
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" alias="OrderDate" />
         <SimpleColumn name="OrderNo" />
-        <SimpleColumn name="Shipper" />
         <SimpleColumn name="Notes" alias="OrderNotes" />
       
         <SimpleColumn name="Customer" />
@@ -88,6 +87,7 @@
       <SimpleColumn name="Notes" alias="CargoNotes" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Contact" alias="Shipper" />
         <SimpleColumn name="Date" alias="LoadingDate" />
         <SimpleColumn name="Terminal" alias="LoadingTerminal" />
 

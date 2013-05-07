@@ -4,10 +4,9 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Invoice" viewName="Sales" caption="Sąskaita"
+  name="CargoInvoice" viewName="Sales" caption="Sąskaita"
   width="800" height="600"
   >
   <FlowPanel class="flexBox-vertical">
@@ -23,14 +22,14 @@
         <Label html="Suma" style="&lbl;" />
         <HorizontalPanel>
           <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
-          <DataSelector name="Currency" source="CurrencyName" placeholder="Val."
+          <DataSelector source="CurrencyName" placeholder="Val."
             style="width:40px; margin-right:5px;" editEnabled="false" />
           <CheckBox source="VatIncluded" html="PVM tame sk." />
         </HorizontalPanel>
 
         <Label html="Sąskaita" style="&lbl;" />
         <FlowPanel>
-          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;"
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;"
           caption="Ser." d:style="width:30px; text-align:right;" />
           <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;" />
         </FlowPanel>

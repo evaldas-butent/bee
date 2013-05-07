@@ -1,51 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY row "display: -webkit-flex; -webkit-align-items: flex-start;">
-  <!ENTITY separator "<br/>">
-  <!ENTITY lbl "width: 120px; margin-right: 1em; text-align: right;">
-  <!ENTITY w2 "width: 160px;">
-  <!ENTITY inpdt "width: 7em;">
+  <!ENTITY lbl "text-align: right;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
   
   name="NewCargoInvoice" viewName="Sales" caption="Nauja sąskaita"
+  width="600" height="400"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel>
-      <FlowPanel style="&row;">
+    <Table>
+      <row>
         <Label html="Data" class="bee-required" style="&lbl;" />
-        <InputDateTime source="Date" style="&w2;" />
+        <InputDateTime source="Date" style="width:110px;" />
 
         <Label html="Numeris" style="&lbl;" />
         <InputText source="Number" />
-      </FlowPanel>
-      &separator;
+      </row>
+      <row>
+        <Label html="Valiuta" class="bee-required" style="&lbl;" />
+        <HorizontalPanel>
+          <DataSelector source="CurrencyName" style="width:40px; margin-right:5px;" editEnabled="false" />
+          <CheckBox source="VatIncluded" html="PVM tame sk." />
+        </HorizontalPanel>
 
-      <FlowPanel style="&row;">
-        <InputText source="InvoicePrefix" caption="Sąskaitos ser." required="true" upperCase="true" />
-        <InputText source="InvoiceNo" caption="Nr." />
-      </FlowPanel>
-      &separator;
-
-      <DataSelector name="Currency" source="Currency" caption="Valiuta"
-        style="width:40px; margin-right:10px;" editEnabled="false" />
-      &separator;
-
-      <DataSelector source="Customer" caption="Klientas" required="true" />
-      &separator;
-
-      <FlowPanel style="&row;">
+        <Label html="Sąskaita" style="&lbl;" />
+        <FlowPanel>
+          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;"
+          caption="Ser." d:style="width:30px; text-align:right;" />
+          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;" />
+        </FlowPanel>
+      </row>
+      <row>
+        <Label html="Klientas" class="bee-required" style="&lbl;" />
+        <DataSelector source="Customer" required="true" />
+        <Label html="Terminas" style="&lbl;" />
+        <InputDate source="Term" style="width:70px;" />
+      </row>
+      <row>
+        <Label html="Tiekėjas" style="&lbl;" />
+        <DataSelector source="Supplier" />
         <Label html="Vadybininkas" style="&lbl;" />
-        <DataSelector source="Manager" editSource="CustomerPerson" style="&w2;" />
-      </FlowPanel>
-      
-      <FlowPanel style="&row;">
-        <Label name="MainItemCaption" html="Suminė apskaitos prekė" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" />
+      </row>
+      <row>
+        <cell colSpan="3">
+          <Label name="MainItemCaption" html="Suminė apskaitos prekė" style="&lbl;" />
+        </cell>
         <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" 
           label="Suminė apskaitos prekė" />
-      </FlowPanel>
-    </FlowPanel>
+      </row>
+    </Table>
 
     <TabbedPages class="flexible">
       <page>

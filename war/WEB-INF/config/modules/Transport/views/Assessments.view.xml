@@ -29,7 +29,6 @@
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" alias="OrderDate" editable="true" />
         <SimpleColumn name="OrderNo" />
-        <SimpleColumn name="Shipper" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
         <SimpleColumn name="Notes" alias="Route" label="Maršrutas" editable="true" />
       
@@ -50,6 +49,7 @@
       <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Contact" alias="Shipper" editable="true" />
         <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
         <SimpleColumn name="Terminal" alias="LoadingTerminal" label="Transporto Nr." editable="true" />
         <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />

@@ -12,13 +12,13 @@
     <DataColumn name="Quantity" />
     <DataColumn name="UnitName" />
     <DataColumn name="Price" />
-    <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" caption="%" width="20" sortable="false" />
     <CalcColumn name="Amount" type="decimal" caption="Suma" format="#.##">
       <render>
         <ui:expression>row.Quantity * row.Price</ui:expression>
       </render>
     </CalcColumn>
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" caption="%" width="20" sortable="false" />
     <DataColumn name="Note" />
   </columns>
 </Grid>

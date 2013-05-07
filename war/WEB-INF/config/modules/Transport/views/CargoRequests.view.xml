@@ -50,7 +50,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="Cargo" />
-    <SimpleJoin name="Cargo" joinType="INNER">
+    <SimpleJoin name="Cargo" joinType="LEFT">
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
