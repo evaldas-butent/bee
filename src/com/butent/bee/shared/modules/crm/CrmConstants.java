@@ -127,6 +127,8 @@ public class CrmConstants {
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
   public static final String VAR_TASK_DURATION_DATE_FROM = VAR_TASK_DURATION_DATE + "_from";
   public static final String VAR_TASK_DURATION_DATE_TO = VAR_TASK_DURATION_DATE + "_to";
+  public static final String VAR_TASK_DURATION_HIDE_ZEROS = Service.RPC_VAR_PREFIX
+      + "task_duration_hide_zeros";
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";

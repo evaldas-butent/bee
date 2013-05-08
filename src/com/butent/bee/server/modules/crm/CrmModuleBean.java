@@ -587,6 +587,7 @@ public class CrmModuleBean implements BeeModule {
 
   private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
     LocalizableConstants constants = usr.getLocalizableConstants();
+    boolean hideZeroTimes = false;
 
     SqlSelect companiesListQuery =
         new SqlSelect()
@@ -609,11 +610,15 @@ public class CrmModuleBean implements BeeModule {
               .parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
     }
     
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideZeroTimes = true;
+    }
+
     SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
     long totalTimeMls = 0;
     
-    result.addRow(new String[] {"Klientas", constants.spentTime()});
+    result.addRow(new String[] {constants.client(), constants.spentTime()});
 
     /* Register times in tasks without company */
     companiesListSet.addRow(new String[] {null, "—", null});
@@ -685,9 +690,11 @@ public class CrmModuleBean implements BeeModule {
       }
 
       totalTimeMls += dTimeMls;
-      dTime = new DateTime(dTimeMls).toUtcTimeString();
 
-      result.addRow(new String[] {compFullName, dTime});
+      if (!(hideZeroTimes && dTimeMls <= 0)) {
+        dTime = new DateTime(dTimeMls).toUtcTimeString();
+        result.addRow(new String[] {compFullName, dTime});
+      }
     }
 
     result.addRow(new String[] {constants.totalOf() + ":",
@@ -785,11 +792,14 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private ResponseObject getTypeHoursReport(RequestInfo reqInfo) {
+    LocalizableConstants constants = usr.getLocalizableConstants();
     SqlSelect durationTypes = new SqlSelect()
         .addFrom(TBL_DURATION_TYPES)
         .addFields(TBL_DURATION_TYPES, COL_NAME)
         .setWhere(SqlUtils.sqlTrue())
         .addOrder(TBL_DURATION_TYPES, COL_NAME);
+
+    boolean hideTimeZeros = false;
 
     if (reqInfo.hasParameter(VAR_TASK_DURATION_TYPE)) {
       durationTypes.setWhere(SqlUtils.and(durationTypes.getWhere(), SqlUtils.inList(
@@ -797,10 +807,14 @@ public class CrmModuleBean implements BeeModule {
               .getParameter(VAR_TASK_DURATION_TYPE)))));
     }
 
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideTimeZeros = true;
+    }
+
     SimpleRowSet dTypesList = qs.getData(durationTypes);
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
 
-    result.addRow(new String[] {"Tipas", "Sugaištas laikas"});
+    result.addRow(new String[] {constants.durationType(), constants.spentTime()});
     Assert.notNull(dTypesList);
 
     long totalTimeMls = 0;
@@ -870,18 +884,21 @@ public class CrmModuleBean implements BeeModule {
 
       totalTimeMls += dTimeMls;
 
-      dTime = new DateTime(dTimeMls).toUtcTimeString();
-      result.addRow(new String[] {dType, dTime});
+      if (!(hideTimeZeros && dTimeMls <= 0)) {
+        dTime = new DateTime(dTimeMls).toUtcTimeString();
+        result.addRow(new String[] {dType, dTime});
+      }
     }
     
     result.addRow(new String[] {
-        "Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
   }
 
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {
+    LocalizableConstants constants = usr.getLocalizableConstants();
     SqlSelect userListQuery =
         new SqlSelect()
             .addFields(CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS))
@@ -897,13 +914,20 @@ public class CrmModuleBean implements BeeModule {
                 CommonsConstants.TBL_PERSONS,
                 sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
                     CommonsConstants.COL_PERSON)).setWhere(SqlUtils.sqlTrue())
+            .setWhere(SqlUtils.sqlTrue())
             .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
                 CommonsConstants.COL_LAST_NAME);
 
-    if (reqInfo.hasParameter(VAR_TASK_USERS)) {
+    boolean hideTimeZeros = false;
+
+    if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
       userListQuery.setWhere(SqlUtils.and(userListQuery.getWhere(), SqlUtils.inList(
           CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
-              .parseIdList(reqInfo.getParameter(VAR_TASK_USERS)))));
+              .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
+    }
+
+    if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
+      hideTimeZeros = true;
     }
 
     SimpleRowSet usersListSet = qs.getData(userListQuery);
@@ -911,7 +935,7 @@ public class CrmModuleBean implements BeeModule {
     long totalTimeMls = 0;
 
     result.addRow(new String[] {
-        "Vartotojo vardas, pavardė", "Sugaištas laikas"});
+        constants.userFullName(), constants.spentTime()});
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =
@@ -983,12 +1007,15 @@ public class CrmModuleBean implements BeeModule {
       }
 
       totalTimeMls += dTimeMls;
-      dTime = new DateTime(dTimeMls).toUtcTimeString();
 
-      result.addRow(new String[] {userFullName, dTime});
+      if (!(hideTimeZeros && dTimeMls <= 0)) {
+        dTime = new DateTime(dTimeMls).toUtcTimeString();
+        result.addRow(new String[] {userFullName, dTime});
+      }
     }
 
-    result.addRow(new String[] {"Iš viso:", new DateTime(totalTimeMls).toUtcTimeString()});
+    result.addRow(new String[] {
+        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;

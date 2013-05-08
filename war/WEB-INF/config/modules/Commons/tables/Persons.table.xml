@@ -10,5 +10,6 @@
     <String name="LastName" precision="30" label="Pavardė" />
     <Date name="DateOfBirth" label="Gimimo data" />
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
+    <Relation name="Photo" relation="Files" editable ="true"/>
   </Fields>
 </Table>

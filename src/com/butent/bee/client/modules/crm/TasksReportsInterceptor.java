@@ -11,7 +11,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -20,10 +19,12 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -45,6 +46,14 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_USER_NAME = "User";
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";
+  private static final String WIDGET_HIDE_ZEROS_NAME = "hideZeros";
+  
+  private static final int FIRST_DAY_OF_MONTH = 1;
+  private static final int MIDNIGHT_HOUR = 0;
+  private static final int START_MINUTE_OF_HOUR = 0;
+  private static final int LAST_HOUR_OF_DAY = 23;
+  private static final int LAST_MINUTE_OF_HOUR = 59;
+  private static final int MIN_ROW_SET = 3;
 
   private ReportType reportType;
 
@@ -83,6 +92,12 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       if (durationTId != null) {
         durationTId.clearValue();
       }
+
+      InputBoolean hideZeros = (InputBoolean) form.getWidgetByName(WIDGET_HIDE_ZEROS_NAME);
+
+      if (hideZeros != null) {
+        hideZeros.clearValue();
+      }
     }
   }
 
@@ -120,9 +135,11 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (fromDate != null) {
         if (!BeeUtils.isEmpty(fromDate.getValue())) {
-
+          DateTime time = fromDate.getDate().getDateTime();
+          time.setHour(MIDNIGHT_HOUR);
+          time.setMinute(START_MINUTE_OF_HOUR);
           params.addQueryItem(CrmConstants.VAR_TASK_DURATION_DATE_FROM,
-              fromDate.getDate().getTime());
+              time.getTime());
         }
       }
 
@@ -130,7 +147,10 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (tillDate != null) {
         if (!BeeUtils.isEmpty(tillDate.getValue())) {
-          params.addQueryItem(CrmConstants.VAR_TASK_DURATION_DATE_TO, tillDate.getDate().getTime());
+          DateTime time = tillDate.getDate().getDateTime();
+          time.setHour(LAST_HOUR_OF_DAY);
+          time.setMinute(LAST_MINUTE_OF_HOUR);
+          params.addQueryItem(CrmConstants.VAR_TASK_DURATION_DATE_TO, time.getTime());
         }
       }
 
@@ -155,6 +175,15 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       if (durationTId != null) {
         if (!BeeUtils.isEmpty(durationTId.getValue())) {
           params.addQueryItem(CrmConstants.VAR_TASK_DURATION_TYPE, durationTId.getValue().trim());
+        }
+      }
+
+      InputBoolean hideZerosId = (InputBoolean) form.getWidgetByName(WIDGET_HIDE_ZEROS_NAME);
+
+      if (hideZerosId != null) {
+        if (!BeeUtils.isEmpty(hideZerosId.getValue())
+            && BeeUtils.same(hideZerosId.getValue(), BooleanValue.S_TRUE)) {
+          params.addQueryItem(CrmConstants.VAR_TASK_DURATION_HIDE_ZEROS, hideZerosId.getValue());
         }
       }
 
@@ -189,6 +218,12 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           int gridRows = rowSet.getNumberOfRows();
           int gridCols = rowSet.getNumberOfColumns();
           Grid g = new Grid(gridRows, gridCols);
+
+          if (gridRows < MIN_ROW_SET) {
+            g.setText(0, 0, Localized.constants.noData());
+            reportPanel.add(g);
+            return;
+          }
 
           g.setStyleName("bee-HtmlTable bee-crm-taskDuration-display");
           for (int i = 0; i < gridRows; i++) {
@@ -229,7 +264,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
     if (BeeUtils.same(name, WIDGET_DATE_FROM_NAME) && widget instanceof InputDate) {
       InputDate dateFrom = (InputDate) widget;
       DateTime thMonth = new DateTime();
-      thMonth.setDom(1);
+      thMonth.setDom(FIRST_DAY_OF_MONTH);
       dateFrom.setDate(thMonth);
     }
     if (BeeUtils.same(name, WIDGET_DATE_TILL_NAME) && widget instanceof InputDate) {
@@ -246,10 +281,6 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TasksReportsInterceptor();
-  }
-
-  @Override
-  public void onShow(Presenter presenter) {
   }
 
   @Override

@@ -402,6 +402,10 @@ body {
   -webkit-filter: contrast(1) invert(1) !important;
 }
 
+.bee-HtmlTable {
+  border-collapse: collapse;
+}
+
 .bee-CellGrid {
   position: absolute;
   left: 0;

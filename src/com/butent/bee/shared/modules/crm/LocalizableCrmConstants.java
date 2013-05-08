@@ -4,6 +4,8 @@ public interface LocalizableCrmConstants {
 
   String durationType();
 
+  String hideZeroTimes();
+
   String hoursByCompanies();
 
   String hoursByTypes();

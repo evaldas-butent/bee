@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget" style="border-spacing: 10px;">
+<!DOCTYPE Form [
+  <!ENTITY defaultMargin "margin-left: 4px; margin-right: 4px; margin-top: 2.5px; margin-bottom: 2.5px;">
+]>
+<Table xmlns="http://www.butent.com/widget">
 
   <row>
-    <Label text="=period" horizontalAlignment="right"/>
-    <FlowPanel class="flexBox-horizontal">
+    <Label text="=period"  style="&defaultMargin;" horizontalAlignment="right"/>
+    <FlowPanel class="flexBox-horizontal" style="&defaultMargin;">
       <InputDate name="dateFrom" style="width:100px;"  />
       <Label html="—"  style="margin-left:8px; margin-right:8px"/>
       <InputDate name="dateTill"  style="width:100px;" />
     </FlowPanel>
-    <Label text="=user" horizontalAlignment="left" />
-    <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName" newRowEnabled="false" style="width:200px"/>
+    <Label text="=user" style="&defaultMargin;" horizontalAlignment="left" />
+    <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName" newRowEnabled="false" 
+      style="width:200px;&defaultMargin;"/>
   </row>
   <row>
-    <Label text="=company" horizontalAlignment="right" />
-    <MultiSelector name="Company" viewName="Companies" choiceColumns="Name TypeName" newRowEnabled="false" style="width:230px" />
+    <Label text="=company" horizontalAlignment="right" style="&defaultMargin;" />
+    <MultiSelector name="Company" viewName="Companies" choiceColumns="Name TypeName" newRowEnabled="false" style="width:230px; &defaultMargin;" />
     <Label text="=durationType" horizontalAlignment="right" />
-    <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name" newRowEnabled="false" style="width:200px"/>   
+    <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name" newRowEnabled="false" style="width:200px; &defaultMargin;"/>   
   </row>
   <row>
     <cell colSpan="4">
-    <FlowPanel class="flexBox-horizontal">
-      <Button name="Filter" text="=doFilter" horizontalAlignment="right" style="margin:4px"/>
-      <Button name="ClearFilter" text="=clear" horizontalAlignment="right" style="margin:4px"/>
+      <CheckBox name="hideZeros" text="=hideZeroTimes" checked="true" style="&defaultMargin;" />
+    </cell>
+  </row>
+  <row>
+    <cell colSpan="4">
+    <FlowPanel class="flexBox-horizontal" style="&defaultMargin;">
+      <Button name="Filter" text="=doFilter" horizontalAlignment="right" style="&defaultMargin;"/>
+      <Button name="ClearFilter" text="=clear" horizontalAlignment="right" style="&defaultMargin;"/>
     </FlowPanel>
     </cell>
   </row>
