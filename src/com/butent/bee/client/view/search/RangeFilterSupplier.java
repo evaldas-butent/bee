@@ -32,7 +32,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
   }
   
   @Override
-  public Filter parse(String values) {
+  public Filter parse(String value) {
     return null;
   }
 }

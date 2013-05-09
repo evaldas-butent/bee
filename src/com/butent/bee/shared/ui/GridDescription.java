@@ -10,6 +10,7 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -44,7 +45,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
-  
+
   public static final String HEADER_MODE_ALL = "all";
   public static final String HEADER_MODE_COLUMN = "column";
   public static final String HEADER_MODE_GRID = "grid";
@@ -120,20 +121,20 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Set<Action> disabledActions = Sets.newHashSet();
 
   private String favorite = null;
-  
+
   private Integer minNumberOfRows = null;
   private Integer maxNumberOfRows = null;
-  
+
   private String renderMode = null;
 
   private Integer rowChangeSensitivityMillis = null;
-  
+
   private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name) {
     this(name, null);
   }
-  
+
   public GridDescription(String name, String viewName) {
     super();
     this.name = name;
@@ -500,7 +501,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Max Number Of Rows", getMaxNumberOfRows(),
         "Render Mode", getRenderMode(),
         "Row Change Sensitivity Millis", getRowChangeSensitivityMillis());
-    
+
     if (getFlexibility() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Flexibility", getFlexibility().getInfo());
     }
@@ -653,6 +654,18 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getParent() {
     return parent;
+  }
+
+  public List<FilterDescription> getPredefinedFilters() {
+    List<FilterDescription> filters = Lists.newArrayList();
+
+    for (ColumnDescription columnDescription : getColumns()) {
+      if (!BeeUtils.isEmpty(columnDescription.getPredefinedFilters())) {
+        filters.addAll(columnDescription.getPredefinedFilters());
+      }
+    }
+
+    return filters;
   }
 
   public String getRenderMode() {
@@ -991,7 +1004,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
   }
-  
+
   public void setHasFooters(Boolean hasFooters) {
     this.hasFooters = hasFooters;
   }
@@ -1007,7 +1020,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setInitialRowSetSize(Integer initialRowSetSize) {
     this.initialRowSetSize = initialRowSetSize;
   }
-  
+
   public void setMaxColumnWidth(Integer maxColumnWidth) {
     this.maxColumnWidth = maxColumnWidth;
   }
@@ -1071,7 +1084,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowEditable(Calculation rowEditable) {
     this.rowEditable = rowEditable;
   }
-  
+
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }

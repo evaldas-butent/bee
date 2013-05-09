@@ -621,7 +621,8 @@ public class GridLoaderBean {
       List<FilterDescription> predefinedFilters = Lists.newArrayList();
 
       for (Element fdElement : filterDescriptionElements) {
-        FilterDescription fd = FilterDescription.create(XmlUtils.getAttributes(fdElement));
+        FilterDescription fd = FilterDescription.create(dst.getName(),
+            XmlUtils.getAttributes(fdElement));
         if (fd != null) {
           predefinedFilters.add(fd);
         }

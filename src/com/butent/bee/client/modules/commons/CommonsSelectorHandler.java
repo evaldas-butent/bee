@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,26 +55,47 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     if (!event.isChanged()) {
       return;
     }
+
     DataInfo sourceInfo = Data.getDataInfo(event.getRelatedViewName());
     IsRow source = event.getRelatedRow();
-
     if (source == null) {
       return;
     }
+
     DataView dataView = UiHelper.getDataView(event.getSelector());
-    if (dataView == null) {
+    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName())) {
       return;
     }
+
     DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
     IsRow target = dataView.getActiveRow();
-    String targetColumn = COL_COUNTRY;
+    if (target == null) {
+      return;
+    }
+
+    String targetColumn = BeeUtils.notEmpty(event.getSelector().getOptions(), COL_COUNTRY);
     int targetIndex = targetInfo.getColumnIndex(targetColumn);
+    if (BeeConst.isUndef(targetIndex)) {
+      return;
+    }
 
-    if (targetIndex != BeeConst.UNDEF) {
-      target.setValue(targetIndex, source.getLong(sourceInfo.getColumnIndex(COL_COUNTRY)));
+    Long country = source.getLong(sourceInfo.getColumnIndex(COL_COUNTRY));
+    if (country == null || country.equals(target.getLong(targetIndex))) {
+      return;
+    }
+    
+    if (dataView.isFlushable()) {
+      target.setValue(targetIndex, country);
+    } else {
+      target.preliminaryUpdate(targetIndex, country.toString());
+    }
 
-      RelationUtils.updateRow(targetInfo, targetColumn, target, sourceInfo, source, false);
-      dataView.refresh(false);
+    Collection<String> updatedColumns =
+        RelationUtils.updateRow(targetInfo, targetColumn, target, sourceInfo, source, false);
+    updatedColumns.add(targetColumn);
+
+    for (String colName : updatedColumns) {
+      dataView.refreshBySource(colName);
     }
   }
 

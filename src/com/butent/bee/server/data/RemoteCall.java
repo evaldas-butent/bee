@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
@@ -176,7 +177,12 @@ public class RemoteCall {
     if (rs instanceof BeeRowSet) {
       BeeRowSet rowSet = (BeeRowSet) rs;
       data.affected = rowSet.getNumberOfRows();
-      data.columns = rowSet.getColumnLabels();
+      
+      data.columns = Lists.newArrayList();
+      for (BeeColumn column : rowSet.getColumns()) {
+        data.columns.add(column.getLabel());
+      }
+
       data.rows = Lists.newArrayList();
 
       if (prm.showId || prm.showVersion || !skipColumns) {

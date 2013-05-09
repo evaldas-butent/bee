@@ -103,7 +103,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterInfo;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -908,14 +908,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       interceptor.afterCreate(this);
     }
   }
-  
-  @Override
-  public void initData(int rowCount, BeeRowSet rowSet) {
-    getGrid().setRowCount(rowCount, false);
-    if (rowSet != null && !rowSet.isEmpty()) {
-      getGrid().setRowData(rowSet.getRows().getList(), false);
-    }
-  }
 
   @Override
   public boolean createParentRow(final NotificationListener notificationListener,
@@ -1109,21 +1101,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public List<FilterInfo> getColumnFilters() {
-    List<FilterInfo> filters = Lists.newArrayList();
-
-    for (ColumnInfo columnInfo : getGrid().getColumns()) {
-      ColumnFooter footer = columnInfo.getFooter();
-      if (footer != null && footer.getFilter() != null) {
-        filters.add(new FilterInfo(columnInfo.getColumnId(), columnInfo.getCaption(),
-            footer.getFilterLabel(), footer.getFilter()));
-      }
-    }
-
-    return filters;
-  }
-
-  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
@@ -1134,7 +1111,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter getFilter(List<? extends IsColumn> columnsa, String idColumnName,
+  public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
 
     if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
@@ -1147,6 +1124,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     Filter filter = null;
+
     for (ColumnFooter footer : footers) {
       if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(footer.getId())) {
         continue;
@@ -1234,6 +1212,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public void initData(int rowCount, BeeRowSet rowSet) {
+    getGrid().setRowCount(rowCount, false);
+    if (rowSet != null && !rowSet.isEmpty()) {
+      getGrid().setRowData(rowSet.getRows().getList(), false);
+    }
+  }
+
+  @Override
   public boolean isAdding() {
     return adding;
   }
@@ -1241,6 +1227,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public boolean isEnabled() {
     return getGrid().isEnabled();
+  }
+
+  @Override
+  public boolean isFlushable() {
+    return false;
   }
 
   @Override
@@ -1384,41 +1375,55 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public void refresh(boolean refreshChildren) {
+  public Filter parseFilter(Collection<FilterDescription> filterDescriptions) {
+    if (BeeUtils.isEmpty(filterDescriptions)) {
+      return null;
+    }
+
+    Set<Filter> filters = Sets.newHashSet();
+
+    for (FilterDescription filterDescription : filterDescriptions) {
+      Map<String, String> valuesByColumn = filterDescription.getValues();
+
+      for (Map.Entry<String, String> entry : valuesByColumn.entrySet()) {
+        ColumnInfo columnInfo = getGrid().getColumnById(entry.getKey());
+        if (columnInfo == null) {
+          logger.warning("filter column not found:", entry.getKey(), entry.getValue());
+          continue;
+        }
+
+        AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
+        if (filterSupplier == null) {
+          logger.warning("filter supplier not found:", entry.getKey(), entry.getValue());
+          continue;
+        }
+
+        Filter columnFilter = filterSupplier.parse(entry.getValue());
+        if (columnFilter == null) {
+          logger.warning(entry.getKey(), "cannot parse filter:", entry.getValue());
+        } else {
+          filters.add(columnFilter);
+        }
+      }
+    }
+
+    return Filter.and(filters);
+  }
+
+  @Override
+  public void refresh(boolean refreshChildren, boolean focus) {
     getGrid().refresh();
   }
 
   @Override
-  public void refreshCellContent(long rowId, String columnSource) {
-    getGrid().refreshCellContent(rowId, columnSource);
+  public int refreshBySource(String source) {
+    IsRow row = getGrid().getActiveRow();
+    return (row == null) ? 0 : refreshCellContent(row.getId(), source);
   }
 
   @Override
-  public void setColumnFilters(Collection<FilterInfo> filters) {
-    if (BeeUtils.isEmpty(filters)) {
-      clearFilter();
-
-    } else {
-      for (ColumnInfo columnInfo : getGrid().getColumns()) {
-        ColumnFooter footer = columnInfo.getFooter();
-
-        if (footer != null) {
-          boolean updated = false;
-
-          for (FilterInfo filterInfo : filters) {
-            if (columnInfo.getColumnId().equals(filterInfo.getId())) {
-              footer.update(filterInfo);
-              updated = true;
-              break;
-            }
-          }
-
-          if (!updated && !footer.isEmpty()) {
-            footer.reset();
-          }
-        }
-      }
-    }
+  public int refreshCellContent(long rowId, String columnSource) {
+    return getGrid().refreshCellContent(rowId, columnSource);
   }
 
   @Override
@@ -2089,9 +2094,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
         @Override
         public void onSuccess(BeeRow result) {
-          int updated = RelationUtils.updateRow(getDataInfo(), editSource, row,
-              editDataInfo, result, false);
-          if (updated > 0) {
+          if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
+              false).isEmpty()) {
             getGrid().refreshCellContent(row.getId(), editableColumn.getColumnId());
           }
 

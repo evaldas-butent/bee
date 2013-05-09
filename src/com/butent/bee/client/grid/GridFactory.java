@@ -52,6 +52,7 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -184,14 +185,9 @@ public class GridFactory {
     }
   }
 
-  public static void createGrid(String gridName, Collection<UiOption> uiOptions,
-      GridOptions gridOptions, PresenterCallback presenterCallback) {
-    createGrid(gridName, getGridInterceptor(gridName), uiOptions, gridOptions, presenterCallback);
-  }
-
-  public static void createGrid(String gridName, final GridInterceptor gridInterceptor,
-      final Collection<UiOption> uiOptions, final GridOptions gridOptions,
-      final PresenterCallback presenterCallback) {
+  public static void createGrid(String gridName, final String supplierKey,
+      final GridInterceptor gridInterceptor, final Collection<UiOption> uiOptions,
+      final GridOptions gridOptions, final PresenterCallback presenterCallback) {
     Assert.notEmpty(gridName);
     Assert.notNull(presenterCallback);
 
@@ -202,7 +198,8 @@ public class GridFactory {
         if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
           return;
         }
-        consumeGridDescription(result, gridInterceptor, presenterCallback, uiOptions, gridOptions);
+        consumeGridDescription(result, supplierKey, gridInterceptor, presenterCallback, uiOptions,
+            gridOptions);
       }
     });
   }
@@ -303,21 +300,30 @@ public class GridFactory {
         Data.getDataInfoProvider(), gridDescription.getViewName()));
   }
 
-  public static Filter getInitialQueryFilter(Filter immutableFilter,
-      Map<String, Filter> initialFilters) {
+  public static Filter getInitialQueryFilter(GridView gridView, Filter immutableFilter,
+      Map<String, Filter> initialParentFilters,
+      Collection<FilterDescription> initialUserFilters) {
 
     List<Filter> filters = Lists.newArrayList();
     if (immutableFilter != null) {
       filters.add(immutableFilter);
     }
 
-    if (initialFilters != null) {
-      for (Filter filter : initialFilters.values()) {
+    if (initialParentFilters != null) {
+      for (Filter filter : initialParentFilters.values()) {
         if (filter != null) {
           filters.add(filter);
         }
       }
     }
+
+    if (gridView != null && !BeeUtils.isEmpty(initialUserFilters)) {
+      Filter filter = gridView.parseFilter(initialUserFilters);
+      if (filter != null) {
+        filters.add(filter);
+      }
+    }
+
     return Filter.and(filters);
   }
 
@@ -333,6 +339,17 @@ public class GridFactory {
       order = gridDescription.getOrder();
     }
     return order;
+  }
+
+  public static List<FilterDescription> getPredefinedFilters(GridDescription gridDescription,
+      GridInterceptor gridInterceptor) {
+    Assert.notNull(gridDescription);
+
+    if (gridInterceptor == null) {
+      return gridDescription.getPredefinedFilters();
+    } else {
+      return gridInterceptor.getPredefinedFilters(gridDescription.getPredefinedFilters());
+    }
   }
 
   public static String getSupplierKey(String gridName, GridInterceptor gridInterceptor) {
@@ -355,27 +372,27 @@ public class GridFactory {
   public static void openGrid(final String gridName, final GridInterceptor gridInterceptor,
       final GridOptions gridOptions) {
 
+    final String supplierKey = getSupplierKey(gridName, gridInterceptor);
     final Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
-
-    String supplierKey = getSupplierKey(gridName, gridInterceptor);
 
     if (!WidgetFactory.hasSupplier(supplierKey)) {
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
         public void create(final Callback<IdentifiableWidget> callback) {
-          createGrid(gridName, gridInterceptor, uiOptions, gridOptions, new PresenterCallback() {
-            @Override
-            public void onCreate(Presenter presenter) {
-              callback.onSuccess(presenter.getWidget());
-            }
-          });
+          createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions,
+              new PresenterCallback() {
+                @Override
+                public void onCreate(Presenter presenter) {
+                  callback.onSuccess(presenter.getWidget());
+                }
+              });
         }
       };
 
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
 
-    createGrid(gridName, gridInterceptor, uiOptions, gridOptions,
+    createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions,
         PresenterCallback.SHOW_IN_ACTIVE_PANEL);
   }
 
@@ -414,7 +431,7 @@ public class GridFactory {
 
     Global.showGrid(new PropertiesData(info, "Grid Name", "Column Count"));
   }
-  
+
   public static CellGrid simpleGrid(IsTable<?, ?> table, int containerWidth) {
     Assert.notNull(table);
 
@@ -464,12 +481,20 @@ public class GridFactory {
   }
 
   private static void consumeGridDescription(final GridDescription gridDescription,
-      final GridInterceptor gridInterceptor, final PresenterCallback presenterCallback,
-      final Collection<UiOption> uiOptions, final GridOptions gridOptions) {
+      String supplierKey, final GridInterceptor gridInterceptor,
+      final PresenterCallback presenterCallback, final Collection<UiOption> uiOptions,
+      final GridOptions gridOptions) {
 
     final Filter immutableFilter = getImmutableFilter(gridDescription, gridOptions);
-    final Map<String, Filter> initialFilters =
-        (gridInterceptor == null) ? null : gridInterceptor.getInitialFilters();
+    final Map<String, Filter> initialParentFilters =
+        (gridInterceptor == null) ? null : gridInterceptor.getInitialParentFilters();
+
+//    List<FilterDescription> predefinedFilters =
+//        getPredefinedFilters(gridDescription, gridInterceptor);
+//    Global.getFilters().ensurePredefinedFilters(supplierKey, predefinedFilters);
+
+    Collection<FilterDescription> initialUserFilters =
+        Global.getFilters().getInitialFilters(supplierKey);
 
     final Order order = getOrder(gridDescription, gridOptions);
 
@@ -521,7 +546,7 @@ public class GridFactory {
       gridView.initData(brs.getNumberOfRows(), brs);
 
       createPresenter(gridDescription, gridView, brs.getNumberOfRows(), brs, providerType,
-          cachingPolicy, uiOptions, gridInterceptor, immutableFilter, initialFilters, order,
+          cachingPolicy, uiOptions, gridInterceptor, immutableFilter, initialParentFilters, order,
           gridOptions, presenterCallback);
       return;
     }
@@ -548,8 +573,9 @@ public class GridFactory {
 
     final GridView gridView = createGridView(gridDescription, Data.getColumns(viewName), uiOptions,
         gridInterceptor, order);
-    
-    Filter queryFilter = getInitialQueryFilter(immutableFilter, initialFilters);
+
+    Filter queryFilter = getInitialQueryFilter(gridView, immutableFilter, initialParentFilters,
+        initialUserFilters);
 
     Queries.getRowSet(viewName, null, queryFilter, order, 0, limit, cachingPolicy, queryOptions,
         new Queries.RowSetCallback() {
@@ -561,12 +587,12 @@ public class GridFactory {
             if (requestSize) {
               rc = Math.max(rc, BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
             }
-            
+
             gridView.initData(rc, rowSet);
-            
+
             createPresenter(gridDescription, gridView, rc, rowSet, providerType, cachingPolicy,
-                uiOptions, gridInterceptor, immutableFilter, initialFilters, order, gridOptions,
-                presenterCallback);
+                uiOptions, gridInterceptor, immutableFilter, initialParentFilters, order,
+                gridOptions, presenterCallback);
           }
         });
   }
@@ -580,12 +606,12 @@ public class GridFactory {
   private static void createPresenter(GridDescription gridDescription, GridView gridView,
       int rowCount, BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Filter immutableFilter, Map<String, Filter> initialFilters,
+      Filter immutableFilter, Map<String, Filter> initialParentFilters,
       Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     GridPresenter presenter = new GridPresenter(gridDescription, gridView, rowCount, rowSet,
-        providerType, cachingPolicy, uiOptions, gridInterceptor, immutableFilter, initialFilters,
-        order, gridOptions);
+        providerType, cachingPolicy, uiOptions, gridInterceptor, immutableFilter,
+        initialParentFilters, order, gridOptions);
 
     if (gridInterceptor != null) {
       gridInterceptor.onShow(presenter);

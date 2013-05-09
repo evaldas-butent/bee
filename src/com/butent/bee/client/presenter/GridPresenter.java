@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -63,7 +62,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -73,7 +71,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
@@ -179,7 +176,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor, Filter immutableFilter,
-      Map<String, Filter> initialFilters, Order order, GridFactory.GridOptions gridOptions) {
+      Map<String, Filter> initialParentFilters, Order order, GridFactory.GridOptions gridOptions) {
 
     if (gridInterceptor != null) {
       gridInterceptor.setGridPresenter(this);
@@ -190,7 +187,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
-        immutableFilter, initialFilters, order, rowSet, providerType, cachingPolicy);
+        immutableFilter, initialParentFilters, order, rowSet, providerType, cachingPolicy);
 
     bind();
   }
@@ -431,13 +428,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           source, newValue));
       return true;
     }
+    
+    BeeRowSet rowSet = event.getRowSet(getViewName(), getDataColumns());
+    event.getRowValue().reset();
 
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
-    rs.setViewName(getViewName());
-    rs.addRow(rowId, version, new String[] {event.getOldValue()});
-    rs.getRow(0).preliminaryUpdate(0, newValue);
-
-    final boolean rowMode = event.isRowMode();
+    final boolean rowMode = event.isRowMode() || rowSet.getNumberOfColumns() > 1;
 
     RowCallback rowCallback = new RowCallback() {
       @Override
@@ -464,9 +459,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     };
 
     if (rowMode) {
-      Queries.updateRow(rs, rowCallback);
+      Queries.updateRow(rowSet, rowCallback);
     } else {
-      Queries.updateCell(rs, rowCallback);
+      Queries.updateCell(rowSet, rowCallback);
     }
     return true;
   }
@@ -584,7 +579,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter immutableFilter,
-      Map<String, Filter> initialFilters, Order order, BeeRowSet rowSet,
+      Map<String, Filter> initialParentFilters, Order order, BeeRowSet rowSet,
       Provider.Type providerType, CachingPolicy cachingPolicy) {
 
     if (providerType == null) {
@@ -616,8 +611,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         provider = null;
     }
 
-    if (initialFilters != null) {
-      for (Map.Entry<String, Filter> entry : initialFilters.entrySet()) {
+    if (initialParentFilters != null) {
+      for (Map.Entry<String, Filter> entry : initialParentFilters.entrySet()) {
         String key = entry.getKey();
         Filter value = entry.getValue();
         if (!BeeUtils.isEmpty(key) && value != null) {
@@ -667,40 +662,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void handleFilter() {
-    String label;
-    String serialized;
-
-    List<FilterInfo> columnFilters = getGridView().getColumnFilters();
-    if (BeeUtils.isEmpty(columnFilters)) {
-      label = null;
-      serialized = null;
-
-    } else {
-      List<String> labels = Lists.newArrayList();
-      for (FilterInfo filterInfo : columnFilters) {
-        labels.add(BeeUtils.joinWords(filterInfo.getCaption(), filterInfo.getLabel()));
-      }
-
-      label = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, labels);
-      serialized = Codec.beeSerialize(columnFilters);
-    }
-
-    Element relativeTo = (getHeader() == null) ? null : getHeader().asWidget().getElement();
-
-    Global.getFilters().handle(gridContainer.getSupplierKey(), label, serialized, relativeTo,
-        new Consumer<String>() {
-          @Override
-          public void accept(String input) {
-            String arr[] = Codec.beeDeserializeCollection(input);
-            List<FilterInfo> filters = Lists.newArrayList();
-            for (String s : arr) {
-              filters.add(FilterInfo.restore(s));
-            }
-
-            getGridView().setColumnFilters(filters);
-            updateFilter(null);
-          }
-        });
   }
 
   private void setLastFilter(Filter lastFilter) {

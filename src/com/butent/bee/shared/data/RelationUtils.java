@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class RelationUtils {
 
@@ -112,9 +114,10 @@ public class RelationUtils {
     return result;
   }
 
-  public static int updateRow(DataInfo targetInfo, String targetColumn, IsRow targetRow,
-      DataInfo sourceInfo, IsRow sourceRow, boolean updateRelationColumn) {
-    int result = BeeConst.UNDEF;
+  public static Collection<String> updateRow(DataInfo targetInfo, String targetColumn,
+      IsRow targetRow, DataInfo sourceInfo, IsRow sourceRow, boolean updateRelationColumn) {
+
+    Set<String> result = Sets.newHashSet();
     if (targetInfo == null || sourceInfo == null || BeeUtils.isEmpty(targetColumn)
         || targetRow == null) {
       return result;
@@ -132,7 +135,7 @@ public class RelationUtils {
         } else {
           targetRow.setValue(index, sourceRow.getId());
         }
-        result = 1;
+        result.add(targetColumn);
       }
     }
 
@@ -142,7 +145,6 @@ public class RelationUtils {
       return result;
     }
 
-    result = Math.max(result, 0);
     for (ViewColumn tc : targetColumns) {
       int targetIndex = targetInfo.getColumnIndex(tc.getName());
       if (BeeConst.isUndef(targetIndex)) {
@@ -153,7 +155,7 @@ public class RelationUtils {
       if (clear) {
         if (!targetRow.isNull(targetIndex)) {
           targetRow.clearCell(targetIndex);
-          result++;
+          result.add(tc.getName());
         }
 
       } else {
@@ -163,7 +165,7 @@ public class RelationUtils {
             !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
                 sourceRow.getString(sourceIndex))) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));
-          result++;
+          result.add(tc.getName());
         }
       }
     }

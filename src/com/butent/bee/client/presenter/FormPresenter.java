@@ -251,17 +251,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public boolean onReadyForUpdate(final ReadyForUpdateEvent event) {
-    final long rowId = event.getRowValue().getId();
-    final long version = event.getRowValue().getVersion();
-    final String columnId = event.getColumn().getId();
-    final String newValue = event.getNewValue();
+    BeeRowSet rowSet = event.getRowSet(getViewName(), getDataProvider().getColumns());
+    event.getRowValue().reset();
 
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
-    rs.setViewName(getViewName());
-    rs.addRow(rowId, version, new String[] {event.getOldValue()});
-    rs.getRow(0).preliminaryUpdate(0, newValue);
-
-    final boolean rowMode = event.isRowMode();
+    final boolean rowMode = event.isRowMode() || rowSet.getNumberOfColumns() > 1;
 
     RowCallback rowCallback = new RowCallback() {
       @Override
@@ -282,19 +275,19 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         } else {
 
           CellSource source = CellSource.forColumn(event.getColumn(),
-              getDataProvider().getColumnIndex(columnId));
+              getDataProvider().getColumnIndex(event.getColumn().getId()));
           String value = row.getString(0);
 
-          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), rowId, row.getVersion(),
-              source, value));
+          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), row.getId(),
+              row.getVersion(), source, value));
         }
       }
     };
 
     if (rowMode) {
-      Queries.updateRow(rs, rowCallback);
+      Queries.updateRow(rowSet, rowCallback);
     } else {
-      Queries.updateCell(rs, rowCallback);
+      Queries.updateCell(rowSet, rowCallback);
     }
     return true;
   }

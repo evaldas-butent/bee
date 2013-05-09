@@ -168,9 +168,12 @@
   </xs:attributeGroup>
   
   <xs:complexType name="columnFilter">
+    <xs:attribute name="name" type="xs:ID" use="required" />
     <xs:attribute name="label" type="xs:normalizedString" use="required" />
-    <xs:attribute name="values" type="xs:normalizedString" use="required" />
+    <xs:attribute name="value" type="xs:normalizedString" use="required" />
     <xs:attribute name="ordinal" type="xs:nonNegativeInteger" />
     <xs:attribute name="initial" type="xs:boolean" />
+    <xs:attribute name="editable" type="xs:boolean" />
+    <xs:attribute name="removable" type="xs:boolean" />
   </xs:complexType>
 </xs:schema>

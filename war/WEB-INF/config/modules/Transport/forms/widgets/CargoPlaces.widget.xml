@@ -22,7 +22,7 @@
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="LoadingCity" style="width:135px;">
+      <DataSelector source="LoadingCity" style="width:135px;" options="LoadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">
@@ -75,7 +75,7 @@
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="UnloadingCity" style="width:135px;">
+      <DataSelector source="UnloadingCity" style="width:135px;" options="UnloadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">

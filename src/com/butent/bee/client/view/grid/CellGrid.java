@@ -2083,17 +2083,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     render(true);
   }
 
-  public void refreshCellContent(long rowId, String sourceName) {
+  public int refreshCellContent(long rowId, String sourceName) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
       logger.warning("refreshCell: row id", rowId, "is not visible");
-      return;
+      return 0;
     }
 
     List<Integer> colIndexes = getColumnIndexBySourceName(sourceName);
     for (int col : colIndexes) {
       updateCellContent(row, col);
     }
+    return colIndexes.size();
   }
 
   @Override
@@ -2492,10 +2493,19 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.resizerShowSensitivityMillis = resizerShowSensitivityMillis;
   }
 
+  ColumnInfo getColumnById(String id) {
+    for (ColumnInfo columnInfo : columns) {
+      if (columnInfo.is(id)) {
+        return columnInfo;
+      }
+    }
+    return null;
+  }
+
   List<ColumnInfo> getColumns() {
     return columns;
   }
-
+  
   private void activateCell(int row, int col) {
     if (getActiveRowIndex() == row) {
       setActiveColumnIndex(col);

@@ -10,13 +10,13 @@
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
       caption="-">
-      <filter label="=taskFilterNew" values="0" />
-      <filter label="=taskFilterUpdated" values="1" />
-      <filter label="=taskFilterNewOrUpdated" values="2" />
+      <filter name="new" label="=taskFilterNew" value="0" />
+      <filter name="updated" label="=taskFilterUpdated" value="1" />
+      <filter name="new_upd" label="=taskFilterNewOrUpdated" value="2" />
     </CalcColumn>
 
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20">
-      <filter label="=taskFilterStarred" values="*" />
+      <filter name="starred" label="=taskFilterStarred" value="*" />
       <renderer type="star" />
     </PropColumn>
 
@@ -28,15 +28,14 @@
     <RelColumn name="Company" editEnabled="true" flexGrow="1" />
 
     <DataColumn name="Status" itemKey="TaskStatus">
-      <filter label="=taskFilterNotVisitedOrActive" values="0,1" />
-      <filter label="=taskFilterNotVisitedOrActiveOrCompleted" values="0,1,4" />
+      <filter name="nv_a" label="=taskFilterNotVisitedOrActive" value="0,1" />
+      <filter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted" value="0,1,4" />
     </DataColumn>
 
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan.">
-      <filter label="=taskFilterLate" values="late" />
-      <filter label="=taskFilterScheduled" values="scheduled" />
+      <filter name="late" label="=taskFilterLate" value="late" />
+      <filter name="scheduled" label="=taskFilterScheduled" value="scheduled" />
     </CalcColumn>
-    
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />

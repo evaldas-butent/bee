@@ -97,7 +97,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
               dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
               rowSet.getRow(value), true);
-          dataView.refresh(false);
+          dataView.refresh(false, true);
         } else {
           createVehicle(owner, dataView);
         }
@@ -120,7 +120,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
                 dataView.getActiveRow(), vehiclesInfo, result, true);
-            dataView.refresh(false);
+            dataView.refresh(false, true);
           }
         });
   }
@@ -188,7 +188,7 @@ class SelectorHandler implements SelectorEvent.Handler {
               RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
                   dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
                   result.getRow(0), true);
-              dataView.refresh(false);
+              dataView.refresh(false, false);
             } else {
               chooseVehicle(dataView, result, companyName, event.getRelatedRow());
             }
@@ -279,7 +279,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_COMPANY, row,
                 Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), result, true);
-            dataView.refresh(false);
+            dataView.refresh(false, false);
           }
         });
       }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form [
+<!DOCTYPE Table [
   <!ENTITY defaultMargin "margin-left: 4px; margin-right: 4px; margin-top: 2.5px; margin-bottom: 2.5px;">
 ]>
 <Table xmlns="http://www.butent.com/widget">
@@ -35,4 +35,3 @@
     </cell>
   </row>
 </Table>
-  

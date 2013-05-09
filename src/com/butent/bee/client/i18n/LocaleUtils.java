@@ -181,6 +181,14 @@ public class LocaleUtils {
   public static String getLabel(IsColumn column) {
     return maybeLocalize(column.getLabel());
   }
+  
+  public static List<String> getLabels(List<? extends IsColumn> columns) {
+    List<String> labels = Lists.newArrayList();
+    for (IsColumn column : columns) {
+      labels.add(getLabel(column));
+    }
+    return labels;
+  }
 
   public static String getLanguageCode(LocaleInfo locale) {
     if (locale == null) {

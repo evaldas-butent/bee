@@ -17,6 +17,8 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements {@code isRow} interface, sets behaviors for row classes.
@@ -28,6 +30,7 @@ public abstract class AbstractRow implements IsRow {
   private long version = 0;
   private boolean editable = true;
 
+  private Map<Integer, String> shadow = null;
   private CustomProperties properties = null;
 
   protected AbstractRow(long id) {
@@ -102,6 +105,18 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public Map<Integer, String> getShadow() {
+    return shadow;
+  }
+
+  public String getShadowString(int col) {
+    if (shadow != null) {
+      return shadow.get(col);
+    }
+    return null;
+  }
+
+  @Override
   public String getString(int index) {
     return getValue(index).getString();
   }
@@ -154,6 +169,33 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public void preliminaryUpdate(int col, String value) {
+    String oldValue = getString(col);
+
+    if (!BeeUtils.equalsTrimRight(value, oldValue)) {
+      if (shadow == null) {
+        shadow = new HashMap<Integer, String>();
+      }
+      if (!shadow.containsKey(col)) {
+        shadow.put(col, oldValue);
+
+      } else if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
+        shadow.remove(col);
+
+        if (BeeUtils.isEmpty(shadow)) {
+          reset();
+        }
+      }
+      setValue(col, value);
+    }
+  }
+
+  @Override
+  public void reset() {
+    setShadow(null);
+  }
+
+  @Override
   public void setEditable(boolean editable) {
     this.editable = editable;
   }
@@ -162,7 +204,7 @@ public abstract class AbstractRow implements IsRow {
   public void setId(long id) {
     this.id = id;
   }
-
+  
   @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
@@ -221,7 +263,7 @@ public abstract class AbstractRow implements IsRow {
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
   }
-
+  
   @Override
   public void setValue(int index, Value value) {
     IsCell cell = getCell(index);
@@ -259,4 +301,9 @@ public abstract class AbstractRow implements IsRow {
       target.setProperties(getProperties().copy());
     }
   }
+  
+  protected void setShadow(Map<Integer, String> shadow) {
+    this.shadow = shadow;
+  }
+  
 }

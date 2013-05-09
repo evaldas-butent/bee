@@ -35,6 +35,7 @@ import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -709,6 +710,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean isFlushable() {
+    return isAdding() || isEditing();
+  }
+
+  @Override
   public boolean isModal() {
     return false;
   }
@@ -831,7 +837,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     final BeeRowSet rowSet =
         DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow(), null);
     if (!DataUtils.isEmpty(rowSet)) {
-      updatedLabels.addAll(rowSet.getColumnLabels());
+      updatedLabels.addAll(LocaleUtils.getLabels(rowSet.getColumns()));
     }
     
     for (EditableWidget editableWidget : getEditableWidgets()) {
@@ -923,7 +929,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
       logger.debug(column.getId(), "old:", oldValue, "new:", newValue);
 
-      if (isAdding() || isEditing()) {
+      if (isFlushable()) {
         rowValue.setValue(index, newValue);
 
         Set<String> refreshed = Sets.newHashSet();
@@ -1067,15 +1073,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean printHeader() {
     return printHeader;
   }
-
-  @Override
-  public void refresh() {
-    refresh(true);
-  }
   
   @Override
-  public void refresh(boolean refreshChildren) {
-    refreshData(refreshChildren, getActiveRow() != null);
+  public void refresh() {
+    refresh(true, false);
+  }
+
+  @Override
+  public void refresh(boolean refreshChildren, boolean focus) {
+    refreshData(refreshChildren, focus);
   }
 
   @Override
@@ -1106,7 +1112,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
     }
-
+    
     return refreshed.size();
   }
 
@@ -1192,7 +1198,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       fireDataRequest(origin);
     }
   }
-
+  
   @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
@@ -1208,7 +1214,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       fireScopeChange();
     }
   }
-  
+
   @Override
   public void setRowData(List<? extends IsRow> values, boolean refresh) {
     if (BeeUtils.isEmpty(values)) {
@@ -1218,7 +1224,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (refresh) {
-      refresh(true);
+      refresh(true, false);
     }
   }
 
@@ -1340,7 +1346,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     String oldValue = rowValue.getString(index);
 
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      if (isAdding() || isEditing()) {
+      if (isFlushable()) {
         rowValue.setValue(index, newValue);
         Set<String> refreshed = refreshEditableWidget(index);
         refreshDisplayWidgets(refreshed);

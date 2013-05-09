@@ -37,8 +37,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return row;
   }
 
-  private Map<Integer, String> shadow = null;
-
   public BeeRow(long id, long version) {
     this(id, BeeConst.EMPTY_STRING_ARRAY);
     setVersion(version);
@@ -138,46 +136,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return children;
   }
 
-  public Map<Integer, String> getShadow() {
-    return shadow;
-  }
-
-  public String getShadowString(int col) {
-    if (shadow != null) {
-      return shadow.get(col);
-    }
-    return null;
-  }
-
   public boolean hasChildren() {
     return !BeeUtils.isEmpty(getProperty(PROPERTY_CHILDREN));
   }
 
-  public void preliminaryUpdate(int col, String value) {
-    String oldValue = getString(col);
-
-    if (!BeeUtils.equalsTrimRight(value, oldValue)) {
-      if (shadow == null) {
-        shadow = new HashMap<Integer, String>();
-      }
-      if (!shadow.containsKey(col)) {
-        shadow.put(col, oldValue);
-
-      } else if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
-        shadow.remove(col);
-
-        if (BeeUtils.isEmpty(shadow)) {
-          reset();
-        }
-      }
-      super.setValue(col, value);
-    }
-  }
-
-  public void reset() {
-    setShadow(null);
-  }
-  
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -203,7 +165,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case SHADOW:
-          arr[i++] = shadow;
+          arr[i++] = getShadow();
           break;
 
         case PROPERTIES:
@@ -220,9 +182,5 @@ public class BeeRow extends StringRow implements BeeSerializable {
     } else {
       setProperty(PROPERTY_CHILDREN, Codec.beeSerialize(children));
     }
-  }
-  
-  private void setShadow(Map<Integer, String> shadow) {
-    this.shadow = shadow;
   }
 }

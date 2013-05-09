@@ -1,6 +1,6 @@
 package com.butent.bee.client.view.search;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
@@ -19,6 +19,7 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.Order;
@@ -43,27 +45,21 @@ public class Filters {
 
   private static class Item implements Comparable<Item> {
 
-    private final long id;
+    private long id;
 
-    private boolean initial;
-    private int order;
+    private final FilterDescription filterDescription;
 
-    private String name;
-    private final String filter;
+    private final boolean predefined;
 
-    private Item(long id, boolean initial, int order, String name, String filter) {
+    private Item(long id, FilterDescription filterDescription, boolean predefined) {
       this.id = id;
-      this.initial = initial;
-      this.order = order;
-      this.name = name;
-      this.filter = filter;
+      this.filterDescription = filterDescription;
+      this.predefined = predefined;
     }
 
     @Override
     public int compareTo(Item o) {
-      int result = BeeUtils.compare(o.isInitial(), isInitial());
-      return (result == BeeConst.COMPARE_EQUAL) ? BeeUtils.compare(getOrder(), o.getOrder())
-          : result;
+      return filterDescription.compareTo(o.filterDescription);
     }
 
     @Override
@@ -76,32 +72,52 @@ public class Filters {
       return Longs.hashCode(getId());
     }
 
-    private String getFilter() {
-      return filter;
-    }
-
     private long getId() {
       return id;
     }
 
-    private String getName() {
-      return name;
+    private String getLabel() {
+      return filterDescription.getLabel();
     }
 
-    private int getOrder() {
-      return order;
+    private String getName() {
+      return filterDescription.getName();
+    }
+
+    private Integer getOrdinal() {
+      return filterDescription.getOrdinal();
+    }
+
+    private String getValue() {
+      return filterDescription.getValue();
+    }
+
+    private boolean isEditable() {
+      return filterDescription.isEditable();
     }
 
     private boolean isInitial() {
-      return initial;
+      return filterDescription.isInitial();
     }
 
     private boolean isNew() {
-      return !DataUtils.isId(getId());
+      return getId() == DataUtils.NEW_ROW_ID;
     }
 
-    private void setName(String name) {
-      this.name = name;
+    private boolean isPredefined() {
+      return predefined;
+    }
+
+    private boolean isRemovable() {
+      return filterDescription.isRemovable();
+    }
+
+    private void setId(long id) {
+      this.id = id;
+    }
+
+    private void setLabel(String label) {
+      filterDescription.setLabel(label);
     }
   }
 
@@ -111,10 +127,14 @@ public class Filters {
 
   private static final String COL_USER = "User";
   private static final String COL_KEY = "Key";
-  private static final String COL_INITIAL = "Initial";
-  private static final String COL_ORDER = "Order";
   private static final String COL_NAME = "Name";
-  private static final String COL_FILTER = "Filter";
+  private static final String COL_LABEL = "Label";
+  private static final String COL_INITIAL = "Initial";
+  private static final String COL_ORDINAL = "Ordinal";
+  private static final String COL_EDITABLE = "Editable";
+  private static final String COL_REMOVABLE = "Removable";
+  private static final String COL_PREDEFINED = "Predefined";
+  private static final String COL_VALUE = "Value";
 
   private static final String STYLE_PREFIX = "bee-Filters-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
@@ -127,7 +147,7 @@ public class Filters {
 
   private static final String STYLE_INITIAL = STYLE_PREFIX + "initial";
   private static final String STYLE_NON_INITIAL = STYLE_PREFIX + "non-initial";
-  private static final String STYLE_NAME = STYLE_PREFIX + "name";
+  private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
   private static final String STYLE_ADD = STYLE_PREFIX + "add";
   private static final String STYLE_DELETE = STYLE_PREFIX + "delete";
@@ -135,39 +155,70 @@ public class Filters {
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
 
-  private final Multimap<String, Item> itemsByKey = HashMultimap.create();
+  private final Multimap<String, Item> itemsByKey = ArrayListMultimap.create();
 
-  private int maxNameLength = BeeConst.UNDEF;
+  private int maxLabelLength = BeeConst.UNDEF;
+
+  private int keyColumnIndex = BeeConst.UNDEF;
+
+  private int nameColumnIndex;
+  private int labelColumnIndex;
+
+  private int initialColumnIndex;
+  private int ordinalColumnIndex;
+
+  private int editableColumnIndex;
+  private int removableColumnIndex;
+  private int predefinedColumnIndex;
+
+  private int valueColumnIndex;
 
   public Filters() {
     super();
   }
 
-  public void handle(final String key, String name, String filter, Element relativeTo,
-      final Consumer<String> callback) {
+  public void ensurePredefinedFilters(String key, List<FilterDescription> filters) {
+    if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(filters) && !itemsByKey.containsKey(key)) {
+      List<FilterDescription> predefinedFilters = Lists.newArrayList(filters);
+      if (predefinedFilters.size() > 1) {
+        Collections.sort(predefinedFilters);
+      }
 
+      for (int i = 0; i < predefinedFilters.size(); i++) {
+        FilterDescription filterDescription = predefinedFilters.get(i).copy();
+        filterDescription.setOrdinal(i);
+
+        itemsByKey.put(key, new Item(-1 - i, filterDescription, true));
+      }
+
+      Collection<Item> items = itemsByKey.get(key);
+      for (Item item : items) {
+        insert(key, item);
+      }
+    }
+  }
+
+  public Collection<FilterDescription> getInitialFilters(String key) {
+    List<FilterDescription> filters = Lists.newArrayList();
+
+    if (itemsByKey.containsKey(key)) {
+      for (Item item : itemsByKey.get(key)) {
+        if (item.isInitial()) {
+          filters.add(item.filterDescription);
+        }
+      }
+    }
+
+    return filters;
+  }
+
+  public void handle(final String key, Element relativeTo, final Consumer<String> callback) {
     Assert.notEmpty(key);
     Assert.notNull(callback);
 
     final List<Item> items = getItems(key);
 
     int activeItemIndex = BeeConst.UNDEF;
-    if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(filter)) {
-      if (!items.isEmpty()) {
-        for (int i = 0; i < items.size(); i++) {
-          if (filter.equals(items.get(i).getFilter())) {
-            activeItemIndex = i;
-            break;
-          }
-        }
-      }
-
-      if (BeeConst.isUndef(activeItemIndex)) {
-        items.add(new Item(DataUtils.NEW_ROW_ID, false, BeeConst.UNDEF, normalizeName(name),
-            filter.trim()));
-        activeItemIndex = items.size() - 1;
-      }
-    }
 
     if (items.isEmpty()) {
       return;
@@ -183,7 +234,7 @@ public class Filters {
     for (Item item : items) {
       int c = 0;
 
-      final long id = item.getId();
+      final String name = item.getName();
 
       CustomDiv initial = new CustomDiv();
       initial.addClickHandler(new ClickHandler() {
@@ -195,20 +246,20 @@ public class Filters {
       createCell(table, r, c, initial, item.isInitial() ? STYLE_INITIAL : STYLE_NON_INITIAL);
       c++;
 
-      final CustomDiv label = new CustomDiv();
-      label.setHTML(item.getName());
+      final CustomDiv labelWidget = new CustomDiv();
+      labelWidget.setHTML(LocaleUtils.maybeLocalize(item.getLabel()));
 
       if (!item.isNew()) {
-        label.addClickHandler(new ClickHandler() {
+        labelWidget.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             dialog.close();
-            callback.accept(getItem(items, id).getFilter());
+            callback.accept(getItem(items, name).getValue());
           }
         });
       }
 
-      createCell(table, r, c, label, STYLE_NAME);
+      createCell(table, r, c, labelWidget, STYLE_LABEL);
       c++;
 
       BeeImage edit = new BeeImage(Global.getImages().silverEdit());
@@ -218,23 +269,23 @@ public class Filters {
       edit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          final Item editItem = getItem(items, id);
-          final String oldName = normalizeName(editItem.getName());
+          final Item editItem = getItem(items, name);
+          final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
 
           Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
             @Override
-            public void onSuccess(String value) {
-              String newName = normalizeName(value);
-              if (!BeeUtils.isEmpty(newName) && !newName.equals(oldName)) {
-                editItem.setName(newName);
-                label.setHTML(newName);
-                
+            public void onSuccess(String newValue) {
+              String newLabel = normalizeLabel(newValue);
+              if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
+                editItem.setLabel(newLabel);
+                labelWidget.setHTML(newLabel);
+
                 if (!editItem.isNew()) {
-                  Queries.update(TBL_FILTERS, id, COL_NAME, new TextValue(newName));
+                  Queries.update(TBL_FILTERS, editItem.getId(), COL_LABEL, new TextValue(newLabel));
                 }
               }
             }
-          }, oldName, getMaxNameLength());
+          }, oldLabel, getMaxLabelLength());
         }
       });
 
@@ -249,7 +300,7 @@ public class Filters {
           @Override
           public void onClick(ClickEvent event) {
             dialog.close();
-            insert(key, items, id);
+            insert(key, getItem(items, name));
           }
         });
 
@@ -262,7 +313,7 @@ public class Filters {
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            remove(key, items, id, dialog, table);
+            remove(key, items, name, dialog, table);
           }
         });
 
@@ -299,29 +350,37 @@ public class Filters {
   }
 
   public void load() {
-    Queries.getRowSet(TBL_FILTERS, null, BeeKeeper.getUser().getFilter(COL_USER),
-        new Order(COL_KEY, true), new Queries.RowSetCallback() {
+    Order order = new Order(COL_KEY, true);
+    order.add(COL_ORDINAL, true);
+
+    Queries.getRowSet(TBL_FILTERS, null, BeeKeeper.getUser().getFilter(COL_USER), order,
+        new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             itemsByKey.clear();
 
+            if (result != null) {
+              keyColumnIndex = result.getColumnIndex(COL_KEY);
+
+              nameColumnIndex = result.getColumnIndex(COL_NAME);
+              labelColumnIndex = result.getColumnIndex(COL_LABEL);
+
+              initialColumnIndex = result.getColumnIndex(COL_INITIAL);
+              ordinalColumnIndex = result.getColumnIndex(COL_ORDINAL);
+
+              editableColumnIndex = result.getColumnIndex(COL_EDITABLE);
+              removableColumnIndex = result.getColumnIndex(COL_REMOVABLE);
+              predefinedColumnIndex = result.getColumnIndex(COL_PREDEFINED);
+
+              valueColumnIndex = result.getColumnIndex(COL_VALUE);
+            }
+
             if (!DataUtils.isEmpty(result)) {
-              int keyIndex = result.getColumnIndex(COL_KEY);
-              int initIndex = result.getColumnIndex(COL_INITIAL);
-              int orderIndex = result.getColumnIndex(COL_ORDER);
-              int nameIndex = result.getColumnIndex(COL_NAME);
-              int filterIndex = result.getColumnIndex(COL_FILTER);
-
               for (BeeRow row : result.getRows()) {
-                String key = BeeUtils.trim(row.getString(keyIndex));
+                String key = BeeUtils.trim(row.getString(keyColumnIndex));
+                Item item = createItem(row);
 
-                boolean initial = BeeUtils.isTrue(row.getBoolean(initIndex));
-                int order = BeeUtils.unbox(row.getInteger(orderIndex));
-
-                String name = BeeUtils.trim(row.getString(nameIndex));
-                String filter = BeeUtils.trim(row.getString(filterIndex));
-
-                itemsByKey.put(key, new Item(row.getId(), initial, order, name, filter));
+                itemsByKey.put(key, item);
               }
             }
 
@@ -338,10 +397,32 @@ public class Filters {
       table.getColumnFormatter().addStyleName(col, styleName + STYLE_SUFFIX_COL);
     }
   }
-  
-  private Item getItem(Collection<Item> items, long id) {
+
+  private Item createItem(BeeRow row) {
+    if (row == null || BeeConst.isUndef(keyColumnIndex)) {
+      return null;
+    }
+
+    String name = BeeUtils.trim(row.getString(nameColumnIndex));
+    String label = BeeUtils.trim(row.getString(labelColumnIndex));
+
+    Boolean initial = row.getBoolean(initialColumnIndex);
+    Integer ordinal = row.getInteger(ordinalColumnIndex);
+
+    Boolean editable = row.getBoolean(editableColumnIndex);
+    Boolean removable = row.getBoolean(removableColumnIndex);
+    boolean predefined = BeeUtils.isTrue(row.getBoolean(predefinedColumnIndex));
+
+    String value = BeeUtils.trim(row.getString(valueColumnIndex));
+
+    return new Item(row.getId(),
+        new FilterDescription(name, label, value, initial, ordinal, editable, removable),
+        predefined);
+  }
+
+  private Item getItem(Collection<Item> items, String name) {
     for (Item item : items) {
-      if (item.getId() == id) {
+      if (item.getName().equals(name)) {
         return item;
       }
     }
@@ -353,82 +434,73 @@ public class Filters {
 
     if (itemsByKey.containsKey(key)) {
       result.addAll(itemsByKey.get(key));
-      if (result.size() > 1) {
-        Collections.sort(result);
-      }
     }
 
     return result;
   }
 
-  private int getMaxNameLength() {
-    if (maxNameLength <= 0) {
-      maxNameLength = Data.getColumnPrecision(TBL_FILTERS, COL_NAME);
+  private int getMaxLabelLength() {
+    if (maxLabelLength <= 0) {
+      maxLabelLength = Data.getColumnPrecision(TBL_FILTERS, COL_LABEL);
     }
-    return maxNameLength;
+    return maxLabelLength;
   }
-  
-  private void insert(final String key, List<Item> items, long id) {
-    Item item = null;
-    int order = 0;
 
-    for (int i = 0; i < items.size(); i++) {
-      if (items.get(i).getId() == id) {
-        item = items.get(i);
-        if (!BeeConst.isUndef(item.getOrder())) {
-          order = item.getOrder();
-          break;
-        }
+  private void insert(String key, final Item item) {
+    List<BeeColumn> columns = Data.getColumns(TBL_FILTERS,
+        Lists.newArrayList(COL_USER, COL_KEY, COL_NAME, COL_LABEL, COL_VALUE));
+    List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
+        item.getName(), item.getLabel(), item.getValue());
 
-      } else {
-        order = Math.max(order, items.get(i).getOrder() + 1);
-      }
+    if (item.isInitial()) {
+      columns.add(Data.getColumn(TBL_FILTERS, COL_INITIAL));
+      values.add(BooleanValue.pack(item.isInitial()));
+    }
+    if (item.getOrdinal() != null) {
+      columns.add(Data.getColumn(TBL_FILTERS, COL_ORDINAL));
+      values.add(item.getOrdinal().toString());
     }
 
-    Assert.notNull(item);
+    if (item.isEditable()) {
+      columns.add(Data.getColumn(TBL_FILTERS, COL_EDITABLE));
+      values.add(BooleanValue.pack(item.isEditable()));
+    }
+    if (item.isRemovable()) {
+      columns.add(Data.getColumn(TBL_FILTERS, COL_REMOVABLE));
+      values.add(BooleanValue.pack(item.isRemovable()));
+    }
 
-    final boolean initial = item.isInitial();
-    final int itemOrder = order;
-    final String name = normalizeName(item.getName());
-    final String filter = item.getFilter();
-
-    List<BeeColumn> columns = Data.getColumns(TBL_FILTERS,
-        Lists.newArrayList(COL_USER, COL_KEY, COL_ORDER, COL_NAME, COL_FILTER));
-    List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key, order, name, filter);
-
-    if (initial) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_INITIAL));
-      values.add(BooleanValue.pack(initial));
+    if (item.isPredefined()) {
+      columns.add(Data.getColumn(TBL_FILTERS, COL_PREDEFINED));
+      values.add(BooleanValue.pack(item.isPredefined()));
     }
 
     Queries.insert(TBL_FILTERS, columns, values, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        if (result != null) {
-          itemsByKey.put(key, new Item(result.getId(), initial, itemOrder, name, filter));
-        }
+        item.setId(result.getId());
       }
     });
   }
 
-  private String normalizeName(String name) {
-    return BeeUtils.left(BeeUtils.trim(name), getMaxNameLength());
+  private String normalizeLabel(String label) {
+    return BeeUtils.left(BeeUtils.trim(label), getMaxLabelLength());
   }
 
-  private void remove(final String key, final List<Item> items, final long id,
+  private void remove(final String key, final List<Item> items, String name,
       final DialogBox dialog, final HtmlTable table) {
 
-    final Item item = getItem(items, id);
+    final Item item = getItem(items, name);
     Assert.notNull(item);
-    
+
     Global.confirmDelete("Filtro pašalinimas", Icon.WARNING,
         Lists.newArrayList("Pašalinti filtrą", BeeUtils.joinWords(item.getName(), "?")),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            Queries.deleteRow(TBL_FILTERS, id);
+            Queries.deleteRow(TBL_FILTERS, item.getId());
             itemsByKey.remove(key, item);
-            
+
             if (items.size() > 1) {
               int index = items.indexOf(item);
               items.remove(index);

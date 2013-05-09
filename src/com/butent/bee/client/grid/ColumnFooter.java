@@ -16,7 +16,7 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterInfo;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasFilterHandler {
@@ -106,12 +106,12 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
     this.filterHandler = filterHandler;
   }
   
-  public void update(FilterInfo filterInfo) {
-    if (filterInfo == null || filterInfo.getFilter() == null) {
+  public void update(FilterDescription filterDescription) {
+    if (filterDescription == null) {
       reset();
     } else {
-      filterSupplier.setFilter(filterInfo.getFilter());
-      getFooterCell().setHtml(filterInfo.getLabel());
+      filterSupplier.setFilter(filterSupplier.parse(filterDescription.getValue()));
+      getFooterCell().setHtml(filterDescription.getLabel());
     }
   }
 

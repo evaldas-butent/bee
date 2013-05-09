@@ -13,6 +13,7 @@ public class UiConstants {
   public static final String ATTR_CAPTION = "caption";
   public static final String ATTR_LABEL = "label";
 
+  public static final String ATTR_VALUE = "value";
   public static final String ATTR_READ_ONLY = "readOnly";
   
   public static final String ATTR_CLASS = "class";

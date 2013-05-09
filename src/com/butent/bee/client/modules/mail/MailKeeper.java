@@ -67,7 +67,7 @@ public class MailKeeper {
 
     GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AbstractGridInterceptor() {
       @Override
-      public Map<String, Filter> getInitialFilters() {
+      public Map<String, Filter> getInitialParentFilters() {
         return ImmutableMap.of("UserFilter",
             ComparisonFilter.isEqual(COL_USER, new LongValue(BeeKeeper.getUser().getUserId())));
       }

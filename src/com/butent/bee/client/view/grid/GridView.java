@@ -16,7 +16,8 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.FilterInfo;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
@@ -49,8 +50,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void formConfirm();
   
-  List<FilterInfo> getColumnFilters();
-
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
@@ -79,9 +78,9 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean likeAMotherlessChild();
 
-  void refreshCellContent(long rowId, String columnSource);
-
-  void setColumnFilters(Collection<FilterInfo> filters);
+  Filter parseFilter(Collection<FilterDescription> filterDescriptions);
+  
+  int refreshCellContent(long rowId, String columnSource);
 
   void setRelId(Long relId);
 

@@ -289,9 +289,9 @@ class TaskList {
     }
 
     @Override
-    public Filter parse(String values) {
-      if (BeeUtils.isDigit(values)) {
-        switch (BeeUtils.toInt(values)) {
+    public Filter parse(String value) {
+      if (BeeUtils.isDigit(value)) {
+        switch (BeeUtils.toInt(value)) {
           case 0:
             return getNewFilter();
           case 1:
@@ -497,10 +497,10 @@ class TaskList {
     }
 
     @Override
-    public Filter parse(String values) {
-      if (BeeUtils.same(values, "late")) {
+    public Filter parse(String value) {
+      if (BeeUtils.same(value, "late")) {
         return getLateFilter();
-      } else if (BeeUtils.same(values, "scheduled")) {
+      } else if (BeeUtils.same(value, "scheduled")) {
         return getScheduledFilter();
       } else {
         return null;

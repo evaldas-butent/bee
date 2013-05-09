@@ -7,9 +7,13 @@
   <Fields>
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" />
     <String name="Key" precision="100" notNull="true" />
+    <String name="Name" precision="30" notNull="true" />
+    <String name="Label" precision="100" notNull="true" />
     <Boolean name="Initial" />
-    <Integer name="Order" />
-    <String name="Name" precision="100" notNull="true" />
-    <Text name="Filter" notNull="true" />
+    <Integer name="Ordinal" />
+    <Boolean name="Editable" />
+    <Boolean name="Removable" />
+    <Boolean name="Predefined" />
+    <Text name="Value" notNull="true" />
   </Fields>
 </Table>

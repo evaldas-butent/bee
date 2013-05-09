@@ -219,7 +219,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     final Filter immutableFilter =
         GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
     final Map<String, Filter> initialFilters =
-        (getGridInterceptor() == null) ? null : getGridInterceptor().getInitialFilters();
+        (getGridInterceptor() == null) ? null : getGridInterceptor().getInitialParentFilters();
 
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 
@@ -239,7 +239,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     }
 
     Filter queryFilter = Filter.and(getFilter(row),
-        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters));
+        GridFactory.getInitialQueryFilter(gridView, immutableFilter, initialFilters, null));
 
     Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
         getCachingPolicy(), new Queries.RowSetCallback() {

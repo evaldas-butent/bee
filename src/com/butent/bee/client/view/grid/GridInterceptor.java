@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -87,11 +88,13 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   GridPresenter getGridPresenter();
 
-  Map<String, Filter> getInitialFilters();
+  Map<String, Filter> getInitialParentFilters();
 
   BeeRowSet getInitialRowSet(GridDescription gridDescription);
 
   GridInterceptor getInstance();
+  
+  List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
   AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);

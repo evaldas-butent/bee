@@ -354,7 +354,7 @@ public class TransportHandler {
                       String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
                       row.setValue(speedIndex, r[0]);
                       row.setValue(fuelIndex, r[1]);
-                      getFormView().refresh(false);
+                      getFormView().refresh(false, false);
 
                     } else {
                       Global.showError("Unknown response");

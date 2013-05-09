@@ -50,6 +50,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.Presenter;
@@ -138,7 +139,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
           CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow,
           getFormView().getChildrenForUpdate());
       if (!DataUtils.isEmpty(rowSet)) {
-        changes.addAll(rowSet.getColumnLabels());
+        changes.addAll(LocaleUtils.getLabels(rowSet.getColumns()));
       }
 
       Long oldService = null;
@@ -552,7 +553,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         loadProperties();
         loadReminders();
 
-        getFormView().refresh(false);
+        getFormView().refresh(false, true);
         return false;
 
       default:

@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="Persons" viewName="Persons" caption="Asmenys"
-  editForm="Person" flexGrow="1" flexShrink="1"
+  editForm="Person" flexGrow="1" flexShrink="1" editInPlace="CityName"
   >
   <columns>
     <DataColumn name="FirstName" />
@@ -18,7 +18,7 @@
 
     <DataColumn name="Address" />
 
-    <DataColumn name="CityName" caption="Miestas" />
+    <RelColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" sortable="false" hasFooter="false" horizontalAlignment="center">

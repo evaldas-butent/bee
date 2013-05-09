@@ -1,12 +1,21 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Consumable;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Remembers old and new values of the field being updated to make further validations with them.
@@ -75,6 +84,50 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
 
   public String getOldValue() {
     return oldValue;
+  }
+  
+  public BeeRowSet getRowSet(String viewName, List<BeeColumn> columns) {
+    List<BeeColumn> updatedColumns = Lists.newArrayList();
+    List<String> oldValues = Lists.newArrayList();
+    List<String> newValues = Lists.newArrayList();
+
+    BeeColumn firstColumn = DataUtils.getColumn(getColumn().getId(), columns);
+    if (firstColumn == null) {
+      firstColumn = new BeeColumn(getColumn().getType(), getColumn().getId());
+    }
+    
+    updatedColumns.add(firstColumn);
+    oldValues.add(getOldValue());
+    newValues.add(getNewValue());
+    
+    Map<Integer, String> shadow = getRowValue().getShadow();
+
+    if (!BeeUtils.isEmpty(shadow) && !BeeUtils.isEmpty(columns)) {
+      for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
+        int index = entry.getKey();
+
+        BeeColumn shadowColumn = columns.get(index);
+        String shadowOld = entry.getValue(); 
+        String shadowNew = getRowValue().getString(index); 
+        
+        if (!DataUtils.contains(updatedColumns, shadowColumn.getId())
+            && !BeeUtils.equalsTrimRight(shadowOld, shadowNew)) {
+          updatedColumns.add(shadowColumn);
+          oldValues.add(shadowOld);
+          newValues.add(shadowNew);
+        }
+      }
+    }
+    
+    BeeRow row = new BeeRow(getRowValue().getId(), getRowValue().getVersion(), oldValues);
+    for (int i = 0; i < newValues.size(); i++) {
+      row.preliminaryUpdate(i, newValues.get(i));
+    }
+
+    BeeRowSet rowSet = new BeeRowSet(viewName, updatedColumns);
+    rowSet.addRow(row);
+    
+    return rowSet;
   }
 
   public IsRow getRowValue() {

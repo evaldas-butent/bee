@@ -7,6 +7,7 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains necessary methods for row classes, for example {@code addCell} or {@code setValue}.
@@ -44,6 +45,8 @@ public interface IsRow extends HasCustomProperties {
 
   int getNumberOfCells();
 
+  Map<Integer, String> getShadow();
+  
   String getString(int index);
 
   Value getValue(int index);
@@ -58,8 +61,12 @@ public interface IsRow extends HasCustomProperties {
 
   boolean isNull(int index);
 
+  void preliminaryUpdate(int col, String value);
+  
   void removeCell(int index);
 
+  void reset();
+  
   void setCell(int index, IsCell cell);
 
   void setCells(List<IsCell> cells);

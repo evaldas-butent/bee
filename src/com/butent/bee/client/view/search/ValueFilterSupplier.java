@@ -68,8 +68,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String values) {
-    return BeeUtils.isEmpty(values) ? null : buildFilter(BeeUtils.trim(values));
+  public Filter parse(String value) {
+    return BeeUtils.isEmpty(value) ? null : buildFilter(BeeUtils.trim(value));
   }
 
   @Override

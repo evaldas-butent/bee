@@ -350,7 +350,6 @@ public enum FormWidget {
   private static final String ATTR_MIN_SIZE = "minSize";
   private static final String ATTR_MAX_SIZE = "maxSize";
 
-  private static final String ATTR_VALUE = "value";
   private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
 
   private static final String ATTR_MIN = "min";
@@ -927,7 +926,7 @@ public enum FormWidget {
             ((Progress) widget).setMax(BeeUtils.toDouble(max));
           }
 
-          String value = attributes.get(ATTR_VALUE);
+          String value = attributes.get(UiConstants.ATTR_VALUE);
           if (BeeUtils.isNonNegativeDouble(value)) {
             ((Progress) widget).setValue(BeeUtils.toDouble(value));
           }
@@ -1919,7 +1918,7 @@ public enum FormWidget {
           ((HasIntStep) widget).setStepValue(BeeUtils.toInt(value));
         }
 
-      } else if (BeeUtils.same(name, ATTR_VALUE)) {
+      } else if (BeeUtils.same(name, UiConstants.ATTR_VALUE)) {
         if (widget instanceof Editor) {
           ((Editor) widget).setValue(value);
         }

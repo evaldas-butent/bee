@@ -353,7 +353,7 @@ public class MailPanel extends AbstractFormInterceptor {
     private final Horizontal w = new Horizontal();
 
     @Override
-    public Map<String, Filter> getInitialFilters() {
+    public Map<String, Filter> getInitialParentFilters() {
       return ImmutableMap.of(MESSAGES_FILTER,
           ComparisonFilter.isEqual(COL_FOLDER, new LongValue(getCurrentFolderId())));
     }

@@ -335,9 +335,9 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     boolean ok = false;
     if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasRelatedRow
         && getRelation() != null && hasColumn()) {
-      ok = RelationUtils.updateRow(Data.getDataInfo(viewName), getColumnId(), row,
+      ok = !RelationUtils.updateRow(Data.getDataInfo(viewName), getColumnId(), row,
           Data.getDataInfo(getRelation().getViewName()),
-          ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn) > 0;
+          ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn).isEmpty();
     }
     return ok;
   }
@@ -368,7 +368,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     } else if (event.isEdited()) {
       if (getForm() != null
           && maybeUpdateRelation(getForm().getViewName(), getForm().getActiveRow(), false)) {
-        getForm().refresh(false);
+        getForm().refresh(false, true);
       }
     }
   }

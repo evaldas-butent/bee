@@ -72,8 +72,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String values) {
-    if (BeeUtils.isEmpty(values)) {
+  public Filter parse(String value) {
+    if (BeeUtils.isEmpty(value)) {
       return null;
     }
 
@@ -81,7 +81,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     DateTime end = null;
 
     int i = 0;
-    for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(values)) {
+    for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(value)) {
       if (i == 0) {
         start = TimeUtils.toDateTimeOrNull(s);
       } else if (i == 1) {

@@ -67,8 +67,8 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String values) {
-    return BeeUtils.isLong(values) ? ComparisonFilter.compareId(BeeUtils.toLong(values)) : null;
+  public Filter parse(String value) {
+    return BeeUtils.isLong(value) ? ComparisonFilter.compareId(BeeUtils.toLong(value)) : null;
   }
 
   @Override

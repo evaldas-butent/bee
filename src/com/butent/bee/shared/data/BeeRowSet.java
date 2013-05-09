@@ -156,14 +156,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     }
   }
 
-  public List<String> getColumnLabels() {
-    List<String> labels = Lists.newArrayList();
-    for (int i = 0; i < getNumberOfColumns(); i++) {
-      labels.add(getColumnLabel(i));
-    }
-    return labels;
-  }
-
   public String getShadowString(int rowIdx, int columnIdx) {
     return getRow(rowIdx).getShadowString(columnIdx);
   }
@@ -187,14 +179,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public boolean isEmpty() {
     return getNumberOfRows() <= 0;
-  }
-
-  public void preliminaryUpdate(int rowIdx, int columnIdx, String value) {
-    getRow(rowIdx).preliminaryUpdate(columnIdx, value);
-  }
-
-  public void preliminaryUpdate(int rowIdx, String columnId, String value) {
-    preliminaryUpdate(rowIdx, getColumnIndex(columnId), value);
   }
 
   @Override

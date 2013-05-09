@@ -120,11 +120,11 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String values) {
-    if (BeeUtils.isEmpty(values)) {
+  public Filter parse(String value) {
+    if (BeeUtils.isEmpty(value)) {
       return null;
     } else {
-      return buildFilter(BeeUtils.toInts(values));
+      return buildFilter(BeeUtils.toInts(value));
     }
   }
 

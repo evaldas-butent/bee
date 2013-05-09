@@ -79,12 +79,13 @@ public class GridPanel extends Simple implements HasEnabled {
       return;
     }
 
-    GridInterceptor gcb = getGridInterceptor();
-    if (gcb == null) {
-      gcb = GridFactory.getGridInterceptor(getGridName());
+    GridInterceptor gic = getGridInterceptor();
+    if (gic == null) {
+      gic = GridFactory.getGridInterceptor(getGridName());
     }
 
-    GridFactory.createGrid(getGridName(), gcb, EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
+    GridFactory.createGrid(getGridName(), GridFactory.getSupplierKey(getGridName(), gic), gic,
+        EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
         new PresenterCallback() {
           @Override
           public void onCreate(Presenter gp) {

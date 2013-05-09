@@ -91,9 +91,9 @@ public class AssessmentForm extends AbstractFormInterceptor {
     }
 
     @Override
-    public Map<String, Filter> getInitialFilters() {
+    public Map<String, Filter> getInitialParentFilters() {
       if (currentRow == null) {
-        return super.getInitialFilters();
+        return super.getInitialParentFilters();
       } else {
         return ImmutableMap.of(COL_ASSESSOR, getFilter());
       }
@@ -374,12 +374,12 @@ public class AssessmentForm extends AbstractFormInterceptor {
                                 gridView.getViewPresenter().handleAction(Action.REFRESH);
                               }
                             } else {
-                              formView.refresh(true);
+                              formView.refresh(true, true);
                             }
                           }
                         });
                   } else {
-                    formView.refresh(false);
+                    formView.refresh(false, true);
                   }
                 }
               });

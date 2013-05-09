@@ -88,8 +88,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   boolean printHeader();
 
-  int refreshBySource(String source);
-
   void refreshChildWidgets(IsRow row);
 
   void start(Integer rowCount);
