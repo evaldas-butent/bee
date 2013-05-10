@@ -2,7 +2,8 @@
 <!DOCTYPE Table [
   <!ENTITY defaultMargin "margin-left: 4px; margin-right: 4px; margin-top: 2.5px; margin-bottom: 2.5px;">
 ]>
-<Table xmlns="http://www.butent.com/widget">
+<Table xmlns="http://www.butent.com/widget" 
+  style="border-collapse: collapse;">
 
   <row>
     <Label text="=period"  style="&defaultMargin;" horizontalAlignment="right"/>
