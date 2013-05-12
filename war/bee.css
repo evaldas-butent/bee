@@ -505,6 +505,10 @@ body {
   z-index: 2;
 }
 
+.bee-CellGridColumn-area {
+  white-space: pre-line;
+}
+
 .bee-CellGridEmpty {
   text-align: center;
   margin-top: 3ex;

@@ -89,6 +89,11 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
+  public String getStyleSuffix() {
+    return (getValueType() == null) ? "calc" : ("calc-" + getValueType().getTypeCode());
+  }
+  
+  @Override
   public String getValue(IsRow object) {
     return null;
   }

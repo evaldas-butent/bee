@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.cell.HtmlCell;
+import com.butent.bee.client.grid.column.AreaColumn;
 import com.butent.bee.client.grid.column.BooleanColumn;
 import com.butent.bee.client.grid.column.CurrencyColumn;
 import com.butent.bee.client.grid.column.DataColumn;
@@ -23,7 +24,7 @@ import com.butent.bee.client.grid.column.DecimalColumn;
 import com.butent.bee.client.grid.column.DoubleColumn;
 import com.butent.bee.client.grid.column.IntegerColumn;
 import com.butent.bee.client.grid.column.LongColumn;
-import com.butent.bee.client.grid.column.TextColumn;
+import com.butent.bee.client.grid.column.StringColumn;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
@@ -144,36 +145,53 @@ public class GridFactory {
 
   public static DataColumn<?> createColumn(CellSource cellSource, CellType cellType) {
     if (cellType != null) {
-      return new TextColumn(createCell(cellType), cellSource);
+      return new StringColumn(createCell(cellType), cellSource);
     }
 
     ValueType type = cellSource.getValueType();
     if (type == null) {
-      return new TextColumn(cellSource);
+      return new StringColumn(cellSource);
     }
 
     switch (type) {
       case BOOLEAN:
         return new BooleanColumn(cellSource);
+
       case DATE:
         return new DateColumn(cellSource);
+
       case DATE_TIME:
         return new DateTimeColumn(cellSource);
-      case NUMBER:
-        return new DoubleColumn(cellSource);
-      case INTEGER:
-        return new IntegerColumn(cellSource);
-      case LONG:
-        return new LongColumn(cellSource);
+
       case DECIMAL:
         if (cellSource.getScale() == 2) {
           return new CurrencyColumn(cellSource);
         } else {
           return new DecimalColumn(cellSource);
         }
-      default:
-        return new TextColumn(cellSource);
+
+      case INTEGER:
+        return new IntegerColumn(cellSource);
+
+      case LONG:
+        return new LongColumn(cellSource);
+        
+      case NUMBER:
+        return new DoubleColumn(cellSource);
+      
+      case TEXT:
+        if (cellSource.isText()) {
+          return new AreaColumn(cellSource);
+        } else {
+          return new StringColumn(cellSource);
+        }
+
+      case TIME_OF_DAY:
+        return new StringColumn(cellSource);
     }
+    
+    Assert.untouchable();
+    return null;
   }
 
   public static DataColumn<?> createColumn(CellSource cellSource, CellType cellType,

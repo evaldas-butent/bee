@@ -18,6 +18,11 @@ public class BooleanColumn extends DataColumn<Boolean> {
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "boolean";
+  }
+  
+  @Override
   public Boolean getValue(IsRow row) {
     if (row == null) {
       return null;

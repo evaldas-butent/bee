@@ -33,6 +33,14 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
     }
   }
 
+  protected Long getLong(IsRow row) {
+    if (row == null || cellSource == null) {
+      return null;
+    } else {
+      return cellSource.getLong(row);
+    }
+  }
+  
   protected String getString(IsRow row) {
     if (row == null || cellSource == null) {
       return null;

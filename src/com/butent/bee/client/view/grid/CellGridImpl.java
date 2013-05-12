@@ -712,7 +712,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             column = GridFactory.createColumn(cellSource, cellType, renderer);
 
             if (relationEditable) {
-              column.setClasses(RowEditor.EDITABLE_RELATION_STYLE);
+              column.addClass(RowEditor.EDITABLE_RELATION_STYLE);
               column.setInstantKarma(true);
             }
 

@@ -37,6 +37,11 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "selection";
+  }
+  
+  @Override
   public Boolean getValue(IsRow row) {
     if (row != null && getGrid() != null) {
       return getGrid().isRowSelected(row.getId());

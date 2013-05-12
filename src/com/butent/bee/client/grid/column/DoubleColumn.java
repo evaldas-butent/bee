@@ -24,4 +24,9 @@ public class DoubleColumn extends NumberColumn<Double> {
   protected Double getNumber(IsRow row) {
     return getCellSource().getDouble(row);
   }
+  
+  @Override
+  public String getStyleSuffix() {
+    return "double";
+  }
 }

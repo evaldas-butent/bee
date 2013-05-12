@@ -46,6 +46,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -371,7 +372,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
 
   public static IdentifiableWidget getDefaultFace() {
-    return new BeeButton("Pasirinkite bylas");
+    return new BeeButton(Localized.constants.chooseFiles());
   }
 
   public static List<Column> parseColumns(String input) {

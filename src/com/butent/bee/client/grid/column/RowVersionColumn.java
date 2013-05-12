@@ -49,6 +49,11 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "version";
+  }
+  
+  @Override
   public DateTime getValue(IsRow row) {
     if (row == null) {
       return null;
@@ -60,7 +65,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   public ValueType getValueType() {
     return ValueType.DATE_TIME;
   }
-
+  
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     if (getCell() instanceof HasDateTimeFormat) {

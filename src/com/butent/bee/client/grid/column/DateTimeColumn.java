@@ -31,6 +31,11 @@ public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeF
       return null;
     }
   }
+
+  @Override
+  public String getStyleSuffix() {
+    return "datetime";
+  }
   
   @Override
   public DateTime getValue(IsRow row) {

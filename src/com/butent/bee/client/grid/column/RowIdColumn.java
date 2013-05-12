@@ -48,6 +48,11 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "id";
+  }
+  
+  @Override
   public Long getValue(IsRow row) {
     if (row == null) {
       return null;

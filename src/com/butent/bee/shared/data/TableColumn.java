@@ -114,6 +114,16 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
+  public boolean isCharacter() {
+    return ValueType.TEXT.equals(getType()) && getPrecision() > 0;
+  }
+  
+  @Override
+  public boolean isText() {
+    return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
+  }
+  
+  @Override
   public void setId(String id) {
     this.id = id;
   }

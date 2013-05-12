@@ -33,6 +33,11 @@ public class DateColumn extends DataColumn<JustDate> implements HasDateTimeForma
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "date";
+  }
+  
+  @Override
   public JustDate getValue(IsRow row) {
     if (row == null) {
       return null;

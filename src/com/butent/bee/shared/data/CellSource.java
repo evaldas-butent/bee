@@ -31,6 +31,10 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
     CellSource source = new CellSource(SourceType.COLUMN, column.getId(), index, column.getType());
     source.setPrecision(column.getPrecision());
     source.setScale(column.getScale());
+    
+    if (column.isText()) {
+      source.setText(true);
+    }
 
     return source;
   }
@@ -59,6 +63,8 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
+  
+  private boolean isText = false;
 
   private CellSource(SourceType sourceType, String name, Integer index, ValueType valueType) {
     super();
@@ -279,6 +285,10 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
     return true;
   }
 
+  public boolean isText() {
+    return isText;
+  }
+
   @Override
   public String render(IsRow row) {
     if (row == null) {
@@ -387,5 +397,9 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
   @Override
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public void setText(boolean isText) {
+    this.isText = isText;
   }
 }

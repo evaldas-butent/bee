@@ -20,6 +20,10 @@ public interface IsColumn extends HasCustomProperties, HasPrecision, HasScale {
 
   ValueType getType();
 
+  boolean isCharacter();
+
+  boolean isText();
+  
   void setId(String id);
 
   void setLabel(String label);

@@ -24,4 +24,9 @@ public class LongColumn extends NumberColumn<Long> {
   protected Long getNumber(IsRow row) {
     return getCellSource().getLong(row);
   }
+  
+  @Override
+  public String getStyleSuffix() {
+    return "long";
+  }
 }

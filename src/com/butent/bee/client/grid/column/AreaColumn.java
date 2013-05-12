@@ -8,23 +8,19 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements text type column, enables to get value for a specified row and manage column's maximum
- * display size.
- */
+public class AreaColumn extends DataColumn<String> {
 
-public class TextColumn extends DataColumn<String> {
   private int maxDisplaySize;
 
-  public TextColumn(CellSource cellSource) {
+  public AreaColumn(CellSource cellSource) {
     this(new TextCell(), cellSource, BeeConst.UNDEF);
   }
 
-  public TextColumn(Cell<String> cell, CellSource cellSource) {
+  public AreaColumn(Cell<String> cell, CellSource cellSource) {
     this(cell, cellSource, BeeConst.UNDEF);
   }
 
-  public TextColumn(Cell<String> cell, CellSource cellSource, int maxDisplaySize) {
+  public AreaColumn(Cell<String> cell, CellSource cellSource, int maxDisplaySize) {
     super(cell, cellSource);
     this.maxDisplaySize = maxDisplaySize;
   }
@@ -33,6 +29,11 @@ public class TextColumn extends DataColumn<String> {
     return maxDisplaySize;
   }
 
+  @Override
+  public String getStyleSuffix() {
+    return "area";
+  }
+  
   @Override
   public String getValue(IsRow row) {
     if (row == null) {

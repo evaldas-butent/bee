@@ -24,4 +24,9 @@ public class IntegerColumn extends NumberColumn<Integer> {
   protected Integer getNumber(IsRow row) {
     return getCellSource().getInteger(row);
   }
+  
+  @Override
+  public String getStyleSuffix() {
+    return "integer";
+  }
 }

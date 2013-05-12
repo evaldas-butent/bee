@@ -5,6 +5,7 @@ import com.google.gwt.cell.client.Cell;
 import com.butent.bee.client.grid.column.DataColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.NameUtils;
 
 public class RenderableColumn extends DataColumn<String> implements HasCellRenderer {
 
@@ -24,6 +25,11 @@ public class RenderableColumn extends DataColumn<String> implements HasCellRende
     return renderer;
   }
 
+  @Override
+  public String getStyleSuffix() {
+    return (getRenderer() == null) ? "renderable" : NameUtils.getName(getRenderer());
+  }
+  
   @Override
   public String getValue(IsRow row) {
     return renderer.render(row);

@@ -41,6 +41,11 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
   }
 
   @Override
+  public String getStyleSuffix() {
+    return "action";
+  }
+
+  @Override
   public String getValue(IsRow row) {
     if (row == null) {
       return null;

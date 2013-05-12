@@ -3,8 +3,8 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="Documents" viewName="Documents" 
-  newRowForm="NewDocument" editForm="Document" parent="Tree"
+  name="Documents" viewName="Documents" caption="=documents"
+  newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
   flexGrow="1" flexShrink="1"
   >
   
@@ -18,13 +18,19 @@
   </west>
   
   <columns>
-    <IdColumn name="Id" />
     <DataColumn name="Name" />
     <DataColumn name="DocumentDate" />
     <DataColumn name="Expires" />
     <DataColumn name="Number" />
+    <DataColumn name="CategoryName" caption="=documentCategory" />
     <DataColumn name="TypeName" />
     <DataColumn name="PlaceName" />
     <DataColumn name="StatusName" />
+
+    <IdColumn name="Id" visible="false" />
+    <DataColumn name="RegistrationNumber" visible="false" />
+    <DataColumn name="Sent" visible="false" />
+    <DataColumn name="Received" visible="false" />
+    <DataColumn name="Description" visible="false" />
   </columns>
 </Grid>

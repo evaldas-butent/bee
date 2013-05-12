@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.AnchorElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -23,6 +21,8 @@ import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.FileLinkRenderer;
+import com.butent.bee.client.render.FileSizeRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -36,16 +36,17 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -90,7 +91,7 @@ public class DocumentHandler {
       }
 
       if (getCollector().getFiles().isEmpty()) {
-        event.getCallback().onFailure("Pasirinkite bylas");
+        event.getCallback().onFailure(Localized.constants.chooseFiles());
         return;
       }
 
@@ -179,19 +180,16 @@ public class DocumentHandler {
     @Override
     public void onSelection(SelectionEvent<IsRow> event) {
       if (event != null && getGridPresenter() != null) {
-        Long category = null;
         setSelectedCategory(event.getSelectedItem());
+        Long category = (getSelectedCategory() == null) ? null : getSelectedCategory().getId();
 
-        if (getSelectedCategory() != null) {
-          category = getSelectedCategory().getId();
-        }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
         getGridPresenter().refresh(true);
       }
     }
 
     private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotNull(category, categoryTree, categoryTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(category, categoryTree)) {
         return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
       }
       return null;
@@ -274,64 +272,14 @@ public class DocumentHandler {
       if (BeeUtils.same(columnName, COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
             DataUtils.getColumnIndex(COL_CAPTION, dataColumns));
+
       } else if (BeeUtils.same(columnName, COL_FILE_SIZE)) {
-        return new FileSizeRenderer(DataUtils.getColumnIndex(columnName, dataColumns));
+        int index = DataUtils.getColumnIndex(columnName, dataColumns);
+        return new FileSizeRenderer(CellSource.forColumn(dataColumns.get(index), index));
+      
       } else {
         return super.getRenderer(columnName, dataColumns, columnDescription);
       }
-    }
-  }
-
-  private static class FileLinkRenderer extends AbstractCellRenderer {
-
-    private static final AnchorElement anchorElement = Document.get().createAnchorElement();
-
-    private final int idIndex;
-    private final int captionIndex;
-
-    private FileLinkRenderer(int idIndex, int captionIndex) {
-      super(null);
-
-      this.idIndex = idIndex;
-      this.captionIndex = captionIndex;
-    }
-
-    @Override
-    public String render(IsRow row) {
-      if (row == null) {
-        return null;
-      }
-
-      Long id = row.getLong(idIndex);
-      String text = row.getString(captionIndex);
-
-      if (!DataUtils.isId(id) || BeeUtils.isEmpty(text)) {
-        return null;
-      }
-
-      anchorElement.setHref(FileUtils.getUrl(text, id));
-      anchorElement.setInnerText(text);
-
-      return anchorElement.getString();
-    }
-  }
-
-  private static class FileSizeRenderer extends AbstractCellRenderer {
-    private final int index;
-
-    private FileSizeRenderer(int index) {
-      super(null);
-      this.index = index;
-    }
-
-    @Override
-    public String render(IsRow row) {
-      if (row == null) {
-        return null;
-      }
-
-      Long size = row.getLong(index);
-      return BeeUtils.isPositive(size) ? FileUtils.sizeToText(size) : BeeConst.STRING_EMPTY;
     }
   }
 

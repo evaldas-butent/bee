@@ -20,6 +20,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String changePassword();
 
+  String chooseFiles();
+
   String city();
 
   String clear();

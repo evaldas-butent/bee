@@ -181,10 +181,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     }
   }
 
-  public boolean isCharacter() {
-    return ValueType.TEXT.equals(getType()) && getPrecision() > 0;
-  }
-  
   public boolean isEditable() {
     return editable;
   }
@@ -199,10 +195,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
 
   public boolean isReadOnly() {
     return readOnly;
-  }
-
-  public boolean isText() {
-    return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
   }
 
   @Override

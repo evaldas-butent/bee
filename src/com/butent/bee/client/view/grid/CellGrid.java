@@ -1034,34 +1034,38 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public static int defaultRowChangeSensitivityMillis = 0;
 
   public static int pageSizeCalculationReserve = 3;
-  public static String STYLE_GRID = "bee-CellGrid";
 
-  public static String STYLE_EMPTY = "bee-CellGridEmpty";
+  public static final String STYLE_EVEN_ROW = "bee-CellGridEvenRow";
+  public static final String STYLE_ODD_ROW = "bee-CellGridOddRow";
+  
+  private static final String STYLE_GRID = "bee-CellGrid";
 
-  public static String STYLE_CELL = "bee-CellGridCell";
+  private static final String STYLE_EMPTY = "bee-CellGridEmpty";
 
-  public static String STYLE_HEADER = "bee-CellGridHeader";
-  public static String STYLE_BODY = "bee-CellGridBody";
+  private static final String STYLE_CELL = "bee-CellGridCell";
 
-  public static String STYLE_FOOTER = "bee-CellGridFooter";
-  public static String STYLE_EVEN_ROW = "bee-CellGridEvenRow";
-  public static String STYLE_ODD_ROW = "bee-CellGridOddRow";
-  public static String STYLE_SELECTED_ROW = "bee-CellGridSelectedRow";
+  private static final String STYLE_HEADER = "bee-CellGridHeader";
+  private static final String STYLE_BODY = "bee-CellGridBody";
+  private static final String STYLE_FOOTER = "bee-CellGridFooter";
 
-  public static String STYLE_ACTIVE_ROW = "bee-CellGridActiveRow";
-  public static String STYLE_ACTIVE_CELL = "bee-CellGridActiveCell";
-  public static String STYLE_RESIZED_CELL = "bee-CellGridResizedCell";
-  public static String STYLE_RESIZER = "bee-CellGridResizer";
-  public static String STYLE_RESIZER_HANDLE = "bee-CellGridResizerHandle";
-  public static String STYLE_RESIZER_BAR = "bee-CellGridResizerBar";
+  private static final String STYLE_SELECTED_ROW = "bee-CellGridSelectedRow";
 
-  public static String STYLE_RESIZER_HORIZONTAL = "bee-CellGridResizerHorizontal";
-  public static String STYLE_RESIZER_HANDLE_HORIZONTAL = "bee-CellGridResizerHandleHorizontal";
-  public static String STYLE_RESIZER_BAR_HORIZONTAL = "bee-CellGridResizerBarHorizontal";
+  private static final String STYLE_COLUMN_PREFIX = "bee-CellGridColumn-";
 
-  public static String STYLE_RESIZER_VERTICAL = "bee-CellGridResizerVertical";
-  public static String STYLE_RESIZER_HANDLE_VERTICAL = "bee-CellGridResizerHandleVertical";
-  public static String STYLE_RESIZER_BAR_VERTICAL = "bee-CellGridResizerBarVertical";
+  private static final String STYLE_ACTIVE_ROW = "bee-CellGridActiveRow";
+  private static final String STYLE_ACTIVE_CELL = "bee-CellGridActiveCell";
+  private static final String STYLE_RESIZED_CELL = "bee-CellGridResizedCell";
+  private static final String STYLE_RESIZER = "bee-CellGridResizer";
+  private static final String STYLE_RESIZER_HANDLE = "bee-CellGridResizerHandle";
+  private static final String STYLE_RESIZER_BAR = "bee-CellGridResizerBar";
+
+  private static final String STYLE_RESIZER_HORIZONTAL = "bee-CellGridResizerHorizontal";
+  private static final String STYLE_RESIZER_HANDLE_HORIZONTAL = "bee-CellGridResizerHandleHorizontal";
+  private static final String STYLE_RESIZER_BAR_HORIZONTAL = "bee-CellGridResizerBarHorizontal";
+
+  private static final String STYLE_RESIZER_VERTICAL = "bee-CellGridResizerVertical";
+  private static final String STYLE_RESIZER_HANDLE_VERTICAL = "bee-CellGridResizerHandleVertical";
+  private static final String STYLE_RESIZER_BAR_VERTICAL = "bee-CellGridResizerBarVertical";
 
   private static final String HEADER_ROW = "header";
   private static final String FOOTER_ROW = "footer";
@@ -4028,8 +4032,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int actRow = getActiveRowIndex();
     int actCol = getActiveColumnIndex();
 
-    String classes =
-        StyleUtils.buildClasses(STYLE_CELL, STYLE_BODY, getBodyComponent().getClassName());
+    List<String> classes = Lists.newArrayList(STYLE_CELL, STYLE_BODY,
+        getBodyComponent().getClassName());
 
     Edges padding = getBodyCellPadding();
     Edges borderWidth = getBodyBorderWidth();
@@ -4076,13 +4080,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       boolean isSelected = isRowSelected(rowValue);
       boolean isActive = i == actRow;
 
-      String rowClasses = StyleUtils.buildClasses(classes,
-          ((i + start) % 2 == 1) ? STYLE_EVEN_ROW : STYLE_ODD_ROW);
+      List<String> rowClasses = Lists.newArrayList(classes);
+      rowClasses.add(((i + start) % 2 == 1) ? STYLE_EVEN_ROW : STYLE_ODD_ROW);
       if (isActive) {
-        rowClasses = StyleUtils.buildClasses(rowClasses, STYLE_ACTIVE_ROW);
+        rowClasses.add(STYLE_ACTIVE_ROW);
       }
       if (isSelected) {
-        rowClasses = StyleUtils.buildClasses(rowClasses, STYLE_SELECTED_ROW);
+        rowClasses.add(STYLE_SELECTED_ROW);
       }
 
       SafeStyles extraRowStyles = null;
@@ -4092,7 +4096,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         if (dynRowStyle != null) {
           String dynRowClass = dynRowStyle.getClassName();
           if (!BeeUtils.isEmpty(dynRowClass)) {
-            rowClasses = StyleUtils.buildClasses(rowClasses, dynRowClass);
+            rowClasses.add(dynRowClass);
           }
 
           if (dynRowStyle.hasSafeStylesOrFont()) {
@@ -4116,14 +4120,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         int columnWidth = columnInfo.getWidth();
 
         if (colIndexes == null || colIndexes.contains(col)) {
-          String cellClasses = StyleUtils.buildClasses(rowClasses,
-              columnInfo.getClassName(ComponentType.BODY), column.getClasses());
+          List<String> cellClasses = Lists.newArrayList(rowClasses);
+          BeeUtils.addNotEmpty(cellClasses, columnInfo.getClassName(ComponentType.BODY));
+          
+          cellClasses.add(STYLE_COLUMN_PREFIX + column.getStyleSuffix());
+          cellClasses.addAll(column.getClasses());
+
           if (isActive && col == actCol) {
+            cellClasses.add(STYLE_ACTIVE_CELL);
             if (columnInfo.isCellResizable()) {
-              cellClasses = StyleUtils.buildClasses(cellClasses, STYLE_ACTIVE_CELL,
-                  StyleUtils.NAME_RESIZABLE);
-            } else {
-              cellClasses = StyleUtils.buildClasses(cellClasses, STYLE_ACTIVE_CELL);
+              cellClasses.add(StyleUtils.NAME_RESIZABLE);
             }
           }
 
@@ -4143,7 +4149,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
                 i, col, column.getValueType(), column.getString(context, rowValue));
             if (dynColStyle != null) {
               if (!BeeUtils.isEmpty(dynColStyle.getClassName())) {
-                cellClasses = StyleUtils.buildClasses(cellClasses, dynColStyle.getClassName());
+                cellClasses.add(dynColStyle.getClassName());
               }
               dynColStyle.buildSafeStyles(extraStylesBuilder);
             }
@@ -4177,15 +4183,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
             cellWidth = cellInfo.getWidth();
             cellHeight = cellInfo.getHeight();
 
-            cellClasses = StyleUtils.buildClasses(cellClasses, STYLE_RESIZED_CELL);
+            cellClasses.add(STYLE_RESIZED_CELL);
             if (cellWidth > columnWidth || cellHeight > rowHeight) {
               extraStylesBuilder.append(StyleUtils.buildZIndex(incrementZIndex()));
             }
           }
 
-          result.add(renderCell(rowIdx, col, cellClasses, left, top, cellWidth, cellHeight,
-              defaultStyles, extraStylesBuilder.toSafeStyles(), column.getHorizontalAlignment(),
-              cellHtml, true));
+          result.add(renderCell(rowIdx, col, StyleUtils.buildClasses(cellClasses), left, top,
+              cellWidth, cellHeight, defaultStyles, extraStylesBuilder.toSafeStyles(),
+              column.getHorizontalAlignment(), cellHtml, true));
         }
         left += columnWidth + defaultWidthIncr;
         col++;
