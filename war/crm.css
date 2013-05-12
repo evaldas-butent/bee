@@ -164,11 +164,6 @@
   -webkit-animation: spinMode 2s linear infinite;
 }
 
-.bee-crm-DocumentAddFiles-panel {
-  min-width: 400px;
-  min-height: 60px;
-}
-
 .bee-crm-DocumentSelector {
   width: auto;
   margin: 1ex 1em;

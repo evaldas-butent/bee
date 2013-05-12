@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.crm;
 
 public interface LocalizableCrmConstants {
 
+  String documentFileExists();
+
   String durationType();
 
   String hideZeroTimes();

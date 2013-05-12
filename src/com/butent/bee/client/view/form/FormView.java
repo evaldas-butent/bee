@@ -2,12 +2,12 @@ package com.butent.bee.client.view.form;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
@@ -38,7 +38,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, HasAllDragAndDropHandlers,
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, DndWidget,
     EditEndEvent.Handler, SaveChangesEvent.Handler, RequiresResize, Printable {
 
   void applyOptions(String options);

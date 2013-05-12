@@ -10,7 +10,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,6 +31,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -208,8 +208,8 @@ class TaskEditor extends AbstractFormInterceptor {
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
       Widget panel = getWidget();
-      if (panel instanceof HasAllDragAndDropHandlers) {
-        collector.bindDnd((HasAllDragAndDropHandlers) panel, panel.getElement());
+      if (panel instanceof DndTarget) {
+        collector.bindDnd((DndTarget) panel);
       }
 
       return collector.getId();

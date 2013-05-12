@@ -1355,21 +1355,21 @@ body {
   background-color: #eee;
   display: -webkit-flex;
   -webkit-align-items: center;
+  -webkit-justify-content: space-between;  
 }
+
 .bee-SimplePager {
   margin-left: 5px;
-  margin-right: 3px;
+  margin-right: 1em;
 }
 .bee-FooterSearch {
   -webkit-flex: 1;
-  margin-left: 5px;
+  margin-right: 1em;
 }
-
 .bee-SelectionCounter {
   color: #00f;
   font-size: large;
-  margin-left: 3px;
-  margin-right: 5px;
+  margin-right: 1em;
 }
 
 .bee-ProgressItem {
@@ -1423,6 +1423,11 @@ body {
 }
 .bee-FileCollector-size, .bee-FileGroup-size {
   text-align: right;
+}
+
+.bee-FileCollector-headless {
+  z-index: -1;
+  visibility: hidden;
 }
 
 .bee-EditableRelation:hover {

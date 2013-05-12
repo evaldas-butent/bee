@@ -59,7 +59,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
     if (widget instanceof FileCollector) {
-      ((FileCollector) widget).bindDnd(getFormView(), getFormView().asWidget().getElement());
+      ((FileCollector) widget).bindDnd(getFormView());
     }
 
     if (BeeUtils.same(name, NAME_START_DATE) && (widget instanceof InputDate)) {

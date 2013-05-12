@@ -101,6 +101,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   String getRowCaption(IsRow row, boolean edit);
 
+  void onAttach(GridView gridView);
+  
   boolean onClose(GridPresenter presenter);
 
   boolean onLoad(GridDescription gridDescription);

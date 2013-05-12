@@ -229,7 +229,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     }
 
     final GridView gridView = GridFactory.createGridView(getGridDescription(), getRelSource(),
-        dataInfo.getColumns(), uiOptions, gridInterceptor, order);
+        dataInfo.getColumns(), uiOptions, getGridInterceptor(), order);
     
     if (!hasParentValue(row)) {
       BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());

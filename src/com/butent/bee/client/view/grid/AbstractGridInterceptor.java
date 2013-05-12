@@ -213,6 +213,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void onAttach(GridView gridView) {
+  }
+
+  @Override
   public boolean onClose(GridPresenter presenter) {
     return true;
   }

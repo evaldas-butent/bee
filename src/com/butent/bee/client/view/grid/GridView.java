@@ -1,7 +1,10 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.gwt.user.client.ui.HasWidgets;
+
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
@@ -30,7 +33,7 @@ import java.util.Map;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator, HandlesHistory {
+    HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets {
 
   public enum SelectedRows {
     ALL, EDITABLE
