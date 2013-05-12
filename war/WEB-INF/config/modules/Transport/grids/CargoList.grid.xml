@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoList" viewName="CargoList" caption="Kroviniai" disabledActions="add"
+  name="CargoList" viewName="CargoList" caption="=cargos" disabledActions="add"
   editPopup="true"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >

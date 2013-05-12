@@ -1,5 +1,7 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -28,6 +30,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   
   private final Editor editor;
   private int lastWidth = BeeConst.UNDEF;
+  
+  private String oldValue = null;
 
   public ValueFilterSupplier(String viewName, final BeeColumn column, String options) {
     super(viewName, column, options);
@@ -45,13 +49,13 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+  public String getLabel() {
+    return editor.getValue();
   }
   
   @Override
-  public String getDisplayHtml() {
-    return editor.getValue();
+  public String getValue() {
+    return Strings.emptyToNull(BeeUtils.trim(editor.getValue()));
   }
 
   @Override
@@ -63,19 +67,31 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       setLastWidth(width);
     }
     
+    setOldValue(getValue());
+    
     openDialog(target, editor.asWidget(), callback);
     editor.setFocus(true);
   }
-
+  
   @Override
   public Filter parse(String value) {
     return BeeUtils.isEmpty(value) ? null : buildFilter(BeeUtils.trim(value));
   }
-
+  
   @Override
   public boolean reset() {
     editor.clearValue();
     return super.reset();
+  }
+
+  @Override
+  public void setValue(String value) {
+    editor.setValue(value);
+  }
+
+  @Override
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList();
   }
 
   private Filter buildFilter(String value) {
@@ -112,11 +128,19 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     return lastWidth;
   }
 
+  private String getOldValue() {
+    return oldValue;
+  }
+
   private void onSave() {
-    update(buildFilter(BeeUtils.trim(editor.getValue())));
+    update(!Objects.equal(buildFilter(getOldValue()), buildFilter(getValue())));
   }
 
   private void setLastWidth(int lastWidth) {
     this.lastWidth = lastWidth;
+  }
+
+  private void setOldValue(String oldValue) {
+    this.oldValue = oldValue;
   }
 }

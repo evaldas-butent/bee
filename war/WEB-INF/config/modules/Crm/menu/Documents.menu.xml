@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Documents" label="Dokumentai" order="50"
+name="Documents" label="=documents" order="50"
 >
-  <Item name="DocumentList" label="Dokumentai" service="grid" parameters="Documents" />
+  <Item name="DocumentList" label="=documents" service="grid" parameters="Documents" />
 
-  <Item name="Categories" label="Kategorijos" service="form" parameters="DocumentTree" separator="true" />
+  <Item name="Categories" label="=documentCategories" service="form" parameters="DocumentTree" separator="true" />
 
-  <Item name="Types" label="Tipai" service="grid" parameters="DocumentTypes" separator="true" />
-  <Item name="Groups" label="Grupės" service="grid" parameters="DocumentGroups" />
-  <Item name="Places" label="Vietos" service="grid" parameters="DocumentPlaces" />
+  <Item name="Types" label="=documentTypes" service="grid" parameters="DocumentTypes" separator="true" />
+  <Item name="Places" label="=documentPlaces" service="grid" parameters="DocumentPlaces" />
+  <Item name="Statuses" label="=documentStatuses" service="grid" parameters="DocumentStatuses" />
 </Entry>

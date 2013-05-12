@@ -136,6 +136,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (hasSearch() && !disabledActions.contains(Action.FILTER)) {
         enabledActions.add(Action.FILTER);
       }
+      if (hasSearch() && !disabledActions.contains(Action.REMOVE_FILTER)) {
+        enabledActions.add(Action.REMOVE_FILTER);
+      }
 
       boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
       if (fav) {
@@ -158,6 +161,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (max > 0 && rowCount >= max) {
         disabledActions.add(Action.ADD);
       }
+      
+      if (!disabledActions.contains(Action.CONFIGURE)) {
+        enabledActions.add(Action.CONFIGURE);
+      }
 
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
           enabledActions, disabledActions);
@@ -171,9 +178,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     FooterView footer;
     ScrollPager scroller;
 
-    if (hasPaging() || hasSearch()) {
+    if (hasPaging()) {
       footer = new FooterImpl();
-      footer.create(rowCount, hasPaging(), true, hasSearch());
+      footer.create(rowCount, hasPaging(), true, false);
     } else {
       footer = null;
     }

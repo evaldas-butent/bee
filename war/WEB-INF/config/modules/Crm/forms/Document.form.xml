@@ -7,7 +7,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Document" caption="Dokumentas">
+  name="Document" caption="=document">
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="-webkit-justify-content: space-between;">
@@ -15,26 +15,26 @@
       
       <Table style="margin-top: 5px; margin-right: 5px;">
         <row>
-          <Label html="Įmonės:" style="&chlabel;" />
+          <Label text="=companies" style="&chlabel;" />
           <ChildSelector viewName="Companies" childTable="Relations" renderColumns="Name"
             style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Asmenys:" style="&chlabel;" />
+          <Label text="=persons" style="&chlabel;" />
           <ChildSelector viewName="Persons" childTable="Relations"
             renderColumns="FirstName LastName" style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Įvykiai:" style="&chlabel;" />
+          <Label text="=appointments" style="&chlabel;" />
           <ChildSelector viewName="Appointments" childTable="Relations"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
             newRowEnabled="false" style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Užduotys:" style="&chlabel;" />
+          <Label text="=tasks" style="&chlabel;" />
           <ChildSelector viewName="Tasks" childTable="Relations" 
             renderColumns="Summary"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
@@ -42,26 +42,26 @@
         </row>
         
         <row>
-          <Label html="Transp. priem.:" style="&chlabel;" />
+          <Label text="=vehiclesShort" style="&chlabel;" />
           <ChildSelector viewName="Vehicles" childTable="Relations" 
             renderColumns="Number" choiceColumns="Number ParentModelName ModelName"
             style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Vairuotojai:" style="&chlabel;" />
+          <Label text="=drivers" style="&chlabel;" />
           <ChildSelector viewName="Drivers" childTable="Relations" 
             renderColumns="FirstName LastName" newRowEnabled="false" style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Užsakymai:" style="&chlabel;" />
+          <Label text="=transportationOrders" style="&chlabel;" />
           <ChildSelector viewName="TransportationOrders" childTable="Relations" 
             renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" style="&chselect;" />
         </row>
 
         <row>
-          <Label html="Kroviniai:" style="&chlabel;" />
+          <Label text="=cargos" style="&chlabel;" />
           <ChildSelector viewName="OrderCargo" childTable="Relations" 
             renderColumns="Description"
             choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode"
@@ -69,7 +69,7 @@
         </row>
 
         <row>
-          <Label html="Reisai:" style="&chlabel;" />
+          <Label text="=trips" style="&chlabel;" />
           <ChildSelector viewName="Trips" childTable="Relations" 
             renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber"
             style="&chselect;" />

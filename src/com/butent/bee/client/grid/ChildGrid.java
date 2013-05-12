@@ -175,8 +175,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     GridPresenter gp = new GridPresenter(getGridDescription(), gridView,
         rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
-        uiOptions, getGridInterceptor(), immutableFilter, initialFilters, order,
-        getGridOptions());
+        uiOptions, getGridInterceptor(), immutableFilter, initialFilters, null, null,
+        order, getGridOptions());
 
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
@@ -239,7 +239,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     }
 
     Filter queryFilter = Filter.and(getFilter(row),
-        GridFactory.getInitialQueryFilter(gridView, immutableFilter, initialFilters, null));
+        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters, null));
 
     Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
         getCachingPolicy(), new Queries.RowSetCallback() {

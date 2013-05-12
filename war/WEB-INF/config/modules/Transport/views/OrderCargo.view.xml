@@ -5,7 +5,7 @@
   name="OrderCargo"
   source="OrderCargo"
   editForm="OrderCargo"
-  caption="Kroviniai"
+  caption="=cargos"
   >
   <Columns>
     <SimpleColumn name="Order" />

@@ -17,7 +17,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="Task" viewName="Tasks" caption="Užduotis" showRowId="true" printHeader="true"
+  name="Task" viewName="Tasks" caption="=task" showRowId="true" printHeader="true"
   >
 
   <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
@@ -98,26 +98,26 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Įmonės:" style="&top1;" />
+        <Label text="=companies" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
           style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Asmenys:" style="&top1;" />
+        <Label text="=persons" style="&top1;" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
           style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Įvykiai:" style="&top1;" />
+        <Label text="=appointments" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Užduotys:" style="&top1;" />
+        <Label text="=tasks" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="Summary ExecutorFirstName ExecutorLastName"
           choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"

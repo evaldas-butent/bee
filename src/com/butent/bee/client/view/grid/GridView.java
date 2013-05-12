@@ -11,19 +11,18 @@ import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Specifies necessary methods for grid view user interface component.
@@ -31,13 +30,15 @@ import java.util.List;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator, HandlesHistory, SearchView {
+    HasEditFormHandlers, ParentRowCreator, HandlesHistory {
 
   public enum SelectedRows {
     ALL, EDITABLE
   }
 
   void applyOptions(String options);
+  
+  void clearFilter();
 
   void create(List<BeeColumn> dataColumns, GridDescription gridDescription,
       GridInterceptor gridInterceptor, boolean hasSearch, Order order);
@@ -54,6 +55,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int getDataIndex(String source);
 
+  Filter getFilter(String excludeColumn);
+  
   FormView getForm(boolean edit);
 
   CellGrid getGrid();
@@ -78,10 +81,12 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean likeAMotherlessChild();
 
-  Filter parseFilter(Collection<FilterDescription> filterDescriptions);
+  Filter parseFilter(List<Map<String, String>> filterValues);
   
   int refreshCellContent(long rowId, String columnSource);
 
+  void setFilter(List<Map<String, String>> filterValues);
+      
   void setRelId(Long relId);
 
   boolean validateFormData(FormView form, NotificationListener notificationListener,

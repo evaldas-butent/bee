@@ -2,28 +2,29 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="DocumentFiles" viewName="DocumentFiles" caption="Bylos"
+  name="DocumentFiles" viewName="DocumentFiles"
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="File" caption="Atidaryti" readOnly="true" cellType="html" sortable="false"
-      minWidth="100" />
+    <DataColumn name="File" caption="=documentFileOpen" readOnly="true" cellType="html"
+      sortable="false" minWidth="100" />
 
-    <DataColumn name="FileDate" caption="Data" required="true" width="128" />
-    <DataColumn name="FileVersion" caption="Versija" />
-    <DataColumn name="Caption" caption="Pavadinimas" required="true" updateMode="row" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="FileDate" required="true" width="128" />
+    <DataColumn name="FileVersion" />
+    <DataColumn name="Caption" required="true" updateMode="row" />
+    <DataColumn name="Description" />
 
-    <DataColumn name="FileName" caption="Originalus pavad." readOnly="true" />
-    <DataColumn name="FileSize" caption="Dydis" readOnly="true" horizontalAlignment="right"
-      width="60" />
+    <DataColumn name="FileName" readOnly="true" />
+    <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60" />
 
-    <DataColumn name="FileType" caption="Tipas" readOnly="true" />
+    <DataColumn name="FileType" readOnly="true" />
     <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
       width="20">
       <renderer type="fileIcon" />
     </PropColumn>
 
-    <RelColumn name="Owner" caption="Registratorius" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
+    
+    <DataColumn name="Comment" />
   </columns>
 </Grid>

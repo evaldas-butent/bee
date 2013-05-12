@@ -1359,14 +1359,6 @@ body {
 .bee-FooterSearch {
   -webkit-flex: 1;
   margin-left: 5px;
-  visibility: hidden;
-}
-
-.bee-RemoveFilter {
-  margin-right: 20px;
-}
-.bee-RemoveFilter:hover {
-  -webkit-filter:  blur(1px) !important;
 }
 
 .bee-SelectionCounter {

@@ -115,7 +115,7 @@
         </FlowPanel>
       </page>
       <page>
-        <text>Kroviniai</text>
+        <text>=cargos</text>
         <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
       <page>
@@ -141,7 +141,7 @@
         </ComplexPanel>
       </page>
       <page>
-        <text>Dokumentai</text>
+        <text>=documents</text>
         <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
     </TabbedPages>

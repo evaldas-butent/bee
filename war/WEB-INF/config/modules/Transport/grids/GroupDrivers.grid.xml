@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="GroupDrivers" viewName="GroupDrivers" caption="Vairuotojai"
+  name="GroupDrivers" viewName="GroupDrivers" caption="=drivers"
   >
   <columns>
     <RelColumn name="Driver" viewName="AllDrivers" caption="Vardas, Pavardė" newRowEnabled="false" 

@@ -1,6 +1,7 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -24,6 +25,7 @@ import java.util.Set;
  */
 public class BeeUtils {
 
+  public static final Joiner numberJoiner = Joiner.on(BeeConst.CHAR_COMMA).skipNulls();
   public static final Splitter numberSplitter =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
   
@@ -509,10 +511,6 @@ public class BeeUtils {
       return src.substring(0, start);
     }
     return src.substring(0, start) + src.substring(end);
-  }
-
-  public static String emptyToNull(String s) {
-    return isEmpty(s) ? null : s;
   }
 
   /**
@@ -1340,11 +1338,19 @@ public class BeeUtils {
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
   }
+  
+  public static String joinInts(Collection<Integer> ints) {
+    return isEmpty(ints) ? null : numberJoiner.join(ints);
+  }
 
   public static String joinItems(Object first, Object second, Object... rest) {
     return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
   }
 
+  public static String joinLongs(Collection<Long> longs) {
+    return isEmpty(longs) ? null : numberJoiner.join(longs);
+  }
+  
   public static String joinNoDuplicates(String sep, Object first, Object second, Object... rest) {
     return doJoin(false, sep, first, second, rest);
   }

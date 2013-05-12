@@ -93,7 +93,8 @@ public class CrmModuleBean implements BeeModule {
 
     List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
         Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
-            COL_TYPE_NAME, COL_GROUP_NAME, COL_CATEGORY_NAME, COL_PLACE_NAME), query));
+            COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME, COL_DOCUMENT_PLACE_NAME,
+            COL_DOCUMENT_STATUS_NAME), query));
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_COMPANY_NAME,

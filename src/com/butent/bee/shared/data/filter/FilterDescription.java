@@ -68,6 +68,11 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     return filterDescription;
   }
 
+  public static String createValue(Map<String, String> values) {
+    Assert.notEmpty(values);
+    return Codec.beeSerialize(values);
+  }
+  
   public static String createValue(String key, String value) {
     Assert.notEmpty(key);
     Assert.notEmpty(value);
@@ -76,11 +81,6 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     values.put(key, value);
     
     return createValue(values);
-  }
-  
-  public static String createValue(Map<String, String> values) {
-    Assert.notEmpty(values);
-    return Codec.beeSerialize(values);
   }
   
   public static FilterDescription predefined(String name, String label, String key, String value) {
@@ -297,16 +297,16 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     this.label = label;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public void setOrdinal(Integer ordinal) {
     this.ordinal = ordinal;
   }
 
   public void setRemovable(Boolean removable) {
     this.removable = removable;
+  }
+
+  private void setName(String name) {
+    this.name = name;
   }
 
   private void setValue(String value) {

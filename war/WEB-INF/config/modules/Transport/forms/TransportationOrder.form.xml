@@ -46,11 +46,11 @@
 
     <TabbedPages class="flexible" style="margin-top: 1ex;" >
       <page>
-        <text>Kroviniai</text>
+        <text>=cargos</text>
         <ChildGrid name="OrderCargo" relColumn="Order" caption="-" />
       </page>
       <page>
-        <text>Dokumentai</text>
+        <text>=documents</text>
         <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
     </TabbedPages>

@@ -5,6 +5,6 @@
   idName="DocumentTypeID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=documentType" />
   </Fields>
 </Table>

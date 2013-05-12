@@ -97,7 +97,7 @@
         </FlowPanel>
       </page>
       <page>
-        <text>Dokumentai</text>
+        <text>=documents</text>
         <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
       </page>
       <page>

@@ -40,6 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class Filters {
 
@@ -92,6 +93,10 @@ public class Filters {
       return filterDescription.getValue();
     }
 
+    private Map<String, String> getValues() {
+      return filterDescription.getValues();
+    }
+    
     private boolean isEditable() {
       return filterDescription.isEditable();
     }
@@ -184,32 +189,34 @@ public class Filters {
         Collections.sort(predefinedFilters);
       }
 
+      List<Item> items = Lists.newArrayList();
       for (int i = 0; i < predefinedFilters.size(); i++) {
         FilterDescription filterDescription = predefinedFilters.get(i).copy();
         filterDescription.setOrdinal(i);
 
-        itemsByKey.put(key, new Item(-1 - i, filterDescription, true));
+        items.add(new Item(-1 - i, filterDescription, true));
       }
 
-      Collection<Item> items = itemsByKey.get(key);
+      itemsByKey.putAll(key, items);
+
       for (Item item : items) {
         insert(key, item);
       }
     }
   }
 
-  public Collection<FilterDescription> getInitialFilters(String key) {
-    List<FilterDescription> filters = Lists.newArrayList();
+  public List<Map<String, String>> getInitialValues(String key) {
+    List<Map<String, String>> initialValues = Lists.newArrayList();
 
     if (itemsByKey.containsKey(key)) {
       for (Item item : itemsByKey.get(key)) {
         if (item.isInitial()) {
-          filters.add(item.filterDescription);
+          initialValues.add(item.getValues());
         }
       }
     }
 
-    return filters;
+    return initialValues;
   }
 
   public void handle(final String key, Element relativeTo, final Consumer<String> callback) {

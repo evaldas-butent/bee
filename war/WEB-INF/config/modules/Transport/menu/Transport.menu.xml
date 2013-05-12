@@ -17,7 +17,7 @@ name="Transport" label="Transportas" order="60"
   <Item name="ExpeditionTrips" label="Ekspedijavimo reisai" service="grid" parameters="ExpeditionTrips" />
   <Item name="Drivers" label="=drivers" service="grid" parameters="Drivers" separator="true" />
 
-  <Item name="Vehicles" label="Transporto priemonės" service="grid" parameters="Vehicles" separator="true" />
+  <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true" />
   <Item name="SpareParts" label="Keičiamos dalys" service="grid" parameters="SpareParts" />
 
   <Item name="FreightExchange" label="=freightExchange" service="freight_exchange" separator="true" />

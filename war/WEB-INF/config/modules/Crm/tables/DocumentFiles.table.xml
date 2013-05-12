@@ -7,10 +7,15 @@
   <Fields>
     <Relation name="Document" relation="Documents" notNull="true" cascade="DELETE" />
     <Relation name="File" relation="Files" notNull="true" />
-    <String name="Caption" precision="100" />
-    <Text name="Description" />
-    <DateTime name="FileDate" notNull="true" />
-    <String name="FileVersion" precision="30" />
-    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" />
+
+    <String name="Caption" precision="100" label="=documentFileDate"/>
+    <Text name="Description" label="=documentFileDescription" />
+
+    <DateTime name="FileDate" notNull="true" label="=documentFileDate" />
+    <String name="FileVersion" precision="30" label="=documentFileVersion" />
+
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" 
+      label="=documentFileOwner" />
+    <Text name="Comment" label="=documentFileComment" />
   </Fields>
 </Table>

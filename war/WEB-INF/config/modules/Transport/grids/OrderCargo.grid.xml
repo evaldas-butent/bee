@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
+  name="OrderCargo" viewName="OrderCargo" caption="=cargos"
   newRowForm="NewOrderCargo" newRowCaption="Naujas krovinys" newRowPopup="true"
   editForm="OrderCargo" editPopup="true"
   flexGrow="1" flexShrink="1"

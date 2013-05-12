@@ -3,14 +3,14 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="Documents" viewName="Documents" caption="Dokumentai" 
+  name="Documents" viewName="Documents" 
   newRowForm="NewDocument" editForm="Document" parent="Tree"
   flexGrow="1" flexShrink="1"
   >
   
   <west size="200" splitterSize="2">
-    <w:DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
-              hideActions="true">
+    <w:DataTree name="Tree" caption="=documentCategories" source="DocumentTree"
+      parentColumn="Parent" hideActions="true">
       <w:calc>
         <ui:expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</ui:expression>
       </w:calc>
@@ -19,12 +19,12 @@
   
   <columns>
     <IdColumn name="Id" />
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="DocumentDate" caption="Data" />
-    <DataColumn name="Expires" caption="Galioja iki" />
-    <DataColumn name="Number" caption="Numeris" />
-    <DataColumn name="TypeName" caption="Tipas" />
-    <DataColumn name="GroupName" caption="Grupė" />
-    <DataColumn name="PlaceName" caption="Vieta" />
+    <DataColumn name="Name" />
+    <DataColumn name="DocumentDate" />
+    <DataColumn name="Expires" />
+    <DataColumn name="Number" />
+    <DataColumn name="TypeName" />
+    <DataColumn name="PlaceName" />
+    <DataColumn name="StatusName" />
   </columns>
 </Grid>

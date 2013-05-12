@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="DocumentFiles"
-  source="DocumentFiles"
+  name="DocumentFiles" source="DocumentFiles"
+  caption="=documentFiles"
   >
   <Columns>
     <SimpleColumn name="Document" />
@@ -17,6 +17,7 @@
     <SimpleColumn name="FileVersion" />
     <SimpleColumn name="Caption" />
     <SimpleColumn name="Description" />
+    <SimpleColumn name="Comment" />
 
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">

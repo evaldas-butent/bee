@@ -1,13 +1,11 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.cellview.client.Header;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterHandler;
@@ -16,7 +14,6 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasFilterHandler {
@@ -29,9 +26,6 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
   private FilterHandler filterHandler = null;
 
   private State state = State.CLOSED;
-  
-  private final String id;
-  private final ImmutableSet<String> exclusion;
 
   public ColumnFooter(AbstractFilterSupplier filterSupplier,
       NotificationListener notificationListener) {
@@ -39,9 +33,6 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
 
     this.filterSupplier = filterSupplier;
     this.notificationListener = notificationListener;
-    
-    this.id = DomUtils.createUniqueId("cf");
-    this.exclusion = ImmutableSet.of(this.id);
   }
 
   public Filter getFilter() {
@@ -50,10 +41,6 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
   
   public String getFilterLabel() {
     return isEmpty() ? null : getFooterCell().getHtml();
-  }
-
-  public String getId() {
-    return id;
   }
 
   @Override
@@ -76,8 +63,8 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
         close();
 
       } else {
-        filterSupplier.setEffectiveFilter((getFilterHandler() == null 
-            ? null : getFilterHandler().getEffectiveFilter(exclusion)));
+        filterSupplier.setEffectiveFilter((getFilterHandler() == null) 
+            ? null : getFilterHandler().getEffectiveFilter(null));
         
         filterSupplier.onRequest(elem, notificationListener, new Callback<Boolean>() {
           @Override
@@ -106,15 +93,6 @@ public class ColumnFooter extends Header<AbstractFilterSupplier> implements HasF
     this.filterHandler = filterHandler;
   }
   
-  public void update(FilterDescription filterDescription) {
-    if (filterDescription == null) {
-      reset();
-    } else {
-      filterSupplier.setFilter(filterSupplier.parse(filterDescription.getValue()));
-      getFooterCell().setHtml(filterDescription.getLabel());
-    }
-  }
-
   private void close() {
     setState(State.CLOSED);
   }

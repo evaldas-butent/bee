@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Tasks" label="Užduotys" order="30"
+name="Tasks" label="=tasks" order="30"
 >
   <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" />
   <Item name="DelegatedTasks" label="Deleguotos" service="task_list" parameters="d" />

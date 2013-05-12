@@ -7,8 +7,8 @@
   <Fields>
     <String name="Hash" precision="40" notNull="true" unique="true" />
     <Text name="Repository" notNull="true" />
-    <String name="Name" precision="100" notNull="true" />
-    <Long name="Size" />
-    <String name="Type" precision="100" />
+    <String name="Name" precision="100" notNull="true" label="=fileOriginalName" />
+    <Long name="Size" label="=fileSize" />
+    <String name="Type" precision="100" label="=fileType" />
   </Fields>
 </Table>

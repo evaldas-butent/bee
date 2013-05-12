@@ -1,24 +1,18 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.view.search.SearchView;
-import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -33,7 +27,6 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   
   private static final String STYLE_PAGER = "bee-SimplePager";
   private static final String STYLE_SEARCH = "bee-FooterSearch";
-  private static final String STYLE_REMOVE_FILTER = "bee-RemoveFilter";
   private static final String STYLE_SELECTION_COUNTER = "bee-SelectionCounter";
 
   private static final int HEIGHT = 32;
@@ -42,7 +35,6 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
 
   private String pagerId = null;
   private String searchId = null;
-  private String removeFilterId = null;
   private String selectionCounterId = null;
 
   private boolean enabled = true;
@@ -66,24 +58,6 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
       search.addStyleName(STYLE_SEARCH);
       add(search);
       setSearchId(search.getWidgetId());
-      
-      BeeImage removeFilter = new BeeImage(Global.getImages().silverFilterRemove());
-      removeFilter.addStyleName(STYLE_REMOVE_FILTER);
-      removeFilter.setTitle(Action.REMOVE_FILTER.getCaption());
-      
-      removeFilter.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (getViewPresenter() != null) {
-            getViewPresenter().handleAction(Action.REMOVE_FILTER);
-          }
-        }
-      });
-      
-      add(removeFilter);
-      setRemoveFilterId(removeFilter.getId());
-      
-      StyleUtils.hideDisplay(removeFilter);
     }
 
     BeeLabel selectionCounter = new BeeLabel();
@@ -167,21 +141,8 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
     this.viewPresenter = viewPresenter;
   }
 
-  @Override
-  public void showFilterDelete(boolean show) {
-    if (show) {
-      StyleUtils.unhideDisplay(getRemoveFilterId());
-    } else {
-      StyleUtils.hideDisplay(getRemoveFilterId());
-    }
-  }
-
   private String getPagerId() {
     return pagerId;
-  }
-
-  private String getRemoveFilterId() {
-    return removeFilterId;
   }
 
   private String getSearchId() {
@@ -194,10 +155,6 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
 
   private void setPagerId(String pagerId) {
     this.pagerId = pagerId;
-  }
-
-  private void setRemoveFilterId(String removeFilterId) {
-    this.removeFilterId = removeFilterId;
   }
 
   private void setSearchId(String searchId) {

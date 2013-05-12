@@ -39,11 +39,6 @@ public class SearchBox extends InputText implements SearchView {
   }
 
   @Override
-  public void clearFilter() {
-    clearValue();
-  }
-
-  @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
     if (BeeUtils.isEmpty(getValue())) {

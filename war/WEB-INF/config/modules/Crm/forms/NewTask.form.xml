@@ -98,26 +98,26 @@
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Įmonės:" style="&top1;" />
+      <Label text="=companies" style="&top1;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Asmenys:" style="&top1;" />
+      <Label text="=persons" style="&top1;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Įvykiai:" style="&top1;" />
+      <Label text="=appointments" style="&top1;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Užduotys:" style="&top1;" />
+      <Label text="=tasks" style="&top1;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"

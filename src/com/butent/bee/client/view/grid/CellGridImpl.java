@@ -1,7 +1,6 @@
 package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -103,7 +102,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -482,10 +480,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   @Override
   public void clearFilter() {
-    List<ColumnFooter> footers = getGrid().getFooters();
-    for (ColumnFooter footer : footers) {
-      if (!footer.isEmpty()) {
-        footer.reset();
+    for (ColumnInfo columnInfo : getGrid().getColumns()) {
+      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
+      if (filterSupplier != null) {
+        filterSupplier.setValue(null);
       }
     }
   }
@@ -1111,35 +1109,25 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
-      String versionColumnName, ImmutableSet<String> excludeSearchers) {
+  public Filter getFilter(String excludeColumn) {
+    List<Filter> filters = Lists.newArrayList();
 
-    if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
-      return null;
-    }
+    for (ColumnInfo columnInfo : getGrid().getColumns()) {
+      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
 
-    List<ColumnFooter> footers = getGrid().getFooters();
-    if (footers.isEmpty()) {
-      return null;
-    }
+      if (filterSupplier != null) {
+        if (!BeeUtils.isEmpty(excludeColumn)
+            && BeeUtils.same(excludeColumn, columnInfo.getColumnId())) {
+          continue;
+        }
 
-    Filter filter = null;
-
-    for (ColumnFooter footer : footers) {
-      if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(footer.getId())) {
-        continue;
-      }
-
-      Filter columnFilter = footer.getFilter();
-      if (columnFilter != null) {
-        if (filter == null) {
-          filter = columnFilter;
-        } else {
-          filter = Filter.and(filter, columnFilter);
+        Filter columnFilter = filterSupplier.getFilter();
+        if (columnFilter != null) {
+          filters.add(columnFilter);
         }
       }
     }
-    return filter;
+    return Filter.and(filters);
   }
 
   @Override
@@ -1375,33 +1363,33 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter parseFilter(Collection<FilterDescription> filterDescriptions) {
-    if (BeeUtils.isEmpty(filterDescriptions)) {
+  public Filter parseFilter(List<Map<String, String>> filterValues) {
+    if (BeeUtils.isEmpty(filterValues)) {
       return null;
     }
 
-    Set<Filter> filters = Sets.newHashSet();
+    List<Filter> filters = Lists.newArrayList();
 
-    for (FilterDescription filterDescription : filterDescriptions) {
-      Map<String, String> valuesByColumn = filterDescription.getValues();
+    for (Map<String, String> values : filterValues) {
+      for (Map.Entry<String, String> entry : values.entrySet()) {
+        String columnId = entry.getKey();
 
-      for (Map.Entry<String, String> entry : valuesByColumn.entrySet()) {
-        ColumnInfo columnInfo = getGrid().getColumnById(entry.getKey());
+        ColumnInfo columnInfo = getGrid().getColumnById(columnId);
         if (columnInfo == null) {
-          logger.warning("filter column not found:", entry.getKey(), entry.getValue());
+          logger.warning("filter column not found:", columnId);
           continue;
         }
 
         AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
         if (filterSupplier == null) {
-          logger.warning("filter supplier not found:", entry.getKey(), entry.getValue());
+          logger.warning("filter supplier not found:", columnId);
           continue;
         }
 
         Filter columnFilter = filterSupplier.parse(entry.getValue());
         if (columnFilter == null) {
-          logger.warning(entry.getKey(), "cannot parse filter:", entry.getValue());
-        } else {
+          logger.warning(columnId, "cannot parse filter:", entry.getValue());
+        } else if (!filters.contains(columnFilter)) {
           filters.add(columnFilter);
         }
       }
@@ -1432,6 +1420,41 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public void setFilter(List<Map<String, String>> filterValues) {
+    if (BeeUtils.isEmpty(filterValues)) {
+      clearFilter();
+      return;
+    }
+
+    Map<String, String> columnFilters = Maps.newHashMap();
+    for (Map<String, String> values : filterValues) {
+      for (Map.Entry<String, String> entry : values.entrySet()) {
+        String columnId = entry.getKey();
+
+        if (columnFilters.containsKey(columnId)) {
+          logger.warning(columnId, "duplicate column filter:", columnFilters.get(columnId),
+              entry.getValue());
+        } else {
+          columnFilters.put(columnId, entry.getValue());
+        }
+      }
+    }
+
+    for (ColumnInfo columnInfo : getGrid().getColumns()) {
+      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
+
+      if (filterSupplier != null) {
+        String columnId = columnInfo.getColumnId();
+
+        if (columnFilters.containsKey(columnId)) {
+          filterSupplier.setValue(columnFilters.get(columnId));
+        } else {
+          filterSupplier.setValue(null);
+        }
+      }
+    }
+  }
+
   public void setFilterHandler(FilterHandler filterHandler) {
     List<ColumnFooter> footers = getGrid().getFooters();
     for (ColumnFooter footer : footers) {

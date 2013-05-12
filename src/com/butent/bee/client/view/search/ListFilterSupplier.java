@@ -1,8 +1,12 @@
 package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
@@ -11,9 +15,10 @@ import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -23,17 +28,23 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private final List<String> renderColumns = Lists.newArrayList();
   private final List<String> orderColumns = Lists.newArrayList();
 
-  private final int renderCount;
-  private final int relIndex;
+  private final boolean foreign;
+
+  private final int valueIndex;
   private final int countIndex;
 
+  private final int renderCount;
+
   private SimpleRowSet data = null;
+
+  private final List<String> values = Lists.newArrayList();
 
   public ListFilterSupplier(String viewName, BeeColumn column, List<String> renderColumns,
       List<String> orderColumns, Relation relation, String options) {
@@ -43,7 +54,9 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       this.renderColumns.add(column.getId());
       this.orderColumns.add(column.getId());
 
-      this.relIndex = BeeConst.UNDEF;
+      this.foreign = false;
+
+      this.valueIndex = 0;
       this.countIndex = 1;
 
     } else {
@@ -52,24 +65,65 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       } else {
         this.renderColumns.addAll(NameUtils.toList(options));
       }
-      
+
       this.orderColumns.addAll(orderColumns);
 
-      this.relIndex = this.renderColumns.size();
-      this.countIndex = this.relIndex + 1;
+      this.foreign = true;
+
+      this.valueIndex = this.renderColumns.size();
+      this.countIndex = this.valueIndex + 1;
     }
 
     this.renderCount = this.renderColumns.size();
   }
 
   @Override
-  public String getDisplayHtml() {
-    List<String> values = Lists.newArrayList();
+  public String getLabel() {
+    if (values.isEmpty()) {
+      return null;
 
-    for (int row : getSelectedItems()) {
-      values.add(getCaption(row));
+    } else if (!isForeign() || DataUtils.isEmpty(getData())) {
+      return BeeUtils.join(BeeConst.STRING_COMMA, values);
+
+    } else {
+      List<String> labels = Lists.newArrayList();
+      Set<String> ids = Sets.newHashSet(values);
+
+      for (SimpleRow row : data) {
+        String value = row.getValue(valueIndex);
+        if (ids.remove(value)) {
+          labels.add(getCaption(row));
+        }
+      }
+
+      if (!ids.isEmpty()) {
+        labels.addAll(ids);
+      }
+
+      return BeeUtils.join(BeeConst.STRING_COMMA, labels);
     }
-    return BeeUtils.join(BeeConst.STRING_COMMA, values);
+  }
+
+  @Override
+  public String getValue() {
+    if (values.isEmpty()) {
+      return null;
+
+    } else {
+      JSONArray arr = new JSONArray();
+
+      for (int i = 0; i < values.size(); i++) {
+        String value = values.get(i);
+
+        if (value == null) {
+          arr.set(i, JSONNull.getInstance());
+        } else {
+          arr.set(i, new JSONString(value));
+        }
+      }
+
+      return arr.toString();
+    }
   }
 
   @Override
@@ -91,7 +145,9 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
           callback.onSuccess(reset());
 
         } else if (result.getNumberOfRows() == 1) {
-          notificationListener.notifyInfo(messageOneValue(getCaption(0), getCount(0)));
+          SimpleRow row = result.getRow(0);
+          notificationListener.notifyInfo(messageOneValue(getCaption(row),
+              row.getValue(countIndex)));
           callback.onSuccess(reset());
 
         } else {
@@ -112,6 +168,14 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public void setValue(String value) {
+    values.clear();
+    if (!BeeUtils.isEmpty(value)) {
+      values.addAll(JsonUtils.toList(JSONParser.parseStrict(value)));
+    }
+  }
+
+  @Override
   protected void doClear() {
     clearDisplay();
     super.doClear();
@@ -120,20 +184,23 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   @Override
   protected void doCommit() {
     if (isSelectionEmpty()) {
-      update(null);
-      return;
+      boolean changed = !values.isEmpty();
+      values.clear();
+      update(changed);
+
+    } else {
+      List<String> newValues = Lists.newArrayList();
+      for (int row : getSelectedItems()) {
+        newValues.add(data.getValue(row, valueIndex));
+      }
+
+      boolean changed = !BeeUtils.sameElements(values, newValues);
+
+      BeeUtils.overwrite(values, newValues);
+      update(changed);
     }
-
-    List<String> values = Lists.newArrayList();
-
-    int colIndex = (relIndex > 0) ? relIndex : 0;
-    for (int row : getSelectedItems()) {
-      values.add(data.getValue(row, colIndex));
-    }
-
-    update(buildFilter(values));
   }
-  
+
   @Override
   protected List<SupplierAction> getActions() {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
@@ -142,7 +209,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   @Override
   protected List<String> getHistogramColumns() {
     List<String> columns = Lists.newArrayList(renderColumns);
-    if (relIndex > 0) {
+    if (isForeign()) {
       columns.add(getColumnId());
     }
     return columns;
@@ -152,33 +219,30 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   protected List<String> getHistogramOrder() {
     return orderColumns;
   }
-  
-  private Filter buildFilter(Collection<String> values) {
-    if (BeeUtils.isEmpty(values)) {
+
+  private Filter buildFilter(Collection<String> input) {
+    if (BeeUtils.isEmpty(input)) {
       return null;
     }
 
-    CompoundFilter filter = Filter.or();
+    List<Filter> filters = Lists.newArrayList();
+    String columnId = getColumnId();
 
-    for (String value : values) {
+    for (String value : input) {
       if (value == null || value.isEmpty()) {
-        filter.add(Filter.isEmpty(getColumnId()));
-      } else if (relIndex >= 0) {
-        filter.add(ComparisonFilter.isEqual(getColumnId(),
+        filters.add(Filter.isEmpty(columnId));
+
+      } else if (isForeign()) {
+        filters.add(ComparisonFilter.isEqual(columnId, 
             new LongValue(BeeUtils.toLongOrNull(value))));
+
       } else {
-        filter.add(ComparisonFilter.isEqual(getColumnId(),
+        filters.add(ComparisonFilter.isEqual(columnId, 
             Value.parseValue(getColumnType(), value, false)));
       }
     }
-
-    if (filter.isEmpty()) {
-      return null;
-    } else if (filter.size() == 1) {
-      return filter.getSubFilters().get(0);
-    } else {
-      return filter;
-    }
+    
+    return Filter.or(filters);
   }
 
   private Widget createWidget() {
@@ -188,7 +252,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     for (String[] dataItem : getData().getRows()) {
       int col = 0;
 
-      if (dataItem[Math.max(relIndex, 0)] == null) {
+      if (dataItem[valueIndex] == null) {
         display.setText(row, col, NULL_VALUE_LABEL);
         col = renderCount;
 
@@ -197,7 +261,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
           display.setText(row, col++, dataItem[i]);
         }
       }
-      
+
       addBinSize(display, row, col, dataItem[countIndex]);
       row++;
     }
@@ -205,16 +269,18 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     return wrapDisplay(display, true);
   }
 
-  private String getCaption(int row) {
+  private String getCaption(SimpleRow row) {
     if (isNull(row)) {
       return NULL_VALUE_LABEL;
+
     } else if (renderCount == 1) {
-      return data.getValue(row, 0);
+      return row.getValue(0);
+
     } else {
       StringBuilder sb = new StringBuilder();
 
       for (int i = 0; i < renderCount; i++) {
-        String value = data.getValue(row, i);
+        String value = row.getValue(i);
         if (value != null) {
           if (sb.length() > 0) {
             sb.append(BeeConst.CHAR_SPACE);
@@ -226,16 +292,16 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
-  private String getCount(int row) {
-    return data.getValue(row, countIndex);
-  }
-
   private SimpleRowSet getData() {
     return data;
   }
 
-  private boolean isNull(int row) {
-    return data.getValue(row, Math.max(relIndex, 0)) == null;
+  private boolean isForeign() {
+    return foreign;
+  }
+
+  private boolean isNull(SimpleRow row) {
+    return row.getValue(valueIndex) == null;
   }
 
   private void setData(SimpleRowSet data) {

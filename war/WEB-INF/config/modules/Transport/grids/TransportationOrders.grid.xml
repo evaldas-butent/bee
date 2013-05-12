@@ -20,7 +20,7 @@
     <RelColumn name="Customer" caption="Užsakovas" flexGrow="1" />
     <RelColumn name="Payer" caption="Mokėtojas" flexGrow="1" flexShrink="1" />
     <RelColumn name="Manager" caption="Vadybininkas" flexGrow="1" flexShrink="1" />
-    <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo"
+    <CalcColumn name="Cargo" type="string" caption="=cargos" searchBy="Cargo"
       flexGrow="2" flexShrink="3" flexBasis="200">
       <render>
         <ui:function>

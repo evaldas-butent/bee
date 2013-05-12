@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -27,6 +28,8 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   
   private final Editor editor;
   private int lastWidth = BeeConst.UNDEF;
+  
+  private Long oldValue = null;
 
   public IdFilterSupplier(String viewName, final BeeColumn column, String options) {
     super(viewName, column, options);
@@ -44,13 +47,13 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+  public String getLabel() {
+    return editor.getValue();
   }
   
   @Override
-  public String getDisplayHtml() {
-    return editor.getValue();
+  public String getValue() {
+    return Strings.emptyToNull(BeeUtils.trim(editor.getValue()));
   }
 
   @Override
@@ -62,6 +65,8 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
       setLastWidth(width);
     }
     
+    setOldValue(BeeUtils.toLongOrNull(getValue()));
+    
     openDialog(target, editor.asWidget(), callback);
     editor.setFocus(true);
   }
@@ -70,33 +75,52 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   public Filter parse(String value) {
     return BeeUtils.isLong(value) ? ComparisonFilter.compareId(BeeUtils.toLong(value)) : null;
   }
-
+  
   @Override
   public boolean reset() {
     editor.clearValue();
     return super.reset();
+  }
+
+  @Override
+  public void setValue(String value) {
+    editor.setValue(value);
+  }
+
+  @Override
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList();
   }
   
   private int getLastWidth() {
     return lastWidth;
   }
 
+  private Long getOldValue() {
+    return oldValue;
+  }
+
   private void onSave() {
     String value = BeeUtils.trim(editor.getValue());
+
     if (BeeUtils.isEmpty(value)) {
-      update(null);
-      return;
-    }
-    
-    Filter filter = parse(value);
-    if (filter == null) {
-      Global.showError(Lists.newArrayList("Neteisinga ID reikšmė", value));
+      update(getOldValue() != null);
+
     } else {
-      update(filter);
+      Long id = BeeUtils.toLongOrNull(value);
+      if (id == null) {
+        Global.showError(Lists.newArrayList("Neteisinga ID reikšmė", value));
+      } else {
+        update(!id.equals(getOldValue()));
+      }
     }
   }
 
   private void setLastWidth(int lastWidth) {
     this.lastWidth = lastWidth;
+  }
+
+  private void setOldValue(Long oldValue) {
+    this.oldValue = oldValue;
   }
 }

@@ -86,7 +86,7 @@
     
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
-        <text>Kroviniai</text>
+        <text>=cargos</text>
         <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
       <page>

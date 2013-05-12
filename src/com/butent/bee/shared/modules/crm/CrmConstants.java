@@ -3,19 +3,8 @@ package com.butent.bee.shared.modules.crm;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class CrmConstants {
-
-  public enum ProjectEvent implements HasCaption {
-    CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
-    EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
-
-    @Override
-    public String getCaption() {
-      return BeeUtils.proper(this);
-    }
-  }
 
   public enum TaskEvent implements HasCaption {
     CREATE("Sukurta", null),
@@ -102,7 +91,6 @@ public class CrmConstants {
   public static final String CRM_METHOD = CRM_MODULE + "Method";
 
   public static final String CRM_TASK_PREFIX = "task_";
-  public static final String CRM_PROJECT_PREFIX = "project_";
 
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
@@ -133,11 +121,6 @@ public class CrmConstants {
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
 
-  public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
-  public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
-  public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
-  public static final String VAR_PROJECT_OBSERVERS = Service.RPC_VAR_PREFIX + "project_observers";
-
   public static final String TBL_REQUESTS = "Requests";
 
   public static final String TBL_TASKS = "Tasks";
@@ -147,8 +130,6 @@ public class CrmConstants {
   public static final String TBL_DURATION_TYPES = "DurationTypes";
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
-
-  public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
@@ -178,7 +159,6 @@ public class CrmConstants {
   public static final String COL_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
-  public static final String COL_PROJECT = "Project";
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
 
@@ -190,13 +170,17 @@ public class CrmConstants {
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
 
-  public static final String COL_CATEGORY = "Category";
-  public static final String COL_CATEGORY_NAME = "CategoryName";
-  public static final String COL_TYPE = "Type";
-  public static final String COL_TYPE_NAME = "TypeName";
-  public static final String COL_GROUP = "Group";
-  public static final String COL_GROUP_NAME = "GroupName";
-  public static final String COL_PLACE_NAME = "PlaceName";
+  public static final String COL_DOCUMENT = "Document";
+  public static final String COL_DOCUMENT_DATE = "DocumentDate";
+  public static final String COL_DOCUMENT_COUNT = "DocumentCount";
+  public static final String COL_DOCUMENT_CATEGORY = "Category";
+  public static final String COL_DOCUMENT_CATEGORY_NAME = "CategoryName";
+  public static final String COL_DOCUMENT_TYPE = "Type";
+  public static final String COL_DOCUMENT_TYPE_NAME = "TypeName";
+  public static final String COL_DOCUMENT_PLACE = "Place";
+  public static final String COL_DOCUMENT_PLACE_NAME = "PlaceName";
+  public static final String COL_DOCUMENT_STATUS = "Status";
+  public static final String COL_DOCUMENT_STATUS_NAME = "StatusName";
 
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "FileName";
@@ -204,10 +188,6 @@ public class CrmConstants {
   public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
-
-  public static final String COL_DOCUMENT = "Document";
-  public static final String COL_DOCUMENT_DATE = "DocumentDate";
-  public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
   public static final String COL_NUMBER = "Number";
   public static final String COL_REGISTRATION_NUMBER = "RegistrationNumber";

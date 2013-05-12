@@ -1,44 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget" style="border-spacing: 5px;">
+<Table xmlns="http://www.butent.com/widget" style="border-spacing: 3px;">
 
   <row>
-    <Label html="Pavadinimas:" class="bee-required" />
+    <Label text="=documentName" class="bee-required" />
     <cell colSpan="3">
       <InputText source="Name" style="width: 100%;" />
     </cell>
   </row>
 
   <row>
-    <Label html="Dokumento data:" />
+    <Label text="=documentDate" />
     <InputDateTime source="DocumentDate" />
-    <Label html="Galioja iki:" horizontalAlignment="right" />
+    <Label text="=documentExpires" horizontalAlignment="right" />
     <InputDateTime source="Expires" />
   </row>
 
   <row>
-    <Label html="Numeris:" />
+    <Label text="=documentNumber" />
     <InputText source="Number" />
-    <Label html="Reg. nr.:" horizontalAlignment="right" />
+    <Label text="=documentRegistrationNumberShort" horizontalAlignment="right" />
     <InputText source="RegistrationNumber" />
   </row>
 
   <row>
-    <Label html="Kategorija:" />
+    <Label text="=documentCategory" />
     <DataSelector source="Category" />
-    <Label html="Vieta:" horizontalAlignment="right" />
-    <DataSelector source="Place" />
+    <Label text="=documentType" horizontalAlignment="right" />
+    <DataSelector source="Type" />
   </row>
 
   <row>
-    <Label html="Tipas:" />
-    <DataSelector source="Type" />
-    <Label html="Grupė:" horizontalAlignment="right" />
-    <DataSelector source="Group" />
+    <Label text="=documentPlace"  />
+    <DataSelector source="Place" />
+    <Label text="=documentStatus" horizontalAlignment="right" />
+    <DataSelector source="Status" />
+  </row>
+
+  <row>
+    <Label text="=documentSent" />
+    <InputDateTime source="Sent" />
+    <Label text="=documentReceived" horizontalAlignment="right" />
+    <InputDateTime source="Received" />
   </row>
 
   <row>
     <cell verticalAlignment="top">
-      <Label html="Aprašymas:" />
+      <Label text="=documentDescription" />
     </cell>
     <cell colSpan="3">
       <InputArea source="Description" style="width: 100%; height: 60px;" />

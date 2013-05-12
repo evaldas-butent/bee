@@ -9,9 +9,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import java.util.List;
 
 public interface SearchView extends View, HasFilterHandler {
-  
-  void clearFilter();
-
   Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers);
 }

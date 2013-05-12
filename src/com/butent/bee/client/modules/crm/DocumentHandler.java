@@ -117,8 +117,9 @@ public class DocumentHandler {
 
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,
-            Lists.newArrayList(COL_TYPE, COL_TYPE_NAME, COL_GROUP, COL_GROUP_NAME,
-                COL_CATEGORY, COL_CATEGORY_NAME));
+            Lists.newArrayList(COL_DOCUMENT_CATEGORY, COL_DOCUMENT_CATEGORY_NAME,
+                COL_DOCUMENT_TYPE, COL_DOCUMENT_TYPE_NAME,
+                COL_DOCUMENT_PLACE, COL_DOCUMENT_PLACE_NAME));
 
       } else if (form.getViewPresenter() instanceof GridFormPresenter) {
         GridInterceptor gcb = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
@@ -127,8 +128,8 @@ public class DocumentHandler {
           IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
 
           if (category != null) {
-            newRow.setValue(form.getDataIndex(COL_CATEGORY), category.getId());
-            newRow.setValue(form.getDataIndex(COL_CATEGORY_NAME),
+            newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY), category.getId());
+            newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY_NAME),
                 ((DocumentGridHandler) gcb).getCategoryValue(category, COL_NAME));
           }
         }
@@ -198,9 +199,9 @@ public class DocumentHandler {
 
     private Filter getFilter(Long category) {
       if (category == null) {
-        return Filter.isEmpty(COL_CATEGORY);
+        return null;
       } else {
-        return ComparisonFilter.isEqual(COL_CATEGORY, new LongValue(category));
+        return ComparisonFilter.isEqual(COL_DOCUMENT_CATEGORY, new LongValue(category));
       }
     }
 

@@ -1,7 +1,9 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -41,28 +43,56 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   private static final int DATE_COL = 1;
   private static final int TIME_COL = 2;
 
-  private DateTime startValue = null;
-  private DateTime endValue = null;
+  private Range<DateTime> range = null;
 
   public DateTimeFilterSupplier(String viewName, BeeColumn column, String options) {
     super(viewName, column, options);
   }
 
   @Override
-  public String getDisplayHtml() {
-    if (getStartValue() == null && getEndValue() == null) {
+  public String getLabel() {
+    if (getRange() == null) {
+      return null;
+    }
+
+    DateTime start = getStart();
+    DateTime end = getEnd();
+
+    if (start == null && end == null) {
       return null;
 
-    } else if (getStartValue() == null) {
-      return "iki " + getEndValue().toCompactString();
+    } else if (start == null) {
+      return "iki " + end.toCompactString();
 
-    } else if (getEndValue() == null) {
-      return "nuo " + getStartValue().toCompactString();
+    } else if (end == null) {
+      return "nuo " + start.toCompactString();
 
     } else {
-      return BeeUtils.join(" - ",
-          getStartValue().toCompactString(), getEndValue().toCompactString());
+      return BeeUtils.join(" - ", start.toCompactString(), end.toCompactString());
     }
+  }
+
+  @Override
+  public String getValue() {
+    if (getRange() == null) {
+      return null;
+    }
+
+    DateTime start = getStart();
+    DateTime end = getEnd();
+    if (start == null && end == null) {
+      return null;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    if (start != null) {
+      sb.append(start.getTime());
+    }
+    if (end != null) {
+      sb.append(BeeConst.CHAR_COMMA).append(end.getTime());
+    }
+
+    return sb.toString();
   }
 
   @Override
@@ -73,32 +103,26 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public Filter parse(String value) {
-    if (BeeUtils.isEmpty(value)) {
+    Range<DateTime> r = parseRange(value);
+    if (r == null) {
       return null;
     }
 
-    DateTime start = null;
-    DateTime end = null;
-
-    int i = 0;
-    for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(value)) {
-      if (i == 0) {
-        start = TimeUtils.toDateTimeOrNull(s);
-      } else if (i == 1) {
-        end = TimeUtils.toDateTimeOrNull(s);
-      }
-
-      i++;
-    }
+    DateTime start = r.hasLowerBound() ? r.lowerEndpoint() : null;
+    DateTime end = r.hasUpperBound() ? r.upperEndpoint() : null;
 
     return buildFilter(start, end);
   }
 
   @Override
   public boolean reset() {
-    setStartValue(null);
-    setEndValue(null);
+    setRange(null);
     return super.reset();
+  }
+
+  @Override
+  public void setValue(String value) {
+    setRange(parseRange(value));
   }
 
   @Override
@@ -116,14 +140,13 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     getInputDate(display, END_ROW).clearValue();
     getInputTimeOfDay(display, END_ROW).clearValue();
 
-    setStartValue(null);
-    setEndValue(null);
+    setRange(null);
   }
 
   @Override
   protected void doCommit() {
-    DateTime start = getStart();
-    DateTime end = getEnd(start);
+    DateTime start = getInputStartValue();
+    DateTime end = getInputEndValue(start);
 
     if (start != null && end != null && TimeUtils.isMeq(start, end)) {
       List<String> messages = Lists.newArrayList("Neteisingas intervalas",
@@ -132,10 +155,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return;
     }
 
-    setStartValue(start);
-    setEndValue(end);
+    Range<DateTime> newRange = buildRange(start, end);
+    boolean changed = !Objects.equal(getRange(), newRange);
 
-    update(buildFilter(start, end));
+    setRange(newRange);
+    update(changed);
   }
 
   @Override
@@ -153,6 +177,18 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     } else {
       return Filter.and(ComparisonFilter.isMoreEqual(getColumnId(), new DateTimeValue(start)),
           ComparisonFilter.isLess(getColumnId(), new DateTimeValue(end)));
+    }
+  }
+
+  private Range<DateTime> buildRange(DateTime start, DateTime end) {
+    if (start == null && end == null) {
+      return null;
+    } else if (start == null) {
+      return Range.lessThan(end);
+    } else if (end == null) {
+      return Range.atLeast(start);
+    } else {
+      return Range.closedOpen(start, end);
     }
   }
 
@@ -183,14 +219,18 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     timeTo.addStyleName(STYLE_TIME);
     display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
 
-    if (getStartValue() != null) {
-      getInputDate(display, START_ROW).setDate(getStartValue());
-      getInputTimeOfDay(display, START_ROW).setTime(getStartValue());
-    }
+    if (getRange() != null) {
+      DateTime start = getStart();
+      if (start != null) {
+        getInputDate(display, START_ROW).setDate(start);
+        getInputTimeOfDay(display, START_ROW).setTime(start);
+      }
 
-    if (getEndValue() != null) {
-      getInputDate(display, END_ROW).setDate(getEndValue());
-      getInputTimeOfDay(display, END_ROW).setTime(getEndValue());
+      DateTime end = getEnd();
+      if (end != null) {
+        getInputDate(display, END_ROW).setDate(end);
+        getInputTimeOfDay(display, END_ROW).setTime(end);
+      }
     }
 
     Widget wrapper = wrapDisplay(display, false);
@@ -199,7 +239,20 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return wrapper;
   }
 
-  private DateTime getEnd(DateTime start) {
+  private DateTime getEnd() {
+    return (getRange() != null && getRange().hasUpperBound()) ? getRange().upperEndpoint() : null;
+  }
+
+  private InputDate getInputDate(HtmlTable display, int row) {
+    Widget widget = display.getWidget(row, DATE_COL);
+    if (widget instanceof InputDate) {
+      return (InputDate) widget;
+    } else {
+      return null;
+    }
+  }
+
+  private DateTime getInputEndValue(DateTime start) {
     HtmlTable display = getDisplayAsTable();
     if (display == null) {
       return null;
@@ -230,29 +283,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
-  private DateTime getEndValue() {
-    return endValue;
-  }
-
-  private InputDate getInputDate(HtmlTable display, int row) {
-    Widget widget = display.getWidget(row, DATE_COL);
-    if (widget instanceof InputDate) {
-      return (InputDate) widget;
-    } else {
-      return null;
-    }
-  }
-
-  private InputTimeOfDay getInputTimeOfDay(HtmlTable display, int row) {
-    Widget widget = display.getWidget(row, TIME_COL);
-    if (widget instanceof InputTimeOfDay) {
-      return (InputTimeOfDay) widget;
-    } else {
-      return null;
-    }
-  }
-
-  private DateTime getStart() {
+  private DateTime getInputStartValue() {
     HtmlTable display = getDisplayAsTable();
     if (display == null) {
       return null;
@@ -278,15 +309,46 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return TimeUtils.combine(datePart, timeMillis);
   }
 
-  private DateTime getStartValue() {
-    return startValue;
+  private InputTimeOfDay getInputTimeOfDay(HtmlTable display, int row) {
+    Widget widget = display.getWidget(row, TIME_COL);
+    if (widget instanceof InputTimeOfDay) {
+      return (InputTimeOfDay) widget;
+    } else {
+      return null;
+    }
   }
 
-  private void setEndValue(DateTime endValue) {
-    this.endValue = endValue;
+  private Range<DateTime> getRange() {
+    return range;
   }
 
-  private void setStartValue(DateTime startValue) {
-    this.startValue = startValue;
+  private DateTime getStart() {
+    return (getRange() != null && getRange().hasLowerBound()) ? getRange().lowerEndpoint() : null;
+  }
+
+  private Range<DateTime> parseRange(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    }
+
+    DateTime start = null;
+    DateTime end = null;
+
+    int i = 0;
+    for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(value)) {
+      if (i == 0) {
+        start = TimeUtils.toDateTimeOrNull(s);
+      } else if (i == 1) {
+        end = TimeUtils.toDateTimeOrNull(s);
+      }
+
+      i++;
+    }
+
+    return buildRange(start, end);
+  }
+
+  private void setRange(Range<DateTime> range) {
+    this.range = range;
   }
 }

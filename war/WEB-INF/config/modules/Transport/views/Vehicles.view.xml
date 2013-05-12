@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
 
-  name="Vehicles" source="Vehicles" caption="Transporto priemonės"
+  name="Vehicles" source="Vehicles" caption="=vehicles"
   editForm="Vehicle" newRowForm="Vehicle" newRowCaption="Nauja transporto priemonė"
   rowCaption="Number"
   >

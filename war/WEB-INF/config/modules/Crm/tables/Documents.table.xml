@@ -5,19 +5,22 @@
   idName="DocumentID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
+    <String name="Name" precision="100" notNull="true" label="=documentName" />
 
-    <DateTime name="DocumentDate" label="Dokumento data" defExpr="CURRENT_TIME" />
-    <DateTime name="Expires" label="Galioja iki" />
+    <DateTime name="DocumentDate" label="=documentDate" defExpr="CURRENT_TIME" />
+    <DateTime name="Expires" label="=documentExpires" />
 
-    <String name="Number" precision="30" label="Numeris" />
-    <String name="RegistrationNumber" precision="30" label="Registracijos numeris" />
+    <String name="Number" precision="30" label="=documentNumber" />
+    <String name="RegistrationNumber" precision="30" label="=documentRegistrationNumber" />
 
-    <Relation name="Type" relation="DocumentTypes" label="Tipas" />
-    <Relation name="Group" relation="DocumentGroups" label="Grupė" />
-    <Relation name="Category" relation="DocumentTree" label="Kategorija" />
-    <Relation name="Place" relation="DocumentPlaces" label="Vieta" />
+    <Relation name="Category" relation="DocumentTree" label="=documentCategory" />
+    <Relation name="Type" relation="DocumentTypes" label="=documentType" />
+    <Relation name="Place" relation="DocumentPlaces" label="=documentPlace" />
+    <Relation name="Status" relation="DocumentStatuses" label="=documentStatus" />
 
-    <Text name="Description" label="Aprašymas" />
+    <DateTime name="Sent" label="=documentSent" />
+    <DateTime name="Received" label="=documentReceived" />
+
+    <Text name="Description" label="=documentDescription" />
   </Fields>
 </Table>

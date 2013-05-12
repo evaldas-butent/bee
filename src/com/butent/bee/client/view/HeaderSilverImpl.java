@@ -138,6 +138,9 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverFilter(), Action.FILTER));
     }
+    if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
+      add(createControl(Global.getImages().silverFilterRemove(), Action.REMOVE_FILTER));
+    }
     
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverAdd(), Action.ADD));

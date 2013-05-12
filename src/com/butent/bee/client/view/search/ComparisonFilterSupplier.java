@@ -17,12 +17,12 @@ public class ComparisonFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+  public String getLabel() {
+    return null;
   }
   
   @Override
-  public String getDisplayHtml() {
+  public String getValue() {
     return null;
   }
 
@@ -34,5 +34,14 @@ public class ComparisonFilterSupplier extends AbstractFilterSupplier {
   @Override
   public Filter parse(String value) {
     return null;
+  }
+  
+  @Override
+  public void setValue(String value) {
+  }
+
+  @Override
+  protected List<SupplierAction> getActions() {
+    return Lists.newArrayList();
   }
 }

@@ -229,10 +229,78 @@ class TaskList {
 
   private static class ModeFilterSupplier extends AbstractFilterSupplier {
 
+    private enum Mode {
+      NEW {
+        @Override
+        Filter getFilter() {
+          return null;
+        }
+
+        @Override
+        String getLabel() {
+          return "n";
+        }
+
+        @Override
+        String getValue() {
+          return "0";
+        }
+      },
+
+      UPDATED {
+        @Override
+        Filter getFilter() {
+          return null;
+        }
+
+        @Override
+        String getLabel() {
+          return "p";
+        }
+
+        @Override
+        String getValue() {
+          return "1";
+        }
+      },
+      
+      NEW_OR_UPDATED {
+        @Override
+        Filter getFilter() {
+          return null;
+        }
+
+        @Override
+        String getLabel() {
+          return "np";
+        }
+
+        @Override
+        String getValue() {
+          return "2";
+        }
+      };
+      
+      private static Mode parseValue(String value) {
+        for (Mode mode : Mode.values()) {
+          if (BeeUtils.same(value, mode.getValue())) {
+            return mode;
+          }
+        }
+        return null;
+      }
+
+      abstract Filter getFilter();
+
+      abstract String getLabel();
+
+      abstract String getValue();
+    }
+    
     private static final Splitter TASK_SPLITTER =
         Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
-    private String caption = null;
+    private Mode mode = null;
 
     private final List<Long> newTasks = Lists.newArrayList();
     private final List<Long> updTasks = Lists.newArrayList();
@@ -242,8 +310,13 @@ class TaskList {
     }
 
     @Override
-    public String getDisplayHtml() {
-      return getCaption();
+    public String getLabel() {
+      return (getMode() == null) ? null : getMode().getLabel();
+    }
+
+    @Override
+    public String getValue() {
+      return (getMode() == null) ? null : getMode().getValue();
     }
 
     @Override
@@ -290,6 +363,7 @@ class TaskList {
 
     @Override
     public Filter parse(String value) {
+      
       if (BeeUtils.isDigit(value)) {
         switch (BeeUtils.toInt(value)) {
           case 0:
@@ -306,8 +380,13 @@ class TaskList {
 
     @Override
     public boolean reset() {
-      setCaption(null);
+      setMode(null);
       return super.reset();
+    }
+
+    @Override
+    public void setValue(String value) {
+      setMode(Mode.parseValue(value));
     }
 
     @Override
@@ -319,7 +398,7 @@ class TaskList {
     protected String getStylePrefix() {
       return "bee-crm-FilterSupplier-Mode-";
     }
-    
+
     private Widget createMode(String styleName) {
       return new CustomDiv(styleName);
     }
@@ -337,8 +416,9 @@ class TaskList {
         bNew.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            setCaption("n");
-            update(getNewFilter());
+            boolean changed = !Mode.NEW.equals(getMode());
+            setMode(Mode.NEW);
+            update(changed);
           }
         });
 
@@ -359,8 +439,9 @@ class TaskList {
         bUpd.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            setCaption("p");
-            update(getUpdFilter());
+            boolean changed = !Mode.UPDATED.equals(getMode());
+            setMode(Mode.UPDATED);
+            update(changed);
           }
         });
 
@@ -381,8 +462,9 @@ class TaskList {
         both.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            setCaption("np");
-            update(Filter.or(getNewFilter(), getUpdFilter()));
+            boolean changed = !Mode.NEW_OR_UPDATED.equals(getMode());
+            setMode(Mode.NEW_OR_UPDATED);
+            update(changed);
           }
         });
 
@@ -395,7 +477,7 @@ class TaskList {
         container.setWidget(row, 1, modeBoth);
 
         container.setText(row, 2, BeeUtils.toString(newTasks.size() + updTasks.size()));
-        
+
         row++;
       }
 
@@ -405,8 +487,9 @@ class TaskList {
       all.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption(null);
-          update(null);
+          boolean changed = getMode() != null;
+          setMode(null);
+          update(changed);
         }
       });
 
@@ -427,8 +510,8 @@ class TaskList {
       return container;
     }
 
-    private String getCaption() {
-      return caption;
+    private Mode getMode() {
+      return mode;
     }
 
     private Filter getNewFilter() {
@@ -439,8 +522,8 @@ class TaskList {
       return Filter.idIn(updTasks);
     }
 
-    private void setCaption(String caption) {
-      this.caption = caption;
+    private void setMode(Mode mode) {
+      this.mode = mode;
     }
   }
 
@@ -471,7 +554,7 @@ class TaskList {
       }
       return BeeConst.STRING_EMPTY;
     }
-    
+
     private String renderMode(String styleName) {
       return "<div class=\"" + styleName + "\"></div>";
     }
@@ -479,17 +562,76 @@ class TaskList {
 
   private static class SlackFilterSupplier extends AbstractFilterSupplier {
 
-    private String caption = null;
+    private enum Slack {
+      LATE {
+        @Override
+        Filter getFilter() {
+          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
+              ComparisonFilter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
+        }
+
+        @Override
+        String getLabel() {
+          return Localized.constants.taskLabelLate();
+        }
+
+        @Override
+        String getValue() {
+          return "late";
+        }
+      },
+
+      SCHEDULED {
+        @Override
+        Filter getFilter() {
+          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
+              ComparisonFilter.isMoreEqual(COL_START_TIME,
+                  new DateTimeValue(TimeUtils.today(1).getDateTime())));
+        }
+
+        @Override
+        String getLabel() {
+          return Localized.constants.taskLabelScheduled();
+        }
+
+        @Override
+        String getValue() {
+          return "scheduled";
+        }
+      };
+      
+      private static Slack parseValue(String value) {
+        for (Slack slack : Slack.values()) {
+          if (BeeUtils.same(value, slack.getValue())) {
+            return slack;
+          }
+        }
+        return null;
+      }
+
+      abstract Filter getFilter();
+
+      abstract String getLabel();
+
+      abstract String getValue();
+    }
+
+    private Slack slack = null;
 
     private SlackFilterSupplier(String options) {
       super(VIEW_TASKS, null, options);
     }
 
     @Override
-    public String getDisplayHtml() {
-      return getCaption();
+    public String getLabel() {
+      return (getSlack() == null) ? null : getSlack().getLabel();
     }
 
+    @Override
+    public String getValue() {
+      return (getSlack() == null) ? null : getSlack().getValue();
+    }
+    
     @Override
     public void onRequest(Element target, NotificationListener notificationListener,
         Callback<Boolean> callback) {
@@ -498,19 +640,19 @@ class TaskList {
 
     @Override
     public Filter parse(String value) {
-      if (BeeUtils.same(value, "late")) {
-        return getLateFilter();
-      } else if (BeeUtils.same(value, "scheduled")) {
-        return getScheduledFilter();
-      } else {
-        return null;
-      }
+      Slack s = Slack.parseValue(value);
+      return (s == null) ? null : s.getFilter();
     }
 
     @Override
     public boolean reset() {
-      setCaption(null);
+      setSlack(null);
       return super.reset();
+    }
+
+    @Override
+    public void setValue(String value) {
+      setSlack(Slack.parseValue(value));
     }
 
     @Override
@@ -533,8 +675,9 @@ class TaskList {
       late.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption(Localized.constants.taskLabelLate());
-          update(getLateFilter());
+          boolean changed = !Slack.LATE.equals(getSlack());
+          setSlack(Slack.LATE);
+          update(changed);
         }
       });
 
@@ -546,8 +689,9 @@ class TaskList {
       scheduled.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption(Localized.constants.taskLabelScheduled());
-          update(getScheduledFilter());
+          boolean changed = !Slack.SCHEDULED.equals(getSlack());
+          setSlack(Slack.SCHEDULED);
+          update(changed);
         }
       });
 
@@ -559,8 +703,9 @@ class TaskList {
       all.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setCaption(null);
-          update(null);
+          boolean changed = getSlack() != null;
+          setSlack(null);
+          update(changed);
         }
       });
 
@@ -581,23 +726,12 @@ class TaskList {
       return container;
     }
 
-    private String getCaption() {
-      return caption;
+    private Slack getSlack() {
+      return slack;
     }
 
-    private Filter getLateFilter() {
-      return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-          ComparisonFilter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
-    }
-
-    private Filter getScheduledFilter() {
-      return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-          ComparisonFilter.isMoreEqual(COL_START_TIME,
-              new DateTimeValue(TimeUtils.today(1).getDateTime())));
-    }
-
-    private void setCaption(String caption) {
-      this.caption = caption;
+    private void setSlack(Slack slack) {
+      this.slack = slack;
     }
   }
 

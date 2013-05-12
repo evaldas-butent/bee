@@ -3,15 +3,16 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="DocumentTree" caption="Dokumentų medis">
+  name="DocumentTree" caption="=documentTree">
 
-  <DataTree caption="Kategorijos" source="DocumentTree" parentColumn="Parent" orderColumn="Order">
+  <DataTree caption="=documentCategories" source="DocumentTree" parentColumn="Parent"
+    orderColumn="Order">
     <calc>
       <ui:expression>row.Name</ui:expression>
     </calc>
-    <form name="Kategorijos koregavimas">
+    <form name="EditCategory">
       <FlowPanel>
-        <Label html="Kategorija" class="bee-required" />
+        <Label text="=documentCategory" class="bee-required" />
         <InputText source="Name" />
       </FlowPanel>
     </form>

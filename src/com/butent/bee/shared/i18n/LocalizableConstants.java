@@ -26,6 +26,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String client();
 
+  String clients();
+
+  String companies();
+
   String company();
 
   String companyCode();
@@ -47,6 +51,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String email();
 
   String fax();
+
+  String fileOriginalName();
+
+  String fileSize();
+
+  String fileType();
 
   String filter();
 
@@ -77,6 +87,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String oldPasswordIsInvalid();
 
   String oldPasswordIsRequired();
+
+  String period();
+
+  String persons();
 
   String phone();
 

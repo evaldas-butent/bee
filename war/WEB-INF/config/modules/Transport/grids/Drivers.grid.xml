@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Drivers" viewName="Drivers" caption="Vairuotojai"
+  name="Drivers" viewName="Drivers" caption="=drivers"
   newRowForm="Driver" editForm="Driver"
   flexGrow="1" flexShrink="1"
   >

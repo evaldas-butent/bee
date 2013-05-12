@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Documents" source="Documents"
-  caption="Dokumentai" newRowCaption="Naujas dokumentas"
+  caption="=documents" newRowCaption="=documentNew"
   editForm="Document" newRowForm="NewDocument"
   >
   <Columns>
@@ -14,22 +14,28 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="RegistrationNumber" />
 
-    <SimpleColumn name="Type" />
-    <SimpleJoin joinType="LEFT" name="Type">
-      <SimpleColumn alias="TypeName" name="Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Group" />
-    <SimpleJoin joinType="LEFT" name="Group">
-      <SimpleColumn alias="GroupName" name="Name" />
-    </SimpleJoin>
     <SimpleColumn name="Category" />
     <SimpleJoin joinType="LEFT" name="Category">
       <SimpleColumn alias="CategoryName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="Type" />
+    <SimpleJoin joinType="LEFT" name="Type">
+      <SimpleColumn alias="TypeName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="Place" />
     <SimpleJoin joinType="LEFT" name="Place">
       <SimpleColumn alias="PlaceName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="Status" />
+    <SimpleJoin joinType="LEFT" name="Status">
+      <SimpleColumn alias="StatusName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Sent" />
+    <SimpleColumn name="Received" />
 
     <SimpleColumn name="Description" />
   </Columns>

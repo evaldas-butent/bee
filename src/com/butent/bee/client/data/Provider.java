@@ -179,6 +179,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
+  public void setUserFilter(Filter userFilter) {
+    this.userFilter = userFilter;
+  }
+
   protected void acceptFilter(Filter newFilter) {
     setUserFilter(newFilter);
     getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
@@ -223,9 +227,5 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private Map<String, Filter> getParentFilters() {
     return parentFilters;
-  }
-
-  private void setUserFilter(Filter userFilter) {
-    this.userFilter = userFilter;
   }
 }

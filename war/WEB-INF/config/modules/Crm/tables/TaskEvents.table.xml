@@ -5,7 +5,7 @@
   idName="TaskEventID"
   >
   <Fields>
-    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="Užduotis" />
+    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=task" />
     <Relation name="Publisher" notNull="true" relation="Users" label="Naudotojas" />
     <DateTime name="PublishTime" notNull="true" />
     <Text name="Comment" label="Komentaras" />

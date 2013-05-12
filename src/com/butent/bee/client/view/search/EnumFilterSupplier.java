@@ -11,7 +11,6 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.ui.Captions;
@@ -45,6 +44,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   private final int nullIndex;
 
   private final List<DataItem> data = Lists.newArrayList();
+  private final List<Integer> values = Lists.newArrayList();
 
   public EnumFilterSupplier(String viewName, BeeColumn column, String options, String key) {
     super(viewName, column, options);
@@ -54,12 +54,21 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public String getDisplayHtml() {
-    List<String> values = Lists.newArrayList();
-    for (int row : getSelectedItems()) {
-      values.add(getCaption(data.get(row)));
+  public String getLabel() {
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    List<String> labels = Lists.newArrayList();
+    for (int index : values) {
+      labels.add(getCaption(index));
     }
     return BeeUtils.join(BeeConst.STRING_COMMA, values);
+  }
+
+  @Override
+  public String getValue() {
+    return BeeUtils.joinInts(values);
   }
 
   @Override
@@ -135,6 +144,11 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public void setValue(String value) {
+    BeeUtils.overwrite(values, BeeUtils.toInts(value));
+  }
+
+  @Override
   protected void doClear() {
     clearDisplay();
     super.doClear();
@@ -142,7 +156,15 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected void doCommit() {
-    update(buildFilter(getSelectedItems()));
+    List<Integer> newValues = Lists.newArrayList();
+    for (int row : getSelectedItems()) {
+      newValues.add(data.get(row).getIndex());
+    }
+    
+    boolean changed = BeeUtils.sameElements(values, newValues);
+    
+    BeeUtils.overwrite(values, newValues);
+    update(changed);
   }
 
   @Override
@@ -154,35 +176,29 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     if (BeeUtils.isEmpty(ordinals)) {
       return null;
     }
-
-    CompoundFilter compoundFilter = Filter.or();
+    
+    List<Filter> filters = Lists.newArrayList();
 
     for (Integer ordinal : ordinals) {
       if (ordinal != null) {
         if (ordinal.equals(nullIndex)) {
-          compoundFilter.add(Filter.isEmpty(getColumnId()));
+          filters.add(Filter.isEmpty(getColumnId()));
         } else {
-          compoundFilter.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(ordinal)));
+          filters.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(ordinal)));
         }
       }
     }
 
-    if (compoundFilter.isEmpty()) {
-      return null;
-    } else if (compoundFilter.size() == 1) {
-      return compoundFilter.getSubFilters().get(0);
-    } else {
-      return compoundFilter;
-    }
+    return Filter.or(filters);
   }
-  
+
   private Widget createWidget() {
     HtmlTable display = createDisplay(true);
-    
+
     int row = 0;
     for (DataItem dataItem : data) {
       int col = 0;
-      display.setText(row, col++, getCaption(dataItem));
+      display.setText(row, col++, getCaption(dataItem.getIndex()));
       addBinSize(display, row, col, dataItem.getCount());
       row++;
     }
@@ -190,8 +206,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     return wrapDisplay(display, false);
   }
 
-  private String getCaption(DataItem dataItem) {
-    return (dataItem.getIndex() == nullIndex)
-        ? NULL_VALUE_LABEL : captions.get(dataItem.getIndex());
+  private String getCaption(int index) {
+    return (index == nullIndex) ? NULL_VALUE_LABEL : captions.get(index);
   }
 }

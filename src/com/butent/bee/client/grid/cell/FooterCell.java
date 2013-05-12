@@ -41,8 +41,8 @@ public class FooterCell extends AbstractCell<AbstractFilterSupplier> {
   
   @Override
   public void render(Context context, AbstractFilterSupplier fs, SafeHtmlBuilder sb) {
-    String html = BeeUtils.trim(fs.getDisplayHtml());
-    String title = BeeUtils.trim(fs.getDisplayTitle());
+    String html = BeeUtils.trim(fs.getLabel());
+    String title = BeeUtils.trim(fs.getTitle());
 
     String classes = StyleUtils.buildClasses(STYLE_NAME, 
         html.isEmpty() ? STYLE_EMPTY : STYLE_FILTER);
@@ -55,7 +55,7 @@ public class FooterCell extends AbstractCell<AbstractFilterSupplier> {
   }
   
   public void update(Element container, AbstractFilterSupplier fs) {
-    update(container, fs.getDisplayHtml(), fs.getDisplayTitle());
+    update(container, fs.getLabel(), fs.getTitle());
   }
   
   private void update(Element container, String html, String title) {

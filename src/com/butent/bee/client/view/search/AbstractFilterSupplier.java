@@ -1,11 +1,11 @@
 package com.butent.bee.client.view.search;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -45,7 +45,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public abstract class AbstractFilterSupplier implements HasViewName, HasOptions {
+public abstract class AbstractFilterSupplier implements HasViewName, HasOptions, TakesValue<String> {
 
   protected enum SupplierAction implements HasCaption {
     ALL("Visi"),
@@ -72,7 +72,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   protected static final String NULL_VALUE_LABEL = "[tuščia]";
 
   protected static final String DEFAULT_STYLE_PREFIX = "bee-FilterSupplier-";
-  
+
   private static final String BIN_SIZE_CELL_STYLE_SUFFIX = "binSizeCell";
 
   private final String viewName;
@@ -80,7 +80,6 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
 
   private String options;
 
-  private Filter filter = null;
   private boolean filterChanged = false;
 
   private Popup dialog = null;
@@ -100,23 +99,24 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     this.options = options;
   }
 
-  public abstract String getDisplayHtml();
-
-  public String getDisplayTitle() {
-    if (Global.isDebug()) {
-      return (getFilter() == null) ? null : getFilter().toString();
-    } else {
-      return getDisplayHtml();
-    }
-  }
-
   public Filter getFilter() {
-    return filter;
+    return parse(getValue());
   }
+
+  public abstract String getLabel();
 
   @Override
   public String getOptions() {
     return options;
+  }
+
+  public String getTitle() {
+    if (Global.isDebug()) {
+      Filter filter = getFilter();
+      return (filter == null) ? null : filter.toString();
+    } else {
+      return getLabel();
+    }
   }
 
   @Override
@@ -125,32 +125,28 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
   }
 
   public boolean isEmpty() {
-    return getFilter() == null;
+    return BeeUtils.isEmpty(getValue());
   }
 
   public abstract void onRequest(Element target, NotificationListener notificationListener,
       Callback<Boolean> callback);
-  
+
   public abstract Filter parse(String value);
 
   public boolean reset() {
     clearSelection();
     setCounter(0);
 
-    if (getFilter() == null) {
+    if (BeeUtils.isEmpty(getValue())) {
       return false;
     } else {
-      setFilter(null);
+      setValue(null);
       return true;
     }
   }
 
   public void setEffectiveFilter(Filter effectiveFilter) {
     this.effectiveFilter = effectiveFilter;
-  }
-
-  public void setFilter(Filter filter) {
-    this.filter = filter;
   }
 
   @Override
@@ -207,7 +203,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
               for (int i = 0; i < rc; i++) {
                 invertSelection(i, display.getRow(i));
               }
-              
+
             } else {
               invertSelection(rowElement.getRowIndex(), rowElement);
             }
@@ -464,10 +460,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions 
     this.displayId = displayId;
   }
 
-  protected void update(Filter newFilter) {
-    setFilterChanged(!Objects.equal(getFilter(), newFilter));
-
-    setFilter(newFilter);
+  protected void update(boolean valueChanged) {
+    setFilterChanged(valueChanged);
     closeDialog();
   }
 

@@ -106,8 +106,6 @@ public class CrmKeeper {
     key = Captions.register(CrmConstants.TaskStatus.class);
     Captions.registerColumn(VIEW_TASKS, COL_STATUS, key);
 
-    Captions.register(CrmConstants.ProjectEvent.class);
-
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
 
