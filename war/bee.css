@@ -982,7 +982,7 @@ body {
 }
 
 .bee-TabbedPages-horizontal {
-  min-height: 100px;
+  min-height: 120px;
 }
 
 .bee-TabbedPages-tabPanel {
@@ -1130,7 +1130,7 @@ body {
 
 .bee-ChildGrid, .bee-GridPanel {
   position: relative;
-  min-height: 80px;
+  min-height: 100px;
 }
 
 .bee-ChildGrid > .bee-GridContainer, .bee-GridPanel > .bee-GridContainer {

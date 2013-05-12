@@ -111,7 +111,7 @@ public class RowFactory {
 
     selector.setAdding(true);
 
-    createRow(formName, caption, dataInfo, row, selector, new RowCallback() {
+    createRow(formName, caption, dataInfo, row, selector, null, new RowCallback() {
       @Override
       public void onCancel() {
         selector.setAdding(false);
@@ -127,10 +127,14 @@ public class RowFactory {
   }
 
   public static void createRow(String viewName) {
-    createRow(viewName, null);
+    createRow(viewName, null, null);
   }
 
-  public static void createRow(String viewName, String caption) {
+  public static void createRow(String viewName, RowCallback rowCallback) {
+    createRow(viewName, null, rowCallback);
+  }
+  
+  public static void createRow(String viewName, String caption, RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -139,7 +143,8 @@ public class RowFactory {
     }
 
     BeeRow row = createEmptyRow(dataInfo, true);
-    createRow(dataInfo, row, BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()));
+    createRow(dataInfo.getNewRowForm(), BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()),
+        dataInfo, row, null, null, rowCallback);
   }
 
   public static void createRow(DataInfo dataInfo, BeeRow row) {
@@ -149,7 +154,7 @@ public class RowFactory {
 
   public static void createRow(DataInfo dataInfo, BeeRow row, String caption) {
     Assert.notNull(dataInfo);
-    createRow(dataInfo.getNewRowForm(), caption, dataInfo, row, null, null);
+    createRow(dataInfo.getNewRowForm(), caption, dataInfo, row, null, null, null);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
@@ -165,11 +170,6 @@ public class RowFactory {
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       RowCallback rowCallback) {
     createRow(formName, caption, dataInfo, row, null, null, rowCallback);
-  }
-
-  public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, RowCallback rowCallback) {
-    createRow(formName, caption, dataInfo, row, target, null, rowCallback);
   }
 
   public static int setDefaults(BeeRow row, DataInfo dataInfo) {

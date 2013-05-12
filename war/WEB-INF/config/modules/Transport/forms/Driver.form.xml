@@ -67,7 +67,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=documents</text>
-        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
+        <ChildGrid name="RelatedDocuments" relColumn="Driver" />
       </page>
       <page>
         <text>Reisai</text>

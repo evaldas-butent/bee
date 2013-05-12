@@ -53,7 +53,7 @@
       </page>
       <page>
         <text>=documents</text>
-        <xi:include href="../../Crm/forms/widgets/DocumentSelector.widget.xml" />
+        <ChildGrid name="RelatedDocuments" relColumn="Vehicle" />
       </page>
       <page>
         <text>Keičiamos dalys</text>

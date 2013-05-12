@@ -1155,6 +1155,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public String getRelColumn() {
+    return relColumn;
+  }
+
+  @Override
   public Long getRelId() {
     return relId;
   }
@@ -1770,6 +1775,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private void generateNewRowForm(GridDescription gridDescription) {
     String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+
+    if (BeeConst.STRING_MINUS.equals(newRowColumns)) {
+      return;
+    }
+
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
     if (columnNames.isEmpty()) {
@@ -1947,10 +1957,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private EditStartEvent getPendingEditStartEvent() {
     return pendingEditStartEvent;
-  }
-
-  private String getRelColumn() {
-    return relColumn;
   }
 
   private String getRowCaption(IsRow row, boolean edit) {

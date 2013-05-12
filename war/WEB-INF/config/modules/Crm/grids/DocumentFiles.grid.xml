@@ -14,10 +14,8 @@
     <DataColumn name="Caption" required="true" updateMode="row" />
     <DataColumn name="Description" />
 
-    <DataColumn name="FileName" readOnly="true" />
     <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60" />
 
-    <DataColumn name="FileType" readOnly="true" />
     <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
       width="20">
       <renderer type="fileIcon" />
@@ -26,5 +24,8 @@
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
     
     <DataColumn name="Comment" />
+
+    <DataColumn name="FileName" readOnly="true" visible="false" />
+    <DataColumn name="FileType" readOnly="true" visible="false" />
   </columns>
 </Grid>

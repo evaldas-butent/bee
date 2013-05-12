@@ -3,7 +3,8 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewDocument">
+  name="NewDocument" width="500" height="400"
+  >
 
   <FlowPanel>
     <xi:include href="widgets/DocumentFields.widget.xml" />

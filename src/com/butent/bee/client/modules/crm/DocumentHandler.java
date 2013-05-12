@@ -13,6 +13,8 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -30,6 +32,7 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
@@ -50,6 +53,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -333,11 +337,78 @@ public class DocumentHandler {
     }
   }
 
+  private static class RelatedDocumentsHandler extends AbstractGridInterceptor {
+    
+    private int documentIndex = BeeConst.UNDEF;
+
+    private RelatedDocumentsHandler() {
+    }
+    
+    @Override
+    public void afterCreate(GridView gridView) {
+      documentIndex = gridView.getDataIndex(COL_DOCUMENT);
+      super.afterCreate(gridView);
+    }
+
+    @Override
+    public boolean beforeAction(Action action, final GridPresenter presenter) {
+      if (Action.ADD.equals(action)) {
+        RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            String relColumn = presenter.getGridView().getRelColumn();
+            Long relId = presenter.getGridView().getRelId();
+            
+            Queries.insert(CommonsConstants.TBL_RELATIONS,
+                Data.getColumns(CommonsConstants.TBL_RELATIONS,
+                    Lists.newArrayList(COL_DOCUMENT, relColumn)),
+                Queries.asList(result.getId(), relId), null, new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow row) {
+                    presenter.handleAction(Action.REFRESH);
+                  }
+                });
+          }
+        });
+      
+        return false;
+
+      } else {
+        return super.beforeAction(action, presenter);
+      }
+    }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new RelatedDocumentsHandler();
+    }
+
+    @Override
+    public void onEditStart(EditStartEvent event) {
+      event.consume();
+
+      if (!BeeConst.isUndef(documentIndex) && event.getRowValue() != null) {
+        Long docId = event.getRowValue().getLong(documentIndex);
+
+        if (DataUtils.isId(docId)) {
+          RowEditor.openRow(VIEW_DOCUMENTS, docId, true, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              getGridPresenter().handleAction(Action.REFRESH);
+            }
+          });
+        }
+      }
+    }
+  }
+  
   private static final String DOCUMENT_VIEW_NAME = "Documents";
 
   public static void register() {
     GridFactory.registerGridInterceptor("Documents", new DocumentGridHandler());
     GridFactory.registerGridInterceptor("DocumentFiles", new FileGridHandler());
+
+    GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
   }

@@ -7,7 +7,9 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Document" caption="=document">
+  name="Document" caption="=document"
+  width="900" height="400"
+  > 
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="-webkit-justify-content: space-between;">
