@@ -16,7 +16,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
@@ -35,6 +34,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.shared.Assert;
@@ -323,12 +323,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        Global.inputString("Options", new StringCallback() {
-          @Override
-          public void onSuccess(String value) {
-            getGridView().applyOptions(value);
-          }
-        });
+        GridSettings.handle(getGridView().getGrid(), getHeader().asWidget());
         break;
 
       case DELETE:

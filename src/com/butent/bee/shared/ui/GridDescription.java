@@ -705,16 +705,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return viewName;
   }
 
-  public List<ColumnDescription> getVisibleColumns() {
-    List<ColumnDescription> result = Lists.newArrayList();
-    for (ColumnDescription column : getColumns()) {
-      if (column.isVisible()) {
-        result.add(column);
-      }
-    }
-    return result;
-  }
-
   public List<String> getWidgets() {
     return widgets;
   }

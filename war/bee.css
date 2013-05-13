@@ -1792,6 +1792,20 @@ div:focus,
   border-top : 1px solid #edede1;
 }
 
+.bee-GridSettings-dialog {
+  background-color: white;
+}
+.bee-GridSettings-table {
+  border-collapse: collapse;
+}
+.bee-GridSettings-check {
+  margin: 0;
+}
+.bee-GridSettings-label {
+  font-size: 12px;
+  margin-left: 1em;
+}
+
 .companyInfo-label, .companyInfo-item {
   display: inline-block;
   margin-right: 4px;

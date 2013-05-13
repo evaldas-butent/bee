@@ -503,10 +503,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     setDataColumns(dataCols);
 
     boolean hasHeaders = gridDescr.hasColumnHeaders();
-    boolean hasFooters = hasSearch;
-    if (hasFooters && BeeUtils.isFalse(gridDescr.hasFooters())) {
-      hasFooters = false;
-    }
+    boolean hasFooters = BeeUtils.isTrue(gridDescr.hasFooters());
 
     List<ColumnDescription> columnDescriptions = null;
 
@@ -550,7 +547,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       setRowValidation(Evaluator.create(gridDescr.getRowValidation(), null, dataCols));
     }
 
-    columnDescriptions = gridDescr.getVisibleColumns();
+    columnDescriptions = gridDescr.getColumns();
     if (interceptor != null) {
       interceptor.beforeCreateColumns(dataCols, columnDescriptions);
     }
@@ -838,8 +835,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
-      getGrid().addColumn(columnName, cellSource, column, header, footer);
-      getGrid().setColumnInfo(columnName, columnDescr, gridDescr, dataCols);
+      ColumnInfo columnInfo = getGrid().addColumn(columnName, cellSource, column, header, footer,
+          BeeUtils.isTrue(columnDescr.isVisible()));
+      getGrid().setColumnInfo(columnInfo, columnDescr, gridDescr, dataCols);
     }
 
     if (interceptor != null) {
