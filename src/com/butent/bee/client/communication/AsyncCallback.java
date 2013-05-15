@@ -92,13 +92,12 @@ public class AsyncCallback implements RequestCallback {
       finalizeResponse();
       return;
     }
-    String sid = resp.getHeader(Service.RPC_VAR_SID);
 
+    String sid = resp.getHeader(Service.RPC_VAR_SID);
     if (!BeeUtils.isEmpty(sid)) {
       BeeKeeper.getUser().setSessionId(sid);
 
       String usr = resp.getHeader(Service.RPC_VAR_USER);
-
       if (!BeeUtils.isEmpty(usr)) {
         UserData userData = UserData.restore(Codec.decodeBase64(usr));
         BeeKeeper.getUser().setUserData(userData);

@@ -239,7 +239,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   @Override
   public void render(IsRow row) {
-    render((row == null) ? null : row.getProperty(rowProperty));
+    if (!BeeUtils.isEmpty(rowProperty)) {
+      render((row == null) ? null : row.getProperty(rowProperty));
+    }
   }
 
   public void render(String value) {

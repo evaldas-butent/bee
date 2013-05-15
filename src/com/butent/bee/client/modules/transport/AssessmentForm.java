@@ -4,10 +4,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -43,7 +44,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -572,7 +572,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
       header.addCommandItem(new BeeButton("Rašyti laišką", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Element div = new CustomDiv().getElement();
+          Element div = Document.get().createDivElement();
           StyleUtils.setWhiteSpace(div, WhiteSpace.PRE_WRAP);
           div.setInnerHTML("\n\n---\n"
               + BeeUtils.joinWords(row.getString(form.getDataIndex("FirstName")),
@@ -581,7 +581,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
           Set<Long> recipient = null;
           Long addr = row.getLong(form.getDataIndex("PersonEmail"));
 
-          if (addr != null) {
+          if (addr == null) {
             addr = row.getLong(form.getDataIndex("CustomerEmail"));
           }
           if (addr != null) {
