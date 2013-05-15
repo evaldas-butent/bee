@@ -3,9 +3,11 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -26,7 +28,10 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -38,6 +43,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -62,6 +68,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AssessmentForm extends AbstractFormInterceptor {
 
@@ -540,7 +547,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void afterRefresh(final FormView form, IsRow row) {
+  public void afterRefresh(final FormView form, final IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -565,6 +572,22 @@ public class AssessmentForm extends AbstractFormInterceptor {
       header.addCommandItem(new BeeButton("Rašyti laišką", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
+          Element div = new CustomDiv().getElement();
+          StyleUtils.setWhiteSpace(div, WhiteSpace.PRE_WRAP);
+          div.setInnerHTML("\n\n---\n"
+              + BeeUtils.joinWords(row.getString(form.getDataIndex("FirstName")),
+                  row.getString(form.getDataIndex("LastName"))));
+
+          Set<Long> recipient = null;
+          Long addr = row.getLong(form.getDataIndex("PersonEmail"));
+
+          if (addr != null) {
+            addr = row.getLong(form.getDataIndex("CustomerEmail"));
+          }
+          if (addr != null) {
+            recipient = Sets.newHashSet(addr);
+          }
+          NewMailMessage.create(recipient, null, null, null, div.getString(), null);
         }
       }));
       if (AssessmentStatus.NEW.is(status)) {

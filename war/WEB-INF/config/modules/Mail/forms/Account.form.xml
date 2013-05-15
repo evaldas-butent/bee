@@ -9,7 +9,7 @@
     <FlowPanel class="flexBox-vertical-center">
       <Table>
         <row>
-          <Label html="Pavadinimas" horizontalAlignment="right" />
+          <Label html="Pavadinimas" horizontalAlignment="right" class="bee-required" />
           <InputText source="Description" style="width:200px" />
 
           <cell rowSpan="2" verticalAlignment="middle">
@@ -17,7 +17,7 @@
           </cell>
         </row>
         <row>
-          <Label html="El.paštas" horizontalAlignment="right" />
+          <Label html="El.paštas" horizontalAlignment="right" class="bee-required" />
           <DataSelector source="Address" style="width:200px">
             <renderToken source="Label" suffix=" " />
             <renderToken source="Email" prefix="&lt;" suffix="&gt;" />

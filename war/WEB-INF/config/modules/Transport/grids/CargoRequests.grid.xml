@@ -5,7 +5,6 @@
 
   name="CargoRequests" viewName="CargoRequests" caption="Pervežimo užklausimai"
   flexGrow="1" flexShrink="1"
-  newRowForm="NewCargoRequest" editForm="CargoRequest"
   >
   <north size="40">
     <w:HorizontalPanel>

@@ -14,10 +14,10 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.output.Printer;
@@ -57,7 +57,7 @@ import java.util.Set;
 public class Global implements Module {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
-  
+
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();
 
@@ -68,9 +68,9 @@ public class Global implements Module {
   private static final Images.Resources images = Images.createResources();
 
   private static final Map<String, String> styleSheets = Maps.newHashMap();
-  
+
   private static final Favorites favorites = new Favorites();
-  
+
   private static final Defaults defaults = new ClientDefaults();
 
   private static final Search search = new Search();
@@ -80,11 +80,11 @@ public class Global implements Module {
   private static final Reports reports = new Reports();
 
   private static boolean debug = false;
-  
+
   public static void addReport(String caption, Command command) {
     reports.addReport(caption, command);
   }
-  
+
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
       logger.warning("style sheet name not specified");
@@ -100,7 +100,7 @@ public class Global implements Module {
 
     if (!value.equals(styleSheets.get(key))) {
       styleSheets.put(key, value);
-      
+
       String css = CharMatcher.BREAKING_WHITESPACE.collapseFrom(value, BeeConst.CHAR_SPACE);
       StyleInjector.inject(css);
       Printer.onInjectStyleSheet(css);
@@ -137,7 +137,7 @@ public class Global implements Module {
       ConfirmationCallback callback) {
     msgBoxen.confirm(caption, icon, messages, callback, null, null, null);
   }
-  
+
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
     msgBoxen.confirm(caption, icon, messages, callback, null,
@@ -154,7 +154,7 @@ public class Global implements Module {
 
     vars.put(name, new Variable(caption, type, value));
   }
-  
+
   public static void createVar(String name, String caption, BeeType type, String value,
       BeeWidget widget, String... items) {
     Assert.notEmpty(name);
@@ -166,12 +166,12 @@ public class Global implements Module {
   public static void debug(String s) {
     logger.debug(s);
   }
-  
+
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
     msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null);
   }
-  
+
   public static CacheManager getCache() {
     return cache;
   }
@@ -195,7 +195,7 @@ public class Global implements Module {
   public static InputBoxes getInpBoxen() {
     return inpBoxen;
   }
-  
+
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
   }
@@ -207,7 +207,7 @@ public class Global implements Module {
   public static Search getSearch() {
     return search;
   }
-  
+
   public static Widget getSearchWidget() {
     return search.ensureSearchWidget();
   }
@@ -274,7 +274,7 @@ public class Global implements Module {
       String defaultValue, int maxLength) {
     inputString(caption, prompt, callback, defaultValue, maxLength, BeeConst.DOUBLE_UNDEF, null);
   }
-  
+
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, CssUnit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
@@ -308,7 +308,7 @@ public class Global implements Module {
   public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
     inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
   }
-  
+
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle) {
     inputWidget(caption, input, callback, dialogStyle, null, Action.NO_ACTIONS);
@@ -331,7 +331,7 @@ public class Global implements Module {
   public static boolean isVar(String name) {
     return vars.containsKey(name);
   }
-  
+
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
@@ -341,18 +341,18 @@ public class Global implements Module {
   public static boolean nativeConfirm(String... lines) {
     return msgBoxen.nativeConfirm(lines);
   }
-  
+
   public static void sayHuh(String... messages) {
     int n = (messages == null) ? 0 : messages.length;
     String[] arr = new String[n + 1];
     arr[0] = "Huh ?";
-    
+
     for (int i = 0; i < n; i++) {
       arr[i + 1] = messages[i];
     }
     inform(arr);
   }
-  
+
   public static void setDebug(boolean debug) {
     Global.debug = debug;
   }
@@ -379,7 +379,7 @@ public class Global implements Module {
   public static void setVarValue(String name, String value) {
     getVar(name).setValue(value);
   }
-  
+
   public static void setVarWidth(String name, String width) {
     getVar(name).setWidth(width);
   }
@@ -396,7 +396,7 @@ public class Global implements Module {
 
     showError(messages);
   }
-  
+
   public static void showError(String caption, List<String> messages) {
     showError(caption, messages, null, null);
   }
@@ -428,14 +428,14 @@ public class Global implements Module {
 
   public static void showVars(String... context) {
     int n = (context == null) ? 0 : context.length;
-    List<String> names = Lists.newArrayList(); 
+    List<String> names = Lists.newArrayList();
 
     if (n > 0) {
       Set<String> keys = new LinkedHashSet<String>();
       for (String z : context) {
         keys.addAll(BeeUtils.filterContext(vars.keySet(), z));
       }
-      
+
       names.addAll(keys);
     } else {
       names.addAll(vars.keySet());
@@ -503,7 +503,7 @@ public class Global implements Module {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);
     BeeKeeper.getBus().registerMultiDeleteHandler(getFavorites(), false);
   }
-  
+
   private void initImages() {
     Images.init(getImages());
   }

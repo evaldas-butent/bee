@@ -3,7 +3,10 @@
 
 name="Tasks" label="=tasks" order="30"
 >
-  <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" />
+  <Item name="Requests" label="Užklausimai" service="grid" parameters="Requests"/>
+  <Item name="NewRequest" label="Naujas užklausimas" service="new" parameters="Requests" />
+
+  <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" separator="true" />
   <Item name="DelegatedTasks" label="Deleguotos" service="task_list" parameters="d" />
   <Item name="ObservedTasks" label="Stebimos" service="task_list" parameters="o" />
 

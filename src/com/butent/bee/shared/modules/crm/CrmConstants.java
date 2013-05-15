@@ -122,6 +122,7 @@ public class CrmConstants {
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
 
   public static final String TBL_REQUESTS = "Requests";
+  public static final String TBL_REQUEST_FILES = "RequestFiles";
 
   public static final String TBL_TASKS = "Tasks";
   public static final String TBL_TASK_USERS = "TaskUsers";
@@ -262,6 +263,8 @@ public class CrmConstants {
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
   public static final String FORM_TASKS_REPORT = "TasksReport";
+
+  public static final String FORM_NEW_REQUEST = "NewRequest";
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 

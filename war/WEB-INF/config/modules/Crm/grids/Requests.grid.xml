@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+
+  name="Requests" viewName="Requests" caption="Užklausimai"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <IdColumn name="ID" />
+    <DataColumn name="Date" caption="Data" width="100" />
+    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT">
+      <filter name="Executing" label="Vykdomi" value="!(Finished)" />
+    </DataColumn>
+    <RelColumn name="Customer" caption="Klientas" minWidth="100" />
+
+    <DataColumn name="Content" caption="Užklausimas" minWidth="100">
+      <style>
+        <bodyStyle>
+          <ui:inline>white-space: nowrap;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+
+    <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
+  </columns>
+</Grid>

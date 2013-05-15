@@ -64,6 +64,8 @@ public class CrmKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
 
+    FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
+
     BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       @Override
       public void onSelection(String parameters) {

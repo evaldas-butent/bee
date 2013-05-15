@@ -90,6 +90,22 @@ public class MailModuleBean implements BeeModule {
   @Resource
   EJBContext ctx;
 
+  public void checkMail(MailAccount account, MailFolder localFolder) {
+    Assert.noNulls(account, localFolder);
+    Store store = null;
+
+    if (localFolder.isConnected()) {
+      try {
+        store = account.connectToStore();
+        checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, true);
+      } catch (MessagingException e) {
+        logger.error(e);
+      } finally {
+        account.disconnectFromStore(store);
+      }
+    }
+  }
+
   @Override
   public Collection<String> dependsOn() {
     return null;
@@ -241,7 +257,8 @@ public class MailModuleBean implements BeeModule {
         if (folder == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
-          response = checkMail(account, folder);
+          mail.checkMailAsynchronously(account, folder);
+          response = new ResponseObject();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
         response = new ResponseObject();
@@ -286,6 +303,10 @@ public class MailModuleBean implements BeeModule {
           }
           response.addInfo("Laiškas išsaugotas juodraščiuose");
         }
+
+      } else if (BeeUtils.same(svc, SVC_GET_USABLE_CONTENT)) {
+        response = getUsableContent(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)));
+
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
         logger.warning(msg);
@@ -554,14 +575,18 @@ public class MailModuleBean implements BeeModule {
         remoteFolder.fetch(newMessages, fp);
 
         for (Message message : newMessages) {
-          boolean ok = mail.storeMail(message, localFolder.getId(),
-              uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null);
+          try {
+            boolean ok = mail.storeMail(message, localFolder.getId(),
+                uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null);
 
-          if (ok) {
-            if (localFolder.getParent() == null) { // INBOX
-              // TODO applyRules(message);
+            if (ok) {
+              if (localFolder.getParent() == null) { // INBOX
+                // TODO applyRules(message);
+              }
+              c++;
             }
-            c++;
+          } catch (MessagingException e) {
+            logger.error(e);
           }
         }
       } finally {
@@ -595,24 +620,6 @@ public class MailModuleBean implements BeeModule {
       }
     }
     return c;
-  }
-
-  private ResponseObject checkMail(MailAccount account, MailFolder localFolder)
-      throws MessagingException {
-    Assert.noNulls(account, localFolder);
-    Store store = null;
-    int c = 0;
-
-    if (localFolder.isConnected()) {
-      try {
-        store = account.connectToStore();
-        c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder, true);
-
-      } finally {
-        account.disconnectFromStore(store);
-      }
-    }
-    return ResponseObject.response(c);
   }
 
   private void disconnectFolder(MailAccount account, MailFolder folder) throws MessagingException {
@@ -670,6 +677,16 @@ public class MailModuleBean implements BeeModule {
     Assert.notNull(messageId);
 
     Map<String, SimpleRowSet> packet = Maps.newHashMap();
+
+    packet.put(TBL_MESSAGES, qs.getRow(new SqlSelect()
+        .addFields(TBL_MESSAGES, COL_DATE, COL_SENDER, COL_SUBJECT)
+        .addFields(CommonsConstants.TBL_EMAILS,
+            CommonsConstants.COL_EMAIL_ADDRESS, CommonsConstants.COL_EMAIL_LABEL)
+        .addFrom(TBL_MESSAGES)
+        .addFromInner(CommonsConstants.TBL_EMAILS,
+            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
+        .setWhere(sys.idEquals(TBL_MESSAGES, messageId))).getRowSet());
+
     IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, messageId);
 
     if (!showBcc) {
@@ -698,6 +715,85 @@ public class MailModuleBean implements BeeModule {
       newRs.addRow(new String[] {row[0], HtmlUtils.cleanHtml(row[1])});
     }
     packet.put(TBL_PARTS, newRs);
+
+    packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
+        .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)
+        .addFields(CommonsConstants.TBL_FILES, CommonsConstants.COL_FILE_NAME,
+            CommonsConstants.COL_FILE_SIZE)
+        .addFrom(TBL_ATTACHMENTS)
+        .addFromInner(CommonsConstants.TBL_FILES,
+            sys.joinTables(CommonsConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
+
+    return ResponseObject.response(packet);
+  }
+
+  private ResponseObject getUsableContent(Long messageId) {
+    Assert.notNull(messageId);
+
+    Map<String, Object> packet = Maps.newHashMap();
+
+    SimpleRow data = qs.getRow(new SqlSelect()
+        .addFields(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_COMPANY)
+        .addField(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.getIdName(CommonsConstants.TBL_COMPANY_PERSONS), CommonsConstants.COL_PERSON)
+        .addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+        .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME)
+        .addFrom(TBL_MESSAGES)
+        .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
+            CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
+        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_CONTACT))
+        .addFromInner(CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON))
+        .addFromInner(CommonsConstants.TBL_COMPANIES,
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_COMPANY))
+        .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
+
+    if (data != null) {
+      packet.put(CommonsConstants.COL_COMPANY, data.getLong(CommonsConstants.COL_COMPANY));
+      packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_NAME,
+          data.getValue(CommonsConstants.COL_NAME));
+      packet.put(CommonsConstants.COL_PERSON, data.getLong(CommonsConstants.COL_PERSON));
+      packet.put(CommonsConstants.COL_FIRST_NAME, data.getValue(CommonsConstants.COL_FIRST_NAME));
+      packet.put(CommonsConstants.COL_LAST_NAME, data.getValue(CommonsConstants.COL_LAST_NAME));
+    } else {
+      data = qs.getRow(new SqlSelect()
+          .addField(CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
+              CommonsConstants.COL_COMPANY)
+          .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME)
+          .addFrom(TBL_MESSAGES)
+          .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
+              CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
+          .addFromInner(CommonsConstants.TBL_COMPANIES,
+              sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANIES,
+                  CommonsConstants.COL_CONTACT))
+          .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
+
+      if (data != null) {
+        packet.put(CommonsConstants.COL_COMPANY, data.getValue(CommonsConstants.COL_COMPANY));
+        packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_NAME,
+            data.getValue(CommonsConstants.COL_NAME));
+      }
+    }
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_PARTS, COL_CONTENT, COL_HTML_CONTENT)
+        .addFrom(TBL_PARTS)
+        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, messageId)));
+
+    StringBuilder content = new StringBuilder();
+
+    for (String[] row : rs.getRows()) {
+      if (content.length() > 0) {
+        content.append("\n\n");
+      }
+      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row[1]), row[0]));
+    }
+    packet.put(COL_CONTENT, content.toString());
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
         .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)

@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
     <Relation name="File" relation="Files" notNull="true" />
-    <String name="FileName" precision="100" />
+    <String name="FileName" precision="255" />
   </Fields>
   <Triggers>
     <Trigger events="INSERT DELETE" scope="ROW" timing="AFTER">

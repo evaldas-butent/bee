@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Mail" caption="Laiškai" readOnly="true"
+  name="Mail" caption="Laiškai" readOnly="true" enabledActions="add delete"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 5px;">
     <HorizontalPanel style="width: 100%; padding-bottom: 5px; border-bottom: 1px solid lightgray;">
       <InputText placeholder="Čia bus paieška..." style="width: 280px" />
-    
-      <ListBox name="Accounts" />
-      
-      <HorizontalPanel cellStyle="padding: 5px">
-        <Image name="create" resource="silverEdit" />
-        <Image name="reply" resource="replyTo" />
-        <Image name="replyAll" resource="replyToAll" />
-        <Image name="forward" resource="forwardTo" />
-        <Image name="delete" resource="silverMinus" />
-      </HorizontalPanel>
-      
     </HorizontalPanel>
 
     <SplitPanel class="flexible" splitterSize="1">
@@ -28,31 +18,10 @@
       <center>
         <FlowPanel class="flexBox-vertical" style="margin-top: 5px; margin-left: 5px;">
           <Label name="EmptySelection" class="bee-mail-EmptySelection"
-            html="Nepasirinktas joks laiškas" />
+            text="Nepasirinktas joks laiškas" />
 
           <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">
-            <FlowPanel class="bee-mail-Envelope">
-              <FlowPanel>
-                <TextLabel name="SenderLabel" class="bee-mail-SenderLabel" />
-                <TextLabel name="SenderEmail" class="bee-mail-SenderEmail" />
-                <DateTimeLabel name="MessageDate" class="bee-mail-Date"
-                  format="EEEE, y 'm'. MMMM d 'd'. HH:mm" />
-              </FlowPanel>
-
-              <SimplePanel>
-                <TextLabel name="Recipients" class="bee-mail-Recipients" />
-              </SimplePanel>
-
-              <FlowPanel>
-                <TextLabel name="MessageSubject" class="bee-mail-Subject" />
-                <TextLabel name="Attachments" class="bee-mail-Attachments" />
-              </FlowPanel>
-            </FlowPanel>
-
-            <FlowPanel class="flexible" style="overflow: auto;">
-              <Image name="WaitingForContent" class="bee-mail-WaitingForContent" resource="loading" />
-              <HtmlLabel name="Parts" class="bee-mail-Content" style="display: none;" />
-            </FlowPanel>
+            <xi:include href="widgets/Message.widget.xml" />
           </FlowPanel>
         </FlowPanel>
       </center>

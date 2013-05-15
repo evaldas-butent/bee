@@ -37,9 +37,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.mail.Address;
 import javax.mail.FetchProfile;
 import javax.mail.Folder;
@@ -66,6 +69,13 @@ public class MailStorageBean {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
+  @EJB
+  MailModuleBean mail;
+
+  @Asynchronous
+  public void checkMailAsynchronously(MailAccount account, MailFolder folder) {
+    mail.checkMail(account, folder);
+  }
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -213,6 +223,7 @@ public class MailStorageBean {
     return id;
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public boolean storeMail(Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
@@ -332,7 +343,11 @@ public class MailStorageBean {
             }
             syncedMsgs.add(id);
           } else {
-            storeMail(message, localFolder.getId(), uid);
+            try {
+              storeMail(message, localFolder.getId(), uid);
+            } catch (MessagingException e) {
+              logger.error(e);
+            }
           }
         }
         List<Long> deletedMsgs = Lists.newArrayList();
@@ -358,6 +373,7 @@ public class MailStorageBean {
     return lastUid;
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void validateFolder(MailFolder folder, Long uidValidity) {
     Assert.notNull(folder);
 

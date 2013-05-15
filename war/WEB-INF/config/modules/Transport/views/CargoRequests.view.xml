@@ -3,12 +3,13 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="CargoRequests" source="Relations"
+  newRowForm="NewCargoRequest" editForm="CargoRequest"
   >
   <Columns>
     <SimpleColumn name="Request" />
     <SimpleJoin name="Request" joinType="INNER">
       <SimpleColumn name="Date" editable="true" />
-      <SimpleColumn name="Request" alias="Route" label="Maršrutas" editable="true" />
+      <SimpleColumn name="Content" alias="Route" label="Maršrutas" editable="true" />
       <SimpleColumn name="Contacts" editable="true" />
       <SimpleColumn name="Created" />
       <SimpleColumn name="Finished" editable="true" />

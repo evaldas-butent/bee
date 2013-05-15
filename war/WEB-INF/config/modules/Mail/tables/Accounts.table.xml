@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
-    <String name="Description" precision="100" notNull="true" unique="true" />
+    <String name="Description" precision="50" notNull="true" />
     <Boolean name="Main" />
     <Relation name="Address" relation="Emails" notNull="true" unique="true" />
 
@@ -28,9 +28,4 @@
     <Relation name="DraftsFolder" relation="Folders" cascade="SET_NULL" />
     <Relation name="TrashFolder" relation="Folders" cascade="SET_NULL" />
   </Fields>
-  <Keys>
-    <Key>
-      <KeyField>StoreLogin</KeyField>
-    </Key>
-  </Keys>
 </Table>

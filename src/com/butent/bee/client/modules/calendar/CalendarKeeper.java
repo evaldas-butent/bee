@@ -44,6 +44,11 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ResponseStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -106,7 +111,7 @@ public class CalendarKeeper {
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES, 
+          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES,
           CommonsConstants.VIEW_THEMES, CommonsConstants.VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
           VIEW_APPOINTMENT_STYLES, VIEW_CAL_APPOINTMENT_TYPES);
 
@@ -192,7 +197,7 @@ public class CalendarKeeper {
 
     Captions.registerColumn(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
     Captions.registerColumn(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
-    
+
     key = Captions.register("Calendar_Visibility", Visibility.class);
     Captions.registerColumn(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
     Captions.registerColumn(VIEW_CALENDARS, COL_VISIBILITY, key);
@@ -261,7 +266,7 @@ public class CalendarKeeper {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
-              
+
               Long att = null;
               if (DataUtils.isId(attendeeId)) {
                 att = attendeeId;
@@ -496,7 +501,7 @@ public class CalendarKeeper {
                   builder.setUcAttendees(controller.getAttendees());
                 }
               }
-              
+
               Set<Action> enabledActions = BeeKeeper.getUser().is(appointment.getCreator())
                   ? EnumSet.of(Action.DELETE, Action.PRINT) : EnumSet.of(Action.PRINT);
 

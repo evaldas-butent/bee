@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="Requests" source="Requests"
+  newRowForm="NewRequest" editForm="Request"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Content" label="Užklausimas" />
+    <SimpleColumn name="Contacts" />
+    <SimpleColumn name="Created" />
+    <SimpleColumn name="Finished" />
+    <SimpleColumn name="Result" />
+      
+      <SimpleColumn name="Customer" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+      
+      <SimpleColumn name="CustomerPerson" />
+      <SimpleJoin name="CustomerPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="PersonFirstName" />
+          <SimpleColumn name="LastName" alias="PersonLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Manager" />
+      <SimpleJoin name="Manager" joinType="LEFT">
+        <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleColumn name="Creator" />
+      <SimpleJoin name="Creator" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+            <SimpleColumn name="LastName" alias="CreatorLastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+  </Columns>
+</View>

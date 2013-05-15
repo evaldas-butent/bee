@@ -11,7 +11,7 @@
     <String name="Contacts" precision="50" label="Kontaktai" />
     <Relation name="Payer" relation="Companies" label="Mokėtojas" />
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
-    <Text name="Request" notNull="true" label="Užklausimas" />
+    <Text name="Content" notNull="true" label="Užklausimas" />
     <Text name="Result" label="Rezultatas" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="Autorius" />
     <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="Sukurtas" />

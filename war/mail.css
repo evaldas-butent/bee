@@ -125,15 +125,6 @@
   background-color: whiteSmoke;
 }  
 
-.bee-mail-Envelope {
-  padding-bottom: 10px;
-  border-bottom: 1px solid lightgray;
-}
-
-.bee-mail-Content {
-  margin-top: 10px;
-}
-
 .bee-mail-PartSeparator {
   height: 0;
   border-width: 1px 0 0 0;
