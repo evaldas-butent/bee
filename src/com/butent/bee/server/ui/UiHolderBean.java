@@ -21,7 +21,6 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
 
@@ -237,7 +236,7 @@ public class UiHolderBean {
     boolean ok = !BeeUtils.isEmpty(resource);
 
     if (ok) {
-      register(resource, formCache, formName, moduleName);
+      register("form", resource, formCache, formName, moduleName);
     } else {
       unregister(formName, formCache);
     }
@@ -253,7 +252,7 @@ public class UiHolderBean {
     boolean ok = !BeeUtils.isEmpty(resource);
 
     if (ok) {
-      register(resource, gridCache, gridName, moduleName);
+      register("grid", resource, gridCache, gridName, moduleName);
     } else {
       unregister(gridName, gridCache);
     }
@@ -269,7 +268,8 @@ public class UiHolderBean {
     boolean ok = (xmlMenu != null);
     if (ok) {
       xmlMenu.setModuleName(moduleName);
-      register(xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName), moduleName);
+      register("menu", xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName),
+          moduleName);
     } else {
       unregister(menuName, menuCache);
     }
@@ -349,17 +349,15 @@ public class UiHolderBean {
     return BeeUtils.normalize(name);
   }
 
-  private <T> void register(T object, Map<String, T> cache, String objectName, String moduleName) {
-    if (object != null) {
-      String name = NameUtils.getClassName(object.getClass());
+  private <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
+      String moduleName) {
 
+    if (object != null) {
       if (cache.containsKey(key(objectName))) {
         logger.warning(BeeUtils.parenthesize(moduleName),
-            "Dublicate", name, "name:", BeeUtils.bracket(objectName));
+            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
       } else {
         cache.put(key(objectName), object);
-        logger.debug(BeeUtils.parenthesize(moduleName),
-            "Registered", name, BeeUtils.bracket(objectName));
       }
     }
   }

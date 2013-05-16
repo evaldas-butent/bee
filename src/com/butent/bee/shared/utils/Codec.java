@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import com.butent.bee.shared.Assert;
@@ -231,6 +232,19 @@ public class Codec {
       }
     }
     return res;
+  }
+
+  public static Map<String, String> beeDeserializeMap(String data) {
+    Map<String, String> result = Maps.newHashMap();
+
+    String[] arr = beeDeserializeCollection(data);
+    if (arr != null) {
+      for (int i = 0; i < arr.length - 1; i += 2) {
+        result.put(arr[i], arr[i + 1]);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -825,7 +839,7 @@ public class Codec {
     Assert.notNull(arr);
     Assert.isPositive(arr.length);
   }
-  
+
   private Codec() {
   }
 }

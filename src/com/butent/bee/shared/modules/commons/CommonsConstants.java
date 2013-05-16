@@ -113,6 +113,8 @@ public class CommonsConstants {
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_RELATIONS = "Relations";
+  public static final String TBL_FAVORITES = "Favorites";
+  public static final String TBL_FILTERS = "Filters";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -196,6 +198,12 @@ public class CommonsConstants {
 
   public static final String COL_THEME = "Theme";
 
+  public static final String COL_FAVORITE_USER = "User";
+
+  public static final String COL_FILTER_USER = "User";
+  public static final String COL_FILTER_KEY = "Key";
+  public static final String COL_FILTER_ORDINAL = "Ordinal";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 

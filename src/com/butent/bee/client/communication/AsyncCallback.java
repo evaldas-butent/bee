@@ -23,11 +23,9 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -56,12 +54,12 @@ public class AsyncCallback implements RequestCallback {
     boolean debug = Global.isDebug();
 
     String qid = resp.getHeader(Service.RPC_VAR_QID);
-
     if (qid == null) {
       BeeKeeper.getBus().removeExitHandler();
       Window.Location.reload();
       return;
     }
+
     int id = BeeUtils.toInt(qid);
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);
     String svc = (info == null) ? BeeConst.STRING_EMPTY : info.getService();
@@ -72,8 +70,7 @@ public class AsyncCallback implements RequestCallback {
       logger.warning("Rpc info not available");
     }
     if (BeeUtils.isEmpty(svc)) {
-      logger.warning("Rpc service",
-          BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
+      logger.warning("Rpc service", BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
     }
 
     if (statusCode != Response.SC_OK) {
@@ -96,13 +93,6 @@ public class AsyncCallback implements RequestCallback {
     String sid = resp.getHeader(Service.RPC_VAR_SID);
     if (!BeeUtils.isEmpty(sid)) {
       BeeKeeper.getUser().setSessionId(sid);
-
-      String usr = resp.getHeader(Service.RPC_VAR_USER);
-      if (!BeeUtils.isEmpty(usr)) {
-        UserData userData = UserData.restore(Codec.decodeBase64(usr));
-        BeeKeeper.getUser().setUserData(userData);
-        BeeKeeper.getScreen().updateSignature(userData.getUserSign());
-      }
     }
 
     ContentType ctp = CommUtils.getContentType(resp.getHeader(Service.RPC_VAR_CTP));

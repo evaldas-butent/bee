@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
@@ -27,7 +26,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     DataInfo.Provider, ColumnNamesProvider {
 
   private static final BeeLogger logger = LogUtils.getLogger(DataInfoProvider.class);
-  
+
   private final Map<String, DataInfo> views = Maps.newHashMap();
 
   public DataInfoProvider() {
@@ -48,30 +47,17 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     }
     return dataInfo;
   }
-  
+
   public Collection<DataInfo> getViews() {
     return views.values();
   }
 
-  public void load(final Callback<Integer> callback) {
+  public void load() {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DATA_INFO, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
-        String[] info = Codec.beeDeserializeCollection((String) response.getResponse());
-
-        views.clear();
-        for (String s : info) {
-          DataInfo dataInfo = DataInfo.restore(s);
-          if (dataInfo != null) {
-            views.put(BeeUtils.normalize(dataInfo.getViewName()), dataInfo);
-          }
-        }
-        logger.info("data info provider loaded", views.size(), "items");
-        
-        if (callback != null) {
-          callback.onSuccess(views.size());
-        }
+        restore((String) response.getResponse());
       }
     });
   }
@@ -97,6 +83,26 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     DataInfo dataInfo = getDataInfo(event.getViewName(), false);
     if (dataInfo != null) {
       dataInfo.setRowCount(dataInfo.getRowCount() + 1);
+    }
+  }
+
+  public void restore(String serialized) {
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+
+    if (arr == null) {
+      logger.severe("cannot restore data info");
+
+    } else {
+      views.clear();
+
+      for (String s : arr) {
+        DataInfo dataInfo = DataInfo.restore(s);
+        if (dataInfo != null) {
+          views.put(BeeUtils.normalize(dataInfo.getViewName()), dataInfo);
+        }
+      }
+
+      logger.info("data info provider", views.size());
     }
   }
 }

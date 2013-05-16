@@ -125,7 +125,7 @@ public class TuningFactory {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {
-          parseXml((String) response.getResponse());
+          parseDecorators((String) response.getResponse());
         }
       }
     });
@@ -135,52 +135,7 @@ public class TuningFactory {
     return enabled;
   }
 
-  public static void refresh() {
-    getTools();
-  }
-
-  public static void setEnabled(boolean enabled) {
-    TuningFactory.enabled = enabled;
-  }
-
-  private static boolean initialize(Decorator decorator, Collection<String> relatives) {
-    String ext = decorator.getParent();
-    if (BeeUtils.isEmpty(ext)) {
-      decorator.init(null);
-      return true;
-    }
-
-    String id = decorator.getId();
-    if (BeeUtils.same(id, ext) || relatives != null && relatives.contains(normalize(ext))) {
-      logger.severe("incest detected:", id, ext, relatives);
-      return false;
-    }
-
-    Decorator parent = decorators.get(normalize(ext));
-    if (parent == null) {
-      logger.severe("parent decorator not found id:", id, "extends:", ext);
-      return false;
-    }
-
-    if (!parent.isInitialized()) {
-      List<String> children = Lists.newArrayList(normalize(id));
-      if (relatives != null) {
-        children.addAll(relatives);
-      }
-      if (!initialize(parent, children)) {
-        return false;
-      }
-    }
-
-    decorator.init(parent.getFields());
-    return true;
-  }
-
-  private static String normalize(String key) {
-    return BeeUtils.normalize(key);
-  }
-
-  private static void parseXml(String xml) {
+  public static void parseDecorators(String xml) {
     Document document = XmlUtils.parse(xml);
     if (document == null) {
       return;
@@ -277,7 +232,52 @@ public class TuningFactory {
             handlers, template, eventTarget, appearanceTarget, BeeUtils.unbox(appearanceDeep)));
       }
     }
-    logger.info("loaded", decorators.size(), "decorators");
+    logger.info("decorators", decorators.size());
+  }
+
+  public static void refresh() {
+    getTools();
+  }
+
+  public static void setEnabled(boolean enabled) {
+    TuningFactory.enabled = enabled;
+  }
+
+  private static boolean initialize(Decorator decorator, Collection<String> relatives) {
+    String ext = decorator.getParent();
+    if (BeeUtils.isEmpty(ext)) {
+      decorator.init(null);
+      return true;
+    }
+
+    String id = decorator.getId();
+    if (BeeUtils.same(id, ext) || relatives != null && relatives.contains(normalize(ext))) {
+      logger.severe("incest detected:", id, ext, relatives);
+      return false;
+    }
+
+    Decorator parent = decorators.get(normalize(ext));
+    if (parent == null) {
+      logger.severe("parent decorator not found id:", id, "extends:", ext);
+      return false;
+    }
+
+    if (!parent.isInitialized()) {
+      List<String> children = Lists.newArrayList(normalize(id));
+      if (relatives != null) {
+        children.addAll(relatives);
+      }
+      if (!initialize(parent, children)) {
+        return false;
+      }
+    }
+
+    decorator.init(parent.getFields());
+    return true;
+  }
+
+  private static String normalize(String key) {
+    return BeeUtils.normalize(key);
   }
 
   private TuningFactory() {

@@ -53,6 +53,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -121,8 +122,6 @@ public class UiServiceBean {
       response = getGrid(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_FORM)) {
       response = getForm(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
-      response = getDecorators();
 
     } else if (BeeUtils.same(svc, Service.MAIL)) {
       response = doMail(reqInfo);
@@ -172,6 +171,9 @@ public class UiServiceBean {
       response = getRelatedValues(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE_RELATED_VALUES)) {
       response = updateRelatedValues(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
+      response = getDecorators();
       
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
@@ -179,6 +181,55 @@ public class UiServiceBean {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+  
+  public ResponseObject getDecorators() {
+    File dir = new File(Config.WEB_INF_DIR, DecoratorConstants.DIRECTORY);
+    List<File> files = FileUtils.findFiles(dir, Lists.newArrayList(FileUtils.INPUT_FILTER,
+        new ExtensionFilter(XmlUtils.DEFAULT_XML_EXTENSION)));
+    if (files.isEmpty()) {
+      return ResponseObject.error("getDecorators: no xml found in", dir.getPath());
+    }
+
+    Document dstDoc = XmlUtils.createDocument();
+    Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
+    dstRoot.setAttribute(XmlHelper.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
+    dstDoc.appendChild(dstRoot);
+
+    for (File file : files) {
+      String path = file.getPath();
+
+      Document srcDoc =
+          XmlUtils.getXmlResource(path, Config.getSchemaPath(DecoratorConstants.SCHEMA));
+      if (srcDoc == null) {
+        return ResponseObject.error("getDecorators: cannot load xml:", path);
+      }
+
+      List<Element> elements = XmlUtils.getChildrenElements(srcDoc.getDocumentElement(),
+          Sets.newHashSet(DecoratorConstants.TAG_ABSTRACT, DecoratorConstants.TAG_DECORATOR));
+      if (elements.isEmpty()) {
+        logger.warning("no decorators found in", path);
+      }
+
+      for (Element decorator : elements) {
+        dstRoot.appendChild(dstDoc.importNode(decorator, true));
+      }
+      logger.debug(elements.size(), "decorators loaded from", path);
+    }
+    return ResponseObject.response(XmlUtils.toString(dstDoc, false));
+  }
+
+  public BeeRowSet getFavorites() {
+    return qs.getViewData(CommonsConstants.TBL_FAVORITES,
+        usr.getCurrentUserFilter(CommonsConstants.COL_FAVORITE_USER));
+  }
+  
+  public BeeRowSet getFilters() {
+    Order order = new Order(CommonsConstants.COL_FILTER_KEY, true);
+    order.add(CommonsConstants.COL_FILTER_ORDINAL, true);
+
+    return qs.getViewData(CommonsConstants.TBL_FILTERS,
+        usr.getCurrentUserFilter(CommonsConstants.COL_FILTER_USER), order);
   }
 
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
@@ -405,42 +456,6 @@ public class UiServiceBean {
       dataInfo.setRowCount(qs.getViewSize(viewName, null));
       return ResponseObject.response(dataInfo);
     }
-  }
-
-  private ResponseObject getDecorators() {
-    File dir = new File(Config.WEB_INF_DIR, DecoratorConstants.DIRECTORY);
-    List<File> files = FileUtils.findFiles(dir, Lists.newArrayList(FileUtils.INPUT_FILTER,
-        new ExtensionFilter(XmlUtils.DEFAULT_XML_EXTENSION)));
-    if (files.isEmpty()) {
-      return ResponseObject.error("getDecorators: no xml found in", dir.getPath());
-    }
-
-    Document dstDoc = XmlUtils.createDocument();
-    Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
-    dstRoot.setAttribute(XmlHelper.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
-    dstDoc.appendChild(dstRoot);
-
-    for (File file : files) {
-      String path = file.getPath();
-
-      Document srcDoc =
-          XmlUtils.getXmlResource(path, Config.getSchemaPath(DecoratorConstants.SCHEMA));
-      if (srcDoc == null) {
-        return ResponseObject.error("getDecorators: cannot load xml:", path);
-      }
-
-      List<Element> elements = XmlUtils.getChildrenElements(srcDoc.getDocumentElement(),
-          Sets.newHashSet(DecoratorConstants.TAG_ABSTRACT, DecoratorConstants.TAG_DECORATOR));
-      if (elements.isEmpty()) {
-        logger.warning("no decorators found in", path);
-      }
-
-      for (Element decorator : elements) {
-        dstRoot.appendChild(dstDoc.importNode(decorator, true));
-      }
-      logger.debug(elements.size(), "decorators loaded from", path);
-    }
-    return ResponseObject.response(XmlUtils.toString(dstDoc, false));
   }
 
   private ResponseObject getDsns() {

@@ -85,7 +85,6 @@ public class Service {
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
   public static final String RPC_VAR_LOC = RPC_VAR_SYS_PREFIX + "loc";
   public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
-  public static final String RPC_VAR_USER = RPC_VAR_SYS_PREFIX + "usr";
 
   public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";
   public static final String RPC_VAR_COLS = RPC_VAR_SYS_PREFIX + "c_c";

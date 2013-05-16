@@ -32,9 +32,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
-import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -96,7 +96,7 @@ public class Filters {
     private Map<String, String> getValues() {
       return filterDescription.getValues();
     }
-    
+
     private boolean isEditable() {
       return filterDescription.isEditable();
     }
@@ -128,14 +128,9 @@ public class Filters {
 
   private static final BeeLogger logger = LogUtils.getLogger(Filters.class);
 
-  private static final String TBL_FILTERS = "Filters";
-
-  private static final String COL_USER = "User";
-  private static final String COL_KEY = "Key";
   private static final String COL_NAME = "Name";
   private static final String COL_LABEL = "Label";
   private static final String COL_INITIAL = "Initial";
-  private static final String COL_ORDINAL = "Ordinal";
   private static final String COL_EDITABLE = "Editable";
   private static final String COL_REMOVABLE = "Removable";
   private static final String COL_PREDEFINED = "Predefined";
@@ -288,7 +283,8 @@ public class Filters {
                 labelWidget.setHTML(newLabel);
 
                 if (!editItem.isNew()) {
-                  Queries.update(TBL_FILTERS, editItem.getId(), COL_LABEL, new TextValue(newLabel));
+                  Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
+                      new TextValue(newLabel));
                 }
               }
             }
@@ -356,44 +352,35 @@ public class Filters {
     }
   }
 
-  public void load() {
-    Order order = new Order(COL_KEY, true);
-    order.add(COL_ORDINAL, true);
+  public void load(String serialized) {
+    Assert.notEmpty(serialized);
 
-    Queries.getRowSet(TBL_FILTERS, null, BeeKeeper.getUser().getFilter(COL_USER), order,
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            itemsByKey.clear();
+    BeeRowSet rowSet = BeeRowSet.restore(serialized);
 
-            if (result != null) {
-              keyColumnIndex = result.getColumnIndex(COL_KEY);
+    keyColumnIndex = rowSet.getColumnIndex(CommonsConstants.COL_FILTER_KEY);
 
-              nameColumnIndex = result.getColumnIndex(COL_NAME);
-              labelColumnIndex = result.getColumnIndex(COL_LABEL);
+    nameColumnIndex = rowSet.getColumnIndex(COL_NAME);
+    labelColumnIndex = rowSet.getColumnIndex(COL_LABEL);
 
-              initialColumnIndex = result.getColumnIndex(COL_INITIAL);
-              ordinalColumnIndex = result.getColumnIndex(COL_ORDINAL);
+    initialColumnIndex = rowSet.getColumnIndex(COL_INITIAL);
+    ordinalColumnIndex = rowSet.getColumnIndex(CommonsConstants.COL_FILTER_ORDINAL);
 
-              editableColumnIndex = result.getColumnIndex(COL_EDITABLE);
-              removableColumnIndex = result.getColumnIndex(COL_REMOVABLE);
-              predefinedColumnIndex = result.getColumnIndex(COL_PREDEFINED);
+    editableColumnIndex = rowSet.getColumnIndex(COL_EDITABLE);
+    removableColumnIndex = rowSet.getColumnIndex(COL_REMOVABLE);
+    predefinedColumnIndex = rowSet.getColumnIndex(COL_PREDEFINED);
 
-              valueColumnIndex = result.getColumnIndex(COL_VALUE);
-            }
+    valueColumnIndex = rowSet.getColumnIndex(COL_VALUE);
 
-            if (!DataUtils.isEmpty(result)) {
-              for (BeeRow row : result.getRows()) {
-                String key = BeeUtils.trim(row.getString(keyColumnIndex));
-                Item item = createItem(row);
+    itemsByKey.clear();
 
-                itemsByKey.put(key, item);
-              }
-            }
+    for (BeeRow row : rowSet.getRows()) {
+      String key = BeeUtils.trim(row.getString(keyColumnIndex));
+      Item item = createItem(row);
 
-            logger.info("loaded", itemsByKey.size(), "filters");
-          }
-        });
+      itemsByKey.put(key, item);
+    }
+
+    logger.info("filters", itemsByKey.size());
   }
 
   private void createCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
@@ -448,41 +435,44 @@ public class Filters {
 
   private int getMaxLabelLength() {
     if (maxLabelLength <= 0) {
-      maxLabelLength = Data.getColumnPrecision(TBL_FILTERS, COL_LABEL);
+      maxLabelLength = Data.getColumnPrecision(CommonsConstants.TBL_FILTERS, COL_LABEL);
     }
     return maxLabelLength;
   }
 
   private void insert(String key, final Item item) {
-    List<BeeColumn> columns = Data.getColumns(TBL_FILTERS,
-        Lists.newArrayList(COL_USER, COL_KEY, COL_NAME, COL_LABEL, COL_VALUE));
+    List<BeeColumn> columns =
+        Data.getColumns(CommonsConstants.TBL_FILTERS,
+            Lists.newArrayList(CommonsConstants.COL_FILTER_USER, CommonsConstants.COL_FILTER_KEY,
+                COL_NAME, COL_LABEL, COL_VALUE));
     List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
         item.getName(), item.getLabel(), item.getValue());
 
     if (item.isInitial()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_INITIAL));
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_INITIAL));
       values.add(BooleanValue.pack(item.isInitial()));
     }
     if (item.getOrdinal() != null) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_ORDINAL));
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, 
+          CommonsConstants.COL_FILTER_ORDINAL));
       values.add(item.getOrdinal().toString());
     }
 
     if (item.isEditable()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_EDITABLE));
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_EDITABLE));
       values.add(BooleanValue.pack(item.isEditable()));
     }
     if (item.isRemovable()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_REMOVABLE));
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_REMOVABLE));
       values.add(BooleanValue.pack(item.isRemovable()));
     }
 
     if (item.isPredefined()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_PREDEFINED));
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_PREDEFINED));
       values.add(BooleanValue.pack(item.isPredefined()));
     }
 
-    Queries.insert(TBL_FILTERS, columns, values, null, new RowCallback() {
+    Queries.insert(CommonsConstants.TBL_FILTERS, columns, values, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         item.setId(result.getId());
@@ -505,7 +495,7 @@ public class Filters {
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            Queries.deleteRow(TBL_FILTERS, item.getId());
+            Queries.deleteRow(CommonsConstants.TBL_FILTERS, item.getId());
             itemsByKey.remove(key, item);
 
             if (items.size() > 1) {

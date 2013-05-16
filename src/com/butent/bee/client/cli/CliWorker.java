@@ -1755,7 +1755,7 @@ public class CliWorker {
       showMatrix(data, "view", "table", "id", "version", "cc", "vc", "rc");
 
     } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
-      Data.getDataInfoProvider().load(null);
+      Data.getDataInfoProvider().load();
 
     } else {
       DataInfo dataInfo = Data.getDataInfo(viewName);

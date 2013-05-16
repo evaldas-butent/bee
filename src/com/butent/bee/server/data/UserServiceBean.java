@@ -21,6 +21,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
@@ -154,6 +157,10 @@ public class UserServiceBean {
     Principal p = ctx.getCallerPrincipal();
     Assert.notNull(p);
     return p.getName().toLowerCase();
+  }
+
+  public Filter getCurrentUserFilter(String column) {
+    return ComparisonFilter.isEqual(column, new LongValue(getCurrentUserId()));
   }
 
   public Long getCurrentUserId() {

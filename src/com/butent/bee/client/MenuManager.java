@@ -26,7 +26,6 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,10 +40,10 @@ public class MenuManager implements Module {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(MenuManager.class);
-  
+
   private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
 
-  private List<Menu> roots = null;
+  private final List<Menu> roots = Lists.newArrayList();
 
   private final List<String> layouts = Lists.newArrayList();
 
@@ -58,7 +57,7 @@ public class MenuManager implements Module {
   }
 
   public boolean drawMenu() {
-    IdentifiableWidget w = createMenu(0, getRoots(), null);
+    IdentifiableWidget w = createMenu(0, roots, null);
     boolean ok = (w != null);
 
     if (ok) {
@@ -101,10 +100,6 @@ public class MenuManager implements Module {
     return getLayout(0);
   }
 
-  public List<Menu> getRoots() {
-    return roots;
-  }
-
   @Override
   public void init() {
   }
@@ -114,13 +109,7 @@ public class MenuManager implements Module {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse()) {
-          roots = Lists.newArrayList();
-          String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
-
-          for (String s : arr) {
-            roots.add(Menu.restore(s));
-          }
-          drawMenu();
+          restore((String) response.getResponse());
         }
       }
     });
@@ -136,14 +125,29 @@ public class MenuManager implements Module {
     menuCallbacks.put(BeeUtils.normalize(service), callback);
   }
 
+  public void restore(String data) {
+    if (!BeeUtils.isEmpty(data)) {
+      String[] arr = Codec.beeDeserializeCollection(data);
+
+      roots.clear();
+      for (String s : arr) {
+        roots.add(Menu.restore(s));
+      }
+      
+      logger.info("menu", roots.size());
+      
+      drawMenu();
+    }
+  }
+
   public void showMenuInfo() {
-    if (BeeUtils.isEmpty(getRoots())) {
+    if (roots.isEmpty()) {
       Global.inform("menu empty");
       return;
     }
     Tree tree = new Tree();
 
-    for (Menu menu : getRoots()) {
+    for (Menu menu : roots) {
       TreeItem item = new TreeItem(menu.getLabel());
       collectMenuInfo(item, menu);
       tree.addItem(item);
@@ -153,7 +157,6 @@ public class MenuManager implements Module {
 
   @Override
   public void start() {
-    clear();
   }
 
   private void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
@@ -195,10 +198,6 @@ public class MenuManager implements Module {
 
       ((Tree) rw).addItem(it);
     }
-  }
-
-  private void clear() {
-    roots = new ArrayList<Menu>();
   }
 
   private void collectMenuInfo(TreeItem treeItem, Menu menu) {

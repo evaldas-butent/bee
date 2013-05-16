@@ -16,6 +16,7 @@ import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -64,21 +66,21 @@ public class Favorites implements HandlesDeleteEvents {
       void open(String key, long id, String html) {
         RowActionEvent event = new RowActionEvent(key, id, Service.OPEN_FAVORITE, html);
         BeeKeeper.getBus().fireEvent(event);
-        
+
         if (event.isConsumed()) {
           return;
         }
-        
+
         DataInfo dataInfo = Data.getDataInfo(key);
         if (dataInfo == null) {
           return;
         }
-        
+
         String formName = dataInfo.getEditForm();
         if (BeeUtils.isEmpty(formName)) {
           return;
         }
-        
+
         RowEditor.openRow(formName, dataInfo, id);
       }
     };
@@ -107,7 +109,7 @@ public class Favorites implements HandlesDeleteEvents {
       displays.clear();
       items.clear();
     }
-    
+
     private Widget createItemWidget(String key, Item item) {
       return createItemWidget(key, item.getId(), item.getHtml());
     }
@@ -141,6 +143,16 @@ public class Favorites implements HandlesDeleteEvents {
     private HtmlTable getDisplay(String key) {
       return displays.get(key);
     }
+    
+    private int getSize() {
+      int size = 0;
+      for (List<Item> values : items.values()) {
+        if (values != null) {
+          size += values.size();
+        }
+      }
+      return size;
+    }
 
     private int indexOf(String key, Item item) {
       List<Item> values = items.get(key);
@@ -161,12 +173,12 @@ public class Favorites implements HandlesDeleteEvents {
       }
       return result;
     }
-    
+
     private void registerDomainEntry(String key) {
       BeeKeeper.getScreen().addDomainEntry(Domain.FAVORITE, getDisplay(key), getDomainKey(key),
           getCaption(key));
     }
-    
+
     private boolean remove(String key, Item item) {
       List<Item> values = items.get(key);
       if (values == null) {
@@ -226,9 +238,6 @@ public class Favorites implements HandlesDeleteEvents {
   private static final int EDIT_COLUMN = 1;
   private static final int DELETE_COLUMN = 2;
 
-  private static final String VIEW_NAME = "Favorites";
-
-  private static final String COL_USER = "User";
   private static final String COL_GROUP = "Group";
   private static final String COL_KEY = "Key";
   private static final String COL_ITEM = "Item";
@@ -252,15 +261,15 @@ public class Favorites implements HandlesDeleteEvents {
     Item item = new Item(id, html, order);
 
     group.add(key, item);
-    
+
     if (!group.displays.containsKey(key)) {
       group.displays.put(key, createDisplay());
       group.registerDomainEntry(key);
     }
-    
+
     addDisplayRow(group.getDisplay(key), group, key, item);
 
-    Queries.insert(VIEW_NAME,
+    Queries.insert(CommonsConstants.TBL_FAVORITES,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
             BeeUtils.toString(order), BeeUtils.trim(html)));
@@ -295,27 +304,26 @@ public class Favorites implements HandlesDeleteEvents {
     }, html);
   }
 
-  public void load() {
-    if (!BeeKeeper.getUser().isLoggedIn()) {
-      logger.warning(NameUtils.getName(this), "user not active");
-      return;
+  public void load(String serialized) {
+    Assert.notEmpty(serialized);
+
+    BeeRowSet rowSet = BeeRowSet.restore(serialized);
+    BeeUtils.overwrite(columns, rowSet.getColumns());
+
+    groupIndex = DataUtils.getColumnIndex(COL_GROUP, columns);
+    keyIndex = DataUtils.getColumnIndex(COL_KEY, columns);
+    itemIndex = DataUtils.getColumnIndex(COL_ITEM, columns);
+    orderIndex = DataUtils.getColumnIndex(COL_ORDER, columns);
+    htmlIndex = DataUtils.getColumnIndex(COL_HTML, columns);
+
+    loadItems(rowSet);
+    
+    int size = 0;
+    for (Group group : Group.values()) {
+      size += group.getSize();
     }
-
-    Queries.getRowSet(VIEW_NAME, null, BeeKeeper.getUser().getFilter(COL_USER),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            BeeUtils.overwrite(columns, result.getColumns());
-
-            Favorites.this.groupIndex = DataUtils.getColumnIndex(COL_GROUP, columns);
-            Favorites.this.keyIndex = DataUtils.getColumnIndex(COL_KEY, columns);
-            Favorites.this.itemIndex = DataUtils.getColumnIndex(COL_ITEM, columns);
-            Favorites.this.orderIndex = DataUtils.getColumnIndex(COL_ORDER, columns);
-            Favorites.this.htmlIndex = DataUtils.getColumnIndex(COL_HTML, columns);
-
-            Favorites.this.loadItems(result);
-          }
-        });
+    
+    logger.info("favorites", size);
   }
 
   @Override
@@ -358,7 +366,7 @@ public class Favorites implements HandlesDeleteEvents {
     BeeImage delete = new BeeImage(Global.getImages().silverMinus());
     delete.addStyleName(DELETE_STYLE);
     delete.setTitle("pašalinti");
-    
+
     delete.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -376,10 +384,10 @@ public class Favorites implements HandlesDeleteEvents {
     display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
     display.getColumnFormatter().addStyleName(EDIT_COLUMN, EDIT_COLUMN_STYLE);
     display.getColumnFormatter().addStyleName(DELETE_COLUMN, DELETE_COLUMN_STYLE);
-    
+
     return display;
   }
-  
+
   private Item createItem(BeeRow row) {
     Long itm = row.getLong(itemIndex);
     if (itm == null) {
@@ -396,11 +404,11 @@ public class Favorites implements HandlesDeleteEvents {
     if (rowSet.isEmpty()) {
       return;
     }
-    
+
     for (Group group : Group.values()) {
       group.clear();
     }
-    
+
     Group lastGroup = null;
     String lastKey = null;
 
@@ -414,15 +422,15 @@ public class Favorites implements HandlesDeleteEvents {
       if (BeeUtils.isEmpty(key)) {
         continue;
       }
-      
+
       Item item = createItem(row);
       if (item == null) {
         continue;
       }
-      
+
       if (!group.equals(lastGroup) || !key.equals(lastKey)) {
         group.displays.put(key, createDisplay());
-        
+
         lastGroup = group;
         lastKey = key;
       }
@@ -452,7 +460,7 @@ public class Favorites implements HandlesDeleteEvents {
         ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
         ComparisonFilter.isEqual(COL_KEY, new TextValue(key)),
         ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
-    Queries.delete(VIEW_NAME, filter, null);
+    Queries.delete(CommonsConstants.TBL_FAVORITES, filter, null);
 
     return group.remove(key, item);
   }
@@ -468,12 +476,12 @@ public class Favorites implements HandlesDeleteEvents {
     display.getWidget(group.indexOf(key, item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
 
     CompoundFilter filter = Filter.and();
-    filter.add(BeeKeeper.getUser().getFilter(COL_USER),
+    filter.add(BeeKeeper.getUser().getFilter(CommonsConstants.COL_FAVORITE_USER),
         ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
         ComparisonFilter.isEqual(COL_KEY, new TextValue(key)),
         ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
 
-    Queries.update(VIEW_NAME, filter, COL_HTML, new TextValue(html), null);
+    Queries.update(CommonsConstants.TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;
   }
 }

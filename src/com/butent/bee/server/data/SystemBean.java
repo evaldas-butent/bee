@@ -1232,7 +1232,6 @@ public class SystemBean {
             BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModuleName()));
       } else {
         cache.put(BeeUtils.normalize(objectName), object);
-        logger.debug(moduleName, "Registered", name, BeeUtils.bracket(objectName));
       }
     }
   }

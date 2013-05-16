@@ -1,7 +1,10 @@
 package com.butent.bee.server;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ModuleHolderBean;
@@ -9,13 +12,15 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -30,66 +35,100 @@ public class DispatcherBean {
   private static BeeLogger logger = LogUtils.getLogger(DispatcherBean.class);
 
   @EJB
-  ModuleHolderBean moduleBean;
+  ModuleHolderBean moduleHolder;
   @EJB
-  SystemServiceBean sysBean;
+  SystemServiceBean systemService;
   @EJB
-  DataServiceBean dataBean;
+  DataServiceBean dataService;
   @EJB
-  UiServiceBean uiBean;
+  UiServiceBean uiService;
   @EJB
-  UiHolderBean ui;
+  UiHolderBean uiHolder;
   @EJB
-  Invocation invBean;
+  Invocation invocation;
   @EJB
-  UserServiceBean usrBean;
+  UserServiceBean userService;
+  @EJB
+  SystemBean system;
 
   public ResponseObject doLogin(String locale, String host, String agent) {
     if (BeeUtils.isEmpty(SqlBuilderFactory.getDsn())) {
       return ResponseObject.error("DSN not specified");
     }
-    return usrBean.login(locale, host, agent);
+    
+    ResponseObject response = new ResponseObject();
+    Map<String, Object> data = Maps.newHashMap();
+    
+    ResponseObject userData = userService.login(locale, host, agent);
+    response.addMessagesFrom(userData);
+    if (userData.hasErrors()) {
+      return response;
+    }
+    data.put(Service.LOGIN, userData.getResponse());
+    
+    ResponseObject menuData = uiHolder.getMenu();
+    response.addMessagesFrom(menuData);
+    if (menuData.hasErrors()) {
+      return response;
+    }
+    data.put(Service.LOAD_MENU, menuData.getResponse());
+    
+    data.put(Service.GET_DATA_INFO, system.getDataInfo());
+    
+    BeeRowSet favorites = uiService.getFavorites();
+    data.put(favorites.getViewName(), favorites);
+    
+    BeeRowSet filters = uiService.getFilters();
+    data.put(filters.getViewName(), filters);
+    
+    ResponseObject decorators = uiService.getDecorators();
+    response.addMessagesFrom(decorators);
+    if (decorators.hasErrors()) {
+      return response;
+    }
+    data.put(Service.GET_DECORATORS, decorators.getResponse());
+    
+    response.setResponse(data);
+    return response;
   }
 
   public void doLogout(String user) {
-    usrBean.logout(user);
+    userService.logout(user);
   }
 
   public ResponseObject doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
-    Assert.notEmpty(svc);
-    Assert.notNull(buff);
     ResponseObject response = null;
 
     if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(SqlBuilderFactory.getDsn(), dsn)) {
       response = ResponseObject.error("DSN mismatch:", SqlBuilderFactory.getDsn(), "!=", dsn);
+
+    } else if (moduleHolder.hasModule(svc)) {
+      response = moduleHolder.doModule(reqInfo);
+
+    } else if (Service.isDataService(svc)) {
+      response = uiService.doService(reqInfo);
+
+    } else if (Service.isDbService(svc)) {
+      dataService.doService(svc, dsn, reqInfo, buff);
+
+    } else if (Service.isSysService(svc)) {
+      response = systemService.doService(svc, reqInfo, buff);
+
+    } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
+      response = uiHolder.getMenu();
+
+    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
+      buff.addLine(buff.now(), BeeConst.whereAmI());
+
+    } else if (BeeUtils.same(svc, Service.INVOKE)) {
+      Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
+
     } else {
-      if (moduleBean.hasModule(svc)) {
-        response = moduleBean.doModule(reqInfo);
-
-      } else if (Service.isDbService(svc)) {
-        dataBean.doService(svc, dsn, reqInfo, buff);
-
-      } else if (Service.isSysService(svc)) {
-        response = sysBean.doService(svc, reqInfo, buff);
-
-      } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
-        response = ui.getMenu();
-
-      } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-        buff.addLine(buff.now(), BeeConst.whereAmI());
-
-      } else if (BeeUtils.same(svc, Service.INVOKE)) {
-        Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
-
-      } else if (Service.isDataService(svc)) {
-        response = uiBean.doService(reqInfo);
-
-      } else {
-        String msg = BeeUtils.joinWords(svc, "service type not recognized");
-        logger.warning(msg);
-        buff.addWarning(msg);
-      }
+      String msg = BeeUtils.joinWords(svc, "service not recognized");
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
     }
+
     return response;
   }
 }

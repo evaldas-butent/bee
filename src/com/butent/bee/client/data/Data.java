@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -153,9 +152,7 @@ public class Data {
     return BeeUtils.notEmpty(LocaleUtils.maybeLocalize(dataInfo.getCaption()), viewName);
   }
   
-  public static void init(Callback<Integer> callback) {
-    DATA_INFO_PROVIDER.load(callback);
-
+  public static void init() {
     BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);

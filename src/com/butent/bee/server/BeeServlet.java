@@ -55,19 +55,16 @@ public class BeeServlet extends HttpServlet {
 
     RequestInfo reqInfo = new RequestInfo(req);
 
-    String meth, rid, svc, dsn, sep, opt;
+    String meth = reqInfo.getMethod();
 
-    meth = reqInfo.getMethod();
-
-    rid = reqInfo.getId();
-    svc = reqInfo.getService();
-    dsn = reqInfo.getDsn();
-    sep = reqInfo.getSeparator();
-    opt = reqInfo.getOptions();
+    String rid = reqInfo.getId();
+    String svc = reqInfo.getService();
+    String dsn = reqInfo.getDsn();
+    String sep = reqInfo.getSeparator();
 
     boolean debug = reqInfo.isDebug();
 
-    logger.info(rid, "request", meth, svc, dsn, opt);
+    logger.info("<", rid, meth, svc);
     if (debug) {
       reqInfo.logParams(logger);
       reqInfo.logVars(logger);
@@ -75,58 +72,67 @@ public class BeeServlet extends HttpServlet {
     }
 
     if (reqInfo.getContentLen() > 0) {
-      logger.info(rid, "content", reqInfo.getContentTypeHeader(),
-          reqInfo.getContentType(), BeeUtils.bracket(reqInfo.getContentLen()));
+      logger.info("<", rid, reqInfo.getContentTypeHeader(), reqInfo.getContentType(),
+          BeeUtils.bracket(reqInfo.getContentLen()));
       if (debug) {
         logger.info(reqInfo.getContent());
       }
     }
+
     ResponseObject response = null;
     ResponseBuffer buff = new ResponseBuffer(sep);
 
     String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
     HttpSession session = req.getSession();
 
-    boolean doLogout = BeeUtils.same(svc, Service.LOGOUT)
-        || (BeeUtils.isEmpty(reqSid) && session.getAttribute(Service.VAR_USER) != null);
+    boolean doLogin = false;
+    boolean doLogout = false;
 
-    if (!doLogout) {
-      if (BeeUtils.isEmpty(reqSid)) {
-        try {
-          response = dispatcher.doLogin(reqInfo.getLocale(), req.getRemoteAddr(),
-              req.getHeader("user-agent"));
-        } catch (EJBException e) {
-          response = ResponseObject.error(e);
-        }
-        if (response.hasErrors()) {
-          doLogout = true;
-          response.log(logger);
-        } else {
-          session.setAttribute(Service.VAR_USER, req.getRemoteUser());
+    if (BeeUtils.same(svc, Service.LOGIN)) {
+      doLogin = true;
+    
+    } else if (BeeUtils.same(svc, Service.LOGOUT)) {
+      doLogout = true;
 
-          resp.setHeader(Service.RPC_VAR_SID, session.getId());
-          resp.setHeader(Service.RPC_VAR_USER,
-              Codec.encodeBase64(Codec.beeSerialize(response.getResponse())));
+    } else if (BeeUtils.isEmpty(reqSid)) {
+      doLogout = (session.getAttribute(Service.VAR_USER) != null);
 
-          logger.info("session id:", session.getId());
-        }
-      } else if (!BeeUtils.same(reqSid, session.getId())) {
-        doLogout = true;
-        logger.severe("session id:", "request =", reqSid, "current =", session.getId());
-      }
+    } else if (!BeeUtils.same(reqSid, session.getId())) {
+      doLogout = true;
+      logger.severe("session id:", "request =", reqSid, "current =", session.getId());
     }
-    if (doLogout) {
-      response = logout(req, session);
-    } else {
-      if (BeeUtils.same(svc, Service.LOGIN)) {
-        response = ResponseObject.info("Login OK");
-      } else {
-        try {
-          response = dispatcher.doService(svc, dsn, reqInfo, buff);
-        } catch (EJBException e) {
-          response = ResponseObject.error(e);
-        }
+
+    if (doLogin) {
+      try {
+        response = dispatcher.doLogin(reqInfo.getLocale(), req.getRemoteAddr(),
+            req.getHeader("user-agent"));
+      } catch (EJBException e) {
+        response = ResponseObject.error(e);
       }
+
+      if (response.hasErrors()) {
+        response.log(logger);
+        logout(req, session);
+
+      } else {
+        session.setAttribute(Service.VAR_USER, req.getRemoteUser());
+        
+        resp.setHeader(Service.RPC_VAR_SID, session.getId());
+        resp.setHeader(Service.RPC_VAR_QID, rid);
+
+        logger.info("session id:", session.getId());
+      }
+
+    } else if (doLogout) {
+      response = logout(req, session);
+
+    } else {
+      try {
+        response = dispatcher.doService(svc, dsn, reqInfo, buff);
+      } catch (EJBException e) {
+        response = ResponseObject.error(e);
+      }
+
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 
@@ -147,8 +153,8 @@ public class BeeServlet extends HttpServlet {
 
       s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
 
-      logger.info(TimeUtils.elapsedSeconds(start), rid, "response",
-          ctp, resp.getContentType(), s.length());
+      logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, resp.getContentType(),
+          s.length());
 
     } else {
       int respLen = buff.getSize();
@@ -214,8 +220,8 @@ public class BeeServlet extends HttpServlet {
       } else {
         s = BeeConst.EMPTY;
       }
-      logger.info(TimeUtils.elapsedSeconds(start), rid, "response",
-          ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
+      logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, resp.getContentType(),
+          cnt, cc, mc, pc, s.length());
     }
 
     try {

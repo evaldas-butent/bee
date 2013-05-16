@@ -102,6 +102,13 @@ public class ResponseObject implements BeeSerializable {
     return this;
   }
 
+  public ResponseObject addMessagesFrom(ResponseObject other) {
+    if (other.hasMessages()) {
+      addMessages(other.getMessages());
+    }
+    return this;
+  }
+  
   public ResponseObject addWarning(Object... obj) {
     messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
     return this;
