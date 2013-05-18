@@ -17,6 +17,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
@@ -103,13 +104,16 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   @Override
   public void launch() {
-    GridFactory.getGrid(gridName, new Callback<GridDescription>() {
+    GridFactory.getGridDescription(gridName, new Callback<GridDescription>() {
       @Override
       public void onSuccess(GridDescription result) {
         if (getGridInterceptor() != null && !getGridInterceptor().onLoad(result)) {
           return;
         }
-        setGridDescription(result);
+        
+        String supplierKey = GridFactory.getSupplierKey(gridName, getGridInterceptor());
+        setGridDescription(GridSettings.apply(supplierKey, result));
+
         resolveState();
       }
     });

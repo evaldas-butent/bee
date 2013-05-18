@@ -9,6 +9,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -18,6 +19,8 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
@@ -75,6 +78,11 @@ public class Bee implements EntryPoint {
     Global.getFilters().load(data.get(CommonsConstants.TBL_FILTERS));
 
     TuningFactory.parseDecorators(data.get(Service.GET_DECORATORS));
+    
+    if (data.containsKey(GridDescription.TBl_GRID_SETTINGS)) {
+      GridSettings.load(data.get(GridDescription.TBl_GRID_SETTINGS),
+          data.get(ColumnDescription.TBl_COLUMN_SETTINGS));
+    }
   }
   
   private void start() {

@@ -372,19 +372,18 @@ public class UserServiceBean {
           .addConstant(COL_HOST, BeeUtils.joinWords(host, agent))
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
 
-      response.setResponse(data).addInfo("User logged in:",
-          user + " " + BeeUtils.parenthesize(data.getUserSign()));
+      response.setResponse(data);
+      logger.info("User logged in:", user, BeeUtils.parenthesize(data.getUserSign()));
 
     } else if (BeeUtils.isEmpty(getUsers())) {
-      response.setResponse(
-          new UserData(-1, user, null, null, null, null)
-              .setProperty("dsn", SqlBuilderFactory.getDsn()))
-          .addWarning("Anonymous user logged in:", user);
+      response.setResponse(new UserData(-1, user, null, null, null, null)
+          .setProperty("dsn", SqlBuilderFactory.getDsn()));
+      logger.warning("Anonymous user logged in:", user);
 
     } else {
       response.addError("Login attempt by an unauthorized user:", user);
+      response.log(logger);
     }
-    response.log(logger);
 
     return response;
   }

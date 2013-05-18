@@ -28,12 +28,12 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   }
 
   public static final String TAG_STYLE = "style";
+
   private static final String ATTR_HEIGHT = "height";
   private static final String ATTR_MIN_HEIGHT = "minHeight";
   private static final String ATTR_MAX_HEIGHT = "maxHeight";
   private static final String ATTR_PADDING = "padding";
   private static final String ATTR_BORDER_WIDTH = "borderWidth";
-
   private static final String ATTR_MARGIN = "margin";
 
   public static GridComponentDescription restore(String s) {
@@ -65,6 +65,24 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   }
 
   private GridComponentDescription() {
+  }
+  
+  public GridComponentDescription copy() {
+    GridComponentDescription result = new GridComponentDescription();
+    
+    if (getStyle() != null) {
+      result.setStyle(getStyle().copy());
+    }
+    
+    result.setHeight(getHeight());
+    result.setMinHeight(getMinHeight());
+    result.setMaxHeight(getMaxHeight());
+
+    result.setPadding(getPadding());
+    result.setBorderWidth(getBorderWidth());
+    result.setMargin(getMargin());
+    
+    return result;
   }
 
   @Override
@@ -143,6 +161,12 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     return style;
   }
 
+  public boolean isEmpty() {
+    return (getStyle() == null || getStyle().isEmpty())
+        && getHeight() == null && getMinHeight() == null && getMaxHeight() == null
+        && BeeUtils.allEmpty(getPadding(), getBorderWidth(), getMargin());
+  }
+  
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -204,31 +228,31 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     }
   }
 
-  public void setStyle(StyleDeclaration style) {
-    this.style = style;
-  }
-
-  private void setBorderWidth(String borderWidth) {
+  public void setBorderWidth(String borderWidth) {
     this.borderWidth = borderWidth;
   }
 
-  private void setHeight(Integer height) {
+  public void setHeight(Integer height) {
     this.height = height;
   }
 
-  private void setMargin(String margin) {
+  public void setMargin(String margin) {
     this.margin = margin;
   }
 
-  private void setMaxHeight(Integer maxHeight) {
+  public void setMaxHeight(Integer maxHeight) {
     this.maxHeight = maxHeight;
   }
 
-  private void setMinHeight(Integer minHeight) {
+  public void setMinHeight(Integer minHeight) {
     this.minHeight = minHeight;
   }
 
-  private void setPadding(String padding) {
+  public void setPadding(String padding) {
     this.padding = padding;
+  }
+
+  public void setStyle(StyleDeclaration style) {
+    this.style = style;
   }
 }

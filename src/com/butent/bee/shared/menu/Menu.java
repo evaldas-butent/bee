@@ -106,6 +106,8 @@ public abstract class Menu implements BeeSerializable {
   public String getParent() {
     return parent;
   }
+  
+  public abstract int getSize();
 
   public Boolean hasSeparator() {
     return BeeUtils.isTrue(separator);

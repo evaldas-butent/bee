@@ -20,6 +20,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -87,6 +88,11 @@ public class DispatcherBean {
       return response;
     }
     data.put(Service.GET_DECORATORS, decorators.getResponse());
+    
+    List<BeeRowSet> settings = uiService.getUserSettings();
+    for (BeeRowSet rowSet : settings) {
+      data.put(rowSet.getViewName(), rowSet);
+    }
     
     response.setResponse(data);
     return response;

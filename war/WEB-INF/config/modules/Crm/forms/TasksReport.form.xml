@@ -2,18 +2,14 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TasksReport"  caption="=hoursByTypes" printHeader="true"
-  >
 
-  <FlowPanel class="flexBox-vertical">  
-    <FlowPanel class="flexBox-horizontal">
+  name="TasksReport" caption="=hoursByTypes" printHeader="true">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel>
       <xi:include href="widgets/TasksReportFilter.widget.xml" />
     </FlowPanel>
-    
-    <FlowPanel name="reportTable" style="background-color:white; width:100%; height:85%;" >
-      
-    </FlowPanel>
-   
+
+    <FlowPanel name="reportTable" class="flexible" style="background-color: white;" />
   </FlowPanel>
 </f:Form>

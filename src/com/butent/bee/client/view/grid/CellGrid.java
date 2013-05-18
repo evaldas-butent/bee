@@ -2218,7 +2218,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     if (columnDescription.getColType().isReadOnly()
-        || BeeUtils.isTrue(columnDescription.isReadOnly())) {
+        || BeeUtils.isTrue(columnDescription.getReadOnly())) {
       columnInfo.setColReadOnly(true);
     }
 

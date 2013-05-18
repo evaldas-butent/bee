@@ -308,8 +308,6 @@ class ReportManager {
     gridDescription.setCaption(caption);
     gridDescription.setReadOnly(true);
 
-    gridDescription.setHasFooters(false);
-
     for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
       String colName = rowSet.getColumn(i).getId();
       ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);

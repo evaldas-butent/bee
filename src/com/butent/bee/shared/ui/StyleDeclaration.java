@@ -21,6 +21,32 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public static final String TAG_CLASS = "class";
   public static final String TAG_INLINE = "inline";
   public static final String TAG_FONT = "font";
+  
+  public static StyleDeclaration fuse(StyleDeclaration styleDeclaration,
+      String className, String inline, String fontDeclaration) {
+
+    if (BeeUtils.allEmpty(className, inline, fontDeclaration)) {
+      return styleDeclaration;
+
+    } else if (styleDeclaration == null) {
+      return new StyleDeclaration(className, inline, fontDeclaration);
+    
+    } else {
+      StyleDeclaration result = styleDeclaration.copy();
+
+      if (!BeeUtils.isEmpty(className)) {
+        result.setClassName(className);
+      }
+      if (!BeeUtils.isEmpty(inline)) {
+        result.setInline(inline);
+      }
+      if (!BeeUtils.isEmpty(fontDeclaration)) {
+        result.setFontDeclaration(fontDeclaration);
+      }
+      
+      return result;
+    }
+  }
 
   public static StyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -48,6 +74,10 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   private StyleDeclaration() {
   }
 
+  public StyleDeclaration copy() {
+    return new StyleDeclaration(getClassName(), getInline(), getFontDeclaration());
+  }
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -94,7 +124,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public boolean isEmpty() {
     return BeeUtils.allEmpty(getClassName(), getInline(), getFontDeclaration());
   }
-
+  
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getClassName(), getInline(), getFontDeclaration()});

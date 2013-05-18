@@ -33,7 +33,7 @@
       <xs:element name="rowValidation" type="ui:calcType" minOccurs="0" />
       <xs:element name="editMessage" type="ui:calcType" minOccurs="0" />
     </xs:sequence>
-    <xs:attribute name="name" type="type:nameType" use="required" />
+    <xs:attribute name="name" type="gridName" use="required" />
     <xs:attribute name="parent" type="xs:normalizedString" />
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="viewName" type="type:nameType" />
@@ -123,4 +123,9 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="gridName">
+    <xs:restriction base="type:nameType">
+      <xs:maxLength value="60" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

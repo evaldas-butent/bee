@@ -780,7 +780,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         column.setSearchBy(Lists.newArrayList(source));
       }
 
-      if (BeeUtils.isTrue(columnDescr.isSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
+      if (BeeUtils.isTrue(columnDescr.getSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
         column.setSortable(true);
       }
 
@@ -836,7 +836,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
 
       ColumnInfo columnInfo = getGrid().addColumn(columnName, cellSource, column, header, footer,
-          BeeUtils.isTrue(columnDescr.isVisible()));
+          !BeeUtils.isFalse(columnDescr.getVisible()));
       getGrid().setColumnInfo(columnInfo, columnDescr, gridDescr, dataCols);
     }
 

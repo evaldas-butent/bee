@@ -134,7 +134,12 @@ public class MenuManager implements Module {
         roots.add(Menu.restore(s));
       }
       
-      logger.info("menu", roots.size());
+      int size = 0;
+      for (Menu menu : roots) {
+        size += menu.getSize();
+      }
+      
+      logger.info("menu", size);
       
       drawMenu();
     }

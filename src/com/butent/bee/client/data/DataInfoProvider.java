@@ -102,7 +102,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
         }
       }
 
-      logger.info("data info provider", views.size());
+      logger.info("data info", views.size());
     }
   }
 }

@@ -33,6 +33,19 @@ public class MenuEntry extends Menu {
   }
 
   @Override
+  public int getSize() {
+    int size = 1;
+    
+    if (items != null) {
+      for (Menu menu : items) {
+        size += menu.getSize();
+      }
+    }
+    
+    return size;
+  }
+
+  @Override
   public String serialize() {
     return super.serialize(items);
   }

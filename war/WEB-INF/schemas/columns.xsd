@@ -9,8 +9,6 @@
   <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
   <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
 
-  <xs:element name="columns" type="columnList" />
-
   <xs:complexType name="columnList">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
       <xs:element name="DataColumn" type="dataColumn" />
@@ -36,7 +34,7 @@
         <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
       </xs:choice>
     </xs:sequence>
-    <xs:attribute name="name" type="xs:ID" use="required" />
+    <xs:attribute name="name" type="columnName" use="required" />
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="width" type="columnWidth" />
@@ -176,4 +174,10 @@
     <xs:attribute name="editable" type="xs:boolean" />
     <xs:attribute name="removable" type="xs:boolean" />
   </xs:complexType>
+  
+  <xs:simpleType name="columnName">
+    <xs:restriction base="xs:ID">
+      <xs:maxLength value="30" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

@@ -46,6 +46,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
 
+  public static final String TBl_GRID_SETTINGS = "GridSettings";
+  public static final String COL_GRID_SETTING_USER = "User";
+
   public static final String HEADER_MODE_ALL = "all";
   public static final String HEADER_MODE_COLUMN = "column";
   public static final String HEADER_MODE_GRID = "grid";
@@ -157,6 +160,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         BeeUtils.joinWords("Dublicate column name:", getName(), column.getName()));
 
     getColumns().add(column);
+  }
+  
+  public GridDescription copy() {
+    return restore(serialize());
   }
 
   @Override

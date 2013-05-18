@@ -55,7 +55,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.DecoratorConstants;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -174,7 +176,7 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
       response = getDecorators();
-      
+
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
@@ -182,7 +184,7 @@ public class UiServiceBean {
     }
     return response;
   }
-  
+
   public ResponseObject getDecorators() {
     File dir = new File(Config.WEB_INF_DIR, DecoratorConstants.DIRECTORY);
     List<File> files = FileUtils.findFiles(dir, Lists.newArrayList(FileUtils.INPUT_FILTER,
@@ -223,13 +225,39 @@ public class UiServiceBean {
     return qs.getViewData(CommonsConstants.TBL_FAVORITES,
         usr.getCurrentUserFilter(CommonsConstants.COL_FAVORITE_USER));
   }
-  
+
   public BeeRowSet getFilters() {
     Order order = new Order(CommonsConstants.COL_FILTER_KEY, true);
     order.add(CommonsConstants.COL_FILTER_ORDINAL, true);
 
     return qs.getViewData(CommonsConstants.TBL_FILTERS,
         usr.getCurrentUserFilter(CommonsConstants.COL_FILTER_USER), order);
+  }
+
+  public List<BeeRowSet> getUserSettings() {
+    List<BeeRowSet> result = Lists.newArrayList();
+
+    Filter userFilter = usr.getCurrentUserFilter(GridDescription.COL_GRID_SETTING_USER);
+    BeeRowSet gridSettings = qs.getViewData(GridDescription.TBl_GRID_SETTINGS, userFilter);
+
+    if (!DataUtils.isEmpty(gridSettings)) {
+      result.add(gridSettings);
+
+      Filter columnFilter = Filter.in(ColumnDescription.COL_GRID_SETTING,
+          GridDescription.TBl_GRID_SETTINGS, sys.getIdName(GridDescription.TBl_GRID_SETTINGS),
+          userFilter);
+
+      Order order = new Order(ColumnDescription.COL_GRID_SETTING, true);
+
+      BeeRowSet columnSettings = qs.getViewData(ColumnDescription.TBl_COLUMN_SETTINGS,
+          columnFilter, order);
+
+      if (!DataUtils.isEmpty(columnSettings)) {
+        result.add(columnSettings);
+      }
+    }
+
+    return result;
   }
 
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
@@ -508,12 +536,12 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(tableName)) {
       return ResponseObject.parameterNotFound(Service.VAR_TABLE);
     }
-    
+
     String filterColumn = reqInfo.getParameter(Service.VAR_FILTER_COLUMN);
     if (BeeUtils.isEmpty(filterColumn)) {
       return ResponseObject.parameterNotFound(Service.VAR_FILTER_COLUMN);
     }
-    
+
     Long filterValue = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_VALUE));
     if (!DataUtils.isId(filterValue)) {
       return ResponseObject.parameterNotFound(Service.VAR_VALUE);
@@ -523,13 +551,13 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(resultColumn)) {
       return ResponseObject.parameterNotFound(Service.VAR_VALUE_COLUMN);
     }
-    
+
     Long[] values = qs.getRelatedValues(tableName, filterColumn, filterValue, resultColumn);
     String response = DataUtils.buildIdList(values);
 
     return ResponseObject.response(Strings.nullToEmpty(response));
   }
-  
+
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();
@@ -787,20 +815,20 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(serialized)) {
       return ResponseObject.parameterNotFound(Service.VAR_CHILDREN);
     }
-    
+
     Collection<RowChildren> children = Lists.newArrayList();
-    
+
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (!ArrayUtils.isEmpty(arr)) {
       for (String s : arr) {
         children.add(RowChildren.restore(s));
       }
     }
-    
+
     if (children.isEmpty()) {
       return ResponseObject.error("cannot restore children");
     }
-    
+
     ResponseObject response = new ResponseObject();
     deb.commitChildren(parentId, children, response);
 
@@ -816,7 +844,7 @@ public class UiServiceBean {
 
     return response;
   }
-  
+
   private ResponseObject updateRow(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }

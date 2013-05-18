@@ -39,6 +39,7 @@ import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -75,9 +76,9 @@ public class GridFactory {
 
   public static class GridOptions {
 
-    private String caption = null;
-    private String filter = null;
-    private String order = null;
+    private final String caption;
+    private final String filter;
+    private final String order;
 
     private GridOptions(String caption, String filter, String order) {
       super();
@@ -104,18 +105,6 @@ public class GridFactory {
 
     public boolean hasOrder() {
       return !BeeUtils.isEmpty(getOrder());
-    }
-
-    public void setCaption(String caption) {
-      this.caption = caption;
-    }
-
-    public void setFilter(String filter) {
-      this.filter = filter;
-    }
-
-    public void setOrder(String order) {
-      this.order = order;
     }
   }
 
@@ -206,18 +195,20 @@ public class GridFactory {
   public static void createGrid(String gridName, final String supplierKey,
       final GridInterceptor gridInterceptor, final Collection<UiOption> uiOptions,
       final GridOptions gridOptions, final PresenterCallback presenterCallback) {
+
     Assert.notEmpty(gridName);
     Assert.notNull(presenterCallback);
 
-    getGrid(gridName, new Callback<GridDescription>() {
+    getGridDescription(gridName, new Callback<GridDescription>() {
       @Override
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
         if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
           return;
         }
-        consumeGridDescription(result, supplierKey, gridInterceptor, presenterCallback, uiOptions,
-            gridOptions);
+
+        consumeGridDescription(GridSettings.apply(supplierKey, result), supplierKey,
+            gridInterceptor, presenterCallback, uiOptions, gridOptions);
       }
     });
   }
@@ -246,12 +237,13 @@ public class GridFactory {
     return new RenderableColumn(cell, cellSource, renderer);
   }
 
-  public static void getGrid(String name, Callback<GridDescription> callback) {
-    getGrid(name, callback, false);
+  public static void getGridDescription(String name, Callback<GridDescription> callback) {
+    getGridDescription(name, callback, false);
   }
 
-  public static void getGrid(final String name, final Callback<GridDescription> callback,
-      boolean reload) {
+  public static void getGridDescription(final String name,
+      final Callback<GridDescription> callback, boolean reload) {
+
     Assert.notEmpty(name);
     Assert.notNull(callback);
 

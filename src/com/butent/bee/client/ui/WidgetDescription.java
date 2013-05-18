@@ -378,7 +378,7 @@ public class WidgetDescription implements HasInfo {
     setCaption(editableColumn.getCaption());
     setSource(editableColumn.getColumnId());
 
-    setRequired(editableColumn.isRequired());
+    setRequired(editableColumn.getRequired());
     setNullable(editableColumn.isNullable());
     setHasDefaults(editableColumn.hasDefaults());
 

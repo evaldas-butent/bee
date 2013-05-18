@@ -126,7 +126,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
     this.maxValue = value;
 
-    this.required = columnDescr.isRequired();
+    this.required = columnDescr.getRequired();
 
     this.editorDescription = columnDescr.getEditor();
     this.itemKey = columnDescr.getItemKey();
@@ -294,6 +294,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return relation;
   }
 
+  public Boolean getRequired() {
+    return required;
+  }
+
   public boolean getRowModeForUpdate() {
     if (updateMode == null) {
       return hasRelation();
@@ -355,15 +359,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public boolean isNullable() {
-    if (BeeUtils.unbox(isRequired())) {
+    if (BeeUtils.isTrue(getRequired())) {
       return false;
     } else {
       return getDataColumn().isNullable();
     }
-  }
-
-  public Boolean isRequired() {
-    return required;
   }
 
   public boolean isWritable() {

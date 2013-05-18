@@ -78,6 +78,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE
   }
 
+  public static final String TBl_COLUMN_SETTINGS = "GridColumnSettings";
+  public static final String COL_GRID_SETTING = "GridSetting";
+  
   public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -158,10 +161,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public ColumnDescription(ColType colType, String name) {
     Assert.notNull(colType);
     Assert.notEmpty(name);
+
     this.colType = colType;
     this.name = name;
-
-    setVisible(true);
   }
 
   private ColumnDescription() {
@@ -415,21 +417,21 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Col Type", getColType(),
         "Name", getName(),
         "Caption", getCaption(),
-        "Read Only", isReadOnly(),
+        "Read Only", getReadOnly(),
         "Width", getWidth(),
         "Source", getSource(),
         "Property", getProperty(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
         "Auto Fit", getAutoFit(),
-        "Sortable", isSortable(),
-        "Visible", isVisible(),
+        "Sortable", getSortable(),
+        "Visible", getVisible(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
         "Has Footer", hasFooter(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
-        "Required", isRequired(),
+        "Required", getRequired(),
         "Value Type", getValueType(),
         "Precision", getPrecision(),
         "Scale", getScale(),
@@ -563,6 +565,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return property;
   }
 
+  public Boolean getReadOnly() {
+    return readOnly;
+  }
+
   public Relation getRelation() {
     return relation;
   }
@@ -583,12 +589,20 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return renderTokens;
   }
 
+  public Boolean getRequired() {
+    return required;
+  }
+
   public Integer getScale() {
     return scale;
   }
 
   public String getSearchBy() {
     return searchBy;
+  }
+
+  public Boolean getSortable() {
+    return sortable;
   }
 
   public String getSortBy() {
@@ -612,6 +626,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return valueType;
   }
 
+  public Boolean getVisible() {
+    return visible;
+  }
+
   public Integer getWidth() {
     return width;
   }
@@ -620,24 +638,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return hasFooter;
   }
 
-  public Boolean isReadOnly() {
-    return readOnly;
-  }
-
   public boolean isRelationInitialized() {
     return relationInitialized;
-  }
-
-  public Boolean isRequired() {
-    return required;
-  }
-
-  public Boolean isSortable() {
-    return sortable;
-  }
-
-  public Boolean isVisible() {
-    return visible;
   }
 
   @Override
@@ -658,7 +660,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           arr[i++] = getCaption();
           break;
         case READ_ONLY:
-          arr[i++] = isReadOnly();
+          arr[i++] = getReadOnly();
           break;
         case WIDTH:
           arr[i++] = getWidth();
@@ -725,19 +727,19 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           arr[i++] = getMinValue();
           break;
         case REQUIRED:
-          arr[i++] = isRequired();
+          arr[i++] = getRequired();
           break;
         case MIN_WIDTH:
           arr[i++] = getMinWidth();
           break;
         case SORTABLE:
-          arr[i++] = isSortable();
+          arr[i++] = getSortable();
           break;
         case VALIDATION:
           arr[i++] = getValidation();
           break;
         case VISIBLE:
-          arr[i++] = isVisible();
+          arr[i++] = getVisible();
           break;
         case BODY_STYLE:
           arr[i++] = getBodyStyle();
