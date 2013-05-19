@@ -138,7 +138,8 @@ import java.util.Set;
  */
 
 public class CellGridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler {
+    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler,
+    SettingsChangeEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -655,7 +656,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     initOrder(order);
 
     getGrid().addEditStartHandler(this);
+
     getGrid().addSortHandler(this);
+    getGrid().addSettingsChangeHandler(this);
 
     add(getGrid());
     add(getNotification());
@@ -1165,6 +1168,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         pendingResize.add(id);
       }
     }
+  }
+
+  @Override
+  public void onSettingsChange(SettingsChangeEvent event) {
+    GridSettings.onSettingsChange(gridKey, event);
   }
 
   @Override

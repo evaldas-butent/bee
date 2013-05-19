@@ -103,7 +103,8 @@ import java.util.Set;
  */
 
 public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable,
-    HasEditStartHandlers, HasEnabled, HasActiveRow, RequiresResize, VisibilityChangeEvent.Handler {
+    HasEditStartHandlers, HasEnabled, HasActiveRow, RequiresResize, VisibilityChangeEvent.Handler,
+    SettingsChangeEvent.HasSettingsChangeHandlers {
 
   public class ColumnInfo implements HasValueType, Flexible, HasCaption {
     private final String columnId;
@@ -606,6 +607,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private class Component {
+    private final ComponentType type;
+
     private StyleDescriptor style = null;
 
     private int cellHeight = BeeConst.UNDEF;
@@ -616,8 +619,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private Edges borderWidth = null;
     private Edges margin = null;
 
-    private Component(int cellHeight, int minHeight, int maxHeight,
+    private Component(ComponentType type, int cellHeight, int minHeight, int maxHeight,
         Edges padding, Edges borderWidth, Edges margin) {
+      this.type = type;
       this.cellHeight = cellHeight;
       this.minHeight = minHeight;
       this.maxHeight = maxHeight;
@@ -721,14 +725,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private void setStyle(StyleDescriptor style) {
       this.style = style;
     }
-  }
-
-  /**
-   * Contains a list of grid components.
-   */
-
-  private enum ComponentType {
-    HEADER, BODY, FOOTER;
   }
 
   private class RenderInfo {
@@ -1087,17 +1083,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private final List<ColumnInfo> predefinedColumns = Lists.newArrayList();
   private final List<Integer> visibleColumns = Lists.newArrayList();
 
-  private final Component headerComponent =
-      new Component(getDefaultHeaderCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
-          defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin);
+  private final Component headerComponent = new Component(ComponentType.HEADER,
+      getDefaultHeaderCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
+      defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin);
 
-  private final Component bodyComponent =
-      new Component(getDefaultBodyCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
-          defaultBodyCellPadding, defaultBodyBorderWidth, defaultBodyCellMargin);
+  private final Component bodyComponent = new Component(ComponentType.BODY,
+      getDefaultBodyCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
+      defaultBodyCellPadding, defaultBodyBorderWidth, defaultBodyCellMargin);
 
-  private final Component footerComponent =
-      new Component(getDefaultFooterCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
-          defaultFooterCellPadding, defaultFooterBorderWidth, defaultFooterCellMargin);
+  private final Component footerComponent = new Component(ComponentType.FOOTER,
+      getDefaultFooterCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
+      defaultFooterCellPadding, defaultFooterBorderWidth, defaultFooterCellMargin);
 
   private int minCellWidth = DEFAULT_MIN_CELL_WIDTH;
   private int maxCellWidth = DEFAULT_MAX_CELL_WIDTH;
@@ -1132,6 +1128,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private String resizerRow = null;
   private int resizerCol = BeeConst.UNDEF;
   private Modifiers resizerModifiers = null;
+  private int resizerStartValue = BeeConst.UNDEF;
 
   private int resizerPosition = BeeConst.UNDEF;
   private int resizerPositionMin = BeeConst.UNDEF;
@@ -1207,6 +1204,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public HandlerRegistration addSelectionCountChangeHandler(
       SelectionCountChangeEvent.Handler handler) {
     return addHandler(handler, SelectionCountChangeEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addSettingsChangeHandler(SettingsChangeEvent.Handler handler) {
+    return addHandler(handler, SettingsChangeEvent.getType());
   }
 
   @Override
@@ -1976,7 +1978,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       updatePageSize();
     }
   }
-  
+
   @Override
   public void onRowDelete(RowDeleteEvent event) {
     Assert.notNull(event);
@@ -2196,7 +2198,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     info.setHeaderWidth(width);
   }
-  
+
   public void setColumnInfo(ColumnInfo columnInfo, ColumnDescription columnDescription,
       GridDescription gridDescription, List<? extends IsColumn> dataColumns) {
     Assert.notNull(columnInfo);
@@ -2486,7 +2488,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       getResizedRows().clear();
       getResizedCells().clear();
-      
+
       doFlexLayout();
       render(false);
 
@@ -3369,6 +3371,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return resizerShowTimer;
   }
 
+  private int getResizerStartValue() {
+    return resizerStartValue;
+  }
+
   private ResizerMode getResizerStatus() {
     return resizerStatus;
   }
@@ -3626,6 +3632,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     setResizerStatus(null);
     setResizerRow(null);
     setResizerCol(BeeConst.UNDEF);
+    setResizerStartValue(BeeConst.UNDEF);
   }
 
   private Edges incrementEdges(Edges defaultEdges, int dw, int dh) {
@@ -3707,18 +3714,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         consumedEvents.addAll(headerEvents);
       }
     }
-  
+
     if (footer != null) {
       Set<String> footerEvents = footer.getCell().getConsumedEvents();
       if (footerEvents != null) {
         consumedEvents.addAll(footerEvents);
       }
     }
-    
+
     if (!consumedEvents.isEmpty()) {
       EventUtils.sinkEvents(this, consumedEvents);
     }
-    
+
     return columnInfo;
   }
 
@@ -4841,6 +4848,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.resizerRow = resizerRow;
   }
 
+  private void setResizerStartValue(int resizerStartValue) {
+    this.resizerStartValue = resizerStartValue;
+  }
+
   private void setResizerStatus(ResizerMode resizerStatus) {
     this.resizerStatus = resizerStatus;
   }
@@ -4915,6 +4926,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.HORIZONTAL);
     setResizerCol(col);
+    setResizerStartValue(getColumnWidth(col));
 
     return true;
   }
@@ -4974,6 +4986,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.VERTICAL);
     setResizerRow(rowIdx);
+    setResizerStartValue((component == null) ? BeeConst.UNDEF : component.getCellHeight());
 
     return true;
   }
@@ -4997,8 +5010,27 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
-    hideResizer();
 
+    if (getResizerStatus() == ResizerMode.HORIZONTAL) {
+      int oldWidth = getResizerStartValue();
+      int newWidth = getColumnWidth(getResizerCol());
+
+      if (oldWidth >= 0 && newWidth > 0 && oldWidth != newWidth) {
+        SettingsChangeEvent.fireWidth(this, getColumnId(getResizerCol()), newWidth);
+      }
+
+    } else if (getResizerStatus() == ResizerMode.VERTICAL) {
+      Component component = getComponent(getResizerRow());
+
+      int oldHeight = getResizerStartValue();
+      int newHeight = (component == null) ? BeeConst.UNDEF : component.getCellHeight();
+      
+      if (oldHeight >= 0 && newHeight > 0 && oldHeight != newHeight) {
+        SettingsChangeEvent.fireHeight(this, component.type, newHeight);
+      }
+    }
+
+    hideResizer();
     setResizerModifiers(null);
   }
 
