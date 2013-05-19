@@ -4,7 +4,7 @@
   name="Objects" viewName="Objects" caption="Objektai" newRowPopup="true"
   >
   <columns>
-    <DataColumn name="Type" caption="Tipas" itemKey="RightsObjectType" />
-    <DataColumn name="Name" caption="Objektas" />
+    <DataColumn name="Type" caption="Tipas" itemKey="RightsObjectType" visible="true" />
+    <DataColumn name="Name" caption="Objektas" visible="true" />
   </columns>
 </Grid>

@@ -5,7 +5,7 @@
   minColumnWidth="100"
   >
   <columns>
-    <RelColumn name="TypeName" caption="Tipas" />
+    <RelColumn name="TypeName" caption="Tipas" visible="true" />
     <DataColumn name="TypeDescription" caption="Aprašymas" />
   </columns>
 </Grid>

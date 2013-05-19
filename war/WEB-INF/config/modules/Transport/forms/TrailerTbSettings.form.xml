@@ -15,7 +15,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
-  name="TrailerTbSettings" viewName="TransportSettings" caption="Nustatymai"
+  name="TrailerTbSettings" viewName="TransportSettings" caption="=settings"
   width="440" height="420"
   >
 

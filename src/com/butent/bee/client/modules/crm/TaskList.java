@@ -39,6 +39,8 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridSettings;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.CustomDiv;
@@ -114,16 +116,22 @@ class TaskList {
     }
 
     @Override
-    public boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+    public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
-      switch (type) {
-        case ASSIGNED:
-          return !BeeUtils.same(columnId, COL_EXECUTOR);
-        case DELEGATED:
-          return !BeeUtils.same(columnId, COL_OWNER);
-        default:
-          return true;
+
+      if (type == Type.ASSIGNED && BeeUtils.same(columnDescription.getName(), COL_EXECUTOR)
+          || type == Type.DELEGATED && BeeUtils.same(columnDescription.getName(), COL_OWNER)) {
+
+        if (columnDescription.getVisible() == null
+            && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {
+          ColumnDescription copy = columnDescription.copy();
+          copy.setVisible(false);
+          
+          return copy;
+        }
       }
+      
+      return columnDescription;
     }
 
     @Override

@@ -18,7 +18,7 @@
   </west>
   
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" visible="true" />
     <DataColumn name="DocumentDate" />
     <DataColumn name="Expires" />
     <DataColumn name="Number" />

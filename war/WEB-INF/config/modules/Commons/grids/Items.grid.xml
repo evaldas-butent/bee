@@ -17,7 +17,7 @@
   </west>
   
   <columns>
-    <DataColumn name="Name" flexGrow="2" />
+    <DataColumn name="Name" flexGrow="2" visible="true" />
     <RelColumn name="UnitName" />
     <DataColumn name="Article" flexGrow="1" />
     <DataColumn name="Barcode" flexGrow="1" />

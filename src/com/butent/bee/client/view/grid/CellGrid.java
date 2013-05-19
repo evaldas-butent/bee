@@ -140,6 +140,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private boolean colReadOnly = false;
 
     private boolean cellResizable = true;
+    
+    private boolean hidable = true;
 
     private ColumnInfo(String columnId, CellSource source,
         AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
@@ -238,6 +240,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     List<String> getSortBy() {
       return getColumn().getSortBy();
+    }
+
+    boolean isHidable() {
+      return hidable;
     }
 
     private void buildSafeStyles(SafeStylesBuilder stylesBuilder, ComponentType componentType) {
@@ -482,6 +488,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     private void setHeaderWidth(int headerWidth) {
       this.headerWidth = headerWidth;
+    }
+
+    private void setHidable(boolean hidable) {
+      this.hidable = hidable;
     }
 
     private void setInitialWidth(int initialWidth) {
@@ -1176,12 +1186,12 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> col,
-      ColumnHeader header, boolean visible) {
-    return insertColumn(getColumnCount(), columnId, source, col, header, null, visible);
+      ColumnHeader header) {
+    return insertColumn(getColumnCount(), columnId, source, col, header, null, true);
   }
 
   public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> col,
-      ColumnHeader header, ColumnFooter footer, boolean visible) {
+      ColumnHeader header, ColumnFooter footer, Boolean visible) {
     return insertColumn(getColumnCount(), columnId, source, col, header, footer, visible);
   }
 
@@ -2479,7 +2489,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public void updateVisibleColumns(List<Integer> columns) {
+  public boolean updateVisibleColumns(List<Integer> columns) {
     if (!columns.isEmpty() && !columns.equals(getVisibleColumns())) {
       visibleColumns.clear();
       visibleColumns.addAll(columns);
@@ -2493,6 +2503,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       render(false);
 
       updatePageSize();
+      return true;
+
+    } else {
+      return false;
     }
   }
 
@@ -3690,15 +3704,19 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private ColumnInfo insertColumn(int beforeIndex, String columnId, CellSource source,
-      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer, boolean visible) {
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer, Boolean visible) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
     checkColumnId(columnId);
 
     ColumnInfo columnInfo = new ColumnInfo(columnId, source, column, header, footer);
+    if (BeeUtils.isTrue(visible)) {
+      columnInfo.setHidable(false);
+    }
     predefinedColumns.add(beforeIndex, columnInfo);
-    if (visible) {
+
+    if (!BeeUtils.isFalse(visible)) {
       visibleColumns.add(beforeIndex);
     }
 

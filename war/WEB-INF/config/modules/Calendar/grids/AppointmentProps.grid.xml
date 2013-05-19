@@ -4,8 +4,9 @@
   name="AppointmentProps" viewName="AppointmentProps" newRowCaption="Naujas parametras"
   >
   <columns>
-    <DataColumn name="GroupName" caption="Grupė" minWidth="100" />
-    <RelColumn name="PropertyName" caption="Pavadinimas" choiceColumns="Name GroupName" minWidth="100" />
+    <DataColumn name="GroupName" caption="Grupė" minWidth="100" visible="true" />
+    <RelColumn name="PropertyName" caption="Pavadinimas" choiceColumns="Name GroupName"
+      minWidth="100" visible="true" />
 
     <DataColumn name="Hours" caption="Valandos" />
     <DataColumn name="Minutes" caption="Minutės" />

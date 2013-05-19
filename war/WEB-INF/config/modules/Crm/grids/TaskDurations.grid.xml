@@ -7,9 +7,9 @@
   >
 
   <columns>
-    <DataColumn name="DurationDate" flexShrink="0" />
-    <DataColumn name="DurationType" />
-    <DataColumn name="Duration" />
+    <DataColumn name="DurationDate" flexShrink="0" visible="true" />
+    <DataColumn name="DurationType" visible="true" />
+    <DataColumn name="Duration" visible="true" />
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 

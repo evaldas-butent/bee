@@ -7,9 +7,9 @@
   <columns>
     <DataColumn name="Ordinal" caption="Eil. Nr." flexGrow="0" />
 
-    <DataColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="TypeName" caption="Tipas" visible="true" />
 
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" visible="true" />
     <DataColumn name="Description" caption="Aprašymas" flexShrink="3" />
     <DataColumn name="Location" caption="Vieta" />
 

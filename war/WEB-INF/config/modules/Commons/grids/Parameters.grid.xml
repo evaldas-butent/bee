@@ -7,8 +7,8 @@
   newRowForm="Parameter" newRowCaption="Naujas parametras" newRowPopup="true"
   >
   <columns>
-    <DataColumn name="Name" source="Name" caption="Parametras" />
-    <DataColumn name="Value" source="UserValue" caption="Reikšmė" maxWidth="400">
+    <DataColumn name="Name" source="Name" caption="Parametras" visible="true" />
+    <DataColumn name="Value" source="UserValue" caption="Reikšmė" maxWidth="400" visible="true">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>

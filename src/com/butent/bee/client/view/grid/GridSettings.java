@@ -26,11 +26,13 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -59,14 +61,14 @@ public class GridSettings {
       return input;
     }
   }
-
-  public static void handle(final CellGrid grid, UIObject target) {
+  
+  public static void handle(final String key, final CellGrid grid, UIObject target) {
     Assert.notNull(grid);
     if (grid.getRowData().isEmpty()) {
       return;
     }
 
-    List<ColumnInfo> predefinedColumns = grid.getPredefinedColumns();
+    final List<ColumnInfo> predefinedColumns = grid.getPredefinedColumns();
     List<Integer> visibleColumns = grid.getVisibleColumns();
 
     final HtmlTable table = new HtmlTable();
@@ -75,8 +77,12 @@ public class GridSettings {
     int row = 0;
 
     for (int index : visibleColumns) {
-      table.setWidget(row, 0, createCheckBox(true));
-      table.setWidget(row, 1, createLabel(predefinedColumns.get(index), index));
+      ColumnInfo columnInfo = predefinedColumns.get(index);
+      
+      if (columnInfo.isHidable()) {
+        table.setWidget(row, 0, createCheckBox(true));
+      }
+      table.setWidget(row, 1, createLabel(columnInfo, index));
 
       row++;
     }
@@ -92,25 +98,47 @@ public class GridSettings {
       }
     }
 
-    Global.inputWidget("Stulpeliai", table, new InputCallback() {
+    Global.inputWidget(Localized.constants.settings(), table, new InputCallback() {
       @Override
       public void onSuccess() {
         List<Integer> selectedColumns = Lists.newArrayList();
 
         for (int i = 0; i < table.getRowCount(); i++) {
-          Widget checkBox = table.getWidget(i, 0);
-          if (checkBox instanceof BooleanWidget
-              && BeeUtils.isTrue(((BooleanWidget) checkBox).getValue())) {
-            int index = DomUtils.getDataIndex(table.getWidget(i, 1).getElement());
-            if (!BeeConst.isUndef(index)) {
-              selectedColumns.add(index);
-            }
+          int index = DomUtils.getDataIndex(table.getWidget(i, 1).getElement());
+          ColumnInfo columnInfo = predefinedColumns.get(index);
+          
+          boolean visible;
+          
+          if (columnInfo.isHidable()) {
+            Widget checkBox = table.getWidget(i, 0);
+            visible = checkBox instanceof BooleanWidget
+                && BeeUtils.isTrue(((BooleanWidget) checkBox).getValue());
+          } else {
+            visible = true;
+          }
+          
+          if (visible) {
+            selectedColumns.add(index);
           }
         }
 
-        grid.updateVisibleColumns(selectedColumns);
+        if (grid.updateVisibleColumns(selectedColumns)) {
+          List<String> names = Lists.newArrayList();
+
+          List<ColumnInfo> columns = grid.getColumns();
+          for (ColumnInfo columnInfo : columns) {
+            names.add(columnInfo.getColumnId());
+          }
+          
+          saveGridSetting(key, GridConfig.columnsIndex, NameUtils.join(names));
+        }
       }
     }, STYLE_DIALOG, target);
+  }
+
+  public static boolean hasVisibleColumns(String key) {
+    GridConfig gridConfig = grids.get(key);
+    return gridConfig != null && gridConfig.hasVisibleColumns();
   }
 
   public static void load(String serializedGridSettings, String serializedColumnSettings) {
@@ -233,6 +261,35 @@ public class GridSettings {
     return BeeUtils.notEmpty(columnInfo.getCaption(), columnInfo.getColumnId());
   }
 
+  private static void saveColumnSetting(final String key, final String name, final int index,
+      final String value) {
+
+    Assert.notEmpty(key);
+    GridConfig gridConfig = grids.get(key);
+
+    if (gridConfig != null) {
+      gridConfig.saveColumnSetting(name, index, value);
+
+    } else if (!BeeUtils.isEmpty(value)) {
+      List<BeeColumn> columns = Lists.newArrayList();
+      columns.add(GridConfig.dataColumns.get(GridConfig.userIndex));
+      columns.add(GridConfig.dataColumns.get(GridConfig.keyIndex));
+
+      List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key);
+
+      Queries.insert(GridDescription.VIEW_GRID_SETTINGS, columns, values, null,
+          new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              GridConfig gcfg = new GridConfig(result);
+              grids.put(key, gcfg);
+
+              gcfg.saveColumnSetting(name, index, value);
+            }
+          });
+    }
+  }
+
   private static void saveGridSetting(final String key, int index, String value) {
     Assert.notEmpty(key);
     Assert.isIndex(GridConfig.dataColumns, index);
@@ -274,35 +331,6 @@ public class GridSettings {
                 logger.warning("could not update grid settings:", result);
                 logger.warning(key, dataColumn.getId(), newValue);
               }
-            }
-          });
-    }
-  }
-
-  private static void saveColumnSetting(final String key, final String name, final int index,
-      final String value) {
-
-    Assert.notEmpty(key);
-    GridConfig gridConfig = grids.get(key);
-
-    if (gridConfig != null) {
-      gridConfig.saveColumnSetting(name, index, value);
-
-    } else if (!BeeUtils.isEmpty(value)) {
-      List<BeeColumn> columns = Lists.newArrayList();
-      columns.add(GridConfig.dataColumns.get(GridConfig.userIndex));
-      columns.add(GridConfig.dataColumns.get(GridConfig.keyIndex));
-
-      List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key);
-
-      Queries.insert(GridDescription.VIEW_GRID_SETTINGS, columns, values, null,
-          new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              GridConfig gcfg = new GridConfig(result);
-              grids.put(key, gcfg);
-
-              gcfg.saveColumnSetting(name, index, value);
             }
           });
     }

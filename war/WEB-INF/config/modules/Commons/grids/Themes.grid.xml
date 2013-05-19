@@ -7,7 +7,7 @@
   >
   <body height="40" />
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" visible="true" />
     <DataColumn name="Description" caption="Aprašymas" flexShrink="3" />
 
     <RelColumn name="DefaultColorName" caption="Pagrindinė spalva:">

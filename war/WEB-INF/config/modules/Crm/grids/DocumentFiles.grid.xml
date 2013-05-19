@@ -9,9 +9,9 @@
     <DataColumn name="File" caption="=documentFileOpen" readOnly="true" cellType="html"
       sortable="false" minWidth="100" />
 
-    <DataColumn name="FileDate" required="true" width="128" />
+    <DataColumn name="FileDate" required="true" width="128" visible="true" />
     <DataColumn name="FileVersion" />
-    <DataColumn name="Caption" required="true" updateMode="row" />
+    <DataColumn name="Caption" required="true" updateMode="row" visible="true" />
     <DataColumn name="Description" />
 
     <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60" />

@@ -5,7 +5,7 @@
   minColumnWidth="100"
   >
   <columns>
-    <RelColumn name="TypeName" caption="Tipas" />
-    <RelColumn name="AttendeeName" caption="Pavadinimas" />
+    <RelColumn name="TypeName" caption="Tipas" visible="true" />
+    <RelColumn name="AttendeeName" caption="Pavadinimas" visible="true" />
   </columns>
 </Grid>

@@ -4,6 +4,6 @@
   name="DocumentPlaces" viewName="DocumentPlaces" caption="=documentPlaces"
   >
   <columns>
-    <DataColumn name="Name" minWidth="200" />
+    <DataColumn name="Name" minWidth="200" visible="true" />
   </columns>
 </Grid>

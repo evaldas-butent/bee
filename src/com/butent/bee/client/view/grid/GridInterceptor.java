@@ -62,8 +62,7 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription);
 
-  boolean beforeCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription);
+  ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription columnDescription);
 
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions);

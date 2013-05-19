@@ -9,7 +9,7 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <RelColumn name="ColorName" caption="Pavadinimas" />
+    <RelColumn name="ColorName" caption="Pavadinimas" visible="true" />
 
     <DataColumn name="Background" caption="Fono spalva">&dyn;</DataColumn>
     <DataColumn name="Foreground" caption="Teksto spalva">&dyn;</DataColumn>

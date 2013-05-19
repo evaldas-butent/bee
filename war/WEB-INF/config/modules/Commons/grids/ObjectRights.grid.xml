@@ -5,8 +5,8 @@
   name="ObjectRights" viewName="Rights" caption="Teisės"
   >
   <columns>
-    <RelColumn name="Role" caption="Rolė" />
-    <DataColumn name="State" caption="Būsena" itemKey="RightsState">
+    <RelColumn name="Role" caption="Rolė" visible="true" />
+    <DataColumn name="State" caption="Būsena" itemKey="RightsState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
       </style>

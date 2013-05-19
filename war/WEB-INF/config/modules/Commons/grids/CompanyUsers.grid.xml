@@ -5,12 +5,12 @@
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
   <columns>
-    <RelColumn name="User" minWidth="150" maxWidth="200">
+    <RelColumn name="User" minWidth="150" maxWidth="200" visible="true">
     	<renderToken source="FirstName" suffix=" " />
     	<renderToken source="LastName" />
     </RelColumn>
     
-    <RelColumn name="Responsibility" minWidth="100" maxWidth="150">
+    <RelColumn name="Responsibility" minWidth="100" maxWidth="150" visible="true">
     	<renderToken source="ResponsibilityName" />
     </RelColumn>
   </columns>

@@ -323,7 +323,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        GridSettings.handle(getGridView().getGrid(), getHeader().asWidget());
+        GridSettings.handle(getGridView().getGridKey(), getGridView().getGrid(),
+            getHeader().asWidget());
         break;
 
       case DELETE:

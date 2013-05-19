@@ -5,8 +5,8 @@
   maxColumnWidth="300"
   >
   <columns>
-    <DataColumn name="Name" minWidth="200" />
-    <RelColumn name="Country" minWidth="100" renderColumns="CountryName">
+    <DataColumn name="Name" minWidth="200" visible="true" />
+    <RelColumn name="Country" minWidth="100" renderColumns="CountryName" visible="true">
       <selectorColumn source="Name" />
       <selectorColumn source="Code">
         <ui:renderer type="flag" />

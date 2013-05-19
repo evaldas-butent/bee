@@ -23,11 +23,11 @@
     <IdColumn name="Id" caption="ID" filterSupplier="id" hasFooter="true" />
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
-    <DataColumn name="Summary" flexGrow="1" />
+    <DataColumn name="Summary" flexGrow="1" visible="true" />
 
     <RelColumn name="Company" editEnabled="true" flexGrow="1" />
 
-    <DataColumn name="Status" itemKey="TaskStatus">
+    <DataColumn name="Status" itemKey="TaskStatus" visible="true">
       <filter name="nv_a" label="=taskFilterNotVisitedOrActive" value="0,1" />
       <filter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted" value="0,1,4" />
     </DataColumn>
@@ -42,7 +42,7 @@
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
       sortBy="ExecutorLastName ExecutorFirstName" flexGrow="1" />
 
-    <DataColumn name="StartTime" flexShrink="0" />
+    <DataColumn name="StartTime" flexShrink="0" visible="true" />
     <DataColumn name="FinishTime" flexShrink="0" />
   </columns>
 </Grid>

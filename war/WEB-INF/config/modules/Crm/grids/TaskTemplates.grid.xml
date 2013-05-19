@@ -7,7 +7,7 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" visible="true" />
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" />
     <DataColumn name="ExpectedDuration" caption="Trukmė" flexBasis="5" flexBasisUnit="em">

@@ -8,8 +8,8 @@
   <body height="60" />
   
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />
+    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
+    <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" visible="true" />
 
     <DataColumn name="Hours" caption="Valandos" />
     <DataColumn name="Minutes" caption="Minutės" />

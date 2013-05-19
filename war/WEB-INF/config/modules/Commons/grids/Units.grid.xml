@@ -4,7 +4,7 @@
   name="Units" viewName="Units" caption="Mato vienetai"
   >
   <columns>
-    <DataColumn name="Unit" source="Name" caption="Mato vienetas" />
+    <DataColumn name="Unit" source="Name" caption="Mato vienetas" visible="true" />
     <DataColumn name="Factor" caption="Koeficientas" />
     <RelColumn  name="BaseUnit" caption="Pagrindinis mv." newRowEnabled="false" />
     <DataColumn name="Caption" caption="Pavadinimas" />

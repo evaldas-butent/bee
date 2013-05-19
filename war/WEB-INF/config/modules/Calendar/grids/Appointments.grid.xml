@@ -13,11 +13,11 @@
     <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
 
     <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
-      caption="Pradžia" />
+      caption="Pradžia" visible="true" />
     <CalcColumn type="string" name="End" sortBy="EffectiveEnd EndDateTime EndDate"
       caption="Pabaiga" />
 
-    <DataColumn name="Summary" caption="Santrauka" />
+    <DataColumn name="Summary" caption="Santrauka" visible="true" />
     <DataColumn name="Description" caption="Aprašymas" />
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />

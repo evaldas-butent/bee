@@ -5,6 +5,6 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="SizeName" minWidth="100" maxWidth="200" />
+    <DataColumn name="SizeName" minWidth="100" maxWidth="200" visible="true" />
   </columns>
 </Grid>

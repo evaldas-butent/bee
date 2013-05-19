@@ -9,9 +9,9 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" width="120" />
+    <DataColumn name="Name" caption="Pavadinimas" width="120" visible="true" />
 
-    <DataColumn name="Background" caption="Fono spalva" minWidth="100" updateMode="row">
+    <DataColumn name="Background" caption="Fono spalva" minWidth="100" updateMode="row" visible="true">
       &dyn;
       <editor type="color" />
     </DataColumn>

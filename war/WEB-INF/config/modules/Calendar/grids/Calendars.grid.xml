@@ -5,7 +5,7 @@
   newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
     <ActionColumn name="Open" source="Name" caption="Atidaryti" element="link" sortable="false" />
 
     <DataColumn name="Description" caption="Aprašymas" sortable="false" />

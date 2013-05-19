@@ -4,6 +4,6 @@
   name="DocumentStatuses" viewName="DocumentStatuses" caption="=documentStatuses"
   >
   <columns>
-    <DataColumn name="Name" minWidth="200" />
+    <DataColumn name="Name" minWidth="200" visible="true" />
   </columns>
 </Grid>

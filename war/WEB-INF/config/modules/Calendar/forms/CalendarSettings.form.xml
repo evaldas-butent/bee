@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="CalendarSettings" viewName="UserCalendars" caption="Nustatymai">
+  name="CalendarSettings" viewName="UserCalendars" caption="=settings">
 
   <xi:include href="widgets/Settings.widget.xml" />
 </f:Form>  

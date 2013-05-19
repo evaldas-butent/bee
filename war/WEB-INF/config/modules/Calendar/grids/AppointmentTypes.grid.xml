@@ -9,7 +9,7 @@
   >
   <body height="100" /> 
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
     <DataColumn name="Description" caption="Aprašymas">&nowrap;</DataColumn>
 
     <RelColumn name="ThemeName" caption="Spalvų tema" />

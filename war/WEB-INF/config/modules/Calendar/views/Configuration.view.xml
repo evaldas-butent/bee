@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Configuration" source="Configuration" newRowCaption="Nustatymai"
+  name="Configuration" source="Configuration" newRowCaption="=settings"
   >
   <Columns>
     <SimpleColumn name="Company" />

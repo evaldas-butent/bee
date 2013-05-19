@@ -104,9 +104,9 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean beforeCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+  public ColumnDescription beforeCreateColumn(GridView gridView,
       ColumnDescription columnDescription) {
-    return true;
+    return columnDescription;
   }
 
   @Override

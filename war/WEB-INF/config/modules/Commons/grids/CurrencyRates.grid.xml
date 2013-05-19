@@ -5,10 +5,10 @@
   name="CurrencyRates" viewName="CurrencyRates" caption="Kursai" minColumnWidth="100"
   >
   <columns>
-    <DataColumn name="Date" source="Date" />
-    <DataColumn name="Quantity" source="Quantity">
+    <DataColumn name="Date" source="Date" visible="true" />
+    <DataColumn name="Quantity" source="Quantity" visible="true">
       <carry><ui:expression>row.Quantity</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="Rate" source="Rate" />
+    <DataColumn name="Rate" source="Rate" visible="true" />
   </columns>
 </Grid>

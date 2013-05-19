@@ -167,6 +167,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private ColumnDescription() {
   }
+  
+  public ColumnDescription copy() {
+    return restore(serialize());
+  }
 
   @Override
   public void deserialize(String s) {

@@ -4,7 +4,7 @@
   name="Companies" viewName="Companies" caption="Klientai" favorite="Name" flexGrow="1"
   >
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" visible="true" />
     <DataColumn name="TypeName" caption="Statusas" />
     <DataColumn name="GroupName" caption="Grupė" />
 

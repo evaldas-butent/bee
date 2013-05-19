@@ -5,8 +5,8 @@
   editForm="Person" flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="FirstName" />
-    <DataColumn name="LastName" />
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
 
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />

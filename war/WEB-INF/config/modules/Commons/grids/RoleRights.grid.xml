@@ -6,9 +6,9 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="ObjectType" caption="Tipas" readOnly="true" itemKey="RightsObjectType" />
-    <RelColumn name="ObjectName" caption="Objektas" />
-    <DataColumn name="State" caption="Būsena" itemKey="RightsState">
+    <DataColumn name="ObjectType" caption="Tipas" readOnly="true" itemKey="RightsObjectType" visible="true" />
+    <RelColumn name="ObjectName" caption="Objektas" visible="true" />
+    <DataColumn name="State" caption="Būsena" itemKey="RightsState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
       </style>

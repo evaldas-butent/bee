@@ -19,5 +19,5 @@ name="Calendar" label="Kalendorius" order="70"
 
   <Item name="TimeZones" label="Laiko juostos" service="grid" parameters="TimeZones" separator="true" />
 
-  <Item name="Configuration" label="Nustatymai" service="grid" parameters="Configuration" separator="true" />
+  <Item name="Configuration" label="=settings" service="grid" parameters="Configuration" separator="true" />
 </Entry>

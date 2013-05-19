@@ -4,7 +4,7 @@
   name="Countries" viewName="Countries" caption="Šalys"
   >
   <columns>
-    <DataColumn name="Name" minWidth="100" />
+    <DataColumn name="Name" minWidth="100" visible="true" />
     <DataColumn name="Code" />
     <DataColumn name="EUMember" caption="ES" />
     <CalcColumn type="string" name="Flag" source="Code" cellType="html" width="30" caption="-"

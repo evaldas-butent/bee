@@ -237,6 +237,10 @@ class GridConfig {
     }
   }
   
+  boolean hasVisibleColumns() {
+    return !BeeUtils.isEmpty(row.getString(columnsIndex));
+  }
+  
   boolean isEmpty() {
     if (!columnSettings.isEmpty()) {
       for (ColumnConfig columnConfig : columnSettings.values()) {
