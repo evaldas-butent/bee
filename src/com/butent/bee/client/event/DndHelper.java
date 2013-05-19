@@ -24,7 +24,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -47,7 +47,7 @@ import elemental.js.dom.JsClipboard;
 
 public class DndHelper {
 
-  public static final Predicate<Long> alwaysTarget = Predicates.alwaysTrue();
+  public static final Predicate<Object> alwaysTarget = Predicates.alwaysTrue();
   
   private static final String TRANSFER_TYPE_FILES = "Files";
   private static final String TRANSFER_ITEM_KIND_FILE = "file";
@@ -250,7 +250,7 @@ public class DndHelper {
 
   public static void makeTarget(final DndTarget widget, final Collection<String> contentTypes,
       final String overStyle, final Predicate<Object> targetPredicate,
-      final Consumer<Object> onDrop) {
+      final BiConsumer<DropEvent, Object> onDrop) {
 
     Assert.notNull(widget);
     Assert.notEmpty(contentTypes);
@@ -303,7 +303,7 @@ public class DndHelper {
       public void onDrop(DropEvent event) {
         if (widget.getTargetState() != null) {
           event.stopPropagation();
-          onDrop.accept(getData());
+          onDrop.accept(event, getData());
         }
       }
     });

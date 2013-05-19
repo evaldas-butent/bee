@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -24,7 +25,7 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -347,11 +348,11 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           public boolean apply(Object input) {
             return Trip.this.isTarget(input);
           }
-        }, new Consumer<Object>() {
+        }, new BiConsumer<DropEvent, Object>() {
           @Override
-          public void accept(Object input) {
+          public void accept(DropEvent t, Object u) {
             widget.asWidget().removeStyleName(overStyle);
-            Trip.this.acceptDrop(input);
+            Trip.this.acceptDrop(u);
           }
         });
   }

@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -12,7 +13,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -136,11 +137,11 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
           public boolean apply(Object input) {
             return Vehicle.this.isTarget(vehicleType, input);
           }
-        }, new Consumer<Object>() {
+        }, new BiConsumer<DropEvent, Object>() {
           @Override
-          public void accept(Object input) {
+          public void accept(DropEvent t, Object u) {
             widget.asWidget().removeStyleName(overStyle);
-            Vehicle.this.acceptDrop(vehicleType, input);
+            Vehicle.this.acceptDrop(vehicleType, u);
           }
         });
   }

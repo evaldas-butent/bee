@@ -1802,8 +1802,16 @@ div:focus,
   margin: 0;
 }
 .bee-GridSettings-label {
+  min-width: 80px;
+  min-height: 20px;
   font-size: 12px;
   margin-left: 1em;
+  cursor: move;
+}
+.bee-GridSettings-drag {
+  background-color: yellow;
+  box-sizing: border-box;
+  border: 1px solid darkgreen;
 }
 
 .companyInfo-label, .companyInfo-item {
