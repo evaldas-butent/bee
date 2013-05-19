@@ -16,7 +16,9 @@
     <Integer name="HeaderHeight" />
     <Text name="HeaderStyle" />
     <String name="HeaderFont" precision="60" />
+    <String name="HeaderPadding" precision="10" />
     <String name="HeaderBorderWidth" precision="10" />
+    <String name="HeaderMargin" precision="10" />
 
     <Integer name="RowHeight" />
     <Text name="BodyStyle" />
@@ -28,7 +30,9 @@
     <Integer name="FooterHeight" />
     <Text name="FooterStyle" />
     <String name="FooterFont" precision="60" />
+    <String name="FooterPadding" precision="10" />
     <String name="FooterBorderWidth" precision="10" />
+    <String name="FooterMargin" precision="10" />
 
     <Boolean name="AutoFit" />
 
@@ -40,4 +44,11 @@
     <Integer name="FlexBasis" />
     <String name="FlexBasisUnit" precision="3" />
   </Fields>
+  
+  <Keys>
+    <Key unique="true">
+      <KeyField>User</KeyField>
+      <KeyField>Key</KeyField>
+    </Key>
+  </Keys>
 </Table>

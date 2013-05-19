@@ -5,8 +5,11 @@ import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -20,6 +23,9 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -37,7 +43,9 @@ public class GridSettings {
 
   private static class ColumnConfig {
 
-    private static int gridIndex = BeeConst.UNDEF;
+    private static List<BeeColumn> dataColumns = Lists.newArrayList();
+
+    private static int gridIndex;
     private static int nameIndex;
     private static int captionIndex;
 
@@ -64,10 +72,12 @@ public class GridSettings {
     private static int footerFontIndex;
 
     private static void ensureIndexes(List<BeeColumn> columns) {
-      if (BeeConst.isUndef(gridIndex)) {
+      if (dataColumns.isEmpty()) {
+        dataColumns.addAll(columns);
+
         List<String> names = DataUtils.getColumnNames(columns);
 
-        gridIndex = getIndex(names, ColumnDescription.COL_GRID_SETTING);
+        gridIndex = getIndex(names, "GridSetting");
         nameIndex = getIndex(names, "Name");
         captionIndex = getIndex(names, "Caption");
 
@@ -217,11 +227,25 @@ public class GridSettings {
     private Integer getWidth() {
       return row.getInteger(widthIndex);
     }
+
+    private boolean isEmpty() {
+      return getCaption() == null
+          && getWidth() == null && getMinWidth() == null && getMaxWidth() == null
+          && getAutoFit() == null
+          && getFlexGrow() == null && getFlexShrink() == null
+          && getFlexBasis() == null && getFlexBasisUnit() == null
+          && getFormat() == null
+          && getHeaderStyle() == null && getHeaderFont() == null
+          && getBodyStyle() == null && getBodyFont() == null
+          && getFooterStyle() == null && getFooterFont() == null;
+    }
   }
 
   private static class GridConfig {
 
-    private static int userIndex = BeeConst.UNDEF;
+    private static List<BeeColumn> dataColumns = Lists.newArrayList();
+
+    private static int userIndex;
     private static int keyIndex;
     private static int captionIndex;
     private static int columnsIndex;
@@ -230,7 +254,9 @@ public class GridSettings {
     private static int headerHeightIndex;
     private static int headerStyleIndex;
     private static int headerFontIndex;
+    private static int headerPaddingIndex;
     private static int headerBorderIndex;
+    private static int headerMarginIndex;
 
     private static int rowHeightIndex;
     private static int bodyStyleIndex;
@@ -242,7 +268,9 @@ public class GridSettings {
     private static int footerHeightIndex;
     private static int footerStyleIndex;
     private static int footerFontIndex;
+    private static int footerPaddingIndex;
     private static int footerBorderIndex;
+    private static int footerMarginIndex;
 
     private static int autoFitIndex;
     private static int minColumnWidthIndex;
@@ -254,7 +282,9 @@ public class GridSettings {
     private static int flexUnitIndex;
 
     private static void ensureIndexes(List<BeeColumn> columns) {
-      if (BeeConst.isUndef(userIndex)) {
+      if (dataColumns.isEmpty()) {
+        dataColumns.addAll(columns);
+
         List<String> names = DataUtils.getColumnNames(columns);
 
         userIndex = getIndex(names, GridDescription.COL_GRID_SETTING_USER);
@@ -266,7 +296,9 @@ public class GridSettings {
         headerHeightIndex = getIndex(names, "HeaderHeight");
         headerStyleIndex = getIndex(names, "HeaderStyle");
         headerFontIndex = getIndex(names, "HeaderFont");
+        headerPaddingIndex = getIndex(names, "HeaderPadding");
         headerBorderIndex = getIndex(names, "HeaderBorderWidth");
+        headerMarginIndex = getIndex(names, "HeaderMargin");
 
         rowHeightIndex = getIndex(names, "RowHeight");
         bodyStyleIndex = getIndex(names, "BodyStyle");
@@ -277,8 +309,10 @@ public class GridSettings {
 
         footerHeightIndex = getIndex(names, "FooterHeight");
         footerStyleIndex = getIndex(names, "FooterStyle");
+        footerPaddingIndex = getIndex(names, "FooterPadding");
         footerFontIndex = getIndex(names, "FooterFont");
         footerBorderIndex = getIndex(names, "FooterBorderWidth");
+        footerMarginIndex = getIndex(names, "FooterMargin");
 
         autoFitIndex = getIndex(names, "AutoFit");
         minColumnWidthIndex = getIndex(names, "MinColumnWidth");
@@ -307,16 +341,19 @@ public class GridSettings {
 
       String order = getOrder();
       if (!BeeUtils.isEmpty(order)) {
-        gridDescription.setOrder(DataUtils.parseOrder(order, Data.getDataInfoProvider(),
-            gridDescription.getViewName()));
+        gridDescription.setOrder(Order.restore(order));
       }
 
       gridDescription.setHeader(fuseCompnent(gridDescription.getHeader(), getHeaderHeight(),
-          getHeaderStyle(), getHeaderFont(), null, getHeaderBorderWidth(), null));
+          getHeaderStyle(), getHeaderFont(), getHeaderPadding(), getHeaderBorderWidth(),
+          getHeaderMargin()));
+
       gridDescription.setBody(fuseCompnent(gridDescription.getBody(), getRowHeight(),
           getBodyStyle(), getBodyFont(), getBodyPadding(), getBodyBorderWidth(), getBodyMargin()));
+
       gridDescription.setFooter(fuseCompnent(gridDescription.getFooter(), getFooterHeight(),
-          getFooterStyle(), getFooterFont(), null, getFooterBorderWidth(), null));
+          getFooterStyle(), getFooterFont(), getFooterPadding(), getFooterBorderWidth(),
+          getFooterMargin()));
 
       Boolean autoFit = getAutoFit();
       if (BeeUtils.isTrue(autoFit)) {
@@ -342,7 +379,7 @@ public class GridSettings {
           gridDescription.getFlexibility().merge(flexibility);
         }
       }
-      
+
       List<String> visibleColumnNames = getColumns();
 
       if (!visibleColumnNames.isEmpty() || !columnSettings.isEmpty()) {
@@ -350,7 +387,7 @@ public class GridSettings {
         for (ColumnDescription columnDescription : gridDescription.getColumns()) {
           names.add(columnDescription.getName());
         }
-        
+
         for (Map.Entry<String, ColumnConfig> entry : columnSettings.entrySet()) {
           int index = names.indexOf(entry.getKey());
           if (index >= 0) {
@@ -359,10 +396,10 @@ public class GridSettings {
             logger.warning("settings column not found:", entry.getKey());
           }
         }
-        
+
         if (!visibleColumnNames.isEmpty()) {
           List<Integer> indexes = Lists.newArrayList();
-          
+
           for (String name : visibleColumnNames) {
             int index = names.indexOf(name);
 
@@ -372,20 +409,20 @@ public class GridSettings {
               logger.warning("visible column not found:", name);
             }
           }
-          
+
           if (!indexes.isEmpty()) {
             List<ColumnDescription> columnDescriptions = Lists.newArrayList();
-            
+
             for (int index : indexes) {
               ColumnDescription columnDescription = gridDescription.getColumns().get(index);
               if (BeeUtils.isFalse(columnDescription.getVisible())) {
                 columnDescription.setVisible(null);
               }
-              
+
               columnDescriptions.add(columnDescription);
             }
-            
-            int cc = names.size(); 
+
+            int cc = names.size();
             if (columnDescriptions.size() < cc) {
               for (int i = 0; i < cc; i++) {
                 if (!indexes.contains(i)) {
@@ -393,12 +430,12 @@ public class GridSettings {
                   if (columnDescription.getVisible() == null) {
                     columnDescription.setVisible(false);
                   }
-                  
+
                   columnDescriptions.add(columnDescription);
                 }
               }
             }
-            
+
             gridDescription.getColumns().clear();
             gridDescription.getColumns().addAll(columnDescriptions);
           }
@@ -507,6 +544,14 @@ public class GridSettings {
       return row.getInteger(footerHeightIndex);
     }
 
+    private String getFooterMargin() {
+      return row.getString(footerMarginIndex);
+    }
+
+    private String getFooterPadding() {
+      return row.getString(footerPaddingIndex);
+    }
+
     private String getFooterStyle() {
       return row.getString(footerStyleIndex);
     }
@@ -521,6 +566,14 @@ public class GridSettings {
 
     private Integer getHeaderHeight() {
       return row.getInteger(headerHeightIndex);
+    }
+
+    private String getHeaderMargin() {
+      return row.getString(headerMarginIndex);
+    }
+
+    private String getHeaderPadding() {
+      return row.getString(headerPaddingIndex);
     }
 
     private String getHeaderStyle() {
@@ -542,6 +595,32 @@ public class GridSettings {
     private Integer getRowHeight() {
       return row.getInteger(rowHeightIndex);
     }
+
+    private boolean isEmpty() {
+      if (!columnSettings.isEmpty()) {
+        for (ColumnConfig columnConfig : columnSettings.values()) {
+          if (!columnConfig.isEmpty()) {
+            return false;
+          }
+        }
+      }
+
+      return getCaption() == null
+          && getColumns() == null && getOrder() == null
+          && getHeaderHeight() == null && getHeaderStyle() == null 
+          && getHeaderFont() == null && getHeaderPadding() == null 
+          && getHeaderBorderWidth() == null && getHeaderMargin() == null
+          && getRowHeight() == null && getBodyStyle() == null
+          && getBodyFont() == null && getBodyPadding() == null
+          && getBodyBorderWidth() == null && getBodyMargin() == null
+          && getFooterHeight() == null && getFooterStyle() == null
+          && getFooterFont() == null && getFooterPadding() == null
+          && getFooterBorderWidth() == null && getFooterMargin() == null
+          && getAutoFit() == null
+          && getMinColumnWidth() == null && getMaxColumnWidth() == null
+          && getFlexGrow() == null && getFlexShrink() == null
+          && getFlexBasis() == null && getFlexBasisUnit() == null;
+    }
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(GridSettings.class);
@@ -555,9 +634,11 @@ public class GridSettings {
   private static final Map<String, GridConfig> grids = Maps.newHashMap();
 
   public static GridDescription apply(String key, GridDescription input) {
-    if (grids.containsKey(key)) {
+    GridConfig gridConfig = grids.get(key);
+
+    if (gridConfig != null && !gridConfig.isEmpty()) {
       GridDescription gridDescription = input.copy();
-      grids.get(key).applyTo(gridDescription);
+      gridConfig.applyTo(gridDescription);
       return gridDescription;
 
     } else {
@@ -613,7 +694,7 @@ public class GridSettings {
           }
         }
 
-        commitColumns(grid, selectedColumns);
+        grid.updateVisibleColumns(selectedColumns);
       }
     }, STYLE_DIALOG, target);
   }
@@ -655,17 +736,10 @@ public class GridSettings {
     }
   }
 
-  private static void commitColumns(CellGrid grid, List<Integer> columns) {
-    if (!columns.isEmpty() && !columns.equals(grid.getVisibleColumns())) {
-      BeeUtils.overwrite(grid.getVisibleColumns(), columns);
-
-      grid.getRenderedRows().clear();
-
-      grid.getResizedRows().clear();
-      grid.getResizedCells().clear();
-
-      grid.onResize();
-    }
+  public static void saveSortOrder(String key, Order order) {
+    ensureGridIndexes();
+    saveGridSetting(key, GridConfig.orderIndex,
+        (order == null || order.isEmpty()) ? null : order.serialize());
   }
 
   private static Widget createCheckBox(boolean value) {
@@ -681,6 +755,19 @@ public class GridSettings {
     DomUtils.setDataIndex(widget.getElement(), index);
 
     return widget;
+  }
+
+  private static void ensureColumnIndexes() {
+    ensureGridIndexes();
+    if (ColumnConfig.dataColumns.isEmpty()) {
+      ColumnConfig.ensureIndexes(Data.getColumns(ColumnDescription.VIEW_COLUMN_SETTINGS));
+    }
+  }
+
+  private static void ensureGridIndexes() {
+    if (GridConfig.dataColumns.isEmpty()) {
+      GridConfig.ensureIndexes(Data.getColumns(GridDescription.VIEW_GRID_SETTINGS));
+    }
   }
 
   private static GridConfig findGridByRowId(long id) {
@@ -702,6 +789,56 @@ public class GridSettings {
 
   private static String getLabel(ColumnInfo columnInfo) {
     return BeeUtils.notEmpty(columnInfo.getCaption(), columnInfo.getColumnId());
+  }
+
+  private static String normalizeValue(String value) {
+    return BeeUtils.isEmpty(value) ? null : value.trim();
+  }
+
+  private static void saveGridSetting(final String key, int index, String value) {
+    Assert.notEmpty(key);
+    Assert.isIndex(GridConfig.dataColumns, index);
+
+    final BeeColumn dataColumn = GridConfig.dataColumns.get(index);
+    final String newValue = normalizeValue(value);
+
+    GridConfig gridConfig = grids.get(key);
+    if (gridConfig == null) {
+      if (newValue != null) {
+        List<BeeColumn> columns = Lists.newArrayList();
+        columns.add(GridConfig.dataColumns.get(GridConfig.userIndex));
+        columns.add(GridConfig.dataColumns.get(GridConfig.keyIndex));
+        columns.add(dataColumn);
+
+        List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key, newValue);
+
+        Queries.insert(GridDescription.VIEW_GRID_SETTINGS, columns, values, null,
+            new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                grids.put(key, new GridConfig(result));
+                logger.debug("created grid settings:", key, dataColumn.getId(), newValue);
+              }
+            });
+      }
+
+    } else if (!BeeUtils.equalsTrim(gridConfig.row.getString(index), newValue)) {
+      gridConfig.row.setValue(index, newValue);
+
+      Queries.update(GridDescription.VIEW_GRID_SETTINGS,
+          ComparisonFilter.compareId(gridConfig.row.getId()), dataColumn.getId(),
+          new TextValue(newValue), new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              if (BeeUtils.unbox(result) == 1) {
+                logger.debug("updated grid settings:", key, dataColumn.getId(), newValue);
+              } else {
+                logger.warning("could not update grid settings:", result);
+                logger.warning(key, dataColumn.getId(), newValue);
+              }
+            }
+          });
+    }
   }
 
   private GridSettings() {

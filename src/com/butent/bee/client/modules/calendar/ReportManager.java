@@ -332,7 +332,8 @@ class ReportManager {
 
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
     
-    GridView gridView = GridFactory.createGridView(gridDescription, rowSet.getColumns(), uiOptions);
+    GridView gridView = GridFactory.createGridView(gridDescription,
+        GridFactory.getSupplierKey(gridName, null), rowSet.getColumns(), uiOptions);
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
     
     GridPresenter presenter = new GridPresenter(gridDescription, gridView,

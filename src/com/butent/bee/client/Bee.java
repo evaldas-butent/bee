@@ -64,7 +64,7 @@ public class Bee implements EntryPoint {
       }
     });
   }
-  
+
   private void load(Map<String, String> data) {
     UserData userData = UserData.restore(data.get(Service.LOGIN));
     BeeKeeper.getUser().setUserData(userData);
@@ -73,18 +73,16 @@ public class Bee implements EntryPoint {
     BeeKeeper.getMenu().restore(data.get(Service.LOAD_MENU));
 
     Data.getDataInfoProvider().restore(data.get(Service.GET_DATA_INFO));
-    
+
     Global.getFavorites().load(data.get(CommonsConstants.TBL_FAVORITES));
     Global.getFilters().load(data.get(CommonsConstants.TBL_FILTERS));
 
     TuningFactory.parseDecorators(data.get(Service.GET_DECORATORS));
-    
-    if (data.containsKey(GridDescription.TBl_GRID_SETTINGS)) {
-      GridSettings.load(data.get(GridDescription.TBl_GRID_SETTINGS),
-          data.get(ColumnDescription.TBl_COLUMN_SETTINGS));
-    }
+
+    GridSettings.load(data.get(GridDescription.VIEW_GRID_SETTINGS),
+        data.get(ColumnDescription.VIEW_COLUMN_SETTINGS));
   }
-  
+
   private void start() {
     ModuleManager.onLoad();
 

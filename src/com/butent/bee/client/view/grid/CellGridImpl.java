@@ -29,6 +29,7 @@ import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -137,7 +138,7 @@ import java.util.Set;
  */
 
 public class CellGridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, ActionEvent.Handler {
+    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -165,6 +166,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private static final String STYLE_NAME = "bee-GridView";
 
   private final String gridName;
+  private final String gridKey;
   private final DataInfo dataInfo;
 
   private GridPresenter viewPresenter = null;
@@ -221,11 +223,13 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private final Set<String> pendingResize = Sets.newHashSet();
 
-  public CellGridImpl(String gridName, String viewName, String relColumn) {
+  public CellGridImpl(String gridName, String gridKey, String viewName, String relColumn) {
     super();
     addStyleName(STYLE_NAME);
 
     this.gridName = gridName;
+    this.gridKey = gridKey;
+
     this.dataInfo = BeeUtils.isEmpty(viewName) ? null : Data.getDataInfo(viewName);
     this.relColumn = relColumn;
   }
@@ -268,214 +272,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
-  }
-
-  @Override
-  public void applyOptions(String options) {
-    if (BeeUtils.isEmpty(options)) {
-      return;
-    }
-
-    boolean redraw = false;
-    String[] opt = BeeUtils.split(options, BeeConst.CHAR_SEMICOLON);
-
-    for (int i = 0; i < opt.length; i++) {
-      String[] arr = BeeUtils.split(opt[i], BeeConst.CHAR_SPACE);
-      int len = arr.length;
-      if (len <= 1) {
-        continue;
-      }
-      String cmd = arr[0].trim().toLowerCase();
-      String args = opt[i].trim().substring(cmd.length() + 1).trim();
-
-      int[] xp = new int[len - 1];
-      String[] sp = new String[len - 1];
-
-      for (int j = 1; j < len; j++) {
-        sp[j - 1] = arr[j].trim();
-        if (BeeUtils.isDigit(arr[j])) {
-          xp[j - 1] = BeeUtils.toInt(arr[j]);
-        } else {
-          xp[j - 1] = 0;
-        }
-      }
-
-      Edges edges = null;
-      switch (len - 1) {
-        case 1:
-          edges = new Edges(xp[0]);
-          break;
-        case 2:
-          edges = new Edges(xp[0], xp[1]);
-          break;
-        case 3:
-          edges = new Edges(xp[0], xp[1], xp[2]);
-          break;
-        default:
-          edges = new Edges(xp[0], xp[1], xp[2], xp[3]);
-      }
-
-      int cc = getGrid().getColumnCount();
-      String colId = sp[0];
-      if (BeeUtils.isDigit(colId) && xp[0] < cc) {
-        colId = getGrid().getColumnId(xp[0]);
-      }
-
-      String msg = null;
-
-      if (cmd.startsWith("bh")) {
-        msg = "setBodyCellHeight " + xp[0];
-        getGrid().setBodyCellHeight(xp[0]);
-        redraw = true;
-      } else if (cmd.startsWith("bp")) {
-        msg = "setBodyCellPadding " + edges.getCssValue();
-        getGrid().setBodyCellPadding(edges);
-        redraw = true;
-      } else if (cmd.startsWith("bw")) {
-        msg = "setBodyBorderWidth " + edges.getCssValue();
-        getGrid().setBodyBorderWidth(edges);
-        redraw = true;
-      } else if (cmd.startsWith("bm")) {
-        msg = "setBodyCellMargin " + edges.getCssValue();
-        getGrid().setBodyCellMargin(edges);
-        redraw = true;
-      } else if (cmd.startsWith("bf")) {
-        msg = "setColumnBodyFont " + args;
-        getGrid().setBodyFont(args);
-        redraw = true;
-
-      } else if (cmd.startsWith("hh")) {
-        msg = "setHeaderCellHeight " + xp[0];
-        getGrid().setHeaderCellHeight(xp[0]);
-        redraw = true;
-      } else if (cmd.startsWith("hp")) {
-        msg = "setHeaderCellPadding " + edges.getCssValue();
-        getGrid().setHeaderCellPadding(edges);
-        redraw = true;
-      } else if (cmd.startsWith("hw")) {
-        msg = "setHeaderBorderWidth " + edges.getCssValue();
-        getGrid().setHeaderBorderWidth(edges);
-        redraw = true;
-      } else if (cmd.startsWith("hm")) {
-        msg = "setHeaderCellMargin " + edges.getCssValue();
-        getGrid().setHeaderCellMargin(edges);
-        redraw = true;
-      } else if (cmd.startsWith("hf")) {
-        msg = "setColumnHeaderFont " + args;
-        getGrid().setHeaderFont(args);
-        redraw = true;
-
-      } else if (cmd.startsWith("fh")) {
-        msg = "setFooterCellHeight " + xp[0];
-        getGrid().setFooterCellHeight(xp[0]);
-        redraw = true;
-      } else if (cmd.startsWith("fp")) {
-        msg = "setFooterCellPadding " + edges.getCssValue();
-        getGrid().setFooterCellPadding(edges);
-        redraw = true;
-      } else if (cmd.startsWith("fw")) {
-        msg = "setFooterBorderWidth " + edges.getCssValue();
-        getGrid().setFooterBorderWidth(edges);
-        redraw = true;
-      } else if (cmd.startsWith("fm")) {
-        msg = "setFooterCellMargin " + edges.getCssValue();
-        getGrid().setFooterCellMargin(edges);
-        redraw = true;
-      } else if (cmd.startsWith("ff")) {
-        msg = "setColumnFooterFont " + args;
-        getGrid().setFooterFont(args);
-        redraw = true;
-
-      } else if (cmd.startsWith("chw") && len > 2) {
-        msg = "setColumnHeaderWidth " + colId + " " + xp[1];
-        getGrid().setColumnHeaderWidth(colId, xp[1]);
-        redraw = true;
-      } else if (cmd.startsWith("chf") && len > 2) {
-        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
-        msg = "setColumnHeaderFont " + colId + " " + font;
-        getGrid().setColumnHeaderFont(colId, font);
-        redraw = true;
-
-      } else if (cmd.startsWith("cbw") && len > 2) {
-        msg = "setColumnBodyWidth " + colId + " " + xp[1];
-        getGrid().setColumnBodyWidth(colId, xp[1]);
-        redraw = true;
-      } else if (cmd.startsWith("cbf") && len > 2) {
-        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
-        msg = "setColumnBodyFont " + colId + " " + font;
-        getGrid().setColumnBodyFont(colId, font);
-        redraw = true;
-
-      } else if (cmd.startsWith("cfw") && len > 2) {
-        msg = "setColumnFooterWidth " + colId + " " + xp[1];
-        getGrid().setColumnFooterWidth(colId, xp[1]);
-        redraw = true;
-      } else if (cmd.startsWith("cff") && len > 2) {
-        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
-        msg = "setColumnFooterFont " + colId + " " + font;
-        getGrid().setColumnFooterFont(colId, font);
-        redraw = true;
-
-      } else if (cmd.startsWith("cw") && len > 2) {
-        if (len <= 3) {
-          msg = "setColumnWidth " + colId + " " + xp[1];
-          getGrid().setColumnWidth(colId, xp[1]);
-          redraw = true;
-        } else {
-          msg = "setColumnWidth " + colId + " " + xp[1] + " " + CssUnit.parse(sp[2]);
-          getGrid().setColumnWidth(colId, xp[1], CssUnit.parse(sp[2]));
-          redraw = true;
-        }
-
-      } else if (cmd.startsWith("minw")) {
-        msg = "setMinCellWidth " + xp[0];
-        getGrid().setMinCellWidth(xp[0]);
-      } else if (cmd.startsWith("maxw")) {
-        msg = "setMaxCellWidth " + xp[0];
-        getGrid().setMaxCellWidth(xp[0]);
-      } else if (cmd.startsWith("minh")) {
-        msg = "setMinCellHeight " + xp[0];
-        getGrid().setMinBodyCellHeight(xp[0]);
-      } else if (cmd.startsWith("maxh")) {
-        msg = "setMaxCellHeight " + xp[0];
-        getGrid().setMaxBodyCellHeight(xp[0]);
-
-      } else if (cmd.startsWith("zm")) {
-        msg = "setResizerMoveSensitivityMillis " + xp[0];
-        getGrid().setResizerMoveSensitivityMillis(xp[0]);
-      } else if (cmd.startsWith("zs")) {
-        msg = "setResizerShowSensitivityMillis " + xp[0];
-        getGrid().setResizerShowSensitivityMillis(xp[0]);
-
-      } else if (cmd.startsWith("fit")) {
-        if (getGrid().contains(colId)) {
-          getGrid().autoFitColumn(colId);
-          msg = "autoFitColumn " + colId;
-        } else {
-          getGrid().autoFit(true);
-          msg = "autoFit";
-        }
-
-      } else if (cmd.startsWith("ps")) {
-        int oldPageSize = getGrid().getPageSize();
-        int newPageSize = BeeUtils.positive(xp[0], getGrid().estimatePageSize());
-        if (newPageSize > 0 && newPageSize != oldPageSize) {
-          getGrid().setPageSize(newPageSize, true);
-          DataRequestEvent.fire(getGrid(), NavigationOrigin.SYSTEM);
-        }
-        msg = "page size: old " + oldPageSize + " new " + newPageSize;
-      }
-
-      if (msg == null) {
-        logger.warning("unrecognized command", opt[i]);
-      } else {
-        logger.info(msg);
-      }
-    }
-
-    if (redraw) {
-      getGrid().refresh();
-    }
   }
 
   @Override
@@ -859,6 +655,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     initOrder(order);
 
     getGrid().addEditStartHandler(this);
+    getGrid().addSortHandler(this);
 
     add(getGrid());
     add(getNotification());
@@ -1148,6 +945,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public String getGridKey() {
+    return gridKey;
+  }
+
+  @Override
   public String getGridName() {
     return gridName;
   }
@@ -1366,6 +1168,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public void onSort(SortEvent event) {
+    GridSettings.saveSortOrder(gridKey, event.getOrder());
+  }
+
+  @Override
   public Filter parseFilter(List<Map<String, String>> filterValues) {
     if (BeeUtils.isEmpty(filterValues)) {
       return null;
@@ -1571,6 +1378,213 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         StyleUtils.setHeight(popup, height);
       }
     });
+  }
+
+  private void applyOptions(String options) {
+    if (BeeUtils.isEmpty(options)) {
+      return;
+    }
+
+    boolean redraw = false;
+    String[] opt = BeeUtils.split(options, BeeConst.CHAR_SEMICOLON);
+
+    for (int i = 0; i < opt.length; i++) {
+      String[] arr = BeeUtils.split(opt[i], BeeConst.CHAR_SPACE);
+      int len = arr.length;
+      if (len <= 1) {
+        continue;
+      }
+      String cmd = arr[0].trim().toLowerCase();
+      String args = opt[i].trim().substring(cmd.length() + 1).trim();
+
+      int[] xp = new int[len - 1];
+      String[] sp = new String[len - 1];
+
+      for (int j = 1; j < len; j++) {
+        sp[j - 1] = arr[j].trim();
+        if (BeeUtils.isDigit(arr[j])) {
+          xp[j - 1] = BeeUtils.toInt(arr[j]);
+        } else {
+          xp[j - 1] = 0;
+        }
+      }
+
+      Edges edges = null;
+      switch (len - 1) {
+        case 1:
+          edges = new Edges(xp[0]);
+          break;
+        case 2:
+          edges = new Edges(xp[0], xp[1]);
+          break;
+        case 3:
+          edges = new Edges(xp[0], xp[1], xp[2]);
+          break;
+        default:
+          edges = new Edges(xp[0], xp[1], xp[2], xp[3]);
+      }
+
+      int cc = getGrid().getColumnCount();
+      String colId = sp[0];
+      if (BeeUtils.isDigit(colId) && xp[0] < cc) {
+        colId = getGrid().getColumnId(xp[0]);
+      }
+
+      String msg = null;
+
+      if (cmd.startsWith("bh")) {
+        msg = "setBodyCellHeight " + xp[0];
+        getGrid().setBodyCellHeight(xp[0]);
+        redraw = true;
+      } else if (cmd.startsWith("bp")) {
+        msg = "setBodyCellPadding " + edges.getCssValue();
+        getGrid().setBodyCellPadding(edges);
+        redraw = true;
+      } else if (cmd.startsWith("bw")) {
+        msg = "setBodyBorderWidth " + edges.getCssValue();
+        getGrid().setBodyBorderWidth(edges);
+        redraw = true;
+      } else if (cmd.startsWith("bm")) {
+        msg = "setBodyCellMargin " + edges.getCssValue();
+        getGrid().setBodyCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("bf")) {
+        msg = "setColumnBodyFont " + args;
+        getGrid().setBodyFont(args);
+        redraw = true;
+
+      } else if (cmd.startsWith("hh")) {
+        msg = "setHeaderCellHeight " + xp[0];
+        getGrid().setHeaderCellHeight(xp[0]);
+        redraw = true;
+      } else if (cmd.startsWith("hp")) {
+        msg = "setHeaderCellPadding " + edges.getCssValue();
+        getGrid().setHeaderCellPadding(edges);
+        redraw = true;
+      } else if (cmd.startsWith("hw")) {
+        msg = "setHeaderBorderWidth " + edges.getCssValue();
+        getGrid().setHeaderBorderWidth(edges);
+        redraw = true;
+      } else if (cmd.startsWith("hm")) {
+        msg = "setHeaderCellMargin " + edges.getCssValue();
+        getGrid().setHeaderCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("hf")) {
+        msg = "setColumnHeaderFont " + args;
+        getGrid().setHeaderFont(args);
+        redraw = true;
+
+      } else if (cmd.startsWith("fh")) {
+        msg = "setFooterCellHeight " + xp[0];
+        getGrid().setFooterCellHeight(xp[0]);
+        redraw = true;
+      } else if (cmd.startsWith("fp")) {
+        msg = "setFooterCellPadding " + edges.getCssValue();
+        getGrid().setFooterCellPadding(edges);
+        redraw = true;
+      } else if (cmd.startsWith("fw")) {
+        msg = "setFooterBorderWidth " + edges.getCssValue();
+        getGrid().setFooterBorderWidth(edges);
+        redraw = true;
+      } else if (cmd.startsWith("fm")) {
+        msg = "setFooterCellMargin " + edges.getCssValue();
+        getGrid().setFooterCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("ff")) {
+        msg = "setColumnFooterFont " + args;
+        getGrid().setFooterFont(args);
+        redraw = true;
+
+      } else if (cmd.startsWith("chw") && len > 2) {
+        msg = "setColumnHeaderWidth " + colId + " " + xp[1];
+        getGrid().setColumnHeaderWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("chf") && len > 2) {
+        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
+        msg = "setColumnHeaderFont " + colId + " " + font;
+        getGrid().setColumnHeaderFont(colId, font);
+        redraw = true;
+
+      } else if (cmd.startsWith("cbw") && len > 2) {
+        msg = "setColumnBodyWidth " + colId + " " + xp[1];
+        getGrid().setColumnBodyWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("cbf") && len > 2) {
+        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
+        msg = "setColumnBodyFont " + colId + " " + font;
+        getGrid().setColumnBodyFont(colId, font);
+        redraw = true;
+
+      } else if (cmd.startsWith("cfw") && len > 2) {
+        msg = "setColumnFooterWidth " + colId + " " + xp[1];
+        getGrid().setColumnFooterWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("cff") && len > 2) {
+        String font = ArrayUtils.join(BeeConst.STRING_SPACE, sp, 1);
+        msg = "setColumnFooterFont " + colId + " " + font;
+        getGrid().setColumnFooterFont(colId, font);
+        redraw = true;
+
+      } else if (cmd.startsWith("cw") && len > 2) {
+        if (len <= 3) {
+          msg = "setColumnWidth " + colId + " " + xp[1];
+          getGrid().setColumnWidth(colId, xp[1]);
+          redraw = true;
+        } else {
+          msg = "setColumnWidth " + colId + " " + xp[1] + " " + CssUnit.parse(sp[2]);
+          getGrid().setColumnWidth(colId, xp[1], CssUnit.parse(sp[2]));
+          redraw = true;
+        }
+
+      } else if (cmd.startsWith("minw")) {
+        msg = "setMinCellWidth " + xp[0];
+        getGrid().setMinCellWidth(xp[0]);
+      } else if (cmd.startsWith("maxw")) {
+        msg = "setMaxCellWidth " + xp[0];
+        getGrid().setMaxCellWidth(xp[0]);
+      } else if (cmd.startsWith("minh")) {
+        msg = "setMinCellHeight " + xp[0];
+        getGrid().setMinBodyCellHeight(xp[0]);
+      } else if (cmd.startsWith("maxh")) {
+        msg = "setMaxCellHeight " + xp[0];
+        getGrid().setMaxBodyCellHeight(xp[0]);
+
+      } else if (cmd.startsWith("zm")) {
+        msg = "setResizerMoveSensitivityMillis " + xp[0];
+        getGrid().setResizerMoveSensitivityMillis(xp[0]);
+      } else if (cmd.startsWith("zs")) {
+        msg = "setResizerShowSensitivityMillis " + xp[0];
+        getGrid().setResizerShowSensitivityMillis(xp[0]);
+
+      } else if (cmd.startsWith("fit")) {
+        if (getGrid().contains(colId)) {
+          getGrid().autoFitColumn(colId);
+          msg = "autoFitColumn " + colId;
+        } else {
+          getGrid().autoFit(true);
+          msg = "autoFit";
+        }
+
+      } else if (cmd.startsWith("ps")) {
+        int oldPageSize = getGrid().getPageSize();
+        int newPageSize = BeeUtils.positive(xp[0], getGrid().estimatePageSize());
+        if (newPageSize > 0 && newPageSize != oldPageSize) {
+          getGrid().setPageSize(newPageSize, true);
+          DataRequestEvent.fire(getGrid(), NavigationOrigin.SYSTEM);
+        }
+        msg = "page size: old " + oldPageSize + " new " + newPageSize;
+      }
+
+      if (msg == null) {
+        logger.warning("unrecognized command", opt[i]);
+      } else {
+        logger.info(msg);
+      }
+    }
+
+    if (redraw) {
+      getGrid().refresh();
+    }
   }
 
   private void closeEditForm() {
@@ -2022,11 +2036,20 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (!gridOrder.isEmpty()) {
       gridOrder.clear();
     }
+    if (viewOrder.isEmpty()) {
+      return;
+    }
+
+    List<ColumnInfo> columns = getGrid().getColumns();
 
     for (Order.Column oc : viewOrder.getColumns()) {
-      String columnId = getGrid().getColumnIdBySourceName(oc.getName());
-      if (!BeeUtils.isEmpty(columnId)) {
-        gridOrder.add(columnId, oc.getSources(), oc.isAscending());
+      for (ColumnInfo columnInfo : columns) {
+        List<String> sortBy = columnInfo.getSortBy();
+
+        if (!BeeUtils.isEmpty(sortBy) && sortBy.equals(oc.getSources())) {
+          gridOrder.add(columnInfo.getColumnId(), sortBy, oc.isAscending());
+          break;
+        }
       }
     }
   }

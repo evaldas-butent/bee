@@ -78,13 +78,10 @@ public class GridFactory {
 
     private final String caption;
     private final String filter;
-    private final String order;
 
-    private GridOptions(String caption, String filter, String order) {
-      super();
+    private GridOptions(String caption, String filter) {
       this.caption = caption;
       this.filter = filter;
-      this.order = order;
     }
 
     public String getCaption() {
@@ -95,16 +92,8 @@ public class GridFactory {
       return filter;
     }
 
-    public String getOrder() {
-      return order;
-    }
-
     public boolean hasFilter() {
       return !BeeUtils.isEmpty(getFilter());
-    }
-
-    public boolean hasOrder() {
-      return !BeeUtils.isEmpty(getOrder());
     }
   }
 
@@ -213,18 +202,18 @@ public class GridFactory {
     });
   }
 
-  public static GridView createGridView(GridDescription gridDescription,
+  public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, Collection<UiOption> uiOptions) {
-    return createGridView(gridDescription, null, dataColumns, uiOptions,
+    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
         getGridInterceptor(gridDescription.getName()), null);
   }
 
-  public static GridView createGridView(GridDescription gridDescription, String relColumn,
-      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Order order) {
+  public static GridView createGridView(GridDescription gridDescription, String supplierKey,
+      List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
+      GridInterceptor gridInterceptor, Order order) {
 
-    GridView gridView = new CellGridImpl(gridDescription.getName(), gridDescription.getViewName(),
-        relColumn);
+    GridView gridView = new CellGridImpl(gridDescription.getName(), supplierKey,
+        gridDescription.getViewName(), relColumn);
     gridView.create(dataColumns, gridDescription, gridInterceptor, UiOption.hasSearch(uiOptions),
         order);
 
@@ -291,12 +280,11 @@ public class GridFactory {
 
     String caption = attributes.get(UiConstants.ATTR_CAPTION);
     String filter = attributes.get(UiConstants.ATTR_FILTER);
-    String order = attributes.get(UiConstants.ATTR_ORDER);
 
-    if (BeeUtils.allEmpty(caption, filter, order)) {
+    if (BeeUtils.allEmpty(caption, filter)) {
       return null;
     } else {
-      return new GridOptions(LocaleUtils.maybeLocalize(caption), filter, order);
+      return new GridOptions(LocaleUtils.maybeLocalize(caption), filter);
     }
   }
 
@@ -331,20 +319,6 @@ public class GridFactory {
     }
 
     return Filter.and(filters);
-  }
-
-  public static Order getOrder(GridDescription gridDescription, GridOptions gridOptions) {
-    Assert.notNull(gridDescription);
-    if (gridOptions == null || !gridOptions.hasOrder()) {
-      return gridDescription.getOrder();
-    }
-
-    Order order = DataUtils.parseOrder(gridOptions.getOrder(), Data.getDataInfoProvider(),
-        gridDescription.getViewName());
-    if (order == null) {
-      order = gridDescription.getOrder();
-    }
-    return order;
   }
 
   public static List<FilterDescription> getPredefinedFilters(GridDescription gridDescription,
@@ -502,7 +476,7 @@ public class GridFactory {
     final List<Map<String, String>> initialUserFilterValues =
         Global.getFilters().getInitialValues(supplierKey);
 
-    final Order order = getOrder(gridDescription, gridOptions);
+    final Order order = gridDescription.getOrder();
 
     String viewName = gridDescription.getViewName();
 
@@ -547,7 +521,7 @@ public class GridFactory {
     }
 
     if (brs != null) {
-      GridView gridView = createGridView(gridDescription, brs.getColumns(), uiOptions,
+      GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(), uiOptions,
           gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
 
@@ -578,8 +552,8 @@ public class GridFactory {
       queryOptions = null;
     }
 
-    final GridView gridView = createGridView(gridDescription, Data.getColumns(viewName), uiOptions,
-        gridInterceptor, order);
+    final GridView gridView = createGridView(gridDescription, supplierKey,
+        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
     
     final Filter initialUserFilter = gridView.parseFilter(initialUserFilterValues);
     Filter queryFilter = getInitialQueryFilter(immutableFilter, initialParentFilters,
@@ -605,10 +579,11 @@ public class GridFactory {
         });
   }
 
-  private static GridView createGridView(GridDescription gridDescription,
+  private static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Order order) {
-    return createGridView(gridDescription, null, dataColumns, uiOptions, gridInterceptor, order);
+    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
+        gridInterceptor, order);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,

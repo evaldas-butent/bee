@@ -111,9 +111,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
           return;
         }
         
-        String supplierKey = GridFactory.getSupplierKey(gridName, getGridInterceptor());
-        setGridDescription(GridSettings.apply(supplierKey, result));
-
+        setGridDescription(GridSettings.apply(getGridKey(), result));
         resolveState();
       }
     });
@@ -215,6 +213,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return gridInterceptor;
   }
 
+  private String getGridKey() {
+    return GridFactory.getSupplierKey(gridName, getGridInterceptor());
+  }
+
   private GridFactory.GridOptions getGridOptions() {
     return gridOptions;
   }
@@ -225,15 +227,15 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     final Map<String, Filter> initialFilters =
         (getGridInterceptor() == null) ? null : getGridInterceptor().getInitialParentFilters();
 
-    final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
+    final Order order = getGridDescription().getOrder();
 
     DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
     if (dataInfo == null) {
       return;
     }
 
-    final GridView gridView = GridFactory.createGridView(getGridDescription(), getRelSource(),
-        dataInfo.getColumns(), uiOptions, getGridInterceptor(), order);
+    final GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(),
+        dataInfo.getColumns(), getRelSource(), uiOptions, getGridInterceptor(), order);
     
     if (!hasParentValue(row)) {
       BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
@@ -352,7 +354,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private void setPresenter(GridPresenter presenter) {
     this.presenter = presenter;
   }
-
+  
   private void unregister() {
     if (getParentRowReg() != null) {
       getParentRowReg().removeHandler();

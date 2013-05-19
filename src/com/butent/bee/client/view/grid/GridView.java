@@ -39,8 +39,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     ALL, EDITABLE
   }
 
-  void applyOptions(String options);
-  
   void clearFilter();
 
   void create(List<BeeColumn> dataColumns, GridDescription gridDescription,
@@ -65,6 +63,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   CellGrid getGrid();
 
   GridInterceptor getGridInterceptor();
+  
+  String getGridKey();
 
   String getGridName();
 

@@ -238,24 +238,12 @@ public class UiServiceBean {
     List<BeeRowSet> result = Lists.newArrayList();
 
     Filter userFilter = usr.getCurrentUserFilter(GridDescription.COL_GRID_SETTING_USER);
-    BeeRowSet gridSettings = qs.getViewData(GridDescription.TBl_GRID_SETTINGS, userFilter);
 
-    if (!DataUtils.isEmpty(gridSettings)) {
-      result.add(gridSettings);
+    BeeRowSet gridSettings = qs.getViewData(GridDescription.VIEW_GRID_SETTINGS, userFilter);
+    result.add(gridSettings);
 
-      Filter columnFilter = Filter.in(ColumnDescription.COL_GRID_SETTING,
-          GridDescription.TBl_GRID_SETTINGS, sys.getIdName(GridDescription.TBl_GRID_SETTINGS),
-          userFilter);
-
-      Order order = new Order(ColumnDescription.COL_GRID_SETTING, true);
-
-      BeeRowSet columnSettings = qs.getViewData(ColumnDescription.TBl_COLUMN_SETTINGS,
-          columnFilter, order);
-
-      if (!DataUtils.isEmpty(columnSettings)) {
-        result.add(columnSettings);
-      }
-    }
+    BeeRowSet columnSettings = qs.getViewData(ColumnDescription.VIEW_COLUMN_SETTINGS, userFilter);
+    result.add(columnSettings);
 
     return result;
   }

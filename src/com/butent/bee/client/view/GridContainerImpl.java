@@ -63,8 +63,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private Presenter viewPresenter = null;
 
-  private String gridName = null;
-
   private String footerId = null;
   private String headerId = null;
   private String scrollerId = null;
@@ -172,9 +170,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       header = null;
     }
 
-    String name = gridDescription.getName();
-    setGridName(name);
-
     FooterView footer;
     ScrollPager scroller;
 
@@ -235,7 +230,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
 
     if (getExtCreation() != null) {
-      getExtCreation().addBinding(name, getId(), gridDescription.getParent());
+      getExtCreation().addBinding(gridDescription.getName(), getId(), gridDescription.getParent());
       getExtCreation().bind(this, getId());
     }
   }
@@ -316,7 +311,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return GridFactory.getSupplierKey(getGridName(), getGridView().getGridInterceptor());
+    return getGridView().getGridKey();
   }
 
   @Override
@@ -693,10 +688,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return footerId;
   }
 
-  private String getGridName() {
-    return gridName;
-  }
-
   private String getHeaderId() {
     return headerId;
   }
@@ -760,10 +751,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void setFooterId(String footerId) {
     this.footerId = footerId;
-  }
-
-  private void setGridName(String gridName) {
-    this.gridName = gridName;
   }
 
   private void setHasPaging(boolean hasPaging) {

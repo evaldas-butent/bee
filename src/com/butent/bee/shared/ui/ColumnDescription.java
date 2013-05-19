@@ -78,8 +78,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE
   }
 
-  public static final String TBl_COLUMN_SETTINGS = "GridColumnSettings";
-  public static final String COL_GRID_SETTING = "GridSetting";
+  public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
   
   public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {

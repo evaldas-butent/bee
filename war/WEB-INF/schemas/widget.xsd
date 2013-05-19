@@ -522,7 +522,6 @@
         <xs:attribute name="gridName" type="type:nameType" />
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="filter" type="xs:normalizedString" />
-        <xs:attribute name="order" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
