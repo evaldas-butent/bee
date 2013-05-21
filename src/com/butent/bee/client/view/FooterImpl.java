@@ -29,7 +29,7 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   private static final String STYLE_SEARCH = "bee-FooterSearch";
   private static final String STYLE_SELECTION_COUNTER = "bee-SelectionCounter";
 
-  private static final int HEIGHT = 32;
+  private static final int HEIGHT = 26;
 
   private Presenter viewPresenter = null;
 

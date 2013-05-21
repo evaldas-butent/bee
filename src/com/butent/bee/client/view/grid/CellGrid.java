@@ -1005,10 +1005,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  /**
-   * Lists possible grid elements for parameter management.
-   */
-
   private enum TargetType {
     CONTAINER, RESIZER, HEADER, BODY, FOOTER;
   }
@@ -1087,7 +1083,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public static int getDefaultHeaderCellHeight() {
-    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1500, 16, 25);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 800, 16, 28);
   }
 
   private final List<ColumnInfo> predefinedColumns = Lists.newArrayList();
