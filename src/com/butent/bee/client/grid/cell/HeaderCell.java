@@ -96,9 +96,9 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
         event.preventDefault();
         int headerWidth = grid.estimateHeaderWidth(col, false);
 
-        Element leftElement = DomUtils.getChildById(parent, sortInfoId);
-        if (leftElement != null) {
-          headerWidth += leftElement.getOffsetLeft() + leftElement.getOffsetWidth();
+        Element sortElement = DomUtils.getChildById(parent, sortInfoId);
+        if (sortElement != null) {
+          headerWidth += Math.max(sortElement.getOffsetWidth(), SORT_INFO_WIDTH);
         }
         
         if (headerWidth > grid.getColumnWidth(col)) {

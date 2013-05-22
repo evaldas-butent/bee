@@ -337,7 +337,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     private int getLowerWidthBound() {
-      return BeeUtils.positive(getMinWidth(), getMinCellWidth(), DEFAULT_MIN_CELL_WIDTH);
+      if (getMinWidth() > 0) {
+        return getMinWidth();
+      } else if (getInitialWidth() <= 0) {
+        return BeeUtils.positive(getMinCellWidth(), DEFAULT_MIN_CELL_WIDTH);
+      } else if (getMinCellWidth() > getInitialWidth()) {
+        return Math.min(DEFAULT_MIN_CELL_WIDTH, getInitialWidth());
+      } else if (getMinCellWidth() > 0) {
+        return getMinCellWidth();
+      } else {
+        return Math.min(DEFAULT_MIN_CELL_WIDTH, getInitialWidth());
+      }
     }
 
     private int getMaxWidth() {
@@ -369,7 +379,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     private int getUpperWidthBound() {
-      return BeeUtils.positive(getMaxWidth(), getMaxCellWidth(), DEFAULT_MAX_CELL_WIDTH);
+      if (getMaxWidth() > 0) {
+        return getMaxWidth();
+      } else if (getInitialWidth() <= 0) {
+        return BeeUtils.positive(getMaxCellWidth(), DEFAULT_MAX_CELL_WIDTH);
+      } else if (getMaxCellWidth() <= 0) {
+        return Math.max(DEFAULT_MAX_CELL_WIDTH, getInitialWidth());
+      } else if (getMaxCellWidth() >= getInitialWidth()) {
+        return getMaxCellWidth();
+      } else {
+        return Math.max(DEFAULT_MAX_CELL_WIDTH, getInitialWidth());
+      }
     }
 
     private int getWidth() {
@@ -2487,6 +2507,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public boolean updateVisibleColumns(List<Integer> columns) {
     if (!columns.isEmpty() && !columns.equals(getVisibleColumns())) {
+      List<Integer> oldColumns = Lists.newArrayList(visibleColumns);
+      
       visibleColumns.clear();
       visibleColumns.addAll(columns);
 
@@ -2494,6 +2516,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       getResizedRows().clear();
       getResizedCells().clear();
+      
+      for (int col = 0; col < columns.size(); col++) {
+        if (!oldColumns.contains(columns.get(col))) {
+          estimateHeaderWidth(col, true);
+          estimateColumnWidth(col, true);
+        }
+      }
 
       doFlexLayout();
       render(false);
