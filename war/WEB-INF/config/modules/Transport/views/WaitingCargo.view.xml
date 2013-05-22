@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  name="WaitingCargo"
+  source="OrderCargo"
+  readOnly="true"
+  filter="!(Cargo)"
+  >
+  <Columns>
+    <SimpleJoin name="Order" joinType="INNER">
+      <SimpleColumn name="Status" />
+      <SimpleColumn name="OrderNo" />
+      
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="LoadingDate" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Description" />
+
+    <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+      <SimpleColumn name="Cargo" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="LoadingDate" />
+  </Order>
+</View>

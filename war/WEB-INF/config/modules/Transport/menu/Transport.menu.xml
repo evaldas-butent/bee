@@ -5,7 +5,7 @@ name="Transport" label="Transportas" order="60"
 >
   <Item name="CargoRequests" label="Užklausimai" service="grid" parameters="CargoRequests" />
   <Item name="Orders" label="=transportationOrders" service="grid" parameters="TransportationOrders" />
-  <Item name="Cargo" label="=cargos" service="grid" parameters="CargoList" />
+  <Item name="Cargo" label="=cargos" service="grid" parameters="AllCargo" />
 
   <Item name="AssessmentRequests" label="Vertinimų užklausimai" service="grid" parameters="AssessmentRequests" separator="true" />
   <Item name="AssessmentOrders" label="Vertinimų užsakymai" service="grid" parameters="AssessmentOrders" />

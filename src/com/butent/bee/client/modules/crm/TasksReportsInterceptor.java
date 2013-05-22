@@ -116,18 +116,18 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       switch (reportType) {
         case TYPE_HOURS:
-          params = CrmKeeper.createTaskRequestParameters(CrmConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
+          params = CrmKeeper.createArgs(CrmConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
         case COMPANY_TIMES:
           params =
-              CrmKeeper.createTaskRequestParameters(CrmConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
+              CrmKeeper.createArgs(CrmConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
           break;
         case USERS_HOURS:
           params =
-              CrmKeeper.createTaskRequestParameters(CrmConstants.SVC_TASKS_REPORTS_USERS_HOURS);
+              CrmKeeper.createArgs(CrmConstants.SVC_TASKS_REPORTS_USERS_HOURS);
           break;
         default:
-          params = CrmKeeper.createTaskRequestParameters(CrmConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
+          params = CrmKeeper.createArgs(CrmConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
       }
 

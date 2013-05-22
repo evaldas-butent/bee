@@ -48,6 +48,16 @@
 
   <xs:element name="expression" abstract="true" />
 
+  <xs:element name="name" substitutionGroup="expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" use="required" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="number" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>

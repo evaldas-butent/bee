@@ -65,6 +65,7 @@ public class CrmKeeper {
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
 
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
+    FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
 
     BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       @Override
@@ -111,14 +112,14 @@ public class CrmKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
 
-  static ParameterList createTaskRequestParameters(String method) {
+  static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CRM_MODULE);
     args.addQueryItem(CRM_METHOD, method);
     return args;
   }
 
   static ParameterList createTaskRequestParameters(TaskEvent event) {
-    return createTaskRequestParameters(CRM_TASK_PREFIX + event.name());
+    return createArgs(CRM_TASK_PREFIX + event.name());
   }
 
   private CrmKeeper() {

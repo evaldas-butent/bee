@@ -137,9 +137,6 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
       response = getColors(reqInfo);
 
-    } else if (BeeUtils.same(svc, SVC_GET_ORDER_TRIPS)) {
-      response = getOrderTripData(BeeUtils.toLong(reqInfo.getParameter(COL_ORDER)));
-
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_USAGE)) {
       response = getCargoUsage(reqInfo.getParameter("ViewName"),
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
@@ -938,32 +935,6 @@ public class TransportModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(settings);
-  }
-
-  private ResponseObject getOrderTripData(long orderId) {
-    if (!DataUtils.isId(orderId)) {
-      return ResponseObject.error("Order ID is not valid:", orderId);
-    }
-    SimpleRowSet data = qs.getData(new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_TRIPS, COL_TRIP_NO, COL_FORWARDER_VEHICLE)
-        .addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_FORWARDER)
-        .addField(TBL_EXPEDITION_TYPES, COL_EXPEDITION_TYPE, COL_EXPEDITION)
-        .addField(TBL_VEHICLES, COL_NUMBER, COL_VEHICLE_NUMBER)
-        .addField("Trailers", COL_NUMBER, COL_TRAILER_NUMBER)
-        .addFrom(TBL_ORDER_CARGO)
-        .addFromInner(TBL_CARGO_TRIPS, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-        .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_CARGO_TRIPS, COL_TRIP))
-        .addFromLeft(TBL_VEHICLES,
-            sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
-        .addFromLeft(TBL_VEHICLES, "Trailers",
-            SqlUtils.join("Trailers", sys.getIdName(TBL_VEHICLES), TBL_TRIPS, COL_TRAILER))
-        .addFromLeft(TBL_EXPEDITION_TYPES,
-            sys.joinTables(TBL_EXPEDITION_TYPES, TBL_TRIPS, COL_EXPEDITION))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TRIPS, COL_FORWARDER))
-        .setWhere(SqlUtils.equals(TBL_ORDER_CARGO, COL_ORDER, orderId)));
-
-    return ResponseObject.response(data);
   }
 
   private BeeRowSet getSettings() {

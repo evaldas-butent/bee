@@ -140,6 +140,9 @@ public class CrmModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_TASKS_REPORTS_USERS_HOURS)) {
       response = getUsersHoursReport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
+      response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -604,13 +607,13 @@ public class CrmModuleBean implements BeeModule {
                     CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_TYPE))
             .setWhere(SqlUtils.sqlTrue())
             .addOrder(CommonsConstants.TBL_COMPANIES, COL_NAME);
-    
+
     if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
       companiesListQuery.setWhere(SqlUtils.and(companiesListQuery.getWhere(), SqlUtils.inList(
           CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES), DataUtils
               .parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
     }
-    
+
     if (reqInfo.hasParameter(VAR_TASK_DURATION_HIDE_ZEROS)) {
       hideZeroTimes = true;
     }
@@ -618,7 +621,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
     long totalTimeMls = 0;
-    
+
     result.addRow(new String[] {constants.client(), constants.spentTime()});
 
     /* Register times in tasks without company */
@@ -645,7 +648,7 @@ public class CrmModuleBean implements BeeModule {
           .addFromLeft(CommonsConstants.TBL_USERS,
               sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .setWhere(
-                  SqlUtils.equals(CommonsConstants.TBL_COMPANIES, sys
+              SqlUtils.equals(CommonsConstants.TBL_COMPANIES, sys
                   .getIdName(CommonsConstants.TBL_COMPANIES), companiesListSet.getValue(i, sys
                   .getIdName(CommonsConstants.TBL_COMPANIES))));
 
@@ -704,7 +707,35 @@ public class CrmModuleBean implements BeeModule {
     ResponseObject resp = ResponseObject.response(result);
     return resp;
   }
-  
+
+  private ResponseObject getRequestFiles(Long requestId) {
+    Assert.state(DataUtils.isId(requestId));
+
+    SimpleRowSet data =
+        qs.getData(new SqlSelect()
+            .addFields(TBL_REQUEST_FILES, COL_FILE, COL_CAPTION)
+            .addFields(CommonsConstants.TBL_FILES, CommonsConstants.COL_FILE_NAME,
+                CommonsConstants.COL_FILE_SIZE, CommonsConstants.COL_FILE_TYPE)
+            .addFrom(TBL_REQUEST_FILES)
+            .addFromInner(CommonsConstants.TBL_FILES,
+                sys.joinTables(CommonsConstants.TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
+            .setWhere(SqlUtils.equals(TBL_REQUEST_FILES, COL_REQUEST, requestId)));
+
+    List<StoredFile> files = Lists.newArrayList();
+
+    for (SimpleRow file : data) {
+      StoredFile sf = new StoredFile(file.getLong(COL_FILE),
+          BeeUtils.notEmpty(file.getValue(COL_CAPTION),
+              file.getValue(CommonsConstants.COL_FILE_NAME)),
+          file.getLong(CommonsConstants.COL_FILE_SIZE),
+          file.getValue(CommonsConstants.COL_FILE_TYPE));
+
+      sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
+      files.add(sf);
+    }
+    return ResponseObject.response(files);
+  }
+
   private ResponseObject getTaskData(long taskId, Long eventId) {
     BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, ComparisonFilter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
@@ -863,7 +894,7 @@ public class CrmModuleBean implements BeeModule {
               DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
         }
       }
-      
+
       if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
           dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
@@ -890,7 +921,7 @@ public class CrmModuleBean implements BeeModule {
         result.addRow(new String[] {dType, dTime});
       }
     }
-    
+
     result.addRow(new String[] {
         constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
 
@@ -961,10 +992,10 @@ public class CrmModuleBean implements BeeModule {
               sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
           .addFromLeft(CommonsConstants.TBL_USERS,
               sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
-              .setWhere(
-                  SqlUtils.equals(CommonsConstants.TBL_USERS, sys
-                      .getIdName(CommonsConstants.TBL_USERS), usersListSet.getValue(i, sys
-                      .getIdName(CommonsConstants.TBL_USERS))));
+          .setWhere(
+              SqlUtils.equals(CommonsConstants.TBL_USERS, sys
+                  .getIdName(CommonsConstants.TBL_USERS), usersListSet.getValue(i, sys
+                  .getIdName(CommonsConstants.TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {

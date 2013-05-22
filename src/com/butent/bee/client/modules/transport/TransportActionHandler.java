@@ -18,13 +18,13 @@ public class TransportActionHandler implements Handler {
     if (!event.hasService(Service.CELL_ACTION)) {
       return;
     }
-    if (event.hasView(VIEW_CARGO_TRIPS)) {
+    if (BeeUtils.inListSame(event.getViewName(), VIEW_CARGO_TRIPS, VIEW_ALL_CARGO)) {
       event.consume();
-      Long tripId = Data.getLong(VIEW_CARGO_TRIPS, event.getRow(), COL_TRIP);
+      Long tripId = Data.getLong(event.getViewName(), event.getRow(), COL_TRIP);
 
       if (DataUtils.isId(tripId)) {
         DataInfo data = Data.getDataInfo(BeeUtils
-            .isEmpty(Data.getString(VIEW_CARGO_TRIPS, event.getRow(), "ExpeditionType"))
+            .isEmpty(Data.getString(event.getViewName(), event.getRow(), "ExpeditionType"))
             ? VIEW_TRIPS : VIEW_EXPEDITION_TRIPS);
 
         RowEditor.openRow(data.getEditForm(), data, tripId);

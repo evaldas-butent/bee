@@ -1204,7 +1204,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void requeryEvents(final long taskId) {
-    ParameterList params = CrmKeeper.createTaskRequestParameters(SVC_GET_TASK_DATA);
+    ParameterList params = CrmKeeper.createArgs(SVC_GET_TASK_DATA);
     params.addDataItem(VAR_TASK_ID, taskId);
 
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {

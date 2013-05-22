@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -23,9 +22,7 @@ import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -44,14 +41,12 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -97,9 +92,6 @@ public class TransportHandler {
   }
 
   private static class OrderFormHandler extends AbstractFormInterceptor {
-
-    protected static final String STYLE_TRIPS = "bee-tr-orderTrips-";
-
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
@@ -112,85 +104,6 @@ public class TransportHandler {
     @Override
     public FormInterceptor getInstance() {
       return this;
-    }
-
-    @Override
-    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-      showTripInfo(row.getId());
-      return true;
-    }
-
-    private void showTripInfo(long orderId) {
-      Widget widget = getFormView().getWidgetByName("TripInfo");
-
-      if (!(widget instanceof Flow)) {
-        return;
-      }
-      final Flow panel = (Flow) widget;
-      panel.clear();
-
-      ParameterList args = createArgs(SVC_GET_ORDER_TRIPS);
-      args.addDataItem(COL_ORDER, orderId);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
-
-          if (!response.hasErrors()) {
-            SimpleRowSet data = SimpleRowSet.restore((String) response.getResponse());
-
-            if (data.getNumberOfRows() > 0) {
-              HtmlTable display = new HtmlTable();
-              display.addStyleName(STYLE_TRIPS + "display");
-              int j = 0;
-
-              Widget col = new CustomDiv(STYLE_TRIPS + "caption");
-              col.getElement().setInnerText("Reiso Nr.");
-              display.setWidget(0, j++, col);
-              int tripIdx = data.getColumnIndex(COL_TRIP_NO);
-
-              col = new CustomDiv(STYLE_TRIPS + "caption");
-              col.getElement().setInnerText("Transportas");
-              display.setWidget(0, j++, col);
-              int vehicleIdx = data.getColumnIndex(COL_VEHICLE_NUMBER);
-              int trailerIdx = data.getColumnIndex(COL_TRAILER_NUMBER);
-              int forwarderVehicleIdx = data.getColumnIndex(COL_FORWARDER_VEHICLE);
-
-              col = new CustomDiv(STYLE_TRIPS + "caption");
-              col.getElement().setInnerText("Ekspedicija");
-              display.setWidget(0, j++, col);
-              int expeditionIdx = data.getColumnIndex(COL_EXPEDITION);
-
-              col = new CustomDiv(STYLE_TRIPS + "caption");
-              col.getElement().setInnerText("Vežėjas");
-              display.setWidget(0, j++, col);
-              int forwarderIdx = data.getColumnIndex(COL_FORWARDER);
-
-              for (int i = 0; i < data.getNumberOfRows(); i++) {
-                j = 0;
-                Widget cell = new CustomDiv(STYLE_TRIPS + "cell");
-                cell.getElement().setInnerText(data.getValue(i, tripIdx));
-                display.setWidget(i + 1, j++, cell);
-
-                cell = new CustomDiv(STYLE_TRIPS + "cell");
-                cell.getElement().setInnerText(BeeUtils.join(" / ", data.getValue(i, vehicleIdx),
-                    data.getValue(i, trailerIdx), data.getValue(i, forwarderVehicleIdx)));
-                display.setWidget(i + 1, j++, cell);
-
-                cell = new CustomDiv(STYLE_TRIPS + "cell");
-                cell.getElement().setInnerText(data.getValue(i, expeditionIdx));
-                display.setWidget(i + 1, j++, cell);
-
-                cell = new CustomDiv(STYLE_TRIPS + "cell");
-                cell.getElement().setInnerText(data.getValue(i, forwarderIdx));
-                display.setWidget(i + 1, j++, cell);
-              }
-              panel.add(display);
-            }
-          }
-        }
-      });
     }
   }
 
@@ -590,7 +503,7 @@ public class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_LIST, new CargoPlaceRenderer());
+    GridFactory.registerGridInterceptor(VIEW_ALL_CARGO, new CargoPlaceRenderer());
 
     GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
     FormFactory.registerFormInterceptor("CargoRequest", new CargoRequestForm());

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="delete"
+  flexGrow="1" flexShrink="1" minColumnWidth="60" newRowPopup="true"
+  >
+  <body height="50" />
+
+  <columns>
+    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
+    <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />    
+    <RelColumn name="Customer" caption="Užsakovas" />
+    <RelColumn name="Manager" caption="Vadybininkas" />
+
+    <RelColumn name="Description" caption="Krovinys" minWidth="100"
+      editEnabled="true" editSource="Cargo" editViewName="OrderCargo" />
+
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
+      minWidth="140" flexBasis="120" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
+      minWidth="140" flexBasis="120" />
+
+    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
+    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Cmr" caption="CMR" />
+    <DataColumn name="CargoNotes" caption="Krovinio pastabos">
+      <style>
+        <bodyStyle>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+
+    <ActionColumn name="TripNo" element="link" />
+    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
+    <DataColumn name="ForwarderName" caption="Vežėjas" />
+    <CalcColumn name="Vehicle" type="string" caption="Transportas" 
+      searchBy="ForwarderVehicle VehicleNumber TrailerNumber">
+      <render>
+        <ui:function>
+          var vehicle = row.ForwarderVehicle;
+
+          if (!vehicle) {
+            vehicle = row.VehicleNumber;
+
+            if (row.TrailerNumber) {
+              vehicle = vehicle + ' / ' + row.TrailerNumber;
+            }
+          }
+          return vehicle;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Driver" type="string" caption="Vairuotojas"
+      searchBy="ForwarderDriver DriverFirstName DriverLastName">
+      <render>
+        <ui:function>
+          var driver = row.ForwarderDriver;
+
+          if (!driver) {
+            driver = row.DriverFirstName;
+
+            if (row.DriverLastName) {
+              driver = driver + ' ' + row.DriverLastName;
+            }
+          }
+          return driver;
+        </ui:function>
+      </render>
+    </CalcColumn>
+  </columns>
+</Grid>

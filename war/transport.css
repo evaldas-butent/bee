@@ -449,20 +449,6 @@
   margin-left: 2em;
 }
 
-.bee-tr-orderTrips-display {
-  border-collapse: collapse;
-}
-.bee-tr-orderTrips-display td {
-  border: 1px solid #aaa;
-  padding: 3px;
-}
-.bee-tr-orderTrips-caption {
-  font-weight: bold;
-  text-align: center;
-}
-.bee-tr-orderTrips-cell {
-}
-
 .bee-tr-assessment-form .bee-disabled, .bee-tr-request-form .bee-disabled {
   background-color: #f3f3eb;
 }

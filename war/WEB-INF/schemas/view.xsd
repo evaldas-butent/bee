@@ -42,12 +42,13 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="common" type="column" abstract="true" />
   <xs:element name="simple" type="column" abstract="true" />
+  <xs:element name="common" type="column" abstract="true" />
   <xs:element name="aggregate" type="column" abstract="true" />
 
+  <xs:element name="IdColumn" type="column" substitutionGroup="simple" />
   <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="simple" />
-  <xs:element name="HiddenColumn" type="columnHidden" substitutionGroup="common" />
+  <xs:element name="HiddenColumn" type="columnSimple" substitutionGroup="common" />
   <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="aggregate" />
 
   <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="simple" />
@@ -78,12 +79,6 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="columnHidden">
-    <xs:complexContent>
-      <xs:extension base="columnSimple" />
-    </xs:complexContent>
-  </xs:complexType>
-
   <xs:complexType name="columnAggregate">
     <xs:complexContent>
       <xs:extension base="columnSimple">
@@ -107,6 +102,7 @@
           <xs:element ref="common" />
           <xs:element ref="simple" />
         </xs:choice>
+        <xs:attribute name="source" type="type:tableNameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

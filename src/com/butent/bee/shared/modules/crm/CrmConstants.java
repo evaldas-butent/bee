@@ -101,6 +101,8 @@ public class CrmConstants {
   public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
       + "users_hours";
 
+  public static final String SVC_GET_REQUEST_FILES = "get_request_files";
+
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
 
@@ -265,6 +267,7 @@ public class CrmConstants {
   public static final String FORM_TASKS_REPORT = "TasksReport";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
+  public static final String FORM_REQUEST = "Request";
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 

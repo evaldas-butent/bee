@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AllCargo" source="TransportationOrders"
+  newRowForm="TransportationOrder" editForm="TransportationOrder"
+  newRowCaption="Naujas pervežimo užsakymas">
+  <Columns>
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="OrderNo" />
+    <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CustomerPerson" />
+    <SimpleJoin name="CustomerPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="PersonFirstName" name="FirstName" />
+        <SimpleColumn alias="PersonLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="PersonCompanyName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Payer" />
+    <SimpleJoin joinType="LEFT" name="Payer">
+      <SimpleColumn name="Name" alias="PayerName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleJoin source="OrderCargo" name="Order" joinType="LEFT">
+      <IdColumn name="Cargo" />
+    
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="LoadingDate" />
+        <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+        <SimpleColumn name="Contact" alias="LoadingContact" />
+        <SimpleColumn name="Address" alias="LoadingAddress" />
+        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
+
+        <SimpleColumn name="City" alias="LoadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="LoadingCityName" />
+        </SimpleJoin>
+        <SimpleColumn name="Country" alias="LoadingCountry" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="LoadingCountryName" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="UnloadingDate" />
+        <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+        <SimpleColumn name="Contact" alias="UnloadingContact" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" />
+        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
+
+        <SimpleColumn name="City" alias="UnloadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="UnloadingCityName" />
+        </SimpleJoin>
+        <SimpleColumn name="Country" alias="UnloadingCountry" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="UnloadingCountryName" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Description" />
+      <SimpleColumn name="Number" />
+      <SimpleColumn name="Cmr" />
+
+      <SimpleJoin joinType="LEFT" name="ShippingTerm">
+        <SimpleColumn name="Name" alias="ShippingTermName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Partial" />
+      <SimpleColumn name="Outsized" />
+      <SimpleColumn name="Dangerous" />
+
+      <SimpleColumn name="Notes" alias="CargoNotes" />
+      <SimpleColumn name="Price" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+
+      <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <SimpleColumn name="Trip" />
+        <SimpleJoin name="Trip" joinType="LEFT">
+          <SimpleColumn name="TripNo" />
+          <SimpleColumn name="Notes" alias="TripNotes" />
+
+          <SimpleColumn name="Vehicle" />
+          <SimpleJoin name="Vehicle" joinType="LEFT">
+            <SimpleColumn name="Number" alias="VehicleNumber" />
+          </SimpleJoin>
+          <SimpleColumn name="Trailer" />
+          <SimpleJoin name="Trailer" joinType="LEFT">
+            <SimpleColumn name="Number" alias="TrailerNumber" />
+          </SimpleJoin>
+
+          <SimpleJoin joinType="LEFT" name="Expedition">
+            <SimpleColumn name="Name" alias="ExpeditionType" />
+          </SimpleJoin>
+          <SimpleJoin joinType="LEFT" name="Forwarder">
+            <SimpleColumn name="Name" alias="ForwarderName" />
+          </SimpleJoin>
+          <SimpleColumn name="ForwarderVehicle" />
+          <SimpleColumn name="ForwarderDriver" />
+
+          <SimpleJoin source="TripDrivers" name="Trip" joinType="LEFT">
+            <SimpleJoin name="Driver" joinType="LEFT">
+              <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
+                  <SimpleColumn name="FirstName" alias="DriverFirstName" />
+                  <SimpleColumn name="LastName" alias="DriverLastName" />
+                </SimpleJoin>
+              </SimpleJoin>
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="LoadingDate" />
+  </Order>
+</View>

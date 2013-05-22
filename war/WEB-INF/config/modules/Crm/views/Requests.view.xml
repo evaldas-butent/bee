@@ -7,7 +7,7 @@
   >
   <Columns>
     <SimpleColumn name="Date" />
-    <SimpleColumn name="Content" label="Užklausimas" />
+    <SimpleColumn name="Content" />
     <SimpleColumn name="Contacts" />
     <SimpleColumn name="Created" />
     <SimpleColumn name="Finished" />

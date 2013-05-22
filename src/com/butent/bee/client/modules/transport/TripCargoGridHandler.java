@@ -55,12 +55,11 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
 
       container.add(new BeeLabel("Pasirinkite krovinį"));
 
-      Relation relation = Relation.create(VIEW_CARGO_LIST,
-          Lists.newArrayList("OrderNo", "CustomerName", "Description"));
+      Relation relation = Relation.create(VIEW_WAITING_CARGO,
+          Lists.newArrayList("OrderNo", "CustomerName", "Description", "LoadingDate"));
       relation.disableNewRow();
 
       CompoundFilter filter = Filter.and();
-      filter.add(Filter.isEmpty(COL_TRIP));
 
       for (IsRow row : grd.getRowData()) {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
@@ -88,7 +87,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
         return;
       }
       dialog.close();
-      
+
       gridView.ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long result) {

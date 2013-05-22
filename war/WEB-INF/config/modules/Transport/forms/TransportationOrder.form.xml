@@ -40,8 +40,6 @@
           <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
         </row>
       </Table>
-      
-      <FlowPanel name="TripInfo" class="flexible" style="margin: 10px; margin-left: 0; overflow: auto;" />
     </FlowPanel>
 
     <TabbedPages class="flexible" style="margin-top: 1ex;" >

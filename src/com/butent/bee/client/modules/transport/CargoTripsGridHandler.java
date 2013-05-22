@@ -59,13 +59,12 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
 
       container.setText(0, 0, "Pasirinkite reisą");
 
-      Relation relation = Relation.create(VIEW_ALL_TRIPS,
-          Lists.newArrayList("TripNo", "VehicleNumber", "Driver", "ExpeditionType",
-              "ForwarderName"));
+      Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
+          Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
+              "ExpeditionType", "ForwarderName"));
       relation.disableNewRow();
 
       CompoundFilter filter = Filter.and();
-      filter.add(Filter.isEmpty("DateTo"));
 
       for (IsRow row : grd.getRowData()) {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(tripIndex)));

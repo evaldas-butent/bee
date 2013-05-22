@@ -34,14 +34,15 @@ import com.butent.bee.shared.data.XmlExpression.XmlHasMember;
 import com.butent.bee.shared.data.XmlExpression.XmlHasMembers;
 import com.butent.bee.shared.data.XmlExpression.XmlMinus;
 import com.butent.bee.shared.data.XmlExpression.XmlMultiply;
+import com.butent.bee.shared.data.XmlExpression.XmlName;
 import com.butent.bee.shared.data.XmlExpression.XmlNvl;
 import com.butent.bee.shared.data.XmlExpression.XmlPlus;
 import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlAggregateColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
-import com.butent.bee.shared.data.XmlView.XmlExternalJoin;
 import com.butent.bee.shared.data.XmlView.XmlHiddenColumn;
+import com.butent.bee.shared.data.XmlView.XmlIdColumn;
 import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleJoin;
@@ -250,7 +251,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
       IsExpression expr = null;
 
-      if (xmlExpr instanceof XmlHasMember) {
+      if (xmlExpr instanceof XmlName) {
+        expr = SqlUtils.name(xmlExpr.content);
+
+      } else if (xmlExpr instanceof XmlHasMember) {
         IsExpression member = parse(((XmlHasMember) xmlExpr).member, history);
 
         if (xmlExpr instanceof XmlSwitch) {
@@ -815,7 +819,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     String ownerAlias = null;
     SqlFunction aggregate = null;
 
-    if (expression == null) {
+    if (field != null) {
       BeeTable table = field.getOwner();
 
       if (!BeeUtils.isEmpty(locale)) {
@@ -854,9 +858,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         IsCondition join;
         String als;
         String relAls = SqlUtils.uniqueName();
+        String src = BeeUtils.normalize(col.source);
 
-        if (col instanceof XmlExternalJoin) {
-          relTable = tables.get(BeeUtils.normalize(((XmlExternalJoin) col).source));
+        if (!BeeUtils.isEmpty(src)) {
+          relTable = tables.get(src);
           Assert.notNull(relTable);
           als = relAls;
           field = relTable.getField(col.name);
@@ -900,6 +905,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         String colName = SqlUtils.uniqueName();
         addColumn(als, field, colName, null, null, true, parent, null, null, null);
         addColumns(relTable, relAls, col.columns, colName, tables);
+
+      } else if (column instanceof XmlIdColumn) {
+        XmlExpression xpr = new XmlName();
+        xpr.type = SqlDataType.LONG.name();
+        xpr.content = BeeUtils.join(".", alias, table.getIdName());
+        addColumn(alias, null, column.name, null, null, false, parent, xpr, null, null);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;

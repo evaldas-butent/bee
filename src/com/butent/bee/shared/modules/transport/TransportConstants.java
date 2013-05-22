@@ -134,7 +134,6 @@ public class TransportConstants {
   public static final String SVC_GET_TRUCK_TB_DATA = "GetTruckTbData";
   public static final String SVC_GET_TRAILER_TB_DATA = "GetTrailerTbData";
   public static final String SVC_GET_COLORS = "GetColors";
-  public static final String SVC_GET_ORDER_TRIPS = "GetOrderTrips";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
@@ -181,12 +180,13 @@ public class TransportConstants {
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
-  public static final String VIEW_CARGO_LIST = "CargoList";
+  public static final String VIEW_ALL_CARGO = "AllCargo";
+  public static final String VIEW_WAITING_CARGO = "WaitingCargo";
   public static final String VIEW_CARGO_INCOME_LIST = "CargoIncomeList";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
-  public static final String VIEW_ALL_TRIPS = "AllTrips";
+  public static final String VIEW_ACTIVE_TRIPS = "ActiveTrips";
 
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";

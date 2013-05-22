@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.XmlExpression.XmlDatetime;
 import com.butent.bee.shared.data.XmlExpression.XmlDivide;
 import com.butent.bee.shared.data.XmlExpression.XmlMinus;
 import com.butent.bee.shared.data.XmlExpression.XmlMultiply;
+import com.butent.bee.shared.data.XmlExpression.XmlName;
 import com.butent.bee.shared.data.XmlExpression.XmlNumber;
 import com.butent.bee.shared.data.XmlExpression.XmlNvl;
 import com.butent.bee.shared.data.XmlExpression.XmlPlus;
@@ -28,7 +29,7 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlSeeAlso({
     XmlNumber.class, XmlString.class, XmlBoolean.class, XmlDate.class, XmlDatetime.class,
     XmlPlus.class, XmlMinus.class, XmlMultiply.class, XmlDivide.class, XmlBulk.class,
-    XmlCast.class, XmlSwitch.class, XmlCase.class, XmlNvl.class, XmlConcat.class})
+    XmlCast.class, XmlSwitch.class, XmlCase.class, XmlNvl.class, XmlConcat.class, XmlName.class})
 public abstract class XmlExpression {
 
   public static class XmlHasMember extends XmlExpression {
@@ -39,6 +40,10 @@ public abstract class XmlExpression {
   public static class XmlHasMembers extends XmlExpression {
     @XmlElementRef
     public List<XmlExpression> members;
+  }
+
+  @XmlRootElement(name = "name", namespace = DataUtils.EXPRESSION_NAMESPACE)
+  public static class XmlName extends XmlExpression {
   }
 
   @XmlRootElement(name = "number", namespace = DataUtils.EXPRESSION_NAMESPACE)

@@ -331,7 +331,7 @@ class TaskList {
     public void onRequest(final Element target, NotificationListener notificationListener,
         final Callback<Boolean> callback) {
 
-      ParameterList params = CrmKeeper.createTaskRequestParameters(SVC_GET_CHANGED_TASKS);
+      ParameterList params = CrmKeeper.createArgs(SVC_GET_CHANGED_TASKS);
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {

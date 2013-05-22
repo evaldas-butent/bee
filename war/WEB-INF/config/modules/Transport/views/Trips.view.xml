@@ -35,9 +35,9 @@
       <AggregateJoin name="Driver" joinType="LEFT">
         <AggregateJoin name="CompanyPerson" joinType="LEFT">
           <AggregateJoin name="Person" joinType="LEFT">
-            <HiddenColumn name="FirstName"></HiddenColumn>
-            <HiddenColumn name="LastName"></HiddenColumn>
-            
+            <HiddenColumn name="FirstName" />
+            <HiddenColumn name="LastName" />
+
             <AggregateColumn name="Driver" aggregate="MAX">
               <xpr:concat>
                 <xpr:string>"LastName"</xpr:string>
