@@ -5,7 +5,7 @@
   
   open="true"
   >
-  <Label html="KONTAKTINĖ INFORMACIJA" />
+  <Label text="=contactInfo"  style="text-transform: uppercase; "/>
 
   <FlowPanel style="position:relative;" >
     <Table>
