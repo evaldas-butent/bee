@@ -132,6 +132,8 @@ public class CommonsConstants {
 
   public static final String VIEW_COUNTRIES = "Countries";
 
+  public static final String GRID_PERSONS = "Persons";
+
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
@@ -163,6 +165,7 @@ public class CommonsConstants {
 
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
+  public static final String COL_PHOTO = "Photo";
 
   public static final String COL_NAME = "Name";
   public static final String COL_ITEM = "Item";
@@ -206,8 +209,10 @@ public class CommonsConstants {
   
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
+  public static final String ALS_PHOTO_FILE_NAME = "PhotoFileName";
 
   public static final String FORM_NEW_COMPANY = "Company";
+  public static final String FORM_PERSON = "Person";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
   public static final String PRM_AUDIT_OFF = "DisableAuditing";

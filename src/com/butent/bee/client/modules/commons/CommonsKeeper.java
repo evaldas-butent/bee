@@ -86,6 +86,9 @@ public class CommonsKeeper {
       }
     });
 
+    GridFactory.registerGridInterceptor(GRID_PERSONS, new PersonsGridInterceptor());
+    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+
     SelectorEvent.register(new CommonsSelectorHandler());
 
     Captions.register(RightsObjectType.class);

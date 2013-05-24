@@ -12,6 +12,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String address();
 
+  String allowablePhotoSize();
+
   String article();
 
   String cancel();

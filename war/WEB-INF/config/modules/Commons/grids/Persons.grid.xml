@@ -4,7 +4,9 @@
   name="Persons" viewName="Persons" caption="Asmenys"
   editForm="Person" flexGrow="1" flexShrink="1"
   >
+  <body height="30" /> 
   <columns>
+    <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false" width="30" horizontalAlignment="center"/>
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 

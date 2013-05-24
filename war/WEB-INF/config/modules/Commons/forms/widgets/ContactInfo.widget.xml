@@ -7,52 +7,71 @@
   >
   <Label html="KONTAKTINĖ INFORMACIJA" />
 
-  <FlowPanel style="position:relative; width: 700px; height: 140px;">
-    <InputText source="Phone" caption="Telefonai:" style="width: 200px;" d:size="80" d:unit="px"
-      d:rootStyle="position:absolute; left: 0; top: 0;" />
-    <InputText source="Mobile" caption="Mobilus:" style="width: 120px;" d:size="60" d:unit="px"
-      d:rootStyle="position:absolute; left: 300px; top: 0;" />
-    <InputText source="Fax" caption="Faksas:" style="width: 120px;" d:size="60" d:unit="px"
-      d:rootStyle="position:absolute; left: 500px; top: 0px;" />
-
-    <DataSelector source="EmailId" caption="El.paštas:" style="width: 200px;" d:size="80" d:unit="px"
-      d:rootStyle="position:absolute; left: 0; top: 30px;">
-      <renderToken source="Label" suffix=" " />
-      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
-    </DataSelector>
-
-    <InputText source="Website" caption="Interneto svetainė:" style="width: 260px;" d:size="120"
-      d:unit="px" d:rootStyle="position:absolute; left: 300px; top: 30px;" />
-
-    <InputText source="Address" caption="Adresas:" style="width: 600px;" d:size="80" d:unit="px"
-      d:rootStyle="position:absolute; left: 0; top: 70px;" />
-
-    <DataSelector source="City" caption="Miestas:" style="width: 160px;" d:size="80" d:unit="px"
-      d:rootStyle="position:absolute; left: 0; top: 100px;">
-      <selectorColumn source="Name" />
-      <selectorColumn source="CountryName" />
-      <selectorColumn source="CountryCode">
-        <ui:renderer type="flag" />
-      </selectorColumn>
-    </DataSelector>
-
-    <DataSelector source="Country" caption="Šalis:" style="width: 140px;" d:size="60" d:unit="px"
-      d:rootStyle="position:absolute; left: 250px; top: 100px;">
-      <renderToken source="CountryName" />
-      <renderToken source="CountryCode" prefix=" (" suffix=")" />
-      <selectorColumn source="Name" />
-      <selectorColumn source="Code">
-        <ui:renderer type="flag" />
-      </selectorColumn>
-    </DataSelector>
-    <Flag source="CountryCode" style="position:absolute; left: 460px; top: 105px;" />
-
-    <InputText source="PostIndex" caption="Pašto indeksas:" style="width: 80px;" d:size="100"
-      d:unit="px" d:rootStyle="position:absolute; left: 500px; top: 100px;" />
-
-    <InputText source="SocialContacts" caption="Socialiniai kontaktai:" style="width: 540px;" d:size="140"
-      d:unit="px" d:rootStyle="position:absolute; left: 0px; top: 130px;" />  
-
+  <FlowPanel style="position:relative;" >
+    <Table>
+      <row>
+        <Label text="=phones" horizontalAlignment="right" />
+	    <InputText source="Phone" style="width: 200px;"  horizontalAlignment="left" />
+	    <Label text="=mobile" horizontalAlignment="right" />
+	    <InputText source="Mobile" style="width: 168px;" horizontalAlignment="left" />
+	    <Label text="=fax" horizontalAlignment="right" />
+	    <InputText source="Fax" style="width: 100%;" horizontalAlignment="left" />
+	  </row>
+      <row>
+	    <Label text="=email" horizontalAlignment="right" />	   
+        <DataSelector source="EmailId" style="width: 200px" horizontalAlignment="left">
+          <renderToken source="Label" suffix=" " />
+          <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+        </DataSelector>	      
+	    
+	    <Label text="=website" horizontalAlignment="right" />
+	      <cell colSpan="3"> 	
+	        <InputText source="Website"  style="width: 100%" horizontalAlignment="left"/>
+	      </cell>	      
+	    </row>
+	    <row>	      
+	      <Label text="=address" horizontalAlignment="right" />
+	      <cell colSpan="5">
+	        <InputText source="Address" style="width: 100%;" horizontalAlignment="left" />
+	      </cell>
+	    </row>
+ 	    <row>
+	      <Label text="=city" horizontalAlignment="right" />
+	      <DataSelector source="City"  style="width: 200px;" horizontalAlignment="left">
+	        <selectorColumn source="Name" />
+	        <selectorColumn source="CountryName" />
+	        <selectorColumn source="CountryCode">
+	          <ui:renderer type="flag" />
+	        </selectorColumn>
+	      </DataSelector>
+	    
+	      <Label text="=country" horizontalAlignment="right" />
+	      <FlowPanel class="flex-horizontal">	
+	        <Table>
+	          <row>
+	            <DataSelector source="Country" style="width: 166px;" >
+	             <renderToken source="CountryName" />
+	             <renderToken source="CountryCode" prefix=" (" suffix=")" />
+	             <selectorColumn source="Name" />
+	             <selectorColumn source="Code">
+	               <ui:renderer type="flag" />
+	             </selectorColumn>
+	            </DataSelector>
+	            <Flag source="CountryCode" style="width: 22px;" />
+	          </row> 
+	        </Table>
+	      </FlowPanel>
+	      
+	      <Label text="=postIndex"  horizontalAlignment="right" />
+	      <InputText source="PostIndex" style="width: 100%;" horizontalAlignment="left"/> 
+	    </row>
+	    <row>
+	      <Label text="=socialContacts" horizontalAlignment="right" />
+	      <cell colSpan="5">
+	        <InputText source="SocialContacts" style="width: 100%;" horizontalAlignment="left" />
+	      </cell>
+	    </row> 
+    </Table>  
   </FlowPanel>
 </Disclosure>
 
