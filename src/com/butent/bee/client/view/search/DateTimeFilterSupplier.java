@@ -4,17 +4,16 @@ import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -96,9 +95,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public void onRequest(Element target, NotificationListener notificationListener,
-      Callback<Boolean> callback) {
-    openDialog(target, createWidget(), callback);
+  public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
+    openDialog(target, createWidget(), onChange);
   }
 
   @Override

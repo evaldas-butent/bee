@@ -30,6 +30,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -96,7 +97,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     HeaderView header = new HeaderSilverImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         EnumSet.of(UiOption.ROOT), formDescription.getEnabledActions(),
-        formDescription.getDisabledActions());
+        formDescription.getDisabledActions(), Action.NO_ACTIONS);
 
     FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, null, dataColumns, true, interceptor);

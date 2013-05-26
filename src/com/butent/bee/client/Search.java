@@ -91,7 +91,7 @@ public class Search {
 
       this.header = new HeaderSilverImpl();
       header.create(query, false, true, EnumSet.of(UiOption.ROOT),
-          EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS);
+          EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);
       header.setMessage(getMessage());

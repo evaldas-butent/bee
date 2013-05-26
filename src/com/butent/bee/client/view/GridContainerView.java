@@ -9,6 +9,7 @@ import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
 
@@ -20,7 +21,7 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasG
 
   void bind();
 
-  void create(GridDescription gridDescription, GridView gridView, int rowCount,
+  void create(GridDescription gridDescription, GridView gridView, int rowCount, Filter userFilter,
       GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions);
 

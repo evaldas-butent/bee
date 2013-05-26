@@ -157,7 +157,8 @@ public class RowPresenter extends AbstractPresenter implements Printable {
     HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, enabledActions, disabledActions);
+    formHeader.create(caption, false, false, null, enabledActions, disabledActions,
+        Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
     
     return formHeader; 

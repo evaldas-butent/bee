@@ -7,7 +7,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,7 +18,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
-import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
@@ -41,6 +39,7 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -58,7 +57,7 @@ import java.util.Set;
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler, HasEditState {
-  
+
   private static final String STYLE_NAME = "bee-GridContainer";
 
   private Presenter viewPresenter = null;
@@ -84,7 +83,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean lastEnabled = false;
 
   private List<String> favorite = Lists.newArrayList();
-  
+
   private boolean resizeSuspended = false;
 
   public GridContainerImpl() {
@@ -107,8 +106,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
-  public void create(GridDescription gridDescription, GridView gridView,
-      int rowCount, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
+  public void create(GridDescription gridDescription, GridView gridView, int rowCount,
+      Filter userFilter, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
     setHasPaging(UiOption.hasPaging(uiOptions));
@@ -130,12 +129,19 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
       Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
       Set<Action> disabledActions = Sets.newHashSet(gridDescription.getDisabledActions());
-      
-      if (hasSearch() && !disabledActions.contains(Action.FILTER)) {
-//        enabledActions.add(Action.FILTER);
-      }
-      if (hasSearch() && !disabledActions.contains(Action.REMOVE_FILTER)) {
-//        enabledActions.add(Action.REMOVE_FILTER);
+      Set<Action> hiddenActions = Sets.newHashSet();
+
+      if (hasSearch()) {
+        if (!disabledActions.contains(Action.FILTER)) {
+          enabledActions.add(Action.FILTER);
+        }
+
+        if (!disabledActions.contains(Action.REMOVE_FILTER)) {
+          enabledActions.add(Action.REMOVE_FILTER);
+          if (userFilter == null) {
+            hiddenActions.add(Action.REMOVE_FILTER);
+          }
+        }
       }
 
       boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
@@ -159,13 +165,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (max > 0 && rowCount >= max) {
         disabledActions.add(Action.ADD);
       }
-      
+
       if (!disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }
 
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
-          enabledActions, disabledActions);
+          enabledActions, disabledActions, hiddenActions);
     } else {
       header = null;
     }
@@ -193,7 +199,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
 
       for (String xml : gridDescription.getWidgets()) {
-        ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(), 
+        ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(),
             gridView.getDataColumns(), getExtCreation(), gridInterceptor);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
@@ -458,37 +464,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public boolean onPrint(Element source, Element target) {
     boolean ok;
 
-    if (getGridView().getGrid().getId().equals(source.getId())) {
-      NodeList<Element> children = DomUtils.getChildren(target);
-      List<Element> hide = Lists.newArrayList();
-
-      for (int i = 0; i < children.getLength(); i++) {
-        Element cell = children.getItem(i);
-
-        if (getGridView().getGrid().isFooterCell(cell)) {
-          boolean show = false;
-
-          String col = DomUtils.getDataColumn(cell);
-          if (BeeUtils.isDigit(col)) {
-            ColumnFooter columnFooter = getGridView().getGrid().getFooter(BeeUtils.toInt(col));
-            if (columnFooter != null && !columnFooter.isEmpty()) {
-              show = true;
-            }
-          }
-
-          if (!show) {
-            StyleUtils.setHeight(cell, 0);
-            StyleUtils.hideScroll(cell);
-          }
-        }
-      }
-
-      for (Element child : hide) {
-        StyleUtils.hideDisplay(child);
-      }
-      ok = true;
-
-    } else if (getGridView().getGrid().getElement().isOrHasChild(source)) {
+    if (getGridView().getGrid().getElement().isOrHasChild(source)) {
       ok = true;
 
     } else if (getId().equals(source.getId())) {
@@ -812,7 +788,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         setWidgetSize(extWidget.getWidget().asWidget(), show ? extWidget.getSize() : 0);
       }
     }
-    
+
     setResizeSuspended(false);
   }
 

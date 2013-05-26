@@ -18,14 +18,12 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Specifies necessary methods for grid view user interface component.
@@ -38,8 +36,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   public enum SelectedRows {
     ALL, EDITABLE
   }
-
-  void clearFilter();
 
   void create(List<BeeColumn> dataColumns, GridDescription gridDescription,
       GridInterceptor gridInterceptor, boolean hasSearch, Order order);
@@ -56,8 +52,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int getDataIndex(String source);
 
-  Filter getFilter(String excludeColumn);
-  
   FormView getForm(boolean edit);
 
   CellGrid getGrid();
@@ -86,12 +80,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean likeAMotherlessChild();
 
-  Filter parseFilter(List<Map<String, String>> filterValues);
-  
   int refreshCellContent(long rowId, String columnSource);
 
-  void setFilter(List<Map<String, String>> filterValues);
-      
   void setRelId(Long relId);
 
   boolean validateFormData(FormView form, NotificationListener notificationListener,

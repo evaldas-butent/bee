@@ -69,7 +69,7 @@ public class SearchBox extends InputText implements SearchView {
   public void onBrowserEvent(Event event) {
     if (getFilterHandler() != null && EventUtils.isKeyDown(event.getType())
         && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      getFilterHandler().onFilterChange(null);
+      getFilterHandler().onFilterChange();
     }
 
     super.onBrowserEvent(event);

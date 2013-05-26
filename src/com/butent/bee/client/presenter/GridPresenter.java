@@ -33,15 +33,16 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -156,9 +157,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
-  
-  private List<Map<String, String>> filterValues;
-  private Filter lastFilter;
+  private final GridFilterManager filterManager;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
@@ -171,25 +170,23 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> parentFilters,
-      List<Map<String, String>> userFilterValues, Filter userFilter, 
+      List<Map<String, String>> userFilterValues, Filter userFilter,
       Order order, GridFactory.GridOptions gridOptions) {
 
     if (gridInterceptor != null) {
       gridInterceptor.setGridPresenter(this);
     }
 
-    this.gridContainer = createView(gridDescription, gridView, rowCount, gridInterceptor,
-        uiOptions, gridOptions);
+    this.gridContainer = createView(gridDescription, gridView, rowCount, userFilter,
+        gridInterceptor, uiOptions, gridOptions);
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
         immutableFilter, parentFilters, userFilter, order, rowSet, providerType, cachingPolicy);
-    
-    this.filterValues = userFilterValues;
-    this.lastFilter = userFilter;
-    
-    if (!BeeUtils.isEmpty(userFilterValues)) {
-      getGridView().setFilter(userFilterValues);
+
+    this.filterManager = new GridFilterManager();
+    if (userFilterValues != null && !userFilterValues.isEmpty()) {
+      filterManager.setFilter(gridContainer.getGridView().getGrid(), userFilterValues);
     }
 
     bind();
@@ -346,7 +343,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case FILTER:
-        handleFilter();
+        filterManager.handleFilter(getGridView().getGrid(), getMainView().getElement(),
+            new Consumer<Filter>() {
+              @Override
+              public void accept(Filter input) {
+                onFilterChange(input);
+              }
+            });
         break;
 
       case PRINT:
@@ -360,7 +363,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case REMOVE_FILTER:
-        updateFilter(null);
+        filterManager.clearFilter(getGridView().getGrid());
+        onFilterChange(null);
         break;
 
       default:
@@ -410,7 +414,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           source, newValue));
       return true;
     }
-    
+
     BeeRowSet rowSet = event.getRowSet(getViewName(), getDataColumns());
     event.getRowValue().reset();
 
@@ -491,15 +495,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       }
 
     } else {
-      Filter filter = getGridView().getFilter(null);
-      if (filter != null && getGridView().getGrid().getRowCount() <= 0) {
-        setLastFilter(null);
-        getDataProvider().onFilterChange(null, updateActiveRow, null);
-      } else if (Objects.equal(filter, getLastFilter())) {
-        getDataProvider().refresh(updateActiveRow);
-      } else {
-        getDataProvider().onFilterChange(filter, updateActiveRow, null);
-      }
+      getDataProvider().refresh(updateActiveRow);
     }
   }
 
@@ -581,7 +577,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     }
-    
+
     if (userFilter != null) {
       provider.setUserFilter(userFilter);
     }
@@ -593,11 +589,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private GridContainerView createView(GridDescription gridDescription, GridView gridView,
-      int rowCount, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
-      GridFactory.GridOptions gridOptions) {
+      int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, gridView, rowCount, gridInterceptor, uiOptions, gridOptions);
+    view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
+        gridOptions);
 
     return view;
   }
@@ -618,15 +615,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getGridView().getGridInterceptor();
   }
 
-  private Filter getLastFilter() {
-    return lastFilter;
-  }
+  private void onFilterChange(Filter filter) {
+    if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
+      return;
+    }
 
-  private void handleFilter() {
-  }
+    HeaderView header = getHeader();
+    if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
+      header.showAction(Action.REMOVE_FILTER, filter != null);
+    }
 
-  private void setLastFilter(Filter lastFilter) {
-    this.lastFilter = lastFilter;
+    getDataProvider().onFilterChange(filter);
   }
 
   private void showFailure(String activity, String... reasons) {
@@ -639,20 +638,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void showInfo(String... messages) {
     getGridView().notifyInfo(messages);
-  }
-
-  private void updateFilter(Consumer<Boolean> callback) {
-    Filter filter = getGridView().getFilter(null);
-
-    if (!Objects.equal(filter, getLastFilter())) {
-      setLastFilter(filter);
-      getDataProvider().onFilterChange(filter, true, callback);
-      
-      HeaderView header = getHeader();
-      if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
-        header.showAction(Action.REMOVE_FILTER, filter != null);
-      }
-    }
   }
 
   private boolean validateParent() {

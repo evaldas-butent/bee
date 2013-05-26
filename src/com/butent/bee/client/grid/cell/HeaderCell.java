@@ -40,7 +40,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
     @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
     SafeHtml sorted(String id, String classes, String sortInfo);
   }
-  
+
   public static final int SORT_INFO_WIDTH = 15;
 
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
@@ -52,7 +52,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
   private final String sortInfoId;
   private final String captionId;
-  
+
   private final String caption;
 
   public HeaderCell(String caption) {
@@ -87,7 +87,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
     if (EventUtils.isClick(event)) {
       int col = context.getColumn();
-      
+
       if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
         event.preventDefault();
         grid.updateOrder(col, event);
@@ -100,11 +100,11 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
         if (sortElement != null) {
           headerWidth += Math.max(sortElement.getOffsetWidth(), SORT_INFO_WIDTH);
         }
-        
+
         if (headerWidth > grid.getColumnWidth(col)) {
           grid.resizeColumn(col, headerWidth);
         }
-        
+
       } else {
         event.preventDefault();
         grid.autoFitColumn(col);
@@ -127,23 +127,22 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
     }
 
     CellGrid grid = context.getGrid();
-    if (grid != null && grid.contains(columnId)) {
+    if (grid != null && grid.isSortable(columnId)) {
 
       Order sortOrder = grid.getSortOrder();
       int size = (sortOrder == null) ? 0 : sortOrder.getSize();
 
-      if ((grid.getColumnCount() > 1 || size > 0) && grid.isSortable(columnId)) {
-        int sortIndex = (size > 0) ? sortOrder.getIndex(columnId) : BeeConst.UNDEF;
-        if (sortIndex >= 0) {
-          boolean ascending = sortOrder.isAscending(columnId);
-          String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
-              ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
-          String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
-          sb.append(template.sorted(sortInfoId, classes, sortInfo));
-        } else {
-          sb.append(template.sortable(sortInfoId,
-              StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
-        }
+      int sortIndex = (size > 0) ? sortOrder.getIndex(columnId) : BeeConst.UNDEF;
+      
+      if (sortIndex >= 0) {
+        boolean ascending = sortOrder.getColumns().get(sortIndex).isAscending();
+        String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
+            ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
+        String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
+        sb.append(template.sorted(sortInfoId, classes, sortInfo));
+      } else {
+        sb.append(template.sortable(sortInfoId,
+            StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
       }
     }
   }

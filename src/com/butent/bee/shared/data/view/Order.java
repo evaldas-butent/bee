@@ -23,29 +23,17 @@ import java.util.List;
 
 public class Order implements BeeSerializable {
 
-  public static final String SORT_ASCENDING = "ascending";
-  public static final String SORT_DESCENDING = "descending";
-
-  private static BeeLogger logger = LogUtils.getLogger(Order.class);
-
-  private static final Splitter ITEM_SPLITTER =
-      Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
-
-  public static boolean isSortAscending(String s) {
-    return BeeUtils.inListSame(s, SORT_ASCENDING, BeeConst.STRING_PLUS)
-        || BeeUtils.isPrefix(SORT_ASCENDING, s);
-  }
-
-  public static boolean isSortDescending(String s) {
-    return BeeUtils.inListSame(s, SORT_DESCENDING, BeeConst.STRING_MINUS)
-        || BeeUtils.isPrefix(SORT_DESCENDING, s);
-  }
-
-  public class Column implements BeeSerializable {
+  public static class Column implements BeeSerializable {
 
     private final String name;
     private final List<String> sources;
     private boolean ascending;
+
+    private Column(String name, List<String> sources, boolean ascending) {
+      this.name = name;
+      this.sources = sources;
+      this.ascending = ascending;
+    }
 
     private Column(String name, String source) {
       this(name, source, true);
@@ -53,12 +41,6 @@ public class Order implements BeeSerializable {
 
     private Column(String name, String source, boolean ascending) {
       this(name, Lists.newArrayList(source), ascending);
-    }
-
-    private Column(String name, List<String> sources, boolean ascending) {
-      this.name = name;
-      this.sources = sources;
-      this.ascending = ascending;
     }
 
     @Override
@@ -125,6 +107,24 @@ public class Order implements BeeSerializable {
     private boolean is(String id) {
       return BeeUtils.same(name, id);
     }
+  }
+  public static final String SORT_ASCENDING = "ascending";
+
+  public static final String SORT_DESCENDING = "descending";
+
+  private static BeeLogger logger = LogUtils.getLogger(Order.class);
+
+  private static final Splitter ITEM_SPLITTER =
+      Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
+
+  public static boolean isSortAscending(String s) {
+    return BeeUtils.inListSame(s, SORT_ASCENDING, BeeConst.STRING_PLUS)
+        || BeeUtils.isPrefix(SORT_ASCENDING, s);
+  }
+
+  public static boolean isSortDescending(String s) {
+    return BeeUtils.inListSame(s, SORT_DESCENDING, BeeConst.STRING_MINUS)
+        || BeeUtils.isPrefix(SORT_DESCENDING, s);
   }
 
   public static Order parse(String input, Collection<String> colNames) {

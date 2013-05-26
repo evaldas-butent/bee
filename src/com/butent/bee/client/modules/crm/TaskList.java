@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,7 +16,6 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -45,7 +45,6 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
@@ -328,19 +327,12 @@ class TaskList {
     }
 
     @Override
-    public void onRequest(final Element target, NotificationListener notificationListener,
-        final Callback<Boolean> callback) {
-
+    public void onRequest(final Element target, final Scheduler.ScheduledCommand onChange) {
       ParameterList params = CrmKeeper.createArgs(SVC_GET_CHANGED_TASKS);
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            if (callback != null) {
-              callback.onFailure(response.getErrors());
-            }
-
-          } else {
+          if (!response.hasErrors()) {
             List<Long> tasks = Lists.newArrayList();
             for (String item : TASK_SPLITTER.split((String) response.getResponse())) {
               tasks.add(BeeUtils.toLong(item));
@@ -363,7 +355,7 @@ class TaskList {
               updTasks.addAll(tasks.subList(cntNew + 1, tasks.size()));
             }
 
-            openDialog(target, createWidget(), callback);
+            openDialog(target, createWidget(), onChange);
           }
         }
       });
@@ -641,9 +633,8 @@ class TaskList {
     }
     
     @Override
-    public void onRequest(Element target, NotificationListener notificationListener,
-        Callback<Boolean> callback) {
-      openDialog(target, createWidget(), callback);
+    public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
+      openDialog(target, createWidget(), onChange);
     }
 
     @Override
@@ -888,8 +879,8 @@ class TaskList {
     DELEGATED("Deleguotos užduotys") {
       @Override
       Filter getFilter(LongValue userValue) {
-        return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue), ComparisonFilter
-            .isNotEqual(COL_EXECUTOR, userValue));
+        return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
+            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
       }
     },
 

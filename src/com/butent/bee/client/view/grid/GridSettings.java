@@ -237,7 +237,7 @@ public class GridSettings {
   private static Widget createLabel(ColumnInfo columnInfo, int index) {
     DndDiv widget = new DndDiv(STYLE_LABEL);
 
-    widget.setHTML(getLabel(columnInfo));
+    widget.setHTML(columnInfo.getLabel());
     DomUtils.setDataIndex(widget.getElement(), index);
 
     DndHelper.makeSource(widget, DND_CONTENT_TYPE, index, STYLE_DRAG);
@@ -269,10 +269,6 @@ public class GridSettings {
 
   private static int getDataIndex(HtmlTable table, int row) {
     return DomUtils.getDataIndex(table.getWidget(row, LABEL_COL).getElement());    
-  }
-
-  private static String getLabel(ColumnInfo columnInfo) {
-    return BeeUtils.notEmpty(columnInfo.getCaption(), columnInfo.getColumnId());
   }
 
   private static List<Integer> getSelectedColumns(HtmlTable table, 

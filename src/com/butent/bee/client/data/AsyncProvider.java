@@ -14,7 +14,6 @@ import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -302,8 +301,7 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  public void onFilterChange(final Filter newFilter, final boolean updateActiveRow,
-      final Consumer<Boolean> callback) {
+  public void onFilterChange(final Filter newFilter) {
     resetRequests();
     Filter flt = getQueryFilter(newFilter);
 
@@ -312,16 +310,10 @@ public class AsyncProvider extends Provider {
       public void onSuccess(Integer result) {
         if (newFilter == null || BeeUtils.isPositive(result)) {
           acceptFilter(newFilter);
-          onRowCount(result, updateActiveRow);
-          if (callback != null) {
-            callback.accept(true);
-          }
+          onRowCount(result, true);
 
         } else {
           rejectFilter(newFilter);
-          if (callback != null) {
-            callback.accept(false);
-          }
         }
       }
     });

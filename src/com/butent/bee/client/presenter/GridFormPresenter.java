@@ -228,7 +228,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 
-    formHeader.create(caption, false, false, null, actions, Action.NO_ACTIONS);
+    formHeader.create(caption, false, false, null, actions, Action.NO_ACTIONS, Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
     formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
 

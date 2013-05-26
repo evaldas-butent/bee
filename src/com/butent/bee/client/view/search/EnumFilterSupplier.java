@@ -1,18 +1,20 @@
 package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -40,6 +42,8 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(EnumFilterSupplier.class);
+  
   private final List<String> captions;
   private final int nullIndex;
 
@@ -72,21 +76,14 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public void onRequest(final Element target, final NotificationListener notificationListener,
-      final Callback<Boolean> callback) {
+  public void onRequest(final Element target, final Scheduler.ScheduledCommand onChange) {
 
     if (captions == null) {
-      callback.onFailure(NameUtils.getName(this) + ": enum captions not available");
+      logger.severe(NameUtils.getName(this) + ": enum captions not available");
       return;
     }
 
     getHistogram(new Callback<SimpleRowSet>() {
-      @Override
-      public void onFailure(String... reason) {
-        super.onFailure(reason);
-        callback.onFailure(reason);
-      }
-
       @Override
       public void onSuccess(SimpleRowSet result) {
         data.clear();
@@ -102,7 +99,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
             if (BeeUtils.isIndex(captions, ordinal)) {
               data.add(new DataItem(ordinal, row[countIndex]));
             } else {
-              notificationListener.notifySevere("Invalid value: " + ordinal);
+              logger.severe("Invalid value: " + ordinal);
             }
           } else {
             nullCount = row[countIndex];
@@ -110,19 +107,16 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
         }
 
         if (data.isEmpty()) {
-          notificationListener.notifyInfo(messageAllEmpty(nullCount));
-          callback.onSuccess(reset());
+          notifyInfo(messageAllEmpty(nullCount));
 
         } else if (data.size() == 1 && BeeUtils.isEmpty(nullCount)) {
-          notificationListener.notifyInfo(messageOneValue(captions.get(data.get(0).getIndex()),
-              data.get(0).getCount()));
-          callback.onSuccess(reset());
+          notifyInfo(messageOneValue(captions.get(data.get(0).getIndex()), data.get(0).getCount()));
 
         } else {
           if (!BeeUtils.isEmpty(nullCount)) {
             data.add(new DataItem(nullIndex, nullCount));
           }
-          openDialog(target, createWidget(), callback);
+          openDialog(target, createWidget(), onChange);
         }
       }
     });
@@ -161,7 +155,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       newValues.add(data.get(row).getIndex());
     }
     
-    boolean changed = BeeUtils.sameElements(values, newValues);
+    boolean changed = !BeeUtils.sameElements(values, newValues);
     
     BeeUtils.overwrite(values, newValues);
     update(changed);

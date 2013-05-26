@@ -116,7 +116,9 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void create(String caption, boolean hasData, boolean readOnly,
-      Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
+      Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions,
+      Set<Action> hiddenActions) {
+
     addStyleName(STYLE_CONTAINER);
 
     captionWidget.addStyleName(STYLE_CAPTION);
@@ -132,44 +134,45 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     add(commandPanel);
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverReload(), Action.REFRESH));
+      add(createControl(Global.getImages().silverReload(), Action.REFRESH, hiddenActions));
     }
 
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverFilter(), Action.FILTER));
+      add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverFilterRemove(), Action.REMOVE_FILTER));
+      add(createControl(Global.getImages().silverFilterRemove(), Action.REMOVE_FILTER,
+          hiddenActions));
     }
     
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverAdd(), Action.ADD));
+      add(createControl(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
     }
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverDelete(), Action.DELETE));
+      add(createControl(Global.getImages().silverDelete(), Action.DELETE, hiddenActions));
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK));
+      add(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK, hiddenActions));
     }
 
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverEdit(), Action.EDIT));
+      add(createControl(Global.getImages().silverEdit(), Action.EDIT, hiddenActions));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverSave(), Action.SAVE));
+      add(createControl(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
     }
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE));
+      add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverPrint(), Action.PRINT));
+      add(createControl(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverClose(), Action.CLOSE));
+      add(createControl(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
     }
   }
 
@@ -303,13 +306,17 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
   }
 
-  private Widget createControl(ImageResource image, Action action) {
+  private Widget createControl(ImageResource image, Action action, Set<Action> hiddenActions) {
     BeeImage control = new BeeImage(image, new ActionListener(action));
     control.addStyleName(STYLE_CONTROL);
 
     if (action != null) {
       control.addStyleName(action.getStyleName());
       control.setTitle(action.getCaption());
+      
+      if (hiddenActions != null && hiddenActions.contains(action)) {
+        StyleUtils.hideDisplay(control);
+      }
 
       getActionControls().put(action, control.getId());
     }

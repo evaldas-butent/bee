@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -45,8 +46,9 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public abstract class AbstractFilterSupplier implements HasViewName, HasOptions, TakesValue<String> {
-
+public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
+    TakesValue<String>, NotificationListener {
+  
   protected enum SupplierAction implements HasCaption {
     ALL("Visi"),
     CLEAR(Localized.constants.clear()),
@@ -76,6 +78,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   private static final String BIN_SIZE_CELL_STYLE_SUFFIX = "binSizeCell";
 
   private final String viewName;
+
   private final BeeColumn column;
 
   private String options;
@@ -85,8 +88,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   private Popup dialog = null;
 
   private Filter effectiveFilter = null;
-
   private String counterId = null;
+
   private int counterValue = 0;
 
   private final List<Integer> selectedItems = Lists.newArrayList();
@@ -102,7 +105,6 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public Filter getFilter() {
     return parse(getValue());
   }
-
   public abstract String getLabel();
 
   @Override
@@ -124,12 +126,31 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     return viewName;
   }
 
+  @Override
+  public boolean hasNotifications() {
+    return getNotificationDelegate().hasNotifications();
+  }
+
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getValue());
   }
 
-  public abstract void onRequest(Element target, NotificationListener notificationListener,
-      Callback<Boolean> callback);
+  @Override
+  public void notifyInfo(String... messages) {
+    getNotificationDelegate().notifyInfo(messages);
+  }
+
+  @Override
+  public void notifySevere(String... messages) {
+    getNotificationDelegate().notifySevere(messages);
+  }
+
+  @Override
+  public void notifyWarning(String... messages) {
+    getNotificationDelegate().notifyWarning(messages);
+  }
+
+  public abstract void onRequest(Element target, Scheduler.ScheduledCommand onChange);
 
   public abstract Filter parse(String value);
 
@@ -373,6 +394,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     return Lists.newArrayList(getColumnId());
   }
 
+  protected NotificationListener getNotificationDelegate() {
+    return BeeKeeper.getScreen();
+  }
+
   protected List<Integer> getSelectedItems() {
     return selectedItems;
   }
@@ -415,7 +440,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
         BeeUtils.bracket(count));
   }
 
-  protected void openDialog(Element target, Widget widget, final Callback<Boolean> callback) {
+  protected void openDialog(Element target, Widget widget,
+      final Scheduler.ScheduledCommand onChange) {
+
     Popup popup = new Popup(OutsideClick.CLOSE, getDialogStyle());
 
     popup.setWidget(widget);
@@ -424,7 +451,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        callback.onSuccess(filterChanged());
+        if (filterChanged()) {
+          onChange.execute();
+        }
       }
     });
 

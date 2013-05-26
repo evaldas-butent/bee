@@ -3,17 +3,16 @@ package com.butent.bee.client.view.search;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -59,8 +58,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public void onRequest(Element target, NotificationListener notificationListener,
-      final Callback<Boolean> callback) {
+  public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
     int width = BeeUtils.clamp(target.getOffsetWidth(), MIN_EDITOR_WIDTH, MAX_EDITOR_WIDTH);
     if (width != getLastWidth()) {
       StyleUtils.setWidth(editor.asWidget(), width);
@@ -69,7 +67,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     
     setOldValue(getValue());
     
-    openDialog(target, editor.asWidget(), callback);
+    openDialog(target, editor.asWidget(), onChange);
     editor.setFocus(true);
   }
   

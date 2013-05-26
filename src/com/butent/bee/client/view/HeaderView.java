@@ -18,7 +18,7 @@ import java.util.Set;
 public interface HeaderView extends View, IndexedPanel, Printable, HasCaption {
 
   void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options,
-      Set<Action> enabledActions, Set<Action> disabledActions);
+      Set<Action> enabledActions, Set<Action> disabledActions, Set<Action> hiddenActions);
 
   void addCaptionStyle(String style);
 

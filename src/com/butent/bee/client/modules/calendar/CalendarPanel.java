@@ -156,7 +156,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     this.header = new HeaderSilverImpl();
     header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
-        EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS);
+        EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
     this.dateBox = new Html();

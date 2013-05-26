@@ -38,6 +38,7 @@ import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
@@ -431,11 +432,7 @@ public class GridFactory {
       CellSource source = CellSource.forColumn(table.getColumn(i), i);
       column = createColumn(source);
 
-      column.setSortable(true);
-      column.setSortBy(Lists.newArrayList(table.getColumn(i).getId()));
-
       String label = table.getColumnLabel(i);
-
       grid.addColumn(label, source, column, new ColumnHeader(label, label));
     }
 
@@ -524,11 +521,12 @@ public class GridFactory {
       GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(), uiOptions,
           gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
+      
+      Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
 
       createPresenter(gridDescription, gridView, brs.getNumberOfRows(), brs, providerType,
           cachingPolicy, uiOptions, gridInterceptor, immutableFilter, initialParentFilters,
-          initialUserFilterValues, gridView.parseFilter(initialUserFilterValues), order,
-          gridOptions, presenterCallback);
+          initialUserFilterValues, filter, order, gridOptions, presenterCallback);
       return;
     }
 
@@ -555,7 +553,8 @@ public class GridFactory {
     final GridView gridView = createGridView(gridDescription, supplierKey,
         Data.getColumns(viewName), uiOptions, gridInterceptor, order);
     
-    final Filter initialUserFilter = gridView.parseFilter(initialUserFilterValues);
+    final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
+        initialUserFilterValues);
     Filter queryFilter = getInitialQueryFilter(immutableFilter, initialParentFilters,
         initialUserFilter);
 

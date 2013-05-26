@@ -1,10 +1,9 @@
 package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 
-import com.butent.bee.client.Callback;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.Filter;
 
@@ -27,8 +26,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
   }
   
   @Override
-  public void onRequest(Element target, NotificationListener notificationListener,
-      Callback<Boolean> callback) {
+  public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
   }
 
   @Override

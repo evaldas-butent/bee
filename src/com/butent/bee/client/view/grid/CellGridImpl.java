@@ -83,7 +83,6 @@ import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
-import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
@@ -100,7 +99,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -268,16 +266,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
-  }
-
-  @Override
-  public void clearFilter() {
-    for (ColumnInfo columnInfo : getGrid().getColumns()) {
-      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-      if (filterSupplier != null) {
-        filterSupplier.setValue(null);
-      }
-    }
   }
 
   @Override
@@ -607,25 +595,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       footer = null;
       if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())) {
-        AbstractFilterSupplier filterSupplier = null;
-        if (interceptor != null) {
-          filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
-        }
-
-        if (filterSupplier == null
-            && (columnDescr.getFilterSupplierType() != null
-            || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
-
-          filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
-              (dataIndex >= 0) ? dataCols.get(dataIndex) : null,
-              columnDescr.getFilterSupplierType(), renderColumns, column.getSortBy(),
-              columnDescr.getItemKey(), columnDescr.getRelation(),
-              columnDescr.getFilterOptions());
-        }
-
-        if (filterSupplier != null) {
-          footer = new ColumnFooter(filterSupplier, this);
-        }
+        footer = new ColumnFooter(columnName);
       }
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
@@ -633,9 +603,25 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
+      AbstractFilterSupplier filterSupplier = null;
+      if (interceptor != null) {
+        filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
+      }
+
+      if (filterSupplier == null
+          && (columnDescr.getFilterSupplierType() != null
+          || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
+
+        filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
+            (dataIndex >= 0) ? dataCols.get(dataIndex) : null,
+            columnDescr.getFilterSupplierType(), renderColumns, column.getSortBy(),
+            columnDescr.getItemKey(), columnDescr.getRelation(),
+            columnDescr.getFilterOptions());
+      }
+
       ColumnInfo columnInfo = getGrid().addColumn(columnName, cellSource, column, header, footer,
-          columnDescr.getVisible());
-      getGrid().setColumnInfo(columnInfo, columnDescr, gridDescr, dataCols);
+          filterSupplier, columnDescr.getVisible());
+      columnInfo.initProperties(columnDescr, gridDescr, dataCols);
     }
 
     if (interceptor != null) {
@@ -908,28 +894,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter getFilter(String excludeColumn) {
-    List<Filter> filters = Lists.newArrayList();
-
-    for (ColumnInfo columnInfo : getGrid().getColumns()) {
-      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-
-      if (filterSupplier != null) {
-        if (!BeeUtils.isEmpty(excludeColumn)
-            && BeeUtils.same(excludeColumn, columnInfo.getColumnId())) {
-          continue;
-        }
-
-        Filter columnFilter = filterSupplier.getFilter();
-        if (columnFilter != null) {
-          filters.add(columnFilter);
-        }
-      }
-    }
-    return Filter.and(filters);
-  }
-
-  @Override
   public FormView getForm(boolean edit) {
     if (edit || isSingleFormInstance()) {
       return getEditForm();
@@ -1182,42 +1146,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public Filter parseFilter(List<Map<String, String>> filterValues) {
-    if (BeeUtils.isEmpty(filterValues)) {
-      return null;
-    }
-
-    List<Filter> filters = Lists.newArrayList();
-
-    for (Map<String, String> values : filterValues) {
-      for (Map.Entry<String, String> entry : values.entrySet()) {
-        String columnId = entry.getKey();
-
-        ColumnInfo columnInfo = getGrid().getColumnById(columnId);
-        if (columnInfo == null) {
-          logger.warning("filter column not found:", columnId);
-          continue;
-        }
-
-        AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-        if (filterSupplier == null) {
-          logger.warning("filter supplier not found:", columnId);
-          continue;
-        }
-
-        Filter columnFilter = filterSupplier.parse(entry.getValue());
-        if (columnFilter == null) {
-          logger.warning(columnId, "cannot parse filter:", entry.getValue());
-        } else if (!filters.contains(columnFilter)) {
-          filters.add(columnFilter);
-        }
-      }
-    }
-
-    return Filter.and(filters);
-  }
-
-  @Override
   public void refresh(boolean refreshChildren, boolean focus) {
     getGrid().refresh();
   }
@@ -1236,49 +1164,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public void setEnabled(boolean enabled) {
     getGrid().setEnabled(enabled);
-  }
-
-  @Override
-  public void setFilter(List<Map<String, String>> filterValues) {
-    if (BeeUtils.isEmpty(filterValues)) {
-      clearFilter();
-      return;
-    }
-
-    Map<String, String> columnFilters = Maps.newHashMap();
-    for (Map<String, String> values : filterValues) {
-      for (Map.Entry<String, String> entry : values.entrySet()) {
-        String columnId = entry.getKey();
-
-        if (columnFilters.containsKey(columnId)) {
-          logger.warning(columnId, "duplicate column filter:", columnFilters.get(columnId),
-              entry.getValue());
-        } else {
-          columnFilters.put(columnId, entry.getValue());
-        }
-      }
-    }
-
-    for (ColumnInfo columnInfo : getGrid().getColumns()) {
-      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-
-      if (filterSupplier != null) {
-        String columnId = columnInfo.getColumnId();
-
-        if (columnFilters.containsKey(columnId)) {
-          filterSupplier.setValue(columnFilters.get(columnId));
-        } else {
-          filterSupplier.setValue(null);
-        }
-      }
-    }
-  }
-
-  public void setFilterHandler(FilterHandler filterHandler) {
-    List<ColumnFooter> footers = getGrid().getFooters();
-    for (ColumnFooter footer : footers) {
-      footer.setFilterHandler(filterHandler);
-    }
   }
 
   @Override

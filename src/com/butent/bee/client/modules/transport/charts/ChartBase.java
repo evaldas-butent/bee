@@ -200,7 +200,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     this.headerView = new HeaderSilverImpl();
     headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), enabledActions,
-        Action.NO_ACTIONS);
+        Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {
       this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);

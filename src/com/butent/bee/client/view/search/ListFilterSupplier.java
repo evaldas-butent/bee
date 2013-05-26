@@ -2,6 +2,7 @@ package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONNull;
@@ -13,7 +14,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -127,32 +127,22 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public void onRequest(final Element target, final NotificationListener notificationListener,
-      final Callback<Boolean> callback) {
+  public void onRequest(final Element target, final Scheduler.ScheduledCommand onChange) {
     getHistogram(new Callback<SimpleRowSet>() {
-      @Override
-      public void onFailure(String... reason) {
-        super.onFailure(reason);
-        callback.onFailure(reason);
-      }
-
       @Override
       public void onSuccess(SimpleRowSet result) {
         setData(result);
 
         if (result.getNumberOfRows() <= 0) {
-          notificationListener.notifyInfo(messageAllEmpty(null));
-          callback.onSuccess(reset());
+          notifyInfo(messageAllEmpty(null));
 
         } else if (result.getNumberOfRows() == 1) {
           SimpleRow row = result.getRow(0);
-          notificationListener.notifyInfo(messageOneValue(getCaption(row),
-              row.getValue(countIndex)));
-          callback.onSuccess(reset());
+          notifyInfo(messageOneValue(getCaption(row), row.getValue(countIndex)));
 
         } else {
           clearSelection();
-          openDialog(target, createWidget(), callback);
+          openDialog(target, createWidget(), onChange);
         }
       }
     });
