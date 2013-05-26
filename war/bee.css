@@ -1606,12 +1606,26 @@ body {
   cursor: pointer;
 }
 
-.bee-Filters-name {
+.bee-GridFilter-dialog .bee-Filters-wrapper {
+  margin-top: 2ex;
+}
+
+.bee-Filters-table {
+  border-collapse: collapse;
+}  
+
+.bee-Filters-initial {
+  margin: 0 5px 0 0;
+}  
+
+.bee-Filters-label {
   min-width: 120px;
-  max-width: 300px;
+  max-width: 240px;
+  max-height: 60px;
+  word-break: break-all;
   cursor: pointer; 
 }
-.bee-Filters-name:hover {
+.bee-Filters-label:hover {
   color: #00e;
   text-decoration: underline;
 }

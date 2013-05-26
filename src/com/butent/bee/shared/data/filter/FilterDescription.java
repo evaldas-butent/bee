@@ -129,8 +129,8 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     Assert.notEmpty(label);
 
     FilterDescription filterDescription = new FilterDescription();
-    String name = BeeUtils.join(BeeConst.STRING_UNDER, System.currentTimeMillis(),
-        BeeUtils.randomString(6));
+    String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
+        System.currentTimeMillis());
     filterDescription.setName(name);
     filterDescription.setLabel(label);
     filterDescription.setValue(createValue(values));

@@ -20,6 +20,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -108,7 +109,7 @@ public class GridFilterManager {
     
     final DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
 
-    Scheduler.ScheduledCommand onChange = new Scheduler.ScheduledCommand() {
+    final Scheduler.ScheduledCommand onChange = new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
         dialog.close();
@@ -147,6 +148,23 @@ public class GridFilterManager {
     Widget saveWidget = maybeCreateSaveWidget(gridKey, grid, dialog);
     if (saveWidget != null) {
       content.add(saveWidget);
+    }
+    
+    if (Global.getFilters().containsKey(gridKey)) {
+      Widget widget = Global.getFilters().createWidget(gridKey, new Consumer<FilterDescription>() {
+        @Override
+        public void accept(FilterDescription input) {
+          List<Map<String, String>> values = Lists.newArrayList();
+          values.add(input.getValues());
+
+          setFilter(grid, values);
+          onChange.execute();
+        }
+      });
+      
+      if (widget != null) {
+        content.add(widget);
+      }
     }
 
     dialog.setWidget(content);
