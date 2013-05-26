@@ -108,6 +108,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String saveChanges();
 
+  String saveFilter();
+
   String selectAll();
 
   String settings();

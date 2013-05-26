@@ -3,9 +3,9 @@ package com.butent.bee.client;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
@@ -315,12 +315,12 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
-      String dialogStyle, UIObject target) {
+      String dialogStyle, Element target) {
     inputWidget(caption, input, callback, dialogStyle, target, Action.NO_ACTIONS);
   }
 
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
-      String dialogStyle, UIObject target, Set<Action> enabledActions) {
+      String dialogStyle, Element target, Set<Action> enabledActions) {
     inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions, null);
   }
 

@@ -2,6 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.base.Supplier;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasNativeEvent;
@@ -19,7 +20,6 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -372,7 +372,7 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
-      String dialogStyle, UIObject target, Set<Action> enabledActions, 
+      String dialogStyle, Element target, Set<Action> enabledActions, 
       WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -490,12 +490,7 @@ public class InputBoxes {
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
     dialog.setAnimationEnabled(true);
-
-    if (target == null) {
-      dialog.center();
-    } else {
-      dialog.showRelativeTo(target.getElement());
-    }
+    dialog.showRelativeTo(target);
 
     UiHelper.focus(widget.asWidget());
   }

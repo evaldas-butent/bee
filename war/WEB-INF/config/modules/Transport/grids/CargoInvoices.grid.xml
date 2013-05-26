@@ -7,7 +7,7 @@
   editForm="CargoInvoice" disabledActions="add"
   >
   <columns>
-    <IdColumn name="ID" filterSupplier="id" />
+    <IdColumn name="ID" />
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="Number" />
     <CalcColumn name="Invoice" type="string" caption="Sąskaitos Nr." 

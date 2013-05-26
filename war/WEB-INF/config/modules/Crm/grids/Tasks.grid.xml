@@ -20,7 +20,7 @@
       <renderer type="star" />
     </PropColumn>
 
-    <IdColumn name="Id" caption="ID" filterSupplier="id" hasFooter="true" />
+    <IdColumn name="Id" caption="ID" />
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
     <DataColumn name="Summary" flexGrow="1" visible="true" />

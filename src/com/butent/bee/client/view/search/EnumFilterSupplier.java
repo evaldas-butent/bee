@@ -67,7 +67,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     for (int index : values) {
       labels.add(getCaption(index));
     }
-    return BeeUtils.join(BeeConst.STRING_COMMA, values);
+    return BeeUtils.join(BeeConst.STRING_COMMA, labels);
   }
 
   @Override

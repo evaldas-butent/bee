@@ -2,9 +2,8 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -74,7 +73,7 @@ public class GridSettings {
     }
   }
 
-  public static void handle(final String key, final CellGrid grid, UIObject target) {
+  public static void handle(final String key, final CellGrid grid, Element target) {
     Assert.notNull(grid);
     if (grid.getRowData().isEmpty()) {
       return;

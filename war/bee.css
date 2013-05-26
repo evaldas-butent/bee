@@ -1595,8 +1595,15 @@ body {
   margin-left: 3px;
 }
 
-.bee-Filters-dialog {
-  background-color: white;
+.bee-GridFilter-save-panel {
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  margin-left: 2em;
+  margin-top: 2ex;
+}
+.bee-GridFilter-save-message {
+  margin-left: 1em;
+  cursor: pointer;
 }
 
 .bee-Filters-name {

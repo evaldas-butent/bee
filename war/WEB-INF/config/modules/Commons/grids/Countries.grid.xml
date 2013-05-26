@@ -8,7 +8,7 @@
     <DataColumn name="Code" />
     <DataColumn name="EUMember" caption="ES" />
     <CalcColumn type="string" name="Flag" source="Code" cellType="html" width="30" caption="-"
-      sortable="false" hasFooter="false" horizontalAlignment="center">
+      sortable="false" horizontalAlignment="center" filterOptions="-" >
       <renderer type="flag" />
     </CalcColumn>
   </columns>

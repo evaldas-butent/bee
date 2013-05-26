@@ -111,6 +111,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
@@ -476,6 +477,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
             renderColumns, dataCols, cellSource, columnDescr.getRelation());
       }
+      
+      FilterSupplierType filterSupplierType = columnDescr.getFilterSupplierType();
 
       CellType cellType = columnDescr.getCellType();
       column = null;
@@ -483,6 +486,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       switch (colType) {
         case ID:
           column = new RowIdColumn();
+          if (filterSupplierType == null) {
+            filterSupplierType = FilterSupplierType.ID;
+          }
           break;
 
         case VERSION:
@@ -608,13 +614,13 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
       }
 
-      if (filterSupplier == null
-          && (columnDescr.getFilterSupplierType() != null
+      if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(columnDescr.getFilterOptions())
+          && (filterSupplierType != null
           || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
 
         filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
             (dataIndex >= 0) ? dataCols.get(dataIndex) : null,
-            columnDescr.getFilterSupplierType(), renderColumns, column.getSortBy(),
+            filterSupplierType, renderColumns, column.getSortBy(),
             columnDescr.getItemKey(), columnDescr.getRelation(),
             columnDescr.getFilterOptions());
       }

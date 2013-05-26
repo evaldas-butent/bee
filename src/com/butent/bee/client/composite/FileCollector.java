@@ -692,7 +692,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
           refresh(index, changedColumns);
         }
       }
-    }, null, getWidget(index, columns.indexOf(Column.EDIT)));
+    }, null, getCellFormatter().getElement(index, columns.indexOf(Column.EDIT)));
   }
 
   private int getDndCounter() {

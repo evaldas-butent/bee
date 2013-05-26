@@ -46,7 +46,7 @@ public class Filters {
 
   private static class Item implements Comparable<Item> {
 
-    private long id;
+    private final long id;
 
     private final FilterDescription filterDescription;
 
@@ -105,20 +105,12 @@ public class Filters {
       return filterDescription.isInitial();
     }
 
-    private boolean isNew() {
-      return getId() == DataUtils.NEW_ROW_ID;
-    }
-
     private boolean isPredefined() {
       return predefined;
     }
 
     private boolean isRemovable() {
       return filterDescription.isRemovable();
-    }
-
-    private void setId(long id) {
-      this.id = id;
     }
 
     private void setLabel(String label) {
@@ -143,13 +135,12 @@ public class Filters {
   private static final String STYLE_ROW = STYLE_PREFIX + "row";
   private static final String STYLE_ROW_INITIAL = STYLE_ROW + "-initial";
   private static final String STYLE_ROW_ACTIVE = STYLE_ROW + "-active";
-  private static final String STYLE_ROW_NEW = STYLE_ROW + "-new";
+  private static final String STYLE_ROW_PREDEFINED = STYLE_ROW + "-predefined";
 
   private static final String STYLE_INITIAL = STYLE_PREFIX + "initial";
   private static final String STYLE_NON_INITIAL = STYLE_PREFIX + "non-initial";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
-  private static final String STYLE_ADD = STYLE_PREFIX + "add";
   private static final String STYLE_DELETE = STYLE_PREFIX + "delete";
 
   private static final String STYLE_SUFFIX_COL = "-col";
@@ -177,6 +168,42 @@ public class Filters {
     super();
   }
 
+  public void addCustomFilter(String key, String label, Map<String, String> values) {
+    Assert.notEmpty(key);
+    Assert.notEmpty(label);
+    Assert.notEmpty(values);
+
+    FilterDescription filterDescription =
+        FilterDescription.userDefined(normalizeLabel(label), values);
+
+    int ordinal = -1;
+    if (itemsByKey.containsKey(key)) {
+      for (Item item : itemsByKey.get(key)) {
+        if (item.getOrdinal() != null) {
+          ordinal = Math.max(ordinal, item.getOrdinal());
+        }
+      }
+    }
+    filterDescription.setOrdinal(ordinal + 1);
+    
+    insert(key, filterDescription, false);
+  }
+
+  public boolean contains(String key, Map<String, String> values) {
+    if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(values)) {
+      return false;
+    }
+
+    if (itemsByKey.containsKey(key)) {
+      for (Item item : itemsByKey.get(key)) {
+        if (item.getValues().equals(values)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public void ensurePredefinedFilters(String key, List<FilterDescription> filters) {
     if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(filters) && !itemsByKey.containsKey(key)) {
       List<FilterDescription> predefinedFilters = Lists.newArrayList(filters);
@@ -184,18 +211,13 @@ public class Filters {
         Collections.sort(predefinedFilters);
       }
 
-      List<Item> items = Lists.newArrayList();
       for (int i = 0; i < predefinedFilters.size(); i++) {
         FilterDescription filterDescription = predefinedFilters.get(i).copy();
         filterDescription.setOrdinal(i);
+        
+        itemsByKey.put(key, new Item(DataUtils.NEW_ROW_ID, filterDescription, true));
 
-        items.add(new Item(-1 - i, filterDescription, true));
-      }
-
-      itemsByKey.putAll(key, items);
-
-      for (Item item : items) {
-        insert(key, item);
+        insert(key, filterDescription, true);
       }
     }
   }
@@ -251,65 +273,50 @@ public class Filters {
       final CustomDiv labelWidget = new CustomDiv();
       labelWidget.setHTML(LocaleUtils.maybeLocalize(item.getLabel()));
 
-      if (!item.isNew()) {
-        labelWidget.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            dialog.close();
-            callback.accept(getItem(items, name).getValue());
-          }
-        });
-      }
+      labelWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          dialog.close();
+          callback.accept(getItem(items, name).getValue());
+        }
+      });
 
       createCell(table, r, c, labelWidget, STYLE_LABEL);
       c++;
 
-      BeeImage edit = new BeeImage(Global.getImages().silverEdit());
-      edit.addStyleName(STYLE_EDIT);
-      edit.setTitle("keisti pavadinimą");
+      if (item.isEditable()) {
+        BeeImage edit = new BeeImage(Global.getImages().silverEdit());
+        edit.addStyleName(STYLE_EDIT);
+        edit.setTitle("keisti pavadinimą");
 
-      edit.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          final Item editItem = getItem(items, name);
-          final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
+        edit.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            final Item editItem = getItem(items, name);
+            final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
 
-          Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
-            @Override
-            public void onSuccess(String newValue) {
-              String newLabel = normalizeLabel(newValue);
-              if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
-                editItem.setLabel(newLabel);
-                labelWidget.setHTML(newLabel);
+            Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
+              @Override
+              public void onSuccess(String newValue) {
+                String newLabel = normalizeLabel(newValue);
+                if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
+                  editItem.setLabel(newLabel);
+                  labelWidget.setHTML(newLabel);
 
-                if (!editItem.isNew()) {
                   Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
                       new TextValue(newLabel));
                 }
               }
-            }
-          }, oldLabel, getMaxLabelLength());
-        }
-      });
-
-      createCell(table, r, c, edit, STYLE_EDIT);
-      c++;
-
-      if (item.isNew()) {
-        BeeImage add = new BeeImage(Global.getImages().silverPlus());
-        add.setTitle("išsaugoti");
-
-        add.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            dialog.close();
-            insert(key, getItem(items, name));
+            }, oldLabel, getMaxLabelLength());
           }
         });
 
-        createCell(table, r, c, add, STYLE_ADD);
+        createCell(table, r, c, edit, STYLE_EDIT);
+      }
 
-      } else {
+      c++;
+
+      if (item.isRemovable()) {
         BeeImage delete = new BeeImage(Global.getImages().silverMinus());
         delete.setTitle("pašalinti");
 
@@ -330,11 +337,12 @@ public class Filters {
       if (item.isInitial()) {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_INITIAL);
       }
+      if (item.isPredefined()) {
+        table.getRowFormatter().addStyleName(r, STYLE_ROW_PREDEFINED);
+      }
+
       if (r == activeItemIndex) {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_ACTIVE);
-      }
-      if (item.isNew()) {
-        table.getRowFormatter().addStyleName(r, STYLE_ROW_NEW);
       }
 
       r++;
@@ -440,42 +448,42 @@ public class Filters {
     return maxLabelLength;
   }
 
-  private void insert(String key, final Item item) {
+  private void insert(final String key, FilterDescription filterDescription, boolean predefined) {
     List<BeeColumn> columns =
         Data.getColumns(CommonsConstants.TBL_FILTERS,
             Lists.newArrayList(CommonsConstants.COL_FILTER_USER, CommonsConstants.COL_FILTER_KEY,
                 COL_NAME, COL_LABEL, COL_VALUE));
     List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
-        item.getName(), item.getLabel(), item.getValue());
+        filterDescription.getName(), filterDescription.getLabel(), filterDescription.getValue());
 
-    if (item.isInitial()) {
+    if (filterDescription.isInitial()) {
       columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_INITIAL));
-      values.add(BooleanValue.pack(item.isInitial()));
+      values.add(BooleanValue.pack(filterDescription.isInitial()));
     }
-    if (item.getOrdinal() != null) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, 
+    if (filterDescription.getOrdinal() != null) {
+      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS,
           CommonsConstants.COL_FILTER_ORDINAL));
-      values.add(item.getOrdinal().toString());
+      values.add(filterDescription.getOrdinal().toString());
     }
 
-    if (item.isEditable()) {
+    if (filterDescription.isEditable()) {
       columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_EDITABLE));
-      values.add(BooleanValue.pack(item.isEditable()));
+      values.add(BooleanValue.pack(filterDescription.isEditable()));
     }
-    if (item.isRemovable()) {
+    if (filterDescription.isRemovable()) {
       columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_REMOVABLE));
-      values.add(BooleanValue.pack(item.isRemovable()));
+      values.add(BooleanValue.pack(filterDescription.isRemovable()));
     }
 
-    if (item.isPredefined()) {
+    if (predefined) {
       columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_PREDEFINED));
-      values.add(BooleanValue.pack(item.isPredefined()));
+      values.add(BooleanValue.pack(predefined));
     }
 
     Queries.insert(CommonsConstants.TBL_FILTERS, columns, values, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        item.setId(result.getId());
+        itemsByKey.put(key, createItem(result));
       }
     });
   }

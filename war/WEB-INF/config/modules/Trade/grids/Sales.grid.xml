@@ -6,7 +6,7 @@
   editShowId="true" flexGrow="1" flexShrink="1"
   >
   <columns>
-    <IdColumn name="ID" filterSupplier="id" />
+    <IdColumn name="ID" />
     <DataColumn name="Date" caption="Data" />
     <DataColumn name="Number" />
     <CalcColumn name="Invoice" type="string" caption="Sąskaitos Nr." 

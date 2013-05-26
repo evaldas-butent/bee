@@ -2,6 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -321,7 +322,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case CONFIGURE:
         GridSettings.handle(getGridView().getGridKey(), getGridView().getGrid(),
-            getHeader().asWidget());
+            getHeaderElement());
         break;
 
       case DELETE:
@@ -343,8 +344,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case FILTER:
-        filterManager.handleFilter(getGridView().getGrid(), getMainView().getElement(),
-            new Consumer<Filter>() {
+        filterManager.handleFilter(getGridView().getGridKey(), getGridView().getGrid(),
+            getHeaderElement(), new Consumer<Filter>() {
               @Override
               public void accept(Filter input) {
                 onFilterChange(input);
@@ -613,6 +614,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private GridInterceptor getGridInterceptor() {
     return getGridView().getGridInterceptor();
+  }
+  
+  private Element getHeaderElement() {
+    HeaderView header = getHeader();
+    return (header == null) ? null : header.getElement();
   }
 
   private void onFilterChange(Filter filter) {
