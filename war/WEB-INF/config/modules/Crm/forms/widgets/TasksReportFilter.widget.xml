@@ -20,11 +20,6 @@
       newRowEnabled="false" style="width:200px;" />
   </row>
   <row>
-    <cell colSpan="4">
-      <CheckBox name="hideZeros" text="=hideZeroTimes" checked="true" />
-    </cell>
-  </row>
-  <row>
     <cell colSpan="4" horizontalAlignment="center">
       <FlowPanel>
         <Button name="Filter" text="=doFilter" />

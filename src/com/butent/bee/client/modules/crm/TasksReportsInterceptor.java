@@ -19,12 +19,10 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -46,7 +44,6 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_USER_NAME = "User";
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";
-  private static final String WIDGET_HIDE_ZEROS_NAME = "hideZeros";
   
   private static final int FIRST_DAY_OF_MONTH = 1;
   private static final int MIDNIGHT_HOUR = 0;
@@ -92,12 +89,6 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       if (durationTId != null) {
         durationTId.clearValue();
       }
-
-      InputBoolean hideZeros = (InputBoolean) form.getWidgetByName(WIDGET_HIDE_ZEROS_NAME);
-
-      if (hideZeros != null) {
-        hideZeros.clearValue();
-      }
     }
   }
 
@@ -130,6 +121,9 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           params = CrmKeeper.createArgs(CrmConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
       }
+
+      /* Hiding zero times */
+      params.addQueryItem(CrmConstants.VAR_TASK_DURATION_HIDE_ZEROS, Boolean.TRUE.toString());
 
       InputDate fromDate = (InputDate) form.getWidgetByName(WIDGET_DATE_FROM_NAME);
 
@@ -175,15 +169,6 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       if (durationTId != null) {
         if (!BeeUtils.isEmpty(durationTId.getValue())) {
           params.addQueryItem(CrmConstants.VAR_TASK_DURATION_TYPE, durationTId.getValue().trim());
-        }
-      }
-
-      InputBoolean hideZerosId = (InputBoolean) form.getWidgetByName(WIDGET_HIDE_ZEROS_NAME);
-
-      if (hideZerosId != null) {
-        if (!BeeUtils.isEmpty(hideZerosId.getValue())
-            && BeeUtils.same(hideZerosId.getValue(), BooleanValue.S_TRUE)) {
-          params.addQueryItem(CrmConstants.VAR_TASK_DURATION_HIDE_ZEROS, hideZerosId.getValue());
         }
       }
 
