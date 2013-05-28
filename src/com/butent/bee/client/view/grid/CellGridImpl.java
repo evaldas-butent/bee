@@ -111,6 +111,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
@@ -429,12 +430,15 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         if (!BeeConst.isUndef(index)) {
           caption = LocaleUtils.getLabel(dataCols.get(index));
         }
-
-        if (BeeUtils.isEmpty(caption)) {
-          caption = columnName;
-        }
       }
 
+      String label;
+      if (Captions.isCaption(caption)) {
+        label = caption;
+      } else {
+        label = BeeUtils.notEmpty(LocaleUtils.maybeLocalize(columnDescr.getLabel()), columnName);
+      }
+      
       CellSource cellSource;
 
       switch (colType) {
@@ -477,7 +481,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
             renderColumns, dataCols, cellSource, columnDescr.getRelation());
       }
-      
+
       FilterSupplierType filterSupplierType = columnDescr.getFilterSupplierType();
 
       CellType cellType = columnDescr.getCellType();
@@ -505,7 +509,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
               column.setInstantKarma(true);
             }
 
-            editableColumn = new EditableColumn(viewName, dataCols, dataIndex, column, caption,
+            editableColumn = new EditableColumn(viewName, dataCols, dataIndex, column, label,
                 columnDescr);
             editableColumn.setNotificationListener(this);
             getEditableColumns().put(BeeUtils.normalize(columnName), editableColumn);
@@ -593,7 +597,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           headerCaption = interceptor.getColumnCaption(columnName);
         }
         if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
-          headerCaption = caption;
+          headerCaption = BeeUtils.notEmpty(caption, columnName);
         }
 
         header = new ColumnHeader(columnName, headerCaption);
@@ -625,8 +629,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             columnDescr.getFilterOptions());
       }
 
-      ColumnInfo columnInfo = getGrid().addColumn(columnName, cellSource, column, header, footer,
-          filterSupplier, columnDescr.getVisible());
+      ColumnInfo columnInfo = getGrid().addColumn(columnName, label, cellSource, column,
+          header, footer, filterSupplier, columnDescr.getVisible());
       columnInfo.initProperties(columnDescr, gridDescr, dataCols);
     }
 

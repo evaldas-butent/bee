@@ -84,7 +84,6 @@ import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridComponentDescription;
@@ -106,8 +105,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     HasEditStartHandlers, HasEnabled, HasActiveRow, RequiresResize, VisibilityChangeEvent.Handler,
     SettingsChangeEvent.HasSettingsChangeHandlers {
 
-  public class ColumnInfo implements HasValueType, Flexible, HasCaption {
+  public class ColumnInfo implements HasValueType, Flexible {
     private final String columnId;
+    private final String label;
 
     private final CellSource source;
 
@@ -116,8 +116,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private final ColumnFooter footer;
 
     private final AbstractFilterSupplier filterSupplier;
-
-    private String caption = null;
 
     private int initialWidth = BeeConst.UNDEF;
     private int minWidth = BeeConst.UNDEF;
@@ -145,10 +143,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     
     private boolean hidable = true;
 
-    private ColumnInfo(String columnId, CellSource source, AbstractColumn<?> column,
+    private ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
         ColumnHeader header, ColumnFooter footer, AbstractFilterSupplier filterSupplier) {
 
       this.columnId = columnId;
+      this.label = label;
       this.source = source;
 
       this.column = column;
@@ -173,11 +172,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     @Override
     public boolean equals(Object obj) {
       return (obj instanceof ColumnInfo) && columnId.equals(((ColumnInfo) obj).columnId);
-    }
-
-    @Override
-    public String getCaption() {
-      return (getHeader() == null) ? caption : getHeader().getCaption();
     }
 
     @Override
@@ -244,7 +238,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     String getLabel() {
-      return BeeUtils.notEmpty(getCaption(), getColumnId());
+      return label;
     }
     
     List<String> getSortBy() {
@@ -255,10 +249,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         List<? extends IsColumn> dataColumns) {
 
       Assert.notNull(columnDescription);
-
-      if (columnDescription.getCaption() != null) {
-        setCaption(columnDescription.getCaption());
-      }
 
       if (columnDescription.getColType().isReadOnly()
           || BeeUtils.isTrue(columnDescription.getReadOnly())) {
@@ -522,10 +512,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     private void setBodyWidth(int bodyWidth) {
       this.bodyWidth = bodyWidth;
-    }
-
-    private void setCaption(String caption) {
-      this.caption = caption;
     }
 
     private void setCellResizable(boolean cellResizable) {
@@ -1273,17 +1259,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
-    return addColumn(columnId, source, column, header, null, null, true);
+    return addColumn(columnId, columnId, source, column, header, null, null, true);
   }
 
-  public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> column,
-      ColumnHeader header, ColumnFooter footer, AbstractFilterSupplier filterSupplier,
-      Boolean visible) {
+  public ColumnInfo addColumn(String columnId, String label, CellSource source,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      AbstractFilterSupplier filterSupplier, Boolean visible) {
 
     Assert.notEmpty(columnId);
     Assert.notNull(column);
 
-    ColumnInfo columnInfo = new ColumnInfo(columnId, source, column, header, footer,
+    ColumnInfo columnInfo = new ColumnInfo(columnId, label, source, column, header, footer,
         filterSupplier);
     if (BeeUtils.isTrue(visible)) {
       columnInfo.setHidable(false);
@@ -1533,14 +1519,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public int getChildrenHeight() {
     return getHeaderHeight() + getBodyHeight() + getFooterHeight();
-  }
-
-  public String getColumnCaption(String columnId) {
-    ColumnInfo info = getColumnInfo(columnId);
-    if (info == null) {
-      return columnId;
-    }
-    return BeeUtils.notEmpty(info.getCaption(), columnId);
   }
 
   public int getColumnCount() {

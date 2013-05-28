@@ -20,10 +20,10 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -122,7 +122,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     addStyleName(STYLE_CONTAINER);
 
     captionWidget.addStyleName(STYLE_CAPTION);
-    if (!BeeUtils.isEmpty(caption) && !BeeConst.STRING_MINUS.equals(caption)) {
+    if (Captions.isCaption(caption)) {
       setCaption(caption);
     }
     add(captionWidget);
@@ -141,8 +141,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverFilterRemove(), Action.REMOVE_FILTER,
-          hiddenActions));
+      add(createControl(Global.getImages().closeSmall(), Action.REMOVE_FILTER, hiddenActions));
     }
     
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {

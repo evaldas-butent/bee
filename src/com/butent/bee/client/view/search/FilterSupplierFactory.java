@@ -28,10 +28,6 @@ public class FilterSupplierFactory {
           supplier = new EnumFilterSupplier(viewName, column, options, itemKey);
           break;
 
-        case FLAG:
-          supplier = new FlagFilterSupplier(viewName, column, options);
-          break;
-          
         case ID:
           supplier = new IdFilterSupplier(viewName, column, options);
           break;
@@ -71,6 +67,7 @@ public class FilterSupplierFactory {
     if (supplier == null && column != null) {
       switch (column.getType()) {
         case BOOLEAN:
+          supplier = new BooleanFilterSupplier(viewName, column, options);
           break;
 
         case DATE:

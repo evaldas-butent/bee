@@ -6,7 +6,8 @@
   >
   <body height="30" /> 
   <columns>
-    <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false" width="30" horizontalAlignment="center"/>
+    <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false"
+      width="30" horizontalAlignment="center"/>
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 
@@ -23,7 +24,8 @@
     <DataColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" sortable="false" horizontalAlignment="center">
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-">
       <renderer type="flag" />
     </CalcColumn>
   </columns>

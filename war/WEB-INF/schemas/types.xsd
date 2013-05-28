@@ -187,7 +187,6 @@
       <xs:enumeration value="range" />
       <xs:enumeration value="enum" />
       <xs:enumeration value="word" />
-      <xs:enumeration value="flag" />
       <xs:enumeration value="star" />
       <xs:enumeration value="id" />
     </xs:restriction>

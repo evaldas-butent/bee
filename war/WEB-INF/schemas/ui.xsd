@@ -420,7 +420,6 @@
     <xs:attribute name="editKey" type="xs:int" />
     <xs:attribute name="editSource" type="type:nameType" />
     <xs:attribute name="editViewName" type="type:nameType" />
-    <xs:attribute name="label" type="xs:string" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

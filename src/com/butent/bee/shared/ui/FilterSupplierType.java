@@ -9,7 +9,6 @@ public enum FilterSupplierType {
   RANGE("range"),
   ENUM("enum"),
   WORD("word"),
-  FLAG("flag"),
   STAR("star"),
   ID("id");
 

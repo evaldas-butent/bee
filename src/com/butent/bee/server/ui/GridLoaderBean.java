@@ -532,6 +532,9 @@ public class GridLoaderBean {
 
         if (BeeUtils.same(key, UiConstants.ATTR_CAPTION)) {
           dst.setCaption(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_LABEL)) {
+          dst.setLabel(value.trim());
+
         } else if (BeeUtils.same(key, UiConstants.ATTR_READ_ONLY)) {
           dst.setReadOnly(BeeUtils.toBooleanOrNull(value));
 

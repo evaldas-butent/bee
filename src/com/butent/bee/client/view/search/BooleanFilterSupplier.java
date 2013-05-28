@@ -9,9 +9,9 @@ import com.butent.bee.shared.data.filter.Filter;
 
 import java.util.List;
 
-public class FlagFilterSupplier extends AbstractFilterSupplier {
+public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
-  public FlagFilterSupplier(String viewName, BeeColumn column, String options) {
+  public BooleanFilterSupplier(String viewName, BeeColumn column, String options) {
     super(viewName, column, options);
   }
 
@@ -19,12 +19,12 @@ public class FlagFilterSupplier extends AbstractFilterSupplier {
   public String getLabel() {
     return null;
   }
-  
+
   @Override
   public String getValue() {
     return null;
   }
-  
+
   @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
   }
@@ -33,11 +33,11 @@ public class FlagFilterSupplier extends AbstractFilterSupplier {
   public Filter parse(String value) {
     return null;
   }
-  
+
   @Override
   public void setValue(String value) {
   }
-  
+
   @Override
   protected List<SupplierAction> getActions() {
     return Lists.newArrayList();

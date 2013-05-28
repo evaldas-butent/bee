@@ -9,13 +9,14 @@
   >
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-">
+      caption="-" label="=taskColumnMode">
       <filter name="new" label="=taskFilterNew" value="0" />
       <filter name="updated" label="=taskFilterUpdated" value="1" />
       <filter name="new_upd" label="=taskFilterNewOrUpdated" value="2" />
     </CalcColumn>
 
-    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20">
+    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
+      label="=taskColumnStar" filterSupplier="star">
       <filter name="starred" label="=taskFilterStarred" value="*" />
       <renderer type="star" />
     </PropColumn>

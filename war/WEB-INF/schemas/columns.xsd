@@ -36,6 +36,7 @@
     </xs:sequence>
     <xs:attribute name="name" type="columnName" use="required" />
     <xs:attribute name="caption" type="xs:string" />
+    <xs:attribute name="label" type="xs:string" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="width" type="columnWidth" />
     <xs:attribute name="minWidth" type="columnWidth" />

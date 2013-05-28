@@ -49,6 +49,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -61,7 +62,7 @@ import java.util.List;
  */
 
 public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler,
-    HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler {
+    HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler, HasCaption {
 
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
 
@@ -201,6 +202,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return cellValidationBus.fireCellValidation(event);
   }
 
+  @Override
   public String getCaption() {
     return caption;
   }

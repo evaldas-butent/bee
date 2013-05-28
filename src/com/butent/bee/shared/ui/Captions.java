@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -96,6 +97,10 @@ public class Captions {
 
   public static String getValueCaption(String viewName, String columnid, int index) {
     return getCaption(getColumnKey(viewName, columnid), index);
+  }
+  
+  public static boolean isCaption(String caption) {
+    return !BeeUtils.isEmpty(caption) && !BeeConst.STRING_MINUS.equals(caption);
   }
 
   public static boolean isColumnRegistered(String viewName, String columnid) {

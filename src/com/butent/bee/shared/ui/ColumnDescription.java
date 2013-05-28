@@ -69,7 +69,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
    */
 
   private enum Serial {
-    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
+    COL_TYPE, NAME, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
@@ -92,6 +92,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private ColType colType;
   private String name;
   private String caption = null;
+  private String label = null;
   private Boolean readOnly = null;
   private Integer width = null;
 
@@ -194,6 +195,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case CAPTION:
           setCaption(value);
+          break;
+        case LABEL:
+          setLabel(value);
           break;
         case READ_ONLY:
           setReadOnly(BeeUtils.toBooleanOrNull(value));
@@ -420,6 +424,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Col Type", getColType(),
         "Name", getName(),
         "Caption", getCaption(),
+        "Label", getLabel(),
         "Read Only", getReadOnly(),
         "Width", getWidth(),
         "Source", getSource(),
@@ -527,6 +532,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public String getItemKey() {
     return itemKey;
+  }
+
+  public String getLabel() {
+    return label;
   }
 
   @Override
@@ -661,6 +670,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case CAPTION:
           arr[i++] = getCaption();
+          break;
+        case LABEL:
+          arr[i++] = getLabel();
           break;
         case READ_ONLY:
           arr[i++] = getReadOnly();
@@ -871,6 +883,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setItemKey(String itemKey) {
     this.itemKey = itemKey;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
   }
 
   @Override

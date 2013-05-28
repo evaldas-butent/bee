@@ -13,7 +13,8 @@
       </selectorColumn>
     </RelColumn>
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" sortable="false" horizontalAlignment="center">
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-">
       <renderer type="flag" />
     </CalcColumn>
   </columns>
