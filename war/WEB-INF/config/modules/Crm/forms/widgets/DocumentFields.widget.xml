@@ -37,10 +37,17 @@
   </row>
 
   <row>
-    <Label text="=documentSent" />
-    <InputDateTime source="Sent" />
     <Label text="=documentReceived" horizontalAlignment="right" />
     <InputDateTime source="Received" />
+    <Label text="=documentSent" />
+    <InputDateTime source="Sent" />
+  </row>
+  <row>
+    <cell><text /></cell>
+    <cell><text /></cell>
+    <cell><text /></cell>
+  
+    <CheckBox source="Returned" text="=documentReturned" />
   </row>
 
   <row>

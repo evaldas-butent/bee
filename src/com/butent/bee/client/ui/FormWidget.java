@@ -1472,17 +1472,13 @@ public enum FormWidget {
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
       String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
-      ok = !BeeUtils.isEmpty(text);
-      if (ok) {
-        table.setText(row, col, text);
-      }
+      table.setText(row, col, text);
+      ok = true;
 
     } else if (BeeUtils.same(tag, TAG_HTML)) {
       String html = XmlUtils.getText(element);
-      ok = !BeeUtils.isEmpty(html);
-      if (ok) {
-        table.setHTML(row, col, html);
-      }
+      table.setHTML(row, col, html);
+      ok = true;
 
     } else {
       IdentifiableWidget widget = createIfWidget(element, viewName, columns, wdcb, widgetCallback);
