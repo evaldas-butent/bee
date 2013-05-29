@@ -11,9 +11,8 @@
     <String name="Subject" precision="255" />
     <Numeric name="AttachmentCount" precision="2" />
   </Fields>
-  <Keys>
-    <Key>
-      <KeyField>Date</KeyField>
-    </Key>
-  </Keys>
+
+  <Indexes>
+    <Index fields="Date" />
+  </Indexes>
 </Table>

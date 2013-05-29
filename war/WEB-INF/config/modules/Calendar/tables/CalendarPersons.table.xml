@@ -11,10 +11,8 @@
     <Boolean name="Creator" />
     <Boolean name="Organizer" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Calendar</KeyField>
-      <KeyField>CompanyPerson</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Calendar CompanyPerson" />
+  </Constraints>
 </Table>

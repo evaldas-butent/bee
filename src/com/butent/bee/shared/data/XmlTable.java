@@ -146,11 +146,11 @@ public class XmlTable {
   /**
    * Handles table key information storage in XML structure.
    */
-  @XmlRootElement(name = "Key", namespace = DataUtils.TABLE_NAMESPACE)
-  public static class XmlKey {
+  @XmlRootElement(name = "Index", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlIndex {
     @XmlAttribute
     public boolean unique;
-    @XmlElement(name = "KeyField", namespace = DataUtils.TABLE_NAMESPACE)
+    @XmlAttribute
     public List<String> fields;
 
     @Override
@@ -164,7 +164,7 @@ public class XmlTable {
       if (getClass() != obj.getClass()) {
         return false;
       }
-      XmlKey other = (XmlKey) obj;
+      XmlIndex other = (XmlIndex) obj;
 
       if (fields == null) {
         if (other.fields != null) {
@@ -187,6 +187,40 @@ public class XmlTable {
       result = prime * result + (unique ? 1231 : 1237);
       return result;
     }
+  }
+
+  @XmlSeeAlso({XmlCheck.class, XmlUnique.class, XmlReference.class})
+  public abstract static class XmlConstraint {
+  }
+
+  @XmlRootElement(name = "Check", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlCheck extends XmlConstraint {
+    @XmlElement(name = "Generic", namespace = DataUtils.TABLE_NAMESPACE)
+    public String generic;
+    @XmlElement(name = "PostgreSql", namespace = DataUtils.TABLE_NAMESPACE)
+    public String postgreSql;
+    @XmlElement(name = "MsSql", namespace = DataUtils.TABLE_NAMESPACE)
+    public String msSql;
+    @XmlElement(name = "Oracle", namespace = DataUtils.TABLE_NAMESPACE)
+    public String oracle;
+  }
+
+  @XmlRootElement(name = "Unique", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlUnique extends XmlConstraint {
+    @XmlAttribute
+    public List<String> fields;
+  }
+
+  @XmlRootElement(name = "Reference", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlReference extends XmlConstraint {
+    @XmlAttribute
+    public List<String> fields;
+    @XmlAttribute
+    public String refTable;
+    @XmlAttribute
+    public List<String> refFields;
+    @XmlAttribute
+    public String cascade;
   }
 
   @XmlRootElement(name = "Trigger", namespace = DataUtils.TABLE_NAMESPACE)
@@ -232,9 +266,13 @@ public class XmlTable {
   @XmlElementRef
   public List<XmlField> extFields;
 
-  @XmlElementWrapper(name = "Keys", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementWrapper(name = "Indexes", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
-  public Set<XmlKey> keys;
+  public Set<XmlIndex> indexes;
+
+  @XmlElementWrapper(name = "Constraints", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementRef
+  public Set<XmlConstraint> constraints;
 
   @XmlElementWrapper(name = "Triggers", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElement(name = "Trigger", namespace = DataUtils.TABLE_NAMESPACE)
@@ -282,13 +320,13 @@ public class XmlTable {
           }
         }
       }
-      if (!BeeUtils.isEmpty(otherTable.keys)) {
-        for (XmlKey key : otherTable.keys) {
-          if (keys == null || !keys.contains(key)) {
-            if (diff.keys == null) {
-              diff.keys = Sets.newHashSet(key);
+      if (!BeeUtils.isEmpty(otherTable.indexes)) {
+        for (XmlIndex key : otherTable.indexes) {
+          if (indexes == null || !indexes.contains(key)) {
+            if (diff.indexes == null) {
+              diff.indexes = Sets.newHashSet(key);
             } else {
-              diff.keys.add(key);
+              diff.indexes.add(key);
             }
             upd = true;
           }
@@ -339,11 +377,11 @@ public class XmlTable {
           extFields.add(field);
         }
       }
-      if (!BeeUtils.isEmpty(diff.keys)) {
-        if (keys == null) {
-          keys = Sets.newHashSet();
+      if (!BeeUtils.isEmpty(diff.indexes)) {
+        if (indexes == null) {
+          indexes = Sets.newHashSet();
         }
-        keys.addAll(diff.keys);
+        indexes.addAll(diff.indexes);
       }
     }
   }

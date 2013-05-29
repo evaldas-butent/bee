@@ -9,10 +9,8 @@
     <String name="Name" precision="30" notNull="true"/>
     <Relation name="Parent" relation="SparePartTypes" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Parent</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Parent Name" />
+  </Constraints>
 </Table>

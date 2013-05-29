@@ -10,8 +10,8 @@ import org.junit.Test;
 public class TestXmlTable {
   @Test
   public void testRead() {
-    String resource = Config.getPath("modules/Transport/" + SysObject.TABLE.getPath() + "/"
-        + SysObject.TABLE.getFileName("TripRoutes"), true);
+    String resource = Config.getPath("modules/Mail/" + SysObject.TABLE.getPath() + "/"
+        + SysObject.TABLE.getFileName("Attachments"), true);
     String schemaSource = SysObject.TABLE.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {

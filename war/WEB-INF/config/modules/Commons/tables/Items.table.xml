@@ -15,9 +15,8 @@
     <Numeric name="VatPercent" precision="3" label="PVM %" />
     <Boolean name="IsService" />
   </Fields>
-  <Keys>
-    <Key>
-      <KeyField>IsService</KeyField>
-    </Key>
-  </Keys>
+
+  <Indexes>
+    <Index fields="IsService" />
+  </Indexes>
 </Table>

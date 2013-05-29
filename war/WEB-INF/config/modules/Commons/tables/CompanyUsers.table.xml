@@ -10,10 +10,8 @@
     <Relation name="User" relation="Users" notNull="true" label="Atsakingas vartotojas"/>
     <Relation name="Responsibility" relation="Responsibilities" notNull="true" label="Atsakomybė"/>
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Company</KeyField>
-      <KeyField>User</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Company User" />
+  </Constraints>
 </Table>

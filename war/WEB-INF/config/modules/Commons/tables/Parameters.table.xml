@@ -13,10 +13,8 @@
     <Boolean name="UserMode" />
     <Text name="Value" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Module</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+ 
+   <Constraints>
+    <Unique fields="Module Name" />
+  </Constraints>
 </Table>

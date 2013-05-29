@@ -9,10 +9,8 @@
     <Integer name="Type" notNull="true" label="Tipas" />
     <String name="Name" precision="100" notNull="true" label="Objektas" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Type</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Type Name" />
+  </Constraints>
 </Table>

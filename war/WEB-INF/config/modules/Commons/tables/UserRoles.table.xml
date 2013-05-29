@@ -9,10 +9,8 @@
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
     <Relation name="Role" notNull="true" relation="Roles" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>User</KeyField>
-      <KeyField>Role</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="User Role" />
+  </Constraints>
 </Table>

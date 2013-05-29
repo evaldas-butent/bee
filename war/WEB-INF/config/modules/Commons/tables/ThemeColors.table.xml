@@ -8,10 +8,8 @@
     <Relation name="Theme" notNull="true" relation="Themes" cascade="DELETE" />
     <Relation name="Color" notNull="true" relation="Colors" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Theme</KeyField>
-      <KeyField>Color</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Theme Color" />
+  </Constraints>
 </Table>

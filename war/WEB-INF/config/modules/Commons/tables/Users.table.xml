@@ -9,12 +9,7 @@
     <String name="Login" precision="30" notNull="true" unique="true" />
     <String name="Password" precision="64" />
     <Text name="Properties" />
-    <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true" />
     <Text name="Host" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>CompanyPerson</KeyField>
-    </Key>
-  </Keys>
 </Table>

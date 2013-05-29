@@ -8,10 +8,8 @@
     <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" />
     <Relation name="Activity" notNull="true" relation="CompanyActivities" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Company</KeyField>
-      <KeyField>Activity</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Company Activity" />
+  </Constraints>
 </Table>

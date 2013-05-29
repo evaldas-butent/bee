@@ -17,10 +17,17 @@
     <xs:sequence>
       <xs:element name="Fields" type="fields" minOccurs="0" maxOccurs="1" />
       <xs:element name="Extensions" type="fields" minOccurs="0" maxOccurs="1" />
-      <xs:element name="Keys" minOccurs="0" maxOccurs="1">
+      <xs:element name="Constraints" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="Key" type="keyType" maxOccurs="unbounded" />
+            <xs:element ref="constraint" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Indexes" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Index" type="indexType" maxOccurs="unbounded" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -50,6 +57,11 @@
   </xs:complexType>
 
   <xs:element name="field" type="fieldType" abstract="true" />
+  <xs:element name="constraint" abstract="true" />
+
+  <xs:element name="Check" type="checkType" substitutionGroup="constraint" />
+  <xs:element name="Unique" type="uniqueType" substitutionGroup="constraint" />
+  <xs:element name="Reference" type="referenceType" substitutionGroup="constraint" />
 
   <xs:element name="Boolean" type="booleanType" substitutionGroup="field" />
   <xs:element name="Integer" type="integerType" substitutionGroup="field" />
@@ -168,10 +180,34 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="keyType">
-    <xs:sequence>
-      <xs:element name="KeyField" type="type:fieldNameType" maxOccurs="unbounded" />
-    </xs:sequence>
+  <xs:simpleType name="fieldListType">
+    <xs:list itemType="type:fieldNameType" />
+  </xs:simpleType>
+
+  <xs:complexType name="checkType">
+    <xs:choice>
+      <xs:sequence>
+        <xs:element name="Generic" type="xs:string" />
+        <xs:element name="PostgreSql" type="xs:string" minOccurs="0" />
+        <xs:element name="MsSql" type="xs:string" minOccurs="0" />
+        <xs:element name="Oracle" type="xs:string" minOccurs="0" />
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="uniqueType">
+    <xs:attribute name="fields" type="fieldListType" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="referenceType">
+    <xs:attribute name="fields" type="fieldListType" use="required" />
+    <xs:attribute name="refTable" type="type:tableNameType" use="required" />
+    <xs:attribute name="refFields" type="fieldListType" />
+    <xs:attribute name="cascade" type="cascadeType" />
+  </xs:complexType>
+
+  <xs:complexType name="indexType">
+    <xs:attribute name="fields" type="fieldListType" use="required" />
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
 

@@ -9,13 +9,12 @@
     <Relation name="Address" relation="Emails" notNull="true" />
     <String name="Type" precision="10" notNull="true" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Message</KeyField>
-      <KeyField>Address</KeyField>
-    </Key>
-    <Key>
-      <KeyField>Type</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Message Address" />
+  </Constraints>
+
+  <Indexes>
+    <Index fields="Type" />
+  </Indexes>
 </Table>

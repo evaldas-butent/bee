@@ -14,11 +14,8 @@
 
     <Text name="Comment" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Appointment</KeyField>
-      <KeyField>Attendee</KeyField>
-    </Key>
-  </Keys>
-
+  
+  <Constraints>
+    <Unique fields="Appointment Attendee" />
+  </Constraints>
 </Table>

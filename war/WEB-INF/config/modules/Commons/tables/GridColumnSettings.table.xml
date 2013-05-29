@@ -33,10 +33,7 @@
     <String name="FooterFont" precision="60" />
   </Fields>
   
-  <Keys>
-    <Key unique="true">
-      <KeyField>GridSetting</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+  <Constraints>
+    <Unique fields="GridSetting Name" />
+  </Constraints>
 </Table>

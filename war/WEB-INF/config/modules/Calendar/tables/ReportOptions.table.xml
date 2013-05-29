@@ -19,10 +19,8 @@
     <Text name="AttendeeTypes"/>
     <Text name="Attendees"/>
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>User</KeyField>
-      <KeyField>Report</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="User Report" />
+  </Constraints>
 </Table>

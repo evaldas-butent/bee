@@ -77,25 +77,40 @@ public class SqlUtils {
     return contains(field(source, field), value);
   }
 
-  public static IsQuery createForeignKey(String table, String name, String field,
-      String refTable, String refField, SqlKeyword cascade) {
+  public static IsQuery createCheck(String table, String name, String expression) {
+    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
+        ImmutableMap.of("table", name(table), "name", name(name), "type", SqlKeyword.CHECK,
+            "expression", expression));
+  }
 
-    Map<String, Object> params = getConstraintMap(SqlKeyword.FOREIGN_KEY, table, name, field);
+  public static IsQuery createForeignKey(String table, String name, List<String> fields,
+      String refTable, List<String> refFields, SqlKeyword cascade) {
+
+    Map<String, Object> params = getConstraintMap(SqlKeyword.FOREIGN_KEY, table, name, fields);
     params.put("refTable", name(refTable));
-    params.put("refFields", name(refField));
+
+    List<Object> refFlds = Lists.newArrayList();
+    for (String fld : refFields) {
+      if (!BeeUtils.isEmpty(refFlds)) {
+        refFlds.add(", ");
+      }
+      refFlds.add(name(fld));
+    }
+    params.put("refFields", expression(refFlds.toArray()));
     params.put("cascade", cascade);
 
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT, params);
   }
 
-  public static IsQuery createIndex(boolean isUnique, String table, String name, String... fields) {
+  public static IsQuery createIndex(String table, String name, List<String> fields,
+      boolean isUnique) {
     Map<String, Object> params = getConstraintMap(null, table, name, fields);
     params.put("isUnique", isUnique);
 
     return new SqlCommand(SqlKeyword.CREATE_INDEX, params);
   }
 
-  public static IsQuery createPrimaryKey(String table, String name, String... fields) {
+  public static IsQuery createPrimaryKey(String table, String name, List<String> fields) {
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
         getConstraintMap(SqlKeyword.PRIMARY_KEY, table, name, fields));
   }
@@ -119,6 +134,22 @@ public class SqlUtils {
     params.put("scope", scope);
 
     return new SqlCommand(SqlKeyword.CREATE_TRIGGER, params);
+  }
+
+  public static IsQuery createUniqueKey(String table, String name, List<String> fields) {
+    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
+        getConstraintMap(SqlKeyword.UNIQUE, table, name, fields));
+  }
+
+  public static IsQuery dbConstraints(String dbName, String dbSchema, String table,
+      SqlKeyword... types) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("dbName", dbName);
+    params.put("dbSchema", dbSchema);
+    params.put("table", table);
+    params.put("keyTypes", types);
+
+    return new SqlCommand(SqlKeyword.DB_CONSTRAINTS, params);
   }
 
   public static IsQuery dbFields(String dbName, String dbSchema, String table) {
@@ -147,16 +178,6 @@ public class SqlUtils {
     params.put("table", table);
 
     return new SqlCommand(SqlKeyword.DB_INDEXES, params);
-  }
-
-  public static IsQuery dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {
-    Map<String, Object> params = Maps.newHashMap();
-    params.put("dbName", dbName);
-    params.put("dbSchema", dbSchema);
-    params.put("table", table);
-    params.put("keyTypes", types);
-
-    return new SqlCommand(SqlKeyword.DB_KEYS, params);
   }
 
   public static IsQuery dbName() {
@@ -699,26 +720,20 @@ public class SqlUtils {
   }
 
   private static Map<String, Object> getConstraintMap(SqlKeyword type, String table, String name,
-      String... fields) {
-    IsExpression fldList;
+      List<String> fields) {
 
-    if (ArrayUtils.isEmpty(fields)) {
-      fldList = name(name);
-    } else {
-      List<Object> flds = Lists.newArrayList();
-      for (String fld : fields) {
-        if (!BeeUtils.isEmpty(flds)) {
-          flds.add(", ");
-        }
-        flds.add(name(fld));
+    List<Object> flds = Lists.newArrayList();
+    for (String fld : fields) {
+      if (!BeeUtils.isEmpty(flds)) {
+        flds.add(", ");
       }
-      fldList = expression(flds.toArray());
+      flds.add(name(fld));
     }
     Map<String, Object> params = Maps.newHashMap();
     params.put("table", name(table));
     params.put("name", name(name));
     params.put("type", type);
-    params.put("fields", fldList);
+    params.put("fields", expression(flds.toArray()));
     return params;
   }
 

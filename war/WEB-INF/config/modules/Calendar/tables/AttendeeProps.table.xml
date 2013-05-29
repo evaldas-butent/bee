@@ -8,10 +8,8 @@
     <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" />
     <Relation name="Property" notNull="true" relation="ExtendedProperties" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Attendee</KeyField>
-      <KeyField>Property</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Attendee Property" />
+  </Constraints>
 </Table>

@@ -30,10 +30,8 @@
 
     <Integer name="ActiveView" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>User</KeyField>
-      <KeyField>Calendar</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="User Calendar" />
+  </Constraints>
 </Table>

@@ -8,10 +8,8 @@
     <Relation name="Item" notNull="true" relation="Items" cascade="DELETE" />
     <Relation name="Category" notNull="true" relation="CategoryTree" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Item</KeyField>
-      <KeyField>Category</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Item Category" />
+  </Constraints>
 </Table>

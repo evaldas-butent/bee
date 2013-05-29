@@ -17,10 +17,7 @@
     <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
   </Fields>
 
-  <Keys>
-    <Key unique="true">
-      <KeyField>UserCalendar</KeyField>
-      <KeyField>Attendee</KeyField>
-    </Key>
-  </Keys>
+  <Constraints>
+    <Unique fields="UserCalendar Attendee" />
+  </Constraints>
 </Table>

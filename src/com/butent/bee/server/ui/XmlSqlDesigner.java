@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
-import com.butent.bee.shared.data.XmlTable.XmlKey;
+import com.butent.bee.shared.data.XmlTable.XmlIndex;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -233,8 +233,8 @@ public class XmlSqlDesigner {
             }
           }
         }
-        if (!BeeUtils.isEmpty(xmlTable.keys)) {
-          for (XmlKey xmlKey : xmlTable.keys) {
+        if (!BeeUtils.isEmpty(xmlTable.indexes)) {
+          for (XmlIndex xmlKey : xmlTable.indexes) {
             table.keys.add(new DataKey(xmlKey.unique ? KeyType.UNIQUE : KeyType.INDEX,
                 xmlKey.fields.toArray(new String[0])));
           }

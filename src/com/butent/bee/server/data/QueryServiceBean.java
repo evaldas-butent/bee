@@ -115,6 +115,11 @@ public class QueryServiceBean {
   @EJB
   ParamHolderBean prm;
 
+  public SimpleRowSet dbConstraints(String dbName, String dbSchema, String table,
+      SqlKeyword... types) {
+    return getData(SqlUtils.dbConstraints(dbName, dbSchema, table, types));
+  }
+
   public SqlEngine dbEngine(String dsn) {
     SqlEngine sqlEngine = null;
 
@@ -155,10 +160,6 @@ public class QueryServiceBean {
 
   public SimpleRowSet dbIndexes(String dbName, String dbSchema, String table) {
     return getData(SqlUtils.dbIndexes(dbName, dbSchema, table));
-  }
-
-  public SimpleRowSet dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {
-    return getData(SqlUtils.dbKeys(dbName, dbSchema, table, types));
   }
 
   public String dbName() {
@@ -519,7 +520,7 @@ public class QueryServiceBean {
 
   public void sqlIndex(String tmp, String... fields) {
     Assert.state(!sys.isTable(tmp), "Can't index a base table: " + tmp);
-    updateData(SqlUtils.createIndex(false, tmp, SqlUtils.uniqueName(), fields));
+    updateData(SqlUtils.createIndex(tmp, SqlUtils.uniqueName(), Lists.newArrayList(fields), false));
   }
 
   public String sqlValue(String source, String field, long id) {

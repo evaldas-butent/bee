@@ -10,11 +10,8 @@
     <Relation name="Role" relation="Roles" cascade="DELETE" />
     <Integer name="State" notNull="true" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Object</KeyField>
-      <KeyField>Role</KeyField>
-      <KeyField>State</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Object Role State" />
+  </Constraints>
 </Table>

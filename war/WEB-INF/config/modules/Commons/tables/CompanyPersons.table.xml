@@ -11,10 +11,8 @@
     <Relation name="Position" relation="Positions" label="Pareigos" />
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Company</KeyField>
-      <KeyField>Person</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Company Person" />
+  </Constraints>
 </Table>

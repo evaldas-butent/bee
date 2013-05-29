@@ -10,10 +10,8 @@
     <Integer name="Quantity" notNull="true" label="Kiekis" />
     <Numeric name="Rate" precision="10" scale="4" notNull="true" label="Kursas" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Currency</KeyField>
-      <KeyField>Date</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Currency Date" />
+  </Constraints>
 </Table>

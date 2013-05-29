@@ -35,7 +35,6 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -56,6 +55,34 @@ import java.util.Set;
 @SuppressWarnings("hiding")
 public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslations,
     HasExtendedInfo {
+
+  public class BeeCheck {
+    private final String tblName;
+    private final String name;
+    private final String expression;
+
+    private BeeCheck(String tblName, String expression) {
+      this.tblName = tblName;
+      this.name = CHECK_PREFIX + Codec.crc32(tblName + expression);
+      this.expression = expression;
+    }
+
+    public String getExpression() {
+      return expression;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public BeeTable getOwner() {
+      return BeeTable.this;
+    }
+
+    public String getTable() {
+      return tblName;
+    }
+  }
 
   public class BeeField {
     private final String name;
@@ -114,7 +141,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           break;
       }
       if (isUnique()) {
-        addKey(true, getStorageTable(), this.getName());
+        addUniqueKey(getStorageTable(), Lists.newArrayList(this.getName()));
       }
     }
 
@@ -179,82 +206,28 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public class BeeForeignKey {
     private final String tblName;
     private final String name;
-    private final String keyField;
+    private final List<String> keyFields;
+    private final List<String> refFields;
     private final String refTable;
     private final SqlKeyword cascade;
 
-    private BeeForeignKey(String tblName, String keyField, String refTable, SqlKeyword cascade) {
-      Assert.notEmpty(tblName);
-      Assert.notEmpty(keyField);
-      Assert.notEmpty(refTable);
+    private BeeForeignKey(String tblName, List<String> fields, String refTable,
+        List<String> refFields, SqlKeyword cascade) {
 
       this.tblName = tblName;
-      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(tblName + keyField + refTable + cascade);
-      this.keyField = keyField;
+      this.keyFields = fields;
       this.refTable = refTable;
+      this.refFields = refFields;
       this.cascade = cascade;
+      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(tblName + BeeUtils.join("", fields) + refTable
+          + BeeUtils.join("", refFields) + cascade);
     }
 
     public SqlKeyword getCascade() {
       return cascade;
     }
 
-    public String getKeyField() {
-      return keyField;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public BeeTable getOwner() {
-      return BeeTable.this;
-    }
-
-    public String getRefTable() {
-      return refTable;
-    }
-
-    public String getTable() {
-      return tblName;
-    }
-  }
-
-  public class BeeKey {
-    private final String tblName;
-    private final String name;
-    private final KeyTypes keyType;
-    private final String[] keyFields;
-
-    private BeeKey(KeyTypes keyType, String tblName, String... keyFields) {
-      Assert.notEmpty(tblName);
-      Assert.notNull(keyFields);
-
-      this.tblName = tblName;
-      String keyName = getTable();
-
-      for (String fld : keyFields) {
-        keyName += fld;
-      }
-      keyName = Codec.crc32(keyName);
-
-      switch (keyType) {
-        case PRIMARY:
-          keyName = PRIMARY_KEY_PREFIX + keyName;
-          break;
-        case UNIQUE:
-          keyName = UNIQUE_KEY_PREFIX + keyName;
-          break;
-        case INDEX:
-          keyName = INDEX_KEY_PREFIX + keyName;
-          break;
-      }
-      this.name = keyName;
-      this.keyType = keyType;
-      this.keyFields = keyFields;
-    }
-
-    public String[] getKeyFields() {
+    public List<String> getFields() {
       return keyFields;
     }
 
@@ -266,16 +239,51 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return BeeTable.this;
     }
 
+    public List<String> getRefFields() {
+      return refFields;
+    }
+
+    public String getRefTable() {
+      return refTable;
+    }
+
+    public String getTable() {
+      return tblName;
+    }
+  }
+
+  public class BeeIndex {
+    private final String tblName;
+    private final String name;
+    private final List<String> indexFields;
+    private final boolean unique;
+
+    private BeeIndex(String tblName, List<String> fields, boolean unique) {
+      this.tblName = tblName;
+      this.name = (unique ? UNIQUE_INDEX_PREFIX : INDEX_KEY_PREFIX)
+          + Codec.crc32(tblName + BeeUtils.join("", fields));
+      this.indexFields = fields;
+      this.unique = unique;
+    }
+
+    public List<String> getFields() {
+      return indexFields;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public BeeTable getOwner() {
+      return BeeTable.this;
+    }
+
     public String getTable() {
       return tblName;
     }
 
-    public boolean isPrimary() {
-      return keyType.equals(KeyTypes.PRIMARY);
-    }
-
     public boolean isUnique() {
-      return keyType.equals(KeyTypes.UNIQUE);
+      return unique;
     }
   }
 
@@ -293,7 +301,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       Assert.notEmpty(this.relation);
 
-      addForeignKey(getStorageTable(), this.getName(), getRelation(), getCascade());
+      addForeignKey(getStorageTable(), Lists.newArrayList(this.getName()), getRelation(), null,
+          getCascade());
     }
 
     public SqlKeyword getCascade() {
@@ -370,6 +379,45 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
+  public class BeeUniqueKey {
+    private final String tblName;
+    private final String name;
+    private final List<String> keyFields;
+    private final boolean primary;
+
+    private BeeUniqueKey(String tblName, List<String> fields, boolean primary) {
+      this.tblName = tblName;
+      this.name = (primary ? PRIMARY_KEY_PREFIX : UNIQUE_KEY_PREFIX)
+          + Codec.crc32(tblName + BeeUtils.join("", fields));
+      this.keyFields = fields;
+      this.primary = primary;
+    }
+
+    private BeeUniqueKey(String tblName, List<String> fields) {
+      this(tblName, fields, false);
+    }
+
+    public List<String> getFields() {
+      return keyFields;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public BeeTable getOwner() {
+      return BeeTable.this;
+    }
+
+    public String getTable() {
+      return tblName;
+    }
+
+    public boolean isPrimary() {
+      return primary;
+    }
+  }
+
   private class ExtSingleTable implements HasExtFields {
 
     private final String extIdName = getIdName();
@@ -387,8 +435,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
             .addLong(extIdName, true)
             .addLong(extVersionName, true);
 
-        addKey(true, tblName, extIdName);
-        addForeignKey(tblName, extIdName, getName(), SqlKeyword.DELETE);
+        addUniqueKey(tblName, Lists.newArrayList(extIdName));
+        addForeignKey(tblName, Lists.newArrayList(extIdName), getName(), null, SqlKeyword.DELETE);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
           field.isNotNull());
@@ -469,14 +517,6 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  /**
-   * Contains available database key types.
-   */
-
-  private enum KeyTypes {
-    PRIMARY, UNIQUE, INDEX
-  }
-
   private class StateSingleTable<T extends Number> implements HasStates {
 
     private final String stateIdName = getIdName();
@@ -546,8 +586,9 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
               .addLong(stateIdName, true)
               .addLong(stateVersionName, true);
 
-          addKey(true, tblName, stateIdName);
-          addForeignKey(tblName, stateIdName, getName(), SqlKeyword.DELETE);
+          addUniqueKey(tblName, Lists.newArrayList(stateIdName));
+          addForeignKey(tblName, Lists.newArrayList(stateIdName), getName(), null,
+              SqlKeyword.DELETE);
         }
         sc.addBoolean(state.name(), false);
 
@@ -736,13 +777,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
             .addLong(translationVersionName, true)
             .addString(translationLocaleName, 2, true);
 
-        addKey(true, tblName, translationIdName, translationLocaleName);
-        addForeignKey(tblName, translationIdName, getName(), SqlKeyword.DELETE);
+        addUniqueKey(tblName, Lists.newArrayList(translationIdName, translationLocaleName));
+        addForeignKey(tblName, Lists.newArrayList(translationIdName), getName(), null,
+            SqlKeyword.DELETE);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(), false);
 
       if (field.isUnique()) {
-        addKey(true, tblName, field.getName(), translationLocaleName);
+        addUniqueKey(tblName, Lists.newArrayList(field.getName(), translationLocaleName));
       }
       return sc;
     }
@@ -840,11 +882,13 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  private static final String PRIMARY_KEY_PREFIX = "PK_";
-  private static final String UNIQUE_KEY_PREFIX = "UK_";
-  private static final String INDEX_KEY_PREFIX = "IK_";
-  private static final String FOREIGN_KEY_PREFIX = "FK_";
-  private static final String TRIGGER_PREFIX = "TR_";
+  static final String UNIQUE_INDEX_PREFIX = "UI_";
+  static final String INDEX_KEY_PREFIX = "IK_";
+  static final String PRIMARY_KEY_PREFIX = "PK_";
+  static final String UNIQUE_KEY_PREFIX = "UK_";
+  static final String FOREIGN_KEY_PREFIX = "FK_";
+  static final String CHECK_PREFIX = "CK_";
+  static final String TRIGGER_PREFIX = "TR_";
 
   private final String moduleName;
   private final String name;
@@ -854,10 +898,13 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final boolean auditable;
   private final boolean recordsVisible;
   private final boolean recordsEditable;
+  private final BeeUniqueKey primaryKey;
 
   private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
-  private final Map<String, BeeKey> keys = Maps.newLinkedHashMap();
+  private final Map<String, BeeIndex> indexes = Maps.newLinkedHashMap();
+  private final Map<String, BeeUniqueKey> uniqueKeys = Maps.newLinkedHashMap();
+  private final Map<String, BeeCheck> checks = Maps.newLinkedHashMap();
   private final Map<String, BeeTrigger> triggers = Maps.newLinkedHashMap();
 
   private final HasExtFields extSource;
@@ -885,8 +932,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     this.stateSource = new StateSingleTable<Long>(Long.SIZE);
     this.translationSource = new TranslationSingleTable();
 
-    BeeKey key = new BeeKey(KeyTypes.PRIMARY, getName(), getIdName());
-    keys.put(BeeUtils.normalize(key.getName()), key);
+    this.primaryKey = new BeeUniqueKey(getName(), Lists.newArrayList(getIdName()), true);
   }
 
   @Override
@@ -921,6 +967,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   @Override
   public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
     return translationSource.createTranslationTable(query, field);
+  }
+
+  public Collection<BeeCheck> getChecks() {
+    return ImmutableList.copyOf(checks.values());
   }
 
   public Map<String, Pair<DefaultExpression, Object>> getDefaults() {
@@ -967,6 +1017,23 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       }
     }
 
+    List<BeeUniqueKey> keyInfo = Lists.newArrayList(primaryKey);
+    keyInfo.addAll(uniqueKeys.values());
+    info.add(new ExtendedProperty("Keys", BeeUtils.toString(keyInfo.size())));
+    i = 0;
+    for (BeeUniqueKey uk : keyInfo) {
+      String key = BeeUtils.joinWords("Key", ++i, uk.getName());
+
+      PropertyUtils.addChildren(info, key, "Table", uk.getTable(), "Name", uk.getName(),
+          "Type", uk.isPrimary() ? "PRIMARY" : "UNIQUE");
+      List<String> keyFields = uk.getFields();
+      int cnt = keyFields.size();
+      for (int k = 0; k < cnt; k++) {
+        info.add(new ExtendedProperty(key, BeeUtils.joinWords("Key Field",
+            BeeUtils.progress(k + 1, cnt)), keyFields.get(k)));
+      }
+    }
+
     info.add(new ExtendedProperty("Foreign Keys", BeeUtils.toString(foreignKeys.size())));
     i = 0;
     for (Map.Entry<String, BeeForeignKey> entry : foreignKeys.entrySet()) {
@@ -974,23 +1041,34 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       BeeForeignKey fk = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", fk.getTable(), "Name", fk.getName(),
-          "Key Field", fk.getKeyField(), "Ref Table", fk.getRefTable(), "Cascade", fk.getCascade());
+          "Fields", fk.getFields(), "Ref Table", fk.getRefTable(), "Ref Fields", fk.getRefFields(),
+          "Cascade", fk.getCascade());
     }
 
-    info.add(new ExtendedProperty("Keys", BeeUtils.toString(keys.size())));
+    info.add(new ExtendedProperty("Indexes", BeeUtils.toString(indexes.size())));
     i = 0;
-    for (Map.Entry<String, BeeKey> entry : keys.entrySet()) {
-      String key = BeeUtils.joinWords("Key", ++i, entry.getKey());
-      BeeKey bk = entry.getValue();
+    for (Map.Entry<String, BeeIndex> entry : indexes.entrySet()) {
+      String index = BeeUtils.joinWords("Index", ++i, entry.getKey());
+      BeeIndex ik = entry.getValue();
 
-      PropertyUtils.addChildren(info, key, "Table", bk.getTable(), "Name", bk.getName(),
-          "Type", bk.keyType);
-      String[] keyFields = bk.getKeyFields();
-      int cnt = ArrayUtils.length(keyFields);
+      PropertyUtils.addChildren(info, index, "Table", ik.getTable(), "Name", ik.getName(),
+          "Unique", ik.isUnique());
+      List<String> keyFields = ik.getFields();
+      int cnt = keyFields.size();
       for (int k = 0; k < cnt; k++) {
-        info.add(new ExtendedProperty(key, BeeUtils.joinWords("Key Field",
-            BeeUtils.progress(k + 1, cnt)), keyFields[k]));
+        info.add(new ExtendedProperty(index, BeeUtils.joinWords("Index Field",
+            BeeUtils.progress(k + 1, cnt)), keyFields.get(k)));
       }
+    }
+
+    info.add(new ExtendedProperty("Checks", BeeUtils.toString(checks.size())));
+    i = 0;
+    for (Map.Entry<String, BeeCheck> entry : checks.entrySet()) {
+      String key = BeeUtils.joinWords("Check", ++i, entry.getKey());
+      BeeCheck check = entry.getValue();
+
+      PropertyUtils.addChildren(info, key, "Table", check.getTable(), "Name", check.getName(),
+          "Expression", check.getExpression());
     }
 
     info.add(new ExtendedProperty("Triggers", BeeUtils.toString(triggers.size())));
@@ -1037,8 +1115,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return idName;
   }
 
-  public Collection<BeeKey> getKeys() {
-    return ImmutableList.copyOf(keys.values());
+  public Collection<BeeIndex> getIndexes() {
+    return ImmutableList.copyOf(indexes.values());
   }
 
   public Collection<BeeField> getMainFields() {
@@ -1083,6 +1161,12 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   public Collection<BeeTrigger> getTriggers() {
     return ImmutableList.copyOf(triggers.values());
+  }
+
+  public Collection<BeeUniqueKey> getUniqueKeys() {
+    List<BeeUniqueKey> keys = Lists.newArrayList(primaryKey);
+    keys.addAll(uniqueKeys.values());
+    return keys;
   }
 
   public String getVersionName() {
@@ -1175,6 +1259,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return stateSource.verifyState(query, tblAlias, state, checkedByDefault, bits);
   }
 
+  void addCheck(String tblName, String expression) {
+    BeeCheck check = new BeeCheck(tblName, expression);
+    checks.put(BeeUtils.normalize(check.getName()), check);
+  }
+
   void addField(XmlField xmlField, boolean extended) {
     BeeField field = (xmlField instanceof XmlRelation)
         ? new BeeRelation((XmlRelation) xmlField, extended)
@@ -1189,14 +1278,15 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     fields.put(BeeUtils.normalize(fieldName), field);
   }
 
-  void addForeignKey(String tblName, String keyField, String refTable, SqlKeyword cascade) {
-    BeeForeignKey fKey = new BeeForeignKey(tblName, keyField, refTable, cascade);
+  void addForeignKey(String tblName, List<String> fields, String refTable, List<String> refFields,
+      SqlKeyword cascade) {
+    BeeForeignKey fKey = new BeeForeignKey(tblName, fields, refTable, refFields, cascade);
     foreignKeys.put(BeeUtils.normalize(fKey.getName()), fKey);
   }
 
-  void addKey(boolean unique, String tblName, String... keyFields) {
-    BeeKey key = new BeeKey(unique ? KeyTypes.UNIQUE : KeyTypes.INDEX, tblName, keyFields);
-    keys.put(BeeUtils.normalize(key.getName()), key);
+  void addIndex(String tblName, List<String> fields, boolean unique) {
+    BeeIndex index = new BeeIndex(tblName, fields, unique);
+    indexes.put(BeeUtils.normalize(index.getName()), index);
   }
 
   void addTrigger(String tblName, SqlTriggerType type, Map<String, ?> parameters,
@@ -1204,6 +1294,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     BeeTrigger trigger = new BeeTrigger(tblName, type, parameters, timing, events, scope);
     triggers.put(BeeUtils.normalize(trigger.getName()), trigger);
+  }
+
+  void addUniqueKey(String tblName, List<String> fields) {
+    BeeUniqueKey uniqueKey = new BeeUniqueKey(tblName, fields);
+    uniqueKeys.put(BeeUtils.normalize(uniqueKey.getName()), uniqueKey);
   }
 
   void setActive(boolean active) {

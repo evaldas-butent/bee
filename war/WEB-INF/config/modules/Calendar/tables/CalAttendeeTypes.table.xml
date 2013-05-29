@@ -8,10 +8,8 @@
     <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" />
     <Relation name="AttendeeType" notNull="true" relation="AttendeeTypes" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Calendar</KeyField>
-      <KeyField>AttendeeType</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Calendar AttendeeType" />
+  </Constraints>
 </Table>

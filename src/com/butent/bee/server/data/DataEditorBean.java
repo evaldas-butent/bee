@@ -8,7 +8,7 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
-import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.data.BeeTable.BeeIndex;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
@@ -357,11 +357,11 @@ public class DataEditorBean {
 
     Map<String, List<String>> uniqueKeys = Maps.newHashMap();
 
-    for (BeeKey key : table.getKeys()) {
+    for (BeeIndex key : table.getIndexes()) {
       if (key.isUnique()) {
         List<String> keyFields = Lists.newArrayList();
 
-        for (String keyField : key.getKeyFields()) {
+        for (String keyField : key.getFields()) {
           if (!BeeUtils.same(keyField, sys.getIdName(tblName))
               && table.getField(keyField) instanceof BeeRelation) {
             keyFields.add(keyField);

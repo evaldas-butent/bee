@@ -10,11 +10,8 @@
     <String name="Name" precision="50" notNull="true" />
     <Long name="UIDValidity" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Account</KeyField>
-      <KeyField>Parent</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Account Parent Name" />
+  </Constraints>
 </Table>

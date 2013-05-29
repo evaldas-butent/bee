@@ -45,10 +45,7 @@
     <String name="FlexBasisUnit" precision="3" />
   </Fields>
   
-  <Keys>
-    <Key unique="true">
-      <KeyField>User</KeyField>
-      <KeyField>Key</KeyField>
-    </Key>
-  </Keys>
+  <Constraints>
+    <Unique fields="User Key" />
+  </Constraints>
 </Table>

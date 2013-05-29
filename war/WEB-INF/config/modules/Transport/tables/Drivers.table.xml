@@ -5,15 +5,10 @@
   idName="DriverID"
   >
   <Fields>
-    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" label="Vardas, pavardė"/>
+    <Relation name="CompanyPerson" notNull="true" unique="true" relation="CompanyPersons" label="Vardas, pavardė"/>
     <Date name="StartDate" label="Dirba nuo" />
     <Date name="EndDate" label="Atleistas" />
     <Date name="Experience" label="Stažas nuo" />
     <Text name="Notes" label="Pastabos" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>CompanyPerson</KeyField>
-    </Key>
-  </Keys>
 </Table>

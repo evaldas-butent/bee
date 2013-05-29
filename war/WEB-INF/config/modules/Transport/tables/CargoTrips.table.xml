@@ -16,10 +16,8 @@
     <Numeric name="CargoOrder" precision="2" scale="0" />
     <Relation name="CargoExpense" relation="CargoExpenses" cascade="SET_NULL" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Cargo</KeyField>
-      <KeyField>Trip</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Cargo Trip" />
+  </Constraints>
 </Table>

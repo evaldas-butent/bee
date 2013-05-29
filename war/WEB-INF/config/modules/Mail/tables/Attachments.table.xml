@@ -9,6 +9,7 @@
     <Relation name="File" relation="Files" notNull="true" />
     <String name="FileName" precision="255" />
   </Fields>
+
   <Triggers>
     <Trigger events="INSERT DELETE" scope="ROW" timing="AFTER">
       <PostgreSql>

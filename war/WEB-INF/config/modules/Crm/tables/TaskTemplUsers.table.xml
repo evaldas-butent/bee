@@ -9,10 +9,8 @@
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
     <Boolean name="Executor" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Template</KeyField>
-      <KeyField>User</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Template User" />
+  </Constraints>
 </Table>

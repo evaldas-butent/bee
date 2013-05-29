@@ -8,10 +8,8 @@
     <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
     <Relation name="Group" notNull="true" relation="TransportGroups" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Vehicle</KeyField>
-      <KeyField>Group</KeyField>
-    </Key>
-  </Keys>
+  
+  <Constraints>
+    <Unique fields="Vehicle Group" />
+  </Constraints>
 </Table>

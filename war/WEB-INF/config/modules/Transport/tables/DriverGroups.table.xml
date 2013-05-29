@@ -8,10 +8,8 @@
     <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" />
     <Relation name="Group" notNull="true" relation="TransportGroups" cascade="DELETE" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Driver</KeyField>
-      <KeyField>Group</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Driver Group" />
+  </Constraints>
 </Table>

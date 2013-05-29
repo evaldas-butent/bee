@@ -9,10 +9,8 @@
     <String name="Name" precision="30" notNull="true" label="Miestas" />
     <Relation name="Country" relation="Countries" notNull="true" label="Šalis" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Country</KeyField>
-      <KeyField>Name</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Country Name" />
+  </Constraints>
 </Table>

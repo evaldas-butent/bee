@@ -175,7 +175,7 @@ class OracleSqlBuilder extends SqlBuilder {
             .addOrder("c", "COLUMN_ID")
             .getSqlString(this);
 
-      case DB_KEYS:
+      case DB_CONSTRAINTS:
         wh = null;
 
         prm = params.get("dbSchema");
@@ -200,6 +200,14 @@ class OracleSqlBuilder extends SqlBuilder {
 
               case FOREIGN_KEY:
                 tp = "R";
+                break;
+
+              case UNIQUE:
+                tp = "U";
+                break;
+
+              case CHECK:
+                tp = "C";
                 break;
 
               default:

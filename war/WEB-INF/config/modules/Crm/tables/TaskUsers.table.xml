@@ -10,10 +10,8 @@
     <DateTime name="LastAccess" />
     <Integer name="Star"/>
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Task</KeyField>
-      <KeyField>User</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Task User" />
+  </Constraints>
 </Table>

@@ -5,26 +5,22 @@
   
   name="Mail" caption="Laiškai" readOnly="true" enabledActions="add delete"
   >
-  <FlowPanel class="flexBox-vertical" style="margin: 5px;">
-    <HorizontalPanel style="width: 100%; padding-bottom: 5px; border-bottom: 1px solid lightgray;">
-      <InputText placeholder="Čia bus paieška..." style="width: 280px" />
-    </HorizontalPanel>
-
-    <SplitPanel class="flexible" splitterSize="1">
-      <west size="300">
-        <GridPanel name="Messages" class="bee-mail-Headers" />
-      </west>
+  <SplitPanel splitterSize="1" style="margin:5px;">
+    <west size="300">
+      <FlowPanel class="flexBox-vertical">
+        <InputText placeholder="Čia bus paieška..." style="width: 295px" />
+        <GridPanel name="Messages" class="bee-mail-Headers flexible" />
+      </FlowPanel>
+    </west>
       
-      <center>
-        <FlowPanel class="flexBox-vertical" style="margin-top: 5px; margin-left: 5px;">
-          <Label name="EmptySelection" class="bee-mail-EmptySelection"
-            text="Nepasirinktas joks laiškas" />
+    <center>
+      <FlowPanel class="flexBox-vertical" style="margin-top: 5px; margin-left: 5px;">
+        <Label name="EmptySelection" class="bee-mail-EmptySelection" text="Nepasirinktas joks laiškas" />
 
-          <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">
-            <xi:include href="widgets/Message.widget.xml" />
-          </FlowPanel>
+        <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">
+          <xi:include href="widgets/Message.widget.xml" />
         </FlowPanel>
-      </center>
-    </SplitPanel>
-  </FlowPanel>
+      </FlowPanel>
+    </center>
+  </SplitPanel>
 </f:Form>

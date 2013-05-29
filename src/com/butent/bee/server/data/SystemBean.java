@@ -11,11 +11,13 @@ import com.google.common.eventbus.EventBus;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.data.BeeTable.BeeCheck;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
-import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.data.BeeTable.BeeIndex;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeTable.BeeTrigger;
+import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
@@ -36,14 +38,19 @@ import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants;
+import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.XmlTable.XmlCheck;
+import com.butent.bee.shared.data.XmlTable.XmlConstraint;
 import com.butent.bee.shared.data.XmlTable.XmlField;
-import com.butent.bee.shared.data.XmlTable.XmlKey;
+import com.butent.bee.shared.data.XmlTable.XmlIndex;
+import com.butent.bee.shared.data.XmlTable.XmlReference;
 import com.butent.bee.shared.data.XmlTable.XmlTrigger;
+import com.butent.bee.shared.data.XmlTable.XmlUnique;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
@@ -374,8 +381,17 @@ public class SystemBean {
       for (BeeForeignKey fKey : table.getForeignKeys()) {
         Assert.state(isTable(fKey.getRefTable()),
             BeeUtils.joinWords(
-                "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getKeyField()),
+                "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getFields()),
                 "relation:", BeeUtils.bracket(fKey.getRefTable())));
+
+        if (!BeeUtils.isEmpty(fKey.getRefFields())) {
+          BeeTable refTable = getTable(fKey.getRefTable());
+
+          for (String fld : fKey.getRefFields()) {
+            Assert.state(refTable.hasField(fld),
+                BeeUtils.joinWords("Unrecognized foreign key field:", refTable.getName(), fld));
+          }
+        }
       }
     }
     initDatabase();
@@ -485,8 +501,15 @@ public class SystemBean {
               .addLong(AUDIT_FLD_ID, true)
               .addString(AUDIT_FLD_FIELD, 30, false)
               .addText(AUDIT_FLD_VALUE, false),
-          SqlUtils.createIndex(false,
-              auditPath, "IK_" + Codec.crc32(auditName + AUDIT_FLD_ID), AUDIT_FLD_ID));
+          SqlUtils.createIndex(auditPath, "IK_" + Codec.crc32(auditName + AUDIT_FLD_ID),
+              Lists.newArrayList(AUDIT_FLD_ID), false));
+    }
+  }
+
+  private void createChecks(Collection<BeeCheck> checks) {
+    for (BeeCheck check : checks) {
+      makeStructureChanges(SqlUtils.createCheck(check.getTable(), check.getName(),
+          check.getExpression()));
     }
   }
 
@@ -498,30 +521,41 @@ public class SystemBean {
     }
     for (BeeForeignKey fKey : fKeys) {
       String tblName = fKey.getTable();
-      String fldName = fKey.getKeyField();
+      List<String> fields = fKey.getFields();
       String refTblName = fKey.getRefTable();
+      List<String> refFields = fKey.getRefFields();
 
-      if (flds.containsEntry(tblName, fldName)) {
+      boolean ok = true;
+
+      for (String fldName : fields) {
+        if (!flds.containsEntry(tblName, fldName)) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        if (!BeeUtils.isEmpty(refFields)) {
+          for (String fldName : refFields) {
+            if (!flds.containsEntry(refTblName, fldName)) {
+              ok = false;
+              break;
+            }
+          }
+        } else {
+          refFields = Lists.newArrayList(getIdName(refTblName));
+        }
+      }
+      if (ok) {
         makeStructureChanges(SqlUtils.createForeignKey(tblName, fKey.getName(),
-            fldName, refTblName, getIdName(refTblName), fKey.getCascade()));
+            fields, refTblName, refFields, fKey.getCascade()));
       }
     }
   }
 
-  private void createKeys(Collection<BeeKey> keys) {
-    for (BeeKey key : keys) {
-      String tblName = key.getTable();
-
-      IsQuery index;
-      String keyName = key.getName();
-      String[] keyFields = key.getKeyFields();
-
-      if (key.isPrimary()) {
-        index = SqlUtils.createPrimaryKey(tblName, keyName, keyFields);
-      } else {
-        index = SqlUtils.createIndex(key.isUnique(), tblName, keyName, keyFields);
-      }
-      makeStructureChanges(index);
+  private void createIndexes(Collection<BeeIndex> indexes) {
+    for (BeeIndex index : indexes) {
+      makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
+          index.getFields(), index.isUnique()));
     }
   }
 
@@ -582,15 +616,64 @@ public class SystemBean {
         tblBackup = tblName + "_BAK";
         logger.debug("Checking indexes...");
         int c = 0;
-        String[] keys = qs.dbIndexes(getDbName(), getDbSchema(), tblName)
-            .getColumn(SqlConstants.KEY_NAME);
+        Set<String> indexes = Sets.newHashSet();
 
-        for (BeeKey key : table.getKeys()) {
-          if (BeeUtils.same(key.getTable(), tblName)) {
-            if (ArrayUtils.contains(keys, key.getName())) {
+        for (String index : qs.dbIndexes(getDbName(), getDbSchema(), tblName)
+            .getColumn(SqlConstants.KEY_NAME)) {
+
+          if (index.startsWith(BeeTable.UNIQUE_INDEX_PREFIX)
+              || index.startsWith(BeeTable.INDEX_KEY_PREFIX)) {
+            indexes.add(index);
+          }
+        }
+        for (BeeIndex index : table.getIndexes()) {
+          if (BeeUtils.same(index.getTable(), tblName)) {
+            if (indexes.contains(index.getName())) {
               c++;
             } else {
-              String msg = BeeUtils.joinWords("INDEX", key.getName(), key.getKeyFields(), "NOT IN",
+              String msg = BeeUtils.joinWords("INDEX", index.getName(), index.getFields(),
+                  "NOT IN", indexes);
+              logger.warning(msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
+            }
+          }
+        }
+        if (!update && indexes.size() > c) {
+          String msg = "TOO MANY INDEXES";
+          logger.warning(msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
+        }
+      }
+      if (!update) {
+        logger.debug("Checking unique keys...");
+        int c = 0;
+        Set<String> keys = Sets.newHashSet();
+
+        for (String key : qs.dbConstraints(getDbName(), getDbSchema(), tblName,
+            SqlKeyword.UNIQUE, SqlKeyword.PRIMARY_KEY).getColumn(SqlConstants.KEY_NAME)) {
+
+          if (key.startsWith(BeeTable.UNIQUE_KEY_PREFIX)
+              || key.startsWith(BeeTable.PRIMARY_KEY_PREFIX)) {
+            keys.add(key);
+          }
+        }
+        for (BeeUniqueKey key : table.getUniqueKeys()) {
+          if (BeeUtils.same(key.getTable(), tblName)) {
+            if (keys.contains(key.getName())) {
+              c++;
+            } else {
+              String msg = BeeUtils.joinWords("KEY", key.getName(), key.getFields(), "NOT IN",
                   keys);
               logger.warning(msg);
 
@@ -603,8 +686,8 @@ public class SystemBean {
             }
           }
         }
-        if (!update && keys.length > c) {
-          String msg = "TOO MANY INDEXES";
+        if (!update && keys.size() > c) {
+          String msg = "TOO MANY UNIQUE KEYS";
           logger.warning(msg);
 
           if (diff != null) {
@@ -617,20 +700,26 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking foreign keys...");
         int c = 0;
-        String[] fKeys = qs.dbForeignKeys(getDbName(), getDbSchema(), tblName, null)
-            .getColumn(SqlConstants.KEY_NAME);
+        Set<String> fKeys = Sets.newHashSet();
 
+        for (String fKey : qs.dbConstraints(getDbName(), getDbSchema(), tblName,
+            SqlKeyword.FOREIGN_KEY).getColumn(SqlConstants.KEY_NAME)) {
+
+          if (fKey.startsWith(BeeTable.FOREIGN_KEY_PREFIX)) {
+            fKeys.add(fKey);
+          }
+        }
         for (BeeForeignKey fKey : table.getForeignKeys()) {
           if (BeeUtils.same(fKey.getTable(), tblName)
               && (BeeUtils.same(fKey.getRefTable(), table.getName())
               || getTable(fKey.getRefTable()).isActive())) {
 
-            if (ArrayUtils.contains(fKeys, fKey.getName())) {
+            if (fKeys.contains(fKey.getName())) {
               c++;
             } else {
               String msg = BeeUtils.joinWords("FOREIGN KEY", fKey.getName(),
                   BeeUtils.parenthesize(BeeUtils.join(" ON DELETE ",
-                      fKey.getKeyField() + "->" + fKey.getRefTable(), fKey.getCascade())),
+                      fKey.getFields() + "->" + fKey.getRefTable(), fKey.getCascade())),
                   "NOT IN", fKeys);
               logger.warning(msg);
 
@@ -643,8 +732,48 @@ public class SystemBean {
             }
           }
         }
-        if (!update && fKeys.length > c) {
+        if (!update && fKeys.size() > c) {
           String msg = "TOO MANY FOREIGN KEYS";
+          logger.warning(msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
+        }
+      }
+      if (!update) {
+        logger.debug("Checking check constraints...");
+        int c = 0;
+        Set<String> checks = Sets.newHashSet();
+
+        for (String check : qs.dbConstraints(getDbName(), getDbSchema(), tblName, SqlKeyword.CHECK)
+            .getColumn(SqlConstants.KEY_NAME)) {
+
+          if (check.startsWith(BeeTable.CHECK_PREFIX)) {
+            checks.add(check);
+          }
+        }
+        for (BeeCheck check : table.getChecks()) {
+          if (BeeUtils.same(check.getTable(), tblName)) {
+            if (checks.contains(check.getName())) {
+              c++;
+            } else {
+              String msg = BeeUtils.joinWords("CHECK", check.getName(), "NOT IN", checks);
+              logger.warning(msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
+            }
+          }
+        }
+        if (!update && checks.size() > c) {
+          String msg = "TOO MANY CHECK CONSTRAINTS";
           logger.warning(msg);
 
           if (diff != null) {
@@ -657,9 +786,15 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking triggers...");
         int c = 0;
-        Set<String> triggers = Sets.newHashSet(qs.dbTriggers(getDbName(), getDbSchema(), tblName)
-            .getColumn(SqlConstants.TRIGGER_NAME));
+        Set<String> triggers = Sets.newHashSet();
 
+        for (String trigger : qs.dbTriggers(getDbName(), getDbSchema(), tblName)
+            .getColumn(SqlConstants.TRIGGER_NAME)) {
+
+          if (trigger.startsWith(BeeTable.TRIGGER_PREFIX)) {
+            triggers.add(trigger);
+          }
+        }
         for (BeeTrigger trigger : table.getTriggers()) {
           if (BeeUtils.same(trigger.getTable(), tblName)) {
             if (triggers.contains(trigger.getName())) {
@@ -809,6 +944,21 @@ public class SystemBean {
       makeStructureChanges(SqlUtils.createTrigger(trigger.getName(), trigger.getTable(),
           trigger.getType(), trigger.getParameters(), trigger.getTiming(), trigger.getEvents(),
           trigger.getScope()));
+    }
+  }
+
+  private void createUniqueKeys(Collection<BeeUniqueKey> uniqueKeys) {
+    for (BeeUniqueKey uniqueKey : uniqueKeys) {
+      IsQuery query;
+
+      if (uniqueKey.isPrimary()) {
+        query = SqlUtils.createPrimaryKey(uniqueKey.getTable(), uniqueKey.getName(),
+            uniqueKey.getFields());
+      } else {
+        query = SqlUtils.createUniqueKey(uniqueKey.getTable(), uniqueKey.getName(),
+            uniqueKey.getFields());
+      }
+      makeStructureChanges(query);
     }
   }
 
@@ -1000,37 +1150,69 @@ public class SystemBean {
             }
           }
         }
-        if (!BeeUtils.isEmpty(xmlTable.keys)) {
-          for (XmlKey key : xmlTable.keys) {
-            String firstTbl = null;
-            String firstFld = null;
-            boolean ok = !BeeUtils.isEmpty(key.fields);
-
-            if (ok) {
-              for (String fld : key.fields) {
-                if (table.hasField(fld)) {
-                  String keyTbl = table.getField(fld).getStorageTable();
-                  String keyFld = table.getField(fld).getName();
-
-                  if (BeeUtils.isEmpty(firstTbl)) {
-                    firstTbl = keyTbl;
-                    firstFld = keyFld;
-
-                  } else if (!BeeUtils.same(firstTbl, keyTbl)) {
-                    logger.warning("Key expression contains fields from different sources:",
-                        firstTbl + "." + firstFld, "and", keyTbl + "." + keyFld);
-                    ok = false;
-                    break;
-                  }
-                } else {
-                  logger.warning("Unrecognized key field:", tbl, fld);
-                  ok = false;
-                  break;
-                }
+        if (!BeeUtils.isEmpty(xmlTable.indexes)) {
+          for (XmlIndex index : xmlTable.indexes) {
+            if (!BeeUtils.isEmpty(index.fields)) {
+              for (String fld : index.fields) {
+                Assert.state(table.hasField(fld),
+                    BeeUtils.joinWords("Unrecognized index field:", tbl, fld));
               }
+              table.addIndex(tableName, index.fields, index.unique);
             }
-            if (ok) {
-              table.addKey(key.unique, firstTbl, key.fields.toArray(new String[0]));
+          }
+        }
+        if (!BeeUtils.isEmpty(xmlTable.constraints)) {
+          for (XmlConstraint constraint : xmlTable.constraints) {
+            if (constraint instanceof XmlCheck) {
+              String expression = null;
+
+              switch (SqlBuilderFactory.getBuilder().getEngine()) {
+                case POSTGRESQL:
+                  expression = ((XmlCheck) constraint).postgreSql;
+                  break;
+                case MSSQL:
+                  expression = ((XmlCheck) constraint).msSql;
+                  break;
+                case ORACLE:
+                  expression = ((XmlCheck) constraint).oracle;
+                  break;
+                case GENERIC:
+                  expression = ((XmlCheck) constraint).generic;
+                  break;
+              }
+              if (BeeUtils.isEmpty(expression)) {
+                expression = ((XmlCheck) constraint).generic;
+              }
+              if (!BeeUtils.isEmpty(expression)) {
+                table.addCheck(tableName, expression);
+              }
+            } else if (constraint instanceof XmlUnique) {
+              List<String> fields = ((XmlUnique) constraint).fields;
+
+              if (!BeeUtils.isEmpty(fields)) {
+                for (String fld : fields) {
+                  Assert.state(table.hasField(fld),
+                      BeeUtils.joinWords("Unrecognized unique key field:", tbl, fld));
+                }
+                table.addUniqueKey(tableName, fields);
+              }
+            } else if (constraint instanceof XmlReference) {
+              List<String> fields = ((XmlReference) constraint).fields;
+              List<String> refFields = ((XmlReference) constraint).refFields;
+
+              if (!BeeUtils.isEmpty(fields)) {
+                for (String fld : fields) {
+                  Assert.state(table.hasField(fld),
+                      BeeUtils.joinWords("Unrecognized foreign key field:", tbl, fld));
+                }
+                Assert.state(BeeUtils.isEmpty(refFields)
+                    ? fields.size() == 1 : fields.size() == refFields.size(),
+                    "Field count doesn't match");
+
+                table.addForeignKey(tableName, fields, ((XmlReference) constraint).refTable,
+                    refFields, NameUtils.getEnumByName(SqlKeyword.class,
+                        ((XmlReference) constraint).cascade));
+              }
             }
           }
         }
@@ -1126,11 +1308,18 @@ public class SystemBean {
     Map<String, String> rebuilds = createTable(table, null);
 
     if (rebuilds.containsKey(tblMain)) {
-      Collection<BeeKey> keys = Lists.newArrayList();
+      Collection<BeeIndex> indexes = Lists.newArrayList();
 
-      for (BeeKey key : table.getKeys()) {
+      for (BeeIndex index : table.getIndexes()) {
+        if (BeeUtils.same(index.getTable(), tblMain)) {
+          indexes.add(index);
+        }
+      }
+      Collection<BeeUniqueKey> uniqueKeys = Lists.newArrayList();
+
+      for (BeeUniqueKey key : table.getUniqueKeys()) {
         if (BeeUtils.same(key.getTable(), tblMain)) {
-          keys.add(key);
+          uniqueKeys.add(key);
         }
       }
       Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
@@ -1154,6 +1343,13 @@ public class SystemBean {
           }
         }
       }
+      Collection<BeeCheck> checks = Lists.newArrayList();
+
+      for (BeeCheck check : table.getChecks()) {
+        if (BeeUtils.same(check.getTable(), tblMain)) {
+          checks.add(check);
+        }
+      }
       Collection<BeeTrigger> triggers = Lists.newArrayList();
 
       for (BeeTrigger trigger : table.getTriggers()) {
@@ -1173,18 +1369,27 @@ public class SystemBean {
         makeStructureChanges(SqlUtils.dropTable(tblMain));
         makeStructureChanges(SqlUtils.renameTable(tblBackup, tblMain));
       }
-      createKeys(keys);
+      createIndexes(indexes);
+      createUniqueKeys(uniqueKeys);
+      createChecks(checks);
       createTriggers(triggers);
       createForeignKeys(foreignKeys);
     }
 
     for (String tbl : rebuilds.keySet()) {
       if (!BeeUtils.same(tbl, tblMain)) {
-        Collection<BeeKey> keys = Lists.newArrayList();
+        Collection<BeeIndex> indexes = Lists.newArrayList();
 
-        for (BeeKey key : table.getKeys()) {
+        for (BeeIndex index : table.getIndexes()) {
+          if (BeeUtils.same(index.getTable(), tbl)) {
+            indexes.add(index);
+          }
+        }
+        Collection<BeeUniqueKey> uniqueKeys = Lists.newArrayList();
+
+        for (BeeUniqueKey key : table.getUniqueKeys()) {
           if (BeeUtils.same(key.getTable(), tbl)) {
-            keys.add(key);
+            uniqueKeys.add(key);
           }
         }
         Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
@@ -1196,6 +1401,13 @@ public class SystemBean {
               && (BeeUtils.same(refTable, tblMain) || getTable(refTable).isActive())) {
 
             foreignKeys.add(fKey);
+          }
+        }
+        Collection<BeeCheck> checks = Lists.newArrayList();
+
+        for (BeeCheck check : table.getChecks()) {
+          if (BeeUtils.same(check.getTable(), tbl)) {
+            checks.add(check);
           }
         }
         Collection<BeeTrigger> triggers = Lists.newArrayList();
@@ -1210,7 +1422,9 @@ public class SystemBean {
         if (!BeeUtils.isEmpty(tblBackup)) {
           makeStructureChanges(SqlUtils.dropTable(tbl), SqlUtils.renameTable(tblBackup, tbl));
         }
-        createKeys(keys);
+        createIndexes(indexes);
+        createUniqueKeys(uniqueKeys);
+        createChecks(checks);
         createTriggers(triggers);
         createForeignKeys(foreignKeys);
       }

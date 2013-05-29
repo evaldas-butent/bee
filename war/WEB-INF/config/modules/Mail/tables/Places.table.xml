@@ -10,11 +10,11 @@
     <Integer name="Flags" />
     <Long name="MessageUID" />
   </Fields>
-  <Keys>
-    <Key>
-      <KeyField>MessageUID</KeyField>
-    </Key>
-  </Keys>
+
+  <Indexes>
+    <Index fields="MessageUID" />
+  </Indexes>
+
   <Triggers>
     <Trigger events="DELETE" scope="ROW" timing="AFTER">
       <PostgreSql>
@@ -34,8 +34,8 @@ BEGIN
 END;
         ]]>
       </PostgreSql>
-      <MsSql></MsSql>
-      <Oracle></Oracle>
+      <MsSql />
+      <Oracle />
     </Trigger>
   </Triggers>
 </Table>

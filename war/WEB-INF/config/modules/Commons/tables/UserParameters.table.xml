@@ -10,10 +10,8 @@
     <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
     <Text name="Value" />
   </Fields>
-  <Keys>
-    <Key unique="true">
-      <KeyField>Parameter</KeyField>
-      <KeyField>User</KeyField>
-    </Key>
-  </Keys>
+
+  <Constraints>
+    <Unique fields="Parameter User" />
+  </Constraints>
 </Table>

@@ -597,6 +597,12 @@ public abstract class SqlBuilder {
         }
         return foreign;
 
+      case UNIQUE:
+        return BeeUtils.joinWords("UNIQUE", BeeUtils.parenthesize(params.get("fields")));
+
+      case CHECK:
+        return BeeUtils.joinWords("CHECK", BeeUtils.parenthesize(params.get("expression")));
+
       case CREATE_TRIGGER:
         Assert.notImplemented();
         return null;
@@ -674,7 +680,7 @@ public abstract class SqlBuilder {
             .addOrder("c", "ordinal_position")
             .getSqlString(this);
 
-      case DB_KEYS:
+      case DB_CONSTRAINTS:
         wh = null;
 
         prm = params.get("dbName");
@@ -703,6 +709,14 @@ public abstract class SqlBuilder {
 
               case FOREIGN_KEY:
                 tp = "FOREIGN KEY";
+                break;
+
+              case UNIQUE:
+                tp = "UNIQUE";
+                break;
+
+              case CHECK:
+                tp = "CHECK";
                 break;
 
               default:
