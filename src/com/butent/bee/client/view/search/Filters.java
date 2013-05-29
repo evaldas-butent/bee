@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -24,7 +25,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -117,7 +119,7 @@ public class Filters {
     private void setInitial(Boolean initial) {
       filterDescription.setInitial(initial);
     }
-    
+
     private void setLabel(String label) {
       filterDescription.setLabel(label);
     }
@@ -169,7 +171,9 @@ public class Filters {
     super();
   }
 
-  public void addCustomFilter(final String key, String label, Map<String, String> values) {
+  public void addCustomFilter(final String key, String label, Map<String, String> values,
+      final Scheduler.ScheduledCommand callback) {
+
     Assert.notEmpty(key);
     Assert.notEmpty(label);
     Assert.notEmpty(values);
@@ -191,6 +195,9 @@ public class Filters {
       @Override
       public void onSuccess(BeeRow result) {
         itemsByKey.put(key, createItem(result));
+        if (callback != null) {
+          callback.execute();
+        }
       }
     });
   }
@@ -209,23 +216,26 @@ public class Filters {
     }
     return false;
   }
-  
+
   public boolean containsKey(String key) {
     return itemsByKey.containsKey(key);
   }
 
-  public Widget createWidget(final String key, final Consumer<FilterDescription> callback) {
+  public Widget createWidget(final String key, Map<String, String> activeValues,
+      final BiConsumer<FilterDescription, Action> callback) {
+
     Assert.notEmpty(key);
     Assert.notNull(callback);
 
+    final HtmlTable table = new HtmlTable(STYLE_TABLE);
+
+    Simple wrapper = new Simple(table);
+    wrapper.addStyleName(STYLE_WRAPPER);
+
     final List<Item> items = getItems(key);
     if (items.isEmpty()) {
-      return null;
+      return wrapper;
     }
-
-    int activeItemIndex = BeeConst.UNDEF;
-
-    final HtmlTable table = new HtmlTable(STYLE_TABLE);
 
     int r = 0;
 
@@ -233,10 +243,10 @@ public class Filters {
       int c = 0;
 
       final long id = item.getId();
-      
+
       final SimpleBoolean initial = new SimpleBoolean(item.isInitial());
       initial.setTitle(Localized.constants.initialFilter());
-      
+
       initial.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -256,7 +266,7 @@ public class Filters {
       labelWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          callback.accept(getItem(items, id).filterDescription);
+          callback.accept(getItem(items, id).filterDescription, null);
         }
       });
 
@@ -284,6 +294,7 @@ public class Filters {
 
                   Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
                       new TextValue(newLabel));
+                  callback.accept(null, Action.EDIT);
                 }
               }
             }, oldLabel, getMaxLabelLength());
@@ -302,7 +313,24 @@ public class Filters {
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            remove(key, items, id, table);
+            final Item delItem = getItem(items, id);
+            List<String> messages =
+                Lists.newArrayList("Pašalinti filtrą", BeeUtils.joinWords(delItem.getLabel(), "?"));
+
+            Global.confirmDelete("Filtro pašalinimas", Icon.WARNING, messages,
+                new ConfirmationCallback() {
+                  @Override
+                  public void onConfirm() {
+                    Queries.deleteRow(CommonsConstants.TBL_FILTERS, delItem.getId());
+                    itemsByKey.remove(key, delItem);
+
+                    int index = items.indexOf(delItem);
+                    items.remove(index);
+                    table.removeRow(index);
+
+                    callback.accept(null, Action.DELETE);
+                  }
+                });
           }
         });
 
@@ -320,15 +348,12 @@ public class Filters {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_PREDEFINED);
       }
 
-      if (r == activeItemIndex) {
+      if (!BeeUtils.isEmpty(activeValues) && activeValues.equals(item.getValues())) {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_ACTIVE);
       }
 
       r++;
     }
-
-    Simple wrapper = new Simple(table);
-    wrapper.addStyleName(STYLE_WRAPPER);
 
     return wrapper;
   }
@@ -493,24 +518,5 @@ public class Filters {
 
   private String normalizeLabel(String label) {
     return BeeUtils.left(BeeUtils.trim(label), getMaxLabelLength());
-  }
-
-  private void remove(final String key, final List<Item> items, long id, final HtmlTable table) {
-    final Item item = getItem(items, id);
-    Assert.notNull(item);
-
-    Global.confirmDelete("Filtro pašalinimas", Icon.WARNING,
-        Lists.newArrayList("Pašalinti filtrą", BeeUtils.joinWords(item.getLabel(), "?")),
-        new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            Queries.deleteRow(CommonsConstants.TBL_FILTERS, item.getId());
-            itemsByKey.remove(key, item);
-
-            int index = items.indexOf(item);
-            items.remove(index);
-            table.removeRow(index);
-          }
-        });
   }
 }

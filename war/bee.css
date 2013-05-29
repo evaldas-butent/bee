@@ -1628,6 +1628,9 @@ body {
   word-break: break-all;
   cursor: pointer; 
 }
+.bee-Filters-row-active .bee-Filters-label {
+  font-weight: bold;
+}
 .bee-Filters-label:hover {
   color: #00e;
   text-decoration: underline;

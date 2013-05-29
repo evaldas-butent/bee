@@ -186,9 +186,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
         immutableFilter, parentFilters, userFilter, order, rowSet, providerType, cachingPolicy);
 
-    this.filterManager = new GridFilterManager();
-    if (userFilterValues != null && !userFilterValues.isEmpty()) {
-      filterManager.setFilter(gridContainer.getGridView().getGrid(), userFilterValues);
+    if (gridContainer.hasSearch()) {
+      this.filterManager = new GridFilterManager(gridContainer.getGridView(), this);
+      if (userFilterValues != null && !userFilterValues.isEmpty()) {
+        filterManager.setFilter(userFilterValues);
+      }
+    } else {
+      this.filterManager = null;
     }
 
     bind();
@@ -345,8 +349,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case FILTER:
-        filterManager.handleFilter(getGridView().getGridKey(), getGridView().getGrid(),
-            getHeaderElement(), this);
+        if (filterManager != null) {
+          filterManager.handleFilter(getHeaderElement());
+        }
         break;
 
       case PRINT:
@@ -360,8 +365,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case REMOVE_FILTER:
-        filterManager.clearFilter(getGridView().getGrid());
-        tryFilter(null, null, true);
+        if (filterManager != null) {
+          filterManager.clearFilter();
+          tryFilter(null, null, true);
+        }
         break;
 
       default:
@@ -624,7 +631,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return getGridInterceptor().getDeleteMode(this, row, selected, mode);
     }
   }
-  
+
   private GridInterceptor getGridInterceptor() {
     return getGridView().getGridInterceptor();
   }

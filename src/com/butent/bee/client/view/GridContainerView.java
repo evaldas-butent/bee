@@ -30,4 +30,6 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasG
   FooterView getFooter();
   
   HeaderView getHeader();
+  
+  boolean hasSearch();
 }

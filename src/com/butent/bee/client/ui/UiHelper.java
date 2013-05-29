@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
@@ -90,6 +91,17 @@ public class UiHelper {
       container.add(w);
     }
     return w;
+  }
+
+  public static boolean closeDialog(Widget source) {
+    if (source != null) {
+      Popup popup = DomUtils.getParentPopup(source);
+      if (popup != null) {
+        popup.close();
+        return true;
+      }
+    }
+    return false;
   }
 
   public static boolean focus(Widget target) {
@@ -371,7 +383,7 @@ public class UiHelper {
     int count = children.size();
 
     int index;
-    
+
     if (activeElement == null) {
       index = forward ? 0 : count - 1;
 
@@ -400,7 +412,7 @@ public class UiHelper {
     children.get(index).setFocus(true);
     return true;
   }
-  
+
   public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
     if (BeeUtils.isEmpty(text)) {
       return null;

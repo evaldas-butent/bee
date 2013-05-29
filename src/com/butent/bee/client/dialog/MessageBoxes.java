@@ -18,7 +18,6 @@ import com.google.web.bindery.event.shared.Event;
 
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
@@ -194,19 +193,6 @@ public class MessageBoxes {
     if (timer != null) {
       timer.schedule(timeout);
     }
-  }
-
-  public boolean close(Widget source) {
-    boolean ok = false;
-
-    if (source != null) {
-      Popup p = DomUtils.getParentPopup(source);
-      if (p != null) {
-        p.close();
-        ok = true;
-      }
-    }
-    return ok;
   }
 
   public void confirm(String caption, Icon icon, List<String> messages,

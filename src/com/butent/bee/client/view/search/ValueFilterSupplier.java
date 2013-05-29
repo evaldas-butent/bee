@@ -9,10 +9,8 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -24,11 +22,7 @@ import java.util.List;
 
 public class ValueFilterSupplier extends AbstractFilterSupplier {
   
-  private static final int MIN_EDITOR_WIDTH = 60;
-  private static final int MAX_EDITOR_WIDTH = 200;
-  
   private final Editor editor;
-  private int lastWidth = BeeConst.UNDEF;
   
   private String oldValue = null;
 
@@ -59,12 +53,6 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
-    int width = BeeUtils.clamp(target.getOffsetWidth(), MIN_EDITOR_WIDTH, MAX_EDITOR_WIDTH);
-    if (width != getLastWidth()) {
-      StyleUtils.setWidth(editor.asWidget(), width);
-      setLastWidth(width);
-    }
-    
     setOldValue(getValue());
     
     openDialog(target, editor.asWidget(), onChange);
@@ -122,20 +110,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     return filter;
   }
   
-  private int getLastWidth() {
-    return lastWidth;
-  }
-
   private String getOldValue() {
     return oldValue;
   }
 
   private void onSave() {
     update(!Objects.equal(buildFilter(getOldValue()), buildFilter(getValue())));
-  }
-
-  private void setLastWidth(int lastWidth) {
-    this.lastWidth = lastWidth;
   }
 
   private void setOldValue(String oldValue) {

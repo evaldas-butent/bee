@@ -3,7 +3,7 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import com.butent.bee.client.Global;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeButton;
 
 /**
@@ -18,7 +18,7 @@ public class CloseButton extends BeeButton {
     addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.closeDialog(CloseButton.this);
+        UiHelper.closeDialog(CloseButton.this);
       }
     });
   }

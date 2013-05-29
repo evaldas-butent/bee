@@ -20,6 +20,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
@@ -286,7 +287,7 @@ class ReportManager {
         reportOptions.put(report, newRow);
         doReport(report, newRow);
 
-        Global.closeDialog(container);
+        UiHelper.closeDialog(container);
       }
     });
     addStyle(tableCommand, "tableCommand");

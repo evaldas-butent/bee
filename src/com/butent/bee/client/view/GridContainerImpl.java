@@ -331,6 +331,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
+  public boolean hasSearch() {
+    return hasSearch;
+  }
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
@@ -711,10 +716,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private boolean hasScroller() {
     return !BeeUtils.isEmpty(getScrollerId());
-  }
-
-  private boolean hasSearch() {
-    return hasSearch;
   }
 
   private boolean isResizeSuspended() {

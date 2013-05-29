@@ -121,14 +121,6 @@ public class Global implements Module {
     msgBoxen.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, null, null);
   }
 
-  public static boolean closeDialog(Widget source) {
-    if (source == null) {
-      return false;
-    } else {
-      return msgBoxen.close(source);
-    }
-  }
-
   public static void confirm(String message, ConfirmationCallback callback) {
     confirm(null, null, Lists.newArrayList(message), callback);
   }

@@ -7,7 +7,7 @@
   <body height="30" /> 
   <columns>
     <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false"
-      width="30" horizontalAlignment="center"/>
+      width="30" horizontalAlignment="center" filterOptions="-" />
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 
