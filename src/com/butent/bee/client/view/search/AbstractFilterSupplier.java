@@ -50,7 +50,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     TakesValue<String>, NotificationListener {
   
   protected enum SupplierAction implements HasCaption {
-    ALL("Visi"),
+    ALL(Localized.constants.filterAll()),
     CLEAR(Localized.constants.clear()),
     COMMIT(Localized.constants.doFilter()),
     CANCEL(Localized.constants.cancel());
@@ -71,7 +71,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
   }
 
-  protected static final String NULL_VALUE_LABEL = "[tuščia]";
+  protected static final String NULL_VALUE_LABEL = Localized.constants.filterNullLabel();
+  protected static final String NOT_NULL_VALUE_LABEL = Localized.constants.filterNotNullLabel();
 
   protected static final String DEFAULT_STYLE_PREFIX = "bee-FilterSupplier-";
 
@@ -80,6 +81,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   private final String viewName;
 
   private final BeeColumn column;
+  private final String columnLabel;
 
   private String options;
 
@@ -96,9 +98,13 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
   private String displayId = null;
 
-  public AbstractFilterSupplier(String viewName, BeeColumn column, String options) {
+  public AbstractFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     this.viewName = viewName;
+
     this.column = column;
+    this.columnLabel = BeeUtils.notEmpty(label, 
+        (column == null) ? null : LocaleUtils.getLabel(column));
+    
     this.options = options;
   }
 
@@ -298,7 +304,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String getColumnLabel() {
-    return (getColumn() == null) ? null : LocaleUtils.getLabel(getColumn());
+    return columnLabel;
   }
 
   protected ValueType getColumnType() {
@@ -340,7 +346,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String getDialogStyle() {
-    return getStylePrefix() + "dialog";
+    return DEFAULT_STYLE_PREFIX + "dialog";
   }
 
   protected HtmlTable getDisplayAsTable() {
@@ -436,13 +442,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String messageAllEmpty(String count) {
-    return BeeUtils.joinWords(getColumnLabel() + ":", "visos reikšmės tuščios",
-        BeeUtils.bracket(count));
+    return Localized.messages.allValuesEmpty(getColumnLabel(), count);
   }
 
   protected String messageOneValue(String value, String count) {
-    return BeeUtils.joinWords(getColumnLabel() + ":", "visos reikšmės lygios", value,
-        BeeUtils.bracket(count));
+    return Localized.messages.allValuesIdentical(getColumnLabel(), value, count);
   }
 
   protected void openDialog(Element target, Widget widget,

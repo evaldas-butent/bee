@@ -4,11 +4,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum FilterSupplierType {
   VALUE("value"),
-  COMPARISON("comparison"),
+  VALUE_OR_NULL("valueOrNull"),
   LIST("list"),
-  RANGE("range"),
   ENUM("enum"),
-  WORD("word"),
   STAR("star"),
   ID("id");
 

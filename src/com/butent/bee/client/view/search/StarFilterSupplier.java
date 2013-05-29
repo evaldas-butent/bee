@@ -11,8 +11,8 @@ import java.util.List;
 
 public class StarFilterSupplier extends AbstractFilterSupplier {
 
-  public StarFilterSupplier(String viewName, BeeColumn column, String options) {
-    super(viewName, column, options);
+  public StarFilterSupplier(String viewName, BeeColumn column, String label, String options) {
+    super(viewName, column, label, options);
   }
 
   @Override

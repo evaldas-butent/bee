@@ -1562,6 +1562,13 @@ body {
   width: 40px;
 }
 
+.bee-FilterSupplier-id-editor {
+  width: 80px;
+}
+.bee-FilterSupplier-value-editor {
+  width: 100px;
+}
+
 .bee-GridFilter-dialog {
   background-color: white !important;
 }

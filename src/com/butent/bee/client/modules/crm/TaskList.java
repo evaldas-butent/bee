@@ -313,7 +313,7 @@ class TaskList {
     private final List<Long> updTasks = Lists.newArrayList();
 
     private ModeFilterSupplier(String options) {
-      super(VIEW_TASKS, null, options);
+      super(VIEW_TASKS, null, null, options);
     }
 
     @Override
@@ -624,7 +624,7 @@ class TaskList {
     private Slack slack = null;
 
     private SlackFilterSupplier(String options) {
-      super(VIEW_TASKS, null, options);
+      super(VIEW_TASKS, null, null, options);
     }
 
     @Override

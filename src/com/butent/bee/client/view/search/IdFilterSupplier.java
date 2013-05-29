@@ -9,10 +9,8 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputLong;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -22,18 +20,15 @@ import java.util.List;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
   
-  private static final int MIN_EDITOR_WIDTH = 60;
-  private static final int MAX_EDITOR_WIDTH = 100;
-  
   private final Editor editor;
-  private int lastWidth = BeeConst.UNDEF;
-  
+
   private Long oldValue = null;
 
-  public IdFilterSupplier(String viewName, final BeeColumn column, String options) {
-    super(viewName, column, options);
+  public IdFilterSupplier(String viewName, BeeColumn column, String label, String options) {
+    super(viewName, column, label, options);
     
     this.editor = new InputLong();
+    editor.getElement().addClassName(DEFAULT_STYLE_PREFIX + "id-editor");
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -57,12 +52,6 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
-    int width = BeeUtils.clamp(target.getOffsetWidth(), MIN_EDITOR_WIDTH, MAX_EDITOR_WIDTH);
-    if (width != getLastWidth()) {
-      StyleUtils.setWidth(editor.asWidget(), width);
-      setLastWidth(width);
-    }
-    
     setOldValue(BeeUtils.toLongOrNull(getValue()));
     
     openDialog(target, editor.asWidget(), onChange);
@@ -90,10 +79,6 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     return Lists.newArrayList();
   }
   
-  private int getLastWidth() {
-    return lastWidth;
-  }
-
   private Long getOldValue() {
     return oldValue;
   }
@@ -112,10 +97,6 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
         update(!id.equals(getOldValue()));
       }
     }
-  }
-
-  private void setLastWidth(int lastWidth) {
-    this.lastWidth = lastWidth;
   }
 
   private void setOldValue(Long oldValue) {

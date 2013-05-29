@@ -114,13 +114,6 @@
   background-color: white;
 }
 
-.bee-crm-FilterSupplier-Slack-dialog,
-.bee-crm-FilterSupplier-Mode-dialog {
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  padding: 2px;
-}
 .bee-crm-FilterSupplier-Slack-late,
 .bee-crm-FilterSupplier-Slack-scheduled {
   display: block;

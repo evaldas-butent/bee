@@ -50,8 +50,9 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   private final List<DataItem> data = Lists.newArrayList();
   private final List<Integer> values = Lists.newArrayList();
 
-  public EnumFilterSupplier(String viewName, BeeColumn column, String options, String key) {
-    super(viewName, column, options);
+  public EnumFilterSupplier(String viewName, BeeColumn column, String label, String options,
+      String key) {
+    super(viewName, column, label, options);
 
     this.captions = Captions.getCaptions(key);
     this.nullIndex = (captions == null) ? BeeConst.UNDEF : captions.size();

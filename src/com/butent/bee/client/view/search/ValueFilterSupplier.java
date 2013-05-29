@@ -26,10 +26,11 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   
   private String oldValue = null;
 
-  public ValueFilterSupplier(String viewName, final BeeColumn column, String options) {
-    super(viewName, column, options);
+  public ValueFilterSupplier(String viewName, BeeColumn column, String label, String options) {
+    super(viewName, column, label, options);
     
     this.editor = EditorFactory.createEditor(column, false);
+    editor.getElement().addClassName(DEFAULT_STYLE_PREFIX + "value-editor");
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override

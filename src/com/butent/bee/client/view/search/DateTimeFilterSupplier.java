@@ -44,8 +44,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
   private Range<DateTime> range = null;
 
-  public DateTimeFilterSupplier(String viewName, BeeColumn column, String options) {
-    super(viewName, column, options);
+  public DateTimeFilterSupplier(String viewName, BeeColumn column, String label, String options) {
+    super(viewName, column, label, options);
   }
 
   @Override

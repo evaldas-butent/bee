@@ -12,7 +12,7 @@ import java.util.List;
 public class FilterSupplierFactory {
 
   public static AbstractFilterSupplier getSupplier(String viewName, List<BeeColumn> dataColumns,
-      int sourceIndex, List<String> searchColumns, FilterSupplierType type,
+      int sourceIndex, String label, List<String> searchColumns, FilterSupplierType type,
       List<String> renderColumns, List<String> orderColumns,
       String itemKey, Relation relation, String options) {
 
@@ -26,77 +26,69 @@ public class FilterSupplierFactory {
 
     if (type != null) {
       switch (type) {
-        case COMPARISON:
-          supplier = new ComparisonFilterSupplier(viewName, filterColumn, options);
-          break;
-
         case ENUM:
-          supplier = new EnumFilterSupplier(viewName, filterColumn, options, itemKey);
+          supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
           break;
 
         case ID:
-          supplier = new IdFilterSupplier(viewName, filterColumn, options);
+          supplier = new IdFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case LIST:
-          supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, renderColumns,
-              orderColumns, relation, options);
-          break;
-
-        case RANGE:
-          supplier = new RangeFilterSupplier(viewName, filterColumn, options);
+          supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, label,
+              renderColumns, orderColumns, relation, options);
           break;
 
         case STAR:
-          supplier = new StarFilterSupplier(viewName, filterColumn, options);
+          supplier = new StarFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case VALUE:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
           break;
 
-        case WORD:
-          supplier = new WordFilterSupplier(viewName, filterColumn, options);
+        case VALUE_OR_NULL:
+          supplier = new ValueOrNullFilterSupplier(viewName, filterColumn, label, options);
           break;
       }
     }
 
     if (supplier == null) {
       if (!BeeUtils.isEmpty(itemKey)) {
-        supplier = new EnumFilterSupplier(viewName, filterColumn, options, itemKey);
+        supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
       } else if (relation != null) {
-        supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, renderColumns,
-            orderColumns, relation, options);
+        supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, label,
+            renderColumns, orderColumns, relation, options);
       }
     }
 
     if (supplier == null && filterColumn != null) {
       switch (filterColumn.getType()) {
         case BOOLEAN:
-          supplier = new BooleanFilterSupplier(viewName, filterColumn, options);
+          supplier = new BooleanFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case DATE:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, options);
+          supplier = new DateFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case DATE_TIME:
-          supplier = new DateTimeFilterSupplier(viewName, filterColumn, options);
+          supplier = new DateTimeFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case DECIMAL:
         case INTEGER:
         case LONG:
         case NUMBER:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case TEXT:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case TIME_OF_DAY:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
           break;
       }
     }

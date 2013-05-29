@@ -47,8 +47,9 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   private final List<String> values = Lists.newArrayList();
 
   public ListFilterSupplier(String viewName, BeeColumn sourceColumn, BeeColumn filterColumn,
-      List<String> renderColumns, List<String> orderColumns, Relation relation, String options) {
-    super(viewName, (relation == null) ? filterColumn : sourceColumn, options);
+      String label, List<String> renderColumns, List<String> orderColumns, Relation relation,
+      String options) {
+    super(viewName, (relation == null) ? filterColumn : sourceColumn, label, options);
 
     if (relation == null) {
       this.renderColumns.add(filterColumn.getId());
