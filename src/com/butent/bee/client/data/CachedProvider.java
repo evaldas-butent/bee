@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -104,19 +105,6 @@ public class CachedProvider extends Provider {
         }
       }
       super.onCellUpdate(event);
-    }
-  }
-
-  @Override
-  public void onFilterChange(Filter newFilter) {
-
-    if (applyFilter(newFilter)) {
-      getDisplay().setRowCount(getRowCount(), true);
-      acceptFilter(newFilter);
-      updateDisplay(true);
-      
-    } else {
-      rejectFilter(newFilter);
     }
   }
 
@@ -243,6 +231,26 @@ public class CachedProvider extends Provider {
         updateDisplay(updateActiveRow);
       }
     });
+  }
+
+  @Override
+  public void tryFilter(Filter newFilter, Consumer<Boolean> callback, boolean notify) {
+    if (applyFilter(newFilter)) {
+      getDisplay().setRowCount(getRowCount(), true);
+      acceptFilter(newFilter);
+      updateDisplay(true);
+      
+      if (callback != null) {
+        callback.accept(true);
+      }
+      
+    } else {
+      rejectFilter(newFilter, notify);
+
+      if (callback != null) {
+        callback.accept(false);
+      }
+    }
   }
 
   @Override

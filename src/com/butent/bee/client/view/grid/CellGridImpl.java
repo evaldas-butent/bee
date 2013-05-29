@@ -387,7 +387,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
           columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
               sourceHolder, listHolder, Relation.RenderMode.TARGET);
-
+          
           source = sourceHolder.get();
           renderColumns = listHolder.get();
 
@@ -622,9 +622,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           && (filterSupplierType != null
           || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
 
-        filterSupplier = FilterSupplierFactory.getSupplier(getViewName(),
-            (dataIndex >= 0) ? dataCols.get(dataIndex) : null,
-            filterSupplierType, renderColumns, column.getSortBy(),
+        filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataCols, dataIndex,
+            column.getSearchBy(), filterSupplierType, renderColumns, column.getSortBy(),
             columnDescr.getItemKey(), columnDescr.getRelation(),
             columnDescr.getFilterOptions());
       }

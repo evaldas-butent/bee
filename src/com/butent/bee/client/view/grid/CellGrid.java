@@ -140,7 +140,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private boolean colReadOnly = false;
 
     private boolean cellResizable = true;
-    
+
     private boolean hidable = true;
 
     private ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
@@ -153,7 +153,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       this.column = column;
       this.header = header;
       this.footer = footer;
-      
+
       this.filterSupplier = filterSupplier;
     }
 
@@ -240,7 +240,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     String getLabel() {
       return label;
     }
-    
+
     List<String> getSortBy() {
       return getColumn().getSortBy();
     }
@@ -305,7 +305,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     boolean is(String id) {
       return BeeUtils.same(getColumnId(), id);
     }
-    
+
     boolean isHidable() {
       return hidable;
     }
@@ -1505,7 +1505,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int incr = getBodyCellWidthIncrement();
 
     List<ColumnInfo> columns = getColumns();
-    
+
     for (ColumnInfo columnInfo : columns) {
       int w = columnInfo.getWidth();
       if (w <= 0) {
@@ -2505,7 +2505,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public boolean updateVisibleColumns(List<Integer> columns) {
     if (!columns.isEmpty() && !columns.equals(getVisibleColumns())) {
       List<Integer> oldColumns = Lists.newArrayList(visibleColumns);
-      
+
       visibleColumns.clear();
       visibleColumns.addAll(columns);
 
@@ -2513,7 +2513,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       getResizedRows().clear();
       getResizedCells().clear();
-      
+
       for (int col = 0; col < columns.size(); col++) {
         if (!oldColumns.contains(columns.get(col))) {
           estimateHeaderWidth(col, true);
@@ -4435,31 +4435,57 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         return false;
       }
 
+      int scrollWidth = cell.getScrollWidth() - (cell.getClientWidth() - oldWidth);
+      int scrollHeight = cell.getScrollHeight() - (cell.getClientHeight() - oldHeight);
+
+      int defWidth = getColumnWidth(col);
+      int defHeight = getRowHeight(row);
+      
       int newWidth = oldWidth;
       int newHeight = oldHeight;
 
       switch (keyCode) {
         case EventUtils.KEY_INSERT:
-          newWidth++;
-          newHeight++;
+          if (scrollWidth > defWidth && scrollWidth > oldWidth
+              || scrollHeight > defHeight && scrollHeight > oldHeight) {
+            newWidth = Math.max(oldWidth, scrollWidth);
+            newHeight = Math.max(oldHeight, scrollHeight);
+          } else {
+            newWidth += 2;
+            newHeight += 2;
+          }
           break;
+
         case KeyCodes.KEY_DELETE:
           newWidth--;
           newHeight--;
           break;
+
         case KeyCodes.KEY_ESCAPE:
           newWidth = getColumnWidth(col);
           newHeight = getRowHeight(row);
           break;
+
         case KeyCodes.KEY_DOWN:
-          newHeight++;
+          if (scrollHeight > defHeight && scrollHeight > oldHeight) {
+            newHeight = scrollHeight;
+          } else {
+            newHeight += 2;
+          }
           break;
+
         case KeyCodes.KEY_LEFT:
           newWidth--;
           break;
+
         case KeyCodes.KEY_RIGHT:
-          newWidth++;
+          if (scrollWidth > defWidth && scrollWidth > oldWidth) {
+            newWidth = scrollWidth;
+          } else {
+            newWidth += 2;
+          }
           break;
+
         case KeyCodes.KEY_UP:
           newHeight--;
           break;
@@ -5001,7 +5027,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       int oldHeight = getResizerStartValue();
       int newHeight = (component == null) ? BeeConst.UNDEF : component.getCellHeight();
-      
+
       if (oldHeight >= 0 && newHeight > 0 && oldHeight != newHeight) {
         SettingsChangeEvent.fireHeight(this, component.type, newHeight);
       }

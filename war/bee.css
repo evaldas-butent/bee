@@ -1567,32 +1567,38 @@ body {
 }
 .bee-GridFilter-dialog .bee-Dialog-header {
   background-color: inherit;
-  height: 21px;
+  height: 22px;
   border-style: none;
 }
 
-.bee-GridFilter-supplier-column {
-  display: -webkit-flex;
-  -webkit-flex-direction: row;
-  -webkit-align-items: center;
+.bee-GridFilter-content table {
+  border-spacing: 1em 0;
 }
-.bee-GridFilter-supplier-column:hover {
-  background-color: #f2f2f2;
+.bee-GridFilter-content td {
+  padding: 0;
 }
 .bee-GridFilter-supplier-label {
-  width: 100px;
+  cursor: pointer;
+}
+.bee-GridFilter-supplier-row:hover .bee-GridFilter-supplier-label {
+  background-color: #f2f2f2;
 }
 .bee-GridFilter-supplier-button {
   max-width: 200px;
   max-height: 60px;
   word-break: break-all;
-  margin-left: 3px;
 }
-.bee-GridFilter-supplier-not-empty {
-  padding: 1px 2px !important;
+.bee-GridFilter-supplier-empty .bee-GridFilter-supplier-button {
+  vertical-align: middle;
+}  
+.bee-GridFilter-supplier-not-empty .bee-GridFilter-supplier-button {
+  padding: 1px 2px;
 }  
 .bee-GridFilter-supplier-clear {
-  margin-left: 3px;
+  margin-left: 4px;
+}
+.bee-GridFilter-supplier-empty .bee-GridFilter-supplier-clear {
+  display: none;
 }
 
 .bee-GridFilter-save-panel {
@@ -1608,16 +1614,13 @@ body {
 
 .bee-GridFilter-dialog .bee-Filters-wrapper {
   margin-top: 2ex;
+  max-height: 200px;
+  overflow: auto;
 }
 
-.bee-Filters-table {
-  border-collapse: collapse;
-}  
-
 .bee-Filters-initial {
-  margin: 0 5px 0 0;
+  margin: 0;
 }  
-
 .bee-Filters-label {
   min-width: 120px;
   max-width: 240px;
@@ -1628,6 +1631,9 @@ body {
 .bee-Filters-label:hover {
   color: #00e;
   text-decoration: underline;
+}
+.bee-Filters-row:hover .bee-Filters-label {
+  background-color: #f2f2f2;
 }
 
 .bee-resizable {

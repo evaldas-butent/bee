@@ -39,6 +39,7 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -73,7 +74,7 @@ import java.util.Map;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
-    HasGridView, HasViewName {
+    HasGridView, HasViewName, FilterConsumer {
 
   private class DeleteCallback extends ConfirmationCallback {
     private final IsRow activeRow;
@@ -345,12 +346,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case FILTER:
         filterManager.handleFilter(getGridView().getGridKey(), getGridView().getGrid(),
-            getHeaderElement(), new Consumer<Filter>() {
-              @Override
-              public void accept(Filter input) {
-                onFilterChange(input);
-              }
-            });
+            getHeaderElement(), this);
         break;
 
       case PRINT:
@@ -365,7 +361,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case REMOVE_FILTER:
         filterManager.clearFilter(getGridView().getGrid());
-        onFilterChange(null);
+        tryFilter(null, null, true);
         break;
 
       default:
@@ -500,6 +496,23 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  @Override
+  public void tryFilter(Filter filter, Consumer<Boolean> callback, boolean notify) {
+    if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
+      if (callback != null) {
+        callback.accept(true);
+      }
+      return;
+    }
+
+    HeaderView header = getHeader();
+    if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
+      header.showAction(Action.REMOVE_FILTER, filter != null);
+    }
+
+    getDataProvider().tryFilter(filter, callback, notify);
+  }
+
   private void addRow() {
     if (getGridView().likeAMotherlessChild() && !validateParent()) {
       return;
@@ -611,27 +624,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return getGridInterceptor().getDeleteMode(this, row, selected, mode);
     }
   }
-
+  
   private GridInterceptor getGridInterceptor() {
     return getGridView().getGridInterceptor();
   }
-  
+
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
-  }
-
-  private void onFilterChange(Filter filter) {
-    if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
-      return;
-    }
-
-    HeaderView header = getHeader();
-    if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
-      header.showAction(Action.REMOVE_FILTER, filter != null);
-    }
-
-    getDataProvider().onFilterChange(filter);
   }
 
   private void showFailure(String activity, String... reasons) {

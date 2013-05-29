@@ -46,13 +46,13 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private final List<String> values = Lists.newArrayList();
 
-  public ListFilterSupplier(String viewName, BeeColumn column, List<String> renderColumns,
-      List<String> orderColumns, Relation relation, String options) {
-    super(viewName, column, options);
+  public ListFilterSupplier(String viewName, BeeColumn sourceColumn, BeeColumn filterColumn,
+      List<String> renderColumns, List<String> orderColumns, Relation relation, String options) {
+    super(viewName, (relation == null) ? filterColumn : sourceColumn, options);
 
     if (relation == null) {
-      this.renderColumns.add(column.getId());
-      this.orderColumns.add(column.getId());
+      this.renderColumns.add(filterColumn.getId());
+      this.orderColumns.add(filterColumn.getId());
 
       this.foreign = false;
 

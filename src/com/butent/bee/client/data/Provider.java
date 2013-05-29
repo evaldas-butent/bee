@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -30,7 +31,7 @@ import java.util.Map;
  */
 
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
-    DataRequestEvent.Handler {
+    DataRequestEvent.Handler, FilterConsumer {
 
   public enum Type {
     ASYNC, CACHED, LOCAL
@@ -145,8 +146,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     onRequest(false);
   }
 
-  public abstract void onFilterChange(Filter newFilter);
-
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
@@ -213,8 +212,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected abstract void onRequest(boolean updateActiveRow);
 
-  protected void rejectFilter(Filter filter) {
-    if (filter != null && notificationListener != null) {
+  protected void rejectFilter(Filter filter, boolean notify) {
+    if (filter != null && notify && notificationListener != null) {
       if (Global.isDebug()) {
         notificationListener.notifyWarning("no rows found", filter.toString());
       } else {

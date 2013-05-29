@@ -28,6 +28,7 @@ import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a panel that formats its child widgets using the default HTML layout behavior.
@@ -40,9 +41,17 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   private String options = null;
 
   public Flow() {
+    super();
     DomUtils.createId(this, getIdPrefix());
   }
 
+  public Flow(String styleName) {
+    this();
+    if (!BeeUtils.isEmpty(styleName)) {
+      setStyleName(styleName);
+    }
+  }
+  
   @Override
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());

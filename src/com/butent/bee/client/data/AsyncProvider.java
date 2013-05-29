@@ -13,6 +13,7 @@ import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -37,8 +38,6 @@ import java.util.Map;
  */
 
 public class AsyncProvider extends Provider {
-
-  private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
 
   private class QueryCallback extends Queries.RowSetCallback {
 
@@ -202,6 +201,8 @@ public class AsyncProvider extends Provider {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
+
   private static final int DEFAULT_SENSITIVITY_MILLIS = 300;
   private static final int DEFAULT_MAX_REPEAT_MILLIS = 100;
 
@@ -301,25 +302,6 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  public void onFilterChange(final Filter newFilter) {
-    resetRequests();
-    Filter flt = getQueryFilter(newFilter);
-
-    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      @Override
-      public void onSuccess(Integer result) {
-        if (newFilter == null || BeeUtils.isPositive(result)) {
-          acceptFilter(newFilter);
-          onRowCount(result, true);
-
-        } else {
-          rejectFilter(newFilter);
-        }
-      }
-    });
-  }
-
-  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
       if (hasPaging()) {
@@ -398,6 +380,33 @@ public class AsyncProvider extends Provider {
     } else {
       onRequest(updateActiveRow);
     }
+  }
+
+  @Override
+  public void tryFilter(final Filter newFilter, final Consumer<Boolean> callback,
+      final boolean notify) {
+
+    resetRequests();
+    Filter flt = getQueryFilter(newFilter);
+
+    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        if (newFilter == null || BeeUtils.isPositive(result)) {
+          acceptFilter(newFilter);
+          onRowCount(result, true);
+          if (callback != null) {
+            callback.accept(true);
+          }
+
+        } else {
+          rejectFilter(newFilter, notify);
+          if (callback != null) {
+            callback.accept(false);
+          }
+        }
+      }
+    });
   }
 
   @Override

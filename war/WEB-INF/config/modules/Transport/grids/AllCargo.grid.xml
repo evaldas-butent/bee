@@ -13,8 +13,8 @@
     <RelColumn name="Customer" caption="Užsakovas" />
     <RelColumn name="Manager" caption="Vadybininkas" />
 
-    <RelColumn name="Description" caption="Krovinys" minWidth="100"
-      editEnabled="true" editSource="Cargo" editViewName="OrderCargo" />
+    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="Krovinys"
+      minWidth="100" editEnabled="true" filterSupplier="value" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
       minWidth="140" flexBasis="120" />

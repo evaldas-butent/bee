@@ -32,6 +32,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -146,9 +147,6 @@ public class Filters {
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
   private static final String STYLE_DELETE = STYLE_PREFIX + "delete";
 
-  private static final String STYLE_SUFFIX_COL = "-col";
-  private static final String STYLE_SUFFIX_CELL = "-cell";
-
   private final Multimap<String, Item> itemsByKey = ArrayListMultimap.create();
 
   private int maxLabelLength = BeeConst.UNDEF;
@@ -227,8 +225,7 @@ public class Filters {
 
     int activeItemIndex = BeeConst.UNDEF;
 
-    final HtmlTable table = new HtmlTable();
-    table.addStyleName(STYLE_TABLE);
+    final HtmlTable table = new HtmlTable(STYLE_TABLE);
 
     int r = 0;
 
@@ -238,6 +235,8 @@ public class Filters {
       final long id = item.getId();
       
       final SimpleBoolean initial = new SimpleBoolean(item.isInitial());
+      initial.setTitle(Localized.constants.initialFilter());
+      
       initial.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -248,7 +247,7 @@ public class Filters {
         }
       });
 
-      createCell(table, r, c, initial, STYLE_INITIAL);
+      table.setWidgetAndStyle(r, c, initial, STYLE_INITIAL);
       c++;
 
       final CustomDiv labelWidget = new CustomDiv();
@@ -261,7 +260,7 @@ public class Filters {
         }
       });
 
-      createCell(table, r, c, labelWidget, STYLE_LABEL);
+      table.setWidgetAndStyle(r, c, labelWidget, STYLE_LABEL);
       c++;
 
       if (item.isEditable()) {
@@ -291,7 +290,7 @@ public class Filters {
           }
         });
 
-        createCell(table, r, c, edit, STYLE_EDIT);
+        table.setWidgetAndStyle(r, c, edit, STYLE_EDIT);
       }
 
       c++;
@@ -307,7 +306,7 @@ public class Filters {
           }
         });
 
-        createCell(table, r, c, delete, STYLE_DELETE);
+        table.setWidgetAndStyle(r, c, delete, STYLE_DELETE);
       }
 
       c++;
@@ -405,15 +404,6 @@ public class Filters {
     }
 
     logger.info("filters", itemsByKey.size());
-  }
-
-  private void createCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
-    widget.addStyleName(styleName);
-    table.setWidget(row, col, widget, styleName + STYLE_SUFFIX_CELL);
-
-    if (row == 0) {
-      table.getColumnFormatter().addStyleName(col, styleName + STYLE_SUFFIX_COL);
-    }
   }
 
   private Item createItem(BeeRow row) {

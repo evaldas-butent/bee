@@ -19,6 +19,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -242,6 +243,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }-*/;
   }
 
+  private static final String STYLE_SUFFIX_COL = "-col";
+  private static final String STYLE_SUFFIX_CELL = "-cell";
+  
   private final Element tableElem;
   private final Element bodyElem;
 
@@ -271,6 +275,13 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     init();
   }
 
+  public HtmlTable(String styleName) {
+    this();
+    if (!BeeUtils.isEmpty(styleName)) {
+      addStyleName(styleName);
+    }
+  }
+  
   public void alignCenter(int row, int column) {
     getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_CENTER);
   }
@@ -472,6 +483,15 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public void setWidget(int row, int column, Widget widget, String cellStyleName) {
     setWidget(row, column, widget);
     getCellFormatter().addStyleName(row, column, cellStyleName);
+  }
+  
+  public void setWidgetAndStyle(int row, int column, Widget widget, String styleName) {
+    widget.addStyleName(styleName);
+    setWidget(row, column, widget, styleName + STYLE_SUFFIX_CELL);
+
+    if (row == 0) {
+      getColumnFormatter().addStyleName(column, styleName + STYLE_SUFFIX_COL);
+    }
   }
 
   private void checkCellBounds(int row, int column) {

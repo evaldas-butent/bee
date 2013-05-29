@@ -139,9 +139,6 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private static final String STYLE_COLOR_PICKER = STYLE_PREFIX + "colorPicker";
 
-  private static final String STYLE_SUFFIX_COL = "-col";
-  private static final String STYLE_SUFFIX_CELL = "-cell";
-
   private static final String STYLE_SUFFIX_ENABLED = "-enabled";
   private static final String STYLE_SUFFIX_DISABLED = "-disabled";
 
@@ -321,10 +318,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     int c = 0;
     for (UcaColumn column : UcaColumn.values()) {
-      String styleName = STYLE_PREFIX + column.getLabel();
-
       Widget widget = column.create(row);
-      widget.addStyleName(styleName);
 
       switch (column) {
         case COLOR:
@@ -391,10 +385,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
           break;
       }
 
-      table.setWidget(r, c, widget, styleName + STYLE_SUFFIX_CELL);
-      if (r == 0) {
-        table.getColumnFormatter().addStyleName(c, styleName + STYLE_SUFFIX_COL);
-      }
+      table.setWidgetAndStyle(r, c, widget, STYLE_PREFIX + column.getLabel());
       c++;
     }
   }

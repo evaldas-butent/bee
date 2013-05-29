@@ -77,8 +77,6 @@ public class MessageBoxes {
   private static final String STYLE_STAR_PICKER = "bee-StarPicker";
   private static final String STYLE_STAR_CLUSTER = "bee-StarCluster-";
 
-  private static final String CELL_STYLE_SUFFIX = "-cell";
-
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
@@ -303,8 +301,8 @@ public class MessageBoxes {
     final Holder<State> state = Holder.of(State.OPEN);
     final Timer timer = (timeout > 0) ? new DialogTimer(popup, state) : null;
 
-    HtmlTable panel = new HtmlTable();
-    panel.addStyleName(STYLE_MESSAGE_BOX_PANEL);
+    HtmlTable table = new HtmlTable();
+    table.addStyleName(STYLE_MESSAGE_BOX_PANEL);
 
     int row = 0;
     int col = 0;
@@ -314,7 +312,7 @@ public class MessageBoxes {
           DialogConstants.WIDGET_ICON);
 
       if (iconWidget != null) {
-        setCell(panel, row, col, iconWidget, STYLE_MESSAGE_BOX_ICON);
+        table.setWidgetAndStyle(row, col, iconWidget, STYLE_MESSAGE_BOX_ICON);
         col++;
       }
     }
@@ -329,7 +327,7 @@ public class MessageBoxes {
             if (!BeeUtils.isEmpty(messageStyle)) {
               messageWidget.addStyleName(messageStyle);
             }
-            setCell(panel, row++, col, messageWidget, STYLE_MESSAGE_BOX_MESSAGE);
+            table.setWidgetAndStyle(row++, col, messageWidget, STYLE_MESSAGE_BOX_MESSAGE);
           }
         }
       }
@@ -362,7 +360,7 @@ public class MessageBoxes {
       }
 
       UiHelper.initialize(group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
-      setCell(panel, row, col, group, STYLE_MESSAGE_BOX_BUTTON_GROUP);
+      table.setWidgetAndStyle(row, col, group, STYLE_MESSAGE_BOX_BUTTON_GROUP);
     }
 
     popup.setHideOnEscape(true);
@@ -386,7 +384,7 @@ public class MessageBoxes {
       }
     });
 
-    UiHelper.setWidget(popup, panel, initializer, DialogConstants.WIDGET_PANEL);
+    UiHelper.setWidget(popup, table, initializer, DialogConstants.WIDGET_PANEL);
 
     popup.setAnimationEnabled(true);
     popup.center();
@@ -610,10 +608,5 @@ public class MessageBoxes {
     if (newIndex >= 0 && newIndex != oldIndex) {
       UiHelper.focus(panel.getWidget(newIndex));
     }
-  }
-
-  private void setCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
-    widget.addStyleName(styleName);
-    table.setWidget(row, col, widget, styleName + CELL_STYLE_SUFFIX);
   }
 }

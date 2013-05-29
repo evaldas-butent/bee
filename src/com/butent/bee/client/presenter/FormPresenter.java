@@ -402,7 +402,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       logger.info("filter not changed", filter);
     } else {
       lastFilter = filter;
-      getDataProvider().onFilterChange(filter);
+      getDataProvider().tryFilter(filter, null, true);
     }
   }
 }

@@ -8,12 +8,15 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
@@ -40,18 +43,21 @@ public class GridFilterManager {
 
   private static final String STYLE_SUPPLIER_PREFIX = STYLE_PREFIX + "supplier-";
   private static final String STYLE_SUPPLIER_PANEL = STYLE_SUPPLIER_PREFIX + "panel";
-  private static final String STYLE_SUPPLIER_COLUMN = STYLE_SUPPLIER_PREFIX + "column";
+  private static final String STYLE_SUPPLIER_TABLE = STYLE_SUPPLIER_PREFIX + "table";
+  private static final String STYLE_SUPPLIER_ROW = STYLE_SUPPLIER_PREFIX + "row";
   private static final String STYLE_SUPPLIER_LABEL = STYLE_SUPPLIER_PREFIX + "label";
-  private static final String STYLE_SUPPLIER_BUTTON = STYLE_SUPPLIER_PREFIX + "button";
+  private static final String STYLE_SUPPLIER_ACTION_CONTAINER = STYLE_SUPPLIER_PREFIX
+      + "action-container";
   private static final String STYLE_SUPPLIER_EMPTY = STYLE_SUPPLIER_PREFIX + "empty";
   private static final String STYLE_SUPPLIER_NOT_EMPTY = STYLE_SUPPLIER_PREFIX + "not-empty";
+  private static final String STYLE_SUPPLIER_BUTTON = STYLE_SUPPLIER_PREFIX + "button";
   private static final String STYLE_SUPPLIER_CLEAR = STYLE_SUPPLIER_PREFIX + "clear";
 
   private static final String STYLE_SAVE_PREFIX = STYLE_PREFIX + "save-";
   private static final String STYLE_SAVE_PANEL = STYLE_SAVE_PREFIX + "panel";
   private static final String STYLE_SAVE_ICON = STYLE_SAVE_PREFIX + "icon";
   private static final String STYLE_SAVE_MESSAGE = STYLE_SAVE_PREFIX + "message";
-  
+
   public static Filter parseFilter(CellGrid grid, List<Map<String, String>> filterValues) {
     if (BeeUtils.isEmpty(filterValues)) {
       return null;
@@ -102,29 +108,41 @@ public class GridFilterManager {
   }
 
   public void handleFilter(String gridKey, final CellGrid grid, Element target,
-      final Consumer<Filter> filterConsumer) {
+      final FilterConsumer filterConsumer) {
 
     List<ColumnInfo> predefinedColumns = grid.getPredefinedColumns();
     List<Integer> visibleColumns = grid.getVisibleColumns();
-    
+
     final DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
 
     final Scheduler.ScheduledCommand onChange = new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        dialog.close();
-        filterConsumer.accept(getFilter(grid, null));
+        final Filter filter = getFilter(grid, null);
+        logger.debug("accept", filter);
+
+        filterConsumer.tryFilter(filter, new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (BeeUtils.isTrue(input)) {
+              dialog.close();
+            } else if (filter != null) {
+              BeeKeeper.getScreen().notifyWarning(Localized.constants.nothingFound());
+            }
+          }
+        }, false);
       }
     };
 
-    Flow supplierPanel = new Flow();
-    supplierPanel.addStyleName(STYLE_SUPPLIER_PANEL);
+    HtmlTable table = new HtmlTable(STYLE_SUPPLIER_TABLE);
+    int row = 0;
 
     for (int index : visibleColumns) {
       ColumnInfo columnInfo = predefinedColumns.get(index);
       AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
       if (filterSupplier != null) {
-        supplierPanel.add(createColumnWidget(grid, columnInfo, filterSupplier, onChange));
+        createSupplierRow(table, row, grid, columnInfo, filterSupplier, onChange);
+        row++;
       }
     }
 
@@ -134,7 +152,8 @@ public class GridFilterManager {
           ColumnInfo columnInfo = predefinedColumns.get(i);
           AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
           if (filterSupplier != null && !filterSupplier.isEmpty()) {
-            supplierPanel.add(createColumnWidget(grid, columnInfo, filterSupplier, onChange));
+            createSupplierRow(table, row, grid, columnInfo, filterSupplier, onChange);
+            row++;
           }
         }
       }
@@ -143,13 +162,15 @@ public class GridFilterManager {
     Flow content = new Flow();
     content.addStyleName(STYLE_CONTENT);
 
+    Simple supplierPanel = new Simple(table);
+    supplierPanel.addStyleName(STYLE_SUPPLIER_PANEL);
     content.add(supplierPanel);
-    
+
     Widget saveWidget = maybeCreateSaveWidget(gridKey, grid, dialog);
     if (saveWidget != null) {
       content.add(saveWidget);
     }
-    
+
     if (Global.getFilters().containsKey(gridKey)) {
       Widget widget = Global.getFilters().createWidget(gridKey, new Consumer<FilterDescription>() {
         @Override
@@ -161,7 +182,7 @@ public class GridFilterManager {
           onChange.execute();
         }
       });
-      
+
       if (widget != null) {
         content.add(widget);
       }
@@ -169,16 +190,18 @@ public class GridFilterManager {
 
     dialog.setWidget(content);
     dialog.setHideOnEscape(true);
-    
+
     dialog.setAnimationEnabled(true);
     dialog.showRelativeTo(target);
   }
-  
+
   public void setFilter(CellGrid grid, List<Map<String, String>> filterValues) {
     if (BeeUtils.isEmpty(filterValues)) {
       clearFilter(grid);
       return;
     }
+
+    logger.debug("set", filterValues);
 
     Map<String, String> columnFilters = Maps.newHashMap();
     for (Map<String, String> values : filterValues) {
@@ -210,53 +233,54 @@ public class GridFilterManager {
     }
   }
 
-  private Widget createColumnWidget(final CellGrid grid, final ColumnInfo columnInfo,
-      final AbstractFilterSupplier filterSupplier, final Scheduler.ScheduledCommand onChange) {
+  private void createSupplierRow(HtmlTable table, int row, final CellGrid grid,
+      final ColumnInfo columnInfo, final AbstractFilterSupplier filterSupplier,
+      final Scheduler.ScheduledCommand onChange) {
 
-    Flow container = new Flow();
-    container.addStyleName(STYLE_SUPPLIER_COLUMN);
-
-    CustomDiv label = new CustomDiv(STYLE_SUPPLIER_LABEL);
+    CustomDiv label = new CustomDiv();
     label.setHTML(columnInfo.getLabel());
-    container.add(label);
 
-    BeeButton button = new BeeButton();
+    table.setWidgetAndStyle(row, 0, label, STYLE_SUPPLIER_LABEL);
+
+    final BeeButton button = new BeeButton();
     button.addStyleName(STYLE_SUPPLIER_BUTTON);
 
-    if (filterSupplier.isEmpty()) {
-      button.addStyleName(STYLE_SUPPLIER_EMPTY);
-    } else {
-      button.addStyleName(STYLE_SUPPLIER_NOT_EMPTY);
+    if (!filterSupplier.isEmpty()) {
       button.setHTML(filterSupplier.getLabel());
       button.setTitle(filterSupplier.getTitle());
     }
 
-    button.addClickHandler(new ClickHandler() {
+    ClickHandler clickHandler = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         filterSupplier.setEffectiveFilter(getFilter(grid, columnInfo.getColumnId()));
-        filterSupplier.onRequest(EventUtils.getEventTargetElement(event), onChange);
+        filterSupplier.onRequest(button.getElement(), onChange);
+      }
+    };
+    
+    label.addClickHandler(clickHandler);
+    button.addClickHandler(clickHandler);
+
+    BeeImage clear = new BeeImage(Global.getImages().closeSmall());
+    clear.addStyleName(STYLE_SUPPLIER_CLEAR);
+
+    clear.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        filterSupplier.setValue(null);
+        onChange.execute();
       }
     });
 
-    container.add(button);
+    Flow actionContainer = new Flow();
+    actionContainer.add(button);
+    actionContainer.add(clear);
 
-    if (!filterSupplier.isEmpty()) {
-      BeeImage clear = new BeeImage(Global.getImages().closeSmall());
-      clear.addStyleName(STYLE_SUPPLIER_CLEAR);
-      
-      clear.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          filterSupplier.setValue(null);
-          onChange.execute();
-        }
-      });
-      
-      container.add(clear);
-    }
+    table.setWidgetAndStyle(row, 1, actionContainer, STYLE_SUPPLIER_ACTION_CONTAINER);
 
-    return container;
+    actionContainer.addStyleName(filterSupplier.isEmpty()
+        ? STYLE_SUPPLIER_EMPTY : STYLE_SUPPLIER_NOT_EMPTY);
+    table.getRowFormatter().addStyleName(row, STYLE_SUPPLIER_ROW);
   }
 
   private Filter getFilter(CellGrid grid, String excludeColumn) {
@@ -294,7 +318,7 @@ public class GridFilterManager {
         }
       }
     }
-    
+
     if (labels.isEmpty()) {
       return null;
     } else {
@@ -318,7 +342,7 @@ public class GridFilterManager {
     }
     return values;
   }
-  
+
   private Widget maybeCreateSaveWidget(final String gridKey, final CellGrid grid,
       final DialogBox dialog) {
 
@@ -326,10 +350,10 @@ public class GridFilterManager {
     if (values.isEmpty() || Global.getFilters().contains(gridKey, values)) {
       return null;
     }
-    
+
     Flow panel = new Flow();
     panel.addStyleName(STYLE_SAVE_PANEL);
-    
+
     ClickHandler clickHandler = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -343,17 +367,17 @@ public class GridFilterManager {
         }
       }
     };
-    
+
     BeeImage icon = new BeeImage(Global.getImages().silverPlus());
     icon.addStyleName(STYLE_SAVE_ICON);
     icon.addClickHandler(clickHandler);
     panel.add(icon);
-    
+
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
     message.setText(Localized.constants.saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
-    
+
     return panel;
   }
 }

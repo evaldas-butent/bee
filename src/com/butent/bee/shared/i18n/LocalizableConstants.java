@@ -64,6 +64,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String filter();
 
+  String initialFilter();
+
   String item();
 
   String mobile();
