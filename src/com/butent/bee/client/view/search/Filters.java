@@ -22,7 +22,6 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -44,8 +43,34 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Filters {
+  
+  private static class Initial extends CustomDiv {
+    
+    private static String STYLE_CHECKED = "checked";
+    private static String STYLE_UNCHECKED = "unchecked";
+    
+    private final long id;
+    private boolean value;
+
+    private Initial(String styleName, long id, boolean value) {
+      super(styleName);
+      this.id = id;
+      this.value = value;
+      
+      addStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
+    }
+    
+    private void toggle() {
+      removeStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
+      
+      value = !value;
+      
+      addStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
+    }
+  }
 
   private static class Item implements Comparable<Item> {
 
@@ -220,7 +245,7 @@ public class Filters {
   public boolean containsKey(String key) {
     return itemsByKey.containsKey(key);
   }
-
+  
   public Widget createWidget(final String key, Map<String, String> activeValues,
       final BiConsumer<FilterDescription, Action> callback) {
 
@@ -244,16 +269,23 @@ public class Filters {
 
       final long id = item.getId();
 
-      final SimpleBoolean initial = new SimpleBoolean(item.isInitial());
+      final Initial initial = new Initial(STYLE_INITIAL, id, item.isInitial());
       initial.setTitle(Localized.constants.initialFilter());
 
       initial.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Boolean value = BeeUtils.isTrue(initial.getValue()) ? true : null;
-
-          getItem(items, id).setInitial(value);
+          initial.toggle();
+          Boolean value = BeeUtils.isTrue(initial.value) ? true : null;
+          
+          Item updatedItem = getItem(items, id);
+          updatedItem.setInitial(value);
+          
           Queries.update(CommonsConstants.TBL_FILTERS, id, COL_INITIAL, new BooleanValue(value));
+          
+          if (BeeUtils.isTrue(value) && items.size() > 1) {
+            synchronizeInitialFilters(items, updatedItem, table);
+          }
         }
       });
 
@@ -518,5 +550,25 @@ public class Filters {
 
   private String normalizeLabel(String label) {
     return BeeUtils.left(BeeUtils.trim(label), getMaxLabelLength());
+  }
+
+  private void synchronizeInitialFilters(List<Item> items, Item checkedItem, HtmlTable table) {
+    Set<String> checkedKeys = checkedItem.getValues().keySet();
+    
+    for (Item item : items) {
+      if (item.id != checkedItem.id && item.isInitial() 
+          && BeeUtils.containsAny(item.getValues().keySet(), checkedKeys)) {
+        
+        item.setInitial(null);
+        Queries.update(CommonsConstants.TBL_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
+        
+        for (Widget widget : table) {
+          if (widget instanceof Initial && ((Initial) widget).id == item.id) {
+            ((Initial) widget).toggle();
+            break;
+          }
+        }
+      }
+    }
   }
 }

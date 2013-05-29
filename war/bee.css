@@ -1619,8 +1619,16 @@ body {
 }
 
 .bee-Filters-initial {
-  margin: 0;
-}  
+  width: 10px;
+  height: 10px;
+  border: 1px solid #777;
+  border-radius: 50%;
+  cursor: pointer; 
+}
+.bee-Filters-initial-checked {
+  background-color: silver;
+}
+
 .bee-Filters-label {
   min-width: 120px;
   max-width: 240px;
