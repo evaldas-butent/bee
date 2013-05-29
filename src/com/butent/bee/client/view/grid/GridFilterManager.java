@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -11,9 +12,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
@@ -61,6 +64,8 @@ public class GridFilterManager {
   private static final String STYLE_SAVE_ICON = STYLE_SAVE_PREFIX + "icon";
   private static final String STYLE_SAVE_MESSAGE = STYLE_SAVE_PREFIX + "message";
 
+  private static final String STYLE_FILTER_PANEL = STYLE_PREFIX + "saved-filters";
+  
   public static Filter parseFilter(CellGrid grid, List<Map<String, String>> filterValues) {
     if (BeeUtils.isEmpty(filterValues)) {
       return null;
@@ -215,6 +220,7 @@ public class GridFilterManager {
       };
 
       Widget widget = Global.getFilters().createWidget(gridKey, valuesByColumn, callback);
+      widget.addStyleName(STYLE_FILTER_PANEL);
       contentPanel.add(widget);
     }
   }
@@ -236,6 +242,22 @@ public class GridFilterManager {
             @Override
             public void execute() {
               buildContentPanel();
+              
+              Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                  for (Widget widget : contentPanel) {
+                    if (StyleUtils.hasClassName(widget.getElement(), STYLE_FILTER_PANEL)) {
+                      NodeList<Element> nodes = 
+                          widget.getElement().getElementsByTagName(DomUtils.TAG_TR);
+                      if (nodes != null && nodes.getLength() > 1) {
+                        nodes.getItem(nodes.getLength() - 1).scrollIntoView();
+                      }
+                      break;
+                    }
+                  }
+                }
+              });
             }
           };
 
@@ -337,10 +359,9 @@ public class GridFilterManager {
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
-      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-
-      if (filterSupplier != null) {
-        String label = filterSupplier.getLabel();
+      if (columnInfo.getFilterSupplier() != null 
+          && valuesByColumn.containsKey(columnInfo.getColumnId())) {
+        String label = columnInfo.getFilterSupplier().getFilterLabel(columnInfo.getLabel());
         if (!BeeUtils.isEmpty(label)) {
           labels.add(label);
         }
@@ -350,7 +371,7 @@ public class GridFilterManager {
     if (labels.isEmpty()) {
       return null;
     } else {
-      return BeeUtils.join(BeeConst.STRING_SPACE, labels);
+      return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, labels);
     }
   }
 

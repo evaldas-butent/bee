@@ -1612,7 +1612,7 @@ body {
   cursor: pointer;
 }
 
-.bee-GridFilter-dialog .bee-Filters-wrapper {
+.bee-GridFilter-saved-filters {
   margin-top: 2ex;
   max-height: 200px;
   overflow: auto;

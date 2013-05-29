@@ -105,6 +105,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public Filter getFilter() {
     return parse(getValue());
   }
+  
+  public String getFilterLabel(String ownerLabel) {
+    return isEmpty() ? null : BeeUtils.joinWords(ownerLabel, getLabel());
+  }
+
   public abstract String getLabel();
 
   @Override

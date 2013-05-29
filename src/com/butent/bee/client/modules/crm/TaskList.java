@@ -317,6 +317,11 @@ class TaskList {
     }
 
     @Override
+    public String getFilterLabel(String ownerLabel) {
+      return getLabel();
+    }
+
+    @Override
     public String getLabel() {
       return (getMode() == null) ? null : getMode().getLabel();
     }
@@ -622,6 +627,11 @@ class TaskList {
       super(VIEW_TASKS, null, options);
     }
 
+    @Override
+    public String getFilterLabel(String ownerLabel) {
+      return getLabel();
+    }
+    
     @Override
     public String getLabel() {
       return (getSlack() == null) ? null : getSlack().getLabel();
