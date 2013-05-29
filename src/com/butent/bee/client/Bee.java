@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -13,6 +14,7 @@ import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
@@ -66,9 +68,32 @@ public class Bee implements EntryPoint {
   }
 
   private void load(Map<String, String> data) {
-    UserData userData = UserData.restore(data.get(Service.LOGIN));
+    final UserData userData = UserData.restore(data.get(Service.LOGIN));
     BeeKeeper.getUser().setUserData(userData);
-    BeeKeeper.getScreen().updateSignature(userData.getUserSign());
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
+    params.addQueryItem(CommonsConstants.COMMONS_METHOD, CommonsConstants.SVC_USER_INFO);
+    params.addQueryItem(CommonsConstants.VAR_USER_ID, userData.getUserId());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response != null) {
+          if (response.hasResponse(SimpleRowSet.class)) {
+            SimpleRowSet personData = SimpleRowSet.restore((String) response.getResponse());
+            Long photoId =
+                personData.getLong(0, personData.getColumnIndex(CommonsConstants.COL_PHOTO));
+            BeeKeeper.updateUserSignature(userData.getUserSign(), photoId);
+          } else {
+            BeeKeeper.updateUserSignature(userData.getUserSign());
+          }
+        } else {
+          BeeKeeper.updateUserSignature(userData.getUserSign());
+        }
+      }
+
+    });
 
     BeeKeeper.getMenu().restore(data.get(Service.LOAD_MENU));
 

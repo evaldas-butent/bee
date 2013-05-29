@@ -312,7 +312,8 @@ public class UserServiceBean {
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_USERS, userIdName, COL_LOGIN, UserData.FLD_COMPANY_PERSON, COL_PROPERTIES)
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
-        .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
+            .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME,
+                sys.getIdName(TBL_PERSONS))
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
@@ -331,6 +332,8 @@ public class UserServiceBean {
       UserInfo user = new UserInfo(userData)
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_PROPERTIES));
+      
+      userData.setProperty(COL_PERSON, row.getValue((sys.getIdName(TBL_PERSONS))));
 
       UserInfo oldInfo = expiredCache.get(login);
 

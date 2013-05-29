@@ -11,7 +11,7 @@
       <Table>
         <row>
           <cell rowSpan="4">
-            <Image name="PhotoImg" style="max-height: 100px; max-width: 100px; border: 1px dashed silver;" />
+            <Image name="PhotoImg" style="max-height: 100px; max-width: 100px; border: 1px dashed silver; cursor: default;" />
           </cell> 
           <Label text="=firstName" class="bee-required" horizontalAlignment="right"/>
           <InputText style="width: 200px;" source="FirstName" horizontalAlignment="left"  />

@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
+import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Pair;
 
 import java.util.Collections;
@@ -16,6 +18,8 @@ import java.util.List;
  */
 
 public class BeeKeeper {
+
+  private static final String SIGNATURE_PHOTO_STYLE = "bee-Image bee-User-PhotoStyle";
 
   private static Screen SCREEN;
   private static RpcFactory RPC;
@@ -48,6 +52,23 @@ public class BeeKeeper {
 
   public static UserInfo getUser() {
     return USER;
+  }
+
+  public static void updateUserSignature(String userSign, Long photoId) {
+    String sign = "";
+    if (photoId != null) {
+      BeeImage img = new BeeImage(FileUtils.getUrl(userSign, photoId));
+      img.setAltText(userSign);
+      img.setStyleName(SIGNATURE_PHOTO_STYLE);
+      sign = img.toString();
+    }
+
+    sign += userSign;
+    getScreen().updateSignature(sign);
+  }
+
+  public static void updateUserSignature(String userSign) {
+    updateUserSignature(userSign, null);
   }
 
   private Module[] modules;

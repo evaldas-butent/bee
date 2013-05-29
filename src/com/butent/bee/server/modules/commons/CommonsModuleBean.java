@@ -42,6 +42,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -123,6 +124,8 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
 
+    } else if (BeeUtils.same(svc, SVC_USER_INFO)) {
+      response = getUserInfo(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -374,5 +377,28 @@ public class CommonsModuleBean implements BeeModule {
       params.add(param);
     }
     return params;
+  }
+
+  private ResponseObject getUserInfo(RequestInfo reqInfo) {
+    String sUserId = reqInfo.getParameter(VAR_USER_ID);
+    if (!BeeUtils.isEmpty(sUserId)) {
+      SimpleRowSet srs =
+          qs.getRow(
+              new SqlSelect().addAllFields(TBL_PERSONS)
+                  .addFrom(TBL_USERS)
+                  .addFromLeft(
+                  CommonsConstants.TBL_COMPANY_PERSONS,
+                  sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                      CommonsConstants.COL_COMPANY_PERSON))
+              .addFromLeft(
+                  CommonsConstants.TBL_PERSONS,
+                  sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                          CommonsConstants.COL_PERSON))
+                  .setWhere(
+                  SqlUtils.equals(TBL_USERS, sys.getIdName(TBL_USERS), sUserId))).getRowSet();
+
+      return ResponseObject.response(srs);
+    }    
+    return null;
   }
 }

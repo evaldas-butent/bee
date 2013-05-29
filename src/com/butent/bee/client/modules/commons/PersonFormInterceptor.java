@@ -24,6 +24,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -163,7 +164,6 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
     }
 
     if (photoImageChanged && (photoImageAttachment != null)) {
-      // form.getViewPresenter().handleAction(Action.CLOSE);
       FileUtils.upload(photoImageAttachment, new Callback<Long>() {
 
         @Override
@@ -178,12 +178,19 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
           photoImageChanged = false;
           photoImageAttachment = null;
 
+          UserData userData = BeeKeeper.getUser().getUserData();
+          if (BeeUtils.toLong(userData.getProperty(COL_PERSON)) == row.getId()) {
+            BeeKeeper.updateUserSignature(userData.getUserSign(), result);
+          }
+
           /* if uploading successful do save again */
           Queries.update(VIEW_PERSONS, form.getDataColumns(), oldRow, row, form
               .getChildrenForUpdate(), new RowUpdateCallback(VIEW_PERSONS));
         }
       });
     } else {
+      BeeKeeper.updateUserSignature(BeeKeeper.getUser().getUserSign(), row.getLong(form
+          .getDataIndex(COL_PHOTO)));
       Queries.update(VIEW_PERSONS, form.getDataColumns(), oldRow, row, form
           .getChildrenForUpdate(), new RowUpdateCallback(VIEW_PERSONS));
     }

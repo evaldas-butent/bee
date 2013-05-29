@@ -82,8 +82,10 @@ public class CommonsConstants {
   public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
+  public static final String VAR_USER_ID = Service.RPC_VAR_PREFIX + "user_id";
 
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
+  public static final String SVC_USER_INFO = "GetUserInfo";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
