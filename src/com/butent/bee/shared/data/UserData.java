@@ -308,6 +308,14 @@ public class UserData implements BeeSerializable, HasInfo {
     this.constants = constants;
   }
 
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
   public UserData setLocale(String locale) {
     this.locale = locale;
     return this;

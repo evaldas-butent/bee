@@ -311,9 +311,8 @@ public class UserServiceBean {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_USERS, userIdName, COL_LOGIN, UserData.FLD_COMPANY_PERSON, COL_PROPERTIES)
-        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
-            .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME,
-                sys.getIdName(TBL_PERSONS))
+        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
+        .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME, COL_PHOTO)
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
@@ -333,7 +332,8 @@ public class UserServiceBean {
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_PROPERTIES));
       
-      userData.setProperty(COL_PERSON, row.getValue((sys.getIdName(TBL_PERSONS))));
+      userData.setProperty(COL_PERSON, row.getValue(COL_PERSON));
+      userData.setProperty(COL_PHOTO, row.getValue(COL_PHOTO));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -354,7 +354,8 @@ public class UserServiceBean {
   }
 
   public boolean isUserTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_USERS, TBL_ROLES, TBL_USER_ROLES);
+    return BeeUtils.inList(tblName, TBL_USERS, TBL_ROLES, TBL_USER_ROLES, TBL_COMPANY_PERSONS,
+        TBL_PERSONS);
   }
 
   @Lock(LockType.WRITE)

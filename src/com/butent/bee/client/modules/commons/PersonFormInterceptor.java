@@ -180,6 +180,9 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
 
           UserData userData = BeeKeeper.getUser().getUserData();
           if (BeeUtils.toLong(userData.getProperty(COL_PERSON)) == row.getId()) {
+            userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
+            userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
+            userData.setProperty(COL_PHOTO, BeeUtils.toString(result));
             BeeKeeper.updateUserSignature(userData.getUserSign(), result);
           }
 
@@ -189,8 +192,16 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
         }
       });
     } else {
-      BeeKeeper.updateUserSignature(BeeKeeper.getUser().getUserSign(), row.getLong(form
-          .getDataIndex(COL_PHOTO)));
+      UserData userData = BeeKeeper.getUser().getUserData();
+
+      if (BeeUtils.toLong(userData.getProperty(COL_PERSON)) == row.getId()) {
+        userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
+        userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
+        userData.setProperty(COL_PHOTO, row.getString(form.getDataIndex(COL_PHOTO)));
+        BeeKeeper.updateUserSignature(userData.getUserSign(), row.getLong(form
+            .getDataIndex(COL_PHOTO)));
+      }
+
       Queries.update(VIEW_PERSONS, form.getDataColumns(), oldRow, row, form
           .getChildrenForUpdate(), new RowUpdateCallback(VIEW_PERSONS));
     }
