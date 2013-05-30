@@ -10,6 +10,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ImageRenderer extends AbstractCellRenderer {
 
+  public static final String CSS_CLASS_STYLE_NAME = "bee-Grid-PersonPhoto";
+
   private static final ImageElement imageElement = Document.get().createImageElement();
 
   private final int imageIndex;

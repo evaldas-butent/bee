@@ -19,7 +19,7 @@ import java.util.List;
 
 public class BeeKeeper {
 
-  private static final String SIGNATURE_PHOTO_STYLE = "bee-Image bee-User-PhotoStyle";
+  public static final String SIGNATURE_PHOTO_STYLE = "bee-Image bee-User-PhotoStyle";
 
   private static Screen SCREEN;
   private static RpcFactory RPC;

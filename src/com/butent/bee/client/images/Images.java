@@ -215,6 +215,9 @@ public class Images {
     @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
 
+    @Source("silver/chat_icon_16x21.gif")
+    ImageResource silverChatIcon();
+
     @Source("silver/close_17x18.png")
     ImageResource silverClose();
 
@@ -425,6 +428,7 @@ public class Images {
 
     map.put(key("silverAdd"), resources.silverAdd());
     map.put(key("silverBookmarkAdd"), resources.silverBookmarkAdd());
+    map.put(key("silverChatIcon"), resources.silverChatIcon());
     map.put(key("silverClose"), resources.silverClose());
     map.put(key("silverConfigure"), resources.silverConfigure());
     map.put(key("silverDelete"), resources.silverDelete());

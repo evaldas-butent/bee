@@ -8,9 +8,19 @@
   padding: 2px 5px 2px;
 }
 
+.bee-crm-taskEvent-col-0,
 .bee-crm-taskEvent-col-1,
 .bee-crm-taskEvent-col-2 {
   margin-left: 1em;
+}
+
+.bee-crm-taskEvent-col-0,
+.bee-crm-taskEvent-col-2 {
+  width: 145px;
+}
+
+.bee-crm-taskEvent-col-1 {
+  margin-right: auto;
 }
 
 .bee-crm-taskEvent-Event,
@@ -178,4 +188,15 @@
 .bee-crm-DocumentSelector .bee-MultiSelector-close {
   position: static;
   margin-left: 1em;
+}
+
+.bee-crm-taskEvent-col-Photo {
+   -webkit-align-self: center;
+ }
+
+.bee-crm-taskEvent-Photo {
+  overflow: hidden;
+  width: 3.5em;
+  height: 2.5em;
+  text-align: center;
 }

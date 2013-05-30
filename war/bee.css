@@ -1855,9 +1855,9 @@ div:focus,
 }
 
 .bee-User-PhotoStyle {
-	max-height: 30px;
-	max-width:  40px;
-	vertical-align: middle;
-	margin-right: 4px;
-	cursor: default;
+  max-height: 30px;
+  max-width:  40px;
+  vertical-align: middle;
+  margin-right: 4px;
+  cursor: default;
 }

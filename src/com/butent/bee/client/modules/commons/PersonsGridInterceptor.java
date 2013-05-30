@@ -12,8 +12,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class PersonsGridInterceptor extends AbstractGridInterceptor {
-
-  private static final String CSS_CLASS_STYLE_NAME = "bee-Grid-PersonPhoto";
     
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
@@ -21,7 +19,7 @@ public class PersonsGridInterceptor extends AbstractGridInterceptor {
    
     if (BeeUtils.same(columnName, COL_PHOTO)) {
       return new ImageRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-          DataUtils.getColumnIndex(COL_FIRST_NAME, dataColumns), CSS_CLASS_STYLE_NAME);
+          DataUtils.getColumnIndex(COL_FIRST_NAME, dataColumns), ImageRenderer.CSS_CLASS_STYLE_NAME);
     }
     
     return super.getRenderer(columnName, dataColumns, columnDescription);

@@ -37,6 +37,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.render.ImageRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -1398,6 +1399,25 @@ class TaskEditor extends AbstractFormInterceptor {
       Table<String, String, Long> durations) {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
+
+    Flow colPhoto = new Flow();
+    colPhoto.addStyleName(STYLE_EVENT_COL + CommonsConstants.COL_PHOTO);
+    ImageRenderer imgr =
+        new ImageRenderer(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns), DataUtils
+            .getColumnIndex(COL_PUBLISHER_FIRST_NAME, columns), ImageRenderer.CSS_CLASS_STYLE_NAME);
+    String render = imgr.render(row);
+    
+    if (BeeUtils.isEmpty(render)) {
+      BeeImage img = new BeeImage(Global.getImages().silverChatIcon());
+      img.setStyleName(BeeKeeper.SIGNATURE_PHOTO_STYLE);
+      render = img.toString();
+    }
+
+    Widget widget = new CustomDiv(STYLE_EVENT + CommonsConstants.COL_PHOTO);
+    widget.getElement().setInnerHTML(render);
+
+    colPhoto.add(widget);
+    container.add(colPhoto);
 
     int c = 0;
     Flow col0 = new Flow();
