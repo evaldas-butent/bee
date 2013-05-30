@@ -108,10 +108,13 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     this.options = options;
   }
 
+  public void ensureData() {
+  }
+  
   public Filter getFilter() {
     return parse(getValue());
   }
-  
+
   public String getFilterLabel(String ownerLabel) {
     return isEmpty() ? null : BeeUtils.joinWords(ownerLabel, getLabel());
   }
@@ -288,7 +291,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     clearSelection();
     setCounter(0);
   }
-
+  
   protected void doCommit() {
   }
 
@@ -479,8 +482,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     selectedItems.add(item);
   }
 
-  protected void selectDisplayRow(HtmlTable display, int row) {
-    display.getRowFormatter().addStyleName(row, getStyleSelected());
+  protected void selectRow(HtmlTable display, int row) {
+    if (!isSelected(row)) {
+      select(row);
+      display.getRowFormatter().addStyleName(row, getStyleSelected());
+    }
   }
 
   protected void setCounter(int count) {

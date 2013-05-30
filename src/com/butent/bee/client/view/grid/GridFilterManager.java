@@ -163,7 +163,7 @@ public class GridFilterManager {
         }
       }
 
-      updateFilterValues(columnFilters);
+      updateFilterValues(columnFilters, true);
     }
   }
 
@@ -214,7 +214,7 @@ public class GridFilterManager {
         @Override
         public void accept(FilterDescription t, Action u) {
           if (t != null) {
-            updateFilterValues(t.getValues());
+            updateFilterValues(t.getValues(), true);
             onChange(null);
           } else if (Action.DELETE == u) {
             buildContentPanel();
@@ -415,7 +415,7 @@ public class GridFilterManager {
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.constants.nothingFound());
           if (columnInfo == null) {
-            updateFilterValues(valuesByColumn);
+            updateFilterValues(valuesByColumn, false);
           } else {
             String value = valuesByColumn.get(columnInfo.getColumnId());
             columnInfo.getFilterSupplier().setValue(value);
@@ -434,7 +434,7 @@ public class GridFilterManager {
     }
   }
 
-  private void updateFilterValues(Map<String, String> values) {
+  private void updateFilterValues(Map<String, String> values, boolean ensureData) {
     if (BeeUtils.isEmpty(values)) {
       clearFilter();
 
@@ -448,6 +448,10 @@ public class GridFilterManager {
 
           if (values.containsKey(columnId)) {
             filterSupplier.setValue(values.get(columnId));
+            if (ensureData) {
+              filterSupplier.ensureData();
+            }
+
           } else if (!filterSupplier.isEmpty()) {
             filterSupplier.setValue(null);
           }

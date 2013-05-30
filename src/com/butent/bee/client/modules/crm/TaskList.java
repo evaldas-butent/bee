@@ -245,7 +245,7 @@ class TaskList {
 
         @Override
         String getLabel() {
-          return "n";
+          return Localized.constants.taskFilterNew();
         }
 
         @Override
@@ -262,7 +262,7 @@ class TaskList {
 
         @Override
         String getLabel() {
-          return "p";
+          return Localized.constants.taskFilterUpdated();
         }
 
         @Override
@@ -279,7 +279,7 @@ class TaskList {
 
         @Override
         String getLabel() {
-          return "np";
+          return Localized.constants.taskFilterNewOrUpdated();
         }
 
         @Override
@@ -314,6 +314,38 @@ class TaskList {
 
     private ModeFilterSupplier(String options) {
       super(VIEW_TASKS, null, null, options);
+    }
+    
+    @Override
+    public void ensureData() {
+      ParameterList params = CrmKeeper.createArgs(SVC_GET_CHANGED_TASKS);
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors()) {
+            List<Long> tasks = Lists.newArrayList();
+            for (String item : TASK_SPLITTER.split((String) response.getResponse())) {
+              tasks.add(BeeUtils.toLong(item));
+            }
+
+            if (tasks.size() <= 1) {
+              return;
+            }
+
+            newTasks.clear();
+            updTasks.clear();
+
+            int cntNew = BeeUtils.toInt(tasks.get(0));
+            if (cntNew > 0) {
+              newTasks.addAll(tasks.subList(1, cntNew + 1));
+            }
+
+            if (cntNew < tasks.size() - 1) {
+              updTasks.addAll(tasks.subList(cntNew + 1, tasks.size()));
+            }
+          }
+        }
+      });
     }
 
     @Override

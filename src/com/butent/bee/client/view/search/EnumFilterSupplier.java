@@ -188,6 +188,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   private Widget createWidget() {
+    clearSelection();
     HtmlTable display = createDisplay(true);
 
     int row = 0;
@@ -195,6 +196,11 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       int col = 0;
       display.setText(row, col++, getCaption(dataItem.getIndex()));
       addBinSize(display, row, col, dataItem.getCount());
+      
+      if (values.contains(dataItem.getIndex())) {
+        selectRow(display, row);
+      }
+      
       row++;
     }
 

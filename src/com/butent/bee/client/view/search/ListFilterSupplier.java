@@ -79,6 +79,19 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public void ensureData() {
+    if (getData() == null || getEffectiveFilter() != null) {
+      setEffectiveFilter(null);
+      getHistogram(new Callback<SimpleRowSet>() {
+        @Override
+        public void onSuccess(SimpleRowSet result) {
+          setData(result);
+        }
+      });
+    }
+  }
+
+  @Override
   public String getLabel() {
     if (values.isEmpty()) {
       return null;
@@ -171,7 +184,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     clearDisplay();
     super.doClear();
   }
-
+  
   @Override
   protected void doCommit() {
     if (isSelectionEmpty()) {
