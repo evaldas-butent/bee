@@ -5,7 +5,7 @@
   
   name="Documents" viewName="Documents" caption="=documents"
   newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1" flexShrink="1" asyncThreshold="-1"
   >
   
   <west size="200" splitterSize="2">
@@ -34,7 +34,7 @@
     <DataColumn name="Received" visible="false" />
     <DataColumn name="Sent" visible="false" />
     <DataColumn name="Returned" visible="false">
-      <filter name="not_returned" label="=documentFilterNotReturned" value="=" />
+<!--       <filter name="not_returned" label="=documentFilterNotReturned" value="=" /> -->
     </DataColumn>
     <DataColumn name="Description" visible="false" />
   </columns>

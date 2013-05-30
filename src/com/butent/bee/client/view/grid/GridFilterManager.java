@@ -109,6 +109,8 @@ public class GridFilterManager {
 
   private final Flow contentPanel = new Flow(STYLE_CONTENT);
 
+  private Filter externalFilter = null;
+  
   public GridFilterManager(GridView gridView, FilterConsumer filterConsumer) {
     super();
 
@@ -127,7 +129,8 @@ public class GridFilterManager {
     }
   }
 
-  public void handleFilter(Element target) {
+  public void handleFilter(Filter queryFilter, Element target) {
+    externalFilter = queryFilter;
     retainValues();
 
     DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
@@ -298,7 +301,7 @@ public class GridFilterManager {
     ClickHandler clickHandler = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        filterSupplier.setEffectiveFilter(getFilter(columnInfo.getColumnId()));
+        filterSupplier.setEffectiveFilter(getFilter(externalFilter, columnInfo.getColumnId()));
         filterSupplier.onRequest(button.getElement(), new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
@@ -333,8 +336,11 @@ public class GridFilterManager {
     table.getRowFormatter().addStyleName(row, STYLE_SUPPLIER_ROW);
   }
 
-  private Filter getFilter(String excludeColumn) {
+  private Filter getFilter(Filter queryFilter, String excludeColumn) {
     List<Filter> filters = Lists.newArrayList();
+    if (queryFilter != null) {
+      filters.add(queryFilter);
+    }
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
@@ -393,7 +399,7 @@ public class GridFilterManager {
   }
 
   private void onChange(final ColumnInfo columnInfo) {
-    final Filter filter = getFilter(null);
+    final Filter filter = getFilter(null, null);
 
     filterConsumer.tryFilter(filter, new Consumer<Boolean>() {
       @Override

@@ -620,7 +620,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(columnDescr.getFilterOptions())
           && (filterSupplierType != null
-          || !BeeConst.isUndef(dataIndex) && !BeeUtils.isEmpty(column.getSearchBy()))) {
+          || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
 
         filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataCols, dataIndex,
             label, column.getSearchBy(), filterSupplierType, renderColumns, column.getSortBy(),

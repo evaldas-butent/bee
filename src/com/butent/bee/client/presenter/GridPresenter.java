@@ -350,7 +350,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case FILTER:
         if (filterManager != null) {
-          filterManager.handleFilter(getHeaderElement());
+          filterManager.handleFilter(getDataProvider().getQueryFilter(null), getHeaderElement());
         }
         break;
 

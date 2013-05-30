@@ -216,6 +216,9 @@ public class CachedProvider extends Provider {
         Assert.notNull(rowSet);
         setTable(rowSet);
 
+        getFilteredRowIds().clear();
+        getViewRows().clear();
+        
         applyFilter(getUserFilter());
 
         int newTableSize = rowSet.getNumberOfRows();

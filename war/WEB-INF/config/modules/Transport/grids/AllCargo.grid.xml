@@ -17,9 +17,9 @@
       minWidth="100" editEnabled="true" filterSupplier="value" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
-      minWidth="140" flexBasis="120" />
+      minWidth="140" flexBasis="120" searchBy="LoadingCountryName" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
-      minWidth="140" flexBasis="120" />
+      minWidth="140" flexBasis="120" searchBy="UnloadingCountryName" />
 
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
@@ -38,7 +38,7 @@
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="ForwarderName" caption="Vežėjas" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas" 
-      searchBy="ForwarderVehicle VehicleNumber TrailerNumber">
+      searchBy="VehicleNumber ForwarderVehicle TrailerNumber">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -55,7 +55,7 @@
       </render>
     </CalcColumn>
     <CalcColumn name="Driver" type="string" caption="Vairuotojas"
-      searchBy="ForwarderDriver DriverFirstName DriverLastName">
+      searchBy="DriverLastName ForwarderDriver DriverFirstName">
       <render>
         <ui:function>
           var driver = row.ForwarderDriver;
