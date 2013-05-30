@@ -18,6 +18,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -133,10 +135,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
 
     getInputDate(display, START_ROW).clearValue();
-    getInputTimeOfDay(display, START_ROW).clearValue();
-
     getInputDate(display, END_ROW).clearValue();
-    getInputTimeOfDay(display, END_ROW).clearValue();
+
+    if (isDateTime()) {
+      getInputTimeOfDay(display, START_ROW).clearValue();
+      getInputTimeOfDay(display, END_ROW).clearValue();
+    }
 
     setRange(null);
   }
@@ -165,16 +169,25 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
   }
 
+  @Override
+  protected String getDisplayStyle() {
+    return STYLE_PREFIX + "display";
+  }
+
+  protected boolean isDateTime() {
+    return true;
+  }
+
   private Filter buildFilter(DateTime start, DateTime end) {
     if (start == null && end == null) {
       return null;
     } else if (end == null) {
-      return ComparisonFilter.isMoreEqual(getColumnId(), new DateTimeValue(start));
+      return ComparisonFilter.isMoreEqual(getColumnId(), getComparisonValue(start));
     } else if (start == null) {
-      return ComparisonFilter.isLess(getColumnId(), new DateTimeValue(end));
+      return ComparisonFilter.isLess(getColumnId(), getComparisonValue(end));
     } else {
-      return Filter.and(ComparisonFilter.isMoreEqual(getColumnId(), new DateTimeValue(start)),
-          ComparisonFilter.isLess(getColumnId(), new DateTimeValue(end)));
+      return Filter.and(ComparisonFilter.isMoreEqual(getColumnId(), getComparisonValue(start)),
+          ComparisonFilter.isLess(getColumnId(), getComparisonValue(end)));
     }
   }
 
@@ -201,9 +214,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     dateFrom.addStyleName(STYLE_DATE);
     display.setWidget(START_ROW, DATE_COL, dateFrom, STYLE_DATE + STYLE_SUFFIX_CELL);
 
-    InputTimeOfDay timeFrom = new InputTimeOfDay();
-    timeFrom.addStyleName(STYLE_TIME);
-    display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
+    if (isDateTime()) {
+      InputTimeOfDay timeFrom = new InputTimeOfDay();
+      timeFrom.addStyleName(STYLE_TIME);
+      display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
+    }
 
     Html labelTo = new Html("Iki");
     labelTo.addStyleName(STYLE_LABEL);
@@ -213,21 +228,27 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     dateTo.addStyleName(STYLE_DATE);
     display.setWidget(END_ROW, DATE_COL, dateTo, STYLE_DATE + STYLE_SUFFIX_CELL);
 
-    InputTimeOfDay timeTo = new InputTimeOfDay();
-    timeTo.addStyleName(STYLE_TIME);
-    display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
+    if (isDateTime()) {
+      InputTimeOfDay timeTo = new InputTimeOfDay();
+      timeTo.addStyleName(STYLE_TIME);
+      display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
+    }
 
     if (getRange() != null) {
       DateTime start = getStart();
       if (start != null) {
         getInputDate(display, START_ROW).setDate(start);
-        getInputTimeOfDay(display, START_ROW).setTime(start);
+        if (isDateTime()) {
+          getInputTimeOfDay(display, START_ROW).setTime(start);
+        }
       }
 
       DateTime end = getEnd();
       if (end != null) {
         getInputDate(display, END_ROW).setDate(end);
-        getInputTimeOfDay(display, END_ROW).setTime(end);
+        if (isDateTime()) {
+          getInputTimeOfDay(display, END_ROW).setTime(end);
+        }
       }
     }
 
@@ -235,6 +256,14 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     wrapper.addStyleName(STYLE_PREFIX + "container");
 
     return wrapper;
+  }
+
+  private Value getComparisonValue(DateTime dt) {
+    if (isDateTime()) {
+      return new DateTimeValue(dt);
+    } else {
+      return new DateValue(JustDate.get(dt));
+    }
   }
 
   private DateTime getEnd() {
@@ -265,9 +294,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     Long timeMillis = null;
 
-    Widget timeWidget = display.getWidget(END_ROW, TIME_COL);
-    if (timeWidget instanceof InputTimeOfDay) {
-      timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
+    if (isDateTime()) {
+      Widget timeWidget = display.getWidget(END_ROW, TIME_COL);
+      if (timeWidget instanceof InputTimeOfDay) {
+        timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
+      }
     }
 
     if (datePart == null && BeeUtils.isPositive(timeMillis) && start != null) {
@@ -299,9 +330,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     Long timeMillis = null;
 
-    Widget timeWidget = display.getWidget(START_ROW, TIME_COL);
-    if (timeWidget instanceof InputTimeOfDay) {
-      timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
+    if (isDateTime()) {
+      Widget timeWidget = display.getWidget(START_ROW, TIME_COL);
+      if (timeWidget instanceof InputTimeOfDay) {
+        timeMillis = ((InputTimeOfDay) timeWidget).getMillis();
+      }
     }
 
     return TimeUtils.combine(datePart, timeMillis);

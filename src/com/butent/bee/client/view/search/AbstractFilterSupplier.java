@@ -219,8 +219,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected HtmlTable createDisplay(boolean addSelectionHandler) {
-    final HtmlTable display = new HtmlTable();
-    display.addStyleName(getStylePrefix() + "display");
+    final HtmlTable display = new HtmlTable(getDisplayStyle());
 
     if (addSelectionHandler) {
       Binder.addClickHandler(display, new ClickHandler() {
@@ -362,6 +361,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     return displayId;
   }
 
+  protected String getDisplayStyle() {
+    return DEFAULT_STYLE_PREFIX + "display";
+  }
+  
   protected Filter getEffectiveFilter() {
     return effectiveFilter;
   }

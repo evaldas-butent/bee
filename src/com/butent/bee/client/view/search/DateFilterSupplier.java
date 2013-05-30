@@ -8,4 +8,8 @@ public class DateFilterSupplier extends DateTimeFilterSupplier {
     super(viewName, column, label, options);
   }
 
+  @Override
+  protected boolean isDateTime() {
+    return false;
+  }
 }
