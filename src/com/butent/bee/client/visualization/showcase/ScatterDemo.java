@@ -9,7 +9,7 @@ import com.butent.bee.client.visualization.LegendPosition;
 import com.butent.bee.client.visualization.visualizations.corechart.AxisOptions;
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.client.visualization.visualizations.corechart.ScatterChart;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -49,8 +49,8 @@ public class ScatterDemo implements LeftTabPanel.WidgetProvider {
     }
 
     ScatterChart viz = new ScatterChart(data, options);
-    BeeLabel status = new BeeLabel();
-    BeeLabel onMouseOverAndOutStatus = new BeeLabel();
+    Label status = new Label();
+    Label onMouseOverAndOutStatus = new Label();
     viz.addSelectHandler(new SelectionDemo(viz, status));
     viz.addReadyHandler(new ReadyDemo(status));
     viz.addOnMouseOverHandler(new OnMouseOverDemo(onMouseOverAndOutStatus));

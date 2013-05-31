@@ -1,9 +1,11 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.NumberRenderer;
+import com.butent.bee.client.style.StyleUtils;
 
 /**
  * Enables using text label user interface component.
@@ -13,12 +15,10 @@ public class NumberLabel<T extends Number> extends ValueLabel<T> implements HasN
 
   public NumberLabel(NumberFormat format, boolean inline) {
     super(new NumberRenderer(format), inline);
-    init();
   }
 
   public NumberLabel(String pattern, boolean inline) {
     super(new NumberRenderer(pattern), inline);
-    init();
   }
 
   @Override
@@ -31,7 +31,9 @@ public class NumberLabel<T extends Number> extends ValueLabel<T> implements HasN
     ((NumberRenderer) getRenderer()).setNumberFormat(format);
   }
 
-  private void init() {
-    setHorizontalAlignment(ALIGN_LOCALE_END);
+  @Override
+  protected void init() {
+    super.init();
+    StyleUtils.setTextAlign(getElement(), HasHorizontalAlignment.ALIGN_LOCALE_END);
   }
 }

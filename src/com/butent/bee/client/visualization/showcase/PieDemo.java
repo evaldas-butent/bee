@@ -7,7 +7,7 @@ import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.LegendPosition;
 import com.butent.bee.client.visualization.visualizations.corechart.PieChart;
 import com.butent.bee.client.visualization.visualizations.corechart.TextStyle;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Implements demonstration of pie chart visualization.
@@ -32,8 +32,8 @@ public class PieDemo implements LeftTabPanel.WidgetProvider {
     DataTable data = Showcase.getSales();
 
     PieChart viz = new PieChart(data, options);
-    BeeLabel status = new BeeLabel();
-    BeeLabel onMouseOverAndOutStatus = new BeeLabel();
+    Label status = new Label();
+    Label onMouseOverAndOutStatus = new Label();
     viz.addSelectHandler(new SelectionDemo(viz, status));
     viz.addReadyHandler(new ReadyDemo(status));
     viz.addOnMouseOverHandler(new OnMouseOverDemo(onMouseOverAndOutStatus));

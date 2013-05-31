@@ -10,7 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -76,11 +76,11 @@ public class CommonsUtils {
 
               if (!BeeUtils.isEmpty(val)) {
                 if (!BeeUtils.isEmpty(phones.get(phone))) {
-                  Widget label = new BeeLabel(phones.get(phone));
+                  Widget label = new Label(phones.get(phone));
                   label.setStyleName(STYLE_COMPANY_LABEL);
                   ((Flow) value).add(label);
                 }
-                Widget item = new BeeLabel(val);
+                Widget item = new Label(val);
                 item.setStyleName(STYLE_COMPANY_ITEM);
                 ((Flow) value).add(item);
               }
@@ -96,7 +96,7 @@ public class CommonsUtils {
             record.setStyleName(STYLE_COMPANY + col.toLowerCase());
 
             if (!BeeUtils.isEmpty(cols.get(col))) {
-              Widget label = new BeeLabel(cols.get(col));
+              Widget label = new Label(cols.get(col));
               label.setStyleName(STYLE_COMPANY_LABEL);
               record.add(label);
             }
@@ -105,7 +105,7 @@ public class CommonsUtils {
             if (value instanceof Widget) {
               item = (Widget) value;
             } else if (value instanceof String && !BeeUtils.isEmpty((String) value)) {
-              item = new BeeLabel((String) value);
+              item = new Label((String) value);
               item.setStyleName(STYLE_COMPANY_ITEM);
             } else {
               continue;

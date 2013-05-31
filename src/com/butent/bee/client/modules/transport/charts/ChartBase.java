@@ -55,7 +55,7 @@ import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
@@ -1465,7 +1465,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected void renderSliderLabels() {
-    BeeLabel startLabel = new BeeLabel();
+    Label startLabel = new Label();
     startLabel.addStyleName(STYLE_START_SLIDER_LABEL);
     StyleUtils.setBottom(startLabel, getFooterHeight());
     startLabel.setVisible(false);
@@ -1473,7 +1473,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     setStartSliderLabel(startLabel);
     canvas.add(startLabel);
 
-    BeeLabel endLabel = new BeeLabel();
+    Label endLabel = new Label();
     endLabel.addStyleName(STYLE_END_SLIDER_LABEL);
     StyleUtils.setBottom(endLabel, getFooterHeight());
     endLabel.setVisible(false);

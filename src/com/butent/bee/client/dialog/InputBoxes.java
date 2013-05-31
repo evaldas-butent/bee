@@ -39,7 +39,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.client.widget.InputInteger;
@@ -167,7 +167,7 @@ public class InputBoxes {
     panel.addStyleName(STYLE_INPUT_PANEL);
 
     if (!BeeUtils.isEmpty(prompt)) {
-      BeeLabel label = new BeeLabel(prompt.trim());
+      Label label = new Label(prompt.trim());
       label.addStyleName(STYLE_INPUT_PROMPT);
 
       UiHelper.add(panel, label, initializer, DialogConstants.WIDGET_PROMPT);
@@ -188,7 +188,7 @@ public class InputBoxes {
 
     final Holder<Widget> input = new Holder<Widget>(box);
 
-    BeeLabel errorLabel = new BeeLabel();
+    Label errorLabel = new Label();
     errorLabel.addStyleName(STYLE_INPUT_ERROR);
     errorLabel.addStyleName(StyleUtils.NAME_ERROR);
 
@@ -390,7 +390,7 @@ public class InputBoxes {
     if (widget instanceof NotificationListener) {
       errorDisplay.set(widget.asWidget());
     } else {
-      BeeLabel errorLabel = new BeeLabel();
+      Label errorLabel = new Label();
       errorLabel.addStyleName(STYLE_INPUT_ERROR);
       errorLabel.addStyleName(StyleUtils.NAME_ERROR);
       errorDisplay.set(errorLabel);

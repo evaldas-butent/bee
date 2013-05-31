@@ -9,7 +9,7 @@ import com.butent.bee.client.visualization.visualizations.corechart.AreaChart;
 import com.butent.bee.client.visualization.visualizations.corechart.AxisOptions;
 import com.butent.bee.client.visualization.visualizations.corechart.ChartAreaOptions;
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Implements demonstration of an area chart visualization.
@@ -36,8 +36,8 @@ public class AreaDemo implements LeftTabPanel.WidgetProvider {
     DataTable data = Showcase.getCompanyPerformance();
     AreaChart viz = new AreaChart(data, options);
 
-    BeeLabel status = new BeeLabel();
-    BeeLabel onMouseOverAndOutStatus = new BeeLabel();
+    Label status = new Label();
+    Label onMouseOverAndOutStatus = new Label();
 
     viz.addSelectHandler(new SelectionDemo(viz, status));
     viz.addReadyHandler(new ReadyDemo(status));

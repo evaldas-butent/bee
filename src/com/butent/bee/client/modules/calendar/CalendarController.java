@@ -32,7 +32,7 @@ import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.SimpleBoolean;
@@ -77,7 +77,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     CAPTION("caption") {
       @Override
       Widget create(BeeRow row) {
-        return new BeeLabel(BeeUtils.notEmpty(row.getString(captionIndex),
+        return new Label(BeeUtils.notEmpty(row.getString(captionIndex),
             row.getString(nameIndex)));
       }
     },

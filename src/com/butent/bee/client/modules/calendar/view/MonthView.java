@@ -30,7 +30,7 @@ import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.MonthLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
@@ -238,7 +238,7 @@ public class MonthView extends CalendarView {
   }
 
   private void buildCell(int row, int col, String text, boolean isToday, boolean currentMonth) {
-    BeeLabel label = new BeeLabel(text);
+    Label label = new Label(text);
     label.addStyleName(CalendarStyleManager.MONTH_CELL_LABEL);
 
     grid.setWidget(row, col, label);
@@ -374,7 +374,7 @@ public class MonthView extends CalendarView {
   }
 
   private void layOnMoreLabel(List<Appointment> appointments, int dayOfWeek, int weekOfMonth) {
-    BeeLabel more = new BeeLabel("+ " + appointments.size());
+    Label more = new Label("+ " + appointments.size());
     more.setStyleName(CalendarStyleManager.MORE_LABEL);
 
     placeItemInGrid(more, null, false, dayOfWeek, dayOfWeek, weekOfMonth, maxCellAppointments);

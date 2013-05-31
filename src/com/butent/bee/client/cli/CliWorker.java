@@ -104,7 +104,7 @@ import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
@@ -2098,7 +2098,7 @@ public class CliWorker {
   }
 
   private static void showGeo() {
-    BeeLabel widget = new BeeLabel("Looking for location...");
+    Label widget = new Label("Looking for location...");
     getGeo(widget.getElement());
     BeeKeeper.getScreen().updateActivePanel(widget);
   }
@@ -2286,7 +2286,7 @@ public class CliWorker {
 
     int row = 0;
     for (String type : types) {
-      table.setWidget(row, 0, new BeeLabel(type));
+      table.setWidget(row, 0, new Label(type));
 
       if (Features.supportsInputType(type)) {
         widget = new TextBox();
@@ -2311,7 +2311,7 @@ public class CliWorker {
 
         table.setWidget(row, 1, widget);
       } else {
-        table.setWidget(row, 1, new BeeLabel("not supported"));
+        table.setWidget(row, 1, new Label("not supported"));
       }
       row++;
     }

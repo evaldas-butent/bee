@@ -59,7 +59,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.TextLabel;
@@ -344,15 +344,15 @@ public class MailPanel extends AbstractFormInterceptor {
               ids.add(info.getId());
             }
           }
-          BeeLabel dragLabel = new BeeLabel();
+          Label dragLabel = new Label();
 
           if (ids.contains(placeId)) {
             int cnt = ids.size();
             String ending = ((cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
                 ? "ų" : (cnt % 10 == 1 ? "as" : "ai"));
-            dragLabel = new BeeLabel(BeeUtils.joinWords(cnt, "pažymėt" + ending, "laišk" + ending));
+            dragLabel = new Label(BeeUtils.joinWords(cnt, "pažymėt" + ending, "laišk" + ending));
           } else {
-            dragLabel = new BeeLabel("1 laiškas");
+            dragLabel = new Label("1 laiškas");
             ids.clear();
           }
           dummy.add(dragLabel);

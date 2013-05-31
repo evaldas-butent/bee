@@ -12,7 +12,7 @@ import com.google.gwt.dom.client.TextAreaElement;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeFrame;
+import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -28,7 +28,7 @@ public class Printer {
 
   private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
 
-  private static BeeFrame frame = null;
+  private static Frame frame = null;
   
   public static void onInjectStyleSheet(String css) {
     if (frame != null && !BeeUtils.isEmpty(css)) {
@@ -61,7 +61,7 @@ public class Printer {
   }
 
   private static void createFrame(String html) {
-    frame = new BeeFrame();
+    frame = new Frame();
 
     StyleUtils.setSize(frame, 0, 0);
     frame.getElement().getStyle().setBorderStyle(BorderStyle.NONE);

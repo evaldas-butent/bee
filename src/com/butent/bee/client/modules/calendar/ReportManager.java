@@ -26,7 +26,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
@@ -164,7 +164,7 @@ class ReportManager {
     final Flow container = new Flow();
     addStyle(container, "container");
 
-    BeeLabel capLabel = new BeeLabel("Pavadinimas:");
+    Label capLabel = new Label("Pavadinimas:");
     addStyle(capLabel, "capLabel");
     container.add(capLabel);
 
@@ -177,7 +177,7 @@ class ReportManager {
     addStyle(caption, "caption");
     container.add(caption);
 
-    BeeLabel ldLabel = new BeeLabel("Data nuo:");
+    Label ldLabel = new Label("Data nuo:");
     addStyle(ldLabel, "ldLabel");
     container.add(ldLabel);
 
@@ -186,7 +186,7 @@ class ReportManager {
     addStyle(lowerDate.asWidget(), "lowerDate");
     container.add(lowerDate);
 
-    BeeLabel udLabel = new BeeLabel("Data iki:");
+    Label udLabel = new Label("Data iki:");
     addStyle(udLabel, "udLabel");
     container.add(udLabel);
 
@@ -199,7 +199,7 @@ class ReportManager {
     final InputSpinner upperHour;
 
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
-      BeeLabel lhLabel = new BeeLabel("Valanda nuo:");
+      Label lhLabel = new Label("Valanda nuo:");
       addStyle(lhLabel, "lhLabel");
       container.add(lhLabel);
 
@@ -208,7 +208,7 @@ class ReportManager {
       addStyle(lowerHour, "lowerHour");
       container.add(lowerHour);
 
-      BeeLabel uhLabel = new BeeLabel("Valanda iki:");
+      Label uhLabel = new Label("Valanda iki:");
       addStyle(uhLabel, "uhLabel");
       container.add(uhLabel);
 
@@ -222,7 +222,7 @@ class ReportManager {
       upperHour = null;
     }
 
-    BeeLabel atpLabel = new BeeLabel("Resursų tipai:");
+    Label atpLabel = new Label("Resursų tipai:");
     addStyle(atpLabel, "atpLabel");
     container.add(atpLabel);
 
@@ -235,7 +235,7 @@ class ReportManager {
     addStyle(atpSelector, "attendeeTypes");
     container.add(atpSelector);
 
-    BeeLabel attLabel = new BeeLabel("Resursai:");
+    Label attLabel = new Label("Resursai:");
     addStyle(attLabel, "attLabel");
     container.add(attLabel);
 

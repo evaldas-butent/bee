@@ -37,7 +37,7 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
@@ -105,7 +105,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     VERSION("version", "Versija", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -117,8 +117,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getFileVersion()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(fileInfo.getFileVersion()));
         }
       }
 
@@ -138,7 +138,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     NAME("name", "Pavadinimas", true, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -150,8 +150,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.notEmpty(fileInfo.getCaption(),
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.notEmpty(fileInfo.getCaption(),
               fileInfo.getName()));
         }
       }
@@ -177,7 +177,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     DESCRIPTION("description", "Aprašymas", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -189,8 +189,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getDescription()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(fileInfo.getDescription()));
         }
       }
 
@@ -210,7 +210,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     SIZE("size", "Dydis", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -220,8 +220,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(FileUtils.sizeToText(fileInfo.getSize()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(FileUtils.sizeToText(fileInfo.getSize()));
         }
       }
 
@@ -234,7 +234,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     TYPE("type", "Tipas", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -246,8 +246,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getType()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(fileInfo.getType()));
         }
       }
 
@@ -654,7 +654,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     int row = 0;
 
     for (Column column : editable) {
-      BeeLabel captionWidget = new BeeLabel(column.getCaption());
+      Label captionWidget = new Label(column.getCaption());
       captionWidget.addStyleName(pfx + STYLE_CAPTION);
       panel.setWidget(row, colCaption, captionWidget, pfx + STYLE_CAPTION + STYLE_CELL);
 

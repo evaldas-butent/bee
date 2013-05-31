@@ -17,7 +17,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -53,7 +53,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       Horizontal container = new Horizontal();
       container.setBorderSpacing(5);
 
-      container.add(new BeeLabel("Pasirinkite krovinį"));
+      container.add(new Label("Pasirinkite krovinį"));
 
       Relation relation = Relation.create(VIEW_WAITING_CARGO,
           Lists.newArrayList("OrderNo", "CustomerName", "Description", "LoadingDate"));

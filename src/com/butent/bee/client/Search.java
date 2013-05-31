@@ -35,7 +35,7 @@ import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -110,7 +110,7 @@ public class Search {
           dataInfo = Data.getDataInfo(viewName);
 
           String viewCaption = LocaleUtils.maybeLocalize(dataInfo.getCaption());
-          BeeLabel label = new BeeLabel(BeeUtils.notEmpty(viewCaption, viewName));
+          Label label = new Label(BeeUtils.notEmpty(viewCaption, viewName));
           label.addStyleName(STYLE_RESULT_VIEW);
           content.add(label);
         }

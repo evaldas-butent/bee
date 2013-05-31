@@ -11,7 +11,7 @@ import com.butent.bee.client.layout.Layout.Alignment;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
@@ -80,14 +80,14 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
     this.caption = BeeUtils.notEmpty(BeeUtils.getSuffix(uri, '/'), BeeUtils.getSuffix(uri, '\\'),
         uri);
 
-    BeeLabel label = new BeeLabel(uri);
+    Label label = new Label(uri);
     p.add(label);
     p.setWidgetVerticalPosition(label, Alignment.BEGIN);
     p.setWidgetLeftRight(label, 10, CssUnit.PX, 10, CssUnit.PX);
     top = 2;
 
     if (resource.isReadOnly()) {
-      BeeLabel rd = new BeeLabel("read only");
+      Label rd = new Label("read only");
       p.add(rd);
       p.setWidgetVerticalPosition(rd, Alignment.END);
       p.setWidgetHorizontalPosition(rd, Alignment.END);

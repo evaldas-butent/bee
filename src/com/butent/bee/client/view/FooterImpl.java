@@ -10,7 +10,7 @@ import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.view.search.SearchView;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -60,7 +60,7 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
       setSearchId(search.getWidgetId());
     }
 
-    BeeLabel selectionCounter = new BeeLabel();
+    Label selectionCounter = new Label();
     selectionCounter.addStyleName(STYLE_SELECTION_COUNTER);
     add(selectionCounter);
     setSelectionCounterId(selectionCounter.getId());

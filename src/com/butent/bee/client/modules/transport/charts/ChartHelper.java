@@ -30,7 +30,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Mover;
@@ -1121,7 +1121,7 @@ public class ChartHelper {
   }
 
   private static Widget renderLabel(String text, String styleName) {
-    BeeLabel widget = new BeeLabel(text);
+    Label widget = new Label(text);
     if (!BeeUtils.isEmpty(styleName)) {
       widget.addStyleName(styleName);
     }

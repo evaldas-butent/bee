@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -58,7 +58,7 @@ class VehicleService implements HasDateRange {
       }
     });
 
-    BeeLabel label = new BeeLabel(getName());
+    Label label = new Label(getName());
     label.addStyleName(labelStyle);
 
     panel.add(label);

@@ -12,7 +12,7 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.RangeMap;
 import com.butent.bee.shared.time.JustDate;
@@ -45,7 +45,7 @@ public class DayViewHeader extends Horizontal {
     super();
     addStyleName(CalendarStyleManager.CALENDAR_HEADER);
 
-    BeeLabel dateLabel = new BeeLabel();
+    Label dateLabel = new Label();
     add(dateLabel);
     addStyleToCell(dateLabel, CalendarStyleManager.DATE_CELL);
     
@@ -69,7 +69,7 @@ public class DayViewHeader extends Horizontal {
 
     JustDate tmp = JustDate.copyOf(date);
     for (int i = 0; i < days; i++) {
-      BeeLabel dayLabel = new BeeLabel(format == null ? tmp.toString() : format.format(tmp));
+      Label dayLabel = new Label(format == null ? tmp.toString() : format.format(tmp));
       dayLabel.addStyleName(CalendarStyleManager.DAY_CELL);
 
       StyleUtils.setLeft(dayLabel, dayWidthPct * i, CssUnit.PCT);

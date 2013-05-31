@@ -1,12 +1,14 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+
+import elemental.client.Browser;
 
 import elemental.html.StyleElement;
 
@@ -21,16 +23,17 @@ import elemental.html.IFrameElement;
 import elemental.js.dom.JsElement;
 import elemental.js.html.JsIFrameElement;
 
-public class BeeFrame extends Frame implements IdentifiableWidget {
+public class Frame extends Widget implements IdentifiableWidget {
 
-  public BeeFrame() {
+  public Frame() {
     super();
+    setElement(Element.as((JsIFrameElement) Browser.getDocument().createIFrameElement()));
     init();
   }
 
-  public BeeFrame(String url) {
-    super(url);
-    init();
+  public Frame(String url) {
+    this();
+    setUrl(url);
   }
   
   public void clear() {
@@ -102,6 +105,10 @@ public class BeeFrame extends Frame implements IdentifiableWidget {
     DomUtils.setId(this, id);
   }
 
+  public void setUrl(String url) {
+    getIFrameElement().setSrc(url);
+  }
+  
   private Document getContentDocument() {
     return getIFrameElement().getContentDocument();
   }

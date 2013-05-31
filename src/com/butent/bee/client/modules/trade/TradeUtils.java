@@ -12,7 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Assert;
@@ -212,7 +212,7 @@ public class TradeUtils {
         if (response.hasErrors()) {
           return;
         }
-        target.add(new BeeLabel(BeeUtils.joinWords(response.getResponse(), currencyName, fraction,
+        target.add(new Label(BeeUtils.joinWords(response.getResponse(), currencyName, fraction,
             minorName)));
       }
     });

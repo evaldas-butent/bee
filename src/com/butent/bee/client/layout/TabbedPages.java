@@ -20,7 +20,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -361,7 +361,7 @@ public class TabbedPages extends Flow implements
   }
 
   private Widget createTabWidget(String text, boolean asHtml) {
-    return asHtml ? new Html(text) : new BeeLabel(text);
+    return asHtml ? new Html(text) : new Label(text);
   }
 
   private Tab getTab(int index) {

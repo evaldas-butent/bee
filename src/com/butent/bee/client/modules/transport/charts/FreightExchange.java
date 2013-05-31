@@ -28,7 +28,7 @@ import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -515,7 +515,7 @@ class FreightExchange extends ChartBase {
   }
 
   private IdentifiableWidget createCustomerWidget(OrderCargo item) {
-    BeeLabel widget = new BeeLabel(item.getCustomerName());
+    Label widget = new Label(item.getCustomerName());
     widget.addStyleName(STYLE_CUSTOMER_LABEL);
 
     bindOpener(widget, CommonsConstants.VIEW_COMPANIES, item.getCustomerId());
@@ -543,7 +543,7 @@ class FreightExchange extends ChartBase {
   }
 
   private IdentifiableWidget createOrderWidget(OrderCargo item) {
-    BeeLabel widget = new BeeLabel(item.getOrderNo());
+    Label widget = new Label(item.getOrderNo());
     widget.addStyleName(STYLE_ORDER_LABEL);
 
     widget.setTitle(item.getOrderTitle());

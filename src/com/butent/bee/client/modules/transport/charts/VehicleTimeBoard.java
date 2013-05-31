@@ -28,7 +28,7 @@ import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Mover;
@@ -835,7 +835,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       panel.addStyleName(STYLE_INFO_OVERLAP);
     }
 
-    BeeLabel label = new BeeLabel(vehicle.getInfo());
+    Label label = new Label(vehicle.getInfo());
     label.addStyleName(STYLE_INFO_LABEL);
 
     UiHelper.maybeSetTitle(label, vehicle.getTitle());

@@ -28,7 +28,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -405,7 +405,7 @@ public class ScreenImpl implements Screen {
     Flow userContainer = new Flow();
     userContainer.addStyleName("bee-UserContainer");
 
-    BeeLabel user = new BeeLabel();
+    Label user = new Label();
     user.addStyleName("bee-UserSignature");
     userContainer.add(user);
     setSignature(user);

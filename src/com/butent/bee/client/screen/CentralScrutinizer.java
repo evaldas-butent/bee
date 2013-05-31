@@ -16,7 +16,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -49,7 +49,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
         add(icon);
       }
 
-      BeeLabel label = new BeeLabel(BeeUtils.notEmpty(caption, domain.getCaption()));
+      Label label = new Label(BeeUtils.notEmpty(caption, domain.getCaption()));
       label.addStyleName(STYLE_NAME + "-label");
       add(label);
 

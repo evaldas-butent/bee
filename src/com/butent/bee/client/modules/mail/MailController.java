@@ -32,7 +32,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.LogUtils;
@@ -63,20 +63,20 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     add(panel);
 
     for (final SystemFolder sysFolder : SystemFolder.values()) {
-      BeeLabel label = null;
+      Label label = null;
 
       switch (sysFolder) {
         case Drafts:
-          label = new BeeLabel("Juodraščiai");
+          label = new Label("Juodraščiai");
           break;
         case Inbox:
-          label = new BeeLabel("Gautieji");
+          label = new Label("Gautieji");
           break;
         case Sent:
-          label = new BeeLabel("Siųstieji");
+          label = new Label("Siųstieji");
           break;
         case Trash:
-          label = new BeeLabel("Šiukšlinė");
+          label = new Label("Šiukšlinė");
           break;
       }
       label.addClickHandler(new ClickHandler() {
@@ -93,7 +93,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Horizontal caption = new Horizontal();
     caption.setStyleName("bee-mail-FolderRow");
 
-    BeeLabel label = new BeeLabel("Aplankai");
+    Label label = new Label("Aplankai");
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
@@ -182,7 +182,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         row.setStyleName("bee-mail-FolderRow");
         row.setDefaultCellStyles("padding: 0px;");
 
-        final BeeLabel label = new BeeLabel(subFolder.getName());
+        final Label label = new Label(subFolder.getName());
         label.setStyleName("bee-mail-Folder");
         label.getElement().getStyle().setMarginLeft(margin, Unit.PX);
         label.addClickHandler(new ClickHandler() {

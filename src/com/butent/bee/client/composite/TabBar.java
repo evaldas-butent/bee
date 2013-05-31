@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -24,10 +23,10 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.IsHtmlTable;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -267,14 +266,14 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void insertTab(String text, boolean asHTML, int beforeIndex) {
     checkInsertBeforeTabIndex(beforeIndex);
 
-    Label item;
+    Label item = new Label();
     if (asHTML) {
-      item = new Html(text);
+      item.setHTML(text);
     } else {
-      item = new BeeLabel(text);
+      item.setText(text);
     }
-
-    item.setWordWrap(false);
+    
+    StyleUtils.setWordWrap(item.getElement(), false);
     insertTabWidget(item, beforeIndex);
   }
 

@@ -1,8 +1,7 @@
 package com.butent.bee.client.visualization.showcase;
 
-import com.google.gwt.user.client.ui.Label;
-
 import com.butent.bee.client.visualization.events.OnMouseOverHandler;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Handles a situation when mouse cursor moves over a particular area in visualization demos.

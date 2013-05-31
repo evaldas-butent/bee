@@ -1,17 +1,18 @@
 package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.visualization.Selectable;
 import com.butent.bee.client.visualization.Selection;
 import com.butent.bee.client.visualization.events.SelectHandler;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Creates a label informing that selection changed when such event occurs.
  */
 
 class SelectionDemo extends SelectHandler {
+
   private final Selectable viz;
   private final Label label;
 

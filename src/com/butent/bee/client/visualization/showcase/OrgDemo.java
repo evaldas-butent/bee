@@ -8,7 +8,7 @@ import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.OrgChart;
 import com.butent.bee.client.visualization.visualizations.OrgChart.Options;
 import com.butent.bee.client.visualization.visualizations.OrgChart.Size;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Implements demonstration of a organizational chart visualization.
@@ -43,7 +43,7 @@ public class OrgDemo implements LeftTabPanel.WidgetProvider {
     data.setValue(7, 1, "Jovita");
 
     OrgChart viz = new OrgChart(data, options);
-    BeeLabel status = new BeeLabel();
+    Label status = new Label();
     viz.addSelectHandler(new SelectionDemo(viz, status));
     panel.add(viz);
     panel.add(status);

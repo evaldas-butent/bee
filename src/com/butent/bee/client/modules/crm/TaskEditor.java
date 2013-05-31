@@ -50,7 +50,7 @@ import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
@@ -121,7 +121,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     private String addComment(boolean required) {
       String styleName = STYLE_DIALOG + "-commentLabel";
-      BeeLabel label = new BeeLabel("Komentaras:");
+      Label label = new Label("Komentaras:");
       label.addStyleName(styleName);
       if (required) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -151,7 +151,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-dateLabel";
-      BeeLabel label = new BeeLabel(caption);
+      Label label = new Label(caption);
       label.addStyleName(styleName);
       if (required) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -194,7 +194,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-filesLabel";
-      BeeLabel label = new BeeLabel("Bylos:");
+      Label label = new Label("Bylos:");
       label.addStyleName(styleName);
 
       table.setWidget(row, col, label);
@@ -223,7 +223,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-selectorLabel";
-      BeeLabel label = new BeeLabel(caption);
+      Label label = new Label(caption);
       label.addStyleName(styleName);
       if (required) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -253,7 +253,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-timeLabel";
-      BeeLabel label = new BeeLabel(caption);
+      Label label = new Label(caption);
       label.addStyleName(styleName);
 
       table.setWidget(row, col, label);
@@ -1559,7 +1559,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (!extensions.isEmpty()) {
       for (int i = extensions.size() - 1; i >= 0; i--) {
-        BeeLabel label = new BeeLabel(extensions.get(i).toCompactString());
+        Label label = new Label(extensions.get(i).toCompactString());
         label.addStyleName(STYLE_EXTENSION);
         panel.add(label);
       }

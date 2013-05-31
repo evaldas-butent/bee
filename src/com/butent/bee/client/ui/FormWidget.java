@@ -77,9 +77,9 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeFrame;
+import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.Canvas;
@@ -602,7 +602,7 @@ public enum FormWidget {
         if (BeeUtils.isEmpty(html)) {
           widget = new Disclosure();
         } else {
-          widget = new Disclosure(new BeeLabel(html));
+          widget = new Disclosure(new Label(html));
         }
 
         String animate = attributes.get(ATTR_ANIMATE);
@@ -670,9 +670,9 @@ public enum FormWidget {
       case FRAME:
         url = attributes.get(ATTR_URL);
         if (BeeUtils.isEmpty(url)) {
-          widget = new BeeFrame();
+          widget = new Frame();
         } else {
-          widget = new BeeFrame(url);
+          widget = new Frame(url);
         }
         break;
 
@@ -840,7 +840,7 @@ public enum FormWidget {
         break;
 
       case LABEL:
-        widget = new BeeLabel(html);
+        widget = new Label(html);
         break;
 
       case LAYOUT_PANEL:

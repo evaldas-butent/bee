@@ -8,7 +8,7 @@ import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.events.RangeChangeHandler;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine.Options;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -19,8 +19,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
   private AnnotatedTimeLine chart;
-  private final BeeLabel status = new BeeLabel();
-  private final BeeLabel rangeStatus = new BeeLabel();
+  private final Label status = new Label();
+  private final Label rangeStatus = new Label();
   private Vertical widget = new Vertical();
 
   public AnnotatedDemo() {

@@ -14,7 +14,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
@@ -101,7 +101,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     VERSION("version", "Versija", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -113,8 +113,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       void refresh(Widget widget, StoredFile sf) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(sf.getFileVersion()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(sf.getFileVersion()));
         }
       }
 
@@ -174,7 +174,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     DESCRIPTION("description", "Aprašymas", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -186,8 +186,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       void refresh(Widget widget, StoredFile sf) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(sf.getDescription()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(sf.getDescription()));
         }
       }
 
@@ -207,7 +207,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     SIZE("size", "Dydis", false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -217,8 +217,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       void refresh(Widget widget, StoredFile sf) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(FileUtils.sizeToText(sf.getSize()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(FileUtils.sizeToText(sf.getSize()));
         }
       }
 
@@ -231,7 +231,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     TYPE("type", "Tipas", false, false) {
       @Override
       Widget createDisplay() {
-        return new BeeLabel();
+        return new Label();
       }
 
       @Override
@@ -243,8 +243,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       void refresh(Widget widget, StoredFile sf) {
-        if (widget instanceof BeeLabel) {
-          ((BeeLabel) widget).setText(BeeUtils.trim(sf.getType()));
+        if (widget instanceof Label) {
+          ((Label) widget).setText(BeeUtils.trim(sf.getType()));
         }
       }
 
@@ -541,7 +541,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     int row = 0;
 
     for (Column column : editable) {
-      BeeLabel captionWidget = new BeeLabel(column.getCaption());
+      Label captionWidget = new Label(column.getCaption());
       captionWidget.addStyleName(pfx + STYLE_CAPTION);
       panel.setWidget(row, colCaption, captionWidget, pfx + STYLE_CAPTION + STYLE_CELL);
 

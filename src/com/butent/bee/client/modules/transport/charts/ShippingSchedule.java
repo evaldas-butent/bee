@@ -15,7 +15,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.ChartRowLayout.GroupLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -258,7 +258,7 @@ class ShippingSchedule extends VehicleTimeBoard  {
 
     trip.makeTarget(panel, STYLE_TRIP_GROUP_DRAG_OVER);
 
-    BeeLabel label = new BeeLabel(trip.getTripNo());
+    Label label = new Label(trip.getTripNo());
     label.addStyleName(STYLE_TRIP_GROUP_LABEL);
 
     label.setTitle(trip.getTitle());
@@ -268,7 +268,7 @@ class ShippingSchedule extends VehicleTimeBoard  {
     panel.add(label);
 
     if (trip.getTrailerId() != null) {
-      BeeLabel trailer = new BeeLabel(trip.getTrailerNumber());
+      Label trailer = new Label(trip.getTrailerNumber());
       trailer.addStyleName(STYLE_TRIP_GROUP_TRAILER);
       
       bindOpener(trailer, VIEW_VEHICLES, trip.getTrailerId());

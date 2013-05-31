@@ -1,13 +1,12 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HTML;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,13 +14,12 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a user interface component that can contain arbitrary HTML code.
  */
 
-public class Html extends HTML implements IdentifiableWidget, HasCommand {
+public class Html extends CustomWidget implements HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 
   public Html() {
-    super();
-    init();
+    super(Document.get().createDivElement());
   }
 
   public Html(Element element) {
@@ -46,19 +44,9 @@ public class Html extends HTML implements IdentifiableWidget, HasCommand {
     }
   }
 
-  public Html(String html, boolean wordWrap) {
-    super(html, wordWrap);
-    init();
-  }
-
   @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;
-  }
-
-  @Override
-  public String getId() {
-    return DomUtils.getId(this);
   }
 
   @Override
@@ -83,12 +71,8 @@ public class Html extends HTML implements IdentifiableWidget, HasCommand {
   }
 
   @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
-  }
-  
-  private void init() {
-    DomUtils.createId(this, getIdPrefix());
+  protected void init() {
+    super.init();
     setStyleName("bee-Html");
   }
 }

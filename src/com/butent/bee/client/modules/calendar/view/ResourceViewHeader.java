@@ -9,7 +9,7 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -26,7 +26,7 @@ public class ResourceViewHeader extends Horizontal {
     super();
     addStyleName(CalendarStyleManager.CALENDAR_HEADER);
 
-    BeeLabel dateLabel = new BeeLabel();
+    Label dateLabel = new Label();
     add(dateLabel);
     addStyleToCell(dateLabel, CalendarStyleManager.DATE_CELL);
     
@@ -49,7 +49,7 @@ public class ResourceViewHeader extends Horizontal {
     int width = 100 / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
       String caption = CalendarKeeper.getAttendeeCaption(calendarId, attendees.get(i));
-      BeeLabel label = new BeeLabel(caption);
+      Label label = new Label(caption);
       label.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CELL);
 
       StyleUtils.setLeft(label, width * i, CssUnit.PCT);

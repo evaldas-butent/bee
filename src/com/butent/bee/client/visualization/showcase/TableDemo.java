@@ -8,7 +8,7 @@ import com.butent.bee.client.visualization.Query;
 import com.butent.bee.client.visualization.Query.Callback;
 import com.butent.bee.client.visualization.QueryResponse;
 import com.butent.bee.client.visualization.visualizations.Table;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Implements a demonstration of query results showing table visualization.
@@ -34,7 +34,7 @@ public class TableDemo implements LeftTabPanel.WidgetProvider {
         Table.Options options = Table.Options.create();
         options.setShowRowNumber(true);
         viz.draw(response.getDataTable(), options);
-        BeeLabel status = new BeeLabel();
+        Label status = new Label();
         viz.addSelectHandler(new SelectionDemo(viz, status));
         panel.add(viz);
         panel.add(status);

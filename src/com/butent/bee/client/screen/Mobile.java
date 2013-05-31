@@ -27,7 +27,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -227,7 +227,7 @@ public class Mobile extends ScreenImpl {
     auth.setId("auth-button");
     hor.add(auth);
 
-    BeeLabel user = new BeeLabel();
+    Label user = new Label();
     StyleUtils.setHorizontalPadding(user, 5);
     hor.add(user);
     setSignature(user);

@@ -6,7 +6,7 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -34,7 +34,7 @@ public class Timeline extends Flow {
       Flow flowPanel = new Flow();
       flowPanel.addStyleName(CalendarStyleManager.HOUR_LAYOUT);
 
-      BeeLabel hourLabel = new BeeLabel(hour);
+      Label hourLabel = new Label(hour);
       hourLabel.addStyleName(CalendarStyleManager.HOUR_LABEL);
       flowPanel.add(hourLabel);
       

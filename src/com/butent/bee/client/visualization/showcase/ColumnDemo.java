@@ -9,7 +9,7 @@ import com.butent.bee.client.visualization.visualizations.corechart.ColumnChart;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart;
 import com.butent.bee.client.visualization.visualizations.corechart.HorizontalAxisOptions;
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 
 /**
  * Implements demonstration of a column chart visualization.
@@ -32,8 +32,8 @@ public class ColumnDemo implements LeftTabPanel.WidgetProvider {
     DataTable data = Showcase.getCompanyPerformance();
     ColumnChart viz = new ColumnChart(data, options);
 
-    BeeLabel status = new BeeLabel();
-    BeeLabel onMouseOverAndOutStatus = new BeeLabel();
+    Label status = new Label();
+    Label onMouseOverAndOutStatus = new Label();
     viz.addSelectHandler(new SelectionDemo(viz, status));
     viz.addReadyHandler(new ReadyDemo(status));
     viz.addOnMouseOverHandler(new OnMouseOverDemo(onMouseOverAndOutStatus));

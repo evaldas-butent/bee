@@ -18,7 +18,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -85,8 +85,8 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   private Presenter viewPresenter = null;
 
-  private final BeeLabel captionWidget = new BeeLabel();
-  private final BeeLabel messageWidget = new BeeLabel();
+  private final Label captionWidget = new Label();
+  private final Label messageWidget = new Label();
 
   private boolean enabled = true;
 

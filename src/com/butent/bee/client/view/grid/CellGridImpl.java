@@ -84,7 +84,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -1434,7 +1434,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
-      BeeLabel label = new BeeLabel(editableColumn.getCaption());
+      Label label = new Label(editableColumn.getCaption());
       label.addStyleName(RowFactory.STYLE_NEW_ROW_LABEL);
 
       if (editableColumn.hasDefaults()) {
