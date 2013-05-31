@@ -20,7 +20,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -82,13 +82,13 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
         }
       });
       container.setWidget(0, 1, selector);
-      container.setWidget(1, 0, new BeeButton("Naujas reisas", new ClickHandler() {
+      container.setWidget(1, 0, new Button("Naujas reisas", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           createNewTrip(VIEW_TRIPS);
         }
       }));
-      container.setWidget(1, 1, new BeeButton("Nauja ekspedicija", new ClickHandler() {
+      container.setWidget(1, 1, new Button("Nauja ekspedicija", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           createNewTrip(VIEW_EXPEDITION_TRIPS);

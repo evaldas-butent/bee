@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -78,7 +78,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
     HtmlTable container = new HtmlTable();
     container.addStyleName(getStylePrefix() + "container");
 
-    BeeButton notEmpty = new BeeButton(getLabelForNotEmpty());
+    Button notEmpty = new Button(getLabelForNotEmpty());
     notEmpty.addStyleName(getStylePrefix() + "notEmpty");
 
     notEmpty.addClickHandler(new ClickHandler() {
@@ -92,7 +92,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(0, 0, notEmpty);
     
-    BeeButton empty = new BeeButton(getLabelForEmpty());
+    Button empty = new Button(getLabelForEmpty());
     empty.addStyleName(getStylePrefix() + "empty");
 
     empty.addClickHandler(new ClickHandler() {
@@ -106,7 +106,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(0, 1, empty);
 
-    BeeButton all = new BeeButton(Localized.constants.filterAll());
+    Button all = new Button(Localized.constants.filterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -120,7 +120,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(1, 0, all);
 
-    BeeButton cancel = new BeeButton(Localized.constants.cancel());
+    Button cancel = new Button(Localized.constants.cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {

@@ -12,7 +12,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -364,7 +364,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList();
 
   public static Widget getDefaultFace() {
-    return new BeeButton(Localized.constants.chooseFiles());
+    return new Button(Localized.constants.chooseFiles());
   }
 
   public static List<Column> parseColumns(String input) {

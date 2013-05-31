@@ -1,10 +1,11 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ButtonElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ButtonBase;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -15,35 +16,34 @@ import com.butent.bee.client.utils.HasCommand;
  * Implements a push button user interface component.
  */
 
-public class BeeButton extends Button implements IdentifiableWidget, HasCommand {
+public class Button extends ButtonBase implements IdentifiableWidget, HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 
-  public BeeButton() {
-    super();
+  public Button() {
+    super(Document.get().createPushButtonElement());
     init();
   }
 
-  public BeeButton(Element element) {
-    super(element);
-    init();
+  public Button(String html) {
+    this();
+    setHTML(html);
   }
 
-  public BeeButton(String html) {
-    super(html);
-    init();
-  }
-
-  public BeeButton(String html, Scheduler.ScheduledCommand cmnd) {
+  public Button(String html, Scheduler.ScheduledCommand cmnd) {
     this(html);
     setCommand(cmnd);
   }
 
-  public BeeButton(String html, ClickHandler handler) {
-    super(html, handler);
-    init();
+  public Button(String html, ClickHandler handler) {
+    this(html);
+    addClickHandler(handler);
   }
 
+  public void click() {
+    ButtonElement.as(getElement()).click();
+  }
+  
   @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;

@@ -18,7 +18,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -291,8 +291,8 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     header.setCaption(reportCaption);
 
-    if (widget instanceof BeeButton) {
-      BeeButton btn = (BeeButton) widget;
+    if (widget instanceof Button) {
+      Button btn = (Button) widget;
       btn.click();
     }
   }

@@ -2,11 +2,11 @@
 <Table xmlns="http://www.butent.com/widget" style="border-spacing: 4px 3px;" >
   <row>
     <Label text="=period" horizontalAlignment="right" />
-    <FlowPanel class="flexBox-horizontal">
+    <HorizontalPanel style="border-collapse: collapse;" cellStyle="padding: 0;">
       <InputDate name="dateFrom" style="width:100px;" />
       <Label html="—" style="margin-left:8px; margin-right:8px" />
       <InputDate name="dateTill" style="width:100px;" />
-    </FlowPanel>
+    </HorizontalPanel>
     <Label text="=user" horizontalAlignment="left" />
     <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName"
       newRowEnabled="false" style="width:200px;" />
@@ -14,7 +14,7 @@
   <row>
     <Label text="=company" horizontalAlignment="right" />
     <MultiSelector name="Company" viewName="Companies" choiceColumns="Name TypeName"
-      newRowEnabled="false" style="width:230px;" />
+      newRowEnabled="false" style="width:100%;" />
     <Label text="=durationType" horizontalAlignment="right" />
     <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name"
       newRowEnabled="false" style="width:200px;" />

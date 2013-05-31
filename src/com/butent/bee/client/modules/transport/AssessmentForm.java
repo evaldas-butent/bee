@@ -43,7 +43,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -484,22 +484,22 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
   private IsRow currentRow = null;
 
-  private final BeeButton cmdNew = new BeeButton("Užklausimas",
+  private final Button cmdNew = new Button("Užklausimas",
       new StatusUpdater(AssessmentStatus.NEW, null));
 
-  private final BeeButton cmdLost = new BeeButton("Pralaimėtas",
+  private final Button cmdLost = new Button("Pralaimėtas",
       new StatusUpdater(AssessmentStatus.LOST, null));
 
-  private final BeeButton cmdAnswered = new BeeButton("Atsakytas",
+  private final Button cmdAnswered = new Button("Atsakytas",
       new StatusUpdater(AssessmentStatus.ANSWERED, "Yra likę nepatvirtintų vertinimų"));
 
-  private final BeeButton cmdActive = new BeeButton("Užsakymas",
+  private final Button cmdActive = new Button("Užsakymas",
       new StatusUpdater(AssessmentStatus.ACTIVE, null));
 
-  private final BeeButton cmdCompleted = new BeeButton("Įvykdytas",
+  private final Button cmdCompleted = new Button("Įvykdytas",
       new StatusUpdater(AssessmentStatus.COMPLETED, "Yra likę vykdomų antrinių užsakymų"));
 
-  private final BeeButton cmdCanceled = new BeeButton("Atšauktas",
+  private final Button cmdCanceled = new Button("Atšauktas",
       new StatusUpdater(AssessmentStatus.CANCELED, null));
 
   private final List<ChildGrid> grids = Lists.newArrayList();
@@ -569,7 +569,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
       header.setCaption(caption);
     }
     if (owner && !newRecord) {
-      header.addCommandItem(new BeeButton("Rašyti laišką", new ClickHandler() {
+      header.addCommandItem(new Button("Rašyti laišką", new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element div = Document.get().createDivElement();
@@ -595,7 +595,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
       }
       if (primary) {
         if (AssessmentStatus.in(status, AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED)) {
-          header.addCommandItem(new BeeButton("Išankstinė S/F", new ClickHandler() {
+          header.addCommandItem(new Button("Išankstinė S/F", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
             }

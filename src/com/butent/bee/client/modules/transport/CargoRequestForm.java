@@ -21,7 +21,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -84,7 +84,7 @@ public class CargoRequestForm extends AbstractFormInterceptor {
 
     if (enabled) {
       if (!DataUtils.isId(currentRow.getLong(form.getDataIndex(COL_ORDER)))) {
-        header.addCommandItem(new BeeButton("Į užsakymus", new ClickHandler() {
+        header.addCommandItem(new Button("Į užsakymus", new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             requestToOrders();
@@ -95,7 +95,7 @@ public class CargoRequestForm extends AbstractFormInterceptor {
           (currentRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) != null);
 
       if (finished) {
-        header.addCommandItem(new BeeButton("Grąžinti", new ClickHandler() {
+        header.addCommandItem(new Button("Grąžinti", new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             restoreRequest();
@@ -104,7 +104,7 @@ public class CargoRequestForm extends AbstractFormInterceptor {
         enabled = false;
 
       } else {
-        header.addCommandItem(new BeeButton("Užbaigti", new ClickHandler() {
+        header.addCommandItem(new Button("Užbaigti", new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             finishRequest();

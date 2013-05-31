@@ -14,7 +14,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.DateLabel;
@@ -119,8 +119,8 @@ public class DisplayWidget {
         break;
 
       case BUTTON:
-        if (!BeeUtils.isEmpty(value) && widget instanceof BeeButton) {
-          ((BeeButton) widget).setHTML(value);
+        if (!BeeUtils.isEmpty(value) && widget instanceof Button) {
+          ((Button) widget).setHTML(value);
         }
         break;
 

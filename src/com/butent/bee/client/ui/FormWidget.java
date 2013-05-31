@@ -76,7 +76,7 @@ import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -496,7 +496,7 @@ public enum FormWidget {
         break;
 
       case BUTTON:
-        widget = new BeeButton(html);
+        widget = new Button(html);
         break;
 
       case CANVAS:
@@ -1313,7 +1313,7 @@ public enum FormWidget {
     if (faceOptions.getB() != null) {
       result = faceOptions.getB();
     } else if (!BeeUtils.isEmpty(faceOptions.getA())) {
-      result = new BeeButton(faceOptions.getA());
+      result = new Button(faceOptions.getA());
     } else {
       result = null;
     }

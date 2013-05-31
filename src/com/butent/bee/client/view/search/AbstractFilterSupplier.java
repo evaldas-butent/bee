@@ -25,7 +25,7 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
@@ -319,7 +319,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
     List<SupplierAction> actions = getActions();
     for (final SupplierAction action : actions) {
-      BeeButton actionWidget = new BeeButton(action.getCaption());
+      Button actionWidget = new Button(action.getCaption());
       actionWidget.addStyleName(getStylePrefix() + action.getStyleSuffix());
 
       actionWidget.addClickHandler(new ClickHandler() {

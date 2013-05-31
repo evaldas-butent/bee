@@ -28,7 +28,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -60,7 +60,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
   @Override
   public void onShow(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(new BeeButton("Formuoti sąskaitą", new ClickHandler() {
+    presenter.getHeader().addCommandItem(new Button("Formuoti sąskaitą", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         CompoundFilter flt = CompoundFilter.or();

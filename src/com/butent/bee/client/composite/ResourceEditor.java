@@ -10,7 +10,7 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Layout.Alignment;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Resource;
@@ -93,7 +93,7 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
       p.setWidgetHorizontalPosition(rd, Alignment.END);
       bottom = 1.5;
     } else if (!BeeUtils.isEmpty(resource.getUri())) {
-      BeeButton button = new BeeButton("Save", new SaveCommand());
+      Button button = new Button("Save", new SaveCommand());
       p.add(button);
       p.setWidgetVerticalPosition(button, Alignment.END);
       p.setWidgetLeftWidth(button, 42, CssUnit.PCT, 16, CssUnit.PCT);

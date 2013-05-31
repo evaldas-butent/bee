@@ -57,7 +57,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
@@ -516,7 +516,7 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
-    header.addCommandItem(new BeeButton("Užklausimas", new ClickHandler() {
+    header.addCommandItem(new Button("Užklausimas", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         createRequest(currentMessage != null

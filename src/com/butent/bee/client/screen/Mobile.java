@@ -24,7 +24,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -217,7 +217,7 @@ public class Mobile extends ScreenImpl {
 
     Horizontal hor = new Horizontal();
 
-    BeeButton auth = new BeeButton("Exit", new ClickHandler() {
+    Button auth = new Button("Exit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         Bee.exit();

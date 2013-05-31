@@ -21,7 +21,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterConsumer;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
@@ -290,7 +290,7 @@ public class GridFilterManager {
 
     table.setWidgetAndStyle(row, 0, label, STYLE_SUPPLIER_LABEL);
 
-    final BeeButton button = new BeeButton();
+    final Button button = new Button();
     button.addStyleName(STYLE_SUPPLIER_BUTTON);
 
     if (!filterSupplier.isEmpty()) {

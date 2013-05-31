@@ -48,7 +48,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomDiv;
@@ -103,7 +103,7 @@ class TaskEditor extends AbstractFormInterceptor {
     private void addAction(String caption, ScheduledCommand command) {
       String styleName = STYLE_DIALOG + "-action";
 
-      BeeButton button = new BeeButton(caption, command);
+      Button button = new Button(caption, command);
       button.addStyleName(styleName);
 
       HtmlTable table = getContainer();
@@ -373,7 +373,7 @@ class TaskEditor extends AbstractFormInterceptor {
       String label = event.getCommandLabel();
 
       if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status, owner, executor)) {
-        header.addCommandItem(new BeeButton(label, new ClickHandler() {
+        header.addCommandItem(new Button(label, new ClickHandler() {
           @Override
           public void onClick(ClickEvent e) {
             doEvent(event);

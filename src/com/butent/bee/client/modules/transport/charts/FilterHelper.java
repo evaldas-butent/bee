@@ -17,7 +17,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -285,7 +285,7 @@ class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
-    BeeButton filter = new BeeButton(Localized.constants.doFilter(), new ClickHandler() {
+    Button filter = new Button(Localized.constants.doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         dialog.close();
@@ -295,7 +295,7 @@ class FilterHelper {
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    BeeButton clear = new BeeButton(Localized.constants.clear(), new ClickHandler() {
+    Button clear = new Button(Localized.constants.clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         for (Widget widget : dataContainer) {

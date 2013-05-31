@@ -30,7 +30,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
@@ -117,7 +117,7 @@ public class MessageBoxes {
         vertical ? Orientation.VERTICAL : Orientation.HORIZONTAL);
 
     for (int i = 0; i < size; i++) {
-      Widget widget = UiHelper.initialize(new BeeButton(options.get(i)), initializer,
+      Widget widget = UiHelper.initialize(new Button(options.get(i)), initializer,
           DialogConstants.WIDGET_COMMAND_ITEM);
       group.addItem(widget);
     }
@@ -125,7 +125,7 @@ public class MessageBoxes {
     final Holder<Integer> cancelIndex = Holder.absent();
 
     if (!BeeUtils.isEmpty(cancelHtml)) {
-      Widget widget = UiHelper.initialize(new BeeButton(cancelHtml), initializer,
+      Widget widget = UiHelper.initialize(new Button(cancelHtml), initializer,
           DialogConstants.WIDGET_CANCEL);
       if (widget != null) {
         widget.addStyleName(STYLE_CHOICE_CANCEL);
@@ -325,7 +325,7 @@ public class MessageBoxes {
 
     if (!BeeUtils.isEmpty(options)) {
       for (String option : options) {
-        BeeButton button = new BeeButton(option, new ClickHandler() {
+        Button button = new Button(option, new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             selectedIndex.set(group.getWidgetIndex((Widget) event.getSource()));

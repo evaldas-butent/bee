@@ -25,7 +25,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
@@ -249,7 +249,7 @@ class ReportManager {
     addStyle(attSelector, "attendees");
     container.add(attSelector);
 
-    final BeeButton tableCommand = new BeeButton("Lentelė", new Command() {
+    final Button tableCommand = new Button("Lentelė", new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();

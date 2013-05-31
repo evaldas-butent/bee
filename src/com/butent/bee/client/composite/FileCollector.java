@@ -35,7 +35,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -373,7 +373,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
   public static IdentifiableWidget getDefaultFace() {
-    return new BeeButton(Localized.constants.chooseFiles());
+    return new Button(Localized.constants.chooseFiles());
   }
 
   public static FileCollector headless(Consumer<Collection<NewFileInfo>> fileConsumer) {

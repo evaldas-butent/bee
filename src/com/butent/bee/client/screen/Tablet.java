@@ -14,7 +14,7 @@ import com.butent.bee.client.style.StyleUtils.FontSize;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -129,25 +129,25 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 1, maxOpacity);
     r++;
 
-    BeeButton rect = new BeeButton("SVG Rectangles", new SvgCommand(0));
+    Button rect = new Button("SVG Rectangles", new SvgCommand(0));
     grid.setWidget(r, 0, rect);
     grid.alignCenter(r, 0);
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton circle = new BeeButton("SVG Circles", new SvgCommand(1));
+    Button circle = new Button("SVG Circles", new SvgCommand(1));
     grid.setWidget(r, 0, circle);
     grid.alignCenter(r, 0);
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton ellipse = new BeeButton("SVG Ellipses", new SvgCommand(2));
+    Button ellipse = new Button("SVG Ellipses", new SvgCommand(2));
     grid.setWidget(r, 0, ellipse);
     grid.alignCenter(r, 0);
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
     
-    BeeButton canvas = new BeeButton("Canvas Demo", new Command() {
+    Button canvas = new Button("Canvas Demo", new Command() {
       @Override
       public void execute() {
         new CanvasDemo().start();
@@ -158,7 +158,7 @@ public class Tablet extends Mobile {
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton visual = new BeeButton("Visualization", new Command() {
+    Button visual = new Button("Visualization", new Command() {
       @Override
       public void execute() {
         Showcase.open();
@@ -169,7 +169,7 @@ public class Tablet extends Mobile {
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton cornify = new BeeButton("Cornify", new Command() {
+    Button cornify = new Button("Cornify", new Command() {
       @Override
       public void execute() {
         CliWorker.execute("cornify 5 1000");

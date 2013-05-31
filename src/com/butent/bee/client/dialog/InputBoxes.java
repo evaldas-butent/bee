@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -37,7 +36,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -349,9 +348,9 @@ public class InputBoxes {
 
     DialogBox dialog = DialogBox.create(caption);
 
-    BeeButton confirm = new BeeButton(Localized.constants.ok(),
+    Button confirm = new Button(Localized.constants.ok(),
         DialogCallback.getConfirmCommand(dialog, callback));
-    BeeButton cancel = new BeeButton(Localized.constants.cancel(),
+    Button cancel = new Button(Localized.constants.cancel(),
         DialogCallback.getCancelCommand(dialog, callback));
 
     table.setWidget(r, 0, confirm);
@@ -506,7 +505,7 @@ public class InputBoxes {
     commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
 
     if (!BeeUtils.isEmpty(confirmHtml)) {
-      BeeButton confirm = new BeeButton(confirmHtml);
+      Button confirm = new Button(confirmHtml);
       confirm.addStyleName(STYLE_INPUT_COMMAND);
       confirm.addStyleName(STYLE_INPUT_CONFIRM);
 
@@ -527,7 +526,7 @@ public class InputBoxes {
     }
 
     if (!BeeUtils.isEmpty(cancelHtml)) {
-      BeeButton cancel = new BeeButton(cancelHtml);
+      Button cancel = new Button(cancelHtml);
       cancel.addStyleName(STYLE_INPUT_COMMAND);
       cancel.addStyleName(STYLE_INPUT_CANCEL);
 

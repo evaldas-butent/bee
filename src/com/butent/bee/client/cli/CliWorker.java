@@ -102,7 +102,7 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeVideo;
@@ -1273,7 +1273,7 @@ public class CliWorker {
           p.add(area);
           p.setWidgetTopBottom(area, 0, CssUnit.EM, 2, CssUnit.EM);
 
-          BeeButton button = new BeeButton("Save schema", new ClickHandler() {
+          Button button = new Button("Save schema", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
               if (area.isValueChanged()) {
