@@ -34,7 +34,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
@@ -479,7 +479,7 @@ public class Search {
     Simple optionsContainer = new Simple();
     optionsContainer.addStyleName(STYLE_OPTIONS_CONTAINER);
 
-    BeeImage options = new BeeImage(Global.getImages().searchOptions().getSafeUri());
+    Image options = new Image(Global.getImages().searchOptions());
     options.addStyleName(STYLE_OPTIONS);
 
     optionsContainer.setWidget(options);
@@ -488,7 +488,7 @@ public class Search {
     Simple submitContainer = new Simple();
     submitContainer.addStyleName(STYLE_SUBMIT_CONTAINER);
 
-    BeeImage submit = new BeeImage(Global.getImages().search().getSafeUri());
+    Image submit = new Image(Global.getImages().search());
     submit.addStyleName(STYLE_SUBMIT);
 
     submit.addClickHandler(new ClickHandler() {

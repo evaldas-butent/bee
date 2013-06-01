@@ -104,7 +104,7 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.CustomDiv;
@@ -2069,7 +2069,7 @@ public class CliWorker {
 
           @Override
           public void onSuccess(String uri) {
-            table.setWidget(0, counter.get(), new BeeImage(uri));
+            table.setWidget(0, counter.get(), new Image(uri));
             count();
           }
 
@@ -2200,7 +2200,7 @@ public class CliWorker {
         if (resource == null) {
           logger.warning("image", arr[i], "not found");
         } else {
-          table.setWidget(0, i - 1, new BeeImage(resource));
+          table.setWidget(0, i - 1, new Image(resource));
         }
       }
 
@@ -2220,7 +2220,7 @@ public class CliWorker {
             HasHorizontalAlignment.ALIGN_RIGHT);
         col++;
 
-        table.setWidget(row, col, new BeeImage(entry.getValue()));
+        table.setWidget(row, col, new Image(entry.getValue()));
         col++;
         if (col > 10) {
           row++;

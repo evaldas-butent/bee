@@ -28,7 +28,7 @@ import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -222,14 +222,14 @@ public class InputBoxes {
       }
     };
 
-    BeeImage save = new BeeImage(Global.getImages().silverSave(), onSave);
+    Image save = new Image(Global.getImages().silverSave(), onSave);
     save.addStyleName(STYLE_INPUT_SAVE);
     UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
     dialog.addAction(Action.SAVE, save);
     
     if (enabledActions != null) {
       if (enabledActions.contains(Action.DELETE)) {
-        BeeImage delete = new BeeImage(Global.getImages().silverDelete(), new ScheduledCommand() {
+        Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override
           public void execute() {
             callback.onDelete(dialog);
@@ -242,7 +242,7 @@ public class InputBoxes {
       }
 
       if (enabledActions.contains(Action.PRINT)) {
-        BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
+        Image print = new Image(Global.getImages().silverPrint(), new ScheduledCommand() {
           @Override
           public void execute() {
             Printer.print(dialog);
@@ -273,7 +273,7 @@ public class InputBoxes {
       }
     };
 
-    BeeImage close = new BeeImage(Global.getImages().silverClose(), onClose);
+    Image close = new Image(Global.getImages().silverClose(), onClose);
     close.addStyleName(STYLE_INPUT_CLOSE);
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);

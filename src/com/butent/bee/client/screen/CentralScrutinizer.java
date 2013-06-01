@@ -15,7 +15,7 @@ import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -44,7 +44,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       addStyleName(STYLE_NAME + BeeUtils.proper(domain.name()));
 
       if (domain.getImageResource() != null) {
-        BeeImage icon = new BeeImage(domain.getImageResource());
+        Image icon = new Image(domain.getImageResource());
         icon.addStyleName(STYLE_NAME + "-icon");
         add(icon);
       }
@@ -54,7 +54,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       add(label);
 
       if (domain.isRemovable()) {
-        BeeImage close = new BeeImage(Global.getImages().closeSmall());
+        Image close = new Image(Global.getImages().closeSmall());
         close.addStyleName(STYLE_NAME + "-close");
 
         close.addClickHandler(new ClickHandler() {

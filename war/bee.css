@@ -668,9 +668,8 @@ body {
 }
 .bee-RichTextToolbar-row {
   display: -webkit-flex;
-}
-.bee-RichTextToolbar-row > * {
-  -webkit-flex: 1;
+  -webkit-justify-content: space-around;
+  margin-bottom: 5px;
 }
 .bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
   background-color: #faac58;

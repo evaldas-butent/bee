@@ -13,7 +13,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -41,7 +41,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     ICON("icon", null, false, true) {
       @Override
       Widget createDisplay() {
-        return new BeeImage();
+        return new Image();
       }
 
       @Override
@@ -51,9 +51,9 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
       @Override
       void refresh(Widget widget, StoredFile sf) {
-        if (widget instanceof BeeImage && !BeeUtils.isEmpty(sf.getIcon())) {
+        if (widget instanceof Image && !BeeUtils.isEmpty(sf.getIcon())) {
           String url = StoredFile.getIconUrl(sf.getIcon());
-          ((BeeImage) widget).setUrl(url);
+          ((Image) widget).setUrl(url);
         }
       }
 
@@ -264,7 +264,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
-        BeeImage widget = new BeeImage(Global.getImages().silverEdit());
+        Image widget = new Image(Global.getImages().silverEdit());
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }
@@ -287,7 +287,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     DELETE("delete", "Pašalinti", false, true) {
       @Override
       Widget createDisplay() {
-        BeeImage widget = new BeeImage(Global.getImages().silverMinus());
+        Image widget = new Image(Global.getImages().silverMinus());
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }

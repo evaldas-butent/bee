@@ -28,7 +28,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -90,7 +90,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
   private double minValue;
   private double stepSize;
 
-  private final BeeImage knobImage;
+  private final Image knobImage;
 
   private int numLabels = 0;
   private final List<Element> labelElements = new ArrayList<Element>();
@@ -140,7 +140,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     DomUtils.createId(lineElement, "line");
     lineElement.getStyle().setPosition(Position.ABSOLUTE);
 
-    knobImage = new BeeImage(knobDefault());
+    knobImage = new Image(knobDefault());
     Element knobElement = knobImage.getElement();
     getElement().appendChild(knobElement);
     knobElement.setClassName(STYLE_KNOB);

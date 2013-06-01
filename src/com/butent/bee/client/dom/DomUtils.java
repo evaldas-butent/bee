@@ -806,7 +806,7 @@ public class DomUtils {
     if (elem.innerHTML) {
       var attributes = elem.attributes;
       var attrs = "";
-      for ( var i = 0; i < attributes.length; i++) {
+      for (var i = 0; i < attributes.length; i++) {
         attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
       }
       return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";

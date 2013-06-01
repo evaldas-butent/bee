@@ -25,7 +25,7 @@ import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -119,14 +119,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
 
     if (hasData()) {
-      BeeImage confirm = new BeeImage(Global.getImages().ok(), new Command() {
+      Image confirm = new Image(Global.getImages().ok(), new Command() {
         @Override
         public void execute() {
           getContent().prepareForInsert();
         }
       });
 
-      BeeImage cancel = new BeeImage(Global.getImages().cancel(), new Command() {
+      Image cancel = new Image(Global.getImages().cancel(), new Command() {
         @Override
         public void execute() {
           getContent().finishNewRow(null);

@@ -49,7 +49,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputArea;
@@ -202,7 +202,7 @@ class TaskEditor extends AbstractFormInterceptor {
       col++;
 
       styleName = STYLE_DIALOG + "-fileCollector";
-      FileCollector collector = new FileCollector(new BeeImage(Global.getImages().attachment()));
+      FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
       collector.addStyleName(styleName);
 
       table.setWidget(row, col, collector);
@@ -1408,7 +1408,7 @@ class TaskEditor extends AbstractFormInterceptor {
     String render = imgr.render(row);
     
     if (BeeUtils.isEmpty(render)) {
-      BeeImage img = new BeeImage(Global.getImages().silverChatIcon());
+      Image img = new Image(Global.getImages().silverChatIcon());
       img.setStyleName(BeeKeeper.SIGNATURE_PHOTO_STYLE);
       render = img.toString();
     }

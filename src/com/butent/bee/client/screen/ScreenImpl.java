@@ -27,7 +27,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DoubleLabel;
@@ -413,7 +413,7 @@ public class ScreenImpl implements Screen {
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
 
-    BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
+    Image exit = new Image(Global.getImages().exit(), new Command() {
       @Override
       public void execute() {
         Global.getMsgBoxen().confirm(Localized.messages.endSession(Settings.getAppName()),

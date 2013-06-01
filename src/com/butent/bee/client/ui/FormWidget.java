@@ -78,7 +78,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Frame;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeVideo;
@@ -728,13 +728,13 @@ public enum FormWidget {
       case IMAGE:
         String resource = attributes.get(ATTR_RESOURCE);
         if (!BeeUtils.isEmpty(resource)) {
-          widget = new BeeImage(Images.get(resource));
+          widget = new Image(Images.get(resource));
         } else {
           url = attributes.get(ATTR_URL);
           if (!BeeUtils.isEmpty(url)) {
-            widget = new BeeImage(url);
+            widget = new Image(url);
           } else {
-            widget = new BeeImage();
+            widget = new Image();
           }
         }
         break;
@@ -1310,7 +1310,7 @@ public enum FormWidget {
   }
 
   private IdentifiableWidget createFace(Element element) {
-    Pair<String, BeeImage> faceOptions = getFaceOptions(element);
+    Pair<String, Image> faceOptions = getFaceOptions(element);
     final IdentifiableWidget result;
 
     if (faceOptions.getB() != null) {
@@ -1516,21 +1516,21 @@ public enum FormWidget {
         XmlUtils.getAttributeUnit(element, ATTR_LEFT_UNIT));
   }
 
-  private Pair<String, BeeImage> getFaceOptions(Element element) {
+  private Pair<String, Image> getFaceOptions(Element element) {
     String html = getTextOrHtml(element);
-    BeeImage image = null;
+    Image image = null;
 
     String name = element.getAttribute(ATTR_RESOURCE);
     if (!BeeUtils.isEmpty(name)) {
       ImageResource resource = Images.get(name);
       if (resource != null) {
-        image = new BeeImage(resource);
+        image = new Image(resource);
       }
     }
     if (image == null) {
       String url = element.getAttribute(ATTR_URL);
       if (!BeeUtils.isEmpty(url)) {
-        image = new BeeImage(url);
+        image = new Image(url);
       }
     }
     return Pair.of(html, image);
@@ -1958,13 +1958,13 @@ public enum FormWidget {
   }
 
   private void setFace(CustomButton button, String faceName, Element element) {
-    Pair<String, BeeImage> options = getFaceOptions(element);
+    Pair<String, Image> options = getFaceOptions(element);
     if (options == null) {
       return;
     }
 
     String html = options.getA();
-    BeeImage image = options.getB();
+    Image image = options.getB();
     if (BeeUtils.isEmpty(html) && image == null) {
       return;
     }
@@ -1988,7 +1988,7 @@ public enum FormWidget {
     }
 
     if (image != null) {
-      face.setImage(image);
+      face.setHTML(DomUtils.getOuterHtml(image.getElement()));
     } else if (face != null) {
       face.setHTML(html);
     }

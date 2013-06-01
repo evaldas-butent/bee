@@ -2,7 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Document;
 
-public class CustomDiv extends CustomWidget {
+public class CustomDiv extends CustomHasHtml {
 
   public CustomDiv() {
     super(Document.get().createDivElement());

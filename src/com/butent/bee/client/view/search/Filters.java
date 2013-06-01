@@ -20,7 +20,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -306,7 +306,7 @@ public class Filters {
       c++;
 
       if (item.isEditable()) {
-        BeeImage edit = new BeeImage(Global.getImages().silverEdit());
+        Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName(STYLE_EDIT);
         edit.setTitle("keisti pavadinimą");
 
@@ -339,7 +339,7 @@ public class Filters {
       c++;
 
       if (item.isRemovable()) {
-        BeeImage delete = new BeeImage(Global.getImages().silverMinus());
+        Image delete = new Image(Global.getImages().silverMinus());
         delete.setTitle("pašalinti");
 
         delete.addClickHandler(new ClickHandler() {

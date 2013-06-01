@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Document;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class Heading extends CustomWidget {
+public class Heading extends CustomHasHtml {
 
   public static final String ATTR_RANK = "rank";
   

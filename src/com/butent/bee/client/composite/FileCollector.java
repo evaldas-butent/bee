@@ -36,7 +36,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -267,7 +267,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
-        BeeImage widget = new BeeImage(Global.getImages().silverEdit());
+        Image widget = new Image(Global.getImages().silverEdit());
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }
@@ -290,7 +290,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     DELETE("delete", "Pašalinti", false, true) {
       @Override
       Widget createDisplay() {
-        BeeImage widget = new BeeImage(Global.getImages().silverMinus());
+        Image widget = new Image(Global.getImages().silverMinus());
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }

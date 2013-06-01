@@ -58,7 +58,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -267,7 +267,7 @@ public class MailPanel extends AbstractFormInterceptor {
       Integer att = row.getInteger(attachmentCount);
 
       if (BeeUtils.isPositive(att)) {
-        Widget image = new BeeImage(Global.getImages().attachment());
+        Widget image = new Image(Global.getImages().attachment());
         image.setStyleName("bee-mail-AttachmentImage");
         fp.add(image);
 

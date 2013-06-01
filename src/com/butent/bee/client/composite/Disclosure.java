@@ -12,7 +12,6 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -20,6 +19,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
@@ -72,10 +72,10 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
         height = scrollHeight - height;
       }
       height = Math.max(height, 1);
-      
+
       double opacity = opening ? progress : 1 - progress;
       StyleUtils.setOpacity(curPanel.contentWrapper, opacity);
-      
+
       StyleUtils.setHeight(curPanel.contentWrapper, height);
       StyleUtils.autoWidth(curPanel.contentWrapper);
     }

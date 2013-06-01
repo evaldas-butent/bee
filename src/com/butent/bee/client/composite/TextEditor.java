@@ -22,7 +22,7 @@ import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasTextBox;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -51,11 +51,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     this.area = new InputArea();
     area.addStyleName("bee-TextEditor-area");
 
-    BeeImage accept = new BeeImage(Global.getImages().accept(), new EditorFactory.Accept(area));
+    Image accept = new Image(Global.getImages().accept(), new EditorFactory.Accept(area));
     accept.addStyleName("bee-TextEditor-accept");
     this.acceptId = accept.getId();
 
-    BeeImage noes = new BeeImage(Global.getImages().noes(), new EditorFactory.Cancel(area));
+    Image noes = new Image(Global.getImages().noes(), new EditorFactory.Cancel(area));
     noes.addStyleName("bee-TextEditor-noes");
     this.noesId = noes.getId();
 

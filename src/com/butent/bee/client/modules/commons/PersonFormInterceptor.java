@@ -22,7 +22,7 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
@@ -41,7 +41,7 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
   private static final String DEFAULT_PHOTO_IMAGE_FILE = "images/silver/person_profile.png";
   private static final long MAX_UPLOAD_FILE_SIZE = 1258292L; /* ~1.2 MB */
 
-  private BeeImage photoImageWidget = null;
+  private Image photoImageWidget = null;
   private NewFileInfo photoImageAttachment = null;
   private boolean photoImageChanged = false;
 
@@ -83,14 +83,14 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
         }
       });
     }
-    if (BeeUtils.same(name, PHOTO_IMAGE_WIDGET_NAME) && widget instanceof BeeImage) {
+    if (BeeUtils.same(name, PHOTO_IMAGE_WIDGET_NAME) && widget instanceof Image) {
       if (widget != null) {
-        photoImageWidget = (BeeImage) widget;
+        photoImageWidget = (Image) widget;
       }
     }
-    if (BeeUtils.same(name, UNSET_PHOTO_WIDGET_NAME) && widget instanceof BeeImage) {
+    if (BeeUtils.same(name, UNSET_PHOTO_WIDGET_NAME) && widget instanceof Image) {
       if (widget != null) {
-        BeeImage unsetPhotoBtn = (BeeImage) widget;
+        Image unsetPhotoBtn = (Image) widget;
         unsetPhotoBtn.addClickHandler(new ClickHandler() {
 
           @Override
@@ -219,14 +219,14 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
     super.onStartNewRow(form, oldRow, newRow);
   }
 
-  private native void showImageInFormBeforeUpload(BeeImage image, File f) /*-{
+  private native void showImageInFormBeforeUpload(Image image, File f) /*-{
     if ($wnd.File && $wnd.FileReader && $wnd.Blob) {
 
       var reader = new FileReader();
 
       reader.onload = (function(theFile) {
         return function(e) {
-          image.@com.butent.bee.client.widget.BeeImage::setUrl(Ljava/lang/String;)(e.target.result);
+          image.@com.butent.bee.client.widget.Image::setUrl(Ljava/lang/String;)(e.target.result);
         };
       })(f);
 

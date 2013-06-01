@@ -16,7 +16,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Frame;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
@@ -192,12 +192,12 @@ public class DisplayWidget {
         break;
 
       case IMAGE:
-        if (!BeeUtils.isEmpty(value) && widget instanceof BeeImage) {
+        if (!BeeUtils.isEmpty(value) && widget instanceof Image) {
           ImageResource resource = Images.get(value);
           if (resource == null) {
-            ((BeeImage) widget).setUrl(value);
+            ((Image) widget).setUrl(value);
           } else {
-            ((BeeImage) widget).setResource(resource);
+            ((Image) widget).setResource(resource);
           }
           widget.getElement().setId(getWidgetId());
         }

@@ -21,7 +21,7 @@ import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.charts.ChartData.Item;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
@@ -58,10 +58,10 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private final Element selectedContainer;
 
   private final CustomDiv unselectedSizeWidget;
-  private final BeeImage selectAllWidget;
+  private final Image selectAllWidget;
 
   private final CustomDiv selectedSizeWidget;
-  private final BeeImage deselectAllWidget;
+  private final Image deselectAllWidget;
 
   private final InputText searchBox;
 
@@ -102,7 +102,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.unselectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
     unselectedControls.add(unselectedSizeWidget);
 
-    this.selectAllWidget = new BeeImage(Global.getImages().arrowDownDouble());
+    this.selectAllWidget = new Image(Global.getImages().arrowDownDouble());
     selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
     selectAllWidget.setTitle(Localized.constants.selectAll());
 
@@ -146,7 +146,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.selectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
     selectedControls.add(selectedSizeWidget);
 
-    this.deselectAllWidget = new BeeImage(Global.getImages().arrowUpDouble());
+    this.deselectAllWidget = new Image(Global.getImages().arrowUpDouble());
     deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
     deselectAllWidget.setTitle(Localized.constants.deselectAll());
 

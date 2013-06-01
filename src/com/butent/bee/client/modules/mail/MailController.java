@@ -31,7 +31,7 @@ import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.DataUtils;
@@ -97,7 +97,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
-    final BeeImage refresh = new BeeImage(Global.getImages().refresh());
+    final Image refresh = new Image(Global.getImages().refresh());
     refresh.addStyleName("bee-mail-FolderAction");
     refresh.setTitle("Sinchronizuoti aplankus");
 
@@ -110,7 +110,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     caption.add(refresh);
     panel.add(caption);
 
-    final BeeImage create = new BeeImage(Global.getImages().silverPlus());
+    final Image create = new Image(Global.getImages().silverPlus());
     create.addStyleName("bee-mail-FolderAction");
     create.setTitle("Sukurti naują aplanką");
 
@@ -200,7 +200,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         row.add(label);
 
         if (subFolder.isConnected()) {
-          final BeeImage disconnect = new BeeImage(Global.getImages().disconnect());
+          final Image disconnect = new Image(Global.getImages().disconnect());
           disconnect.addStyleName("bee-mail-FolderAction");
           disconnect.setTitle(BeeUtils.joinWords("Nutraukti aplanko",
               BeeUtils.bracket(label.getText()), "sinchronizaciją su pašto serveriu?"));
@@ -224,7 +224,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         } else {
           label.addStyleDependentName("disconnected");
         }
-        final BeeImage edit = new BeeImage(Global.getImages().silverEdit());
+        final Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName("bee-mail-FolderAction");
         edit.setTitle((BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
             "pavadinimą")));
@@ -244,7 +244,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         });
         row.add(edit);
 
-        final BeeImage delete = new BeeImage(Global.getImages().silverMinus());
+        final Image delete = new Image(Global.getImages().silverMinus());
         delete.addStyleName("bee-mail-FolderAction");
         delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()) + "?");
 

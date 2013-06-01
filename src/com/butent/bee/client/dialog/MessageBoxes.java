@@ -31,7 +31,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -294,7 +294,7 @@ public class MessageBoxes {
     int col = 0;
 
     if (icon != null) {
-      Widget iconWidget = UiHelper.initialize(new BeeImage(icon.getImageResource()), initializer,
+      Widget iconWidget = UiHelper.initialize(new Image(icon.getImageResource()), initializer,
           DialogConstants.WIDGET_ICON);
 
       if (iconWidget != null) {
@@ -414,7 +414,7 @@ public class MessageBoxes {
 
     int size = Stars.count();
     for (int i = 0; i < size; i++) {
-      BeeImage image = new BeeImage(Stars.get(i));
+      Image image = new Image(Stars.get(i));
       cluster.addItem(image);
     }
 

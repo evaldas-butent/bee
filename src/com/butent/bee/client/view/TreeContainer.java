@@ -17,7 +17,7 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
@@ -65,22 +65,22 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      BeeImage img = new BeeImage(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
+      Image img = new Image(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
       img.addStyleName(STYLE_NAME + "-add");
       img.setTitle(Action.ADD.getCaption());
       hdr.add(img);
 
-      img = new BeeImage(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
+      img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
       img.addStyleName(STYLE_NAME + "-delete");
       img.setTitle(Action.DELETE.getCaption());
       hdr.add(img);
 
-      img = new BeeImage(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
+      img = new Image(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
       img.addStyleName(STYLE_NAME + "-edit");
       img.setTitle(Action.EDIT.getCaption());
       hdr.add(img);
 
-      img = new BeeImage(Global.getImages().silverReload(), new ActionListener(Action.REFRESH));
+      img = new Image(Global.getImages().silverReload(), new ActionListener(Action.REFRESH));
       img.addStyleName(STYLE_NAME + "-refresh");
       img.setTitle(Action.REFRESH.getCaption());
       hdr.add(img);

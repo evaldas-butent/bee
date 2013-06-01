@@ -17,7 +17,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -306,7 +306,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   }
 
   private Widget createControl(ImageResource image, Action action, Set<Action> hiddenActions) {
-    BeeImage control = new BeeImage(image, new ActionListener(action));
+    Image control = new Image(image, new ActionListener(action));
     control.addStyleName(STYLE_CONTROL);
 
     if (action != null) {

@@ -27,7 +27,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
@@ -48,26 +48,26 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
-    CREATE(new BeeImage(Global.getImages().silverPlus()), null, null, "Naujas skirtukas"),
+    CREATE(new Image(Global.getImages().silverPlus()), null, null, "Naujas skirtukas"),
 
     NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, "Nauja sritis viršuje"),
     SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, "Nauja sritis apačioje"),
     WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, "Nauja sritis kairėje"),
     EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, "Nauja sritis dešinėje"),
 
-    MAXIMIZE(new BeeImage(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, "Max dydis"),
-    RESTORE(new BeeImage(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, "Atstatyti dydį"),
+    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, "Max dydis"),
+    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, "Atstatyti dydį"),
 
-    UP(new BeeImage(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
+    UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
         "Didinti aukštyn"),
-    DOWN(new BeeImage(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
+    DOWN(new Image(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
         "Didinti žemyn"),
-    LEFT(new BeeImage(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
+    LEFT(new Image(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
         "Didinti į kairę"),
-    RIGHT(new BeeImage(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
+    RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
         "Didinti į dešinę"),
 
-    CLOSE(new BeeImage(Global.getImages().silverMinus()), null, null, "Uždaryti");
+    CLOSE(new Image(Global.getImages().silverMinus()), null, null, "Uždaryti");
 
     private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 

@@ -5,7 +5,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Pair;
 
 import java.util.Collections;
@@ -57,8 +57,8 @@ public class BeeKeeper {
   public static void updateUserSignature(String userSign, Long photoId) {
     String sign = "";
     if (photoId != null) {
-      BeeImage img = new BeeImage(FileUtils.getUrl(userSign, photoId));
-      img.setAltText(userSign);
+      Image img = new Image(FileUtils.getUrl(userSign, photoId));
+      img.setAlt(userSign);
       img.setStyleName(SIGNATURE_PHOTO_STYLE);
       sign = img.toString();
     }

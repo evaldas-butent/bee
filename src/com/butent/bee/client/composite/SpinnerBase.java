@@ -14,7 +14,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +78,8 @@ public class SpinnerBase {
 
   protected static final Resources IMAGES = GWT.create(Resources.class);
   
-  private final BeeImage decrementArrow;
-  private final BeeImage incrementArrow;
+  private final Image decrementArrow;
+  private final Image incrementArrow;
 
   private List<SpinnerListener> spinnerListeners = new ArrayList<SpinnerListener>();
 
@@ -125,7 +125,7 @@ public class SpinnerBase {
     @Override
     public void onMouseDown(MouseDownEvent event) {
       if (enabled) {
-        BeeImage sender = (BeeImage) event.getSource();
+        Image sender = (Image) event.getSource();
         if (sender == incrementArrow) {
           sender.setResource(arrowUpPressed());
           increment = true;
@@ -144,7 +144,7 @@ public class SpinnerBase {
     @Override
     public void onMouseOver(MouseOverEvent event) {
       if (enabled) {
-        BeeImage sender = (BeeImage) event.getSource();
+        Image sender = (Image) event.getSource();
         if (sender == incrementArrow) {
           sender.setResource(arrowUpHover());
         } else {
@@ -205,13 +205,13 @@ public class SpinnerBase {
 
     this.initialSpeed = INITIAL_SPEED;
 
-    incrementArrow = new BeeImage(arrowUp());
+    incrementArrow = new Image(arrowUp());
     incrementArrow.addMouseUpHandler(mouseUpHandler);
     incrementArrow.addMouseDownHandler(mouseDownHandler);
     incrementArrow.addMouseOverHandler(mouseOverHandler);
     incrementArrow.addMouseOutHandler(mouseOutHandler);
 
-    decrementArrow = new BeeImage(arrowDown());
+    decrementArrow = new Image(arrowDown());
     decrementArrow.addMouseUpHandler(mouseUpHandler);
     decrementArrow.addMouseDownHandler(mouseDownHandler);
     decrementArrow.addMouseOverHandler(mouseOverHandler);
@@ -282,11 +282,11 @@ public class SpinnerBase {
     updateValue(v);
   }
 
-  public BeeImage getDecrementArrow() {
+  public Image getDecrementArrow() {
     return decrementArrow;
   }
 
-  public BeeImage getIncrementArrow() {
+  public Image getIncrementArrow() {
     return incrementArrow;
   }
 
@@ -398,9 +398,9 @@ public class SpinnerBase {
   private void cancelTimer(Widget sender) {
     step = minStep;
     if (sender == incrementArrow) {
-      ((BeeImage) sender).setResource(arrowUp());
+      ((Image) sender).setResource(arrowUp());
     } else {
-      ((BeeImage) sender).setResource(arrowDown());
+      ((Image) sender).setResource(arrowDown());
     }
     timer.cancel();
   }

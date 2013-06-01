@@ -22,7 +22,7 @@ import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -269,7 +269,7 @@ public class GridFilterManager {
       }
     };
 
-    BeeImage icon = new BeeImage(Global.getImages().silverPlus());
+    Image icon = new Image(Global.getImages().silverPlus());
     icon.addStyleName(STYLE_SAVE_ICON);
     icon.addClickHandler(clickHandler);
     panel.add(icon);
@@ -314,7 +314,7 @@ public class GridFilterManager {
     label.addClickHandler(clickHandler);
     button.addClickHandler(clickHandler);
 
-    BeeImage clear = new BeeImage(Global.getImages().closeSmall());
+    Image clear = new Image(Global.getImages().closeSmall());
     clear.addStyleName(STYLE_SUPPLIER_CLEAR);
 
     clear.addClickHandler(new ClickHandler() {

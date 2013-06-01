@@ -35,7 +35,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
@@ -87,7 +87,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       this.labelId = label.getId();
       add(label);
 
-      BeeImage close = new BeeImage(Global.getImages().closeSmall());
+      Image close = new Image(Global.getImages().closeSmall());
       close.addStyleName(STYLE_CLOSE);
       close.addClickHandler(new ClickHandler() {
         @Override

@@ -54,7 +54,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
@@ -187,7 +187,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
 
   private final CustomDiv filterLabel;
-  private final BeeImage removeFilter;
+  private final Image removeFilter;
 
   private final List<ChartData> filterData = Lists.newArrayList();
   private boolean filtered = false;
@@ -206,7 +206,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);
       headerView.addCommandItem(filterLabel);
 
-      this.removeFilter = new BeeImage(Global.getImages().closeSmall(), new ScheduledCommand() {
+      this.removeFilter = new Image(Global.getImages().closeSmall(), new ScheduledCommand() {
         @Override
         public void execute() {
           handleAction(Action.REMOVE_FILTER);

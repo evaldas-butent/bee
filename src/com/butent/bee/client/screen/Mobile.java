@@ -26,7 +26,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.BeeCheckBox;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.CssUnit;
@@ -207,7 +207,7 @@ public class Mobile extends ScreenImpl {
     final CliWidget cli = new CliWidget();
     p.addLeftWidthTop(cli, 3, CssUnit.PX, pct, CssUnit.PCT, 3, CssUnit.PX);
 
-    BeeImage play = new BeeImage(Global.getImages().play(), new Command() {
+    Image play = new Image(Global.getImages().play(), new Command() {
       @Override
       public void execute() {
         CliWorker.execute(cli.getValue());

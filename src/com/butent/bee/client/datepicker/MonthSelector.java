@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -29,20 +29,20 @@ class MonthSelector extends Component {
     }
   }
 
-  private final BeeImage prevYear;
-  private final BeeImage prevMonth;
-  private final BeeImage nextMonth;
-  private final BeeImage nextYear;
+  private final Image prevYear;
+  private final Image prevMonth;
+  private final Image nextMonth;
+  private final Image nextYear;
   
   private final Grid grid;
   
   MonthSelector(CssClasses cssClasses) {
     String styleDisabled = cssClasses.monthNavigationDisabled(); 
 
-    this.prevYear = new BeeImage(Global.getImages().rewind(), new Navigation(-12), styleDisabled);
-    this.prevMonth = new BeeImage(Global.getImages().previous(), new Navigation(-1), styleDisabled);
-    this.nextMonth = new BeeImage(Global.getImages().next(), new Navigation(1), styleDisabled);
-    this.nextYear = new BeeImage(Global.getImages().forward(), new Navigation(12), styleDisabled);
+    this.prevYear = new Image(Global.getImages().rewind(), new Navigation(-12), styleDisabled);
+    this.prevMonth = new Image(Global.getImages().previous(), new Navigation(-1), styleDisabled);
+    this.nextMonth = new Image(Global.getImages().next(), new Navigation(1), styleDisabled);
+    this.nextYear = new Image(Global.getImages().forward(), new Navigation(12), styleDisabled);
     
     this.grid = new Grid(1, 5);
     grid.setWidget(0, 0, prevYear);
@@ -93,7 +93,7 @@ class MonthSelector extends Component {
     return true;
   }
   
-  private void refresh(BeeImage widget, YearMonth ym) {
+  private void refresh(Image widget, YearMonth ym) {
     boolean enabled = isEnabled(ym);
     widget.setEnabled(enabled);
     

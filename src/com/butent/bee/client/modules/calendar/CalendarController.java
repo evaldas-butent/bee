@@ -31,7 +31,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
@@ -85,14 +85,14 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     UP("up") {
       @Override
       Widget create(BeeRow row) {
-        return new BeeImage(Global.getImages().silverTringleUp());
+        return new Image(Global.getImages().silverTringleUp());
       }
     },
 
     DOWN("down") {
       @Override
       Widget create(BeeRow row) {
-        return new BeeImage(Global.getImages().silverTringleDown());
+        return new Image(Global.getImages().silverTringleDown());
       }
     },
 
@@ -106,7 +106,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     REMOVE("remove") {
       @Override
       Widget create(final BeeRow row) {
-        BeeImage widget = new BeeImage(Global.getImages().silverMinus());
+        Image widget = new Image(Global.getImages().silverMinus());
         widget.setTitle("pašalinti");
         return widget;
       }
@@ -180,8 +180,8 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private final BeeRowSet ucAttendees;
 
-  private final BeeImage disclosureOpen = new BeeImage(Global.getImages().disclosureOpen());
-  private final BeeImage disclosureClosed = new BeeImage(Global.getImages().disclosureClosed());
+  private final Image disclosureOpen = new Image(Global.getImages().disclosureOpen());
+  private final Image disclosureClosed = new Image(Global.getImages().disclosureClosed());
 
   private final DatePicker datePicker = new DatePicker(TimeUtils.today(), MIN_DATE, MAX_DATE);
 

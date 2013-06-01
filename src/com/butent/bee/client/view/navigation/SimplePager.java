@@ -11,7 +11,7 @@ import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -78,12 +78,12 @@ public class SimplePager extends AbstractPager {
   private static final int MIN_FAST_PAGES = 3;
   private static final int MAX_FAST_PAGES = 20;
 
-  private final BeeImage widgetFirst;
-  private final BeeImage widgetRewind;
-  private final BeeImage widgetPrev;
-  private final BeeImage widgetNext;
-  private final BeeImage widgetForw;
-  private final BeeImage widgetLast;
+  private final Image widgetFirst;
+  private final Image widgetRewind;
+  private final Image widgetPrev;
+  private final Image widgetNext;
+  private final Image widgetForw;
+  private final Image widgetLast;
 
   private final Html widgetInfo;
   
@@ -103,19 +103,19 @@ public class SimplePager extends AbstractPager {
     this.maxRowCount = maxRowCount;
     this.showPageSize = showPageSize;
 
-    this.widgetFirst = new BeeImage(Global.getImages().first(), new GoCommand(Navigation.FIRST),
+    this.widgetFirst = new Image(Global.getImages().first(), new GoCommand(Navigation.FIRST),
         STYLE_DISABLED_BUTTON);
-    this.widgetPrev = new BeeImage(Global.getImages().previous(), new GoCommand(Navigation.PREV),
+    this.widgetPrev = new Image(Global.getImages().previous(), new GoCommand(Navigation.PREV),
         STYLE_DISABLED_BUTTON);
-    this.widgetNext = new BeeImage(Global.getImages().next(), new GoCommand(Navigation.NEXT),
+    this.widgetNext = new Image(Global.getImages().next(), new GoCommand(Navigation.NEXT),
         STYLE_DISABLED_BUTTON);
-    this.widgetLast = new BeeImage(Global.getImages().last(), new GoCommand(Navigation.LAST),
+    this.widgetLast = new Image(Global.getImages().last(), new GoCommand(Navigation.LAST),
         STYLE_DISABLED_BUTTON);
 
     if (showFastNavigation) {
-      this.widgetRewind = new BeeImage(Global.getImages().rewind(), new GoCommand(Navigation.REWIND),
+      this.widgetRewind = new Image(Global.getImages().rewind(), new GoCommand(Navigation.REWIND),
           STYLE_DISABLED_BUTTON);
-      this.widgetForw = new BeeImage(Global.getImages().forward(), new GoCommand(Navigation.FORWARD),
+      this.widgetForw = new Image(Global.getImages().forward(), new GoCommand(Navigation.FORWARD),
           STYLE_DISABLED_BUTTON);
     } else {
       this.widgetRewind = null;

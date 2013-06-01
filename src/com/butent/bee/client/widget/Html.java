@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a user interface component that can contain arbitrary HTML code.
  */
 
-public class Html extends CustomWidget implements HasCommand {
+public class Html extends CustomHasHtml implements HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 

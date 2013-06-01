@@ -14,7 +14,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -345,7 +345,7 @@ public class Favorites implements HandlesDeleteEvents {
     Widget widget = group.createItemWidget(key, item);
     display.setWidget(row, ITEM_COLUMN, widget);
 
-    BeeImage edit = new BeeImage(Global.getImages().silverEdit());
+    Image edit = new Image(Global.getImages().silverEdit());
     edit.addStyleName(EDIT_STYLE);
     edit.setTitle("keisti pavadinimą");
 
@@ -363,7 +363,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     display.setWidget(row, EDIT_COLUMN, edit);
 
-    BeeImage delete = new BeeImage(Global.getImages().silverMinus());
+    Image delete = new Image(Global.getImages().silverMinus());
     delete.addStyleName(DELETE_STYLE);
     delete.setTitle("pašalinti");
 

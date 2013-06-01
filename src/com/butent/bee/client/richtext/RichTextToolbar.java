@@ -12,7 +12,6 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.Widget;
@@ -26,7 +25,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
@@ -225,21 +224,21 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   private final Toggle superscript;
   private final Toggle strikethrough;
 
-  private final BeeImage indent;
-  private final BeeImage outdent;
-  private final BeeImage justifyLeft;
-  private final BeeImage justifyCenter;
-  private final BeeImage justifyRight;
-  private final BeeImage hr;
-  private final BeeImage ol;
-  private final BeeImage ul;
-  private final BeeImage insertImage;
-  private final BeeImage createLink;
-  private final BeeImage removeLink;
-  private final BeeImage removeFormat;
-  private final BeeImage insertHtml;
-  private final BeeImage undo;
-  private final BeeImage redo;
+  private final Image indent;
+  private final Image outdent;
+  private final Image justifyLeft;
+  private final Image justifyCenter;
+  private final Image justifyRight;
+  private final Image hr;
+  private final Image ol;
+  private final Image ul;
+  private final Image insertImage;
+  private final Image createLink;
+  private final Image removeLink;
+  private final Image removeFormat;
+  private final Image insertHtml;
+  private final Image undo;
+  private final Image redo;
 
   private final BeeListBox backColors;
   private final BeeListBox foreColors;
@@ -258,7 +257,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       this.accept = null;
     } else {
       this.accept = new EditorFactory.Accept(editor);
-      firstRow.add(new BeeImage(Global.getImages().save(), this.accept));
+      firstRow.add(new Image(Global.getImages().save(), this.accept));
       firstRow.add(createSpacer(1.0, CssUnit.EM));
     }
 
@@ -294,7 +293,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     
     if (!embedded) {
       firstRow.add(createSpacer(1.0, CssUnit.EM));
-      firstRow.add(new BeeImage(Global.getImages().close(), new EditorFactory.Cancel(editor)));
+      firstRow.add(new Image(Global.getImages().close(), new EditorFactory.Cancel(editor)));
     }
 
     secondRow.add(backColors = createColorList("Background"));
@@ -341,8 +340,8 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     strikethrough.setDown(formatter.isStrikethrough());
   }
 
-  private BeeImage createButton(ImageResource img, String tip) {
-    BeeImage ib = new BeeImage(img);
+  private Image createButton(ImageResource img, String tip) {
+    Image ib = new Image(img);
     ib.addClickHandler(handler);
     ib.setTitle(tip);
     return ib;

@@ -13,7 +13,7 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.Action;
@@ -130,7 +130,7 @@ public class DialogBox extends Popup implements Printable {
   }
 
   protected void addCloseBox(ImageResource imageResource) {
-    BeeImage close = new BeeImage(imageResource, new ScheduledCommand() {
+    Image close = new Image(imageResource, new ScheduledCommand() {
       @Override
       public void execute() {
         hide(CloseEvent.Cause.MOUSE, null, true);

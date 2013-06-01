@@ -9,7 +9,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CustomButton;
-import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -47,15 +46,11 @@ public class Toggle extends CustomButton implements Editor {
   }
 
   public Toggle(Image upImage) {
-    super(upImage);
+    super();
+    getUpFace().setHTML(DomUtils.getOuterHtml(upImage.getElement()));
     init(null);
   }
 
-  public Toggle(Image upImage, Image downImage) {
-    super(upImage, downImage);
-    init(null);
-  }
-  
   public Toggle(String upText, String downText, String styleName) {
     super(upText, downText);
     init(styleName);
