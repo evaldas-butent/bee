@@ -23,7 +23,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeRadioButton;
+import com.butent.bee.client.widget.RadioButton;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Captions;
@@ -168,7 +168,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     Assert.notEmpty(label);
     int index = getOptionCount();
 
-    BeeRadioButton rb = new BeeRadioButton(getName(), label, asHtml);
+    RadioButton rb = new RadioButton(getName(), label, asHtml);
     add(rb);
 
     rb.setFormValue(BeeUtils.toString(index));
@@ -224,8 +224,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public int getSelectedIndex() {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget widget = getWidget(i);
-      if (widget instanceof BeeRadioButton && ((BeeRadioButton) widget).getValue()) {
-        return BeeUtils.toInt(((BeeRadioButton) widget).getFormValue());
+      if (widget instanceof RadioButton && ((RadioButton) widget).getValue()) {
+        return BeeUtils.toInt(((RadioButton) widget).getFormValue());
       }
     }
     return BeeConst.UNDEF;
@@ -271,8 +271,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public boolean isEnabled() {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget widget = getWidget(i);
-      if (widget instanceof BeeRadioButton) {
-        return ((BeeRadioButton) widget).isEnabled();
+      if (widget instanceof RadioButton) {
+        return ((RadioButton) widget).isEnabled();
       }
     }
     return false;
@@ -300,8 +300,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     Object source = event.getSource();
 
-    if (source instanceof BeeRadioButton && BeeUtils.isTrue(event.getValue())) {
-      BeeRadioButton rb = (BeeRadioButton) source;
+    if (source instanceof RadioButton && BeeUtils.isTrue(event.getValue())) {
+      RadioButton rb = (RadioButton) source;
       int index = BeeUtils.toInt(rb.getFormValue()) + getValueStartIndex();
 
       ValueChangeEvent.fire(this, BeeUtils.toString(index));
@@ -418,14 +418,14 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     }
   }
 
-  private BeeRadioButton getOption(int index) {
+  private RadioButton getOption(int index) {
     if (isIndex(index)) {
       for (int i = 0; i < getWidgetCount(); i++) {
         Widget widget = getWidget(i);
-        if (widget instanceof BeeRadioButton
+        if (widget instanceof RadioButton
             && BeeUtils.equalsTrim(BeeUtils.toString(index),
-                ((BeeRadioButton) widget).getFormValue())) {
-          return (BeeRadioButton) widget;
+                ((RadioButton) widget).getFormValue())) {
+          return (RadioButton) widget;
         }
       }
     }

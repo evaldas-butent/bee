@@ -71,6 +71,10 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
+  public String getFormValue() {
+    return inputElem.getValue();
+  }
+  
   @Override
   public String getHTML() {
     return labelElem.getInnerHTML();
@@ -127,6 +131,10 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
     } else {
       inputElem.blur();
     }
+  }
+  
+  public void setFormValue(String value) {
+    inputElem.setValue(value);
   }
   
   @Override
@@ -187,6 +195,18 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
     });
   }
 
+  protected String getDefaultStyleName() {
+    return "bee-CheckBox";
+  }
+
+  protected InputElement getInputElem() {
+    return inputElem;
+  }
+
+  protected LabelElement getLabelElem() {
+    return labelElem;
+  }
+
   @Override
   protected void onLoad() {
     DOM.setEventListener(DomUtils.upcast(inputElem), this);
@@ -196,9 +216,9 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
   protected void onUnload() {
     DOM.setEventListener(DomUtils.upcast(inputElem), null);
   }
-
+  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-CheckBox");
+    setStyleName(getDefaultStyleName());
   }
 }
