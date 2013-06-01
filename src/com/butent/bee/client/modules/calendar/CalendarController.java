@@ -35,7 +35,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
-import com.butent.bee.client.widget.SimpleBoolean;
+import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
@@ -99,7 +99,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     ENABLE("enable") {
       @Override
       Widget create(BeeRow row) {
-        return new SimpleBoolean();
+        return new SimpleCheckBox();
       }
     },
 
@@ -360,8 +360,8 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
           break;
 
         case ENABLE:
-          if (widget instanceof SimpleBoolean) {
-            final SimpleBoolean cb = (SimpleBoolean) widget;
+          if (widget instanceof SimpleCheckBox) {
+            final SimpleCheckBox cb = (SimpleCheckBox) widget;
             if (enabled) {
               cb.setValue(true);
             }

@@ -49,14 +49,11 @@ public class InputBoolean extends Composite implements Editor {
     super();
 
     if (BeeUtils.isEmpty(label)) {
-      SimpleBoolean simpleBoolean = new SimpleBoolean();
-      this.checkBox = simpleBoolean;
-      initWidget(simpleBoolean);
+      this.checkBox = new SimpleCheckBox();
     } else {
-      BeeCheckBox beeCheckBox = new BeeCheckBox(label, asHTML);
-      this.checkBox = beeCheckBox;
-      initWidget(beeCheckBox);
+      this.checkBox = new CheckBox(label, asHTML);
     }
+    initWidget(checkBox.asWidget());
 
     checkBox.addClickHandler(new ClickHandler() {
       @Override

@@ -20,7 +20,7 @@ import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.widget.BooleanWidget;
 import com.butent.bee.client.widget.DndDiv;
-import com.butent.bee.client.widget.SimpleBoolean;
+import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -228,7 +228,7 @@ public class GridSettings {
   }
 
   private static Widget createCheckBox(boolean value) {
-    SimpleBoolean widget = new SimpleBoolean(value);
+    SimpleCheckBox widget = new SimpleCheckBox(value);
     widget.addStyleName(STYLE_CHECK);
     return widget;
   }

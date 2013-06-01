@@ -25,7 +25,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeCheckBox;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -121,7 +121,7 @@ public class Mobile extends ScreenImpl {
   }
 
   protected int addLogToggle(LayoutPanel panel) {
-    final BeeCheckBox toggle = new BeeCheckBox("Log");
+    final CheckBox toggle = new CheckBox("Log");
 
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       @Override
