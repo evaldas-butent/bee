@@ -5,30 +5,21 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.FileUpload;
-import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.RadioGroup;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
@@ -37,28 +28,17 @@ import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.BeeRadioButton;
-import com.butent.bee.client.widget.InputInteger;
-import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeType;
-import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.Variable;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -69,72 +49,6 @@ import java.util.Set;
 public class InputBoxes {
 
   public static final String SILENT_ERROR = "-";
-
-  private class KeyboardHandler implements KeyDownHandler {
-
-    private final DialogBox dialog;
-    private final DialogCallback callback;
-
-    private KeyboardHandler(DialogBox dialog, DialogCallback callback) {
-      super();
-      this.dialog = dialog;
-      this.callback = callback;
-    }
-
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      switch (event.getNativeKeyCode()) {
-        case KeyCodes.KEY_ESCAPE:
-          event.preventDefault();
-          if (callback == null) {
-            dialog.close();
-          } else {
-            callback.onCancel(dialog);
-          }
-          break;
-
-        case KeyCodes.KEY_ENTER:
-          Widget widget = getWidget(event);
-          if (widget instanceof Button || widget instanceof FileUpload) {
-            break;
-          }
-
-          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
-            event.preventDefault();
-            EventUtils.getEventTargetElement(event).blur();
-            if (callback == null || callback.onConfirm(dialog)) {
-              dialog.close();
-            }
-            break;
-          }
-
-          if (widget instanceof InputText || widget instanceof ListBox) {
-            if (UiHelper.moveFocus(dialog, true)) {
-              event.preventDefault();
-            }
-          } else if (widget instanceof BeeRadioButton) {
-            if (!((BeeRadioButton) widget).getValue()) {
-              event.preventDefault();
-              ((BeeRadioButton) widget).setValue(true, true);
-            }
-          }
-          break;
-
-        case KeyCodes.KEY_DOWN:
-        case KeyCodes.KEY_UP:
-          if (!(getWidget(event) instanceof ListBox)) {
-            if (UiHelper.moveFocus(dialog, event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
-              event.preventDefault();
-            }
-          }
-          break;
-      }
-    }
-
-    private Widget getWidget(HasNativeEvent event) {
-      return DomUtils.getChildByElement(dialog, EventUtils.getEventTargetElement(event));
-    }
-  }
 
   private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
   private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
@@ -265,108 +179,6 @@ public class InputBoxes {
 
     if (timer != null) {
       timer.schedule(timeout);
-    }
-  }
-
-  public void inputVars(String caption, List<Variable> vars, DialogCallback callback) {
-    Assert.notEmpty(vars);
-
-    HtmlTable table = new HtmlTable();
-
-    Widget inp = null;
-    String z, w;
-    BeeType tp;
-    BeeWidget bw;
-
-    int r = 0;
-    FocusWidget fw = null;
-    boolean ok;
-
-    for (Variable var : vars) {
-      tp = var.getType();
-      bw = var.getWidget();
-
-      z = var.getCaption();
-      if (!BeeUtils.isEmpty(z) && tp != BeeType.BOOLEAN) {
-        table.setText(r, 0, z);
-      }
-
-      w = var.getWidth();
-
-      ok = false;
-
-      if (bw != null) {
-        switch (bw) {
-          case LIST:
-            inp = new BeeListBox(var);
-            ok = true;
-            break;
-          case RADIO:
-            inp = new RadioGroup(var);
-            ok = true;
-            break;
-          case PASSWORD:
-            inp = new InputPassword(var);
-            ok = true;
-            break;
-          default:
-            ok = false;
-        }
-
-      } else {
-        switch (tp) {
-          case BOOLEAN:
-            if (BeeUtils.isEmpty(z)) {
-              inp = new SimpleBoolean(var);
-            } else {
-              inp = new BeeCheckBox(var);
-            }
-            ok = true;
-            break;
-          case INT:
-            inp = new InputInteger(var);
-            ok = true;
-            break;
-          default:
-            ok = false;
-        }
-      }
-
-      if (!ok) {
-        inp = new InputText(var);
-      }
-      if (!BeeUtils.isEmpty(w)) {
-        inp.setWidth(w);
-      }
-
-      table.setWidget(r, 1, inp);
-      if (fw == null && inp instanceof FocusWidget) {
-        fw = (FocusWidget) inp;
-      }
-      r++;
-    }
-
-    DialogBox dialog = DialogBox.create(caption);
-
-    Button confirm = new Button(Localized.constants.ok(),
-        DialogCallback.getConfirmCommand(dialog, callback));
-    Button cancel = new Button(Localized.constants.cancel(),
-        DialogCallback.getCancelCommand(dialog, callback));
-
-    table.setWidget(r, 0, confirm);
-    table.setWidget(r, 1, cancel);
-
-    table.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_LEFT);
-    table.getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-
-    dialog.setAnimationEnabled(true);
-    dialog.addDomHandler(new KeyboardHandler(dialog, callback), KeyDownEvent.getType());
-
-    dialog.setWidget(table);
-    dialog.center();
-
-    if (fw != null) {
-      fw.setFocus(true);
     }
   }
 

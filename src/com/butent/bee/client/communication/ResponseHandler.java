@@ -1,11 +1,7 @@
 package com.butent.bee.client.communication;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.composite.ResourceEditor;
-import com.butent.bee.client.layout.Split;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -24,41 +20,6 @@ public class ResponseHandler {
 
   private static final BeeLogger logger = LogUtils.getLogger(ResponseHandler.class);
   
-  public static void showXmlInfo(int pc, int[] sizes, String content) {
-    Assert.betweenInclusive(pc, 1, 3);
-    Assert.notNull(sizes);
-    Assert.isTrue(sizes.length >= pc);
-    Assert.notEmpty(content);
-
-    Resource[] resources = new Resource[pc];
-    int start = 0;
-
-    for (int i = 0; i < pc; i++) {
-      resources[i] = new Resource();
-      resources[i].deserialize(content.substring(start, start + sizes[i]));
-      start += sizes[i];
-    }
-
-    if (pc <= 1) {
-      BeeKeeper.getScreen().updateActivePanel(new ResourceEditor(resources[0]));
-      return;
-    }
-
-    int h = BeeKeeper.getScreen().getActivePanelHeight();
-
-    Split panel = new Split();
-    panel.addNorth(new ResourceEditor(resources[0]), h / pc);
-
-    if (pc == 2) {
-      panel.add(new ResourceEditor(resources[1]));
-    } else {
-      panel.addSouth(new ResourceEditor(resources[2]), h / pc);
-      panel.add(new ResourceEditor(resources[1]));
-    }
-
-    BeeKeeper.getScreen().updateActivePanel(panel);
-  }
-
   public static void unicodeTest(RpcInfo info, String respTxt,
       Collection<ResponseMessage> messages) {
     Assert.notNull(info);

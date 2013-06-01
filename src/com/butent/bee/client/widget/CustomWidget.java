@@ -61,7 +61,6 @@ public class CustomWidget extends Widget implements IdentifiableWidget, HasClick
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
 
   @Override
   public void setText(String text) {

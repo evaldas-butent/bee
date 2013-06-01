@@ -30,7 +30,6 @@ public class ResponseBuffer {
   private int columnCount = 0;
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
-  private List<Resource> parts = new ArrayList<Resource>();
 
   private ContentType contentType;
 
@@ -134,20 +133,6 @@ public class ResponseBuffer {
 
   public void addMessage(Object... obj) {
     messages.add(new ResponseMessage(ArrayUtils.joinWords(obj)));
-  }
-
-  public void addPart(String uri, String content) {
-    addPart(uri, content, null, false);
-  }
-
-  public void addPart(String uri, String content, ContentType type) {
-    addPart(uri, content, type, false);
-  }
-
-  public void addPart(String uri, String content, ContentType type, boolean readOnly) {
-    Assert.notNull(content);
-    parts.add(new Resource(uri, content, type, readOnly));
-    setContentType(ContentType.MULTIPART);
   }
 
   public void addProperties(Collection<Property> lst, String... cap) {
@@ -319,14 +304,6 @@ public class ResponseBuffer {
     return messages;
   }
 
-  public int getPartCount() {
-    return parts.size();
-  }
-
-  public List<Resource> getParts() {
-    return parts;
-  }
-
   public char[] getSeparator() {
     return separator;
   }
@@ -379,10 +356,6 @@ public class ResponseBuffer {
 
   public void setMessages(List<ResponseMessage> messages) {
     this.messages = messages;
-  }
-
-  public void setParts(List<Resource> parts) {
-    this.parts = parts;
   }
 
   public void setSeparator(char[] separator) {

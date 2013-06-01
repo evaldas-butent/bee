@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -23,16 +22,11 @@ public class InputInteger extends InputNumber {
     super(element);
   }
 
-  public InputInteger(HasStringValue source) {
-    super(source);
+  public InputInteger(String type, int min, int max) {
+    this(type, min, max, 1);
   }
 
-  public InputInteger(HasStringValue source, String type, int min, int max) {
-    this(source, type, min, max, 1);
-  }
-
-  public InputInteger(HasStringValue source, String type, int min, int max, int step) {
-    this(source);
+  public InputInteger(String type, int min, int max, int step) {
     initAttributes(type, min, max, step);
   }
 

@@ -131,31 +131,6 @@ public class BeeConst {
 
   public static final String CHARSET_UTF8 = "UTF-8";
 
-  public static final String CLOSE_CURSORS_AT_COMMIT = "close cursors at commit";
-  public static final String HOLD_CURSORS_OVER_COMMIT = "hold cursors over commit";
-
-  public static final String FETCH_FORWARD = "fetch forward";
-  public static final String FETCH_REVERSE = "fetch reverse";
-  public static final String FETCH_UNKNOWN = "fetch unknown";
-
-  public static final String TYPE_FORWARD_ONLY = "forward only";
-  public static final String TYPE_SCROLL_INSENSITIVE = "scroll insensitive";
-  public static final String TYPE_SCROLL_SENSITIVE = "scroll sensitive";
-
-  public static final String CONCUR_READ_ONLY = "concur read only";
-  public static final String CONCUR_UPDATABLE = "concur updatable";
-
-  public static final String TRANSACTION_NONE = "transaction none";
-  public static final String TRANSACTION_READ_COMMITTED = "transaction read committed";
-  public static final String TRANSACTION_READ_UNCOMMITTED = "transaction read uncommitted";
-  public static final String TRANSACTION_REPEATABLE_READ = "transaction repeatable read";
-  public static final String TRANSACTION_SERIALIZABLE = "transaction serializable";
-
-  public static final String JDBC_RESULT_SET = "result set";
-  public static final String JDBC_META_DATA = "meta data";
-  public static final String JDBC_ROW_COUNT = "row count";
-  public static final String JDBC_COLUMNS = "columns";
-
   public static final String SERVER = "server";
   public static final String CLIENT = "client";
 
@@ -184,9 +159,8 @@ public class BeeConst {
   }
 
   /**
-   * Returns is parameter {@code s} value equals {@code DEFAULT} constant.
+   * Returns if parameter {@code s} value equals {@code DEFAULT} constant.
    * 
-   * @param s default value
    * @return {@code true} if {@code s} is equals {@code DEFAULT} constant
    */
   public static boolean isDefault(String s) {

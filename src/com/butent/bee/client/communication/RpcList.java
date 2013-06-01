@@ -31,8 +31,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
       RpcInfo.COL_REQ_ROWS, RpcInfo.COL_REQ_COLS, RpcInfo.COL_REQ_SIZE,
       RpcInfo.COL_RESP_TYPE, RpcInfo.COL_RESP_DATA, RpcInfo.COL_RESP_ROWS,
       RpcInfo.COL_RESP_COLS, RpcInfo.COL_RESP_SIZE, RpcInfo.COL_RESP_MSG_CNT,
-      RpcInfo.COL_RESP_MESSAGES, RpcInfo.COL_RESP_PART_CNT,
-      RpcInfo.COL_RESP_PART_SIZES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG,
+      RpcInfo.COL_RESP_MESSAGES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG,
       RpcInfo.COL_USR_DATA};
 
   private static final int DEFAULT_MAX_SIZE = 100;
@@ -134,11 +133,6 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_MESSAGES)) {
           s = (el.getRespMessages() == null) 
               ? null : Codec.escapeUnicode(el.getRespMessages().toString());
-
-        } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_PART_CNT)) {
-          s = el.getSizeString(el.getRespPartCnt());
-        } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_PART_SIZES)) {
-          s = (el.getRespPartSize() == null) ? null : el.getRespPartSize().toString(); 
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_INFO)) {
           s = el.getRespInfoString();

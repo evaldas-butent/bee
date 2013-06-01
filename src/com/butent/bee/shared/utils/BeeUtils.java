@@ -28,7 +28,7 @@ public class BeeUtils {
   public static final Joiner numberJoiner = Joiner.on(BeeConst.CHAR_COMMA).skipNulls();
   public static final Splitter numberSplitter =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
-  
+
   public static boolean addNotEmpty(Collection<String> col, String item) {
     if (isEmpty(item)) {
       return false;
@@ -126,7 +126,7 @@ public class BeeUtils {
     }
     return false;
   }
-  
+
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
@@ -213,7 +213,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
   }
@@ -391,6 +391,28 @@ public class BeeUtils {
     return ok;
   }
 
+  public static boolean containsAnySame(String x, String first, String second, String... rest) {
+    if (isEmpty(x)) {
+      return false;
+    }
+    if (containsSame(x, first)) {
+      return true;
+    }
+    if (containsSame(x, second)) {
+      return true;
+    }
+
+    if (rest == null) {
+      return false;
+    }
+    for (String y : rest) {
+      if (containsSame(x, y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static <K> boolean containsKey(Map<? extends K, ?> map, K key) {
     if (map == null) {
       return false;
@@ -398,7 +420,7 @@ public class BeeUtils {
       return map.containsKey(key);
     }
   }
-  
+
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 
@@ -654,7 +676,7 @@ public class BeeUtils {
       return null;
     }
   }
-  
+
   public static <K, V> Collection<V> getIfContains(Multimap<K, V> multimap, K key) {
     if (multimap != null && multimap.containsKey(key)) {
       return multimap.get(key);
@@ -880,7 +902,7 @@ public class BeeUtils {
     }
     return false;
   }
-  
+
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -1338,7 +1360,7 @@ public class BeeUtils {
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
   }
-  
+
   public static String joinInts(Collection<Integer> ints) {
     return isEmpty(ints) ? null : numberJoiner.join(ints);
   }
@@ -1350,7 +1372,7 @@ public class BeeUtils {
   public static String joinLongs(Collection<Long> longs) {
     return isEmpty(longs) ? null : numberJoiner.join(longs);
   }
-  
+
   public static String joinNoDuplicates(String sep, Object first, Object second, Object... rest) {
     return doJoin(false, sep, first, second, rest);
   }
@@ -2411,7 +2433,7 @@ public class BeeUtils {
 
   public static List<Integer> toInts(String input) {
     List<Integer> result = Lists.newArrayList();
-    
+
     if (!isEmpty(input)) {
       for (String s : numberSplitter.split(input)) {
         Integer x = toIntOrNull(s);
@@ -2495,7 +2517,7 @@ public class BeeUtils {
 
   public static List<Long> toLongs(String input) {
     List<Long> result = Lists.newArrayList();
-    
+
     if (!isEmpty(input)) {
       for (String s : numberSplitter.split(input)) {
         Long x = toLongOrNull(s);
@@ -2740,7 +2762,7 @@ public class BeeUtils {
 
     return toInt(s.substring(start, end));
   }
-  
+
   /**
    * Transforms an Object {@code x} to a String representation. In general, this method returns a
    * string that "textually represents" this object. String type Objects are trimmed.
@@ -2788,7 +2810,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   private BeeUtils() {
   }
 }

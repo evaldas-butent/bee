@@ -18,7 +18,6 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasBooleanValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
@@ -32,8 +31,6 @@ import java.util.List;
  */
 
 public class Toggle extends CustomButton implements Editor {
-
-  private HasBooleanValue source = null;
 
   private boolean nullable = true;
 
@@ -49,13 +46,6 @@ public class Toggle extends CustomButton implements Editor {
     setDefaultFaces();
   }
 
-  public Toggle(HasBooleanValue source) {
-    this();
-    if (source != null) {
-      initSource(source);
-    }
-  }
-  
   public Toggle(Image upImage) {
     super(upImage);
     init(null);
@@ -115,10 +105,6 @@ public class Toggle extends CustomButton implements Editor {
     return options;
   }
   
-  public HasBooleanValue getSource() {
-    return source;
-  }
-
   @Override
   public String getValue() {
     return BooleanValue.pack(isDown());
@@ -235,10 +221,6 @@ public class Toggle extends CustomButton implements Editor {
     this.options = options;
   }
 
-  public void setSource(HasBooleanValue source) {
-    this.source = source;
-  }
-
   @Override
   public void setValue(String value) {
     setDown(BeeUtils.toBoolean(value));
@@ -262,7 +244,6 @@ public class Toggle extends CustomButton implements Editor {
   
   @Override
   protected void onClick() {
-    updateSource();
     if (isEditing()) {
       fireEvent(new EditStopEvent(State.CHANGED));
     } else {
@@ -275,21 +256,8 @@ public class Toggle extends CustomButton implements Editor {
     setStyleName(BeeUtils.notEmpty(styleName, "bee-Toggle"));
   }
 
-  private void initSource(HasBooleanValue src) {
-    if (src != null) {
-      setSource(src);
-      setDown(BeeUtils.unbox(src.getBoolean()));
-    }
-  }
-
   private void setDefaultFaces() {
     getUpFace().setHTML(BeeUtils.toString(BeeConst.BALLOT));
     getDownFace().setHTML(BeeUtils.toString(BeeConst.HEAVY_CHECK_MARK));
-  }
-
-  private void updateSource() {
-    if (getSource() != null) {
-      getSource().setValue(isDown());
-    }
   }
 }

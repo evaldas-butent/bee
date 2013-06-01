@@ -31,7 +31,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
@@ -905,23 +904,6 @@ public class DomUtils {
       return id;
     }
     return getParentId(parent, find);
-  }
-
-  public static Popup getParentPopup(Widget w) {
-    Assert.notNull(w);
-
-    Widget p = w;
-    for (int i = 0; i < MAX_GENERATIONS; i++) {
-      if (p instanceof Popup) {
-        return (Popup) p;
-      }
-
-      p = p.getParent();
-      if (p == null) {
-        break;
-      }
-    }
-    return null;
   }
 
   public static TableRowElement getParentRow(Element child, boolean incl) {

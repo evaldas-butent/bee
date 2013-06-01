@@ -2,7 +2,7 @@ package com.butent.bee.shared.testutils;
 
 import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.BeeType;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import junit.framework.TestCase;
@@ -24,11 +24,11 @@ import java.util.Set;
 @RunWith(value = Parameterized.class)
 public class TestBeeUtilscontaintAny extends TestCase {
 
-  private static Set<BeeType> testc1 = Sets.newHashSet();
-  private static Set<BeeType> testc2 = Sets.newHashSet();
+  private static Set<ValueType> testc1 = Sets.newHashSet();
+  private static Set<ValueType> testc2 = Sets.newHashSet();
 
-  private static Set<BeeType> testc3 = Sets.newHashSet();
-  private static Set<BeeType> testc4 = Sets.newHashSet();
+  private static Set<ValueType> testc3 = Sets.newHashSet();
+  private static Set<ValueType> testc4 = Sets.newHashSet();
 
   @Parameters
   public static Collection<Object[]> getTestParameters() {
@@ -43,9 +43,9 @@ public class TestBeeUtilscontaintAny extends TestCase {
 
   boolean expected;
 
-  Set<BeeType> value1, value2;
+  Set<ValueType> value1, value2;
 
-  public TestBeeUtilscontaintAny(boolean expected, Set<BeeType> value1, Set<BeeType> value2) {
+  public TestBeeUtilscontaintAny(boolean expected, Set<ValueType> value1, Set<ValueType> value2) {
     this.expected = expected;
     this.value1 = value1;
     this.value2 = value2;
@@ -55,19 +55,19 @@ public class TestBeeUtilscontaintAny extends TestCase {
   @SuppressWarnings("static-access")
   @Before
   public void setUp() throws Exception {
-    BeeType a = null;
-    BeeType b = null;
+    ValueType a = null;
+    ValueType b = null;
     testc1.add(a.BOOLEAN);
-    testc1.add(a.DOUBLE);
+    testc1.add(a.DECIMAL);
     testc1.add(a.NUMBER);
 
-    testc2.add(b.BYTE);
-    testc2.add(b.FLOAT);
-    testc2.add(b.INT);
+    testc2.add(b.DATE);
+    testc2.add(b.LONG);
+    testc2.add(b.INTEGER);
 
-    testc3.add(a.CHAR);
+    testc3.add(a.TEXT);
     
-    testc4.add(a.DOUBLE);
+    testc4.add(a.DECIMAL);
   }
 
   @Override

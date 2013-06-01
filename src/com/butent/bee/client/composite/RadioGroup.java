@@ -26,7 +26,6 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
@@ -75,8 +74,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private final String name;
   private final boolean vertical;
   private int optionCount = 0;
-
-  private Variable variable = null;
 
   private int valueStartIndex = 0;
 
@@ -127,22 +124,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   public RadioGroup(String name, List<String> opt) {
     this(name, false, opt);
-  }
-
-  public RadioGroup(Variable var) {
-    this(var, false);
-  }
-
-  public RadioGroup(Variable var, boolean vertical) {
-    this(vertical);
-    setVariable(var);
-
-    List<String> opt = var.getItems();
-
-    String z = var.getValue();
-    int value = BeeUtils.isEmpty(z) ? BeeConst.UNDEF : opt.indexOf(z);
-
-    addButtons(opt, value);
   }
 
   @Override
@@ -323,10 +304,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       BeeRadioButton rb = (BeeRadioButton) source;
       int index = BeeUtils.toInt(rb.getFormValue()) + getValueStartIndex();
 
-      if (getVariable() != null) {
-        getVariable().setValue(getVariable().getItems().get(index));
-      }
-
       ValueChangeEvent.fire(this, BeeUtils.toString(index));
     }
   }
@@ -459,19 +436,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return optionCount;
   }
 
-  private Variable getVariable() {
-    return variable;
-  }
-
   private boolean isIndex(int index) {
     return index >= 0 && index < getOptionCount();
   }
 
   private void setOptionCount(int optionCount) {
     this.optionCount = optionCount;
-  }
-
-  private void setVariable(Variable variable) {
-    this.variable = variable;
   }
 }

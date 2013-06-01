@@ -39,11 +39,6 @@ public class ParameterList extends ArrayList<RpcParameter> {
 
     addQueryItem(Service.RPC_VAR_SVC, svc);
 
-    String dsn = BeeKeeper.getRpc().getDsn();
-    if (!BeeUtils.isEmpty(dsn)) {
-      addQueryItem(Service.RPC_VAR_DSN, dsn);
-    }
-
     String opt = BeeKeeper.getRpc().getOptions();
     if (!BeeUtils.isEmpty(opt)) {
       addHeaderItem(Service.RPC_VAR_OPT, opt);

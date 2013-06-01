@@ -3,6 +3,7 @@ package com.butent.bee.client.cli;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -48,12 +49,13 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
+import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -76,6 +78,7 @@ import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
 import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -89,8 +92,6 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.CompositeService;
-import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetFactory;
@@ -235,7 +236,7 @@ public class CliWorker {
 
     } else if (z.startsWith("color")) {
       showColor(args);
-      
+
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
 
@@ -268,7 +269,7 @@ public class CliWorker {
       showDimensions(args);
 
     } else if (z.equals("dsn")) {
-      CompositeService.doService(new DsnService().name(), Service.GET_DSNS);
+      doDsn();
 
     } else if (z.startsWith("dt")) {
       showDate(z, args);
@@ -335,7 +336,7 @@ public class CliWorker {
       showInputBox(arr);
 
     } else if (z.equals("jdbc")) {
-      doJdbc();
+      doJdbc(args);
 
     } else if (BeeUtils.inList(z, "keys", "pk")) {
       getKeys(arr);
@@ -375,7 +376,7 @@ public class CliWorker {
 
     } else if (z.startsWith("prev")) {
       Global.showModalGrid("Previewers", new PropertiesData(Previewer.getInstance().getInfo()));
-      
+
     } else if (z.startsWith("print")) {
       print(args);
 
@@ -448,9 +449,6 @@ public class CliWorker {
     } else if (z.startsWith("user")) {
       showPropData(BeeKeeper.getUser().getInfo());
 
-    } else if (z.equals("vars")) {
-      showVars(arr);
-
     } else if (z.equals("video")) {
       playVideo(args);
 
@@ -468,9 +466,6 @@ public class CliWorker {
 
     } else if (z.equals("wf") || z.startsWith("suppl")) {
       showWidgetSuppliers();
-
-    } else if (z.startsWith("xml")) {
-      showXmlInfo(arr);
 
     } else if (z.equals("mail")) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
@@ -778,41 +773,117 @@ public class CliWorker {
     logger.addSeparator();
   }
 
-  private static void doJdbc() {
-    final List<String> varNames = Lists.newArrayList(Service.VAR_JDBC_QUERY,
-        Service.VAR_CONNECTION_AUTO_COMMIT,
-        Service.VAR_CONNECTION_HOLDABILITY,
-        Service.VAR_CONNECTION_READ_ONLY,
-        Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
-        Service.VAR_STATEMENT_CURSOR_NAME,
-        Service.VAR_STATEMENT_ESCAPE_PROCESSING,
-        Service.VAR_STATEMENT_FETCH_DIRECTION,
-        Service.VAR_STATEMENT_FETCH_SIZE,
-        Service.VAR_STATEMENT_MAX_FIELD_SIZE,
-        Service.VAR_STATEMENT_MAX_ROWS,
-        Service.VAR_STATEMENT_POOLABLE,
-        Service.VAR_STATEMENT_QUERY_TIMEOUT,
-        Service.VAR_STATEMENT_RS_TYPE,
-        Service.VAR_STATEMENT_RS_CONCURRENCY,
-        Service.VAR_STATEMENT_RS_HOLDABILITY,
-        Service.VAR_RESULT_SET_FETCH_DIRECTION,
-        Service.VAR_RESULT_SET_FETCH_SIZE,
-        Service.VAR_JDBC_RETURN);
-
-    Global.inputVars("Jdbc Test", varNames, new DialogCallback() {
+  private static void doDsn() {
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_DSNS, new ResponseCallback() {
       @Override
-      public boolean onConfirm(Popup popup) {
-        String sql = Global.getVarValue(Service.VAR_JDBC_QUERY);
-        if (BeeUtils.isEmpty(sql)) {
-          showError("Query not specified");
-          return false;
+      public void onResponse(ResponseObject response) {
+        List<String> dsns = Lists.newArrayList();
+        if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+          if (arr != null) {
+            for (String s : arr) {
+              dsns.add(s);
+            }
+          }
+        }
+
+        if (dsns.isEmpty()) {
+          Global.showError(Lists.newArrayList("No DSN's available"));
+
+        } else if (dsns.size() == 1) {
+          Global.inform("Only one DSN is available:", dsns.get(0));
+
         } else {
-          BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
-              XmlUtils.fromVars(Service.XML_TAG_DATA, varNames));
-          return true;
+          Horizontal panel = new Horizontal();
+          panel.add(new Label("Available DSN's"));
+
+          final RadioGroup rg = new RadioGroup(true,
+              dsns.indexOf(BeeKeeper.getUser().getDsn()), dsns);
+          panel.add(rg);
+
+          Global.inputWidget("Choose DSN", panel, new InputCallback() {
+            @Override
+            public void onSuccess() {
+              String dsn = rg.getValue();
+
+              if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(dsn, BeeKeeper.getUser().getDsn())) {
+                ParameterList params = BeeKeeper.getRpc().createParameters(Service.SWITCH_DSN);
+                params.addQueryItem(Service.VAR_DSN, dsn);
+
+                BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject rsp) {
+                    if (rsp.hasResponse(String.class)) {
+                      BeeKeeper.getUser().setDsn((String) rsp.getResponse());
+                    }
+                  }
+                });
+              }
+            }
+          });
         }
       }
     });
+  }
+
+  private static void doJdbc(String args) {
+    if (BeeUtils.isEmpty(args)) {
+      showError("Query not specified");
+      return;
+    }
+
+    Splitter splitter = Splitter.on(BeeConst.CHAR_SEMICOLON).omitEmptyStrings().trimResults();
+    List<String> input = Lists.newArrayList(splitter.split(args));
+
+    if (BeeUtils.isEmpty(input)) {
+      showError("Query not specified");
+      return;
+    }
+
+    Map<String, String> params = Maps.newHashMap();
+    params.put(Service.VAR_JDBC_QUERY, input.get(0));
+
+    if (input.size() > 1) {
+      Set<String> keys = Sets.newHashSet(
+          Service.VAR_CONNECTION_AUTO_COMMIT,
+          Service.VAR_CONNECTION_HOLDABILITY,
+          Service.VAR_CONNECTION_READ_ONLY,
+          Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
+          Service.VAR_STATEMENT_CURSOR_NAME,
+          Service.VAR_STATEMENT_ESCAPE_PROCESSING,
+          Service.VAR_STATEMENT_FETCH_DIRECTION,
+          Service.VAR_STATEMENT_FETCH_SIZE,
+          Service.VAR_STATEMENT_MAX_FIELD_SIZE,
+          Service.VAR_STATEMENT_MAX_ROWS,
+          Service.VAR_STATEMENT_POOLABLE,
+          Service.VAR_STATEMENT_QUERY_TIMEOUT,
+          Service.VAR_STATEMENT_RS_TYPE,
+          Service.VAR_STATEMENT_RS_CONCURRENCY,
+          Service.VAR_STATEMENT_RS_HOLDABILITY,
+          Service.VAR_RESULT_SET_FETCH_DIRECTION,
+          Service.VAR_RESULT_SET_FETCH_SIZE,
+          Service.VAR_JDBC_RETURN);
+
+      for (int i = 1; i < input.size(); i++) {
+        String s = input.get(i);
+
+        char sep = (s.indexOf(BeeConst.CHAR_EQ) > 0) ? BeeConst.CHAR_EQ : BeeConst.CHAR_SPACE;
+        String name = BeeUtils.getPrefix(s, sep);
+        String value = BeeUtils.getSuffix(s, sep);
+
+        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(value)) {
+          for (String key : keys) {
+            if (BeeUtils.isSuffix(key, name)) {
+              params.put(key, value);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
+        XmlUtils.createString(Service.XML_TAG_DATA, params));
   }
 
   private static void doLike(String[] arr) {
@@ -1546,10 +1617,10 @@ public class CliWorker {
         props.add(new Property(key, caption));
       }
     }
-    
+
     Table<String, String, String> columnKeys = Captions.getColumnKeys();
     props.add(new Property("Column Keys", BeeUtils.bracket(columnKeys.size())));
-    
+
     for (String viewName : columnKeys.rowKeySet()) {
       for (Map.Entry<String, String> entry : columnKeys.row(viewName).entrySet()) {
         props.add(new Property(BeeUtils.joinWords(viewName, entry.getKey()), entry.getValue()));
@@ -1662,20 +1733,20 @@ public class CliWorker {
   private static void showColor(String args) {
     if (BeeUtils.isEmpty(args)) {
       Map<String, String> names = Color.getNames();
-      
+
       List<String> keys = Lists.newArrayList(names.keySet());
       Collections.sort(keys);
-      
+
       HtmlTable table = new HtmlTable();
-      
+
       for (int row = 0; row < keys.size(); row++) {
         String key = keys.get(row);
         String value = names.get(key);
-        
+
         if (value.length() != 7 || !value.substring(0, 1).equals("#")) {
           logger.warning(key, value);
         }
-        
+
         int col = 0;
         table.getCellFormatter().setHorizontalAlignment(row, col,
             HasHorizontalAlignment.ALIGN_RIGHT);
@@ -1684,7 +1755,7 @@ public class CliWorker {
 
         table.setText(row, col, key);
         col++;
-        
+
         CustomDiv keySwatch = new CustomDiv();
         StyleUtils.setSize(keySwatch, 60, 20);
         StyleUtils.setBackgroundColor(keySwatch, key);
@@ -1708,27 +1779,27 @@ public class CliWorker {
         showError(args, "color not recognized");
         return;
       }
-      
+
       HtmlTable table = new HtmlTable();
 
       table.setText(0, 0, args);
-      
+
       CustomDiv argSwatch = new CustomDiv();
       StyleUtils.setSize(argSwatch, 50, 50);
       StyleUtils.setBackgroundColor(argSwatch, args);
       table.setWidget(0, 1, argSwatch);
 
       table.setText(1, 0, normalized);
-      
+
       CustomDiv normSwatch = new CustomDiv();
       StyleUtils.setSize(normSwatch, 50, 50);
       StyleUtils.setBackgroundColor(normSwatch, normalized);
       table.setWidget(1, 1, normSwatch);
-      
+
       Global.showModalWidget(table);
     }
   }
-  
+
   private static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
@@ -1976,7 +2047,7 @@ public class CliWorker {
   private static void showError(String... messages) {
     Global.showError(null, Lists.newArrayList(messages), null, "Whatever");
   }
-  
+
   private static void showExtData(List<ExtendedProperty> data) {
     Global.showGrid(new ExtendedPropertiesData(data, true));
   }
@@ -2979,19 +3050,6 @@ public class CliWorker {
     showTable("Pixels", new PropertiesData(info));
   }
 
-  private static void showVars(String[] arr) {
-    int len = ArrayUtils.length(arr);
-    if (len > 1) {
-      String[] vars = new String[len - 1];
-      for (int i = 0; i < len - 1; i++) {
-        vars[i] = arr[i + 1];
-      }
-      Global.showVars(vars);
-    } else {
-      Global.showVars();
-    }
-  }
-
   private static void showViewInfo(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
@@ -3046,47 +3104,6 @@ public class CliWorker {
       }
     }
     BeeKeeper.getScreen().updateActivePanel(table);
-  }
-
-  private static void showXmlInfo(String[] arr) {
-    if (arr.length >= 2) {
-      String[] opt = ArrayUtils.copyOf(arr);
-      final boolean detailed = !BeeUtils.same(opt[0], "xml");
-      if (detailed) {
-        opt[0] = "xml";
-      }
-
-      ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
-      for (String v : opt) {
-        params.addPositionalHeader(v);
-      }
-
-      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          showExtData(XmlUtils.getInfo((String) response.getResponse(), detailed));
-        }
-      });
-
-    } else {
-      final List<String> varNames = Lists.newArrayList(Service.VAR_XML_SOURCE,
-          Service.VAR_XML_TRANSFORM, Service.VAR_XML_TARGET, Service.VAR_XML_RETURN);
-
-      Global.inputVars("Xml Info", varNames, new DialogCallback() {
-        @Override
-        public boolean onConfirm(Popup popup) {
-          String src = Global.getVarValue(Service.VAR_XML_SOURCE);
-          if (BeeUtils.isEmpty(src)) {
-            showError("Source not specified");
-            return false;
-          } else {
-            BeeKeeper.getRpc().makePostRequest(Service.GET_XML_INFO,
-                XmlUtils.fromVars(Service.XML_TAG_DATA, varNames));
-            return true;
-          }
-        }
-      });
-    }
   }
 
   private static void storage(String[] arr) {

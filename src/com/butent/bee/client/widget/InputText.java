@@ -22,7 +22,6 @@ import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
@@ -37,8 +36,6 @@ import java.util.List;
 
 public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers,
     HasTextBox, HasCapsLock, HasMaxLength {
-
-  private HasStringValue source = null;
 
   private CharMatcher charMatcher = null;
 
@@ -64,11 +61,6 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     init();
   }
   
-  public InputText(HasStringValue source) {
-    this();
-    initSource(source);
-  }
-
   @Override
   public boolean acceptChar(char charCode) {
     if (getCharMatcher() == null) {
@@ -134,10 +126,6 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public String getOptions() {
     return options;
-  }
-
-  public HasStringValue getSource() {
-    return source;
   }
 
   @Override
@@ -219,9 +207,6 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     super.onBrowserEvent(event);
 
     if (EventUtils.isChange(event.getType())) {
-      if (getSource() != null) {
-        getSource().setValue(getValue());
-      }
       setOldValue(getValue());
     }
   }
@@ -258,10 +243,6 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void setOptions(String options) {
     this.options = options;
-  }
-
-  public void setSource(HasStringValue source) {
-    this.source = source;
   }
 
   @Override
@@ -308,16 +289,6 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return "bee-InputText";
   }
 
-  protected void initSource(HasStringValue src) {
-    if (src != null) {
-      setSource(src);
-      String v = src.getString();
-      if (!BeeUtils.isEmpty(v)) {
-        setValue(v);
-      }
-    }
-  }
-  
   protected boolean isTextBox() {
     return true;
   }

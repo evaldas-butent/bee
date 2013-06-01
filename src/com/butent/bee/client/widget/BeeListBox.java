@@ -21,9 +21,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
@@ -39,8 +37,6 @@ import java.util.List;
 
 public class BeeListBox extends ListBox implements Editor, HasItems, HasValueStartIndex,
     AcceptsCaptions {
-
-  private HasStringValue source = null;
 
   private boolean nullable = true;
 
@@ -71,29 +67,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public BeeListBox(Element element) {
     super(element);
     init();
-  }
-
-  public BeeListBox(HasStringValue source) {
-    this();
-    this.source = source;
-
-    if (source instanceof Variable) {
-      initVar((Variable) source);
-    }
-  }
-  
-  public BeeListBox(HasStringValue source, boolean allVisible) {
-    this(source);
-    if (allVisible) {
-      setAllVisible();
-    }
-  }
-
-  public BeeListBox(HasStringValue source, int size) {
-    this(source);
-    if (size > 0) {
-      setVisibleItemCount(size);
-    }
   }
 
   @Override
@@ -200,10 +173,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return options;
   }
   
-  public HasStringValue getSource() {
-    return source;
-  }
-
   @Override
   public String getValue() {
     int index = getSelectedIndex();
@@ -273,9 +242,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public void onBrowserEvent(Event event) {
     if (EventUtils.isChange(event.getType())) {
       setChangePending(true);
-      if (getSource() != null) {
-        getSource().setValue(getValue());
-      }
       ValueChangeEvent.fire(this, getValue());
 
     } else if (EventUtils.isMouseDown(event.getType())) {
@@ -344,10 +310,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   @Override
   public void setOptions(String options) {
     this.options = options;
-  }
-
-  public void setSource(HasStringValue source) {
-    this.source = source;
   }
 
   @Override
@@ -432,15 +394,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-ListBox");
     sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
-  }
-
-  private void initVar(Variable var) {
-    addItems(var.getItems());
-
-    String v = var.getValue();
-    if (!BeeUtils.isEmpty(v)) {
-      setSelectedIndex(getIndex(v));
-    }
   }
 
   private boolean isChangePending() {

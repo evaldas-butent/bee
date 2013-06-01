@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(value = org.junit.runners.Suite.class)
 @SuiteClasses(value = {TestBeeUtilscontaintAny.class,
     TestBeeUtilsTransform.class, TestArrayUtils.class, TestPropertyUtils.class,
-    TestValueUtils.class, TestTimeUtils.class,
+    TestTimeUtils.class,
     TestCodec.class, TestIsExpression.class, TestIsCondition.class,
     TestSqlCreate.class, TestSqlUtilsIsQuery.class, TestSqlInsert.class,
     TestSqlUpdate.class, TestSqlDelete.class, TestSqlSelect.class,
@@ -18,7 +18,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestResource.class, TestIntValue.class,
     TestLongValue.class, TestListSequence.class, TestValueType.class,
     TestService.class, TestStringArray.class,
-    TestVariable.class, TestBooleanValue.class, TestDateTimeValue.class,
+    TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
     TestTimeOfDayValue.class})
 public class AllTests {

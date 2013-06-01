@@ -4,7 +4,6 @@ import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -19,10 +18,6 @@ public class InputLong extends InputNumber {
 
   public InputLong(Element element) {
     super(element);
-  }
-
-  public InputLong(HasStringValue source) {
-    super(source);
   }
 
   @Override

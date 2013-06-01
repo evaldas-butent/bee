@@ -14,7 +14,6 @@ import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -53,10 +52,6 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   public InputNumber(Element element) {
     super(element);
-  }
-
-  public InputNumber(HasStringValue source) {
-    super(source);
   }
 
   @Override

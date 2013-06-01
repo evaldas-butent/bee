@@ -44,10 +44,10 @@ public class DataServiceBean {
   @EJB
   ResultSetBean rsb;
 
-  public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
+  public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
 
-    BeeDataSource ds = checkDs(dsn, buff);
+    BeeDataSource ds = checkDs(buff);
     if (ds == null) {
       return;
     }
@@ -57,7 +57,7 @@ public class DataServiceBean {
     } else if (BeeUtils.same(svc, Service.DB_JDBC)) {
       testJdbc(ds.getConn(), reqInfo, buff);
     } else {
-      String msg = BeeUtils.joinWords(svc, dsn, "data service not recognized");
+      String msg = BeeUtils.joinWords(svc, "data service not recognized");
       logger.warning(msg);
       buff.addWarning(msg);
     }
@@ -65,25 +65,16 @@ public class DataServiceBean {
     ds.close();
   }
 
-  private BeeDataSource checkDs(String dsn, ResponseBuffer buff) {
-    BeeDataSource z;
+  private BeeDataSource checkDs(ResponseBuffer buff) {
+    BeeDataSource z = dsb.getDefaultDs();
 
-    if (BeeUtils.isEmpty(dsn)) {
-      z = dsb.getDefaultDs();
-      if (z == null) {
-        buff.addWarning("dsn not specified");
-        return null;
-      }
-    } else {
-      z = dsb.locateDs(dsn);
-      if (z == null) {
-        buff.addSevere(dsn, "not found");
-        return null;
-      }
+    if (z == null) {
+      buff.addWarning("dsn not specified");
+      return null;
     }
 
     if (!z.check()) {
-      buff.addSevere("cannot open", dsn, z.getErrors());
+      buff.addSevere("cannot open data source", z.getErrors());
       return null;
     }
     return z;
@@ -469,9 +460,10 @@ public class DataServiceBean {
       }
     }
 
-    if (BeeConst.JDBC_COLUMNS.equals(ret)) {
+    if (BeeUtils.containsSame(ret, "col")) {
       rsb.rsMdToResponse(rs, buff, debug);
-    } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
+
+    } else if (BeeUtils.containsSame(ret, "count")) {
       DateTime start = new DateTime();
       long memC1 = SystemInfo.freeMemory();
       int rc = JdbcUtils.getSize(rs);
@@ -483,11 +475,13 @@ public class DataServiceBean {
           "type", JdbcUtils.getTypeInfo(rs));
       buff.addLine("memory", NameUtils.addName("executeQuery", BeeUtils.toString(memQ1 - memQ2)),
           NameUtils.addName(ret, BeeUtils.toString(memC1 - memC2)));
-    } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
+
+    } else if (BeeUtils.containsSame(ret, "meta")) {
       buff.addExtendedPropertiesColumns();
       buff.appendProperties("Connection", BeeConnection.getInfo(conn));
       buff.appendProperties("Statement", BeeStatement.getInfo(stmt));
       buff.appendProperties("Result Set", BeeResultSet.getInfo(rs));
+
     } else {
       rsb.rsToResponse(rs, buff, debug);
     }

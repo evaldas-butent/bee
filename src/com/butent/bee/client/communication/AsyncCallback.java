@@ -103,7 +103,6 @@ public class AsyncCallback implements RequestCallback {
     int cnt = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_CNT));
     int cc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_COLS));
     int mc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_MSG_CNT));
-    int pc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_PART_CNT));
 
     if (debug) {
       logger.info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
@@ -112,8 +111,7 @@ public class AsyncCallback implements RequestCallback {
       logger.info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
           NameUtils.addName("len", len), NameUtils.addName(Service.RPC_VAR_CNT, cnt));
       logger.info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
-          NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
-          NameUtils.addName(Service.RPC_VAR_PART_CNT, pc));
+          NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc));
     }
 
     String hSep = resp.getHeader(Service.RPC_VAR_SEP);
@@ -148,16 +146,8 @@ public class AsyncCallback implements RequestCallback {
       RpcUtils.dispatchMessages(messages);
     }
 
-    int[] partSizes = null;
-    if (pc > 0) {
-      partSizes = new int[pc];
-      for (int i = 0; i < pc; i++) {
-        partSizes[i] = BeeUtils.toInt(resp.getHeader(CommUtils.rpcPartName(i)));
-      }
-    }
-
     if (info != null) {
-      info.end(ctp, txt, len, cnt, cc, mc, messages, pc, partSizes);
+      info.end(ctp, txt, len, cnt, cc, mc, messages);
     }
 
     Duration duration = new Duration();
@@ -180,9 +170,6 @@ public class AsyncCallback implements RequestCallback {
 
     } else if (Service.isInvocation(svc)) {
       dispatchInvocation(svc, info, txt, mc, messages, cc, cnt, sep);
-
-    } else if (pc > 0) {
-      dispatchParts(svc, pc, partSizes, txt);
 
     } else if (CommUtils.isResource(ctp)) {
       dispatchResource(txt);
@@ -222,14 +209,6 @@ public class AsyncCallback implements RequestCallback {
       dispatchResponse(svc, cc, arr);
     } else if (mc <= 0) {
       logger.warning("unknown invocation method", method);
-    }
-  }
-
-  private void dispatchParts(String svc, int pc, int[] sizes, String content) {
-    if (BeeUtils.same(svc, Service.GET_XML_INFO)) {
-      ResponseHandler.showXmlInfo(pc, sizes, content);
-    } else {
-      logger.warning("unknown multipart response", svc);
     }
   }
 

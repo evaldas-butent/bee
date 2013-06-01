@@ -35,7 +35,28 @@ import javax.sql.DataSource;
  */
 
 public class JdbcUtils {
+
   private static final BeeLogger logger = LogUtils.getLogger(JdbcUtils.class);
+
+  private static final String CLOSE_CURSORS_AT_COMMIT = "close cursors at commit";
+  private static final String HOLD_CURSORS_OVER_COMMIT = "hold cursors over commit";
+
+  private static final String FETCH_FORWARD = "fetch forward";
+  private static final String FETCH_REVERSE = "fetch reverse";
+  private static final String FETCH_UNKNOWN = "fetch unknown";
+
+  private static final String TYPE_FORWARD_ONLY = "forward only";
+  private static final String TYPE_SCROLL_INSENSITIVE = "scroll insensitive";
+  private static final String TYPE_SCROLL_SENSITIVE = "scroll sensitive";
+
+  private static final String CONCUR_READ_ONLY = "concur read only";
+  private static final String CONCUR_UPDATABLE = "concur updatable";
+
+  private static final String TRANSACTION_NONE = "transaction none";
+  private static final String TRANSACTION_READ_COMMITTED = "transaction read committed";
+  private static final String TRANSACTION_READ_UNCOMMITTED = "transaction read uncommitted";
+  private static final String TRANSACTION_REPEATABLE_READ = "transaction repeatable read";
+  private static final String TRANSACTION_SERIALIZABLE = "transaction serializable";
 
   public static void applyFetchSize(Statement stmt, int rows) throws JdbcException {
     Assert.notNull(stmt);
@@ -109,9 +130,9 @@ public class JdbcUtils {
   public static String concurrencyAsString(int z) {
     switch (z) {
       case (ResultSet.CONCUR_READ_ONLY):
-        return BeeConst.CONCUR_READ_ONLY;
+        return CONCUR_READ_ONLY;
       case (ResultSet.CONCUR_UPDATABLE):
-        return BeeConst.CONCUR_UPDATABLE;
+        return CONCUR_UPDATABLE;
       default:
         return BeeConst.UNKNOWN;
     }
@@ -121,9 +142,9 @@ public class JdbcUtils {
     Assert.notEmpty(s);
     int z;
 
-    if (BeeUtils.same(s, BeeConst.CONCUR_READ_ONLY)) {
+    if (BeeUtils.containsSame(s, "read")) {
       z = ResultSet.CONCUR_READ_ONLY;
-    } else if (BeeUtils.same(s, BeeConst.CONCUR_UPDATABLE)) {
+    } else if (BeeUtils.containsSame(s, "upd")) {
       z = ResultSet.CONCUR_UPDATABLE;
     } else {
       z = JdbcConst.UNKNOWN_CONCURRENCY;
@@ -134,11 +155,11 @@ public class JdbcUtils {
   public static String fetchDirectionAsString(int z) {
     switch (z) {
       case (ResultSet.FETCH_FORWARD):
-        return BeeConst.FETCH_FORWARD;
+        return FETCH_FORWARD;
       case (ResultSet.FETCH_REVERSE):
-        return BeeConst.FETCH_REVERSE;
+        return FETCH_REVERSE;
       case (ResultSet.FETCH_UNKNOWN):
-        return BeeConst.FETCH_UNKNOWN;
+        return FETCH_UNKNOWN;
       default:
         return BeeConst.UNKNOWN;
     }
@@ -148,11 +169,11 @@ public class JdbcUtils {
     Assert.notEmpty(s);
     int z;
 
-    if (BeeUtils.same(s, BeeConst.FETCH_FORWARD)) {
+    if (BeeUtils.containsSame(s, "forw")) {
       z = ResultSet.FETCH_FORWARD;
-    } else if (BeeUtils.same(s, BeeConst.FETCH_REVERSE)) {
+    } else if (BeeUtils.containsSame(s, "rev")) {
       z = ResultSet.FETCH_REVERSE;
-    } else if (BeeUtils.same(s, BeeConst.FETCH_UNKNOWN)) {
+    } else if (BeeUtils.containsSame(s, "un")) {
       z = ResultSet.FETCH_UNKNOWN;
     } else {
       z = JdbcConst.UNKNOWN_FETCH_DIRECTION;
@@ -498,9 +519,9 @@ public class JdbcUtils {
   public static String holdabilityAsString(int z) {
     switch (z) {
       case (ResultSet.CLOSE_CURSORS_AT_COMMIT):
-        return BeeConst.CLOSE_CURSORS_AT_COMMIT;
+        return CLOSE_CURSORS_AT_COMMIT;
       case (ResultSet.HOLD_CURSORS_OVER_COMMIT):
-        return BeeConst.HOLD_CURSORS_OVER_COMMIT;
+        return HOLD_CURSORS_OVER_COMMIT;
       case (BeeConst.INT_FALSE):
         return JdbcConst.FEATURE_NOT_SUPPORTED;
       case (BeeConst.INT_ERROR):
@@ -514,9 +535,9 @@ public class JdbcUtils {
     Assert.notEmpty(s);
     int z;
 
-    if (BeeUtils.same(s, BeeConst.CLOSE_CURSORS_AT_COMMIT)) {
+    if (BeeUtils.containsSame(s, "close")) {
       z = ResultSet.CLOSE_CURSORS_AT_COMMIT;
-    } else if (BeeUtils.same(s, BeeConst.HOLD_CURSORS_OVER_COMMIT)) {
+    } else if (BeeUtils.containsSame(s, "hold")) {
       z = ResultSet.HOLD_CURSORS_OVER_COMMIT;
     } else if (BeeUtils.same(s, JdbcConst.FEATURE_NOT_SUPPORTED)) {
       z = BeeConst.INT_FALSE;
@@ -558,11 +579,11 @@ public class JdbcUtils {
   public static String rsTypeAsString(int z) {
     switch (z) {
       case (ResultSet.TYPE_FORWARD_ONLY):
-        return BeeConst.TYPE_FORWARD_ONLY;
+        return TYPE_FORWARD_ONLY;
       case (ResultSet.TYPE_SCROLL_INSENSITIVE):
-        return BeeConst.TYPE_SCROLL_INSENSITIVE;
+        return TYPE_SCROLL_INSENSITIVE;
       case (ResultSet.TYPE_SCROLL_SENSITIVE):
-        return BeeConst.TYPE_SCROLL_SENSITIVE;
+        return TYPE_SCROLL_SENSITIVE;
       default:
         return BeeConst.UNKNOWN;
     }
@@ -572,11 +593,11 @@ public class JdbcUtils {
     Assert.notEmpty(s);
     int z;
 
-    if (BeeUtils.same(s, BeeConst.TYPE_FORWARD_ONLY)) {
+    if (BeeUtils.containsSame(s, "forw")) {
       z = ResultSet.TYPE_FORWARD_ONLY;
-    } else if (BeeUtils.same(s, BeeConst.TYPE_SCROLL_INSENSITIVE)) {
+    } else if (BeeUtils.containsSame(s, "insens")) {
       z = ResultSet.TYPE_SCROLL_INSENSITIVE;
-    } else if (BeeUtils.same(s, BeeConst.TYPE_SCROLL_SENSITIVE)) {
+    } else if (BeeUtils.containsSame(s, "sens")) {
       z = ResultSet.TYPE_SCROLL_SENSITIVE;
     } else {
       z = JdbcConst.UNKNOWN_RESULT_SET_TYPE;
@@ -692,15 +713,15 @@ public class JdbcUtils {
   public static String transactionIsolationAsString(int z) {
     switch (z) {
       case (Connection.TRANSACTION_NONE):
-        return BeeConst.TRANSACTION_NONE;
+        return TRANSACTION_NONE;
       case (Connection.TRANSACTION_READ_COMMITTED):
-        return BeeConst.TRANSACTION_READ_COMMITTED;
+        return TRANSACTION_READ_COMMITTED;
       case (Connection.TRANSACTION_READ_UNCOMMITTED):
-        return BeeConst.TRANSACTION_READ_UNCOMMITTED;
+        return TRANSACTION_READ_UNCOMMITTED;
       case (Connection.TRANSACTION_REPEATABLE_READ):
-        return BeeConst.TRANSACTION_REPEATABLE_READ;
+        return TRANSACTION_REPEATABLE_READ;
       case (Connection.TRANSACTION_SERIALIZABLE):
-        return BeeConst.TRANSACTION_SERIALIZABLE;
+        return TRANSACTION_SERIALIZABLE;
       default:
         return BeeConst.UNKNOWN;
     }
@@ -710,15 +731,15 @@ public class JdbcUtils {
     Assert.notEmpty(s);
     int z;
 
-    if (BeeUtils.same(s, BeeConst.TRANSACTION_NONE)) {
+    if (BeeUtils.containsSame(s, "none")) {
       z = Connection.TRANSACTION_NONE;
-    } else if (BeeUtils.same(s, BeeConst.TRANSACTION_READ_COMMITTED)) {
-      z = Connection.TRANSACTION_READ_COMMITTED;
-    } else if (BeeUtils.same(s, BeeConst.TRANSACTION_READ_UNCOMMITTED)) {
+    } else if (BeeUtils.containsSame(s, "uncomm")) {
       z = Connection.TRANSACTION_READ_UNCOMMITTED;
-    } else if (BeeUtils.same(s, BeeConst.TRANSACTION_REPEATABLE_READ)) {
+    } else if (BeeUtils.containsSame(s, "comm")) {
+      z = Connection.TRANSACTION_READ_COMMITTED;
+    } else if (BeeUtils.containsSame(s, "repeat")) {
       z = Connection.TRANSACTION_REPEATABLE_READ;
-    } else if (BeeUtils.same(s, BeeConst.TRANSACTION_SERIALIZABLE)) {
+    } else if (BeeUtils.containsSame(s, "serial")) {
       z = Connection.TRANSACTION_SERIALIZABLE;
     } else {
       z = JdbcConst.UNKNOWN_TRANSACTION_ISOLATION;
@@ -768,7 +789,7 @@ public class JdbcUtils {
   }
 
   public static boolean validConcurrency(String s) {
-    return BeeUtils.inListSame(s, BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
+    return BeeUtils.containsAnySame(s, "read", "upd");
   }
 
   public static boolean validFetchDirection(int z) {
@@ -777,8 +798,7 @@ public class JdbcUtils {
   }
 
   public static boolean validFetchDirection(String s) {
-    return BeeUtils.inListSame(s, BeeConst.FETCH_FORWARD,
-        BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
+    return BeeUtils.containsAnySame(s, "forw", "rev", "un");
   }
 
   public static boolean validHoldability(int z) {
@@ -786,8 +806,7 @@ public class JdbcUtils {
   }
 
   public static boolean validHoldability(String s) {
-    return BeeUtils.inListSame(s, BeeConst.CLOSE_CURSORS_AT_COMMIT,
-        BeeConst.HOLD_CURSORS_OVER_COMMIT);
+    return BeeUtils.containsAnySame(s, "close", "hold");
   }
 
   public static boolean validRsType(int z) {
@@ -797,8 +816,7 @@ public class JdbcUtils {
   }
 
   public static boolean validRsType(String s) {
-    return BeeUtils.inListSame(s, BeeConst.TYPE_FORWARD_ONLY,
-        BeeConst.TYPE_SCROLL_INSENSITIVE, BeeConst.TYPE_SCROLL_SENSITIVE);
+    return BeeUtils.containsAnySame(s, "forw", "insens", "sens");
   }
 
   public static boolean validTransactionIsolation(int z) {
@@ -810,9 +828,7 @@ public class JdbcUtils {
   }
 
   public static boolean validTransactionIsolation(String s) {
-    return BeeUtils.inListSame(s, BeeConst.TRANSACTION_NONE,
-        BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
-        BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
+    return BeeUtils.containsAnySame(s, "none", "comm", "uncomm", "repeat", "serial");
   }
 
   private JdbcUtils() {

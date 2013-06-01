@@ -200,9 +200,8 @@ public class TestCodec {
     Codec.serializeWithLength(sb, null);
     assertEquals("0", sb.toString());
 
-    TransObjectLong obj = new TransObjectLong();
     StringBuilder sb2 = new StringBuilder();
-    Codec.serializeWithLength(sb2, obj);
+    Codec.serializeWithLength(sb2, "Hello world");
     assertEquals("211Hello world", sb2.toString());
 
     Codec.serializeWithLength(sb2, "A string");

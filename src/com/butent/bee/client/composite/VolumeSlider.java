@@ -24,7 +24,6 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.ValueUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -85,7 +84,6 @@ public class VolumeSlider extends Absolute implements Editor {
 
   private final VolumeSpinner spinner;
   private final ProgressBar progressBar;
-  private Object source = null;
 
   private int spacing = 5;
   private int padding = 1;
@@ -102,26 +100,22 @@ public class VolumeSlider extends Absolute implements Editor {
     @Override
     public void onSpinning(long value) {
       progressBar.setProgress(value);
-      source = ValueUtils.setLong(source, value);
-
       ValueChangeEvent.fire(VolumeSlider.this, BeeUtils.toString(value));
     }
   };
 
-  public VolumeSlider(Object source, long min, long max) {
-    this(source, min, max, 1, 5);
+  public VolumeSlider(long value, long min, long max) {
+    this(value, min, max, 1, 5);
   }
 
-  public VolumeSlider(Object source, long min, long max, int step) {
-    this(source, min, max, step, step);
+  public VolumeSlider(long value, long min, long max, int step) {
+    this(value, min, max, step, step);
   }
 
-  public VolumeSlider(Object source, long min, long max, int minStep, int maxStep) {
+  public VolumeSlider(long value, long min, long max, int minStep, int maxStep) {
     super(Position.RELATIVE, Overflow.HIDDEN);
     setStyleName("bee-VolumeSlider");
 
-    this.source = source;
-    long value = ValueUtils.getLong(source);
     progressBar = new ProgressBar(min, max, value);
     spinner = new VolumeSpinner(listener, value, min, max, minStep, maxStep, true);
 

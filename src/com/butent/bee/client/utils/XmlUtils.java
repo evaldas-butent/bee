@@ -15,7 +15,6 @@ import com.google.gwt.xml.client.Text;
 import com.google.gwt.xml.client.XMLParser;
 import com.google.gwt.xml.client.impl.DOMParseException;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.ScrollBars;
@@ -77,14 +76,18 @@ public class XmlUtils {
     return transformDocument(createDoc(rootName, nodes));
   }
 
-  public static String fromVars(String rootName, List<String> names) {
+  public static String createString(String rootName, Map<String, String> input) {
     Assert.notEmpty(rootName);
-    Assert.notEmpty(names);
+    Assert.notEmpty(input);
 
-    String[] nodes = new String[names.size() * 2];
-    for (int i = 0; i < names.size(); i++) {
-      nodes[i * 2] = names.get(i);
-      nodes[i * 2 + 1] = BeeUtils.trim(Global.getVarValue(names.get(i)));
+    String[] nodes = new String[input.size() * 2];
+    int i = 0;
+    
+    for (Map.Entry<String, String> entry : input.entrySet()) {
+      nodes[i] = entry.getKey();
+      nodes[i + 1] = entry.getValue();
+      
+      i += 2;
     }
 
     return transformDocument(createDoc(rootName, nodes));

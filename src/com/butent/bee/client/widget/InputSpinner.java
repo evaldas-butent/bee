@@ -2,7 +2,6 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 
 /**
@@ -19,12 +18,8 @@ public class InputSpinner extends InputInteger {
     DomUtils.setInputType(this, inputType);
   }
 
-  public InputSpinner(HasStringValue source, int min, int max) {
-    super(source, inputType, min, max);
-  }
-
-  public InputSpinner(HasStringValue source, int min, int max, int step) {
-    super(source, inputType, min, max, step);
+  public InputSpinner(int min, int max) {
+    super(inputType, min, max);
   }
 
   public InputSpinner(int value, int min, int max) {

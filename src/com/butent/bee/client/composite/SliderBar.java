@@ -31,7 +31,6 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.ValueUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,8 +85,6 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
 
   private static final String STYLE_SLIDING = "sliding";
 
-  private Object source;
-
   private double curValue;
   private double maxValue;
   private double minValue;
@@ -120,14 +117,13 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
 
   private boolean handlesTabulation = false;
 
-  public SliderBar(Object src, double min, double max, double step) {
-    this(src, min, max, step, 0, 0);
+  public SliderBar(double value, double min, double max, double step) {
+    this(value, min, max, step, 0, 0);
   }
 
-  public SliderBar(Object src, double min, double max, double step, int labels, int ticks) {
+  public SliderBar(double value, double min, double max, double step, int labels, int ticks) {
     super();
-    this.source = src;
-    this.curValue = ValueUtils.getDouble(src);
+    this.curValue = value;
 
     this.minValue = min;
     this.maxValue = max;
@@ -417,7 +413,6 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     }
 
     drawKnob(false);
-    source = ValueUtils.setDouble(source, this.curValue);
     
     if (fireEvents) {
       ValueChangeEvent.fire(this, BeeUtils.toString(this.curValue));

@@ -102,20 +102,17 @@ public class DispatcherBean {
     userService.logout(user);
   }
 
-  public ResponseObject doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     ResponseObject response = null;
 
-    if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(SqlBuilderFactory.getDsn(), dsn)) {
-      response = ResponseObject.error("DSN mismatch:", SqlBuilderFactory.getDsn(), "!=", dsn);
-
-    } else if (moduleHolder.hasModule(svc)) {
+    if (moduleHolder.hasModule(svc)) {
       response = moduleHolder.doModule(reqInfo);
 
     } else if (Service.isDataService(svc)) {
       response = uiService.doService(reqInfo);
 
     } else if (Service.isDbService(svc)) {
-      dataService.doService(svc, dsn, reqInfo, buff);
+      dataService.doService(svc, reqInfo, buff);
 
     } else if (Service.isSysService(svc)) {
       response = systemService.doService(svc, reqInfo, buff);

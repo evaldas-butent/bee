@@ -2,7 +2,6 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -20,16 +19,12 @@ public class InputSlider extends InputInteger {
     DomUtils.setInputType(this, inputType);
   }
 
-  public InputSlider(HasStringValue source, int min, int max) {
-    super(source, inputType, min, max);
+  public InputSlider(int min, int max) {
+    super(inputType, min, max);
   }
 
-  public InputSlider(HasStringValue source, int min, int max, int step) {
-    super(source, inputType, min, max, step);
-  }
-
-  public InputSlider(int value, int min, int max) {
-    super(value, inputType, min, max);
+  public InputSlider(int min, int max, int step) {
+    super(inputType, min, max, step);
   }
 
   public InputSlider(int value, int min, int max, int step) {

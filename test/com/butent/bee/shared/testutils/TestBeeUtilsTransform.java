@@ -1,7 +1,7 @@
 package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeType;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -385,8 +385,8 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testIsOrdinal() {
-    assertEquals(true, beeUtils.isOrdinal(BeeType.class, 5));
-    assertEquals(false, beeUtils.isOrdinal(BeeType.class, 500));
+    assertEquals(true, beeUtils.isOrdinal(State.class, 5));
+    assertEquals(false, beeUtils.isOrdinal(State.class, 500));
   }
 
   @Test

@@ -55,9 +55,6 @@ public class RpcInfo {
   public static final String COL_RESP_MSG_CNT = "Response Msg Cnt";
   public static final String COL_RESP_MESSAGES = "Response Messages";
 
-  public static final String COL_RESP_PART_CNT = "Response Part Cnt";
-  public static final String COL_RESP_PART_SIZES = "Response Part Sizes";
-
   public static final String COL_RESP_INFO = "Response Info";
 
   public static final String COL_ERR_MSG = "Error Msg";
@@ -92,8 +89,6 @@ public class RpcInfo {
 
   private int respMsgCnt = BeeConst.UNDEF;
   private Collection<ResponseMessage> respMessages = null;
-  private int respPartCnt = BeeConst.UNDEF;
-  private int[] respPartSize = null;
 
   private String errMsg = null;
 
@@ -132,7 +127,7 @@ public class RpcInfo {
   }
 
   public int end(ContentType ctp, String data, int size, int rows,
-      int cols, int msgCnt, Collection<ResponseMessage> messages, int partCnt, int[] partSizes) {
+      int cols, int msgCnt, Collection<ResponseMessage> messages) {
     int r = done();
     setState(State.CLOSED);
 
@@ -156,12 +151,6 @@ public class RpcInfo {
       setRespMessages(messages);
     }
 
-    if (!BeeConst.isUndef(partCnt)) {
-      setRespPartCnt(partCnt);
-    }
-    if (partSizes != null) {
-      setRespPartSize(partSizes);
-    }
     return r;
   }
 
@@ -289,14 +278,6 @@ public class RpcInfo {
 
   public Response getResponse() {
     return response;
-  }
-
-  public int getRespPartCnt() {
-    return respPartCnt;
-  }
-
-  public int[] getRespPartSize() {
-    return respPartSize;
   }
 
   public int getRespRows() {
@@ -432,14 +413,6 @@ public class RpcInfo {
 
   public void setResponse(Response response) {
     this.response = response;
-  }
-
-  public void setRespPartCnt(int respPartCnt) {
-    this.respPartCnt = respPartCnt;
-  }
-
-  public void setRespPartSize(int[] respPartSize) {
-    this.respPartSize = respPartSize;
   }
 
   public void setRespRows(int respRows) {

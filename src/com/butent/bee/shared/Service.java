@@ -24,7 +24,6 @@ public class Service {
 
   public static final String SYS_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "sys_";
   public static final String GET_CLASS_INFO = SYS_SERVICE_PREFIX + "class_info";
-  public static final String GET_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
   public static final String GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
   public static final String SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
@@ -80,7 +79,6 @@ public class Service {
   public static final String RPC_VAR_SVC = RPC_VAR_SYS_PREFIX + "svc";
   public static final String RPC_VAR_QID = RPC_VAR_SYS_PREFIX + "qid";
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
-  public static final String RPC_VAR_DSN = RPC_VAR_SYS_PREFIX + "dsn";
   public static final String RPC_VAR_SEP = RPC_VAR_SYS_PREFIX + "sep";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
   public static final String RPC_VAR_LOC = RPC_VAR_SYS_PREFIX + "loc";
@@ -97,8 +95,6 @@ public class Service {
   public static final String RPC_VAR_MSG = RPC_VAR_SYS_PREFIX + "msg";
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
-  public static final String RPC_VAR_PART_CNT = RPC_VAR_SYS_PREFIX + "x_c";
-  public static final String RPC_VAR_PART = RPC_VAR_SYS_PREFIX + "part";
 
   public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
 
@@ -106,11 +102,6 @@ public class Service {
 
   public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
   public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
-
-  public static final String VAR_XML_SOURCE = RPC_VAR_PREFIX + "xml_source";
-  public static final String VAR_XML_TRANSFORM = RPC_VAR_PREFIX + "xml_transform";
-  public static final String VAR_XML_TARGET = RPC_VAR_PREFIX + "xml_target";
-  public static final String VAR_XML_RETURN = RPC_VAR_PREFIX + "xml_return";
 
   public static final String VAR_JDBC_QUERY = RPC_VAR_PREFIX + "jdbc_query";
   public static final String VAR_CONNECTION_AUTO_COMMIT = RPC_VAR_PREFIX + "conn_auto_commit";

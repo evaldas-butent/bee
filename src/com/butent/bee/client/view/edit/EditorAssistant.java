@@ -11,7 +11,6 @@ import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -211,8 +210,6 @@ public class EditorAssistant {
       return ((Editor) widget).getValue();
     } else if (widget instanceof TextBoxBase) {
       return ((TextBoxBase) widget).getValue();
-    } else if (widget instanceof HasStringValue) {
-      return ((HasStringValue) widget).getString();
     } else {
       return null;
     }

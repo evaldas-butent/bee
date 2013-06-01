@@ -95,7 +95,7 @@ public class UiHelper {
 
   public static boolean closeDialog(Widget source) {
     if (source != null) {
-      Popup popup = DomUtils.getParentPopup(source);
+      Popup popup = getParentPopup(source);
       if (popup != null) {
         popup.close();
         return true;
@@ -120,7 +120,7 @@ public class UiHelper {
       return DomUtils.focus(target);
     }
   }
-
+  
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
       return null;
@@ -292,6 +292,23 @@ public class UiHelper {
     }
   }
 
+  public static Popup getParentPopup(Widget w) {
+    Assert.notNull(w);
+
+    Widget p = w;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof Popup) {
+        return (Popup) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return new Consumer<InputText>() {
       @Override
@@ -340,7 +357,7 @@ public class UiHelper {
   }
 
   public static boolean isModal(Widget widget) {
-    return DomUtils.getParentPopup(widget) != null;
+    return getParentPopup(widget) != null;
   }
 
   public static boolean isSave(NativeEvent event) {

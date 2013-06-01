@@ -7,7 +7,7 @@
   >
   <Fields>
     <String name="Login" precision="30" notNull="true" unique="true" />
-    <String name="Password" precision="64" />
+    <String name="Password" precision="64" label="=password" />
     <Text name="Properties" />
     <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true" />
     <Text name="Host" />

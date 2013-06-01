@@ -161,10 +161,6 @@ public class CommUtils {
     return Service.RPC_VAR_PRM + i;
   }
 
-  public static String rpcPartName(int i) {
-    return Service.RPC_VAR_PART + i;
-  }
-
   private CommUtils() {
   }
 }

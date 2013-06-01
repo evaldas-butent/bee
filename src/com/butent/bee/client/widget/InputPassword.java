@@ -2,8 +2,6 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Document;
 
-import com.butent.bee.shared.HasStringValue;
-
 /**
  * Implements a user interface component for inserting passwords.
  */
@@ -14,11 +12,11 @@ public class InputPassword extends InputText {
     super(Document.get().createPasswordInputElement());
   }
 
-  public InputPassword(HasStringValue source) {
+  public InputPassword(int maxLength) {
     this();
-    initSource(source);
+    setMaxLength(maxLength);
   }
-
+  
   @Override
   public String getIdPrefix() {
     return "pswd";

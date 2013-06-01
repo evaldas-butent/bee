@@ -69,10 +69,6 @@ public class RpcFactory implements Module {
     return new ParameterList(svc);
   }
   
-  public String getDsn() {
-    return BeeKeeper.getUser().getDsn();
-  }
-
   @Override
   public String getName() {
     return getClass().getName();

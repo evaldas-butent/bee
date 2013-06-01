@@ -12,7 +12,6 @@ import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
-import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
@@ -30,10 +29,6 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeType;
-import com.butent.bee.shared.BeeWidget;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
@@ -42,10 +37,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CssUnit;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +53,6 @@ public class Global implements Module {
 
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();
-
-  private static final Map<String, Variable> vars = Maps.newHashMap();
 
   private static final CacheManager cache = new CacheManager();
 
@@ -136,25 +127,6 @@ public class Global implements Module {
         StyleUtils.FontSize.LARGE.getClassName(), StyleUtils.FontSize.MEDIUM.getClassName());
   }
 
-  public static void createVar(String name, String caption) {
-    createVar(name, caption, BeeType.STRING, BeeConst.STRING_EMPTY);
-  }
-
-  public static void createVar(String name, String caption, BeeType type, String value) {
-    Assert.notEmpty(name);
-    Assert.notNull(type);
-
-    vars.put(name, new Variable(caption, type, value));
-  }
-
-  public static void createVar(String name, String caption, BeeType type, String value,
-      BeeWidget widget, String... items) {
-    Assert.notEmpty(name);
-    Assert.notNull(type);
-
-    vars.put(name, new Variable(caption, type, value, widget, items));
-  }
-
   public static void debug(String s) {
     logger.debug(s);
   }
@@ -208,47 +180,6 @@ public class Global implements Module {
     return styleSheets;
   }
 
-  public static Variable getVar(String name) {
-    Assert.contains(vars, name);
-    return vars.get(name);
-  }
-
-  public static boolean getVarBoolean(String name) {
-    return getVar(name).getBoolean();
-  }
-
-  public static String getVarCaption(String name) {
-    return getVar(name).getCaption();
-  }
-
-  public static int getVarInt(String name) {
-    return getVar(name).getInt();
-  }
-
-  public static List<String> getVarItems(String name) {
-    return getVar(name).getItems();
-  }
-
-  public static long getVarLong(String name) {
-    return getVar(name).getLong();
-  }
-
-  public static BeeType getVarType(String name) {
-    return getVar(name).getType();
-  }
-
-  public static String getVarValue(String name) {
-    return getVar(name).getValue();
-  }
-
-  public static BeeWidget getVarWidget(String name) {
-    return getVar(name).getWidget();
-  }
-
-  public static String getVarWidth(String name) {
-    return getVar(name).getWidth();
-  }
-
   public static void inform(String... messages) {
     msgBoxen.showInfo(messages);
   }
@@ -284,19 +215,6 @@ public class Global implements Module {
     inputString(caption, null, callback);
   }
 
-  public static void inputVars(String caption, List<String> names, DialogCallback callback) {
-    Assert.notNull(names);
-
-    List<Variable> lst = Lists.newArrayList();
-    for (String name : names) {
-      if (vars.containsKey(name)) {
-        lst.add(vars.get(name));
-      }
-    }
-
-    inpBoxen.inputVars(caption, lst, callback);
-  }
-
   public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
     inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
   }
@@ -318,10 +236,6 @@ public class Global implements Module {
 
   public static boolean isDebug() {
     return debug;
-  }
-
-  public static boolean isVar(String name) {
-    return vars.containsKey(name);
   }
 
   public static void messageBox(String caption, Icon icon, List<String> messages,
@@ -347,33 +261,6 @@ public class Global implements Module {
 
   public static void setDebug(boolean debug) {
     Global.debug = debug;
-  }
-
-  public static void setVar(String name, Variable var) {
-    Assert.notEmpty(name);
-    Assert.notNull(var);
-
-    vars.put(name, var);
-  }
-
-  public static void setVarValue(String name, boolean value) {
-    getVar(name).setValue(value);
-  }
-
-  public static void setVarValue(String name, int value) {
-    getVar(name).setValue(value);
-  }
-
-  public static void setVarValue(String name, long value) {
-    getVar(name).setValue(value);
-  }
-
-  public static void setVarValue(String name, String value) {
-    getVar(name).setValue(value);
-  }
-
-  public static void setVarWidth(String name, String width) {
-    getVar(name).setWidth(width);
   }
 
   public static void showError(List<String> messages) {
@@ -418,28 +305,6 @@ public class Global implements Module {
     msgBoxen.showWidget(widget);
   }
 
-  public static void showVars(String... context) {
-    int n = (context == null) ? 0 : context.length;
-    List<String> names = Lists.newArrayList();
-
-    if (n > 0) {
-      Set<String> keys = new LinkedHashSet<String>();
-      for (String z : context) {
-        keys.addAll(BeeUtils.filterContext(vars.keySet(), z));
-      }
-
-      names.addAll(keys);
-    } else {
-      names.addAll(vars.keySet());
-    }
-
-    if (names.isEmpty()) {
-      showError(Lists.newArrayList("no variables found", ArrayUtils.joinWords(context)));
-    } else {
-      inputVars("Variables", names, null);
-    }
-  }
-
   Global() {
   }
 
@@ -465,7 +330,6 @@ public class Global implements Module {
   @Override
   public void init() {
     initCache();
-    initVars();
     initImages();
     initFavorites();
 
@@ -498,69 +362,5 @@ public class Global implements Module {
 
   private void initImages() {
     Images.init(getImages());
-  }
-
-  private void initVars() {
-    createVar(Service.VAR_XML_SOURCE, "source");
-    createVar(Service.VAR_XML_TRANSFORM, "transform");
-    createVar(Service.VAR_XML_TARGET, "target");
-    createVar(Service.VAR_XML_RETURN, "return", BeeType.STRING,
-        "all", BeeWidget.RADIO, "all", "xsl", "source", "xml", "prop");
-
-    setVarWidth(Service.VAR_XML_SOURCE, "300px");
-    setVarWidth(Service.VAR_XML_TRANSFORM, "300px");
-    setVarWidth(Service.VAR_XML_TARGET, "300px");
-
-    createVar(Service.VAR_JDBC_QUERY, "Jdbc Query");
-    setVarWidth(Service.VAR_JDBC_QUERY, "500px");
-
-    createVar(Service.VAR_CONNECTION_AUTO_COMMIT,
-        "Connection auto commit", BeeType.STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(Service.VAR_CONNECTION_READ_ONLY, "Connection read only",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
-        BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(Service.VAR_CONNECTION_HOLDABILITY, "Connection holdability",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
-        BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
-    createVar(Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
-        "Transaction isolation", BeeType.STRING, BeeConst.DEFAULT,
-        BeeWidget.LIST, BeeConst.DEFAULT, BeeConst.TRANSACTION_NONE,
-        BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
-        BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
-
-    createVar(Service.VAR_STATEMENT_CURSOR_NAME, "Cursor name");
-    createVar(Service.VAR_STATEMENT_ESCAPE_PROCESSING,
-        "Escape Processing", BeeType.STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(Service.VAR_STATEMENT_FETCH_DIRECTION, "Statement fetch direction",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
-        BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createVar(Service.VAR_STATEMENT_FETCH_SIZE, "Statement fetch size");
-    createVar(Service.VAR_STATEMENT_MAX_FIELD_SIZE, "Statement max field size");
-    createVar(Service.VAR_STATEMENT_MAX_ROWS, "Statement max rows");
-    createVar(Service.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.STRING,
-        BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
-        BeeConst.STRING_TRUE);
-    createVar(Service.VAR_STATEMENT_QUERY_TIMEOUT, "Query timeout");
-
-    createVar(Service.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.STRING,
-        BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.TYPE_FORWARD_ONLY,
-        BeeConst.TYPE_SCROLL_INSENSITIVE, BeeConst.TYPE_SCROLL_SENSITIVE);
-    createVar(Service.VAR_STATEMENT_RS_CONCURRENCY, "Statement rs concurrency",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
-        BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
-    createVar(Service.VAR_STATEMENT_RS_HOLDABILITY, "Statement rs holdability",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
-        BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
-
-    createVar(Service.VAR_RESULT_SET_FETCH_DIRECTION, "Rs fetch direction",
-        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
-        BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createVar(Service.VAR_RESULT_SET_FETCH_SIZE, "Rs fetch size");
-
-    createVar(Service.VAR_JDBC_RETURN, "Jdbc return", BeeType.STRING,
-        BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO, BeeConst.JDBC_RESULT_SET,
-        BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
   }
 }

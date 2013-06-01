@@ -28,7 +28,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
@@ -278,7 +277,7 @@ public class NewMailMessage extends AbstractFormInterceptor
   @Override
   public void onClick(ClickEvent event) {
     if (validate()) {
-      Popup dialog = DomUtils.getParentPopup(getFormView().asWidget());
+      Popup dialog = UiHelper.getParentPopup(getFormView().asWidget());
       if (dialog != null) {
         dialog.close();
       }

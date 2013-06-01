@@ -3,7 +3,6 @@ package com.butent.bee.server;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -59,7 +58,6 @@ public class BeeServlet extends HttpServlet {
 
     String rid = reqInfo.getId();
     String svc = reqInfo.getService();
-    String dsn = reqInfo.getDsn();
     String sep = reqInfo.getSeparator();
 
     boolean debug = reqInfo.isDebug();
@@ -128,7 +126,7 @@ public class BeeServlet extends HttpServlet {
 
     } else {
       try {
-        response = dispatcher.doService(svc, dsn, reqInfo, buff);
+        response = dispatcher.doService(svc, reqInfo, buff);
       } catch (EJBException e) {
         response = ResponseObject.error(e);
       }
@@ -159,7 +157,6 @@ public class BeeServlet extends HttpServlet {
     } else {
       int respLen = buff.getSize();
       int mc = buff.getMessageCount();
-      int pc = buff.getPartCount();
 
       int cnt = buff.getCount();
       int cc = buff.getColumnCount();
@@ -203,25 +200,13 @@ public class BeeServlet extends HttpServlet {
       if (respLen > 0) {
         s = CommUtils.prepareContent(ctp, buff.getString());
 
-      } else if (pc > 0) {
-        resp.setIntHeader(Service.RPC_VAR_PART_CNT, pc);
-        StringBuilder sb = new StringBuilder();
-        int pn = 0;
-
-        for (Resource br : buff.getParts()) {
-          String part = br.serialize();
-          sb.append(part);
-          resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
-        }
-        s = sb.toString();
-
       } else if (mc > 0) {
         s = "Messages " + BeeUtils.bracket(mc);
       } else {
         s = BeeConst.EMPTY;
       }
       logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, resp.getContentType(),
-          cnt, cc, mc, pc, s.length());
+          cnt, cc, mc, s.length());
     }
 
     try {

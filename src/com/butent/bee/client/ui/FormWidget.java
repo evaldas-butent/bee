@@ -964,8 +964,11 @@ public enum FormWidget {
 
         if (BeeUtils.isDouble(min) && BeeUtils.isDouble(max) && BeeUtils.isDouble(step)
             && BeeUtils.toLong(min) < BeeUtils.toLong(max) && BeeUtils.isPositiveDouble(step)) {
-          widget = new SliderBar(null, BeeUtils.toDouble(min), BeeUtils.toDouble(max),
-              BeeUtils.toDouble(step));
+          
+          double pMin = BeeUtils.toDouble(min);
+          double pMax = BeeUtils.toDouble(max);
+
+          widget = new SliderBar((pMin + pMax) / 2, pMin, pMax, BeeUtils.toDouble(step));
 
           String z = attributes.get(ATTR_NUM_LABELS);
           if (BeeUtils.isDigit(z)) {
@@ -1060,21 +1063,21 @@ public enum FormWidget {
           String minStep = attributes.get(ATTR_MIN_STEP);
           String maxStep = attributes.get(ATTR_MAX_STEP);
 
-          Object pSrc = null;
           long pMin = BeeUtils.toLong(min);
           long pMax = BeeUtils.toLong(max);
+          long value = (pMin + pMax) / 2;
 
           boolean hasStep = BeeUtils.isInt(step) && BeeUtils.toInt(step) > 0;
           boolean hasStepBounds = BeeUtils.isInt(minStep) && BeeUtils.isInt(maxStep)
               && BeeUtils.toInt(minStep) > 0 && BeeUtils.toInt(maxStep) >= BeeUtils.toInt(minStep);
 
           if (hasStepBounds) {
-            widget = new VolumeSlider(pSrc, pMin, pMax,
+            widget = new VolumeSlider(value, pMin, pMax,
                 BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep));
           } else if (hasStep) {
-            widget = new VolumeSlider(pSrc, pMin, pMax, BeeUtils.toInt(step));
+            widget = new VolumeSlider(value, pMin, pMax, BeeUtils.toInt(step));
           } else {
-            widget = new VolumeSlider(pSrc, pMin, pMax);
+            widget = new VolumeSlider(value, pMin, pMax);
           }
         }
         break;

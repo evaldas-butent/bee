@@ -54,7 +54,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   private String id = null;
 
   private String service = null;
-  private String dsn = null;
   private String locale = null;
 
   private String separator = null;
@@ -116,10 +115,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   public String getContentTypeHeader() {
     return contentTypeHeader;
-  }
-
-  public String getDsn() {
-    return dsn;
   }
 
   @Override
@@ -363,10 +358,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.contentTypeHeader = contentTypeHeader;
   }
 
-  public void setDsn(String dsn) {
-    this.dsn = dsn;
-  }
-
   public void setId(String id) {
     this.id = id;
   }
@@ -388,7 +379,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   public String toString() {
     return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
         BeeUtils.joinOptions("counter", BeeUtils.toString(COUNTER), "method", method, "id", id,
-            "service", service, "dsn", dsn, "sep", separator, "opt", options), headers, params);
+            "service", service, "sep", separator, "opt", options), headers, params);
   }
 
   private Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
@@ -676,8 +667,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       id = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_SVC)) {
       service = v;
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_DSN)) {
-      dsn = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_SEP)) {
       separator = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_OPT)) {

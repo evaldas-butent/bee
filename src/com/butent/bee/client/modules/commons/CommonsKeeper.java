@@ -15,12 +15,10 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
@@ -42,8 +40,7 @@ public class CommonsKeeper {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            CompositeService.doService(new PasswordService().name(),
-                PasswordService.STG_GET_PASS, UiHelper.getForm(widget.asWidget()));
+            PasswordService.changePassword(UiHelper.getForm(widget.asWidget()));
           }
         });
       }
