@@ -70,9 +70,13 @@ public class Html extends CustomHasHtml implements HasCommand {
     }
   }
 
+  protected String getDefaultStyleName() {
+    return "bee-Html";
+  }
+  
   @Override
   protected void init() {
     super.init();
-    setStyleName("bee-Html");
+    addStyleName(getDefaultStyleName());
   }
 }

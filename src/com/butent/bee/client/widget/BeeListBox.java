@@ -392,7 +392,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-ListBox");
+    addStyleName("bee-ListBox");
     sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
   }
 

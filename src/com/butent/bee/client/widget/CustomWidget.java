@@ -22,7 +22,7 @@ public class CustomWidget extends Widget implements IdentifiableWidget, HasClick
   public CustomWidget(Element element, String styleName) {
     this(element);
     if (!BeeUtils.isEmpty(styleName)) {
-      setStyleName(styleName);
+      addStyleName(styleName);
     }
   }
 

@@ -157,7 +157,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   @Override
   protected void init() {
     super.init();
-    setStyleName("bee-Image");
+    addStyleName("bee-Image");
   }
 
   private ImageElement getImageElement() {

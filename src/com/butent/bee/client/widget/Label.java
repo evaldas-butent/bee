@@ -34,6 +34,6 @@ public class Label extends CustomHasHtml {
   @Override
   protected void init() {
     super.init();
-    setStyleName("bee-Label");
+    addStyleName("bee-Label");
   }
 }

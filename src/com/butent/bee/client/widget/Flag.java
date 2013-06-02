@@ -14,7 +14,7 @@ public class Flag extends CustomWidget {
   
   public Flag() {
     super(Document.get().createImageElement());
-    setStyleName("bee-Flag");
+    addStyleName("bee-Flag");
   }
 
   public Flag(String country) {

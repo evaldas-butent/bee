@@ -36,7 +36,7 @@ import java.util.Set;
 public class CachedProvider extends Provider {
 
   private static final BeeLogger logger = LogUtils.getLogger(CachedProvider.class);
-  
+
   private BeeRowSet table;
 
   private final Set<Long> filteredRowIds = Sets.newHashSet();
@@ -64,8 +64,8 @@ public class CachedProvider extends Provider {
   public void addRow(BeeRow row) {
     if (row != null) {
       table.addRow(row);
-      if (!viewRows.isEmpty() && getUserFilter() != null
-          && getUserFilter().isMatch(getTable().getColumns(), row)) {
+
+      if (getUserFilter() != null && getUserFilter().isMatch(getTable().getColumns(), row)) {
         filteredRowIds.add(row.getId());
         viewRows.add(row);
       }
@@ -76,17 +76,19 @@ public class CachedProvider extends Provider {
   public void clear() {
     if (getTable().getNumberOfRows() > 0) {
       getTable().clearRows();
-      getFilteredRowIds().clear();
-      getViewRows().clear();
     }
+
+    filteredRowIds.clear();
+    viewRows.clear();
+
     super.clear();
   }
 
   public int getRowCount() {
-    if (getViewRows().isEmpty()) {
+    if (getUserFilter() == null) {
       return table.getNumberOfRows();
     } else {
-      return getViewRows().size();
+      return viewRows.size();
     }
   }
 
@@ -193,7 +195,7 @@ public class CachedProvider extends Provider {
       }
     }
 
-    if (getViewRows().size() > 1) {
+    if (viewRows.size() > 1) {
       updateViewRows();
     }
     goTop();
@@ -216,16 +218,13 @@ public class CachedProvider extends Provider {
         Assert.notNull(rowSet);
         setTable(rowSet);
 
-        getFilteredRowIds().clear();
-        getViewRows().clear();
-        
         applyFilter(getUserFilter());
 
         int newTableSize = rowSet.getNumberOfRows();
 
         int oldRc = getDisplay().getRowCount();
         int newRc = getRowCount();
-        
+
         if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
           getDisplay().setPageSize(newTableSize, oldRc == newRc);
         }
@@ -238,15 +237,31 @@ public class CachedProvider extends Provider {
 
   @Override
   public void tryFilter(Filter newFilter, Consumer<Boolean> callback, boolean notify) {
-    if (applyFilter(newFilter)) {
+    boolean ok = false;
+
+    if (newFilter == null) {
+      ok = true;
+    } else {
+      List<BeeColumn> columns = getTable().getColumns();
+      for (BeeRow row : getTable().getRows()) {
+        if (newFilter.isMatch(columns, row)) {
+          ok = true;
+          break;
+        }
+      }
+    }
+
+    if (ok) {
+      applyFilter(newFilter);
+
       getDisplay().setRowCount(getRowCount(), true);
       acceptFilter(newFilter);
       updateDisplay(true);
-      
+
       if (callback != null) {
         callback.accept(true);
       }
-      
+
     } else {
       rejectFilter(newFilter, notify);
 
@@ -281,29 +296,19 @@ public class CachedProvider extends Provider {
     getDisplay().setRowData(rowValues, true);
   }
 
-  private boolean applyFilter(Filter newFilter) {
-    if (newFilter == null) {
-      getFilteredRowIds().clear();
-      getViewRows().clear();
-      return true;
-    }
+  private void applyFilter(Filter newFilter) {
+    filteredRowIds.clear();
+    viewRows.clear();
 
-    boolean found = false;
-
-    List<BeeColumn> columns = getTable().getColumns();
-    for (BeeRow row : getTable().getRows()) {
-      if (newFilter.isMatch(columns, row)) {
-        if (!found) {
-          getFilteredRowIds().clear();
-          getViewRows().clear();
-          found = true;
+    if (newFilter != null) {
+      List<BeeColumn> columns = getTable().getColumns();
+      for (BeeRow row : getTable().getRows()) {
+        if (newFilter.isMatch(columns, row)) {
+          filteredRowIds.add(row.getId());
+          viewRows.add(row);
         }
-
-        filteredRowIds.add(row.getId());
-        viewRows.add(row);
       }
     }
-    return found;
   }
 
   private void deleteRow(long rowId) {
@@ -326,20 +331,12 @@ public class CachedProvider extends Provider {
     }
   }
 
-  private Set<Long> getFilteredRowIds() {
-    return filteredRowIds;
-  }
-
   private List<BeeRow> getRowList() {
-    if (getViewRows().isEmpty()) {
+    if (getUserFilter() == null) {
       return getTable().getRows().getList();
     } else {
-      return getViewRows();
+      return viewRows;
     }
-  }
-
-  private List<BeeRow> getViewRows() {
-    return viewRows;
   }
 
   private void setTable(BeeRowSet table) {
@@ -347,8 +344,8 @@ public class CachedProvider extends Provider {
   }
 
   private void updateViewRows() {
-    getViewRows().clear();
-    if (getFilteredRowIds().isEmpty()) {
+    viewRows.clear();
+    if (filteredRowIds.isEmpty()) {
       return;
     }
 

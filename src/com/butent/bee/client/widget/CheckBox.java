@@ -219,6 +219,6 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
   
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName(getDefaultStyleName());
+    addStyleName(getDefaultStyleName());
   }
 }

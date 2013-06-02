@@ -85,7 +85,7 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
 
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-Button");
+    addStyleName("bee-Button");
   }
   
   private void initEvents() {
