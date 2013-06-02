@@ -22,9 +22,7 @@
     <DataColumn name="DocumentDate" />
     <DataColumn name="Expires" />
     <DataColumn name="Number" />
-    <DataColumn name="CategoryName" caption="=documentCategory">
-      <filter name="not_categorized" label="=documentFilterNotCategorized" value="=" />
-    </DataColumn>
+    <DataColumn name="CategoryName" caption="=documentCategory" filterOptions="empty" />
     <DataColumn name="TypeName" />
     <DataColumn name="PlaceName" />
     <DataColumn name="StatusName" />
@@ -32,10 +30,16 @@
     <IdColumn name="Id" visible="false" />
     <DataColumn name="RegistrationNumber" visible="false" />
     <DataColumn name="Received" visible="false" />
-    <DataColumn name="Sent" visible="false" />
-    <DataColumn name="Returned" visible="false">
-      <filter name="not_returned" label="=documentFilterNotReturned" value="=" />
-    </DataColumn>
+    <DataColumn name="Sent" visible="false" filterOptions="empty" />
+    <DataColumn name="Returned" visible="false" />
     <DataColumn name="Description" visible="false" />
   </columns>
+  
+  <predefinedFilter name="not_categorized" label="=documentFilterNotCategorized">
+    <column name="CategoryName" emptyValues="true" />
+  </predefinedFilter>
+  <predefinedFilter name="not_returned" label="=documentFilterNotReturned">
+    <column name="Sent" emptyValues="false" />
+    <column name="Returned" emptyValues="true" />
+  </predefinedFilter>
 </Grid>

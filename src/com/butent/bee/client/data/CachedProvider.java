@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -253,9 +254,11 @@ public class CachedProvider extends Provider {
 
     if (ok) {
       applyFilter(newFilter);
-
-      getDisplay().setRowCount(getRowCount(), true);
       acceptFilter(newFilter);
+
+      getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
+      getDisplay().setRowCount(getRowCount(), true);
+
       updateDisplay(true);
 
       if (callback != null) {

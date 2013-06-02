@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -607,32 +608,14 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
-          
+
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;
         }
       }
-      
+
       if (hasFlexibility) {
         dst.setFlexibility(Flexibility.createIfDefined(attributes));
-      }
-    }
-    
-    List<Element> filterDescriptionElements = XmlUtils.getElementsByLocalName(src,
-        FilterDescription.TAG_FILTER);
-    if (!filterDescriptionElements.isEmpty()) {
-      List<FilterDescription> predefinedFilters = Lists.newArrayList();
-
-      for (Element fdElement : filterDescriptionElements) {
-        FilterDescription fd = FilterDescription.create(dst.getName(),
-            XmlUtils.getAttributes(fdElement));
-        if (fd != null) {
-          predefinedFilters.add(fd);
-        }
-      }
-      
-      if (!predefinedFilters.isEmpty()) {
-        dst.setPredefinedFilters(predefinedFilters);
       }
     }
 
@@ -752,7 +735,7 @@ public class GridLoaderBean {
       if (!BeeUtils.isEmpty(flexBasisUnit)) {
         flexAttributes.put(Flexibility.ATTR_BASIS_UNIT, flexBasisUnit);
       }
-      
+
       dst.setFlexibility(Flexibility.createIfDefined(flexAttributes));
     }
 
@@ -816,12 +799,12 @@ public class GridLoaderBean {
       dst.setRenderMode(renderMode.trim());
     }
 
-    Integer rowChangeSensitivityMillis = 
+    Integer rowChangeSensitivityMillis =
         XmlUtils.getAttributeInteger(src, ATTR_ROW_CHANGE_SENSITIVITY_MILLIS);
     if (rowChangeSensitivityMillis != null) {
       dst.setRowChangeSensitivityMillis(rowChangeSensitivityMillis);
     }
-    
+
     String newRowForm = src.getAttribute(UiConstants.ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);
@@ -848,7 +831,7 @@ public class GridLoaderBean {
     if (newRowFormImmediate != null) {
       dst.setNewRowFormImmediate(newRowFormImmediate);
     }
-    
+
     String editForm = src.getAttribute(UiConstants.ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);
@@ -944,6 +927,40 @@ public class GridLoaderBean {
     Calculation rowValidation = XmlUtils.getCalculation(src, TAG_ROW_VALIDATION);
     if (rowValidation != null) {
       dst.setRowValidation(rowValidation);
+    }
+
+    List<Element> filterDescriptionElements = XmlUtils.getElementsByLocalName(src,
+        FilterDescription.TAG_PREDEFINED_FILTER);
+
+    if (!filterDescriptionElements.isEmpty()) {
+      List<FilterDescription> predefinedFilters = Lists.newArrayList();
+
+      for (Element fdElement : filterDescriptionElements) {
+        List<Element> filterComponentElements = XmlUtils.getElementsByLocalName(fdElement,
+            FilterDescription.TAG_COLUMN);
+
+        if (!filterComponentElements.isEmpty()) {
+          List<FilterComponent> filterComponents = Lists.newArrayList();
+
+          for (Element componentlement : filterComponentElements) {
+            FilterComponent component =
+                FilterComponent.create(XmlUtils.getAttributes(componentlement));
+            if (component != null) {
+              filterComponents.add(component);
+            }
+          }
+
+          FilterDescription fd = FilterDescription.create(dst.getName(),
+              XmlUtils.getAttributes(fdElement), filterComponents);
+          if (fd != null) {
+            predefinedFilters.add(fd);
+          }
+        }
+      }
+
+      if (!predefinedFilters.isEmpty()) {
+        dst.setPredefinedFilters(predefinedFilters);
+      }
     }
   }
 }

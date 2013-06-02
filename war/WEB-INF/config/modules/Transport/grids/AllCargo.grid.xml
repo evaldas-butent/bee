@@ -38,7 +38,7 @@
     <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
     <DataColumn name="ForwarderName" caption="Vežėjas" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas" 
-      searchBy="VehicleNumber ForwarderVehicle TrailerNumber">
+      searchBy="ForwarderVehicle VehicleNumber TrailerNumber">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -55,7 +55,7 @@
       </render>
     </CalcColumn>
     <CalcColumn name="Driver" type="string" caption="Vairuotojas"
-      searchBy="DriverLastName ForwarderDriver DriverFirstName">
+      searchBy="ForwarderDriver DriverLastName DriverFirstName">
       <render>
         <ui:function>
           var driver = row.ForwarderDriver;

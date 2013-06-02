@@ -25,7 +25,6 @@
 
   <xs:complexType name="column">
     <xs:sequence>
-      <xs:element name="filter" type="columnFilter" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="style" type="columnStyle" minOccurs="0" />
       <xs:element name="dynStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
       <xs:choice minOccurs="0" maxOccurs="1">
@@ -165,16 +164,6 @@
     <xs:attribute name="flexBasis" type="flexBasis" />
     <xs:attribute name="flexBasisUnit" type="ui:cssUnit" />
   </xs:attributeGroup>
-  
-  <xs:complexType name="columnFilter">
-    <xs:attribute name="name" type="xs:ID" use="required" />
-    <xs:attribute name="label" type="xs:normalizedString" use="required" />
-    <xs:attribute name="value" type="xs:normalizedString" use="required" />
-    <xs:attribute name="ordinal" type="xs:nonNegativeInteger" />
-    <xs:attribute name="initial" type="xs:boolean" />
-    <xs:attribute name="editable" type="xs:boolean" />
-    <xs:attribute name="removable" type="xs:boolean" />
-  </xs:complexType>
   
   <xs:simpleType name="columnName">
     <xs:restriction base="xs:ID">

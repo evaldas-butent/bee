@@ -9,15 +9,10 @@
   >
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" label="=taskColumnMode">
-<!--       <filter name="new" label="=taskFilterNew" value="0" /> -->
-<!--       <filter name="updated" label="=taskFilterUpdated" value="1" /> -->
-<!--       <filter name="new_upd" label="=taskFilterNewOrUpdated" value="2" /> -->
-    </CalcColumn>
+      caption="-" label="=taskColumnMode" />
 
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
       label="=taskColumnStar">
-<!--       <filter name="starred" label="=taskFilterStarred" value="*" /> -->
       <renderer type="star" />
     </PropColumn>
 
@@ -28,15 +23,8 @@
 
     <RelColumn name="Company" editEnabled="true" flexGrow="1" />
 
-    <DataColumn name="Status" itemKey="TaskStatus" visible="true">
-      <filter name="nv_a" label="=taskFilterNotVisitedOrActive" value="0,1" />
-      <filter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted" value="0,1,4" />
-    </DataColumn>
-
-    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan.">
-      <filter name="late" label="=taskFilterLate" value="late" />
-      <filter name="scheduled" label="=taskFilterScheduled" value="scheduled" />
-    </CalcColumn>
+    <DataColumn name="Status" itemKey="TaskStatus" visible="true" />
+    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
@@ -46,4 +34,32 @@
     <DataColumn name="StartTime" flexShrink="0" visible="true" />
     <DataColumn name="FinishTime" flexShrink="0" />
   </columns>
+  
+  <predefinedFilter name="new" label="=taskFilterNew">
+    <column name="Mode" value="0" />
+  </predefinedFilter>
+  <predefinedFilter name="updated" label="=taskFilterUpdated">
+    <column name="Mode" value="1" />
+  </predefinedFilter>
+  <predefinedFilter name="new_upd" label="=taskFilterNewOrUpdated">
+    <column name="Mode" value="2" />
+  </predefinedFilter>
+  
+  <predefinedFilter name="starred" label="=taskFilterStarred">
+    <column name="Star" emptyValues="false" />
+  </predefinedFilter>
+  
+  <predefinedFilter name="nv_a" label="=taskFilterNotVisitedOrActive">
+    <column name="Status" value="0,1" />
+  </predefinedFilter>  
+  <predefinedFilter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted">
+    <column name="Status" value="0,1,4" />
+  </predefinedFilter>
+  
+  <predefinedFilter name="late" label="=taskFilterLate">
+    <column name="Slack" value="late" />
+  </predefinedFilter>  
+  <predefinedFilter name="scheduled" label="=taskFilterScheduled">
+    <column name="Slack" value="scheduled" />
+  </predefinedFilter>  
 </Grid>

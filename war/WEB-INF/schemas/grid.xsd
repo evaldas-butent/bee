@@ -32,6 +32,8 @@
       <xs:element name="rowEditable" type="ui:calcType" minOccurs="0" />
       <xs:element name="rowValidation" type="ui:calcType" minOccurs="0" />
       <xs:element name="editMessage" type="ui:calcType" minOccurs="0" />
+      <xs:element name="predefinedFilter" type="filterDefinition" minOccurs="0"
+        maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="name" type="gridName" use="required" />
     <xs:attribute name="parent" type="xs:normalizedString" />
@@ -128,4 +130,22 @@
       <xs:maxLength value="60" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:complexType name="filterDefinition">
+    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="column">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:normalizedString" use="required" />
+          <xs:attribute name="value" type="xs:normalizedString" />
+          <xs:attribute name="emptyValues" type="xs:boolean" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:ID" use="required" />
+    <xs:attribute name="label" type="xs:normalizedString" use="required" />
+    <xs:attribute name="initial" type="xs:boolean" />
+    <xs:attribute name="editable" type="xs:boolean" />
+    <xs:attribute name="removable" type="xs:boolean" />
+  </xs:complexType>
+  
 </xs:schema>

@@ -182,7 +182,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected void acceptFilter(Filter newFilter) {
     setUserFilter(newFilter);
-    getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
   }
 
   protected HasDataTable getDisplay() {

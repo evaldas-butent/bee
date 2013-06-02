@@ -4,10 +4,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum FilterSupplierType {
   VALUE("value"),
-  VALUE_OR_NULL("valueOrNull"),
   LIST("list"),
   ENUM("enum"),
-  STAR("star"),
   ID("id");
 
   public static FilterSupplierType getByTypeCode(String code) {

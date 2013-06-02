@@ -28,15 +28,19 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class GridFilterManager {
 
@@ -65,36 +69,34 @@ public class GridFilterManager {
   private static final String STYLE_SAVE_MESSAGE = STYLE_SAVE_PREFIX + "message";
 
   private static final String STYLE_FILTER_PANEL = STYLE_PREFIX + "saved-filters";
-  
-  public static Filter parseFilter(CellGrid grid, List<Map<String, String>> filterValues) {
-    if (BeeUtils.isEmpty(filterValues)) {
+
+  public static Filter parseFilter(CellGrid grid, List<FilterComponent> components) {
+    if (BeeUtils.isEmpty(components)) {
       return null;
     }
 
     List<Filter> filters = Lists.newArrayList();
 
-    for (Map<String, String> values : filterValues) {
-      for (Map.Entry<String, String> entry : values.entrySet()) {
-        String columnId = entry.getKey();
+    for (FilterComponent component : components) {
+      String columnId = component.getName();
 
-        ColumnInfo columnInfo = GridUtils.getColumnInfo(grid.getPredefinedColumns(), columnId);
-        if (columnInfo == null) {
-          logger.warning("filter column not found:", columnId);
-          continue;
-        }
+      ColumnInfo columnInfo = GridUtils.getColumnInfo(grid.getPredefinedColumns(), columnId);
+      if (columnInfo == null) {
+        logger.warning("filter column not found:", component);
+        continue;
+      }
 
-        AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
-        if (filterSupplier == null) {
-          logger.warning("filter supplier not found:", columnId);
-          continue;
-        }
+      AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
+      if (filterSupplier == null) {
+        logger.warning("filter supplier not found:", component);
+        continue;
+      }
 
-        Filter columnFilter = filterSupplier.parse(entry.getValue());
-        if (columnFilter == null) {
-          logger.warning(columnId, "cannot parse filter:", entry.getValue());
-        } else if (!filters.contains(columnFilter)) {
-          filters.add(columnFilter);
-        }
+      Filter columnFilter = filterSupplier.parse(component.getFilterValue());
+      if (columnFilter == null) {
+        logger.warning(columnId, "cannot parse filter:", component);
+      } else if (!filters.contains(columnFilter)) {
+        filters.add(columnFilter);
       }
     }
 
@@ -105,12 +107,12 @@ public class GridFilterManager {
   private final CellGrid grid;
   private final FilterConsumer filterConsumer;
 
-  private final Map<String, String> valuesByColumn = Maps.newHashMap();
+  private final Map<String, FilterValue> valuesByColumn = Maps.newHashMap();
 
   private final Flow contentPanel = new Flow(STYLE_CONTENT);
 
   private Filter externalFilter = null;
-  
+
   public GridFilterManager(GridView gridView, FilterConsumer filterConsumer) {
     super();
 
@@ -124,7 +126,7 @@ public class GridFilterManager {
     for (ColumnInfo columnInfo : columns) {
       AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
       if (filterSupplier != null && !filterSupplier.isEmpty()) {
-        filterSupplier.setValue(null);
+        filterSupplier.setFilterValue(null);
       }
     }
   }
@@ -144,27 +146,36 @@ public class GridFilterManager {
     dialog.showRelativeTo(target);
   }
 
-  public void setFilter(List<Map<String, String>> filterValues) {
-    if (BeeUtils.isEmpty(filterValues)) {
+  public void setFilter(List<FilterComponent> components) {
+    if (BeeUtils.isEmpty(components)) {
       clearFilter();
-
     } else {
-      Map<String, String> columnFilters = Maps.newHashMap();
-      for (Map<String, String> values : filterValues) {
-        for (Map.Entry<String, String> entry : values.entrySet()) {
-          String columnId = entry.getKey();
-
-          if (columnFilters.containsKey(columnId)) {
-            logger.warning(columnId, "duplicate column filter:", columnFilters.get(columnId),
-                entry.getValue());
-          } else {
-            columnFilters.put(columnId, entry.getValue());
-          }
-        }
-      }
-
-      updateFilterValues(columnFilters, true);
+      updateFilterValues(asValues(components), true);
     }
+  }
+
+  private Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
+    List<FilterComponent> components = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(values)) {
+      for (Entry<String, FilterValue> entry : values.entrySet()) {
+        components.add(new FilterComponent(entry.getKey(), entry.getValue()));
+      }
+    }
+
+    return components;
+  }
+
+  private Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
+    Map<String, FilterValue> values = Maps.newHashMap();
+
+    if (!BeeUtils.isEmpty(components)) {
+      for (FilterComponent component : components) {
+        values.put(component.getName(), component.getFilterValue());
+      }
+    }
+    
+    return values;
   }
 
   private void buildContentPanel() {
@@ -204,7 +215,8 @@ public class GridFilterManager {
     supplierPanel.addStyleName(STYLE_SUPPLIER_PANEL);
     contentPanel.add(supplierPanel);
 
-    if (!valuesByColumn.isEmpty() && !Global.getFilters().contains(gridKey, valuesByColumn)) {
+    if (!valuesByColumn.isEmpty() &&
+        !Global.getFilters().contains(gridKey, asComponents(valuesByColumn))) {
       Widget saveWidget = createSaveWidget();
       contentPanel.add(saveWidget);
     }
@@ -214,7 +226,7 @@ public class GridFilterManager {
         @Override
         public void accept(FilterDescription t, Action u) {
           if (t != null) {
-            updateFilterValues(t.getValues(), true);
+            updateFilterValues(asValues(t.getComponents()), true);
             onChange(null);
           } else if (Action.DELETE == u) {
             buildContentPanel();
@@ -222,7 +234,8 @@ public class GridFilterManager {
         }
       };
 
-      Widget widget = Global.getFilters().createWidget(gridKey, valuesByColumn, callback);
+      Widget widget = Global.getFilters().createWidget(gridKey, asComponents(valuesByColumn),
+          callback);
       widget.addStyleName(STYLE_FILTER_PANEL);
       contentPanel.add(widget);
     }
@@ -245,13 +258,13 @@ public class GridFilterManager {
             @Override
             public void execute() {
               buildContentPanel();
-              
+
               Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
                   for (Widget widget : contentPanel) {
                     if (StyleUtils.hasClassName(widget.getElement(), STYLE_FILTER_PANEL)) {
-                      NodeList<Element> nodes = 
+                      NodeList<Element> nodes =
                           widget.getElement().getElementsByTagName(DomUtils.TAG_TR);
                       if (nodes != null && nodes.getLength() > 1) {
                         nodes.getItem(nodes.getLength() - 1).scrollIntoView();
@@ -264,7 +277,7 @@ public class GridFilterManager {
             }
           };
 
-          Global.getFilters().addCustomFilter(gridKey, label, valuesByColumn, onSave);
+          Global.getFilters().addCustomFilter(gridKey, label, asComponents(valuesByColumn), onSave);
         }
       }
     };
@@ -320,7 +333,7 @@ public class GridFilterManager {
     clear.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        filterSupplier.setValue(null);
+        filterSupplier.setFilterValue(null);
         onChange(columnInfo);
       }
     });
@@ -365,9 +378,9 @@ public class GridFilterManager {
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
-      if (columnInfo.getFilterSupplier() != null 
+      if (columnInfo.getFilterSupplier() != null
           && valuesByColumn.containsKey(columnInfo.getColumnId())) {
-        String label = columnInfo.getFilterSupplier().getFilterLabel(columnInfo.getLabel());
+        String label = columnInfo.getFilterSupplier().getComponentLabel(columnInfo.getLabel());
         if (!BeeUtils.isEmpty(label)) {
           labels.add(label);
         }
@@ -381,17 +394,17 @@ public class GridFilterManager {
     }
   }
 
-  private Map<String, String> getFilterValues() {
-    Map<String, String> values = Maps.newHashMap();
+  private Map<String, FilterValue> getFilterValues() {
+    Map<String, FilterValue> values = Maps.newHashMap();
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
       AbstractFilterSupplier filterSupplier = columnInfo.getFilterSupplier();
 
       if (filterSupplier != null) {
-        String value = filterSupplier.getValue();
-        if (!BeeUtils.isEmpty(value)) {
-          values.put(columnInfo.getColumnId(), value);
+        FilterValue filterValue = filterSupplier.getFilterValue();
+        if (filterValue != null) {
+          values.put(columnInfo.getColumnId(), filterValue);
         }
       }
     }
@@ -417,24 +430,24 @@ public class GridFilterManager {
           if (columnInfo == null) {
             updateFilterValues(valuesByColumn, false);
           } else {
-            String value = valuesByColumn.get(columnInfo.getColumnId());
-            columnInfo.getFilterSupplier().setValue(value);
+            FilterValue filterValue = valuesByColumn.get(columnInfo.getColumnId());
+            columnInfo.getFilterSupplier().setFilterValue(filterValue);
           }
         }
       }
     }, false);
   }
-
+  
   private void retainValues() {
     valuesByColumn.clear();
 
-    Map<String, String> values = getFilterValues();
+    Map<String, FilterValue> values = getFilterValues();
     if (!values.isEmpty()) {
       valuesByColumn.putAll(values);
     }
   }
 
-  private void updateFilterValues(Map<String, String> values, boolean ensureData) {
+  private void updateFilterValues(Map<String, FilterValue> values, boolean ensureData) {
     if (BeeUtils.isEmpty(values)) {
       clearFilter();
 
@@ -447,13 +460,13 @@ public class GridFilterManager {
           String columnId = columnInfo.getColumnId();
 
           if (values.containsKey(columnId)) {
-            filterSupplier.setValue(values.get(columnId));
+            filterSupplier.setFilterValue(values.get(columnId));
             if (ensureData) {
               filterSupplier.ensureData();
             }
 
           } else if (!filterSupplier.isEmpty()) {
-            filterSupplier.setValue(null);
+            filterSupplier.setFilterValue(null);
           }
         }
       }

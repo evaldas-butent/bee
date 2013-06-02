@@ -43,7 +43,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
-    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
+    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
+    PREDEFINED_FILTERS
   }
 
   public static final String VIEW_GRID_SETTINGS = "GridSettings";
@@ -132,7 +133,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Integer rowChangeSensitivityMillis = null;
 
-  private List<String> widgets = Lists.newArrayList();
+  private final List<String> widgets = Lists.newArrayList();
+
+  private final List<FilterDescription> predefinedFilters = Lists.newArrayList();
 
   public GridDescription(String name) {
     this(name, null);
@@ -161,7 +164,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
     getColumns().add(column);
   }
-  
+
   public GridDescription copy() {
     return restore(serialize());
   }
@@ -385,6 +388,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM_IMMEDIATE:
           setEditFormImmediate(BeeUtils.toBooleanOrNull(value));
           break;
+
+        case PREDEFINED_FILTERS:
+          setPredefinedFilters(FilterDescription.restoreList(value));
+          break;
       }
     }
   }
@@ -573,13 +580,24 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     int cc = getColumnCount();
     PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
 
-    int i = 0;
     for (ColumnDescription column : getColumns()) {
-      i++;
+      int i = 0;
       PropertyUtils.appendChildrenToExtended(info,
-          BeeUtils.joinWords("Column", BeeUtils.progress(i, cc), column.getName()),
+          BeeUtils.joinWords("Column", BeeUtils.progress(++i, cc), column.getName()),
           column.getInfo());
     }
+
+    if (!getPredefinedFilters().isEmpty()) {
+      int cnt = getPredefinedFilters().size();
+      PropertyUtils.addExtended(info, "Predefined Filters", BeeUtils.bracket(cnt));
+
+      int i = 0;
+      for (FilterDescription filterDescription : getPredefinedFilters()) {
+        PropertyUtils.appendChildrenToExtended(info, "Filter " + BeeUtils.progress(++i, cnt),
+            filterDescription.getInfo());
+      }
+    }
+
     return info;
   }
 
@@ -664,15 +682,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public List<FilterDescription> getPredefinedFilters() {
-    List<FilterDescription> filters = Lists.newArrayList();
-
-    for (ColumnDescription columnDescription : getColumns()) {
-      if (!BeeUtils.isEmpty(columnDescription.getPredefinedFilters())) {
-        filters.addAll(columnDescription.getPredefinedFilters());
-      }
-    }
-
-    return filters;
+    return predefinedFilters;
   }
 
   public String getRenderMode() {
@@ -910,6 +920,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM_IMMEDIATE:
           arr[i++] = getEditFormImmediate();
           break;
+        case PREDEFINED_FILTERS:
+          arr[i++] = getPredefinedFilters();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -1066,6 +1079,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.parent = parent;
   }
 
+  public void setPredefinedFilters(List<FilterDescription> predefinedFilters) {
+    BeeUtils.overwrite(this.predefinedFilters, predefinedFilters);
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -1099,7 +1116,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public void setWidgets(List<String> widgets) {
-    this.widgets = widgets;
+    BeeUtils.overwrite(this.widgets, widgets);
   }
 
   private String getHeaderMode() {

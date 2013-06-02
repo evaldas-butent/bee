@@ -6,10 +6,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTimeOfDay;
@@ -17,6 +20,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
@@ -34,66 +38,80 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_DATE = STYLE_PREFIX + "date";
   private static final String STYLE_TIME = STYLE_PREFIX + "time";
-
-  private static final String STYLE_SUFFIX_CELL = "Cell";
+  
+  private static final String STYLE_NOT_NULL = STYLE_PREFIX + "notNull";
+  private static final String STYLE_NULL = STYLE_PREFIX + "null";
 
   private static final int START_ROW = 0;
   private static final int END_ROW = 1;
+  private static final int EMPTINESS_ROW = 2;
 
   private static final int LABEL_COL = 0;
   private static final int DATE_COL = 1;
   private static final int TIME_COL = 2;
 
+  private static final int NOT_NULL_COL = 1;
+  private static final int NULL_COL = 2;
+
   private Range<DateTime> range = null;
+  private Boolean emptiness = null;
 
   public DateTimeFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);
   }
 
   @Override
-  public String getLabel() {
-    if (getRange() == null) {
-      return null;
-    }
+  public FilterValue getFilterValue() {
+    if (getRange() != null) {
+      DateTime start = getStart();
+      DateTime end = getEnd();
+      if (start == null && end == null) {
+        return null;
+      }
 
-    DateTime start = getStart();
-    DateTime end = getEnd();
+      StringBuilder sb = new StringBuilder();
+      if (start != null) {
+        sb.append(start.getTime());
+      }
+      if (end != null) {
+        sb.append(BeeConst.CHAR_COMMA).append(end.getTime());
+      }
 
-    if (start == null && end == null) {
-      return null;
+      return FilterValue.of(sb.toString());
 
-    } else if (start == null) {
-      return "iki " + end.toCompactString();
-
-    } else if (end == null) {
-      return "nuo " + start.toCompactString();
+    } else if (getEmptiness() != null) {
+      return FilterValue.of(null, getEmptiness());
 
     } else {
-      return BeeUtils.join(" - ", start.toCompactString(), end.toCompactString());
+      return null;
     }
   }
 
   @Override
-  public String getValue() {
-    if (getRange() == null) {
+  public String getLabel() {
+    if (getRange() != null) {
+      DateTime start = getStart();
+      DateTime end = getEnd();
+
+      if (start == null && end == null) {
+        return null;
+
+      } else if (start == null) {
+        return "iki " + end.toCompactString();
+
+      } else if (end == null) {
+        return "nuo " + start.toCompactString();
+
+      } else {
+        return BeeUtils.join(" - ", start.toCompactString(), end.toCompactString());
+      }
+
+    } else if (getEmptiness() != null) {
+      return getEmptinessLabel(getEmptiness());
+    
+    } else {
       return null;
     }
-
-    DateTime start = getStart();
-    DateTime end = getEnd();
-    if (start == null && end == null) {
-      return null;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    if (start != null) {
-      sb.append(start.getTime());
-    }
-    if (end != null) {
-      sb.append(BeeConst.CHAR_COMMA).append(end.getTime());
-    }
-
-    return sb.toString();
   }
 
   @Override
@@ -102,27 +120,33 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String value) {
-    Range<DateTime> r = parseRange(value);
-    if (r == null) {
+  public Filter parse(FilterValue input) {
+    if (input == null) {
       return null;
+
+    } else if (input.hasValue()) {
+      Range<DateTime> r = parseRange(input.getValue());
+      if (r == null) {
+        return null;
+      }
+
+      DateTime start = r.hasLowerBound() ? r.lowerEndpoint() : null;
+      DateTime end = r.hasUpperBound() ? r.upperEndpoint() : null;
+
+      return buildFilter(start, end);
+
+    } else {
+      return getEmptinessFilter(getColumnId(), input.getEmptyValues());
     }
-
-    DateTime start = r.hasLowerBound() ? r.lowerEndpoint() : null;
-    DateTime end = r.hasUpperBound() ? r.upperEndpoint() : null;
-
-    return buildFilter(start, end);
   }
 
   @Override
-  public boolean reset() {
-    setRange(null);
-    return super.reset();
-  }
-
-  @Override
-  public void setValue(String value) {
-    setRange(parseRange(value));
+  public void setFilterValue(FilterValue filterValue) {
+    if (filterValue == null) {
+      clearValue();
+    } else {
+      setValue(parseRange(filterValue.getValue()), filterValue.getEmptyValues());
+    }
   }
 
   @Override
@@ -141,8 +165,6 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       getInputTimeOfDay(display, START_ROW).clearValue();
       getInputTimeOfDay(display, END_ROW).clearValue();
     }
-
-    setRange(null);
   }
 
   @Override
@@ -158,15 +180,17 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
 
     Range<DateTime> newRange = buildRange(start, end);
-    boolean changed = !Objects.equal(getRange(), newRange);
-
-    setRange(newRange);
+    boolean changed = !Objects.equal(getRange(), newRange) || getEmptiness() != null;
+    
+    if (changed) {
+      setValue(newRange, null);
+    }
     update(changed);
   }
 
   @Override
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
+    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR, SupplierAction.CANCEL);
   }
 
   @Override
@@ -203,42 +227,40 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
+  private void clearValue() {
+    setValue(null, null);
+  }
+
   private Widget createWidget() {
     HtmlTable display = createDisplay(false);
 
     Html labelFrom = new Html("Nuo");
-    labelFrom.addStyleName(STYLE_LABEL);
-    display.setWidget(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL + STYLE_SUFFIX_CELL);
+    display.setWidgetAndStyle(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL);
 
     InputDate dateFrom = new InputDate();
-    dateFrom.addStyleName(STYLE_DATE);
-    display.setWidget(START_ROW, DATE_COL, dateFrom, STYLE_DATE + STYLE_SUFFIX_CELL);
+    display.setWidgetAndStyle(START_ROW, DATE_COL, dateFrom, STYLE_DATE);
 
     if (isDateTime()) {
       InputTimeOfDay timeFrom = new InputTimeOfDay();
-      timeFrom.addStyleName(STYLE_TIME);
-      display.setWidget(START_ROW, TIME_COL, timeFrom, STYLE_TIME + STYLE_SUFFIX_CELL);
+      display.setWidgetAndStyle(START_ROW, TIME_COL, timeFrom, STYLE_TIME);
     }
 
     Html labelTo = new Html("Iki");
-    labelTo.addStyleName(STYLE_LABEL);
-    display.setWidget(END_ROW, LABEL_COL, labelTo, STYLE_LABEL + STYLE_SUFFIX_CELL);
+    display.setWidgetAndStyle(END_ROW, LABEL_COL, labelTo, STYLE_LABEL);
 
     InputDate dateTo = new InputDate();
-    dateTo.addStyleName(STYLE_DATE);
-    display.setWidget(END_ROW, DATE_COL, dateTo, STYLE_DATE + STYLE_SUFFIX_CELL);
+    display.setWidgetAndStyle(END_ROW, DATE_COL, dateTo, STYLE_DATE);
 
     if (isDateTime()) {
       InputTimeOfDay timeTo = new InputTimeOfDay();
-      timeTo.addStyleName(STYLE_TIME);
-      display.setWidget(END_ROW, TIME_COL, timeTo, STYLE_TIME + STYLE_SUFFIX_CELL);
+      display.setWidgetAndStyle(END_ROW, TIME_COL, timeTo, STYLE_TIME);
     }
 
     if (getRange() != null) {
       DateTime start = getStart();
       if (start != null) {
         getInputDate(display, START_ROW).setDate(start);
-        if (isDateTime()) {
+        if (isDateTime() && TimeUtils.minutesSinceDayStarted(start) > 0) {
           getInputTimeOfDay(display, START_ROW).setTime(start);
         }
       }
@@ -246,10 +268,28 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       DateTime end = getEnd();
       if (end != null) {
         getInputDate(display, END_ROW).setDate(end);
-        if (isDateTime()) {
+        if (isDateTime() && TimeUtils.minutesSinceDayStarted(end) > 0) {
           getInputTimeOfDay(display, END_ROW).setTime(end);
         }
       }
+    }
+    
+    if (hasEmptiness()) {
+      Button notEmpty = new Button(NOT_NULL_VALUE_LABEL, new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          onEmptiness(false);
+        }
+      });
+      display.setWidgetAndStyle(EMPTINESS_ROW, NOT_NULL_COL, notEmpty, STYLE_NOT_NULL);
+
+      Button empty = new Button(NULL_VALUE_LABEL, new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          onEmptiness(true);
+        }
+      });
+      display.setWidgetAndStyle(EMPTINESS_ROW, NULL_COL, empty, STYLE_NULL);
     }
 
     Widget wrapper = wrapDisplay(display, false);
@@ -257,13 +297,17 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     return wrapper;
   }
-
+  
   private Value getComparisonValue(DateTime dt) {
     if (isDateTime()) {
       return new DateTimeValue(dt);
     } else {
       return new DateValue(JustDate.get(dt));
     }
+  }
+
+  private Boolean getEmptiness() {
+    return emptiness;
   }
 
   private DateTime getEnd() {
@@ -357,6 +401,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return (getRange() != null && getRange().hasLowerBound()) ? getRange().lowerEndpoint() : null;
   }
 
+  private void onEmptiness(Boolean value) {
+    boolean changed = getRange() != null || !Objects.equal(getEmptiness(), value);
+    setValue(null, value);
+    update(changed);
+  }
+
   private Range<DateTime> parseRange(String value) {
     if (BeeUtils.isEmpty(value)) {
       return null;
@@ -379,7 +429,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return buildRange(start, end);
   }
 
-  private void setRange(Range<DateTime> range) {
+  private void setValue(Range<DateTime> range, Boolean emptiness) {
     this.range = range;
+    this.emptiness = emptiness;
   }
 }

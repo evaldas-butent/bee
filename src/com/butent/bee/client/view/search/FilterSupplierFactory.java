@@ -39,16 +39,8 @@ public class FilterSupplierFactory {
               renderColumns, orderColumns, relation, options);
           break;
 
-        case STAR:
-          supplier = new StarFilterSupplier(viewName, filterColumn, label, options);
-          break;
-
         case VALUE:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
-          break;
-
-        case VALUE_OR_NULL:
-          supplier = new ValueOrNullFilterSupplier(viewName, filterColumn, label, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, searchColumns, options);
           break;
       }
     }
@@ -80,15 +72,9 @@ public class FilterSupplierFactory {
         case INTEGER:
         case LONG:
         case NUMBER:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
-          break;
-
         case TEXT:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
-          break;
-
         case TIME_OF_DAY:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, options);
+          supplier = new ValueFilterSupplier(viewName, filterColumn, label, searchColumns, options);
           break;
       }
     }

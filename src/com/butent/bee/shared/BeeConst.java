@@ -36,7 +36,7 @@ public class BeeConst {
   public static final String YES = "yes";
 
   public static final String UNKNOWN = "unknown";
-  public static final String EMPTY = "(empty)";
+  public static final String EMPTY = "empty";
   public static final String DEFAULT = "default";
   public static final String ERROR = "error";
   public static final String NULL = "null";

@@ -55,6 +55,7 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
@@ -439,7 +440,7 @@ public class GridFactory {
     grid.setReadOnly(true);
 
     grid.setMinCellWidth(40);
-    grid.setMaxCellWidth(400);
+    grid.setMaxCellWidth(BeeKeeper.getScreen().getWidth() / 2);
 
     grid.estimateHeaderWidths(true);
     grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
@@ -470,7 +471,7 @@ public class GridFactory {
         getPredefinedFilters(gridDescription, gridInterceptor);
     Global.getFilters().ensurePredefinedFilters(supplierKey, predefinedFilters);
 
-    final List<Map<String, String>> initialUserFilterValues =
+    final List<FilterComponent> initialUserFilterValues =
         Global.getFilters().getInitialValues(supplierKey);
 
     final Order order = gridDescription.getOrder();
@@ -589,7 +590,7 @@ public class GridFactory {
       int rowCount, BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> parentFilters,
-      List<Map<String, String>> userFilterValues, Filter userFilter,
+      List<FilterComponent> userFilterValues, Filter userFilter,
       Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     GridPresenter presenter = new GridPresenter(gridDescription, gridView, rowCount, rowSet,

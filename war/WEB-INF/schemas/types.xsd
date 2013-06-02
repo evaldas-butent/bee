@@ -182,10 +182,8 @@
   <xs:simpleType name="filterSupplier">
     <xs:restriction base="xs:string">
       <xs:enumeration value="value" />
-      <xs:enumeration value="valueOrNull" />
       <xs:enumeration value="list" />
       <xs:enumeration value="enum" />
-      <xs:enumeration value="star" />
       <xs:enumeration value="id" />
     </xs:restriction>
   </xs:simpleType>

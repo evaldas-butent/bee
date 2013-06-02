@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.search;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,11 +10,10 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.List;
 
 public class BooleanFilterSupplier extends AbstractFilterSupplier {
   
@@ -26,8 +24,13 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public String getFilterLabel(String ownerLabel) {
-    return BeeUtils.isEmpty(getColumnLabel()) ? super.getFilterLabel(ownerLabel) : getLabel();
+  public String getComponentLabel(String ownerLabel) {
+    return BeeUtils.isEmpty(getColumnLabel()) ? super.getComponentLabel(ownerLabel) : getLabel();
+  }
+
+  @Override
+  public FilterValue getFilterValue() {
+    return (value == null) ? null : FilterValue.of(null, !value);
   }
 
   @Override
@@ -40,18 +43,14 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public String getValue() {
-    return BooleanValue.pack(value);
-  }
-
-  @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
     openDialog(target, createWidget(), onChange);
   }
 
   @Override
-  public Filter parse(String input) {
-    Boolean b = BooleanValue.unpack(input);
+  public Filter parse(FilterValue input) {
+    Boolean b = getBoolean(input);
+
     if (b == null) {
       return null;
     } else {
@@ -60,15 +59,10 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public void setValue(String value) {
-    this.value = BooleanValue.unpack(value);
+  public void setFilterValue(FilterValue filterValue) {
+    value = getBoolean(filterValue);
   }
 
-  @Override
-  protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
-  }
-  
   @Override
   protected String getStylePrefix() {
     return DEFAULT_STYLE_PREFIX + "boolean-";
@@ -135,11 +129,23 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
     return container;
   }
   
+  private Boolean getBoolean(FilterValue filterValue) {
+    if (filterValue == null) {
+      return null;
+    } else if (filterValue.hasValue()) {
+      return BooleanValue.unpack(filterValue.getValue());
+    } else if (filterValue.hasEmptiness()) {
+      return !filterValue.getEmptyValues();
+    } else {
+      return null;
+    }
+  }
+
   private String getLabelForEmpty() {
     return BeeUtils.isEmpty(getColumnLabel()) 
         ? NULL_VALUE_LABEL : Localized.messages.not(getColumnLabel());
   }
-
+  
   private String getLabelForNotEmpty() {
     return BeeUtils.isEmpty(getColumnLabel()) ? NOT_NULL_VALUE_LABEL : getColumnLabel();
   }

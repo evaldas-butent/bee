@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.Relation;
@@ -92,6 +93,28 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public FilterValue getFilterValue() {
+    if (values.isEmpty()) {
+      return null;
+
+    } else {
+      JSONArray arr = new JSONArray();
+
+      for (int i = 0; i < values.size(); i++) {
+        String value = values.get(i);
+
+        if (value == null) {
+          arr.set(i, JSONNull.getInstance());
+        } else {
+          arr.set(i, new JSONString(value));
+        }
+      }
+
+      return FilterValue.of(arr.toString());
+    }
+  }
+
+  @Override
   public String getLabel() {
     if (values.isEmpty()) {
       return null;
@@ -119,28 +142,6 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public String getValue() {
-    if (values.isEmpty()) {
-      return null;
-
-    } else {
-      JSONArray arr = new JSONArray();
-
-      for (int i = 0; i < values.size(); i++) {
-        String value = values.get(i);
-
-        if (value == null) {
-          arr.set(i, JSONNull.getInstance());
-        } else {
-          arr.set(i, new JSONString(value));
-        }
-      }
-
-      return arr.toString();
-    }
-  }
-
-  @Override
   public void onRequest(final Element target, final Scheduler.ScheduledCommand onChange) {
     getHistogram(new Callback<SimpleRowSet>() {
       @Override
@@ -163,19 +164,19 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String value) {
-    if (BeeUtils.isEmpty(value)) {
-      return null;
+  public Filter parse(FilterValue input) {
+    if (input != null && input.hasValue()) {
+      return buildFilter(JsonUtils.toList(JSONParser.parseStrict(input.getValue())));
     } else {
-      return buildFilter(JsonUtils.toList(JSONParser.parseStrict(value)));
+      return null;
     }
   }
 
   @Override
-  public void setValue(String value) {
+  public void setFilterValue(FilterValue filterValue) {
     values.clear();
-    if (!BeeUtils.isEmpty(value)) {
-      values.addAll(JsonUtils.toList(JSONParser.parseStrict(value)));
+    if (filterValue != null && filterValue.hasValue()) {
+      values.addAll(JsonUtils.toList(JSONParser.parseStrict(filterValue.getValue())));
     }
   }
 
@@ -207,7 +208,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
+    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR, SupplierAction.CANCEL);
   }
 
   @Override

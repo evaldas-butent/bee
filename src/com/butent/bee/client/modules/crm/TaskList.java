@@ -17,8 +17,6 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -46,7 +44,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -54,6 +51,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -87,6 +85,7 @@ class TaskList {
 
     private static final String NAME_MODE = "Mode";
     private static final String NAME_SLACK = "Slack";
+    private static final String NAME_STAR = "Star";
 
     private final Type type;
     private final Long userId;
@@ -125,11 +124,11 @@ class TaskList {
             && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {
           ColumnDescription copy = columnDescription.copy();
           copy.setVisible(false);
-          
+
           return copy;
         }
       }
-      
+
       return columnDescription;
     }
 
@@ -172,6 +171,9 @@ class TaskList {
         ColumnDescription columnDescription) {
       if (BeeUtils.same(columnName, NAME_SLACK)) {
         return new SlackFilterSupplier(columnDescription.getFilterOptions());
+
+      } else if (BeeUtils.same(columnName, NAME_STAR)) {
+        return new StarFilterSupplier(columnDescription.getFilterOptions());
 
       } else if (BeeUtils.same(columnName, NAME_MODE)) {
         return new ModeFilterSupplier(columnDescription.getFilterOptions());
@@ -239,11 +241,6 @@ class TaskList {
     private enum Mode {
       NEW {
         @Override
-        Filter getFilter() {
-          return null;
-        }
-
-        @Override
         String getLabel() {
           return Localized.constants.taskFilterNew();
         }
@@ -256,11 +253,6 @@ class TaskList {
 
       UPDATED {
         @Override
-        Filter getFilter() {
-          return null;
-        }
-
-        @Override
         String getLabel() {
           return Localized.constants.taskFilterUpdated();
         }
@@ -270,13 +262,8 @@ class TaskList {
           return "1";
         }
       },
-      
-      NEW_OR_UPDATED {
-        @Override
-        Filter getFilter() {
-          return null;
-        }
 
+      NEW_OR_UPDATED {
         @Override
         String getLabel() {
           return Localized.constants.taskFilterNewOrUpdated();
@@ -287,7 +274,7 @@ class TaskList {
           return "2";
         }
       };
-      
+
       private static Mode parseValue(String value) {
         for (Mode mode : Mode.values()) {
           if (BeeUtils.same(value, mode.getValue())) {
@@ -297,60 +284,25 @@ class TaskList {
         return null;
       }
 
-      abstract Filter getFilter();
-
       abstract String getLabel();
 
       abstract String getValue();
     }
-    
-    private static final Splitter TASK_SPLITTER =
-        Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
     private Mode mode = null;
-
-    private final List<Long> newTasks = Lists.newArrayList();
-    private final List<Long> updTasks = Lists.newArrayList();
 
     private ModeFilterSupplier(String options) {
       super(VIEW_TASKS, null, null, options);
     }
-    
+
     @Override
-    public void ensureData() {
-      ParameterList params = CrmKeeper.createArgs(SVC_GET_CHANGED_TASKS);
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (!response.hasErrors()) {
-            List<Long> tasks = Lists.newArrayList();
-            for (String item : TASK_SPLITTER.split((String) response.getResponse())) {
-              tasks.add(BeeUtils.toLong(item));
-            }
-
-            if (tasks.size() <= 1) {
-              return;
-            }
-
-            newTasks.clear();
-            updTasks.clear();
-
-            int cntNew = BeeUtils.toInt(tasks.get(0));
-            if (cntNew > 0) {
-              newTasks.addAll(tasks.subList(1, cntNew + 1));
-            }
-
-            if (cntNew < tasks.size() - 1) {
-              updTasks.addAll(tasks.subList(cntNew + 1, tasks.size()));
-            }
-          }
-        }
-      });
+    public String getComponentLabel(String ownerLabel) {
+      return getLabel();
     }
 
     @Override
-    public String getFilterLabel(String ownerLabel) {
-      return getLabel();
+    public FilterValue getFilterValue() {
+      return (getMode() == null) ? null : FilterValue.of(getMode().getValue());
     }
 
     @Override
@@ -359,50 +311,14 @@ class TaskList {
     }
 
     @Override
-    public String getValue() {
-      return (getMode() == null) ? null : getMode().getValue();
+    public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
+      openDialog(target, createWidget(), onChange);
     }
 
     @Override
-    public void onRequest(final Element target, final Scheduler.ScheduledCommand onChange) {
-      ParameterList params = CrmKeeper.createArgs(SVC_GET_CHANGED_TASKS);
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (!response.hasErrors()) {
-            List<Long> tasks = Lists.newArrayList();
-            for (String item : TASK_SPLITTER.split((String) response.getResponse())) {
-              tasks.add(BeeUtils.toLong(item));
-            }
-
-            if (tasks.size() <= 1) {
-              BeeKeeper.getScreen().notifyInfo("Naujų arba pasikeitusių užduočių nerasta");
-              return;
-            }
-
-            newTasks.clear();
-            updTasks.clear();
-
-            int cntNew = BeeUtils.toInt(tasks.get(0));
-            if (cntNew > 0) {
-              newTasks.addAll(tasks.subList(1, cntNew + 1));
-            }
-
-            if (cntNew < tasks.size() - 1) {
-              updTasks.addAll(tasks.subList(cntNew + 1, tasks.size()));
-            }
-
-            openDialog(target, createWidget(), onChange);
-          }
-        }
-      });
-    }
-
-    @Override
-    public Filter parse(String value) {
-      
-      if (BeeUtils.isDigit(value)) {
-        switch (BeeUtils.toInt(value)) {
+    public Filter parse(FilterValue input) {
+      if (input != null && BeeUtils.isDigit(input.getValue())) {
+        switch (BeeUtils.toInt(input.getValue())) {
           case 0:
             return getNewFilter();
           case 1:
@@ -416,19 +332,8 @@ class TaskList {
     }
 
     @Override
-    public boolean reset() {
-      setMode(null);
-      return super.reset();
-    }
-
-    @Override
-    public void setValue(String value) {
-      setMode(Mode.parseValue(value));
-    }
-
-    @Override
-    protected List<SupplierAction> getActions() {
-      return Lists.newArrayList();
+    public void setFilterValue(FilterValue filterValue) {
+      setMode((filterValue == null) ? null : Mode.parseValue(filterValue.getValue()));
     }
 
     @Override
@@ -446,77 +351,65 @@ class TaskList {
 
       int row = 0;
 
-      if (!newTasks.isEmpty()) {
-        Button bNew = new Button(Localized.constants.taskFilterNew());
-        bNew.addStyleName(getStylePrefix() + "new");
+      Button bNew = new Button(Localized.constants.taskFilterNew());
+      bNew.addStyleName(getStylePrefix() + "new");
 
-        bNew.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            boolean changed = !Mode.NEW.equals(getMode());
-            setMode(Mode.NEW);
-            update(changed);
-          }
-        });
+      bNew.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean changed = !Mode.NEW.equals(getMode());
+          setMode(Mode.NEW);
+          update(changed);
+        }
+      });
 
-        container.setWidget(row, 0, bNew);
+      container.setWidget(row, 0, bNew);
 
-        Widget modeNew = createMode(TaskList.STYLE_MODE_NEW);
-        container.setWidget(row, 1, modeNew);
+      Widget modeNew = createMode(TaskList.STYLE_MODE_NEW);
+      container.setWidget(row, 1, modeNew);
 
-        container.setText(row, 2, BeeUtils.toString(newTasks.size()));
+      row++;
 
-        row++;
-      }
+      Button bUpd = new Button(Localized.constants.taskFilterUpdated());
+      bUpd.addStyleName(getStylePrefix() + "upd");
 
-      if (!updTasks.isEmpty()) {
-        Button bUpd = new Button(Localized.constants.taskFilterUpdated());
-        bUpd.addStyleName(getStylePrefix() + "upd");
+      bUpd.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean changed = !Mode.UPDATED.equals(getMode());
+          setMode(Mode.UPDATED);
+          update(changed);
+        }
+      });
 
-        bUpd.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            boolean changed = !Mode.UPDATED.equals(getMode());
-            setMode(Mode.UPDATED);
-            update(changed);
-          }
-        });
+      container.setWidget(row, 0, bUpd);
 
-        container.setWidget(row, 0, bUpd);
+      Widget modeUpd = createMode(TaskList.STYLE_MODE_UPD);
+      container.setWidget(row, 1, modeUpd);
 
-        Widget modeUpd = createMode(TaskList.STYLE_MODE_UPD);
-        container.setWidget(row, 1, modeUpd);
+      row++;
 
-        container.setText(row, 2, BeeUtils.toString(updTasks.size()));
+      Button both = new Button(Localized.constants.taskFilterNewOrUpdated());
+      both.addStyleName(getStylePrefix() + "both");
 
-        row++;
-      }
+      both.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean changed = !Mode.NEW_OR_UPDATED.equals(getMode());
+          setMode(Mode.NEW_OR_UPDATED);
+          update(changed);
+        }
+      });
 
-      if (!newTasks.isEmpty() && !updTasks.isEmpty()) {
-        Button both = new Button(Localized.constants.taskFilterNewOrUpdated());
-        both.addStyleName(getStylePrefix() + "both");
+      container.setWidget(row, 0, both);
 
-        both.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            boolean changed = !Mode.NEW_OR_UPDATED.equals(getMode());
-            setMode(Mode.NEW_OR_UPDATED);
-            update(changed);
-          }
-        });
+      Flow modeBoth = new Flow();
+      modeBoth.add(createMode(TaskList.STYLE_MODE_NEW));
+      modeBoth.add(createMode(TaskList.STYLE_MODE_UPD));
 
-        container.setWidget(row, 0, both);
+      container.setWidget(row, 1, modeBoth);
 
-        Flow modeBoth = new Flow();
-        modeBoth.add(createMode(TaskList.STYLE_MODE_NEW));
-        modeBoth.add(createMode(TaskList.STYLE_MODE_UPD));
-
-        container.setWidget(row, 1, modeBoth);
-
-        container.setText(row, 2, BeeUtils.toString(newTasks.size() + updTasks.size()));
-
-        row++;
-      }
+      row++;
 
       Button all = new Button(Localized.constants.taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
@@ -552,11 +445,12 @@ class TaskList {
     }
 
     private Filter getNewFilter() {
-      return Filter.idIn(newTasks);
+      return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
+          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isEmpty(COL_LAST_ACCESS)));
     }
 
     private Filter getUpdFilter() {
-      return Filter.idIn(updTasks);
+      return null;
     }
 
     private void setMode(Mode mode) {
@@ -636,7 +530,7 @@ class TaskList {
           return "scheduled";
         }
       };
-      
+
       private static Slack parseValue(String value) {
         for (Slack slack : Slack.values()) {
           if (BeeUtils.same(value, slack.getValue())) {
@@ -660,45 +554,34 @@ class TaskList {
     }
 
     @Override
-    public String getFilterLabel(String ownerLabel) {
+    public String getComponentLabel(String ownerLabel) {
       return getLabel();
     }
-    
+
+    @Override
+    public FilterValue getFilterValue() {
+      return (getSlack() == null) ? null : FilterValue.of(getSlack().getValue());
+    }
+
     @Override
     public String getLabel() {
       return (getSlack() == null) ? null : getSlack().getLabel();
     }
 
     @Override
-    public String getValue() {
-      return (getSlack() == null) ? null : getSlack().getValue();
-    }
-    
-    @Override
     public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
       openDialog(target, createWidget(), onChange);
     }
 
     @Override
-    public Filter parse(String value) {
-      Slack s = Slack.parseValue(value);
+    public Filter parse(FilterValue input) {
+      Slack s = (input == null) ? null : Slack.parseValue(input.getValue());
       return (s == null) ? null : s.getFilter();
     }
 
     @Override
-    public boolean reset() {
-      setSlack(null);
-      return super.reset();
-    }
-
-    @Override
-    public void setValue(String value) {
-      setSlack(Slack.parseValue(value));
-    }
-
-    @Override
-    protected List<SupplierAction> getActions() {
-      return Lists.newArrayList();
+    public void setFilterValue(FilterValue filterValue) {
+      setSlack((filterValue == null) ? null : Slack.parseValue(filterValue.getValue()));
     }
 
     @Override
@@ -907,6 +790,110 @@ class TaskList {
       if (args.size() >= 3) {
         setMaxWidthDays(Math.max(BeeUtils.toInt(args.get(2)), 1));
       }
+    }
+  }
+
+  private static class StarFilterSupplier extends AbstractFilterSupplier {
+
+    private boolean starred = false;
+
+    private StarFilterSupplier(String options) {
+      super(VIEW_TASKS, null, null, options);
+    }
+
+    @Override
+    public String getComponentLabel(String ownerLabel) {
+      return getLabel();
+    }
+
+    @Override
+    public FilterValue getFilterValue() {
+      return isStarred() ? FilterValue.of(null, false) : null;
+    }
+
+    @Override
+    public String getLabel() {
+      return isStarred() ? Localized.constants.taskFilterStarred() : null;
+    }
+
+    @Override
+    public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
+      openDialog(target, createWidget(), onChange);
+    }
+
+    @Override
+    public Filter parse(FilterValue input) {
+      if (input != null && BeeUtils.isFalse(input.getEmptyValues())) {
+        return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
+            Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.notEmpty(COL_STAR)));
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void setFilterValue(FilterValue filterValue) {
+      setStarred(filterValue != null && BeeUtils.isFalse(filterValue.getEmptyValues()));
+    }
+
+    @Override
+    protected String getStylePrefix() {
+      return "bee-crm-FilterSupplier-Star-";
+    }
+
+    private Widget createWidget() {
+      Flow container = new Flow();
+      container.addStyleName(getStylePrefix() + "container");
+
+      Button star = new Button(Localized.constants.taskFilterStarred());
+      star.addStyleName(getStylePrefix() + "starred");
+
+      star.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean changed = !isStarred();
+          setStarred(true);
+          update(changed);
+        }
+      });
+
+      container.add(star);
+
+      Button all = new Button(Localized.constants.taskFilterAll());
+      all.addStyleName(getStylePrefix() + "all");
+
+      all.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          boolean changed = isStarred();
+          setStarred(false);
+          update(changed);
+        }
+      });
+
+      container.add(all);
+
+      Button cancel = new Button(Localized.constants.cancel());
+      cancel.addStyleName(getStylePrefix() + "cancel");
+
+      cancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          closeDialog();
+        }
+      });
+
+      container.add(cancel);
+
+      return container;
+    }
+
+    private boolean isStarred() {
+      return starred;
+    }
+
+    private void setStarred(boolean starred) {
+      this.starred = starred;
     }
   }
 

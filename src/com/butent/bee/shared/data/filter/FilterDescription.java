@@ -14,20 +14,24 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class FilterDescription implements BeeSerializable, HasInfo, Comparable<FilterDescription> {
+public class FilterDescription implements BeeSerializable, HasInfo {
 
-  public static final String TAG_FILTER = "filter";
+  public static final String TAG_PREDEFINED_FILTER = "predefinedFilter";
+
+  public static final String TAG_COLUMN = "column";
 
   private static final String ATTR_INITIAL = "initial";
-  private static final String ATTR_ORDINAL = "ordinal";
   private static final String ATTR_EDITABLE = "editable";
   private static final String ATTR_REMOVABLE = "removable";
 
-  public static FilterDescription create(String key, Map<String, String> attributes) {
-    if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(attributes)) {
+  public static FilterDescription create(String key, Map<String, String> attributes,
+      Collection<FilterComponent> components) {
+
+    if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(attributes) || BeeUtils.isEmpty(components)) {
       return null;
     }
 
@@ -41,21 +45,10 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
       return null;
     }
 
-    String value = attributes.get(UiConstants.ATTR_VALUE);
-    if (BeeUtils.isEmpty(value)) {
-      return null;
-    }
-
-    FilterDescription filterDescription = new FilterDescription();
-    filterDescription.setName(name);
-    filterDescription.setLabel(label);
-    filterDescription.setValue(createValue(key, value));
+    FilterDescription filterDescription = new FilterDescription(name, label, components);
 
     if (attributes.containsKey(ATTR_INITIAL)) {
       filterDescription.setInitial(BeeUtils.toBooleanOrNull(attributes.get(ATTR_INITIAL)));
-    }
-    if (attributes.containsKey(ATTR_ORDINAL)) {
-      filterDescription.setOrdinal(BeeUtils.toIntOrNull(attributes.get(ATTR_ORDINAL)));
     }
 
     if (attributes.containsKey(ATTR_EDITABLE)) {
@@ -72,30 +65,15 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     Assert.notEmpty(values);
     return Codec.beeSerialize(values);
   }
-  
+
   public static String createValue(String key, String value) {
     Assert.notEmpty(key);
     Assert.notEmpty(value);
-    
+
     Map<String, String> values = Maps.newHashMap();
     values.put(key, value);
-    
+
     return createValue(values);
-  }
-  
-  public static FilterDescription predefined(String name, String label, String key, String value) {
-    Assert.notEmpty(name);
-    Assert.notEmpty(label);
-
-    FilterDescription filterDescription = new FilterDescription();
-    filterDescription.setName(name);
-    filterDescription.setLabel(label);
-    filterDescription.setValue(createValue(key, value));
-
-    filterDescription.setEditable(false);
-    filterDescription.setRemovable(false);
-
-    return filterDescription;
   }
 
   public static FilterDescription restore(String s) {
@@ -105,6 +83,24 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     filterDescription.deserialize(s);
 
     return filterDescription;
+  }
+
+  public static List<FilterComponent> restoreComponents(String serialized) {
+    Assert.notEmpty(serialized);
+    List<FilterComponent> result = Lists.newArrayList();
+
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+    if (ArrayUtils.isEmpty(arr)) {
+      return result;
+    }
+
+    for (String s : arr) {
+      if (!BeeUtils.isEmpty(s)) {
+        result.add(FilterComponent.restore(s));
+      }
+    }
+
+    return result;
   }
 
   public static List<FilterDescription> restoreList(String serialized) {
@@ -125,15 +121,16 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     return result;
   }
 
-  public static FilterDescription userDefined(String label, Map<String, String> values) {
+  public static FilterDescription userDefined(String label,
+      Collection<FilterComponent> components) {
+    
     Assert.notEmpty(label);
+    Assert.notEmpty(components);
 
-    FilterDescription filterDescription = new FilterDescription();
     String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
         System.currentTimeMillis());
-    filterDescription.setName(name);
-    filterDescription.setLabel(label);
-    filterDescription.setValue(createValue(values));
+
+    FilterDescription filterDescription = new FilterDescription(name, label, components);
 
     filterDescription.setEditable(true);
     filterDescription.setRemovable(true);
@@ -142,23 +139,27 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
   }
 
   private String name = null;
+
   private String label = null;
-  private String value = null;
+  private final List<FilterComponent> components = Lists.newArrayList();
 
   private Boolean initial = null;
-  private Integer ordinal = null;
 
   private Boolean editable = null;
+
   private Boolean removable = null;
 
-  public FilterDescription(String name, String label, String value, Boolean initial,
-      Integer ordinal, Boolean editable, Boolean removable) {
-    super();
+  public FilterDescription(String name, String label, Collection<FilterComponent> components,
+      Boolean initial, Boolean editable, Boolean removable) {
+
     this.name = name;
     this.label = label;
-    this.value = value;
+
+    if (components != null) {
+      this.components.addAll(components);
+    }
+
     this.initial = initial;
-    this.ordinal = ordinal;
     this.editable = editable;
     this.removable = removable;
   }
@@ -167,30 +168,32 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     super();
   }
 
-  @Override
-  public int compareTo(FilterDescription o) {
-    if (getOrdinal() == null) {
-      if (o.getOrdinal() == null) {
-        return BeeConst.COMPARE_EQUAL;
-      } else {
-        return BeeConst.COMPARE_MORE;
+  private FilterDescription(String name, String label, Collection<FilterComponent> components) {
+    this(name, label, components, null, null, null);
+  }
+
+  public boolean containsAnyComponent(Collection<String> names) {
+    if (!BeeUtils.isEmpty(names)) {
+      for (FilterComponent component : getComponents()) {
+        if (names.contains(component.getName())) {
+          return true;
+        }
       }
-    } else if (o.getOrdinal() == null) {
-      return BeeConst.COMPARE_LESS;
-    } else {
-      return getOrdinal().compareTo(o.getOrdinal());
     }
+    return false;
   }
 
   public FilterDescription copy() {
     FilterDescription result = new FilterDescription();
-    
+
     result.setName(getName());
     result.setLabel(getLabel());
-    result.setValue(getValue());
+
+    for (FilterComponent component : getComponents()) {
+      result.getComponents().add(component.copy());
+    }
 
     result.setInitial(getInitial());
-    result.setOrdinal(getOrdinal());
 
     result.setEditable(getEditable());
     result.setRemovable(getRemovable());
@@ -201,18 +204,22 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 7);
+    Assert.lengthEquals(arr, 6);
 
     int i = 0;
     setName(arr[i++]);
     setLabel(arr[i++]);
-    setValue(arr[i++]);
+
+    setComponents(restoreComponents(arr[i++]));
 
     setInitial(BeeUtils.toBooleanOrNull(arr[i++]));
-    setOrdinal(BeeUtils.toIntOrNull(arr[i++]));
 
     setEditable(BeeUtils.toBooleanOrNull(arr[i++]));
     setRemovable(BeeUtils.toBooleanOrNull(arr[i++]));
+  }
+
+  public List<FilterComponent> getComponents() {
+    return components;
   }
 
   public Boolean getEditable() {
@@ -221,13 +228,18 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
 
   @Override
   public List<Property> getInfo() {
-    return PropertyUtils.createProperties("Name", getName(),
+    List<Property> info = PropertyUtils.createProperties("Name", getName(),
         "Label", getLabel(),
-        "Value", getValue(),
         "Initial", getInitial(),
-        "Ordinal", getOrdinal(),
         "Editable", getEditable(),
         "Removable", getRemovable());
+
+    info.add(new Property("Components", BeeUtils.bracket(getComponents().size())));
+    for (FilterComponent component : getComponents()) {
+      PropertyUtils.appendChildrenToProperties(info, "Component", component.getInfo());
+    }
+
+    return info;
   }
 
   public Boolean getInitial() {
@@ -242,31 +254,10 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     return name;
   }
 
-  public Integer getOrdinal() {
-    return ordinal;
-  }
-
   public Boolean getRemovable() {
     return removable;
   }
 
-  public String getValue() {
-    return value;
-  }
-
-  public Map<String, String> getValues() {
-    Map<String, String> values = Maps.newHashMap();
-    
-    String[] arr = Codec.beeDeserializeCollection(getValue());
-    Assert.notNull(arr);
-    
-    for (int i = 0; i < arr.length - 1; i += 2) {
-      values.put(arr[i], arr[i + 1]);
-    }
-    
-    return values;
-  }
-  
   public boolean isEditable() {
     return BeeUtils.isTrue(getEditable());
   }
@@ -279,10 +270,22 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     return BeeUtils.isTrue(getRemovable());
   }
 
+  public boolean sameComponents(Collection<FilterComponent> otherComponents) {
+    return BeeUtils.sameElements(getComponents(), otherComponents);
+  }
+
   @Override
   public String serialize() {
-    return Codec.beeSerialize(new Object[] {getName(), getLabel(), getValue(),
-        getInitial(), getOrdinal(), getEditable(), getRemovable()});
+    return Codec.beeSerialize(new Object[] {getName(), getLabel(), getComponents(),
+        getInitial(), getEditable(), getRemovable()});
+  }
+
+  public String serializeComponents() {
+    return Codec.beeSerialize(getComponents());
+  }
+
+  public void setComponents(List<FilterComponent> components) {
+    BeeUtils.overwrite(this.components, components);
   }
 
   public void setEditable(Boolean editable) {
@@ -297,19 +300,11 @@ public class FilterDescription implements BeeSerializable, HasInfo, Comparable<F
     this.label = label;
   }
 
-  public void setOrdinal(Integer ordinal) {
-    this.ordinal = ordinal;
-  }
-
   public void setRemovable(Boolean removable) {
     this.removable = removable;
   }
 
   private void setName(String name) {
     this.name = name;
-  }
-
-  private void setValue(String value) {
-    this.value = value;
   }
 }

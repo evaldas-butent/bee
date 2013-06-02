@@ -3,6 +3,7 @@ package com.butent.bee.client.view.search;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -40,18 +42,16 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class Filters {
-  
+
   private static class Initial extends CustomDiv {
-    
+
     private static String STYLE_CHECKED = "checked";
     private static String STYLE_UNCHECKED = "unchecked";
-    
+
     private final long id;
     private boolean value;
 
@@ -59,36 +59,33 @@ public class Filters {
       super(styleName);
       this.id = id;
       this.value = value;
-      
+
       addStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
     }
-    
+
     private void toggle() {
       removeStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
-      
+
       value = !value;
-      
+
       addStyleDependentName(value ? STYLE_CHECKED : STYLE_UNCHECKED);
     }
   }
 
-  private static class Item implements Comparable<Item> {
+  private static class Item {
 
     private long id;
 
     private final FilterDescription filterDescription;
 
+    private final int ordinal;
     private final boolean predefined;
 
-    private Item(long id, FilterDescription filterDescription, boolean predefined) {
+    private Item(long id, FilterDescription filterDescription, int ordinal, boolean predefined) {
       this.id = id;
       this.filterDescription = filterDescription;
+      this.ordinal = ordinal;
       this.predefined = predefined;
-    }
-
-    @Override
-    public int compareTo(Item o) {
-      return filterDescription.compareTo(o.filterDescription);
     }
 
     @Override
@@ -99,6 +96,14 @@ public class Filters {
     @Override
     public int hashCode() {
       return Longs.hashCode(getId());
+    }
+    
+    private boolean containsAnyComponent(Collection<String> names) {
+      return filterDescription.containsAnyComponent(names);
+    }
+
+    private List<FilterComponent> getComponents() {
+      return filterDescription.getComponents();
     }
 
     private long getId() {
@@ -113,12 +118,8 @@ public class Filters {
       return filterDescription.getName();
     }
 
-    private Integer getOrdinal() {
-      return filterDescription.getOrdinal();
-    }
-
-    private Map<String, String> getValues() {
-      return filterDescription.getValues();
+    private int getOrdinal() {
+      return ordinal;
     }
 
     private boolean isEditable() {
@@ -135,6 +136,10 @@ public class Filters {
 
     private boolean isRemovable() {
       return filterDescription.isRemovable();
+    }
+
+    private boolean sameComponents(Collection<FilterComponent> otherComponents) {
+      return filterDescription.sameComponents(otherComponents);
     }
 
     private void setId(long id) {
@@ -196,27 +201,24 @@ public class Filters {
     super();
   }
 
-  public void addCustomFilter(final String key, String label, Map<String, String> values,
-      final Scheduler.ScheduledCommand callback) {
+  public void addCustomFilter(final String key, String label,
+      Collection<FilterComponent> components, final Scheduler.ScheduledCommand callback) {
 
     Assert.notEmpty(key);
     Assert.notEmpty(label);
-    Assert.notEmpty(values);
+    Assert.notEmpty(components);
 
     FilterDescription filterDescription =
-        FilterDescription.userDefined(normalizeLabel(label), values);
+        FilterDescription.userDefined(normalizeLabel(label), components);
 
     int ordinal = -1;
     if (itemsByKey.containsKey(key)) {
       for (Item item : itemsByKey.get(key)) {
-        if (item.getOrdinal() != null) {
-          ordinal = Math.max(ordinal, item.getOrdinal());
-        }
+        ordinal = Math.max(ordinal, item.getOrdinal());
       }
     }
-    filterDescription.setOrdinal(ordinal + 1);
 
-    insert(key, filterDescription, false, new RowCallback() {
+    insert(key, filterDescription, ordinal + 1, false, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         itemsByKey.put(key, createItem(result));
@@ -227,14 +229,14 @@ public class Filters {
     });
   }
 
-  public boolean contains(String key, Map<String, String> values) {
-    if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(values)) {
+  public boolean contains(String key, Collection<FilterComponent> components) {
+    if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(components)) {
       return false;
     }
 
     if (itemsByKey.containsKey(key)) {
       for (Item item : itemsByKey.get(key)) {
-        if (item.getValues().equals(values)) {
+        if (item.sameComponents(components)) {
           return true;
         }
       }
@@ -245,8 +247,8 @@ public class Filters {
   public boolean containsKey(String key) {
     return itemsByKey.containsKey(key);
   }
-  
-  public Widget createWidget(final String key, Map<String, String> activeValues,
+
+  public Widget createWidget(final String key, Collection<FilterComponent> activeComponents,
       final BiConsumer<FilterDescription, Action> callback) {
 
     Assert.notEmpty(key);
@@ -277,12 +279,12 @@ public class Filters {
         public void onClick(ClickEvent event) {
           initial.toggle();
           Boolean value = BeeUtils.isTrue(initial.value) ? true : null;
-          
+
           Item updatedItem = getItem(items, id);
           updatedItem.setInitial(value);
-          
+
           Queries.update(CommonsConstants.TBL_FILTERS, id, COL_INITIAL, new BooleanValue(value));
-          
+
           if (BeeUtils.isTrue(value) && items.size() > 1) {
             synchronizeInitialFilters(items, updatedItem, table);
           }
@@ -380,7 +382,7 @@ public class Filters {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_PREDEFINED);
       }
 
-      if (!BeeUtils.isEmpty(activeValues) && activeValues.equals(item.getValues())) {
+      if (!BeeUtils.isEmpty(activeComponents) && item.sameComponents(activeComponents)) {
         table.getRowFormatter().addStyleName(r, STYLE_ROW_ACTIVE);
       }
 
@@ -393,17 +395,13 @@ public class Filters {
   public void ensurePredefinedFilters(final String key, List<FilterDescription> filters) {
     if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(filters) && !itemsByKey.containsKey(key)) {
       List<FilterDescription> predefinedFilters = Lists.newArrayList(filters);
-      if (predefinedFilters.size() > 1) {
-        Collections.sort(predefinedFilters);
-      }
 
       for (int i = 0; i < predefinedFilters.size(); i++) {
         FilterDescription filterDescription = predefinedFilters.get(i).copy();
-        filterDescription.setOrdinal(i);
 
-        itemsByKey.put(key, new Item(DataUtils.NEW_ROW_ID, filterDescription, true));
+        itemsByKey.put(key, new Item(DataUtils.NEW_ROW_ID, filterDescription, i, true));
 
-        insert(key, filterDescription, true, new RowCallback() {
+        insert(key, filterDescription, i, true, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             String name = BeeUtils.trim(result.getString(nameColumnIndex));
@@ -418,13 +416,13 @@ public class Filters {
     }
   }
 
-  public List<Map<String, String>> getInitialValues(String key) {
-    List<Map<String, String>> initialValues = Lists.newArrayList();
+  public List<FilterComponent> getInitialValues(String key) {
+    List<FilterComponent> initialValues = Lists.newArrayList();
 
     if (itemsByKey.containsKey(key)) {
       for (Item item : itemsByKey.get(key)) {
         if (item.isInitial()) {
-          initialValues.add(item.getValues());
+          initialValues.addAll(item.getComponents());
         }
       }
     }
@@ -481,8 +479,9 @@ public class Filters {
     String value = BeeUtils.trim(row.getString(valueColumnIndex));
 
     return new Item(row.getId(),
-        new FilterDescription(name, label, value, initial, ordinal, editable, removable),
-        predefined);
+        new FilterDescription(name, label, FilterDescription.restoreComponents(value), initial,
+            editable, removable),
+        BeeUtils.unbox(ordinal), predefined);
   }
 
   private Item getItem(Collection<Item> items, long id) {
@@ -511,24 +510,21 @@ public class Filters {
     return maxLabelLength;
   }
 
-  private void insert(String key, FilterDescription filterDescription, boolean predefined,
-      RowCallback callback) {
+  private void insert(String key, FilterDescription filterDescription, int ordinal,
+      boolean predefined, RowCallback callback) {
 
     List<BeeColumn> columns =
         Data.getColumns(CommonsConstants.TBL_FILTERS,
             Lists.newArrayList(CommonsConstants.COL_FILTER_USER, CommonsConstants.COL_FILTER_KEY,
-                COL_NAME, COL_LABEL, COL_VALUE));
+                COL_NAME, COL_LABEL, COL_VALUE, CommonsConstants.COL_FILTER_ORDINAL));
+
     List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
-        filterDescription.getName(), filterDescription.getLabel(), filterDescription.getValue());
+        filterDescription.getName(), filterDescription.getLabel(),
+        filterDescription.serializeComponents(), ordinal);
 
     if (filterDescription.isInitial()) {
       columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_INITIAL));
       values.add(BooleanValue.pack(filterDescription.isInitial()));
-    }
-    if (filterDescription.getOrdinal() != null) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS,
-          CommonsConstants.COL_FILTER_ORDINAL));
-      values.add(filterDescription.getOrdinal().toString());
     }
 
     if (filterDescription.isEditable()) {
@@ -553,15 +549,16 @@ public class Filters {
   }
 
   private void synchronizeInitialFilters(List<Item> items, Item checkedItem, HtmlTable table) {
-    Set<String> checkedKeys = checkedItem.getValues().keySet();
-    
+    Set<String> checkedKeys = Sets.newHashSet();
+    for (FilterComponent component : checkedItem.getComponents()) {
+      checkedKeys.add(component.getName());
+    }
+
     for (Item item : items) {
-      if (item.id != checkedItem.id && item.isInitial() 
-          && BeeUtils.containsAny(item.getValues().keySet(), checkedKeys)) {
-        
+      if (item.id != checkedItem.id && item.isInitial() && item.containsAnyComponent(checkedKeys)) {
         item.setInitial(null);
         Queries.update(CommonsConstants.TBL_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
-        
+
         for (Widget widget : table) {
           if (widget instanceof Initial && ((Initial) widget).id == item.id) {
             ((Initial) widget).toggle();

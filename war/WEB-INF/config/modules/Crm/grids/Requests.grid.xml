@@ -9,9 +9,8 @@
   <columns>
     <IdColumn name="ID" />
     <DataColumn name="Date" caption="Data" width="100" />
-    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT">
-      <filter name="Executing" label="Vykdomi" value="!(Finished)" />
-    </DataColumn>
+    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" 
+      filterOptions="empty" />
     <RelColumn name="Customer" caption="Klientas" minWidth="100" />
 
     <DataColumn name="Content" caption="Užklausimas" minWidth="100">
@@ -24,4 +23,8 @@
 
     <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
   </columns>
+  
+  <predefinedFilter name="Executing" label="Vykdomi">
+    <column name="Finished" emptyValues="true" />
+  </predefinedFilter>
 </Grid>

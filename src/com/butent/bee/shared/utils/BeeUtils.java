@@ -1542,7 +1542,7 @@ public class BeeUtils {
       target.clear();
     }
 
-    if (source != null) {
+    if (!isEmpty(source)) {
       target.addAll(source);
     }
   }

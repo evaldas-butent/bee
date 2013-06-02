@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -59,6 +60,11 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
+  public FilterValue getFilterValue() {
+    return values.isEmpty() ? null : FilterValue.of(BeeUtils.joinInts(values));
+  }
+
+  @Override
   public String getLabel() {
     if (values.isEmpty()) {
       return null;
@@ -69,11 +75,6 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       labels.add(getCaption(index));
     }
     return BeeUtils.join(BeeConst.STRING_COMMA, labels);
-  }
-
-  @Override
-  public String getValue() {
-    return BeeUtils.joinInts(values);
   }
 
   @Override
@@ -124,23 +125,20 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public Filter parse(String value) {
-    if (BeeUtils.isEmpty(value)) {
-      return null;
+  public Filter parse(FilterValue input) {
+    if (input != null && input.hasValue()) {
+      return buildFilter(BeeUtils.toInts(input.getValue()));
     } else {
-      return buildFilter(BeeUtils.toInts(value));
+      return null;
     }
   }
 
   @Override
-  public boolean reset() {
-    data.clear();
-    return super.reset();
-  }
-
-  @Override
-  public void setValue(String value) {
-    BeeUtils.overwrite(values, BeeUtils.toInts(value));
+  public void setFilterValue(FilterValue filterValue) {
+    values.clear();
+    if (filterValue != null && filterValue.hasValue()) {
+      values.addAll(BeeUtils.toInts(filterValue.getValue()));
+    }
   }
 
   @Override
@@ -164,7 +162,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR);
+    return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR, SupplierAction.CANCEL);
   }
 
   private Filter buildFilter(Collection<Integer> ordinals) {

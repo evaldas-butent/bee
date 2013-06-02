@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.search;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -14,9 +13,8 @@ import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.List;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
   
@@ -41,50 +39,48 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  public String getLabel() {
-    return editor.getValue();
+  public FilterValue getFilterValue() {
+    String value = getEditorValue();
+    return value.isEmpty() ?  null : FilterValue.of(value);
   }
   
   @Override
-  public String getValue() {
-    return Strings.emptyToNull(BeeUtils.trim(editor.getValue()));
+  public String getLabel() {
+    return getEditorValue();
   }
 
   @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
-    setOldValue(BeeUtils.toLongOrNull(getValue()));
+    setOldValue(BeeUtils.toLongOrNull(getEditorValue()));
     
     openDialog(target, editor.asWidget(), onChange);
     editor.setFocus(true);
   }
-
-  @Override
-  public Filter parse(String value) {
-    return BeeUtils.isLong(value) ? ComparisonFilter.compareId(BeeUtils.toLong(value)) : null;
-  }
   
   @Override
-  public boolean reset() {
-    editor.clearValue();
-    return super.reset();
+  public Filter parse(FilterValue input) {
+    if (input != null && BeeUtils.isLong(input.getValue())) {
+      return ComparisonFilter.compareId(BeeUtils.toLong(input.getValue()));
+    } else {
+      return null;
+    }
   }
 
   @Override
-  public void setValue(String value) {
-    editor.setValue(value);
-  }
-
-  @Override
-  protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+  public void setFilterValue(FilterValue filterValue) {
+    editor.setValue((filterValue == null) ? null : filterValue.getValue());
   }
   
+  private String getEditorValue() {
+    return BeeUtils.trim(editor.getValue());
+  }
+
   private Long getOldValue() {
     return oldValue;
   }
 
   private void onSave() {
-    String value = BeeUtils.trim(editor.getValue());
+    String value = getEditorValue();
 
     if (BeeUtils.isEmpty(value)) {
       update(getOldValue() != null);
@@ -98,7 +94,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
       }
     }
   }
-
+  
   private void setOldValue(Long oldValue) {
     this.oldValue = oldValue;
   }

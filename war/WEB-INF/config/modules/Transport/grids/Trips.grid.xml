@@ -11,7 +11,7 @@
     <DataColumn name="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
     <DataColumn name="Status" caption="Būsena" itemKey="TripStatus" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas" flexGrow="1" flexShrink="1"
-      searchBy="VehicleNumber">
+      searchBy="VehicleNumber TrailerNumber">
       <render>
         <ui:function>
           var vehicle = row.VehicleNumber;

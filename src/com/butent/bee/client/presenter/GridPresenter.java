@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -172,7 +173,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> parentFilters,
-      List<Map<String, String>> userFilterValues, Filter userFilter,
+      List<FilterComponent> userFilterValues, Filter userFilter,
       Order order, GridFactory.GridOptions gridOptions) {
 
     if (gridInterceptor != null) {
