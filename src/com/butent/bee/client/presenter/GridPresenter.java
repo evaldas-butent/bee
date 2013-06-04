@@ -572,36 +572,23 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     switch (providerType) {
       case ASYNC:
         provider = new AsyncProvider(display, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, cachingPolicy);
+            idColumnName, versionColumnName, immutableFilter, cachingPolicy, parentFilters,
+            userFilter);
         break;
 
       case CACHED:
         provider = new CachedProvider(display, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, rowSet);
+            idColumnName, versionColumnName, immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       case LOCAL:
         provider = new LocalProvider(display, notificationListener, viewName, columns,
-            immutableFilter, rowSet);
+            immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       default:
         Assert.untouchable();
         provider = null;
-    }
-
-    if (parentFilters != null) {
-      for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
-        String key = entry.getKey();
-        Filter value = entry.getValue();
-        if (!BeeUtils.isEmpty(key) && value != null) {
-          provider.setParentFilter(key, value);
-        }
-      }
-    }
-
-    if (userFilter != null) {
-      provider.setUserFilter(userFilter);
     }
 
     if (order != null) {

@@ -2,7 +2,9 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -23,10 +25,10 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,27 +41,32 @@ public class CachedProvider extends Provider {
   private static final BeeLogger logger = LogUtils.getLogger(CachedProvider.class);
 
   private BeeRowSet table;
+  private boolean complete;
 
   private final Set<Long> filteredRowIds = Sets.newHashSet();
   private final List<BeeRow> viewRows = Lists.newArrayList();
 
   public CachedProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
-    this(display, notificationListener, viewName, columns, null, null, null, table);
+    this(display, notificationListener, viewName, columns, null, null, null, table, null, null);
   }
 
   public CachedProvider(HasDataTable display, NotificationListener notificationListener,
-      String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table) {
-    this(display, notificationListener, viewName, columns, null, null, immutableFilter, table);
+      String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
+      Map<String, Filter> parentFilters, Filter userFilter) {
+    this(display, notificationListener, viewName, columns, null, null, immutableFilter, table,
+        parentFilters, userFilter);
   }
 
   public CachedProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter, BeeRowSet table) {
+      Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters, Filter userFilter) {
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
-        immutableFilter);
+        immutableFilter, parentFilters, userFilter);
+
     Assert.notNull(table);
     this.table = table;
+    this.complete = (userFilter == null);
   }
 
   public void addRow(BeeRow row) {
@@ -203,74 +210,36 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void refresh(final boolean updateActiveRow) {
-    String name = getViewName();
-    if (BeeUtils.isEmpty(name)) {
-      logger.warning("refresh: view name not available");
-      return;
-    }
-
-    final int oldPageSize = getPageSize();
-    final int oldTableSize = getTable().getNumberOfRows();
-
-    Queries.getRowSet(name, null, getQueryFilter(null), getOrder(), new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet rowSet) {
-        Assert.notNull(rowSet);
-        setTable(rowSet);
-
-        applyFilter(getUserFilter());
-
-        int newTableSize = rowSet.getNumberOfRows();
-
-        int oldRc = getDisplay().getRowCount();
-        int newRc = getRowCount();
-
-        if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
-          getDisplay().setPageSize(newTableSize, oldRc == newRc);
-        }
-        getDisplay().setRowCount(newRc, true);
-
-        updateDisplay(updateActiveRow);
-      }
-    });
+  public void refresh(boolean updateActiveRow) {
+    refresh(updateActiveRow, null);
   }
 
   @Override
-  public void tryFilter(Filter newFilter, Consumer<Boolean> callback, boolean notify) {
-    boolean ok = false;
+  public void tryFilter(final Filter newFilter, final Consumer<Boolean> callback,
+      final boolean notify) {
 
     if (newFilter == null) {
-      ok = true;
-    } else {
-      List<BeeColumn> columns = getTable().getColumns();
-      for (BeeRow row : getTable().getRows()) {
-        if (newFilter.isMatch(columns, row)) {
-          ok = true;
-          break;
-        }
+      if (isComplete()) {
+        acceptFilter(newFilter);
+      } else {
+        setUserFilter(null);
+        refresh(true);
       }
-    }
-
-    if (ok) {
-      applyFilter(newFilter);
-      acceptFilter(newFilter);
-
-      getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
-      getDisplay().setRowCount(getRowCount(), true);
-
-      updateDisplay(true);
 
       if (callback != null) {
         callback.accept(true);
       }
+      
+    } else if (isComplete()) {
+      tryNotEmptyFilter(newFilter, callback, notify);
 
     } else {
-      rejectFilter(newFilter, notify);
-
-      if (callback != null) {
-        callback.accept(false);
-      }
+      refresh(true, new ScheduledCommand() {
+        @Override
+        public void execute() {
+          tryNotEmptyFilter(newFilter, callback, notify);
+        }
+      });
     }
   }
 
@@ -297,6 +266,14 @@ public class CachedProvider extends Provider {
       getDisplay().updateActiveRow(rowValues);
     }
     getDisplay().setRowData(rowValues, true);
+  }
+
+  private void acceptFilter(Filter newFilter) {
+    applyFilter(newFilter);
+    setUserFilter(newFilter);
+
+    getDisplay().setRowCount(getRowCount(), true);
+    updateDisplay(true);
   }
 
   private void applyFilter(Filter newFilter) {
@@ -342,8 +319,72 @@ public class CachedProvider extends Provider {
     }
   }
 
+  private boolean isComplete() {
+    return complete;
+  }
+
+  private void refresh(final boolean updateActiveRow, final ScheduledCommand callback) {
+    final int oldPageSize = getPageSize();
+    final int oldTableSize = getTable().getNumberOfRows();
+
+    Queries.getRowSet(getViewName(), null, getQueryFilter(null), getOrder(), new RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet rowSet) {
+        Assert.notNull(rowSet);
+        setTable(rowSet);
+        setComplete(true);
+
+        applyFilter(getUserFilter());
+
+        int newTableSize = rowSet.getNumberOfRows();
+
+        int oldRc = getDisplay().getRowCount();
+        int newRc = getRowCount();
+
+        if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
+          getDisplay().setPageSize(newTableSize, oldRc == newRc);
+        }
+        getDisplay().setRowCount(newRc, true);
+
+        updateDisplay(updateActiveRow);
+
+        if (callback != null) {
+          callback.execute();
+        }
+      }
+    });
+  }
+
+  private void setComplete(boolean complete) {
+    this.complete = complete;
+  }
+
   private void setTable(BeeRowSet table) {
     this.table = table;
+  }
+
+  private void tryNotEmptyFilter(Filter newFilter, Consumer<Boolean> callback, boolean notify) {
+    boolean ok = false;
+    List<BeeColumn> columns = getTable().getColumns();
+    for (BeeRow row : getTable().getRows()) {
+      if (newFilter.isMatch(columns, row)) {
+        ok = true;
+        break;
+      }
+    }
+
+    if (ok) {
+      acceptFilter(newFilter);
+      if (callback != null) {
+        callback.accept(true);
+      }
+
+    } else {
+      rejectFilter(newFilter, notify);
+      if (callback != null) {
+        callback.accept(false);
+      }
+    }
   }
 
   private void updateViewRows() {

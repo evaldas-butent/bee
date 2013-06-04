@@ -56,7 +56,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected Provider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter) {
+      Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter) {
+
     this.display = display;
     this.notificationListener = notificationListener;
 
@@ -67,6 +68,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.versionColumnName = versionColumnName;
 
     this.immutableFilter = immutableFilter;
+    
+    if (parentFilters != null) {
+      for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
+        String key = entry.getKey();
+        Filter value = entry.getValue();
+        if (!BeeUtils.isEmpty(key) && value != null) {
+          setParentFilter(key, value);
+        }
+      }
+    }
+    
+    this.userFilter = userFilter;
 
     this.handlerRegistry.add(display.addDataRequestHandler(this));
 
@@ -178,10 +191,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   public void setUserFilter(Filter userFilter) {
     this.userFilter = userFilter;
-  }
-
-  protected void acceptFilter(Filter newFilter) {
-    setUserFilter(newFilter);
   }
 
   protected HasDataTable getDisplay() {

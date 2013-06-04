@@ -235,11 +235,18 @@ public class AsyncProvider extends Provider {
   private boolean prefetchPending = false;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+      String viewName, List<BeeColumn> columns, CachingPolicy cachingPolicy) {
+    this(display, notificationListener, viewName, columns, null, null, null, cachingPolicy, null,
+        null);
+  }
+
+  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter, CachingPolicy cachingPolicy) {
+      Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
+      Filter userFilter) {
 
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
-        immutableFilter);
+        immutableFilter, parentFilters, userFilter);
 
     this.cachingPolicy = cachingPolicy;
     this.enablePrefetch = CachingPolicy.FULL.equals(cachingPolicy);
@@ -393,14 +400,16 @@ public class AsyncProvider extends Provider {
       @Override
       public void onSuccess(Integer result) {
         if (newFilter == null || BeeUtils.isPositive(result)) {
-          acceptFilter(newFilter);
+          setUserFilter(newFilter);
           onRowCount(result, true);
+
           if (callback != null) {
             callback.accept(true);
           }
 
         } else {
           rejectFilter(newFilter, notify);
+          
           if (callback != null) {
             callback.accept(false);
           }
