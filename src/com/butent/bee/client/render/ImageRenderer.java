@@ -10,7 +10,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ImageRenderer extends AbstractCellRenderer {
 
-  public static final String CSS_CLASS_STYLE_NAME = "bee-Grid-PersonPhoto";
+  public static final String CSS_CLASS_STYLE_NAME = "bee-PersonPhoto";
 
   private static final ImageElement imageElement = Document.get().createImageElement();
 
@@ -62,7 +62,7 @@ public class ImageRenderer extends AbstractCellRenderer {
     }
 
     if (!BeeUtils.isEmpty(cssClass)) {
-      imageElement.setClassName(cssClass);
+      imageElement.addClassName(cssClass);
     }
 
     return imageElement.getString();

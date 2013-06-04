@@ -1859,11 +1859,11 @@ div:focus,
   font-weight: bold;
 }
 
-.bee-Grid-PersonPhoto {
+.bee-PersonPhoto {
   height: 100%;
 }
 
-.bee-User-PhotoStyle {
+.bee-UserPhoto {
   max-height: 30px;
   max-width:  40px;
   vertical-align: middle;

@@ -38,7 +38,7 @@
           <FlowPanel class="flexBox-horizontal" style="font-style:italic; font-size: smaller;">
             <Image name="unsetPhoto" resource="silverMinus" horizontalAlignment="right"  class="bee-FileCollector-delete"/>
             <Label html="(" style="margin-left: 8px;" />
-            <Label text="=allowablePhotoSize" style="text-transform: lowercase; " />
+            <Label text="=allowPhotoSize" style="text-transform: lowercase; " />
             <Label html="1.2 MB)" style="margin-left: 0.2em;" />
           </FlowPanel>
         </row>

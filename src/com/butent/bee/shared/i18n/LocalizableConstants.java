@@ -12,7 +12,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String address();
 
-  String allowablePhotoSize();
+  String allowPhotoSize();
 
   String article();
 

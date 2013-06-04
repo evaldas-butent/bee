@@ -19,7 +19,7 @@ import java.util.List;
 
 public class BeeKeeper {
 
-  public static final String SIGNATURE_PHOTO_STYLE = "bee-Image bee-User-PhotoStyle";
+  public static final String SIGNATURE_PHOTO_STYLE = "bee-UserPhoto";
 
   private static Screen SCREEN;
   private static RpcFactory RPC;
@@ -59,7 +59,7 @@ public class BeeKeeper {
     if (photoId != null) {
       Image img = new Image(FileUtils.getUrl(userSign, photoId));
       img.setAlt(userSign);
-      img.setStyleName(SIGNATURE_PHOTO_STYLE);
+      img.addStyleName(SIGNATURE_PHOTO_STYLE);
       sign = img.toString();
     }
 
