@@ -73,7 +73,8 @@ public class CachedProvider extends Provider {
     if (row != null) {
       table.addRow(row);
 
-      if (getUserFilter() != null && getUserFilter().isMatch(getTable().getColumns(), row)) {
+      if (isComplete() && getUserFilter() != null
+          && getUserFilter().isMatch(getTable().getColumns(), row)) {
         filteredRowIds.add(row.getId());
         viewRows.add(row);
       }
@@ -90,14 +91,6 @@ public class CachedProvider extends Provider {
     viewRows.clear();
 
     super.clear();
-  }
-
-  public int getRowCount() {
-    if (getUserFilter() == null) {
-      return table.getNumberOfRows();
-    } else {
-      return viewRows.size();
-    }
   }
 
   public BeeRowSet getTable() {
@@ -311,11 +304,19 @@ public class CachedProvider extends Provider {
     }
   }
 
-  private List<BeeRow> getRowList() {
-    if (getUserFilter() == null) {
-      return getTable().getRows().getList();
+  private int getRowCount() {
+    if (getUserFilter() != null && isComplete()) {
+      return viewRows.size();
     } else {
+      return table.getNumberOfRows();
+    }
+  }
+
+  private List<BeeRow> getRowList() {
+    if (getUserFilter() != null && isComplete()) {
       return viewRows;
+    } else {
+      return getTable().getRows().getList();
     }
   }
 

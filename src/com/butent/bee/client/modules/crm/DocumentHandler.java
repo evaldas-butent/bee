@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -291,31 +292,31 @@ public class DocumentHandler {
         }
       }
     }
-    
+
     private List<NewFileInfo> sanitize(GridView gridView, Collection<NewFileInfo> input) {
       List<NewFileInfo> result = Lists.newArrayList();
       if (BeeUtils.isEmpty(input)) {
         return result;
       }
-      
+
       List<? extends IsRow> data = gridView.getRowData();
       if (BeeUtils.isEmpty(data)) {
         result.addAll(input);
         return result;
       }
-      
+
       int nameIndex = gridView.getDataIndex(COL_FILE_NAME);
       int sizeIndex = gridView.getDataIndex(COL_FILE_SIZE);
       int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
-      
+
       Set<NewFileInfo> oldFiles = Sets.newHashSet();
       for (IsRow row : data) {
         oldFiles.add(new NewFileInfo(row.getString(nameIndex),
             BeeUtils.unbox(row.getLong(sizeIndex)), row.getDateTime(dateIndex)));
       }
-      
+
       List<String> messages = Lists.newArrayList();
-      
+
       for (NewFileInfo nfi : input) {
         if (oldFiles.contains(nfi)) {
           messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, nfi.getName(),
@@ -325,7 +326,7 @@ public class DocumentHandler {
           result.add(nfi);
         }
       }
-      
+
       if (!messages.isEmpty()) {
         result.clear();
 
@@ -338,12 +339,12 @@ public class DocumentHandler {
   }
 
   private static class RelatedDocumentsHandler extends AbstractGridInterceptor {
-    
+
     private int documentIndex = BeeConst.UNDEF;
 
     private RelatedDocumentsHandler() {
     }
-    
+
     @Override
     public void afterCreate(GridView gridView) {
       documentIndex = gridView.getDataIndex(COL_DOCUMENT);
@@ -351,31 +352,30 @@ public class DocumentHandler {
     }
 
     @Override
-    public boolean beforeAction(Action action, final GridPresenter presenter) {
-      if (Action.ADD.equals(action)) {
-        RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            String relColumn = presenter.getGridView().getRelColumn();
-            Long relId = presenter.getGridView().getRelId();
-            
-            Queries.insert(CommonsConstants.TBL_RELATIONS,
-                Data.getColumns(CommonsConstants.TBL_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT, relColumn)),
-                Queries.asList(result.getId(), relId), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow row) {
-                    presenter.handleAction(Action.REFRESH);
-                  }
-                });
-          }
-        });
-      
-        return false;
+    public boolean beforeAddRow(final GridPresenter presenter) {
+      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          final long docId = result.getId();
 
-      } else {
-        return super.beforeAction(action, presenter);
-      }
+          presenter.getGridView().ensureRelId(new IdCallback() {
+            @Override
+            public void onSuccess(Long relId) {
+              Queries.insert(CommonsConstants.TBL_RELATIONS,
+                  Data.getColumns(CommonsConstants.TBL_RELATIONS,
+                      Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+                  Queries.asList(docId, relId), null, new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow row) {
+                      presenter.handleAction(Action.REFRESH);
+                    }
+                  });
+            }
+          });
+        }
+      });
+
+      return false;
     }
 
     @Override
@@ -401,7 +401,7 @@ public class DocumentHandler {
       }
     }
   }
-  
+
   private static final String DOCUMENT_VIEW_NAME = "Documents";
 
   public static void register() {

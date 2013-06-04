@@ -113,11 +113,12 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     if (action == null) {
       return;
     }
+    
     FormInterceptor interceptor = getForm().getFormInterceptor();
-
     if (interceptor != null && !interceptor.beforeAction(action, this)) {
       return;
     }
+
     switch (action) {
       case CLOSE:
         getForm().onClose(new CloseCallback() {
