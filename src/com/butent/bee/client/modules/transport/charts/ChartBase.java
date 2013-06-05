@@ -139,6 +139,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_SHIPMENT_DAY_FLAG = STYLE_SHIPMENT_DAY_PREFIX + "flag";
   private static final String STYLE_SHIPMENT_DAY_LABEL = STYLE_SHIPMENT_DAY_PREFIX + "label";
 
+  private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "item-";
+  private static final String STYLE_ITEM_START = STYLE_ITEM_PREFIX + "start";
+  private static final String STYLE_ITEM_END = STYLE_ITEM_PREFIX + "end";
+  
   private final HeaderView headerView;
   private final Flow canvas;
 
@@ -921,7 +925,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     return ChartHelper.getRectangle(left, width, firstRow, lastRow, getRowHeight());
   }
-
+  
   protected int getRelativeLeft(Range<JustDate> parent, JustDate date) {
     return TimeUtils.dayDiff(parent.lowerEndpoint(), date) * getDayColumnWidth();
   }
@@ -1662,6 +1666,15 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     }
 
     return result;
+  }
+
+  protected void styleItemWidget(HasDateRange item, Widget widget) {
+    if (getVisibleRange().contains(item.getRange().lowerEndpoint())) {
+      widget.addStyleName(STYLE_ITEM_START);
+    }
+    if (getVisibleRange().contains(item.getRange().upperEndpoint())) {
+      widget.addStyleName(STYLE_ITEM_END);
+    }
   }
 
   protected void updateMaxRange() {

@@ -706,6 +706,8 @@ abstract class VehicleTimeBoard extends ChartBase {
           if (itemWidget != null) {
             Rectangle rectangle = getRectangle(item.getRange(), rowIndex + i);
             ChartHelper.apply(itemWidget, rectangle, margins);
+            
+            styleItemWidget(item, itemWidget);
             if (opacity != null) {
               StyleUtils.setOpacity(itemWidget, opacity);
             }

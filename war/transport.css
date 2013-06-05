@@ -307,6 +307,15 @@
   cursor: pointer;
 }
 
+.bee-tr-chart-item-start {
+  border-top-left-radius: 6px 50%;
+  border-bottom-left-radius: 6px 50%;
+}
+.bee-tr-chart-item-end {
+  border-top-right-radius: 6px 50%;
+  border-bottom-right-radius: 6px 50%;
+}
+
 .bee-tr-dtb-Trip-void,
 .bee-tr-vtb-Trip-void {
   position: absolute;

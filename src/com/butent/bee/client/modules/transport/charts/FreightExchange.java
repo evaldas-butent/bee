@@ -423,7 +423,8 @@ class FreightExchange extends ChartBase {
 
         Rectangle rectangle = getRectangle(item.getRange(), row);
         ChartHelper.apply(itemWidget, rectangle, margins);
-
+        
+        styleItemWidget(item, itemWidget);
         if (itemOpacity != null) {
           StyleUtils.setOpacity(itemWidget, itemOpacity);
         }
