@@ -23,27 +23,30 @@ import java.util.List;
 public class Printer {
 
   private static final BeeLogger logger = LogUtils.getLogger(Printer.class);
-  
+
   private static final String ID_PREFIX = "p-";
 
   private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
 
+  private static final int DELAY_MS = 100;
+  private static final int NUMBER_OF_ATTEMPTS = 10;
+
   private static Frame frame = null;
-  
+
   public static void onInjectStyleSheet(String css) {
     if (frame != null && !BeeUtils.isEmpty(css)) {
       frame.injectStyleSheet(css);
     }
   }
-  
+
   public static void print(Element element, Printable widget) {
     Assert.notNull(element);
-    
+
     String html = element.getString();
     if (BeeUtils.isEmpty(html)) {
       html = DomUtils.getOuterHtml(element);
     }
-    
+
     print(html, widget);
   }
 
@@ -81,29 +84,35 @@ public class Printer {
       frame.setBodyHtml(html);
     }
 
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+    Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+      int counter = 0;
+
       @Override
-      public void execute() {
+      public boolean execute() {
         NodeList<Element> children = DomUtils.getChildren(frame.getBody());
+        if (children == null || children.getLength() <= 0) {
+          counter++;
+          logger.warning("print attempt", counter, "failed");
+          return counter < NUMBER_OF_ATTEMPTS;
+        }
 
-        if (children != null) {
-          List<Element> hide = Lists.newArrayList();
+        List<Element> hide = Lists.newArrayList();
 
-          for (int i = 0; i < children.getLength(); i++) {
-            Element element = children.getItem(i);
-            if (!prepare(element, widget)) {
-              hide.add(element);
-            }
-          }
-
-          for (Element element : hide) {
-            StyleUtils.hideDisplay(element);
+        for (int i = 0; i < children.getLength(); i++) {
+          Element element = children.getItem(i);
+          if (!prepare(element, widget)) {
+            hide.add(element);
           }
         }
 
+        for (Element element : hide) {
+          StyleUtils.hideDisplay(element);
+        }
+
         printFrame();
+        return false;
       }
-    });
+    }, DELAY_MS);
   }
 
   private static boolean prepare(Element target, Printable widget) {
