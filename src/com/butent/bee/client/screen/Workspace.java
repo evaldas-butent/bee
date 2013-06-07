@@ -97,11 +97,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private class TabWidget extends Span implements HasCaption {
 
-    private TabWidget(String caption) {
+    private InlineLabel closeTab;
+
+    private TabWidget(String caption, boolean setClose) {
       super();
-      InlineLabel label = new InlineLabel(caption);
-      label.addStyleName(getStylePrefix() + "caption");
-      add(label);
 
       InlineLabel dropDown = new InlineLabel(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.addStyleName(getStylePrefix() + "dropDown");
@@ -115,6 +114,28 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
           Workspace.this.showActions(TabWidget.this.getId());
         }
       });
+
+      InlineLabel label = new InlineLabel(caption);
+      label.addStyleName(getStylePrefix() + "caption");
+      add(label);
+
+      closeTab = new InlineLabel();
+      closeTab.addStyleName(getStylePrefix() + "closeTab");
+      closeTab.setTitle("Uždaryti skirtuką");
+      closeTab.setVisible(setClose);
+      add(closeTab);
+
+      closeTab.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          doAction(TabAction.CLOSE, getTabIndex(TabWidget.this.getId()));
+        }
+      });
+    }
+
+    private TabWidget(String caption) {
+      this(caption, true);
     }
 
     @Override
@@ -122,8 +143,12 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       return getCaptionWidget().getText();
     }
 
+    public void setClose(boolean close) {
+      closeTab.setVisible(close);
+    }
+
     private InlineLabel getCaptionWidget() {
-      return (InlineLabel) getWidget(0);
+      return (InlineLabel) getWidget(1);
     }
 
     private void setCaption(String caption) {
@@ -166,32 +191,32 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       updateCaption((Tile) event.getSource(), event.getCaption());
     }
   }
-  
+
   @Override
   public void onEventPreview(NativePreviewEvent event) {
     EventTarget target = event.getNativeEvent().getEventTarget();
     if (target == null) {
       return;
     }
-    
+
     Node node = Node.as(target);
-    
+
     TilePanel activePanel = getActivePanel();
     if (activePanel == null || activePanel.getWidgetCount() <= 1
         || !activePanel.getElement().isOrHasChild(node)) {
       return;
     }
-    
+
     Tile activeTile = activePanel.getActiveTile();
     if (activeTile == null || activeTile.getElement().isOrHasChild(node)) {
       return;
     }
-    
+
     Tile eventTile = activePanel.getEventTile(node);
     if (eventTile == null || eventTile.getId().equals(activeTile.getId())) {
       return;
     }
-    
+
     eventTile.activate(true);
   }
 
@@ -201,9 +226,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (tileCount <= 1) {
       return false;
     }
-    
+
     List<ExtendedProperty> info = debug ? panel.getExtendedInfo() : null;
-    
+
     int tileIndex = BeeUtils.randomInt(0, tileCount);
 
     int index = 0;
@@ -221,13 +246,13 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         index++;
       }
     }
-    
+
     if (!debug) {
       return true;
     }
-    
+
     boolean ok = true;
-    int minSize = TilePanel.MIN_SIZE - TilePanel.TILE_MARGIN * 2; 
+    int minSize = TilePanel.MIN_SIZE - TilePanel.TILE_MARGIN * 2;
 
     for (Widget child : panel) {
       if (child instanceof Tile) {
@@ -239,7 +264,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
       }
     }
-    
+
     if (!ok) {
       Global.showModalGrid("close error", new ExtendedPropertiesData(info, false));
     }
@@ -275,7 +300,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
               Assert.untouchable();
               direction = null;
           }
-          
+
           int size = direction.isHorizontal() ? tile.getOffsetWidth() : tile.getOffsetHeight();
           size = (size + TilePanel.TILE_MARGIN * 2 - panel.getSplitterSize()) / 2;
           if (size < TilePanel.MIN_SIZE) {
@@ -305,6 +330,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     if (getPageCount() == 1) {
       setStyleOne(true);
+      TabWidget tab = (TabWidget) getTabWidget(0);
+      tab.setClose(false);
     }
   }
 
@@ -330,7 +357,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (activeContent != null && widget.getId().equals(activeContent.getId())) {
       return;
     }
-    
+
     Tile tile = TilePanel.getTile(widget.asWidget());
 
     int index = getPageIndex(tile);
@@ -419,7 +446,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       if (!tile.isBlank()) {
         tile.blank();
       }
-      
+
       panel.remove(tile);
       resizePage(pageIndex);
 
@@ -526,11 +553,15 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     if (getPageCount() == 1) {
       setStyleOne(false);
+      tab.setClose(false);
     }
 
     insert(panel, tab, before);
+    tab.setClose(isActionEnabled(TabAction.CLOSE, getTabIndex(tab.getId())));
+
     if (getPageCount() == 1) {
       setStyleOne(true);
+      tab.setClose(false);
     }
 
     selectPage(before, SelectionOrigin.INSERT);
@@ -660,6 +691,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     tab.setCaption(caption);
+
+    tab.setClose(isActionEnabled(TabAction.CLOSE, getTabIndex(tab.getId())));
 
     if (checkSize) {
       checkLayout();

@@ -1215,7 +1215,7 @@ body {
   line-height: 25px;
   background-color: white;
   border: 1px solid #E4E4E4;
-  padding: 0 10px;
+  padding: 0 3px;
   cursor: pointer;
 }
 .bee-Workspace-tab:hover {
@@ -1237,7 +1237,7 @@ body {
 }
 
 .bee-Workspace-dropDown {
-  padding-left: 3px;
+  padding-right: 3px;
   cursor: pointer;
   color: #a1bff5;
 }
@@ -1283,6 +1283,22 @@ body {
   width: 7px;
   height: 14px;
   border-left-width: 8px;
+}
+
+.bee-Workspace-closeTab {
+  padding: 0 7px;
+  background: url("images/closeSmall.png");
+  background-size: 8px 8px; 
+  background-repeat:no-repeat;
+  background-position: center;
+}
+
+.bee-Workspace-closeTab:hover {
+  padding: 0 7px;
+  background: url("images/noes.png");
+  background-size: 12px 12px;
+  background-repeat:no-repeat;
+  background-position: center; 
 }
 
 .bee-Workspace-action-up {
