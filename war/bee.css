@@ -1314,6 +1314,25 @@ body {
   cursor: e-resize !important;
 }
 
+.bee-Workspace-newTab {
+  position: absolute;
+  padding: 4px 8px;
+  margin-top: -1px;
+  border-top-right-radius: 5px;
+  border: 1px solid #E4E4E4;
+  border-left: none;
+  border-bottom-right-radius: 5px;
+  margin-left: 0.4em;
+ }
+ 
+.bee-Workspace-newTab:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-Workspace-tabPanel {
+  padding-right: 30px;
+}
+
 .bee-MessageBox-message-cell {
   padding-bottom: 12px;
 }

@@ -32,6 +32,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String clients();
 
+  String closeTab();
+
   String companies();
 
   String company();
@@ -123,6 +125,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String settings();
 
   String sorry();
+
+  String tabControl();
 
   String tooLittleData();
 

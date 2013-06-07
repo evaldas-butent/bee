@@ -98,13 +98,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private class TabWidget extends Span implements HasCaption {
 
     private InlineLabel closeTab;
+    private Image newTab;
 
     private TabWidget(String caption, boolean setClose) {
       super();
 
       InlineLabel dropDown = new InlineLabel(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.addStyleName(getStylePrefix() + "dropDown");
-      dropDown.setTitle("Skirtuko valdymas");
+      dropDown.setTitle(Localized.constants.tabControl());
       add(dropDown);
 
       dropDown.addClickHandler(new ClickHandler() {
@@ -121,7 +122,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       closeTab = new InlineLabel();
       closeTab.addStyleName(getStylePrefix() + "closeTab");
-      closeTab.setTitle("Uždaryti skirtuką");
+      closeTab.setTitle(Localized.constants.closeTab());
       closeTab.setVisible(setClose);
       add(closeTab);
 
@@ -130,6 +131,20 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         @Override
         public void onClick(ClickEvent event) {
           doAction(TabAction.CLOSE, getTabIndex(TabWidget.this.getId()));
+        }
+      });
+
+      newTab = new Image(Global.getImages().silverPlus());
+      newTab.addStyleName(getStylePrefix() + "newTab");
+      newTab.setTitle(Localized.constants.newTab());
+      add(newTab);
+      
+      newTab.addClickHandler(new ClickHandler() {
+        
+        @Override
+        public void onClick(ClickEvent event) {
+          doAction(TabAction.CREATE, getTabIndex(TabWidget.this.getId()));
+          TabWidget.this.setNewTab(false);
         }
       });
     }
@@ -143,8 +158,12 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       return getCaptionWidget().getText();
     }
 
-    public void setClose(boolean close) {
-      closeTab.setVisible(close);
+    public void setClose(boolean visible) {
+      closeTab.setVisible(visible);
+    }
+
+    public void setNewTab(boolean visible) {
+      newTab.setVisible(visible);
     }
 
     private InlineLabel getCaptionWidget() {
@@ -333,6 +352,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       TabWidget tab = (TabWidget) getTabWidget(0);
       tab.setClose(false);
     }
+
+    TabWidget tab = (TabWidget) getTabWidget(getPageCount() - 1);
+    tab.setNewTab(true);
   }
 
   @Override
@@ -462,6 +484,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     } else if (!tile.isBlank()) {
       tile.blank();
     }
+
+    TabWidget tab = (TabWidget) getTabWidget(getPageCount() - 1);
+    tab.setNewTab(true);
   }
 
   private void doAction(TabAction action, int index) {
@@ -565,6 +590,17 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     selectPage(before, SelectionOrigin.INSERT);
+    
+    if (getTabIndex(tab.getId()) == (getPageCount() - 1)) {
+      tab.setNewTab(true);
+    } else {
+      tab.setNewTab(false);
+    }
+    
+    if (getPageCount() > 1) {
+      TabWidget firstTab = (TabWidget) getTabWidget(0);
+      firstTab.setClose(isActionEnabled(TabAction.CLOSE, 0));
+    }
   }
 
   private boolean isActionEnabled(TabAction action, int index) {
