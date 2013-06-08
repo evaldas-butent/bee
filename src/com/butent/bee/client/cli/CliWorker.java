@@ -317,8 +317,8 @@ public class CliWorker {
     } else if (z.equals("gwt")) {
       showGwt();
 
-    } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
-      showSupport();
+    } else if (BeeUtils.inList(z, "h5", "html5") || z.startsWith("supp") || z.startsWith("feat")) {
+      showSupport(args);
 
     } else if (z.startsWith("hist")) {
       Global.showModalGrid("History", new PropertiesData(Historian.getInstance().getInfo()));
@@ -1447,13 +1447,12 @@ public class CliWorker {
       }
 
       @Override
-      public void onComplete() {
-        super.onComplete();
-        StyleUtils.clearTranform(style);
+      protected void onComplete() {
+        StyleUtils.clearTransform(style);
       }
 
       @Override
-      public boolean run(double elapsed) {
+      protected boolean run(double elapsed) {
         double x;
         double y;
 
@@ -2361,7 +2360,7 @@ public class CliWorker {
 
       if (Features.supportsInputType(type)) {
         widget = new TextBox();
-        widget.getElement().setAttribute(DomUtils.ATTRIBUTE_TYPE, type);
+        DomUtils.setInputType(widget, type);
 
         if (type.equals("search")) {
           if (Features.supportsAttributePlaceholder()) {
@@ -2817,8 +2816,29 @@ public class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
   }
 
-  private static void showSupport() {
-    showPropData(Features.getInfo());
+  private static void showSupport(String args) {
+    List<Property> data = Features.getInfo();
+    
+    if (BeeUtils.isEmpty(args)) {
+      showPropData(data);
+
+    } else {
+      List<Property> filtered = Lists.newArrayList();
+      for (Property p : data) {
+        if (BeeUtils.containsSame(p.getName(), args) || p.getValue().equalsIgnoreCase(args)) {
+          filtered.add(p);
+        }
+      }
+      
+      if (filtered.isEmpty()) {
+        showError("feature not tested:", args);
+      } else if (filtered.size() == 1) {
+        Property p = filtered.get(0);
+        Global.inform(p.getName(), p.getValue());
+      } else {
+        showPropData(filtered);
+      }
+    }
   }
 
   private static void showSvg(String[] arr) {

@@ -10,65 +10,65 @@
     <AbsolutePanel style="top: 5px; height: 240px; left: 1em; right: 1em;">
       <layer top="0" bottom="0" width="240">
         <FlowPanel>
-          <DataSelector source="CompanyName" caption="Įmonė:" style="width: 140px;"
+          <DataSelector source="CompanyName" caption="Įmonė" style="width: 140px;"
             d:size="80" d:unit="px" />
-          <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
+          <TextLabel source="CompanyPhone" caption="Telefonas" inline="true"
             d:size="80" d:unit="px" />
-          <TextLabel source="CompanyEmail" caption="El.paštas:" inline="true"
+          <TextLabel source="CompanyEmail" caption="El.paštas" inline="true"
             d:size="80" d:unit="px">
             <renderToken source="CompanyLabel" suffix=" " />
             <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
           </TextLabel>
           <br/>  
 
-          <InputText source="Summary" caption="Santrauka:"
+          <InputText source="Summary" caption="Santrauka"
             style="width: 222px;" decorator="caption-top" />
-          <InputArea source="Description" caption="Aprašymas:" visibleLines="5"
+          <InputArea source="Description" caption="Aprašymas" visibleLines="5"
             style="width: 222px;" decorator="caption-top" />
         </FlowPanel>
       </layer>
 
       <layer top="0" bottom="0" left="260" right="260">
         <FlowPanel>
-          <InputDate source="StartDate" caption="Planuojama pradžios data:"
+          <InputDate source="StartDate" caption="Planuojama pradžios data"
             style="width: 80px;" d:size="180" d:unit="px" />
           <div style="height: 2px;" />
-          <InputDate source="EndDate" caption="Planuojama pabaigos data:"
+          <InputDate source="EndDate" caption="Planuojama pabaigos data"
             style="width: 80px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:" step="30"
+          <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
           <div style="height: 2px;" />
-          <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
+          <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <InputDateTime source="EffectiveStart" caption="Pradėta:" step="5"
+          <InputDateTime source="EffectiveStart" caption="Pradėta" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
           <div style="height: 2px;" />
-          <InputDateTime source="EffectiveEnd" caption="Baigta:" step="5"
+          <InputDateTime source="EffectiveEnd" caption="Baigta" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
+          <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena"
             style="width: 120px;" d:size="180" d:unit="px" />
         </FlowPanel>
       </layer>
 
       <layer top="0" bottom="0" width="260" right="0">
         <FlowPanel>
-          <DataSelector source="AppointmentType" caption="Tipas:" 
+          <DataSelector source="AppointmentType" caption="Tipas" 
             style="width: 140px;" d:size="100" d:unit="px" />
           <div style="height: 2px;" />
-          <DataSelector source="ColorName" caption="Spalva:"
+          <DataSelector source="ColorName" caption="=color"
             style="width: 140px;" d:size="100" d:unit="px" />
           <div style="height: 2px;" />
-          <DataSelector source="Style" caption="Stilius:"
+          <DataSelector source="Style" caption="Stilius"
             style="width: 140px;" d:size="100" d:unit="px" />
 
           <br/>  
-          <DataSelector source="Organizer" caption="Atsakingas darbuotojas:" style="width: 242px;" 
+          <DataSelector source="Organizer" caption="Atsakingas darbuotojas" style="width: 242px;" 
             decorator="caption-top">
             <renderToken source="OrganizerFirstName" />
             <renderToken source="OrganizerLastName" />
@@ -76,10 +76,10 @@
           </DataSelector>
 
           <br/>  
-          <InputDateTime source="Created" caption="Registruotas:"
+          <InputDateTime source="Created" caption="Registruotas"
             style="width: 140px;" d:size="100" d:unit="px" />
           <div style="height: 2px;" />
-          <DataSelector source="Creator" caption="Registravo:" editSource="CreatorCompanyPerson"
+          <DataSelector source="Creator" caption="Registravo" editSource="CreatorCompanyPerson"
             style="width: 140px;" d:size="100" d:unit="px"/>
         </FlowPanel>
       </layer>
@@ -106,49 +106,49 @@
         <Table style="border-collapse: collapse; margin-top: 2ex;"
           cellStyle="padding: 3px; border: 1px solid #ccc;" >
           <row>
-            <DataSelector source="VehicleNumber" caption="Valst. Nr.:" />
-            <TextLabel source="Vehicle" caption="Modelis:" inline="true"
+            <DataSelector source="VehicleNumber" caption="Valst. Nr." />
+            <TextLabel source="Vehicle" caption="Modelis" inline="true"
               renderColumns="VehicleParentModel VehicleModel" />
-            <TextLabel source="VehicleType" caption="Tipas:" inline="true" />
+            <TextLabel source="VehicleType" caption="Tipas" inline="true" />
           </row>
 
           <row>
             <cell colSpan="3">
-              <TextLabel source="VehicleOwnerName" caption="Savininkas:" inline="true" />
+              <TextLabel source="VehicleOwnerName" caption="Savininkas" inline="true" />
             </cell>
           </row>
 
           <row>
-            <DateLabel source="VehicleProductionDate" caption="Pagaminimo data:" inline="true" />
-            <TextLabel source="VehicleEngineNumber" caption="Variklio Nr.:" inline="true" />
-            <TextLabel source="VehicleBodyNumber" caption="Kėbulo Nr.:" inline="true" />
+            <DateLabel source="VehicleProductionDate" caption="Pagaminimo data" inline="true" />
+            <TextLabel source="VehicleEngineNumber" caption="Variklio Nr." inline="true" />
+            <TextLabel source="VehicleBodyNumber" caption="Kėbulo Nr." inline="true" />
           </row>
 
           <row>
-            <IntegerLabel source="VehicleNetto" caption="Svoris Neto:" inline="true"
+            <IntegerLabel source="VehicleNetto" caption="Svoris Neto" inline="true"
               style="width: 100px;" />
-            <IntegerLabel source="VehicleBrutto" caption="Svoris Bruto:" inline="true"
+            <IntegerLabel source="VehicleBrutto" caption="Svoris Bruto" inline="true"
               style="width: 100px;" />
           </row>
 
           <row>
-            <DecimalLabel source="VehiclePower" caption="Galia kW:" inline="true"
+            <DecimalLabel source="VehiclePower" caption="Galia kW" inline="true"
               style="width: 100px;" />
-            <IntegerLabel source="VehicleEngineVolume" caption="Darbinis tūris cm&#x00b3;:"
+            <IntegerLabel source="VehicleEngineVolume" caption="Darbinis tūris cm&#x00b3;"
               inline="true" style="width: 100px;" />
           </row>
 
           <row>
-            <TextLabel source="VehicleFuel" caption="Kuro rūšis:" inline="true" />
-            <DecimalLabel source="VehicleTankCapacity" caption="Kuro bako talpa l:"
+            <TextLabel source="VehicleFuel" caption="Kuro rūšis" inline="true" />
+            <DecimalLabel source="VehicleTankCapacity" caption="Kuro bako talpa l"
               inline="true" style="width: 100px;" />
-            <IntegerLabel source="VehicleSpeedometer" caption="Spidometro skalė:"
+            <IntegerLabel source="VehicleSpeedometer" caption="Spidometro skalė"
               inline="true" style="width: 100px;" />
           </row>
 
           <row>
             <cell colSpan="3">
-              <TextLabel source="VehicleNotes" caption="Pastabos:" style="white-space: pre-wrap;" />
+              <TextLabel source="VehicleNotes" caption="Pastabos" style="white-space: pre-wrap;" />
             </cell>  
           </row>
         </Table>
@@ -169,31 +169,31 @@
           </row>
 
           <row>
-            <InputText source="Location" caption="Location:" 
+            <InputText source="Location" caption="Location" 
               style="width: 200px;" d:size="120" d:unit="px" />
-            <InputText source="HtmlLink" caption="Html Link:"
+            <InputText source="HtmlLink" caption="Html Link"
               style="width: 200px;" d:size="120" d:unit="px" />
           </row>
 
           <row>
-            <DataSelector source="StartTimeZone" caption="Start Time Zone:"
+            <DataSelector source="StartTimeZone" caption="Start Time Zone"
               style="width: 200px;" d:size="120" d:unit="px" />
-            <DataSelector source="EndTimeZone" caption="End Time Zone:"
+            <DataSelector source="EndTimeZone" caption="End Time Zone"
               style="width: 200px;" d:size="120" d:unit="px" />
             <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
           </row>
 
           <row>
-            <InputArea source="Recurrence" caption="Recurrence:" style="width: 320px;" 
+            <InputArea source="Recurrence" caption="Recurrence" style="width: 320px;" 
               decorator="caption-top" />
-            <LongLabel source="RecurringEventId" caption="Recurring Event Id:" inline="true"
+            <LongLabel source="RecurringEventId" caption="Recurring Event Id" inline="true"
               style="width: 200px;" d:size="120" d:unit="px" />
           </row>
 
           <row>
-            <InputText source="ICalUID" caption="ICal UID:"
+            <InputText source="ICalUID" caption="ICal UID"
               style="width: 200px;" d:size="120" d:unit="px" />
-            <InputInteger source="Sequence" caption="Sequence:"
+            <InputInteger source="Sequence" caption="Sequence"
               style="width: 200px;" d:size="120" d:unit="px" />
           </row>
 

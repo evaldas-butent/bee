@@ -13,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Image;
@@ -201,8 +202,10 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
     Shell shell = new Shell();
     shell.restore();
+    
+    Simple wrapper = new Simple(shell);
 
-    add(Domain.ADMIN, shell);
+    add(Domain.ADMIN, wrapper);
   }
 
   private int find(Domain domain, Long key) {

@@ -7,8 +7,10 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -46,6 +48,11 @@ public class Bee implements EntryPoint {
 
     Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
     Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
+    
+    LayoutEngine layoutEngine = LayoutEngine.detect();
+    if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
+      DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
+    }
 
     Bee.keeper = new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
 

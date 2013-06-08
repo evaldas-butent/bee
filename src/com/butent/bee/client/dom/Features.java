@@ -1,5 +1,6 @@
 package com.butent.bee.client.dom;
 
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -14,12 +15,16 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+import elemental.client.Browser;
+import elemental.html.InputElement;
+
 /**
  * Checks whether a user's browser support certain features like mp3, drag and drop, web sockets,
  * canvas and so on.
  */
 
 public class Features {
+
   private static String nsSvg = "http://www.w3.org/2000/svg";
 
   private static Boolean applicationCache = null;
@@ -79,6 +84,7 @@ public class Features {
   private static Boolean localStorage = null;
   private static Boolean microdata = null;
   private static Boolean postMessage = null;
+  private static Boolean requestAnimationFrame = null;
   private static Boolean selectors = null;
   private static Boolean sendAsFormData = null;
   private static Boolean serverSentEvents = null;
@@ -105,7 +111,7 @@ public class Features {
 
   private static Boolean xhrCrossDomain = null;
   private static Boolean xhrUploadProgress = null;
-
+  
   public static String getAudioAac() {
     if (!supportsAudio()) {
       return BeeConst.STRING_EMPTY;
@@ -205,6 +211,7 @@ public class Features {
         "Local Storage", supportsLocalStorage(),
         "Microdata", supportsMicrodata(),
         "Post Message", supportsPostMessage(),
+        "Request Animation Frame", supportsRequestAnimationFrame(),
         "Send As Form Data", supportsSendAsFormData(),
         "Selectors", supportsSelectors(),
         "Server Sent Events", supportsServerSentEvents(),
@@ -265,49 +272,6 @@ public class Features {
     return videoWebm;
   }
 
-  public static native JavaScriptObject getWindowProperty(String p) /*-{
-    if (p == null || p == "") {
-      return null;
-    }
-
-    var obj;
-    try {
-      obj = $wnd[p];
-    } catch (err) {
-      obj = null;
-    }
-
-    return obj;
-  }-*/;
-
-  public static native boolean isDocumentFunction(String fnc) /*-{
-    if (fnc == null || fnc == "") {
-      return false;
-    }
-
-    var ok;
-    try {
-      ok = (typeof ($doc[fnc]) == "function");
-    } catch (err) {
-      ok = false;
-    }
-    return ok;
-  }-*/;
-
-  public static native boolean isDocumentProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
-
-    var ok;
-    try {
-      ok = !!$doc[p];
-    } catch (err) {
-      ok = false;
-    }
-    return ok;
-  }-*/;
-
   public static boolean isEventSupported(String tagName, String eventName) {
     Assert.notEmpty(tagName);
     Assert.notEmpty(eventName);
@@ -331,42 +295,6 @@ public class Features {
     element = null;
     return ok;
   }
-
-  public static native boolean isInWindow(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    } else {
-      return p in $wnd;
-    }
-  }-*/;
-
-  public static native boolean isNavigatorProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
-
-    var ok;
-    try {
-      ok = !!$wnd.navigator[p];
-    } catch (err) {
-      ok = false;
-    }
-    return ok;
-  }-*/;
-
-  public static native boolean isWindowProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
-
-    var ok;
-    try {
-      ok = !!$wnd[p];
-    } catch (err) {
-      ok = false;
-    }
-    return ok;
-  }-*/;
 
   public static boolean supportsApplicationCache() {
     if (applicationCache == null) {
@@ -681,7 +609,14 @@ public class Features {
     return postMessage;
   }
 
-  public static boolean supportsSelectors() {
+  public static boolean supportsRequestAnimationFrame() {
+    if (requestAnimationFrame == null) {
+      requestAnimationFrame = testRequestAnimationFrame();
+    }
+    return requestAnimationFrame;
+  }
+
+    public static boolean supportsSelectors() {
     if (selectors == null) {
       selectors = testSelectors();
     }
@@ -813,6 +748,82 @@ public class Features {
     return xhrUploadProgress;
   }
 
+  private static native JavaScriptObject getWindowProperty(String p) /*-{
+    var obj;
+
+    try {
+      obj = $wnd[p];
+    } catch (err) {
+      obj = null;
+    }
+
+    return obj;
+  }-*/;
+
+  private static native boolean isDocumentFunction(String fnc) /*-{
+    var ok;
+
+    try {
+      ok = (typeof($doc[fnc]) == "function");
+    } catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
+  private static native boolean isDocumentProperty(String p) /*-{
+    var ok;
+
+    try {
+      ok = !!$doc[p];
+    } catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
+  private static native boolean isInWindow(String p) /*-{
+    return p in $wnd;
+  }-*/;
+
+  private static native boolean isNavigatorProperty(String p) /*-{
+    var ok;
+
+    try {
+      ok = !!$wnd.navigator[p];
+    } catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
+  private static native boolean isWindowFunction(String fnc) /*-{
+    var ok;
+
+    try {
+      ok = (typeof($wnd[fnc]) == "function");
+    } catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
+  private static native boolean isWindowProperty(String p) /*-{
+    var ok;
+
+    try {
+      ok = !!$wnd[p];
+    } catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
   private static boolean testApplicationCache() {
     return isWindowProperty("applicationCache");
   }
@@ -888,10 +899,6 @@ public class Features {
   }
 
   private static native String testAudioType(String type) /*-{
-    if (type == null || type == "") {
-      return "";
-    }
-
     var el = $doc.createElement('audio');
     var v = "";
 
@@ -1051,10 +1058,18 @@ public class Features {
     if (BeeUtils.isEmpty(type)) {
       return false;
     }
-    Element element = DomUtils.createElement(DomUtils.TAG_INPUT);
-    element.setAttribute(DomUtils.ATTRIBUTE_TYPE, type);
+    
+    InputElement inputElement = Browser.getDocument().createInputElement();
 
-    return BeeUtils.same(element.getAttribute(DomUtils.ATTRIBUTE_TYPE), type);
+    boolean ok;
+    try {
+      inputElement.setType(type);
+      ok = true;
+    } catch (JavaScriptException ex) {
+      ok = false;
+    }
+    
+    return ok && BeeUtils.same(inputElement.getType(), type);
   }
 
   private static boolean testInputUrl() {
@@ -1075,6 +1090,10 @@ public class Features {
 
   private static boolean testPostMessage() {
     return isWindowProperty("postMessage");
+  }
+  
+  private static boolean testRequestAnimationFrame() {
+    return isWindowFunction("requestAnimationFrame");
   }
 
   private static boolean testSelectors() {

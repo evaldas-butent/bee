@@ -26,8 +26,6 @@ public class Printer {
 
   private static final String ID_PREFIX = "p-";
 
-  private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
-
   private static final int DELAY_MS = 100;
   private static final int NUMBER_OF_ATTEMPTS = 10;
 
@@ -73,7 +71,7 @@ public class Printer {
 
     frame.setHtml("<!doctype html><html><head>" +
         "<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">" +
-        "<style type=\"text/css\">" + StyleUtils.getRules() + CSS_RULE + "</style>" +
+        "<style type=\"text/css\">" + StyleUtils.getRules() + "</style>" +
         "</head><body>" + html + "</body></html>");
   }
 
@@ -156,13 +154,9 @@ public class Printer {
   }
 
   private static void printFrame() {
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        frame.print();
-        frame.clear();
-      }
-    });
+    frame.focus();
+    frame.print();
+    frame.clear();
   }
 
   private Printer() {

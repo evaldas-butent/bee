@@ -34,6 +34,8 @@ public class FileIconRenderer extends AbstractCellRenderer {
     }
     
     imageElement.setSrc(src);
+    imageElement.setAlt(icon);
+
     return imageElement.getOuterHTML();
   }
 }

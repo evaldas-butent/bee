@@ -12,7 +12,7 @@
   > 
 
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal" style="-webkit-justify-content: space-between;">
+    <FlowPanel class="flexBox-horizontal-space-between">
       <xi:include href="widgets/DocumentFields.widget.xml" />
       
       <Table style="margin-top: 5px; margin-right: 5px;">

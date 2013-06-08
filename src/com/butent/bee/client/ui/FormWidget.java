@@ -195,7 +195,6 @@ public enum FormWidget {
   HR("hr", null),
   HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
   HTML_PANEL("HtmlPanel", EnumSet.of(Type.PANEL)),
-  HYPERLINK("Hyperlink", EnumSet.of(Type.DISPLAY)),
   IMAGE("Image", EnumSet.of(Type.DISPLAY)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
   INPUT_AREA("InputArea", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -213,6 +212,7 @@ public enum FormWidget {
   INPUT_TIME("InputTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TIME_OF_DAY("InputTimeOfDay", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INTEGER_LABEL("IntegerLabel", EnumSet.of(Type.DISPLAY)),
+  INTERNAL_LINK("InternalLink", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
   LINK("Link", EnumSet.of(Type.DISPLAY)),
@@ -534,7 +534,11 @@ public enum FormWidget {
         break;
 
       case COLOR_EDITOR:
-        widget = new ColorEditor();
+        if (Features.supportsInputColor()) {
+          widget = new ColorEditor();
+        } else {
+          widget = new InputText();
+        }
         break;
 
       case COMPLEX_PANEL:
@@ -721,7 +725,7 @@ public enum FormWidget {
         }
         break;
 
-      case HYPERLINK:
+      case INTERNAL_LINK:
         widget = new InternalLink(html);
         break;
 
@@ -1888,10 +1892,15 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
         if (widget instanceof HasHorizontalAlignment) {
           UiHelper.setHorizontalAlignment((HasHorizontalAlignment) widget, value);
+        } else {
+          UiHelper.setHorizontalAlignment(widget.getElement(), value);
         }
+
       } else if (BeeUtils.same(name, UiConstants.ATTR_VERTICAL_ALIGNMENT)) {
         if (widget instanceof HasVerticalAlignment) {
           UiHelper.setVerticalAlignment((HasVerticalAlignment) widget, value);
+        } else {
+          UiHelper.setVerticalAlignment(widget.getElement(), value);
         }
 
       } else if (BeeUtils.same(name, ATTR_CELL_CLASS)) {

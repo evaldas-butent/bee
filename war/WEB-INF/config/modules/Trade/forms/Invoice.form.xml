@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY row "display: -webkit-flex; -webkit-align-items: flex-start;">
   <!ENTITY separator "<br/>">
   <!ENTITY lbl "width: 120px; margin-right: 1em; text-align: right;">
   <!ENTITY w2 "width: 160px;">
@@ -14,7 +13,7 @@
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel>
-      <FlowPanel style="&row;">
+      <FlowPanel class="flexBox-horizontal">
         <Label html="Data" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="&w2;" />
 
@@ -23,14 +22,14 @@
       </FlowPanel>
       &separator;
 
-      <FlowPanel style="&row;">
+      <FlowPanel class="flexBox-horizontal">
         <Label html="Sąskaitos ser." style="&lbl;" />
         <InputText source="InvoicePrefix" upperCase="true" />
         <InputText source="InvoiceNo" caption="Nr." />
       </FlowPanel>
       &separator;
 
-      <FlowPanel style="&row;">
+      <FlowPanel class="flexBox-horizontal">
         <Label html="Suma" style="&lbl;" />
         <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;">
           <render>
@@ -42,13 +41,13 @@
       </FlowPanel>
       &separator;
 
-      <FlowPanel style="&row;">
+      <FlowPanel class="flexBox-horizontal">
         <Label html="Klientas" style="&lbl;" />
         <DataSelector source="Customer" />
       </FlowPanel>
       &separator;
 
-      <FlowPanel style="&row;">
+      <FlowPanel class="flexBox-horizontal">
         <Label html="Vadybininkas" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" style="&w2;" />
       </FlowPanel>

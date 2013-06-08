@@ -121,11 +121,21 @@
 }
 
 .bee-tr-chart-dayPicture {
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: center;
   -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  align-items: flex-end;
   -webkit-align-items: flex-end;
+  -ms-flex-align: end;
+  align-content: flex-end;
   -webkit-align-content: flex-end;
+  -ms-flex-line-pack: end;
+  flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
 }
 .bee-tr-chart-dayPicture-tens {
   background-color: #888;
@@ -140,8 +150,12 @@
   left: 0;
   top: 0;
   overflow: hidden;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: space-around;
   -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
 }
 
 .bee-tr-chart-visibleRange-start:hover,
@@ -190,17 +204,31 @@
 .bee-tr-dtb-Driver-panel,
 .bee-tr-vtb-Number-panel {
   position: absolute;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: center;
   -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  align-items: center;
   -webkit-align-items: center;
+  -ms-flex-align: center;
   overflow: hidden;
 }
 .bee-tr-ss-trip-Group-panel {
   position: absolute;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  justify-content: space-between;  
   -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  align-items: center;
   -webkit-align-items: center;
+  -ms-flex-align: center;
   overflow: hidden;
 }
 .bee-tr-vtb-Info-panel {
@@ -261,6 +289,7 @@
 .bee-tr-vtb-Overlap {
   position: absolute;
   box-sizing: border-box;
+  -moz-box-sizing: border-box;
   border: 2px solid red;
   border-radius: 10px;
   pointer-events: none;
@@ -273,6 +302,7 @@
 .bee-tr-vtb-Freight-drag {
   background-image: linear-gradient(to bottom, white, white);
   box-sizing: border-box;
+  -moz-box-sizing: border-box;
   border: 2px inset darkgreen;
   color: black;
 }
@@ -339,8 +369,12 @@
   position: absolute;
   top: 0;
   bottom: 0;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
 }
 
 .bee-tr-chart-shipment-day-empty {
@@ -419,8 +453,12 @@
   left: 0;
   right: 2px;
   height: 16px;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
   -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
 }
 
 .bee-tr-chart-filter-data-itemContainer {
@@ -451,8 +489,12 @@
 
 .bee-tr-chart-filter-commandGroup {
   margin-top: 2px;
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: center;
   -webkit-justify-content: center;
+  -ms-flex-pack: center;
 }
 .bee-tr-chart-filter-commandClear {
   margin-left: 2em;

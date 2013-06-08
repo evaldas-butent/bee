@@ -28,7 +28,7 @@
       <renderToken source="OrganizerCompanyName" prefix=", " />
     </RelColumn>
 
-    <DataColumn name="ColorName" caption="Spalva">
+    <DataColumn name="ColorName" caption="=color">
       <dynStyle>
         <ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>
       </dynStyle>

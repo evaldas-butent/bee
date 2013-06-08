@@ -33,6 +33,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String clients();
 
   String closeTab();
+  
+  String color();
+
+  String colorIsInvalid();
 
   String companies();
 

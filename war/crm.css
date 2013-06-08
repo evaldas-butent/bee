@@ -3,7 +3,9 @@
   border-left: 1px solid #ccc;
 }
 .bee-crm-taskEvent-row {
+  display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
   border-bottom: 1px solid #ccc;
   padding: 2px 5px 2px;
 }
@@ -156,6 +158,10 @@
   background-color: yellow;
 }
 
+@keyframes spinMode {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
 @-webkit-keyframes spinMode {
   from {-webkit-transform: rotate(0deg);}
   to {-webkit-transform: rotate(360deg);}
@@ -164,6 +170,7 @@
 .bee-CellGridActiveRow .bee-crm-Mode-new,
 .bee-CellGridActiveRow .bee-crm-Mode-upd {
   border: 2px dashed blue;
+  animation: spinMode 2s linear infinite;
   -webkit-animation: spinMode 2s linear infinite;
 }
 
@@ -191,7 +198,9 @@
 }
 
 .bee-crm-taskEvent-col-Photo {
-   -webkit-align-self: center;
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
  }
 
 .bee-crm-taskEvent-Photo {

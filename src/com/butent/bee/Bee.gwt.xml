@@ -21,6 +21,11 @@
     <when-type-is class='com.butent.bee.client.Screen'/>
   </replace-with>
 
+  <replace-with class='com.butent.bee.client.modules.ec.EcScreen'>
+    <when-type-is class='com.butent.bee.client.Screen'/>
+    <when-property-is name='screen' value='ec'/> 
+  </replace-with>
+
   <replace-with class='com.butent.bee.client.screen.Mobile'>
     <when-type-is class='com.butent.bee.client.Screen'/>
     <when-property-is name='screen' value='mobile'/> 

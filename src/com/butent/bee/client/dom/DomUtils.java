@@ -87,7 +87,6 @@ public class DomUtils {
   public static final String ATTRIBUTE_POSITION = "position";
   public static final String ATTRIBUTE_ROW_SPAN = "rowSpan";
   public static final String ATTRIBUTE_STEP = "step";
-  public static final String ATTRIBUTE_TYPE = "type";
   public static final String ATTRIBUTE_VALUE = "value";
 
   public static final String ATTRIBUTE_DATA_INDEX = "data-idx";
@@ -417,8 +416,8 @@ public class DomUtils {
       return null;
     }
 
-    for (Element child = parent.getFirstChildElement(); child != null;
-        child = child.getNextSiblingElement()) {
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
       if (getDataIndex(child) == dataIndex) {
         return child;
       }
@@ -658,15 +657,15 @@ public class DomUtils {
       return null;
     }
 
-    for (Element child = parent.getFirstChildElement(); child != null;
-        child = child.getNextSiblingElement()) {
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
       if (UIObject.isVisible(child)) {
         return child;
       }
     }
     return null;
   }
-  
+
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
     if (nodes != null && nodes.getLength() > 0) {
@@ -806,7 +805,7 @@ public class DomUtils {
     if (elem.innerHTML) {
       var attributes = elem.attributes;
       var attrs = "";
-      for (var i = 0; i < attributes.length; i++) {
+      for ( var i = 0; i < attributes.length; i++) {
         attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
       }
       return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
@@ -1126,15 +1125,15 @@ public class DomUtils {
     Assert.notNull(obj);
     return getValueInt(obj.getElement());
   }
-  
+
   public static List<Element> getVisibleChildren(Element parent) {
     List<Element> result = Lists.newArrayList();
     if (parent == null) {
       return result;
     }
 
-    for (Element child = parent.getFirstChildElement(); child != null;
-        child = child.getNextSiblingElement()) {
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
       if (UIObject.isVisible(child)) {
         result.add(child);
       }
@@ -1227,7 +1226,7 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_BUTTON);
   }
-  
+
   public static boolean isChecked(Element elem) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);
@@ -1641,15 +1640,21 @@ public class DomUtils {
     obj.getElement().setId(s);
   }
 
-  public static void setInputType(Element elem, String type) {
+  public static boolean setInputType(Element elem, String type) {
     assertInputElement(elem);
     Assert.notEmpty(type);
-    elem.setAttribute(ATTRIBUTE_TYPE, type);
+    
+    if (Features.supportsInputType(type)) {
+      setType(InputElement.as(elem), type);
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  public static void setInputType(UIObject obj, String type) {
+  public static boolean setInputType(UIObject obj, String type) {
     Assert.notNull(obj);
-    setInputType(obj.getElement(), type);
+    return setInputType(obj.getElement(), type);
   }
 
   public static void setMax(UIObject obj, int max) {
@@ -1683,13 +1688,7 @@ public class DomUtils {
   }
 
   public static boolean setSearch(Element elem) {
-    assertInputElement(elem);
-    if (Features.supportsInputSearch()) {
-      setInputType(elem, TYPE_SEARCH);
-      return true;
-    } else {
-      return false;
-    }
+    return setInputType(elem, TYPE_SEARCH);
   }
 
   public static boolean setSearch(UIObject obj) {
@@ -1815,6 +1814,10 @@ public class DomUtils {
 
     body.removeChild(elem);
   }
+
+  private static native void setType(InputElement el, String tp) /*-{
+    el.type = tp;
+  }-*/;
 
   private static String transformNode(Node nd) {
     if (nd == null) {

@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.search;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.ui.FilterSupplierType;
@@ -15,8 +14,6 @@ public class FilterSupplierFactory {
       int sourceIndex, String label, List<String> searchColumns, FilterSupplierType type,
       List<String> renderColumns, List<String> orderColumns,
       String itemKey, Relation relation, String options) {
-
-    Assert.notEmpty(viewName);
 
     BeeColumn sourceColumn = BeeUtils.getQuietly(dataColumns, sourceIndex);
     BeeColumn filterColumn = BeeUtils.isEmpty(searchColumns) 

@@ -319,8 +319,6 @@ public class StyleUtils {
   public static final String STYLE_TEXT_TRANSFORM = "textTransform";
   public static final String STYLE_LETTER_SPACING = "letterSpacing";
 
-  public static final String STYLE_TRANSFORM = "webkitTransform";
-
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -428,6 +426,8 @@ public class StyleUtils {
 
   private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
+  private static String styleTransform = null;
+  
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
@@ -438,7 +438,7 @@ public class StyleUtils {
     }
     return cnt;
   }
-
+  
   public static String addClassName(String classes, String className) {
     Assert.notEmpty(className);
     if (BeeUtils.isEmpty(classes)) {
@@ -751,9 +751,9 @@ public class StyleUtils {
     clearTableLayout(obj.getElement());
   }
 
-  public static void clearTranform(Style st) {
+  public static void clearTransform(Style st) {
     Assert.notNull(st);
-    st.clearProperty(STYLE_TRANSFORM);
+    st.clearProperty(getStyleTransformPropertyName(st));
   }
 
   public static void clearWidth(Element el) {
@@ -2119,20 +2119,15 @@ public class StyleUtils {
     setSize(el.getStyle(), width, height);
   }
 
+  public static void setSize(Element el, Size size) {
+    Assert.notNull(el);
+    setSize(el.getStyle(), size);
+  }
+
   public static void setSize(Style st, int width, int height) {
     Assert.notNull(st);
     setWidth(st, width, DEFAULT_UNIT);
     setHeight(st, height, DEFAULT_UNIT);
-  }
-
-  public static void setSize(UIObject obj, int width, int height) {
-    Assert.notNull(obj);
-    setSize(obj.getElement(), width, height);
-  }
-
-  public static void setSize(Element el, Size size) {
-    Assert.notNull(el);
-    setSize(el.getStyle(), size);
   }
 
   public static void setSize(Style st, Size size) {
@@ -2143,11 +2138,16 @@ public class StyleUtils {
     setHeight(st, size.getHeight(), DEFAULT_UNIT);
   }
 
+  public static void setSize(UIObject obj, int width, int height) {
+    Assert.notNull(obj);
+    setSize(obj.getElement(), width, height);
+  }
+
   public static void setSize(UIObject obj, Size size) {
     Assert.notNull(obj);
     setSize(obj.getElement(), size);
   }
-  
+
   public static void setStyleDependentName(Element el, String style, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(style);
@@ -2157,7 +2157,7 @@ public class StyleUtils {
 
     setStyleName(el, primary + BeeConst.CHAR_MINUS + style.trim(), add);
   }
-
+  
   public static void setStyleName(Element el, String st, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(st);
@@ -2242,7 +2242,7 @@ public class StyleUtils {
 
   public static void setTransformRotate(Style st, int angle) {
     Assert.notNull(st);
-    st.setProperty(STYLE_TRANSFORM, "rotate(" + angle + "deg)");
+    st.setProperty(getStyleTransformPropertyName(st), "rotate(" + angle + "deg)");
   }
 
   public static void setTransformRotate(UIObject obj, int angle) {
@@ -2257,7 +2257,7 @@ public class StyleUtils {
 
   public static void setTransformScale(Style st, double x, double y) {
     Assert.notNull(st);
-    st.setProperty(STYLE_TRANSFORM, "scale(" + x + "," + y + ")");
+    st.setProperty(getStyleTransformPropertyName(st), "scale(" + x + "," + y + ")");
   }
 
   public static void setTransformScale(UIObject obj, double x, double y) {
@@ -2567,6 +2567,18 @@ public class StyleUtils {
       return null;
     }
     return getParentProperty(parent, name, computed, ignore, true);
+  }
+
+  private static String getStyleTransformPropertyName(Style st) {
+    if (styleTransform == null) {
+      String property = "webkitTransform";
+      if (JsUtils.hasProperty(st, property)) {
+        styleTransform = property;
+      } else {
+        styleTransform = "transform";
+      }
+    }
+    return styleTransform;
   }
 
   private static boolean hasProperty(Style st, String name) {

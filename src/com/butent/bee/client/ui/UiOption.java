@@ -5,13 +5,13 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum UiOption {
-  ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.WINDOW)),
-  CHILD(null),
-  EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH)),
+  ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.SETTINGS, Type.WINDOW)),
+  CHILD(EnumSet.of(Type.SETTINGS)),
+  EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH, Type.SETTINGS)),
   REPORT(EnumSet.of(Type.WINDOW));
   
   private enum Type {
-    PAGING, SEARCH, WINDOW
+    PAGING, SEARCH, SETTINGS, WINDOW
   }
 
   public static boolean hasPaging(Collection<UiOption> options) {
@@ -20,6 +20,10 @@ public enum UiOption {
 
   public static boolean hasSearch(Collection<UiOption> options) {
     return hasType(options, Type.SEARCH);
+  }
+
+  public static boolean hasSettings(Collection<UiOption> options) {
+    return hasType(options, Type.SETTINGS);
   }
   
   public static boolean isWindow(Collection<UiOption> options) {

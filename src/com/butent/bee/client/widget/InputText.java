@@ -194,7 +194,9 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       char charCode = (char) event.getCharCode();
 
       if (!acceptChar(charCode)) {
-        event.preventDefault();
+        if (event.getCharCode() != 0) {
+          event.preventDefault();
+        }
       } else if (isUpperCase()) {
         char upper = Character.toUpperCase(charCode);
         if (upper != charCode) {

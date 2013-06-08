@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form [
-  <!ENTITY separator "<br/>">
-]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -16,19 +13,13 @@
         <text>Papildoma informacija</text>
         <AbsolutePanel>
           <layer top="1" topUnit="ex" width="240">
-            <FlowPanel class="flexBox-vertical" style="-webkit-align-items: flex-end;">
+            <VerticalPanel horizontalAlignment="right" cellStyle="padding-top: 5px;">
               <DataSelector source="Fuel" caption="Kuro rūšis" />
-              &separator;
-            
               <InputInteger source="TankCapacity" caption="Kuro bako talpa l" style="width: 2em;" />
-              &separator;
               <InputInteger source="Speedometer" caption="Spidometro skalė" style="width: 5em;" />
-              &separator;
-
               <InputDate source="StartDate" caption="Eksploatacijos pradžia" style="width: 7em;" />
-              &separator;
               <InputDate source="EndDate" caption="Eksploatacijos pabaiga" style="width: 7em;" />
-            </FlowPanel>
+            </VerticalPanel>
           </layer>
           
           <layer left="260" right="0" top="0" height="50" heightUnit="%">

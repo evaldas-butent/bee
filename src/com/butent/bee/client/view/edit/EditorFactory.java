@@ -6,6 +6,7 @@ import com.butent.bee.client.composite.ColorEditor;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
@@ -176,7 +177,11 @@ public class EditorFactory {
         break;
         
       case COLOR:
-        editor = new ColorEditor();
+        if (Features.supportsInputColor()) {
+          editor = new ColorEditor();
+        } else {
+          editor = new InputText();
+        }
         break;
         
       case INTEGER:

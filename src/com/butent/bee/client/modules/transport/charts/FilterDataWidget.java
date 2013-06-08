@@ -119,7 +119,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.searchBox = new InputText();
     searchBox.addStyleName(STYLE_DATA_SEARCH);
-    DomUtils.setInputType(searchBox, DomUtils.TYPE_SEARCH);
+    DomUtils.setSearch(searchBox);
 
     searchBox.addInputHandler(new InputHandler() {
       @Override

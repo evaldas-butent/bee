@@ -179,12 +179,6 @@ public class DisplayWidget {
         }
         break;
 
-      case HYPERLINK:
-        if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
-          ((InternalLink) widget).setHTML(value);
-        }
-        break;
-
       case HTML_LABEL:
         if (widget instanceof Html) {
           ((Html) widget).setHTML(BeeUtils.trim(value));
@@ -206,6 +200,12 @@ public class DisplayWidget {
       case INTEGER_LABEL:
         if (widget instanceof IntegerLabel) {
           ((IntegerLabel) widget).setValue(BeeUtils.toIntOrNull(value));
+        }
+        break;
+
+      case INTERNAL_LINK:
+        if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
+          ((InternalLink) widget).setHTML(value);
         }
         break;
 

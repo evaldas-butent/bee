@@ -7,6 +7,6 @@
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="Pavadinimas" />
     <Char name="Label" precision="2" label="Žymėjimas" />
-    <Relation name="Color" relation="Colors" label="Spalva" />
+    <Relation name="Color" relation="Colors" label="=color" />
   </Fields>
 </Table>

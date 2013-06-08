@@ -37,9 +37,9 @@
   </row>
 
   <row>
-    <Label text="=documentReceived" horizontalAlignment="right" />
+    <Label text="=documentReceived" />
     <InputDateTime source="Received" />
-    <Label text="=documentSent" />
+    <Label text="=documentSent" horizontalAlignment="right" />
     <InputDateTime source="Sent" />
   </row>
   <row>

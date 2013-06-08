@@ -1,22 +1,23 @@
 package com.butent.bee.client.animation;
 
-import elemental.client.Browser;
+import com.butent.bee.client.dom.Features;
+
 import elemental.dom.RequestAnimationFrameCallback;
 
 public abstract class RafCallback implements RequestAnimationFrameCallback {
-  
-  private static void request(RequestAnimationFrameCallback callback) {
-    Browser.getWindow().webkitRequestAnimationFrame(callback);
-  }
+
+  private static native int request(RequestAnimationFrameCallback callback) /*-{
+    return $wnd.requestAnimationFrame($entry(callback.@elemental.dom.RequestAnimationFrameCallback::onRequestAnimationFrameCallback(D)).bind(callback));
+  }-*/;
 
   protected double duration;
-  
+
   private double startTime;
 
   public RafCallback(double duration) {
     this.duration = duration;
   }
-  
+
   public double getDuration() {
     return duration;
   }
@@ -25,9 +26,6 @@ public abstract class RafCallback implements RequestAnimationFrameCallback {
     return startTime;
   }
 
-  public void onComplete() {
-  }
-  
   @Override
   public boolean onRequestAnimationFrameCallback(double time) {
     double elapsed = time - startTime;
@@ -40,22 +38,29 @@ public abstract class RafCallback implements RequestAnimationFrameCallback {
     return true;
   }
 
-  public abstract boolean run(double elapsed);
-
   public void setDuration(double duration) {
     this.duration = duration;
   }
 
   public void start() {
-    request(new RequestAnimationFrameCallback() {
-      @Override
-      public boolean onRequestAnimationFrameCallback(double time) {
-        RafCallback.this.setStartTime(time);
-        request(RafCallback.this);
-        return false;
-      }
-    });
+    if (Features.supportsRequestAnimationFrame()) {
+      request(new RequestAnimationFrameCallback() {
+        @Override
+        public boolean onRequestAnimationFrameCallback(double time) {
+          RafCallback.this.setStartTime(time);
+          request(RafCallback.this);
+          return false;
+        }
+      });
+
+    } else {
+      onComplete();
+    }
   }
+
+  protected abstract void onComplete();
+
+  protected abstract boolean run(double elapsed);
 
   private void setStartTime(double startTime) {
     this.startTime = startTime;

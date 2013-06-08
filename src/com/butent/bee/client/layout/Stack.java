@@ -89,18 +89,17 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
 
     @Override
-    public void onComplete() {
-      super.onComplete();
-      StyleUtils.clearTranform(style);
+    protected void onComplete() {
+      StyleUtils.clearTransform(style);
     }
-    
+
     @Override
-    public boolean run(double elapsed) {
+    protected boolean run(double elapsed) {
       double factor = BeeUtils.rescale(elapsed, 0, getDuration(), FROM, TO);
       StyleUtils.setTransformScale(style, factor, factor);
       return true;
     }
-    
+
     private void start(Style st) {
       this.style = st;
       super.start();

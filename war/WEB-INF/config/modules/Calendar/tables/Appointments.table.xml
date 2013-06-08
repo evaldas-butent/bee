@@ -13,7 +13,7 @@
     <String name="Location" precision="100" label="Vieta" />
     <String name="HtmlLink" precision="200" />
 
-    <Relation name="Color" relation="Colors" label="Spalva" />
+    <Relation name="Color" relation="Colors" label="=color" />
     <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
 
     <Integer name="Status" defValue="0" label="Būsena" />

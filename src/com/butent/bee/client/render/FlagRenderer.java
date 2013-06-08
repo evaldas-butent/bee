@@ -34,6 +34,8 @@ public class FlagRenderer extends AbstractCellRenderer {
     }
     
     imageElement.setSrc(uri);
+    imageElement.setAlt(key);
+    
     return imageElement.getOuterHTML();
   }
 }

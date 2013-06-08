@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -23,8 +24,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.event.InputEvent;
-import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.Domain;
@@ -487,9 +486,9 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     add(attSelector);
 
     colorPicker.addStyleName(STYLE_COLOR_PICKER);
-    colorPicker.addInputHandler(new InputHandler() {
+    colorPicker.addColorChangeHandler(new Scheduler.ScheduledCommand() {
       @Override
-      public void onInput(InputEvent event) {
+      public void execute() {
         updateColor(getActiveRowId(), colorPicker.getValue());
       }
     });

@@ -197,7 +197,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, CommonsConstants.COL_COLOR);
       Long newColor = BeeUtils.getQuietly(colors, colorWidget.getSelectedTab());
       if (oldColor != null && newColor != null && !oldColor.equals(newColor)) {
-        changes.add("Spalva");
+        changes.add(Localized.constants.color());
       }
 
       if (changes.isEmpty()) {

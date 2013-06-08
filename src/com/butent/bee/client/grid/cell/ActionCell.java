@@ -43,7 +43,7 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     @Template("<button class=\"bee-ActionCellButton\">{0}</button>")
     SafeHtml button(String option);
 
-    @Template("<a href=\"javascript:;\" class=\"bee-ActionCellLink\">{0}</a>")
+    @Template("<div class=\"bee-ActionCellLink\">{0}</div>")
     SafeHtml link(String option);
   }
 

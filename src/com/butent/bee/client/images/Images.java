@@ -289,6 +289,8 @@ public class Images {
     }
 
     imageElement.setSrc(imageResource.getSafeUri().asString());
+    imageElement.setAlt(imageResource.getName());
+
     return imageElement.getOuterHTML();
   }
 

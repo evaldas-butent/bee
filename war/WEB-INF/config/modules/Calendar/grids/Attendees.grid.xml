@@ -21,7 +21,7 @@
 
     <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
     
-    <DataColumn name="ColorName" caption="Spalva" flexGrow="0" >
+    <DataColumn name="ColorName" caption="=color" flexGrow="0" >
       <dynStyle>
         <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
       </dynStyle>

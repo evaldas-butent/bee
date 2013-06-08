@@ -166,7 +166,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         disabledActions.add(Action.ADD);
       }
 
-      if (!disabledActions.contains(Action.CONFIGURE)) {
+      if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }
 

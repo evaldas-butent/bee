@@ -360,7 +360,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="Hyperlink" type="focusableWidget" substitutionGroup="widget" />
+  <xs:element name="InternalLink" type="labelType" substitutionGroup="widget" />
 
   <xs:element name="Label" type="labelType" substitutionGroup="widget" />
   <xs:element name="InlineLabel" type="labelType" substitutionGroup="widget" />

@@ -57,7 +57,7 @@ public class BrowsingContext {
   public static List<Property> getDocumentInfo() {
     Document document = JsBrowser.getDocument();
 
-    return PropertyUtils.createProperties(
+    List<Property> properties = PropertyUtils.createProperties(
         "Active Element", toString(document.getActiveElement()),
         "Alink Color", document.getAlinkColor(),
         "Bg Color", document.getBgColor(),
@@ -82,17 +82,23 @@ public class BrowsingContext {
         "Title", document.getTitle(),
         "URL", document.getURL(),
         "Vlink Color", document.getVlinkColor(),
-        "Webkit Visibility State", document.getWebkitVisibilityState(),
         "Width", document.getWidth(),
         "Xml Encoding", document.getXmlEncoding(),
         "Xml Version", document.getXmlVersion(),
         "Has Focus", document.hasFocus(),
-        "Webkit Fullscreen Enabled", document.isWebkitFullscreenEnabled(),
-        "Webkit Full Screen Keyboard Input Allowed",
-        document.isWebkitFullScreenKeyboardInputAllowed(),
-        "Webkit Hidden", document.isWebkitHidden(),
-        "Webkit Is Full Screen", document.isWebkitIsFullScreen(),
         "Xml Standalone", document.isXmlStandalone());
+
+    if (JsBrowser.getInfo().isWebKit()) {
+      PropertyUtils.addProperties(properties,
+          "Webkit Visibility State", document.getWebkitVisibilityState(),
+          "Webkit Fullscreen Enabled", document.isWebkitFullscreenEnabled(),
+          "Webkit Full Screen Keyboard Input Allowed",
+          document.isWebkitFullScreenKeyboardInputAllowed(),
+          "Webkit Hidden", document.isWebkitHidden(),
+          "Webkit Is Full Screen", document.isWebkitIsFullScreen());
+    }
+
+    return properties;
   }
 
   public static List<Property> getLocationInfo() {
@@ -177,7 +183,7 @@ public class BrowsingContext {
           "Unload Event Start", timing.getUnloadEventStart(),
           "Unload Event End", timing.getUnloadEventEnd());
     }
-    
+
     if (JsUtils.isFunction(performance, "now")) {
       result.add(new Property("Now", JsUtils.doMethod(performance, "now")));
     }

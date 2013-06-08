@@ -39,6 +39,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -331,7 +332,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
     }
 
     if (!Color.validate(normalizedValue)) {
-      messages.add(BeeUtils.joinWords("Neteisinga spalva:", normalizedValue));
+      messages.add(BeeUtils.joinWords(Localized.constants.colorIsInvalid(), normalizedValue));
     }
     return messages;
   }

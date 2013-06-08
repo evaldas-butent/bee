@@ -16,7 +16,7 @@
     <Integer name="Transparency" label="Persidengiamumas" />
     <Integer name="Ordinal" label="Eil. Nr." />
     
-    <Relation name="Color" relation="Colors" label="Spalva" />
+    <Relation name="Color" relation="Colors" label="=color" />
     <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
   </Fields>
 </Table>

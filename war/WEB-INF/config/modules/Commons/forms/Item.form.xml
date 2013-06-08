@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY row "display: -webkit-flex;">
   <!ENTITY separator "<br/>">
   <!ENTITY lbl "width: 100px; margin-right: 1em;">
 ]>
@@ -10,13 +9,13 @@
   name="Item" width="700" height="300"
   >
   <FlowPanel style="margin: 2ex 1em 0 1em;">
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label html="Pavadinimas:" class="bee-required" style="&lbl;" />
       <InputText source="Name" style="width: 500px;" />
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label html="Artikulas:" style="&lbl;" />
       <InputText source="Article" />
       <Label html="Mato vien.:" horizontalAlignment="right" class="bee-required" style="&lbl;" />
@@ -24,7 +23,7 @@
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label html="Barkodas:" style="&lbl;" />
       <InputText source="Barcode" />
       <Label html="Pard. kaina.:" horizontalAlignment="right" style="&lbl;" />
@@ -33,13 +32,13 @@
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <CheckBox source="Vat" html="PVM" style="margin-right:3px;" />
       <InputDecimal source="VatPercent" caption="%" decorator="caption-right" style="width: 30px;" />
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label html="Kategorijos:" style="&lbl;" />
       <MultiSelector viewName="CategoryTree" property="CategList" renderColumns="ParentName Name"
         style="width: 500px;" />
