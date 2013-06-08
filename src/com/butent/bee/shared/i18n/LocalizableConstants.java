@@ -4,11 +4,13 @@ import com.google.gwt.i18n.client.Constants;
 
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
 import com.butent.bee.shared.modules.crm.LocalizableCrmConstants;
+import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
-    LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants {
+    LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants,
+    LocalizableEcConstants {
 
   String address();
 
@@ -33,7 +35,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String clients();
 
   String closeTab();
-  
+
   String color();
 
   String colorIsInvalid();
@@ -73,7 +75,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String filterAll();
 
   String filterNotNullLabel();
-  
+
   String filterNullLabel();
 
   String initialFilter();
