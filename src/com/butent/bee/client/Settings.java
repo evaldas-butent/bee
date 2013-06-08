@@ -47,6 +47,18 @@ public class Settings {
     String value = getProperty("logLevel");
     return BeeUtils.isEmpty(value) ? null : LogLevel.parse(value);
   }
+
+  public static String getLogoImage() {
+    return getProperty("logoImage");
+  }
+
+  public static String getLogoOpen() {
+    return getProperty("logoOpen");
+  }
+
+  public static String getLogoTitle() {
+    return getProperty("logoTitle");
+  }
   
   public static String getProperty(String name) {
     Assert.notEmpty(name);

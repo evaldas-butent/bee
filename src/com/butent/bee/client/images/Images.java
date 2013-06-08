@@ -143,12 +143,6 @@ public class Images {
     @Source("loading.gif")
     ImageResource loading();
 
-    @Source("logo1.gif")
-    ImageResource logo1();
-
-    @Source("logo2.gif")
-    ImageResource logo2();
-
     @Source("next.png")
     ImageResource next();
 

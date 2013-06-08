@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -388,7 +389,10 @@ public class ScreenImpl implements Screen {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
 
-    panel.add(createLogo());
+    IdentifiableWidget logo = createLogo();
+    if (logo != null) {
+      panel.add(logo);
+    }
 
     panel.add(Global.getSearchWidget());
 
@@ -472,19 +476,34 @@ public class ScreenImpl implements Screen {
   }
 
   private IdentifiableWidget createLogo() {
-    CustomDiv container = new CustomDiv("bee-LogoContainer");
-
-    String ver = Settings.getVersion();
-    if (!BeeUtils.isEmpty(ver)) {
-      container.setTitle(ver);
+    String imageUrl = Settings.getLogoImage();
+    if (BeeUtils.isEmpty(imageUrl)) {
+      return null;
     }
-    container.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Window.open("http://www.butent.com", "", "");
+
+    CustomDiv widget = new CustomDiv("bee-LogoContainer");
+    StyleUtils.setBackgroundImage(widget, imageUrl);
+
+    final String title = Settings.getLogoTitle();
+    if (!BeeUtils.isEmpty(title)) {
+      widget.setTitle(title);
+    }
+
+    final String openUrl = Settings.getLogoOpen();
+    if (!BeeUtils.isEmpty(openUrl)) {
+      if (BeeUtils.isEmpty(title)) {
+        widget.setTitle(openUrl);
       }
-    });
-    return container;
+      widget.getElement().getStyle().setCursor(Cursor.POINTER);
+
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          Window.open(openUrl, "_blank", null);
+        }
+      });
+    }
+    return widget;
   }
 
   private CentralScrutinizer getCentralScrutinizer() {

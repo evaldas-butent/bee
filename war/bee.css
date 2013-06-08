@@ -96,11 +96,7 @@ body {
   top: 5px;
   width: 110px;
   height: 80px;
-  cursor: pointer;
-  background-image: url("images/logo.gif");
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
 }
 .bee-Screen {
   background-color: #fbfbfb;  
