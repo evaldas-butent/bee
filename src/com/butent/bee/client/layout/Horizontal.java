@@ -14,6 +14,7 @@ public class Horizontal extends CellVector {
 
   public Horizontal() {
     super();
+    addStyleName("bee-Horizontal");
 
     tableRow = DOM.createTR();
     DOM.appendChild(getBody(), tableRow);

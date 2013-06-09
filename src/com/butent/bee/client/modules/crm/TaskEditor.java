@@ -1409,7 +1409,7 @@ class TaskEditor extends AbstractFormInterceptor {
     
     if (BeeUtils.isEmpty(render)) {
       Image img = new Image(Global.getImages().silverChatIcon());
-      img.setStyleName(BeeKeeper.SIGNATURE_PHOTO_STYLE);
+      img.setStyleName(StyleUtils.USER_PHOTO);
       render = img.toString();
     }
 

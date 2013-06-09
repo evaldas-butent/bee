@@ -90,16 +90,14 @@ body {
   bottom: 0;
 }
 
-.bee-LogoContainer {
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  width: 110px;
-  height: 80px;
-  background-repeat: no-repeat;
-}
 .bee-Screen {
   background-color: #fbfbfb;  
+}
+
+.bee-Logo {
+  position: absolute;
+  left: 1em;
+  top: 1ex;
 }
 
 .bee-NorthContainer > div {
@@ -178,22 +176,18 @@ body {
 }
 
 .bee-UserContainer {
+  position: absolute;
   right: 10px;
   top: 35px;
-  width: 200px;
-  position: relative;
+  border-collapse: collapse;
 }
-.bee-UserSignature {
-  font-size: 13px;
-  position: absolute;
-  right: 27px;
-}  
 .bee-UserExitContainer {
+  margin-left: 1em;
+  margin-top: 5px;
   width: 20px;
   height: 27px;
   overflow: hidden;
-  position: absolute;
-  right: 0px;
+  position: relative;
   cursor: pointer;
 }
 .bee-UserExit {

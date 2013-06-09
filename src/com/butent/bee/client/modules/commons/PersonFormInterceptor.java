@@ -183,7 +183,7 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
             userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
             userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
             userData.setProperty(COL_PHOTO, BeeUtils.toString(result));
-            BeeKeeper.updateUserSignature(userData.getUserSign(), result);
+            BeeKeeper.getScreen().updateSignature(userData);
           }
 
           /* if uploading successful do save again */
@@ -198,8 +198,7 @@ public class PersonFormInterceptor extends AbstractFormInterceptor {
         userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
         userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
         userData.setProperty(COL_PHOTO, row.getString(form.getDataIndex(COL_PHOTO)));
-        BeeKeeper.updateUserSignature(userData.getUserSign(), row.getLong(form
-            .getDataIndex(COL_PHOTO)));
+        BeeKeeper.getScreen().updateSignature(userData);
       }
 
       Queries.update(VIEW_PERSONS, form.getDataColumns(), oldRow, row, form

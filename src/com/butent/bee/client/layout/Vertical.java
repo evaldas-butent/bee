@@ -12,6 +12,7 @@ public class Vertical extends CellVector  {
 
   public Vertical() {
     super();
+    addStyleName("bee-Vertical");
   }
 
   @Override

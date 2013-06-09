@@ -119,6 +119,10 @@ public class Settings {
     return getPropertyBoolean("minimizeNumberOfConcurrentRequests");
   }
 
+  public static boolean showUserPhoto() {
+    return getPropertyBoolean("showUserPhoto");
+  }
+
   private static boolean checkSettings() {
     if (!initialized) {
       readSettings();

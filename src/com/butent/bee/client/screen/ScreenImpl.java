@@ -22,19 +22,22 @@ import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -323,93 +326,97 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void updateSignature(String userSign) {
-    if (getSignature() != null) {
-      getSignature().asWidget().getElement().setInnerHTML(userSign);
+  public void updateSignature(UserData userData) {
+    if (userData != null && getSignature() != null) {
+      String userSign = userData.getUserSign();
+      Long photoId = Settings.showUserPhoto() ? userData.getPhotoId() : null;
+
+      String html;
+      if (photoId == null) {
+        html = userSign;
+      } else {
+        Image img = new Image(FileUtils.getUrl(userSign, photoId));
+        img.setAlt(userSign);
+        img.addStyleName(StyleUtils.USER_PHOTO);
+
+        html = img.toString() + userSign;
+      }
+
+      getSignature().getElement().setInnerHTML(html);
     }
   }
 
+  protected Widget createLogo() {
+    String imageUrl = Settings.getLogoImage();
+    if (BeeUtils.isEmpty(imageUrl)) {
+      return null;
+    }
+
+    Image widget = new Image(imageUrl);
+    widget.setAlt("logo");
+
+    final String title = Settings.getLogoTitle();
+    if (!BeeUtils.isEmpty(title)) {
+      widget.setTitle(title);
+    }
+
+    final String openUrl = Settings.getLogoOpen();
+    if (BeeUtils.isEmpty(openUrl)) {
+      widget.getElement().getStyle().setCursor(Cursor.DEFAULT);
+    } else {
+      if (BeeUtils.isEmpty(title)) {
+        widget.setTitle(openUrl);
+      }
+      widget.getElement().getStyle().setCursor(Cursor.POINTER);
+
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          Window.open(openUrl, "_blank", null);
+        }
+      });
+    }
+
+    return widget;
+  }
+
   protected void createUi() {
-    IdentifiableWidget w;
     Split p = new Split(0);
-    p.addStyleName("bee-Screen");
+    p.addStyleName(getScreenStyle());
 
-    w = initNorth();
-    if (w != null) {
-      p.addNorth(w, 100);
+    Pair<? extends IdentifiableWidget, Integer> north = initNorth();
+    if (north != null) {
+      p.addNorth(north.getA(), north.getB());
     }
 
-    w = initSouth();
-    if (w != null) {
-      p.addSouth(w, 0);
+    Pair<? extends IdentifiableWidget, Integer> south = initSouth();
+    if (south != null) {
+      p.addSouth(south.getA(), south.getB());
     }
 
-    w = initWest();
-    if (w != null) {
-      p.addWest(w, 240);
+    Pair<? extends IdentifiableWidget, Integer> west = initWest();
+    if (west != null) {
+      p.addWest(west.getA(), west.getB());
     }
 
-    w = initEast();
-    if (w != null) {
-      p.addEast(w, ClientLogManager.getInitialPanelSize());
+    Pair<? extends IdentifiableWidget, Integer> east = initEast();
+    if (east != null) {
+      p.addEast(east.getA(), east.getB());
     }
 
-    w = initCenter();
-    if (w != null) {
-      p.add(w);
+    IdentifiableWidget center = initCenter();
+    if (center != null) {
+      p.add(center);
     }
 
     getRootPanel().add(p);
     setScreenPanel(p);
   }
 
-  protected Notification getNotification() {
-    return notification;
-  }
+  protected Widget createUserContainer() {
+    Horizontal userContainer = new Horizontal();
 
-  protected LayoutPanel getRootPanel() {
-    return rootPanel;
-  }
-
-  protected IdentifiableWidget getSignature() {
-    return signature;
-  }
-
-  protected IdentifiableWidget initCenter() {
-    Workspace area = new Workspace();
-    setWorkspace(area);
-    return area;
-  }
-
-  protected IdentifiableWidget initEast() {
-    return ClientLogManager.getLogPanel();
-  }
-
-  protected IdentifiableWidget initNorth() {
-    Complex panel = new Complex();
-    panel.addStyleName("bee-NorthContainer");
-
-    IdentifiableWidget logo = createLogo();
-    if (logo != null) {
-      panel.add(logo);
-    }
-
-    panel.add(Global.getSearchWidget());
-
-    Flow commandContainer = new Flow();
-    commandContainer.addStyleName("bee-MainCommandPanel");
-    panel.add(commandContainer);
-    setCommandPanel(commandContainer);
-
-    Flow menuContainer = new Flow();
-    menuContainer.addStyleName("bee-MainMenu");
-    panel.add(menuContainer);
-    setMenuPanel(menuContainer);
-
-    Flow userContainer = new Flow();
-    userContainer.addStyleName("bee-UserContainer");
-
-    Label user = new Label();
+    Html user = new Html();
     user.addStyleName("bee-UserSignature");
     userContainer.add(user);
     setSignature(user);
@@ -435,6 +442,59 @@ public class ScreenImpl implements Screen {
     exitContainer.setWidget(exit);
     userContainer.add(exitContainer);
 
+    return userContainer;
+  }
+
+  protected Notification getNotification() {
+    return notification;
+  }
+
+  protected LayoutPanel getRootPanel() {
+    return rootPanel;
+  }
+
+  protected String getScreenStyle() {
+    return "bee-Screen";
+  }
+
+  protected IdentifiableWidget getSignature() {
+    return signature;
+  }
+
+  protected IdentifiableWidget initCenter() {
+    Workspace area = new Workspace();
+    setWorkspace(area);
+    return area;
+  }
+
+  protected Pair<? extends IdentifiableWidget, Integer> initEast() {
+    return Pair.of(ClientLogManager.getLogPanel(), ClientLogManager.getInitialPanelSize());
+  }
+  
+  protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
+    Complex panel = new Complex();
+    panel.addStyleName("bee-NorthContainer");
+
+    Widget logo = createLogo();
+    if (logo != null) {
+      logo.addStyleName("bee-Logo");
+      panel.add(logo);
+    }
+
+    panel.add(Global.getSearchWidget());
+
+    Flow commandContainer = new Flow();
+    commandContainer.addStyleName("bee-MainCommandPanel");
+    panel.add(commandContainer);
+    setCommandPanel(commandContainer);
+
+    Flow menuContainer = new Flow();
+    menuContainer.addStyleName("bee-MainMenu");
+    panel.add(menuContainer);
+    setMenuPanel(menuContainer);
+
+    Widget userContainer = createUserContainer();
+    userContainer.addStyleName("bee-UserContainer");
     panel.add(userContainer);
 
     Notification nw = new Notification();
@@ -442,21 +502,22 @@ public class ScreenImpl implements Screen {
     panel.add(nw);
     setNotification(nw);
 
-    return panel;
+    return Pair.of(panel, 100);
   }
 
-  protected IdentifiableWidget initSouth() {
+  protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
     Flow panel = new Flow();
     panel.addStyleName("bee-ProgressPanel");
     setProgressPanel(panel);
 
-    return panel;
+    return Pair.of(panel, 0);
   }
 
-  protected IdentifiableWidget initWest() {
+  protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
     getCentralScrutinizer().start();
-    return getCentralScrutinizer();
+
+    return Pair.of(getCentralScrutinizer(), 240);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {
@@ -473,37 +534,6 @@ public class ScreenImpl implements Screen {
 
   protected void setSignature(IdentifiableWidget signature) {
     this.signature = signature;
-  }
-
-  private IdentifiableWidget createLogo() {
-    String imageUrl = Settings.getLogoImage();
-    if (BeeUtils.isEmpty(imageUrl)) {
-      return null;
-    }
-
-    CustomDiv widget = new CustomDiv("bee-LogoContainer");
-    StyleUtils.setBackgroundImage(widget, imageUrl);
-
-    final String title = Settings.getLogoTitle();
-    if (!BeeUtils.isEmpty(title)) {
-      widget.setTitle(title);
-    }
-
-    final String openUrl = Settings.getLogoOpen();
-    if (!BeeUtils.isEmpty(openUrl)) {
-      if (BeeUtils.isEmpty(title)) {
-        widget.setTitle(openUrl);
-      }
-      widget.getElement().getStyle().setCursor(Cursor.POINTER);
-
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Window.open(openUrl, "_blank", null);
-        }
-      });
-    }
-    return widget;
   }
 
   private CentralScrutinizer getCentralScrutinizer() {

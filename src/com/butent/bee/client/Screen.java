@@ -8,6 +8,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.Workspace;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.data.UserData;
 
 /**
  * manages the main browser window and it's main containing elements (f.e. panels).
@@ -63,5 +64,5 @@ public interface Screen extends Module, NotificationListener {
 
   void updateProgress(String id, double value);
   
-  void updateSignature(String userSign);
+  void updateSignature(UserData userData);
 }

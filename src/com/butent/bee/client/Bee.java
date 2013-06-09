@@ -23,7 +23,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
@@ -76,9 +75,8 @@ public class Bee implements EntryPoint {
   private void load(Map<String, String> data) {
     UserData userData = UserData.restore(data.get(Service.LOGIN));
     BeeKeeper.getUser().setUserData(userData);
+    BeeKeeper.getScreen().updateSignature(userData);
 
-    BeeKeeper.updateUserSignature(userData.getUserSign(), BeeUtils.toLongOrNull(userData
-        .getProperty(CommonsConstants.COL_PHOTO)));
     BeeKeeper.getMenu().restore(data.get(Service.LOAD_MENU));
 
     Data.getDataInfoProvider().restore(data.get(Service.GET_DATA_INFO));

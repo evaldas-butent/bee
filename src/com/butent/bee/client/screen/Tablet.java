@@ -16,6 +16,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -76,12 +77,7 @@ public class Tablet extends Mobile {
   }
 
   @Override
-  protected int getWestWidth() {
-    return 160;
-  }
-
-  @Override
-  protected IdentifiableWidget initWest() {
+  protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     HtmlTable grid = new HtmlTable();
     int r = 0;
     int c = 2;
@@ -180,6 +176,6 @@ public class Tablet extends Mobile {
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    return grid;
+    return Pair.of(grid, 160);
   }
 }

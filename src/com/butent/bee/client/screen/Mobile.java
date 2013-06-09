@@ -19,16 +19,17 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -136,51 +137,17 @@ public class Mobile extends ScreenImpl {
 
   @Override
   protected void createUi() {
-    IdentifiableWidget w;
-    Split p = new Split(1);
-
-    w = initNorth();
-    if (w != null) {
-      p.addNorth(w, 60);
-    }
-
-    w = initSouth();
-    if (w != null) {
-      p.addSouth(w, 30);
-    }
-
-    w = initWest();
-    if (w != null) {
-      p.addWest(w, getWestWidth());
-    }
-
-    w = initEast();
-    if (w != null) {
-      p.addEast(w, BeeUtils.clamp(DomUtils.getClientWidth() / 5, 128, 300));
-    }
-
-    w = initCenter();
-    if (w != null) {
-      p.add(w);
-    }
-
-    getRootPanel().add(p);
-    setScreenPanel(p);
-
+    super.createUi();
     ClientLogManager.setPanelVisible(false);
-  }
-
-  protected int getWestWidth() {
-    return BeeUtils.clamp(DomUtils.getClientWidth() / 5, 100, 200);
   }
 
   @Override
   protected IdentifiableWidget initCenter() {
-    return null;
+    return new CustomDiv();
   }
   
   @Override
-  protected IdentifiableWidget initNorth() {
+  protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
     
@@ -194,11 +161,11 @@ public class Mobile extends ScreenImpl {
     setNotification(new Notification());
     panel.addRightTop(getNotification(), 1, 1);
 
-    return panel;
+    return Pair.of(panel, 60);
   }
 
   @Override
-  protected IdentifiableWidget initSouth() {
+  protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
     LayoutPanel p = new LayoutPanel();
 
     int width = DomUtils.getClientWidth();
@@ -235,11 +202,11 @@ public class Mobile extends ScreenImpl {
     int right = addLogToggle(p);
     p.addLeftRightTop(hor, pct + 12, CssUnit.PCT, right, CssUnit.PX, 1, CssUnit.PX);
 
-    return p;
+    return Pair.of(p, 30);
   }
 
   @Override
-  protected IdentifiableWidget initWest() {
+  protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     return null;
   }
 }

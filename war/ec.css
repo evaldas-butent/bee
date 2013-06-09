@@ -1,0 +1,90 @@
+.bee-ec-Screen {
+  background-color: #fbfbfb;  
+}
+
+.bee-ec-NorthContainer {
+  position: relative;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-ec-Logo {
+  margin-left: 1em;
+  margin-top: 1ex;
+}
+
+.bee-ec-GlobalSearchContainer {
+  position: absolute;
+  left: 180px;
+  top: 2ex;
+}
+.bee-ec-GlobalSearchBox {
+  width: 180px;
+  padding: 3px;
+}
+
+.bee-ec-commandPanel {
+  position: absolute;
+  border-collapse: collapse;
+}
+.bee-ec-Command {
+  color: #00d;
+}
+.bee-Horizontal .bee-ec-Command {
+  padding-left: 1em;
+}  
+
+.bee-ec-commandPanel-info {
+  left: 400px;
+  top: 2ex;
+}
+.bee-ec-commandPanel-contact {
+  left: 700px;
+  top: 2ex;
+}
+
+.bee-ec-commandPanel-searchBy {
+  left: 180px;
+  bottom: 3ex;
+}
+.bee-ec-commandPanel-searchOther {
+  left: 600px;
+  bottom: 3ex;
+}
+
+.bee-ec-commandPanel-cart {
+  right: 1em;
+  bottom: 2ex;
+}
+.bee-ec-commandPanel-cart td {
+  text-align: right;
+}
+
+.bee-ec-UserContainer {
+  position: absolute;
+  right: 1em;
+  top: 1ex;
+  border-collapse: collapse;
+}
+
+.bee-ec-Notifications {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
+.bee-ec-StartPanel {
+  margin: 1ex 2em;
+  overflow: auto;
+}
+.bee-ec-Featured-label, .bee-ec-Novelty-label {
+  font-size: large;
+  font-weight: bold;
+  margin-top: 2ex;
+}
+.bee-ec-Featured-container, .bee-ec-Novelty-container {
+  border: 5px ridge #ccc;
+}
+.bee-ec-Featured-item, .bee-ec-Novelty-item {
+  display: inline-block;
+  margin: 10px;
+}

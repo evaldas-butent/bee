@@ -11,6 +11,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -211,6 +212,10 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public String getLogin() {
     return login;
+  }
+  
+  public Long getPhotoId() {
+    return BeeUtils.toLongOrNull(getProperty(CommonsConstants.COL_PHOTO));    
   }
 
   public Map<String, String> getProperties() {
