@@ -91,13 +91,13 @@ public class Bee implements EntryPoint {
   }
 
   private void start() {
+    BeeKeeper.getScreen().onLoad();
+
     ModuleManager.onLoad();
 
     Data.init();
 
     Historian.start();
-
-    Global.getSearch().focus();
 
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }

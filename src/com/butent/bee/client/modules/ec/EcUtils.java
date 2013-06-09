@@ -10,11 +10,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class EcUtils {
+public class EcUtils {
   
   private static List<String> colors = Lists.newArrayList(Color.getNames().values()); 
   
-  static Widget randomPicture(int min, int max) {
+  public static Widget randomPicture(int min, int max) {
     CustomDiv widget = new CustomDiv();
     
     int width = BeeUtils.randomInt(min, max);

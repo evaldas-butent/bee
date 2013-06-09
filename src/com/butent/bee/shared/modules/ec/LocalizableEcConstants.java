@@ -32,6 +32,8 @@ public interface LocalizableEcConstants {
 
   String ecFinancialInformation();
 
+  String ecFoundItems();
+
   String ecGeneralItems();
 
   String ecInvoiceAmount();

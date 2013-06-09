@@ -47,6 +47,8 @@ public interface Screen extends Module, NotificationListener {
   int getWidth();
   
   Workspace getWorkspace();
+  
+  void onLoad();
 
   boolean removeDomainEntry(Domain domain, Long key);
   

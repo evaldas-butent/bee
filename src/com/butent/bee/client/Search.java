@@ -443,17 +443,17 @@ public class Search {
     super();
   }
 
+  public void focus() {
+    if (getInput() != null) {
+      getInput().setFocus(true);
+    }
+  }
+
   Widget ensureSearchWidget() {
     if (getSearchPanel() == null) {
       createSearchPanel();
     }
     return getSearchPanel();
-  }
-
-  void focus() {
-    if (getInput() != null) {
-      getInput().setFocus(true);
-    }
   }
 
   private void createSearchPanel() {

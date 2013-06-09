@@ -248,6 +248,11 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void onLoad() {
+    Global.getSearch().focus();
+  }
+
+  @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return getCentralScrutinizer().remove(domain, key);
   }
@@ -466,11 +471,11 @@ public class ScreenImpl implements Screen {
     setWorkspace(area);
     return area;
   }
-
+  
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
     return Pair.of(ClientLogManager.getLogPanel(), ClientLogManager.getInitialPanelSize());
   }
-  
+
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
