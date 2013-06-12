@@ -1,17 +1,16 @@
 package com.butent.bee.client.render;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ImageElement;
+
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import elemental.client.Browser;
-
-import elemental.html.ImageElement;
-
 public class FileIconRenderer extends AbstractCellRenderer {
   
-  private static final ImageElement imageElement = Browser.getDocument().createImageElement(); 
+  private static final ImageElement imageElement = Document.get().createImageElement(); 
 
   public FileIconRenderer(CellSource cellSource) {
     super(cellSource);
@@ -36,6 +35,6 @@ public class FileIconRenderer extends AbstractCellRenderer {
     imageElement.setSrc(src);
     imageElement.setAlt(icon);
 
-    return imageElement.getOuterHTML();
+    return imageElement.getString();
   }
 }

@@ -2,15 +2,14 @@ package com.butent.bee.client.images;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 
 import com.butent.bee.shared.Assert;
 
 import java.util.Map;
-
-import elemental.client.Browser;
-import elemental.html.ImageElement;
 
 /**
  * Handles a list of images used in the system.
@@ -275,7 +274,7 @@ public class Images {
 
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
-  private static final ImageElement imageElement = Browser.getDocument().createImageElement();
+  private static final ImageElement imageElement = Document.get().createImageElement();
 
   public static String asString(ImageResource imageResource) {
     if (imageResource == null) {
@@ -285,7 +284,7 @@ public class Images {
     imageElement.setSrc(imageResource.getSafeUri().asString());
     imageElement.setAlt(imageResource.getName());
 
-    return imageElement.getOuterHTML();
+    return imageElement.getString();
   }
 
   public static Resources createResources() {
