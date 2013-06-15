@@ -92,7 +92,7 @@ body {
 
 .bee-SignIn-Input:focus,
 .bee-SignIn-Button:focus {
-  outline: #058cf5 auto 3px;
+  outline: #80c4f9 solid 1px;
 }
 
 .bee-SignIn-Error {

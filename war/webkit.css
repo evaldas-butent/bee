@@ -98,6 +98,19 @@ input[type="checkbox"]:checked {
   margin: 0 3px -5px 0;
 }
 
+div:focus,
+.bee-TextBox:focus,
+.bee-ListBox:focus,
+.bee-InputArea:focus,
+.bee-Button:focus,
+.bee-SimpleCheckBox:focus,
+.bee-DataSelector-editable-active,
+.bee-MultiSelector-container-active,
+.bee-InputDate-active,
+.bee-InputTime-active {
+  outline-style: auto;
+}
+
 @media print {
   body {-webkit-print-color-adjust: exact;}
 }

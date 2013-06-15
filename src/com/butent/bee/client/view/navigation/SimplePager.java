@@ -133,8 +133,12 @@ public class SimplePager extends AbstractPager {
     container.add(widgetPrev);
 
     this.widgetInfo = new Html();
-    StyleUtils.setWidth(widgetInfo, getMaxInfoWidth(maxRowCount));
     widgetInfo.addStyleName(STYLE_INFO);
+
+    int width = getMaxInfoWidth(maxRowCount);
+    if (width > 0) {
+      StyleUtils.setMinWidth(widgetInfo, width);
+    }
 
     container.add(widgetInfo);
     container.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);

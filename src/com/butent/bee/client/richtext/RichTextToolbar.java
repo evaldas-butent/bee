@@ -12,14 +12,13 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.RichTextArea;
-import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.richtext.RichTextArea.Formatter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
@@ -153,9 +152,6 @@ public class RichTextToolbar extends Flow implements HasEnabled {
           }
         });
 
-      } else if (sender == removeLink) {
-        formatter.removeLink();
-
       } else if (sender == hr) {
         formatter.insertHorizontalRule();
       } else if (sender == ol) {
@@ -234,7 +230,6 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   private final Image ul;
   private final Image insertImage;
   private final Image createLink;
-  private final Image removeLink;
   private final Image removeFormat;
   private final Image insertHtml;
   private final Image undo;
@@ -280,16 +275,20 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     firstRow.add(indent = createButton(images.indent(), "Indent Right"));
     firstRow.add(outdent = createButton(images.outdent(), "Indent Left"));
     firstRow.add(createSpacer());
+    
+    if (formatter.queryCommandSupported("InsertHTML")) {
+      firstRow.add(insertHtml = createButton(Global.getImages().html(), "Insert HTML"));
+    } else {
+      insertHtml = null;
+    }
 
-    firstRow.add(insertHtml = createButton(Global.getImages().html(), "Insert HTML"));
     firstRow.add(hr = createButton(images.hr(), "Insert Horizontal Rule"));
     firstRow.add(ol = createButton(images.ol(), "Insert Ordered List"));
     firstRow.add(ul = createButton(images.ul(), "Insert Unordered List"));
-    firstRow.add(insertImage = createButton(images.insertImage(), "Insert Image"));
     firstRow.add(createSpacer());
 
+    firstRow.add(insertImage = createButton(images.insertImage(), "Insert Image"));
     firstRow.add(createLink = createButton(images.createLink(), "Create Link"));
-    firstRow.add(removeLink = createButton(images.removeLink(), "Remove Link"));
     
     if (!embedded) {
       firstRow.add(createSpacer(1.0, CssUnit.EM));

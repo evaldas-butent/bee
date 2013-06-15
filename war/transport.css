@@ -414,6 +414,9 @@
 .bee-tr-chart-filter-data-wrapper {
   overflow: auto;
 }
+.bee-tr-chart-filter-data-panel {
+  overflow: hidden;
+}
 
 .bee-tr-chart-filter-data-caption {
   height: 35px;

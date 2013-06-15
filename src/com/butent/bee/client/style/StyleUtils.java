@@ -1169,7 +1169,7 @@ public class StyleUtils {
 
   public static int getZIndex(Style st) {
     Assert.notNull(st);
-    return BeeUtils.toInt(st.getZIndex());
+    return BeeUtils.toInt(JsUtils.getProperty(st, STYLE_Z_INDEX));
   }
 
   public static int getZIndex(UIObject obj) {
@@ -2465,7 +2465,7 @@ public class StyleUtils {
     List<Property> properties = parseStyles(styles);
     if (properties != null) {
       for (Property property : properties) {
-        st.setProperty(camelize(property.getName()), property.getValue());
+        st.setProperty(checkPropertyName(property.getName()), property.getValue());
       }
     }
   }
@@ -2519,9 +2519,17 @@ public class StyleUtils {
     Assert.notNull(obj);
     zeroWidth(obj.getElement());
   }
-
+  
   private static String camelize(String name) {
     return NameUtils.camelize(name, NAME_DELIMITER);
+  }
+
+  private static String checkPropertyName(String name) {
+    if ("float".equals(name)) {
+      return "cssFloat";
+    } else {
+      return camelize(name);
+    }
   }
 
   private static void clearStyleProperty(Style style, String name) {

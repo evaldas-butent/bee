@@ -23,7 +23,7 @@
   
   name="NewTask" caption="Nauja užduotis" width="650" height="520">
 
-  <FlowPanel style="margin: 10px 2px 2px 10px;">
+  <FlowPanel style="padding: 10px 2px 2px 10px;">
 
     <FlowPanel style="&section;">
       <Label html="Užduočių šablonas:" style="&lbl1;" />

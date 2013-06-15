@@ -1117,7 +1117,7 @@ public class Features {
     if (element == null) {
       return false;
     }
-    return BeeUtils.containsSame(JsUtils.transform(element), "svg");
+    return BeeUtils.containsSame(element.getString(), "svg");
   }
 
   private static boolean testSvg() {
@@ -1130,7 +1130,7 @@ public class Features {
     if (element == null) {
       return false;
     }
-    return BeeUtils.containsSame(JsUtils.transform(element), "svg");
+    return BeeUtils.containsSame(element.getString(), "svg");
   }
 
   private static boolean testSvgInline() {

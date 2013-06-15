@@ -333,18 +333,6 @@ public class JsUtils {
     return "";
   }-*/;
 
-  public static native String transform(double x, int dec) /*-{
-    return x.toFixed(dec);
-  }-*/;
-
-  public static native String transform(int x) /*-{
-    return x.toString();
-  }-*/;
-
-  public static native String transform(JavaScriptObject obj) /*-{
-    return String(obj);
-  }-*/;
-
   private JsUtils() {
   }
 }

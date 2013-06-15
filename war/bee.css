@@ -704,6 +704,9 @@ body {
   justify-content: space-around;
   -webkit-justify-content: space-around;
   -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   margin-bottom: 5px;
 }
 .bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
@@ -882,7 +885,7 @@ body {
   padding-bottom: 1px;
   background-image: url("images/silver/tree_rtb.gif");
   background-repeat: no-repeat;
-  background-position-x: 5px;
+  background-position: 5px 0px;
 }
 
 .bee-TreeItem-leafContainer:last-of-type {
@@ -892,7 +895,7 @@ body {
 .bee-TreeItem-branchContainer {
   background-image: url('images/silver/tree_tb.gif');
   background-repeat: repeat-y;
-  background-position-x: 5px;
+  background-position: 5px 0px;
 }
 
 .bee-TreeItem-branchContainer:last-of-type {
@@ -910,8 +913,7 @@ body {
 .bee-TreeItem-imageCell {
   background-image: url("images/silver/tree_rt_plus.gif");
   background-repeat: no-repeat;
-  background-position-x: 3px;
-  background-position-y: 3px;
+  background-position: 3px 3px;
 }
 
 .bee-TreeItem-selected {
@@ -1829,7 +1831,7 @@ div:focus,
 .bee-MultiSelector-container-active,
 .bee-InputDate-active,
 .bee-InputTime-active {
-  outline: #058cf5 auto 3px;
+  outline: #80c4f9 solid 1px;
 }
 
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
