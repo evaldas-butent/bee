@@ -138,7 +138,11 @@ public interface LocalizableEcConstants {
 
   String ecShoppingCartAlternative();
 
+  String ecShoppingCartAlternativeShort();
+
   String ecShoppingCartMain();
+
+  String ecShoppingCartMainShort();
 
   String ecStockAsk();
 

@@ -10,12 +10,12 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.ec.EcItem;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 

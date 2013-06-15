@@ -3,9 +3,9 @@ package com.butent.bee.client.modules.ec.view;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
-import com.butent.bee.client.modules.ec.EcItem;
 import com.butent.bee.client.modules.ec.widget.ItemList;
 import com.butent.bee.client.modules.ec.widget.ItemSelector;
+import com.butent.bee.shared.modules.ec.EcItem;
 
 import java.util.List;
 

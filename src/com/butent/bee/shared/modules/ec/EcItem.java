@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.ec;
+package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -57,7 +57,15 @@ public class EcItem {
   public boolean hasAnalogs() {
     return true;
   }
+  
+  public boolean isFeatured() {
+    return true;
+  }
 
+  public boolean isNovelty() {
+    return true;
+  }
+  
   public void setQuantity(int quantity) {
     this.quantity = quantity;
   }

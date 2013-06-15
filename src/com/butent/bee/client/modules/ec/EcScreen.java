@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -109,7 +110,7 @@ public class EcScreen extends ScreenImpl {
     int size = cartSize.get(cartType) + count;
     cartSize.put(cartType, size);
     
-    getCartTable().setText(cartType.getIndex(), CART_COL_SIZE, renderCartSize(cartType));
+    getCartTable().setText(cartType.ordinal(), CART_COL_SIZE, renderCartSize(cartType));
   }
   
   @Override
@@ -144,6 +145,8 @@ public class EcScreen extends ScreenImpl {
     if (getSearchBox() != null) {
       getSearchBox().setFocus(true);
     }
+    
+    EcKeeper.showFeaturedAndNoveltyItems();
   }
   
   @Override
@@ -178,55 +181,13 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   protected IdentifiableWidget initCenter() {
-    Flow panel = new Flow();
-    EcStyles.add(panel, "StartPanel");
-    
-    String styleLabel = "label";
-    String styleContainer = "container";
-    String styleItem = "item";
-
-    String style = "Featured";
-    
-    Label featuredLabel = new Label(Localized.constants.ecFeaturedItems());
-    EcStyles.add(featuredLabel, style, styleLabel);
-    panel.add(featuredLabel);
-    
-    Flow featuredContainer = new Flow(); 
-    EcStyles.add(featuredContainer, style, styleContainer);
-    
-    int count = BeeUtils.randomInt(2, 10);
-    for (int i = 0; i < count; i++) {
-      Widget item = EcUtils.randomPicture(60, 200);
-      EcStyles.add(item, style, styleItem);
-      featuredContainer.add(item);
-    }
-    
-    panel.add(featuredContainer);
-    
-    style = "Novelty";
-
-    Label noveltyLabel = new Label(Localized.constants.ecNoveltyItems());
-    EcStyles.add(noveltyLabel, style, styleLabel);
-    panel.add(noveltyLabel);
-
-    Flow noveltyContainer = new Flow(); 
-    EcStyles.add(noveltyContainer, style, styleContainer);
-    
-    count = BeeUtils.randomInt(5, 25);
-    for (int i = 0; i < count; i++) {
-      Widget item = EcUtils.randomPicture(30, 120);
-      EcStyles.add(item, style, styleItem);
-      noveltyContainer.add(item);
-    }
-    
-    panel.add(noveltyContainer);
-    
-    return panel;
+    return new CustomDiv();
   }
   
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
-    return Pair.of(ClientLogManager.getLogPanel(), 0);
+//    return Pair.of(ClientLogManager.getLogPanel(), 0);
+    return Pair.of(ClientLogManager.getLogPanel(), 100);
   }
   
   @Override
@@ -234,7 +195,13 @@ public class EcScreen extends ScreenImpl {
     Flow panel = new Flow();
     EcStyles.add(panel, "NorthContainer");
 
-    Widget logo = createLogo();
+    Widget logo = createLogo(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        EcKeeper.showFeaturedAndNoveltyItems();
+      }
+    });
+
     if (logo != null) {
       EcStyles.add(logo, "Logo");
       panel.add(logo);
@@ -266,18 +233,19 @@ public class EcScreen extends ScreenImpl {
     shell.restore();
     
     Simple wrapper = new Simple(shell);
-    return Pair.of(wrapper, 0);
+//    return Pair.of(wrapper, 0);
+    return Pair.of(wrapper, 100);
   }
   
   private HtmlTable createCartTable() {
     HtmlTable table = new HtmlTable();
     EcStyles.add(table, "cartTable");
     
-    for (CartType cartType : EcConstants.cartTypesOrderedByIndex) {
-      int row = cartType.getIndex();
-
+    for (CartType cartType : CartType.values()) {
+      int row = cartType.ordinal();
+      
       table.setWidget(row, CART_COL_CAPTION, 
-          createCommandWidget(cartType.getService(), cartType.getCaption()));
+          createCommandWidget(cartType.getService(), cartType.getLabel()));
       table.setText(row, CART_COL_SIZE, renderCartSize(cartType));
     }
     
@@ -290,24 +258,24 @@ public class EcScreen extends ScreenImpl {
   private void createCommands(HasWidgets container) {
     String panelStyle = "commandPanel";
     
+    Horizontal fin = new Horizontal();
+    EcStyles.add(fin, panelStyle);
+    EcStyles.add(fin, panelStyle, "fin");
+    
+    fin.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
+        Localized.constants.ecFinancialInformation()));
+
+    container.add(fin);
+    
     Horizontal info = new Horizontal();
     EcStyles.add(info, panelStyle);
     EcStyles.add(info, panelStyle, "info");
     
-    info.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
-        Localized.constants.ecFinancialInformation()));
     info.add(createCommandWidget(EcConstants.SVC_TERMS_OF_DELIVERY,
         Localized.constants.ecTermsOfDelivery()));
-
+    info.add(createCommandWidget(EcConstants.SVC_CONTACTS, Localized.constants.ecContacts()));
+    
     container.add(info);
-    
-    Horizontal contact = new Horizontal();
-    EcStyles.add(contact, panelStyle);
-    EcStyles.add(contact, panelStyle, "contact");
-    
-    contact.add(createCommandWidget(EcConstants.SVC_CONTACTS, Localized.constants.ecContacts()));
-    
-    container.add(contact);
 
     Horizontal searchBy = new Horizontal();
     EcStyles.add(searchBy, panelStyle);
@@ -399,8 +367,8 @@ public class EcScreen extends ScreenImpl {
   }
 
   private void renderCartActivity(HtmlTable table) {
-    for (CartType cartType : EcConstants.cartTypesOrderedByIndex) {
-      int row = cartType.getIndex();
+    for (CartType cartType : CartType.values()) {
+      int row = cartType.ordinal();
 
       if (getActiveCart() == cartType) {
         table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderActiveCart(),

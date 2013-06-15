@@ -14,7 +14,7 @@
 
 .bee-ec-GlobalSearchContainer {
   position: absolute;
-  left: 180px;
+  left: 160px;
   top: 2ex;
 }
 .bee-ec-GlobalSearchBox {
@@ -36,21 +36,21 @@
   padding-left: 1em;
 }  
 
-.bee-ec-commandPanel-info {
+.bee-ec-commandPanel-fin {
   left: 400px;
   top: 2ex;
 }
-.bee-ec-commandPanel-contact {
-  left: 700px;
+.bee-ec-commandPanel-info {
+  left: 580px;
   top: 2ex;
 }
 
 .bee-ec-commandPanel-searchBy {
-  left: 180px;
+  left: 160px;
   bottom: 3ex;
 }
 .bee-ec-commandPanel-searchOther {
-  left: 600px;
+  left: 580px;
   bottom: 3ex;
 }
 

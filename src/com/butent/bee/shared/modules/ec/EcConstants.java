@@ -1,25 +1,23 @@
 package com.butent.bee.shared.modules.ec;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
-
-import java.util.List;
 
 public class EcConstants {
   
   public enum CartType implements HasCaption {
-    MAIN(Localized.constants.ecShoppingCartMain(), 0, "shoppingCartMain"),
-    ALTERNATIVE(Localized.constants.ecShoppingCartAlternative(), 1, "shoppingCartAlternative");
+    MAIN(Localized.constants.ecShoppingCartMain(),
+        Localized.constants.ecShoppingCartMainShort(), "shoppingCartMain"),
+    ALTERNATIVE(Localized.constants.ecShoppingCartAlternative(),
+        Localized.constants.ecShoppingCartAlternativeShort(), "shoppingCartAlternative");
     
     private final String caption;
-    private final int index;
+    private final String label;
     private final String service;
 
-    private CartType(String caption, int index, String service) {
+    private CartType(String caption, String label, String service) {
       this.caption = caption;
-      this.index = index;
+      this.label = label;
       this.service = service;
     }
     
@@ -27,9 +25,9 @@ public class EcConstants {
     public String getCaption() {
       return caption;
     }
-
-    public int getIndex() {
-      return index;
+    
+    public String getLabel() {
+      return label;
     }
 
     public String getService() {
@@ -37,12 +35,16 @@ public class EcConstants {
     }
   }
   
-  public static final List<CartType> cartTypesOrderedByIndex = 
-      Lists.newArrayList(CartType.MAIN, CartType.ALTERNATIVE);
+  public static final String EC_MODULE = "Ec";
+  public static final String EC_METHOD = EC_MODULE + "Method";
+  
+  public static final String SVC_FEATURED_AND_NOVELTY = "featuredAndNovelty";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
   public static final String SVC_TERMS_OF_DELIVERY = "termsOfDelivery";
   public static final String SVC_CONTACTS = "contacts";
+
+  public static final String SVC_SEARCH_GEBERAL = "searchGeneral";
 
   public static final String SVC_SEARCH_BY_ITEM_CODE = "searchByItemCode";
   public static final String SVC_SEARCH_BY_OE_NUMBER = "searchByOeNumber";

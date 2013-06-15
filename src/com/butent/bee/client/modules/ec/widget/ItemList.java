@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.ec.EcItem;
 import com.butent.bee.client.modules.ec.EcScreen;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
@@ -17,6 +16,7 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;

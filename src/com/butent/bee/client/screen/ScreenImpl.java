@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -351,7 +352,7 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  protected Widget createLogo() {
+  protected Widget createLogo(ScheduledCommand command) {
     String imageUrl = Settings.getLogoImage();
     if (BeeUtils.isEmpty(imageUrl)) {
       return null;
@@ -367,12 +368,16 @@ public class ScreenImpl implements Screen {
 
     final String openUrl = Settings.getLogoOpen();
     if (BeeUtils.isEmpty(openUrl)) {
-      widget.getElement().getStyle().setCursor(Cursor.DEFAULT);
+      if (command == null) {
+        widget.getElement().getStyle().setCursor(Cursor.DEFAULT);
+      } else {
+        widget.setCommand(command);
+      }
+
     } else {
       if (BeeUtils.isEmpty(title)) {
         widget.setTitle(openUrl);
       }
-      widget.getElement().getStyle().setCursor(Cursor.POINTER);
 
       widget.addClickHandler(new ClickHandler() {
         @Override
@@ -480,7 +485,7 @@ public class ScreenImpl implements Screen {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
 
-    Widget logo = createLogo();
+    Widget logo = createLogo(null);
     if (logo != null) {
       logo.addStyleName("bee-Logo");
       panel.add(logo);

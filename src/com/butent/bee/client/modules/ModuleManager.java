@@ -3,6 +3,7 @@ package com.butent.bee.client.modules;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.crm.CrmKeeper;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -22,6 +23,8 @@ public class ModuleManager {
     CalendarKeeper.register();
     MailKeeper.register();
     TradeKeeper.register();
+
+    EcKeeper.register();
   }
 
   private ModuleManager() {

@@ -185,6 +185,10 @@ public class ResponseObject implements BeeSerializable {
 
     return res;
   }
+  
+  public String getResponseAsString() {
+    return (String) getResponse();
+  }
 
   public String getType() {
     return type;

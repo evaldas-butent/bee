@@ -45,7 +45,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
 
   public Image(ImageResource resource, ScheduledCommand cmnd) {
     this(resource);
-    initCommand(cmnd);
+    setCommand(cmnd);
   }
   
   public Image(ImageResource resource, ScheduledCommand cmnd, String styleDisabled) {
@@ -128,6 +128,9 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   @Override
   public void setCommand(ScheduledCommand command) {
     this.command = command;
+    if (command != null) {
+      sinkEvents(Event.ONCLICK);
+    }
   }
 
   @Override
@@ -162,12 +165,5 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
 
   private ImageElement getImageElement() {
     return ImageElement.as(getElement());
-  }
-  
-  private void initCommand(ScheduledCommand cmnd) {
-    if (cmnd != null) {
-      setCommand(cmnd);
-      sinkEvents(Event.ONCLICK);
-    }
   }
 }
