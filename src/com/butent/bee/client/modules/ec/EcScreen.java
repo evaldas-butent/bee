@@ -190,8 +190,7 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
-    // return Pair.of(ClientLogManager.getLogPanel(), 0);
-    return Pair.of(ClientLogManager.getLogPanel(), 300);
+    return Pair.of(ClientLogManager.getLogPanel(), 0);
   }
 
   @Override
@@ -237,19 +236,20 @@ public class EcScreen extends ScreenImpl {
     shell.restore();
 
     Simple wrapper = new Simple(shell);
-    // return Pair.of(wrapper, 0);
-    return Pair.of(wrapper, 200);
+    return Pair.of(wrapper, 0);
   }
 
   private HtmlTable createCartTable() {
+    String style = "cartTable";
     HtmlTable table = new HtmlTable();
-    EcStyles.add(table, "cartTable");
+    EcStyles.add(table, style);
 
     for (CartType cartType : CartType.values()) {
       int row = cartType.ordinal();
+      
+      Label label = new Label(cartType.getLabel());
+      table.setWidgetAndStyle(row, CART_COL_CAPTION, label, EcStyles.name(style, "label"));
 
-      table.setWidget(row, CART_COL_CAPTION,
-          createCommandWidget(cartType.getService(), cartType.getLabel()));
       table.setText(row, CART_COL_SIZE, renderCartSize(cartType));
     }
 
@@ -392,15 +392,23 @@ public class EcScreen extends ScreenImpl {
   }
 
   private void renderCartActivity(HtmlTable table) {
+    String activeRowStyle = EcStyles.name("cartRowActive");
+    String inactiveRowStyle = EcStyles.name("cartRowInactive");
+
     for (CartType cartType : CartType.values()) {
       int row = cartType.ordinal();
 
       if (getActiveCart() == cartType) {
         table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderActiveCart(),
             EcStyles.name("cartActive"));
+        table.getRowFormatter().removeStyleName(row, inactiveRowStyle);
+        table.getRowFormatter().addStyleName(row, activeRowStyle);
+
       } else {
         table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderInactiveCart(cartType),
             EcStyles.name("cartInactive"));
+        table.getRowFormatter().removeStyleName(row, activeRowStyle);
+        table.getRowFormatter().addStyleName(row, inactiveRowStyle);
       }
     }
   }

@@ -60,6 +60,12 @@
   bottom: 2ex;
   border-collapse: collapse;
 }
+.bee-ec-cartRowActive .bee-ec-cartTable-label {
+}  
+.bee-ec-cartRowInactive .bee-ec-cartTable-label {
+  color: #888;
+}  
+
 .bee-ec-cartInactive {
   width: 12px;
   height: 12px;
@@ -113,37 +119,24 @@
 .bee-ec-ItemList-table {
   border-collapse: collapse;
 }
-.bee-ec-ItemList-table td {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-}
-
 .bee-ec-ItemList-headerRow td {
   text-align: center;
-  border: none;
+  padding: 5px 10px;
 }
 .bee-ec-ItemList-warehouse {
   font-weight: bold;
 }
 
-.bee-ec-ItemList-picture-cell, .bee-ec-ItemList-quantity-cell {
-  border-right: none !important;
+.bee-ec-ItemList-itemRow > td {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
 }
-.bee-ec-ItemList-info-cell, .bee-ec-ItemList-cart-cell {
-  border-left: none !important;
-}
-
 .bee-ec-ItemList-itemRow:hover {
   background-color: #dfd;
 }
 
 .bee-ec-ItemList-stock1-cell, .bee-ec-ItemList-stock2-cell {
   text-align: right;
-}
-
-.bee-ec-ItemList-quantity {
-  width: 60px;
-  font-size: medium;
 }
 
 .bee-ec-ItemList-name {
@@ -162,9 +155,23 @@
   margin-top: 3px;
   font-size: medium;
 }
-
 .bee-ec-ItemList-manufacturer-container, .bee-ec-ItemList-category-container {
   font-size: 12px;
+}
+
+.bee-ec-ItemList-quantity {
+  border-collapse: collapse;
+}
+.bee-ec-ItemList-quantity-input {
+  width: 50px;
+  font-size: medium;
+}
+.bee-ec-ItemList-quantity-spin {
+  margin-left: 2px;
+  margin-right: 1em;
+}
+.bee-ec-ItemList-quantity-plus, .bee-ec-ItemList-quantity-minus {
+  display: block;
 }
 
 .bee-ec-ItemPanel {

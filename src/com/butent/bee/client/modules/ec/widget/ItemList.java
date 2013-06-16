@@ -5,15 +5,17 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcScreen;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InputSpinner;
+import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -55,7 +57,6 @@ public class ItemList extends Simple {
   private static final int COL_STOCK_1 = 2;
   private static final int COL_STOCK_2 = 3;
   private static final int COL_QUANTITY = 4;
-  private static final int COL_CART = 5;
 
   private final HtmlTable table;
 
@@ -104,22 +105,6 @@ public class ItemList extends Simple {
         renderItem(row++, item);
       }
     }
-  }
-
-  private Widget renderCart() {
-    Image image = new Image("images/shoppingcart_add.png");
-    image.setAlt("cart");
-
-    image.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (BeeKeeper.getScreen() instanceof EcScreen) {
-          ((EcScreen) BeeKeeper.getScreen()).addToCart(1);
-        }
-      }
-    });
-
-    return image;
   }
 
   private Widget renderInfo(EcItem item) {
@@ -224,10 +209,6 @@ public class ItemList extends Simple {
     if (qty != null) {
       table.setWidgetAndStyle(row, COL_QUANTITY, qty, STYLE_QUANTITY);
     }
-    Widget cart = renderCart();
-    if (cart != null) {
-      table.setWidgetAndStyle(row, COL_CART, cart, STYLE_CART);
-    }
 
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
@@ -237,11 +218,59 @@ public class ItemList extends Simple {
   }
 
   private Widget renderQuantity(int quantity) {
-    InputSpinner spinner = new InputSpinner();
-    spinner.setValue(quantity);
-    spinner.setMinValue("1");
+    String stylePrefix = STYLE_QUANTITY + "-";
 
-    return spinner;
+    Horizontal panel = new Horizontal();
+    final InputInteger input = new InputInteger(quantity);
+    input.addStyleName(stylePrefix + "input");
+    panel.add(input);
+    
+    Flow spin = new Flow(stylePrefix + "spin");
+    
+    Image plus = new Image(Global.getImages().silverPlus());
+    plus.addStyleName(stylePrefix + "plus");
+    
+    plus.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        int value = Math.max(input.getIntValue() + 1, 1);
+        input.setValue(value);
+      }
+    });
+    spin.add(plus);
+
+    Image minus = new Image(Global.getImages().silverMinus());
+    minus.addStyleName(stylePrefix + "minus");
+
+    minus.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        int value = Math.max(input.getIntValue() - 1, 0);
+        input.setValue(value);
+      }
+    });
+    spin.add(minus);
+    
+    panel.add(spin);
+
+    Image cart = new Image("images/shoppingcart_add.png");
+    cart.setAlt("cart");
+    cart.addStyleName(STYLE_CART);
+
+    cart.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        int value = input.getIntValue();
+        if (value > 0 && BeeKeeper.getScreen() instanceof EcScreen) {
+          ((EcScreen) BeeKeeper.getScreen()).addToCart(value);
+          input.setValue(0);
+        }
+      }
+    });
+    
+    panel.add(cart);
+    
+    return panel;
   }
 
   private Widget renderStock(int stock) {
