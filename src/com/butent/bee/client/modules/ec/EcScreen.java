@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -35,6 +37,8 @@ import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumMap;
+
+import elemental.events.KeyboardEvent.KeyCode;
 
 public class EcScreen extends ScreenImpl {
   
@@ -187,7 +191,7 @@ public class EcScreen extends ScreenImpl {
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
 //    return Pair.of(ClientLogManager.getLogPanel(), 0);
-    return Pair.of(ClientLogManager.getLogPanel(), 100);
+    return Pair.of(ClientLogManager.getLogPanel(), 300);
   }
   
   @Override
@@ -207,7 +211,7 @@ public class EcScreen extends ScreenImpl {
       panel.add(logo);
     }
 
-    panel.add(createGeneralSearch());
+    panel.add(createGlobalSearch());
     
     createCommands(panel);
 
@@ -234,7 +238,7 @@ public class EcScreen extends ScreenImpl {
     
     Simple wrapper = new Simple(shell);
 //    return Pair.of(wrapper, 0);
-    return Pair.of(wrapper, 100);
+    return Pair.of(wrapper, 200);
   }
   
   private HtmlTable createCartTable() {
@@ -313,11 +317,23 @@ public class EcScreen extends ScreenImpl {
     return commandWidget.widget;
   }
 
-  private Widget createGeneralSearch() {
-    InputText input = new InputText();
+  private Widget createGlobalSearch() {
+    final InputText input = new InputText();
     DomUtils.setSearch(input);
-    DomUtils.setPlaceholder(input, Localized.constants.ecSearchGeneralPlaceholder());
+    DomUtils.setPlaceholder(input, Localized.constants.ecGlobalSearchPlaceholder());
     EcStyles.add(input, "GlobalSearchBox");
+    
+    input.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCode.ENTER) {
+          String query = BeeUtils.trim(input.getValue());
+          if (!BeeUtils.isEmpty(query)) {
+            EcKeeper.doGlobalSearch(query);
+          }
+        }
+      }
+    });
     
     Simple container = new Simple(input);
     EcStyles.add(container, "GlobalSearchContainer");

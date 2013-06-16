@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.ec;
 
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
@@ -44,7 +45,7 @@ public class EcConstants {
   public static final String SVC_TERMS_OF_DELIVERY = "termsOfDelivery";
   public static final String SVC_CONTACTS = "contacts";
 
-  public static final String SVC_SEARCH_GEBERAL = "searchGeneral";
+  public static final String SVC_GLOBAL_SEARCH = "globalSearch";
 
   public static final String SVC_SEARCH_BY_ITEM_CODE = "searchByItemCode";
   public static final String SVC_SEARCH_BY_OE_NUMBER = "searchByOeNumber";
@@ -54,6 +55,12 @@ public class EcConstants {
   public static final String SVC_GENERAL_ITEMS = "generalItems";
   public static final String SVC_BIKE_ITEMS = "bikeItems";
 
+  public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
+
+  public static final String VAR_QUERY = VAR_PREFIX + "query";
+  public static final String VAR_OFFSET = VAR_PREFIX + "offset";
+  public static final String VAR_LIMIT = VAR_PREFIX + "limit";
+  
   private EcConstants() {
   }
 }

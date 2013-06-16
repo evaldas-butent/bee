@@ -1676,6 +1676,10 @@ public class BeeUtils {
     return z.toString();
   }
 
+  public static char randomChar(char min, char max) {
+    return (char) randomInt(min, max);
+  }
+  
   public static double randomDouble(double min, double max) {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);

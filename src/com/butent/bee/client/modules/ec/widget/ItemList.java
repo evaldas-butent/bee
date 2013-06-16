@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcScreen;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
@@ -15,13 +16,14 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ItemList extends Flow {
+public class ItemList extends Simple {
 
   private static final String STYLE_PRIMARY = "ItemList";
   private static final String STYLE_WAREHOUSE = "warehouse";
@@ -41,65 +43,70 @@ public class ItemList extends Flow {
   private static final String STYLE_ITEM_SUPPLIER = EcStyles.name(STYLE_PRIMARY, "supplier");
   private static final String STYLE_ITEM_ANALOGS = EcStyles.name(STYLE_PRIMARY, "analogs");
 
+  private static final String STYLE_ITEM_MANUFACTURER = 
+      EcStyles.name(STYLE_PRIMARY, "manufacturer");
+  private static final String STYLE_ITEM_CATEGORY = EcStyles.name(STYLE_PRIMARY, "category");
+
   private static final int COL_PICTURE = 0;
   private static final int COL_INFO = 1;
   private static final int COL_STOCK_1 = 2;
   private static final int COL_STOCK_2 = 3;
   private static final int COL_QUANTITY = 4;
   private static final int COL_CART = 5;
-  
+
   private final HtmlTable table;
 
   public ItemList() {
-    super(EcStyles.name(STYLE_PRIMARY));
-    
+    super();
+    addStyleName(EcStyles.name(STYLE_PRIMARY));
+
     this.table = new HtmlTable();
     EcStyles.add(table, STYLE_PRIMARY, "table");
-    add(table);
+    setWidget(table);
   }
-  
+
+  public ItemList(List<EcItem> items) {
+    this();
+    render(items);
+  }
+
   public void render(List<EcItem> items) {
-    if (BeeUtils.isEmpty(items)) {
-      if (!table.isEmpty()) {
-        table.clear();
-      }
+    if (!table.isEmpty()) {
+      table.clear();
+    }
 
-    } else {
-      if (!table.isEmpty()) {
-        table.clear();
-      }
-
+    if (!BeeUtils.isEmpty(items)) {
       int row = 0;
-      
+
       if (items.size() > 1) {
         Label caption = new Label(Localized.constants.ecFoundItems());
         EcStyles.add(caption, STYLE_PRIMARY, "caption");
         table.setWidget(row, COL_PICTURE, caption);
       }
-      
+
       Label wrh1 = new Label("S1");
       EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE);
       EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE + "1");
       table.setWidget(row, COL_STOCK_1, wrh1);
-      
+
       Label wrh2 = new Label("S2");
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
       table.setWidget(row, COL_STOCK_2, wrh2);
-      
+
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
-      
+
       row++;
       for (EcItem item : items) {
         renderItem(row++, item);
       }
     }
   }
-  
+
   private Widget renderCart() {
     Image image = new Image("images/shoppingcart_add.png");
     image.setAlt("cart");
-    
+
     image.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -121,7 +128,7 @@ public class ItemList extends Flow {
       itemName.addStyleName(STYLE_ITEM_NAME);
       panel.add(itemName);
     }
-    
+
     String code = item.getCode();
     if (!BeeUtils.isEmpty(code)) {
       Flow codeContainer = new Flow(STYLE_ITEM_CODE + "Container");
@@ -133,10 +140,10 @@ public class ItemList extends Flow {
       CustomSpan itemCode = new CustomSpan(STYLE_ITEM_CODE);
       itemCode.setText(code);
       codeContainer.add(itemCode);
-      
+
       panel.add(codeContainer);
     }
-    
+
     String supplier = item.getSupplier();
     if (!BeeUtils.isEmpty(supplier)) {
       Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + "Container");
@@ -148,14 +155,44 @@ public class ItemList extends Flow {
       CustomSpan itemSupplier = new CustomSpan(STYLE_ITEM_SUPPLIER);
       itemSupplier.setText(supplier);
       supplierContainer.add(itemSupplier);
-      
+
       panel.add(supplierContainer);
     }
-    
+
     if (item.hasAnalogs()) {
       InternalLink analogs = new InternalLink(Localized.constants.ecItemAnalogs());
       analogs.addStyleName(STYLE_ITEM_ANALOGS);
       panel.add(analogs);
+    }
+
+    String manufacturer = item.getManufacturer();
+    if (!BeeUtils.isEmpty(manufacturer)) {
+      Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + "Container");
+
+      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + "Label");
+      manufacturerLabel.setText(Localized.constants.ecItemManufacturer());
+      manufacturerContainer.add(manufacturerLabel);
+
+      CustomSpan itemManufacturer = new CustomSpan(STYLE_ITEM_MANUFACTURER);
+      itemManufacturer.setText(manufacturer);
+      manufacturerContainer.add(itemManufacturer);
+
+      panel.add(manufacturerContainer);
+    }
+
+    String category = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, item.getGroups());
+    if (!BeeUtils.isEmpty(category)) {
+      Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + "Container");
+
+      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + "Label");
+      categoryLabel.setText(Localized.constants.ecItemCategory());
+      categoryContainer.add(categoryLabel);
+
+      CustomSpan itemCategory = new CustomSpan(STYLE_ITEM_CATEGORY);
+      itemCategory.setText(category);
+      categoryContainer.add(itemCategory);
+
+      panel.add(categoryContainer);
     }
     
     return panel;
@@ -170,7 +207,7 @@ public class ItemList extends Flow {
     if (info != null) {
       table.setWidgetAndStyle(row, COL_INFO, info, STYLE_INFO);
     }
-    
+
     Widget stock1 = renderStock(item.getStock1());
     if (stock1 != null) {
       table.setWidgetAndStyle(row, COL_STOCK_1, stock1, STYLE_STOCK_1);
@@ -188,22 +225,22 @@ public class ItemList extends Flow {
     if (cart != null) {
       table.setWidgetAndStyle(row, COL_CART, cart, STYLE_CART);
     }
-    
+
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
-  
+
   private Widget renderPicture() {
     return EcUtils.randomPicture(30, 100);
   }
-  
+
   private Widget renderQuantity(int quantity) {
     InputSpinner spinner = new InputSpinner();
     spinner.setValue(quantity);
     spinner.setMinValue("1");
-    
+
     return spinner;
   }
-  
+
   private Widget renderStock(int stock) {
     String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.constants.ecStockAsk();
     return new Label(text);

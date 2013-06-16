@@ -36,6 +36,8 @@ public interface LocalizableEcConstants {
 
   String ecGeneralItems();
 
+  String ecGlobalSearchPlaceholder();
+
   String ecInvoiceAmount();
 
   String ecInvoiceDate();
@@ -55,6 +57,8 @@ public interface LocalizableEcConstants {
   String ecItemAnalogs();
 
   String ecItemCapacity();
+
+  String ecItemCategory();
 
   String ecItemCharge();
 
@@ -130,9 +134,9 @@ public interface LocalizableEcConstants {
 
   String ecSearchByOeNumber();
 
-  String ecSearchGeneralPlaceholder();
-
   String ecSelectCategory();
+
+  String ecSelectManufacturer();
 
   String ecShoppingCart();
 
