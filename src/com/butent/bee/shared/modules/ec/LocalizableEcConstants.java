@@ -76,6 +76,8 @@ public interface LocalizableEcConstants {
 
   String ecItemName();
 
+  String ecItemOeNumber();
+
   String ecItemOriginalNumber();
 
   String ecItemQuantity();

@@ -3,11 +3,13 @@ package com.butent.bee.client.modules.ec;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.LogLevel;
@@ -40,7 +42,35 @@ public class EcKeeper {
     });
   }
 
+  public static String getContactsUrl() {
+    return Settings.getProperty("ecContacts");
+  }
+
+  public static String getTermsUrl() {
+    return Settings.getProperty("ecTerms");
+  }
+
   public static void register() {
+  }
+
+  public static void searchItems(String service, String query, final Consumer<EcItemList> callback) {
+    Assert.notEmpty(service);
+    Assert.notEmpty(query);
+    Assert.notNull(callback);
+
+    ParameterList params = createArgs(service);
+    params.addDataItem(VAR_QUERY, query);
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        dispatchMessages(response);
+        EcItemList items = getResponseItems(response);
+        if (items != null) {
+          callback.accept(items);
+        }
+      }
+    });
   }
 
   public static void showFeaturedAndNoveltyItems() {

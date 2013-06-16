@@ -1,7 +1,11 @@
 package com.butent.bee.client.modules.ec.view;
 
+import com.butent.bee.client.modules.ec.EcKeeper;
+import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.BeeUtils;
 
 class TermsOfDelivery extends EcView {
 
@@ -11,7 +15,14 @@ class TermsOfDelivery extends EcView {
 
   @Override
   protected void createUi() {
-    add(new Label(Localized.constants.ecTermsOfDelivery()));
+    String url = EcKeeper.getTermsUrl();
+    if (BeeUtils.isEmpty(url)) {
+      add(new Label(Localized.constants.ecTermsOfDelivery() + " url not specified"));
+    } else {
+      Frame frame = new Frame(url);
+      EcStyles.add(frame, getPrimaryStyle(), "frame");
+      add(frame);
+    }
   }
 
   @Override

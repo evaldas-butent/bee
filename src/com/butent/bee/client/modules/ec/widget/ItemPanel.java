@@ -44,11 +44,31 @@ public class ItemPanel extends Flow {
   private final Set<String> selectedGroups = Sets.newHashSet();
   private final Set<String> selectedManufacturers = Sets.newHashSet();
 
-  private final Flow manufacturerWrapper;
-  private final ItemList itemWrapper;
+  private Flow manufacturerWrapper = null;
+  private ItemList itemWrapper = null;
 
-  public ItemPanel(EcItemList ecItemList) {
+  public ItemPanel() {
     super(EcStyles.name(STYLE_PRIMARY));
+  }
+  
+  public ItemPanel(EcItemList ecItemList) {
+    this();
+    render(ecItemList);
+  }
+
+  public void render(EcItemList ecItemList) {
+    if (!isEmpty()) {
+      clear();
+    }
+    
+    if (!items.isEmpty()) {
+      items.clear();
+      groups.clear();
+      manufacturers.clear();
+      
+      selectedGroups.clear();
+      selectedManufacturers.clear();
+    }
 
     int size = ecItemList.size();
     for (int i = 0; i < size; i++) {
@@ -94,7 +114,7 @@ public class ItemPanel extends Flow {
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
     add(itemWrapper);
   }
-
+  
   private List<EcItem> filterByGroup(List<EcItem> input) {
     if (selectedGroups.isEmpty() || selectedGroups.size() >= groups.size()) {
       return input;

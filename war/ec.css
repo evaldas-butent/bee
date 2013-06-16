@@ -99,13 +99,15 @@
 }
 
 .bee-ec-View {
-  margin-left: 1em;
-  margin-top: 2ex;
   overflow: auto;
 }
 
-.bee-ec-searchByItemCode .bee-ec-ItemList {
-  margin-top: 3ex;
+.bee-ec-searchByItem .bee-ec-ItemSelector {
+  margin-top: 2ex;
+  margin-left: 2em;
+}
+.bee-ec-ItemSelector-input {
+  font-size: medium;
 }
 
 .bee-ec-ItemList-table {
@@ -161,8 +163,13 @@
   font-size: medium;
 }
 
+.bee-ec-ItemList-manufacturer-container, .bee-ec-ItemList-category-container {
+  font-size: 12px;
+}
+
 .bee-ec-ItemPanel {
-  margin-top: 1ex;
+  margin-left: 1em;
+  margin-top: 2ex;
 }
 .bee-ec-ItemPanel-groups-wrapper, .bee-ec-ItemPanel-manufacturers-wrapper {
   background-color: white;

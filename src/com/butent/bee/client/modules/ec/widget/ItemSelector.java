@@ -1,79 +1,80 @@
 package com.butent.bee.client.modules.ec.widget;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
-import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.ec.EcItem;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
+import elemental.events.KeyboardEvent.KeyCode;
 
-public class ItemSelector extends Flow implements HasSelectionHandlers<List<EcItem>> {
-  
+public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
+
   private static final String STYLE_PRIMARY = "ItemSelector";
-  
-  private final DataSelector selector;
 
-  public ItemSelector() {
+  private final Editor editor;
+
+  public ItemSelector(String caption) {
     super(EcStyles.name(STYLE_PRIMARY));
-    
-    Label label = new Label(Localized.constants.ecItemCode());
-    EcStyles.add(label, STYLE_PRIMARY, "label");
-    add(label);
-    
-    this.selector = createSelector();
-    EcStyles.add(selector, STYLE_PRIMARY, "input");
-    add(selector);
-    
+
+    if (!BeeUtils.isEmpty(caption)) {
+      Label label = new Label(caption);
+      EcStyles.add(label, STYLE_PRIMARY, "label");
+      add(label);
+    }
+
+    this.editor = createEditor();
+    add(editor);
+
     Button button = new Button(Localized.constants.ecDoSearch());
     EcStyles.add(button, STYLE_PRIMARY, "submit");
-    add(button);
-    
+
     button.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        List<EcItem> items = Lists.newArrayList();
-        int count = BeeUtils.randomInt(1, 10);
-        for (int i = 0; i < count; i++) {
-          items.add(new EcItem());
-        }
-
-        SelectionEvent.fire(ItemSelector.this, items);
+        maybeFire();
       }
     });
+
+    add(button);
   }
 
   @Override
-  public HandlerRegistration addSelectionHandler(SelectionHandler<List<EcItem>> handler) {
+  public HandlerRegistration addSelectionHandler(SelectionHandler<String> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  public DataSelector getSelector() {
-    return selector;
+  private Editor createEditor() {
+    InputText input = new InputText();
+    EcStyles.add(input, STYLE_PRIMARY, "input");
+    
+    input.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCode.ENTER) {
+          maybeFire();
+        }
+      }
+    });
+    return input;
   }
-
-  private DataSelector createSelector() {
-    Relation relation = Relation.create(CommonsConstants.VIEW_ITEMS,
-        Lists.newArrayList(CommonsConstants.COL_NAME, CommonsConstants.COL_ARTICLE));
-    relation.disableEdit();
-    relation.disableNewRow();
-
-    DataSelector dataSelector = new DataSelector(relation, true);
-    dataSelector.setEditing(true);
-
-    return dataSelector;
+  
+  private void maybeFire() {
+    String value = BeeUtils.trim(editor.getValue());
+    if (!value.isEmpty()) {
+      SelectionEvent.fire(this, value);
+    }
   }
 }

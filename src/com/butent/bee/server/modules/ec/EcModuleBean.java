@@ -54,6 +54,12 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GLOBAL_SEARCH)) {
       response = doGlobalSearch(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_SEARCH_BY_ITEM_CODE)) {
+      response = searchByItemCode(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_SEARCH_BY_OE_NUMBER)) {
+      response = searchByOeNumber(reqInfo);
+      
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -107,5 +113,13 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getFeaturedAndNoveltyItems() {
     return ResponseObject.response(generateItems(BeeUtils.randomInt(1, 30)));
+  }
+  
+  private ResponseObject searchByItemCode(RequestInfo reqInfo) {
+    return doGlobalSearch(reqInfo);
+  }
+
+  private ResponseObject searchByOeNumber(RequestInfo reqInfo) {
+    return doGlobalSearch(reqInfo);
   }
 }

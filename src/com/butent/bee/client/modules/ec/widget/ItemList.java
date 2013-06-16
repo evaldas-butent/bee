@@ -47,6 +47,9 @@ public class ItemList extends Simple {
       EcStyles.name(STYLE_PRIMARY, "manufacturer");
   private static final String STYLE_ITEM_CATEGORY = EcStyles.name(STYLE_PRIMARY, "category");
 
+  private static final String STYLE_INFO_CONTAINER = "-container";
+  private static final String STYLE_INFO_LABEL = "-label";
+  
   private static final int COL_PICTURE = 0;
   private static final int COL_INFO = 1;
   private static final int COL_STOCK_1 = 2;
@@ -131,9 +134,9 @@ public class ItemList extends Simple {
 
     String code = item.getCode();
     if (!BeeUtils.isEmpty(code)) {
-      Flow codeContainer = new Flow(STYLE_ITEM_CODE + "Container");
+      Flow codeContainer = new Flow(STYLE_ITEM_CODE + STYLE_INFO_CONTAINER);
 
-      CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + "Label");
+      CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + STYLE_INFO_LABEL);
       codeLabel.setText(Localized.constants.ecItemCode());
       codeContainer.add(codeLabel);
 
@@ -146,9 +149,9 @@ public class ItemList extends Simple {
 
     String supplier = item.getSupplier();
     if (!BeeUtils.isEmpty(supplier)) {
-      Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + "Container");
+      Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + STYLE_INFO_CONTAINER);
 
-      CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + "Label");
+      CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + STYLE_INFO_LABEL);
       supplierLabel.setText(Localized.constants.ecItemSupplier());
       supplierContainer.add(supplierLabel);
 
@@ -167,9 +170,9 @@ public class ItemList extends Simple {
 
     String manufacturer = item.getManufacturer();
     if (!BeeUtils.isEmpty(manufacturer)) {
-      Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + "Container");
+      Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + STYLE_INFO_CONTAINER);
 
-      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + "Label");
+      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + STYLE_INFO_LABEL);
       manufacturerLabel.setText(Localized.constants.ecItemManufacturer());
       manufacturerContainer.add(manufacturerLabel);
 
@@ -182,9 +185,9 @@ public class ItemList extends Simple {
 
     String category = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, item.getGroups());
     if (!BeeUtils.isEmpty(category)) {
-      Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + "Container");
+      Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + STYLE_INFO_CONTAINER);
 
-      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + "Label");
+      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + STYLE_INFO_LABEL);
       categoryLabel.setText(Localized.constants.ecItemCategory());
       categoryContainer.add(categoryLabel);
 

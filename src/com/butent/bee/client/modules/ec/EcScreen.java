@@ -41,22 +41,22 @@ import java.util.EnumMap;
 import elemental.events.KeyboardEvent.KeyCode;
 
 public class EcScreen extends ScreenImpl {
-  
+
   private class CommandWidget {
-    
-    private static final String STYLE_NAME = "Command"; 
-    private static final String STYLE_ACTIVE = "active"; 
-    
+
+    private static final String STYLE_NAME = "Command";
+    private static final String STYLE_ACTIVE = "active";
+
     private final String service;
     private final Widget widget;
 
     private CommandWidget(String service, String html) {
       this.service = service;
       this.widget = new InternalLink(html);
-      
+
       EcStyles.add(widget, STYLE_NAME);
       EcStyles.add(widget, STYLE_NAME, service);
-      
+
       Binder.addClickHandler(widget, new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -64,7 +64,7 @@ public class EcScreen extends ScreenImpl {
         }
       });
     }
-    
+
     private void activate() {
       EcStyles.add(widget, STYLE_NAME, STYLE_ACTIVE);
     }
@@ -73,28 +73,28 @@ public class EcScreen extends ScreenImpl {
       EcStyles.remove(widget, STYLE_NAME, STYLE_ACTIVE);
     }
   }
-  
+
   private static final int CART_COL_CAPTION = 0;
   private static final int CART_COL_SIZE = 1;
   private static final int CART_COL_ACTIVE = 2;
-  
+
   private InputText searchBox = null;
   private CommandWidget activeCommand = null;
 
   private final EnumMap<CartType, Integer> cartSize;
   private CartType activeCart = CartType.MAIN;
-  
+
   private HtmlTable cartTable = null;
-  
+
   public EcScreen() {
     super();
-    
+
     this.cartSize = Maps.newEnumMap(CartType.class);
     for (CartType cartType : CartType.values()) {
       cartSize.put(cartType, 0);
     }
   }
-  
+
   @Override
   public boolean activateDomainEntry(Domain domain, Long key) {
     return false;
@@ -107,28 +107,28 @@ public class EcScreen extends ScreenImpl {
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
   }
-  
+
   public void addToCart(int count) {
     CartType cartType = getActiveCart();
 
     int size = cartSize.get(cartType) + count;
     cartSize.put(cartType, size);
-    
+
     getCartTable().setText(cartType.ordinal(), CART_COL_SIZE, renderCartSize(cartType));
   }
-  
+
   @Override
   public void closeWidget(IdentifiableWidget widget) {
     if (widget != null && Objects.equal(widget, getActiveWidget())) {
       getScreenPanel().remove(widget);
     }
   }
-  
+
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
     return false;
   }
-  
+
   @Override
   public int getActivePanelHeight() {
     return getScreenPanel().getCenterHeight();
@@ -138,32 +138,32 @@ public class EcScreen extends ScreenImpl {
   public int getActivePanelWidth() {
     return getScreenPanel().getCenterWidth();
   }
-  
+
   @Override
   public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
   }
-  
+
   @Override
   public void onLoad() {
     if (getSearchBox() != null) {
       getSearchBox().setFocus(true);
     }
-    
+
     EcKeeper.showFeaturedAndNoveltyItems();
   }
-  
+
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return false;
   }
-  
+
   @Override
   public void showInfo() {
     Global.showModalGrid(getName(),
         new ExtendedPropertiesData(getScreenPanel().getExtendedInfo(), false));
   }
-  
+
   @Override
   public void showWidget(IdentifiableWidget widget, boolean newPlace) {
     getScreenPanel().updateCenter(widget);
@@ -173,7 +173,7 @@ public class EcScreen extends ScreenImpl {
   public void start() {
     createUi();
   }
-  
+
   @Override
   public void updateMenu(IdentifiableWidget widget) {
   }
@@ -187,13 +187,13 @@ public class EcScreen extends ScreenImpl {
   protected IdentifiableWidget initCenter() {
     return new CustomDiv();
   }
-  
+
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
-//    return Pair.of(ClientLogManager.getLogPanel(), 0);
+    // return Pair.of(ClientLogManager.getLogPanel(), 0);
     return Pair.of(ClientLogManager.getLogPanel(), 300);
   }
-  
+
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Flow panel = new Flow();
@@ -212,7 +212,7 @@ public class EcScreen extends ScreenImpl {
     }
 
     panel.add(createGlobalSearch());
-    
+
     createCommands(panel);
 
     Widget userContainer = createUserContainer();
@@ -228,63 +228,72 @@ public class EcScreen extends ScreenImpl {
 
     return Pair.of(panel, 100);
   }
-  
+
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     Shell shell = new Shell();
     shell.setStyleName(EcStyles.name("shell"));
 
     shell.restore();
-    
+
     Simple wrapper = new Simple(shell);
-//    return Pair.of(wrapper, 0);
+    // return Pair.of(wrapper, 0);
     return Pair.of(wrapper, 200);
   }
-  
+
   private HtmlTable createCartTable() {
     HtmlTable table = new HtmlTable();
     EcStyles.add(table, "cartTable");
-    
+
     for (CartType cartType : CartType.values()) {
       int row = cartType.ordinal();
-      
-      table.setWidget(row, CART_COL_CAPTION, 
+
+      table.setWidget(row, CART_COL_CAPTION,
           createCommandWidget(cartType.getService(), cartType.getLabel()));
       table.setText(row, CART_COL_SIZE, renderCartSize(cartType));
     }
-    
+
     renderCartActivity(table);
-    
+
     setCartTable(table);
     return table;
   }
 
   private void createCommands(HasWidgets container) {
     String panelStyle = "commandPanel";
-    
+
     Horizontal fin = new Horizontal();
     EcStyles.add(fin, panelStyle);
     EcStyles.add(fin, panelStyle, "fin");
-    
+
     fin.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
         Localized.constants.ecFinancialInformation()));
 
     container.add(fin);
-    
-    Horizontal info = new Horizontal();
-    EcStyles.add(info, panelStyle);
-    EcStyles.add(info, panelStyle, "info");
-    
-    info.add(createCommandWidget(EcConstants.SVC_TERMS_OF_DELIVERY,
-        Localized.constants.ecTermsOfDelivery()));
-    info.add(createCommandWidget(EcConstants.SVC_CONTACTS, Localized.constants.ecContacts()));
-    
-    container.add(info);
+
+    boolean hasTerms = !BeeUtils.isEmpty(EcKeeper.getTermsUrl());
+    boolean hasContacts = !BeeUtils.isEmpty(EcKeeper.getContactsUrl());
+
+    if (hasTerms || hasContacts) {
+      Horizontal info = new Horizontal();
+      EcStyles.add(info, panelStyle);
+      EcStyles.add(info, panelStyle, "info");
+
+      if (hasTerms) {
+        info.add(createCommandWidget(EcConstants.SVC_TERMS_OF_DELIVERY,
+            Localized.constants.ecTermsOfDelivery()));
+      }
+      if (hasContacts) {
+        info.add(createCommandWidget(EcConstants.SVC_CONTACTS, Localized.constants.ecContacts()));
+      }
+
+      container.add(info);
+    }
 
     Horizontal searchBy = new Horizontal();
     EcStyles.add(searchBy, panelStyle);
     EcStyles.add(searchBy, panelStyle, "searchBy");
-    
+
     searchBy.add(new Label(Localized.constants.ecSearchBy()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_ITEM_CODE,
         Localized.constants.ecSearchByItemCode()));
@@ -294,24 +303,24 @@ public class EcScreen extends ScreenImpl {
         Localized.constants.ecSearchByCar()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_MANUFACTURER,
         Localized.constants.ecSearchByManufacturer()));
-    
+
     container.add(searchBy);
 
     Horizontal searchOther = new Horizontal();
     EcStyles.add(searchOther, panelStyle);
     EcStyles.add(searchOther, panelStyle, "searchOther");
-    
+
     searchOther.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
         Localized.constants.ecGeneralItems()));
     searchOther.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
         Localized.constants.ecBikeItems()));
-    
+
     container.add(searchOther);
-    
+
     HtmlTable carts = createCartTable();
     container.add(carts);
   }
-  
+
   private Widget createCommandWidget(String service, String html) {
     CommandWidget commandWidget = new CommandWidget(service, html);
     return commandWidget.widget;
@@ -322,7 +331,7 @@ public class EcScreen extends ScreenImpl {
     DomUtils.setSearch(input);
     DomUtils.setPlaceholder(input, Localized.constants.ecGlobalSearchPlaceholder());
     EcStyles.add(input, "GlobalSearchBox");
-    
+
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
@@ -334,39 +343,39 @@ public class EcScreen extends ScreenImpl {
         }
       }
     });
-    
+
     Simple container = new Simple(input);
     EcStyles.add(container, "GlobalSearchContainer");
-    
+
     setSearchBox(input);
-    
+
     return container;
   }
-  
+
   private void doCommand(CommandWidget commandWidget) {
     EcView ecView = EcView.create(commandWidget.service);
     if (ecView != null) {
       updateActivePanel(ecView);
     }
-    
+
     if (getActiveCommand() == null || !getActiveCommand().service.equals(commandWidget.service)) {
       if (getActiveCommand() != null) {
         getActiveCommand().deactivate();
       }
-      
+
       setActiveCommand(commandWidget);
       getActiveCommand().activate();
     }
   }
-  
+
   private CartType getActiveCart() {
     return activeCart;
   }
-  
+
   private CommandWidget getActiveCommand() {
     return activeCommand;
   }
-  
+
   private HtmlTable getCartTable() {
     return cartTable;
   }
@@ -378,7 +387,7 @@ public class EcScreen extends ScreenImpl {
   private Widget renderActiveCart() {
     Image image = new Image("images/shopping_cart.png");
     image.setAlt("cart");
-    
+
     return image;
   }
 
@@ -391,7 +400,7 @@ public class EcScreen extends ScreenImpl {
             EcStyles.name("cartActive"));
       } else {
         table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderInactiveCart(cartType),
-            EcStyles.name("cartInactive")); 
+            EcStyles.name("cartInactive"));
       }
     }
   }
@@ -409,10 +418,10 @@ public class EcScreen extends ScreenImpl {
         renderCartActivity(getCartTable());
       }
     });
-    
+
     return widget;
   }
-  
+
   private void setActiveCart(CartType activeCart) {
     this.activeCart = activeCart;
   }
