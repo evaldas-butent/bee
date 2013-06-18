@@ -134,7 +134,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
       });
 
-      newTab = new Image(Global.getImages().silverPlus());
+      newTab = new Image(Global.getImages().silverAdd());
       newTab.addStyleName(getStylePrefix() + "newTab");
       newTab.setTitle(Localized.constants.newTab());
       add(newTab);
@@ -596,10 +596,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     } else {
       tab.setNewTab(false);
     }
-    
+
     if (getPageCount() > 1) {
       TabWidget firstTab = (TabWidget) getTabWidget(0);
       firstTab.setClose(isActionEnabled(TabAction.CLOSE, 0));
+
+      /* last but one tab */
+      TabWidget lboTab = (TabWidget) getTabWidget(getPageCount() - 2);
+      lboTab.setNewTab(false);
     }
   }
 

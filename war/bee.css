@@ -1294,17 +1294,18 @@ body {
 
 .bee-Workspace-newTab {
   position: absolute;
-  padding: 4px 8px;
+  padding: 6px 8px;
   margin-top: -1px;
   border-top-right-radius: 5px;
   border: 1px solid #E4E4E4;
   border-left: none;
   border-bottom-right-radius: 5px;
   margin-left: 0.4em;
+  height: 13px;
  }
  
 .bee-Workspace-newTab:hover {
-  background-color: #f2f2f2;
+  background-color: #f2f2f2; 
 }
 
 .bee-Workspace-tabPanel {
