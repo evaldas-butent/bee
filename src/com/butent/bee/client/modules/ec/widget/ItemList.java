@@ -1,24 +1,35 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcScreen;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -45,13 +56,13 @@ public class ItemList extends Simple {
   private static final String STYLE_ITEM_SUPPLIER = EcStyles.name(STYLE_PRIMARY, "supplier");
   private static final String STYLE_ITEM_ANALOGS = EcStyles.name(STYLE_PRIMARY, "analogs");
 
-  private static final String STYLE_ITEM_MANUFACTURER = 
+  private static final String STYLE_ITEM_MANUFACTURER =
       EcStyles.name(STYLE_PRIMARY, "manufacturer");
   private static final String STYLE_ITEM_CATEGORY = EcStyles.name(STYLE_PRIMARY, "category");
 
   private static final String STYLE_INFO_CONTAINER = "-container";
   private static final String STYLE_INFO_LABEL = "-label";
-  
+
   private static final int COL_PICTURE = 0;
   private static final int COL_INFO = 1;
   private static final int COL_STOCK_1 = 2;
@@ -107,7 +118,19 @@ public class ItemList extends Simple {
     }
   }
 
-  private Widget renderInfo(EcItem item) {
+  private void fillTree(Multimap<String, Pair<String, String>> data, String parent,
+      TreeItem tree) {
+
+    if (data.containsKey(parent)) {
+      for (Pair<String, String> info : data.get(parent)) {
+        TreeItem item = new TreeItem(info.getB());
+        tree.addItem(item);
+        fillTree(data, info.getA(), item);
+      }
+    }
+  }
+
+  private Widget renderInfo(final EcItem item) {
     Flow panel = new Flow();
 
     String name = item.getName();
@@ -151,6 +174,38 @@ public class ItemList extends Simple {
       InternalLink analogs = new InternalLink(Localized.constants.ecItemAnalogs());
       analogs.addStyleName(STYLE_ITEM_ANALOGS);
       panel.add(analogs);
+
+      analogs.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          ParameterList params = EcKeeper.createArgs("ITEM_INFO");
+          params.addDataItem("ID", item.getId());
+
+          BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              response.notify(BeeKeeper.getScreen());
+
+              if (!response.hasErrors()) {
+                Multimap<String, Pair<String, String>> subTree = HashMultimap.create();
+
+                for (SimpleRow row : SimpleRowSet.restore((String) response.getResponse())) {
+                  subTree.put(row.getValue("ParentID"),
+                      Pair.of(row.getValue("CategoryID"), row.getValue("CategoryName")));
+                }
+                Tree tree = new Tree();
+
+                TreeItem root = new TreeItem("Kategorijos");
+                tree.addItem(root);
+                fillTree(subTree, null, root);
+                root.setOpenRecursive(true, false);
+
+                Global.getMsgBoxen().showWidget(tree);
+              }
+            }
+          });
+        }
+      });
     }
 
     String manufacturer = item.getManufacturer();
@@ -182,7 +237,7 @@ public class ItemList extends Simple {
 
       panel.add(categoryContainer);
     }
-    
+
     return panel;
   }
 
@@ -224,12 +279,12 @@ public class ItemList extends Simple {
     final InputInteger input = new InputInteger(quantity);
     input.addStyleName(stylePrefix + "input");
     panel.add(input);
-    
+
     Flow spin = new Flow(stylePrefix + "spin");
-    
+
     Image plus = new Image(Global.getImages().silverPlus());
     plus.addStyleName(stylePrefix + "plus");
-    
+
     plus.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -250,7 +305,7 @@ public class ItemList extends Simple {
       }
     });
     spin.add(minus);
-    
+
     panel.add(spin);
 
     Image cart = new Image("images/shoppingcart_add.png");
@@ -267,9 +322,9 @@ public class ItemList extends Simple {
         }
       }
     });
-    
+
     panel.add(cart);
-    
+
     return panel;
   }
 

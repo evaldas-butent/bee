@@ -215,21 +215,21 @@ public class FileUtils {
     Assert.notNull(filters);
     return findFiles(dir, Lists.newArrayList(filters));
   }
-  
+
   public static byte[] getBytes(File fl) {
     Assert.notNull(fl);
     if (!isInputFile(fl)) {
       logger.severe(fl.getAbsolutePath(), "not an input file");
       return null;
     }
-    
+
     if (fl.length() > Integer.MAX_VALUE) {
       logger.severe(fl.getAbsolutePath(), "file is too big:", fl.length());
       return null;
     }
-    
+
     byte[] result = new byte[(int) fl.length()];
-    
+
     FileInputStream fis = null;
     try {
       fis = new FileInputStream(fl);
@@ -240,7 +240,7 @@ public class FileUtils {
     } finally {
       closeQuietly(fis);
     }
-    
+
     return result;
   }
 

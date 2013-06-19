@@ -1,6 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -8,8 +9,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Builds an INSERT SQL statement for a given target using specified field and value lists.
@@ -18,8 +19,8 @@ import java.util.Set;
 public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
 
   private final String target;
-  private Set<String> fieldList = Sets.newLinkedHashSet();
-  private List<IsExpression> valueList = null;
+  private final LinkedHashMap<String, Integer> fieldList = Maps.newLinkedHashMap();
+  private List<IsExpression[]> data = null;
   private SqlSelect dataSource = null;
 
   /**
@@ -41,9 +42,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * @return object's SqlInsert instance.
    */
   public SqlInsert addConstant(String field, Object value) {
-    if (value != null) {
-      addExpression(field, SqlUtils.constant(value));
-    }
+    addExpression(field, value instanceof IsExpression
+        ? (IsExpression) value : SqlUtils.constant(value));
     return getReference();
   }
 
@@ -56,14 +56,19 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    */
   public SqlInsert addExpression(String field, IsExpression value) {
     Assert.notNull(value);
-    Assert.state(dataSource == null);
+    Assert.state(getFieldCount() == 0 || !BeeUtils.isEmpty(data));
+    Assert.state(!isMultipleInsert());
 
     addField(field);
 
-    if (BeeUtils.isEmpty(valueList)) {
-      valueList = Lists.newArrayList();
+    if (BeeUtils.isEmpty(data)) {
+      data = Lists.newArrayListWithExpectedSize(1);
+      data.add(new IsExpression[0]);
     }
-    valueList.add(value);
+    ArrayList<IsExpression> values = Lists.newArrayList(data.get(0));
+    values.add(value);
+
+    data.set(0, values.toArray(new IsExpression[0]));
 
     return getReference();
   }
@@ -75,12 +80,36 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * @return object's SqlInsert instance.
    */
   public SqlInsert addFields(String... fields) {
-    Assert.state(BeeUtils.isEmpty(valueList));
+    Assert.state(BeeUtils.isEmpty(data));
 
     for (String fld : fields) {
       addField(fld);
     }
     return getReference();
+  }
+
+  public void addValues(Object[] values) {
+    Assert.notNull(values);
+    Assert.state(getFieldCount() == values.length);
+
+    IsExpression[] row = new IsExpression[values.length];
+
+    for (int i = 0; i < values.length; i++) {
+      row[i] = values[i] instanceof IsExpression
+          ? (IsExpression) values[i]
+          : SqlUtils.constant(values[i]);
+    }
+    if (data == null) {
+      data = Lists.newArrayList();
+    }
+    data.add(row);
+  }
+
+  /**
+   * @return the current value list.
+   */
+  public List<IsExpression[]> getData() {
+    return data;
   }
 
   /**
@@ -99,16 +128,12 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
     return fieldList.size();
   }
 
-  /**
-   * @return a list of field currently added to the field list {@code fieldList}.
-   */
-  public List<IsExpression> getFields() {
-    List<IsExpression> fields = new ArrayList<IsExpression>();
+  public Collection<String> getFields() {
+    return fieldList.keySet();
+  }
 
-    for (String field : fieldList) {
-      fields.add(SqlUtils.name(field));
-    }
-    return fields;
+  public int getRowCount() {
+    return data == null ? 0 : data.size();
   }
 
   /**
@@ -139,25 +164,11 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * @return value of the given field.
    */
   public IsExpression getValue(String field) {
-    Assert.isNull(dataSource);
-    Assert.notEmpty(field);
-    int x = 0;
+    Assert.state(!isMultipleInsert());
+    Assert.state(hasField(field));
+    Assert.state(!BeeUtils.isEmpty(data));
 
-    for (String fld : fieldList) {
-      if (BeeUtils.same(fld, field)) {
-        return valueList.get(x);
-      }
-      x++;
-    }
-    Assert.untouchable();
-    return null;
-  }
-
-  /**
-   * @return the current value list.
-   */
-  public List<IsExpression> getValues() {
-    return valueList;
+    return data.get(0)[fieldList.get(field)];
   }
 
   /**
@@ -167,7 +178,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * @return true if the field exist in the list, otherwise false.
    */
   public boolean hasField(String field) {
-    return fieldList.contains(field);
+    return fieldList.containsKey(field);
   }
 
   /**
@@ -178,7 +189,11 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(fieldList)
-        || (BeeUtils.isEmpty(valueList) && dataSource == null);
+        || (BeeUtils.isEmpty(data) && dataSource == null);
+  }
+
+  public boolean isMultipleInsert() {
+    return dataSource != null || (getRowCount() > 1);
   }
 
   /**
@@ -189,7 +204,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   @Override
   public SqlInsert reset() {
     fieldList.clear();
-    valueList = null;
+    data = null;
     dataSource = null;
     return getReference();
   }
@@ -204,7 +219,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   public SqlInsert setDataSource(SqlSelect query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
-    Assert.state(BeeUtils.isEmpty(valueList));
+    Assert.state(BeeUtils.isEmpty(data));
 
     dataSource = query;
 
@@ -214,6 +229,6 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   private void addField(String field) {
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
-    fieldList.add(field);
+    fieldList.put(field, getFieldCount());
   }
 }

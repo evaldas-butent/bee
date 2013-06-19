@@ -4,16 +4,20 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SearchResult;
-import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemList;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -32,7 +36,9 @@ public class EcModuleBean implements BeeModule {
 
   @EJB
   UserServiceBean usr;
-  
+  @EJB
+  QueryServiceBean qs;
+
   @Override
   public Collection<String> dependsOn() {
     return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
@@ -59,7 +65,10 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_OE_NUMBER)) {
       response = searchByOeNumber(reqInfo);
-      
+
+    } else if (BeeUtils.same(svc, "ITEM_INFO")) {
+      response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -92,31 +101,84 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(query)) {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
     }
-    
+
     int count = BeeUtils.randomInt(0, Math.max((10 - query.length()) * 3, 2));
     if (count > 0) {
       return ResponseObject.response(generateItems(count));
     } else {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query)); 
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
     }
   }
 
   private EcItemList generateItems(int count) {
-    SimpleRowSet rowSet = new SimpleRowSet(new String[] {"id"});
+    List<EcItem> items = Lists.newArrayList();
 
     for (int i = 0; i < count; i++) {
-      rowSet.addRow(new String[] {Integer.toString(i)});
+      items.add(new EcItem(0));
     }
-
-    return new EcItemList(rowSet);
+    return new EcItemList(items);
   }
 
   private ResponseObject getFeaturedAndNoveltyItems() {
     return ResponseObject.response(generateItems(BeeUtils.randomInt(1, 30)));
   }
-  
+
+  private ResponseObject getItemInfo(long id) {
+    SqlSelect query = new SqlSelect()
+        .addFields("TcdCategories", "CategoryName", "CategoryID", "ParentID")
+        .addFrom("TcdArticleCategories")
+        .addFromInner("TcdCategories",
+            SqlUtils.joinUsing("TcdArticleCategories", "TcdCategories", "CategoryID"))
+        .setWhere(SqlUtils.equals("TcdArticleCategories", "ArticleID", id));
+
+    return ResponseObject.response(qs.getData(query));
+  }
+
   private ResponseObject searchByItemCode(RequestInfo reqInfo) {
-    return doGlobalSearch(reqInfo);
+    // return doGlobalSearch(reqInfo);
+
+    String code = reqInfo.getParameter(VAR_QUERY);
+    int limit = BeeUtils.toInt(reqInfo.getParameter("Limit"));
+    int offset = BeeUtils.toInt(reqInfo.getParameter("Offset"));
+
+    if (BeeUtils.isEmpty(code)) {
+      return ResponseObject.error("No search criteria defined");
+    }
+    String searchCode = code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+
+    if (BeeUtils.length(searchCode) < 3) {
+      return ResponseObject.error("Search code must be at least 3 characters length:", searchCode);
+    }
+    SqlSelect query = new SqlSelect()
+        .addFields("TcdArticles", "ArticleID", "ArticleNr", "ArticleName", "Supplier")
+        .addField("TcdAnalogs", "Supplier", "AnalogSupplier")
+        .addSum("TcdMotonet", "Remainder")
+        .addMax("TcdMotonet", "Price")
+        .addFrom("TcdAnalogs")
+        .addFromInner("TcdArticles", SqlUtils.joinUsing("TcdAnalogs", "TcdArticles", "ArticleID"))
+        .addFromLeft("TcdMotonet", SqlUtils.joinUsing("TcdArticles", "TcdMotonet", "ArticleID"))
+        .setWhere(SqlUtils.equals("TcdAnalogs", "SearchNr", searchCode))
+        .addGroup("TcdArticles", "ArticleID", "ArticleNr", "ArticleName", "Supplier")
+        .addGroup("TcdAnalogs", "Supplier")
+        .addOrder("TcdArticles", "ArticleID");
+
+    if (limit > 0) {
+      query.setLimit(limit);
+    }
+    if (offset > 0) {
+      query.setOffset(offset);
+    }
+    List<EcItem> items = Lists.newArrayList();
+
+    for (SimpleRow row : qs.getData(query)) {
+      items.add(new EcItem(row.getLong("ArticleID"))
+          .setName(row.getValue("ArticleName"))
+          .setCode(row.getValue("ArticleNr"))
+          .setSupplier(BeeUtils.notEmpty(row.getValue("AnalogSupplier"),
+              row.getValue("Supplier")))
+          .setStock(row.getInt("Remainder")));
+    }
+    return ResponseObject.response(new EcItemList(items));
   }
 
   private ResponseObject searchByOeNumber(RequestInfo reqInfo) {

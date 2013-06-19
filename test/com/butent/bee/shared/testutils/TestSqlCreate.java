@@ -5,12 +5,11 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,14 +30,14 @@ public class TestSqlCreate {
 
   @Test
   public final void testIsEmpty() {
-//    try {
-//      SqlCreate create = new SqlCreate("\n \r \t");
-//      fail("Exceptions not work");
-//    } catch (BeeRuntimeException e) {
-//      assertTrue(true);
-//    } catch (Exception e) {
-//      fail("Need BeeRuntimeEception : " + e.getMessage());
-//    }
+    // try {
+    // SqlCreate create = new SqlCreate("\n \r \t");
+    // fail("Exceptions not work");
+    // } catch (BeeRuntimeException e) {
+    // assertTrue(true);
+    // } catch (Exception e) {
+    // fail("Need BeeRuntimeEception : " + e.getMessage());
+    // }
 
     SqlCreate create = new SqlCreate("table");
     assertTrue(create.isEmpty());
@@ -171,7 +170,7 @@ public class TestSqlCreate {
         "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
         create4.getSqlString(builder4));
 
-    IsExpression expression = create5.getField("bool2").getName();
+    IsExpression expression = SqlUtils.name(create5.getField("bool2").getName());
     assertEquals("bool2", expression.getSqlString(builder4));
   }
 

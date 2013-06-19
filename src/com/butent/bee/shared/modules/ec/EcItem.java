@@ -2,33 +2,49 @@ package com.butent.bee.shared.modules.ec;
 
 import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 
-public class EcItem {
-  
-  private final long id = 0;
+public class EcItem implements BeeSerializable {
 
-  private final String code;
-  private final String name;
-  
+  private enum Serial {
+    ID, CODE, NAME, SUPPLIER, STOCK
+  }
+
+  public static EcItem restore(String s) {
+    EcItem item = new EcItem();
+    item.deserialize(s);
+    return item;
+  }
+
+  private long id;
+
+  private String code;
+  private String name;
+
   private final Collection<String> groups;
 
   private final String manufacturer;
-  private final String supplier;
-  
-  private final int stock1; 
+  private String supplier;
+
+  private int stock1;
   private final int stock2;
-  
+
   private int quantity = 1;
 
-  public EcItem() {
-    super();
-    
-    this.code = BeeUtils.randomString(10, 10, '0', '9');
-    this.name = BeeUtils.randomString(6, 30, 'a', 'z');
-    
+  public EcItem(long id) {
+    this();
+    this.id = id;
+  }
+
+  private EcItem() {
+    // this.code = BeeUtils.randomString(10, 10, '0', '9');
+    // this.name = BeeUtils.randomString(6, 30, 'a', 'z');
+
     this.groups = Sets.newHashSet();
     int cnt = BeeUtils.randomInt(1, 6);
     for (int i = 0; i < cnt; i++) {
@@ -36,12 +52,46 @@ public class EcItem {
       String group = String.valueOf(ch).toUpperCase() + BeeUtils.replicate(ch, 5);
       groups.add(group);
     }
-    
+
     this.manufacturer = "Gamintojas " + BeeUtils.randomInt(1, 10);
-    this.supplier = BeeUtils.randomString(6, 10, 'A', 'Z');
-    
-    this.stock1 = BeeUtils.randomInt(0, 10);
+    // this.supplier = BeeUtils.randomString(6, 10, 'A', 'Z');
+
+    // this.stock1 = BeeUtils.randomInt(0, 10);
     this.stock2 = BeeUtils.randomInt(0, 2) * BeeUtils.randomInt(1, 100);
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      Serial member = members[i];
+      String value = arr[i];
+
+      switch (member) {
+        case ID:
+          this.id = BeeUtils.toLong(value);
+          break;
+
+        case CODE:
+          setCode(value);
+          break;
+
+        case NAME:
+          setName(value);
+          break;
+
+        case STOCK:
+          setStock(BeeUtils.toInt(value));
+          break;
+
+        case SUPPLIER:
+          setSupplier(value);
+          break;
+      }
+    }
   }
 
   public String getCode() {
@@ -71,11 +121,11 @@ public class EcItem {
   public int getStock1() {
     return stock1;
   }
-  
+
   public int getStock2() {
     return stock2;
   }
-  
+
   public String getSupplier() {
     return supplier;
   }
@@ -83,7 +133,7 @@ public class EcItem {
   public boolean hasAnalogs() {
     return true;
   }
-  
+
   public boolean hasGroup(String group) {
     return groups.contains(group);
   }
@@ -95,8 +145,61 @@ public class EcItem {
   public boolean isNovelty() {
     return true;
   }
-  
-  public void setQuantity(int quantity) {
+
+  @Override
+  public String serialize() {
+    Serial[] members = Serial.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
+
+    for (Serial member : members) {
+      switch (member) {
+        case ID:
+          arr[i++] = id;
+          break;
+
+        case CODE:
+          arr[i++] = code;
+          break;
+
+        case NAME:
+          arr[i++] = name;
+          break;
+
+        case STOCK:
+          arr[i++] = stock1;
+          break;
+
+        case SUPPLIER:
+          arr[i++] = supplier;
+          break;
+      }
+    }
+    return Codec.beeSerialize(arr);
+  }
+
+  public EcItem setCode(String code) {
+    this.code = code;
+    return this;
+  }
+
+  public EcItem setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public EcItem setQuantity(int quantity) {
     this.quantity = quantity;
+    return this;
+  }
+
+  public EcItem setStock(int stock) {
+    this.stock1 = stock;
+    return this;
+  }
+
+  public EcItem setSupplier(String supplier) {
+    this.supplier = supplier;
+    return this;
   }
 }

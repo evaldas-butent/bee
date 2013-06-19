@@ -43,7 +43,7 @@ public abstract class EcView extends Flow {
         }
       }
     }
-    
+
     if (ecView != null) {
       ecView.createUi();
     }
@@ -58,7 +58,7 @@ public abstract class EcView extends Flow {
   protected abstract void createUi();
 
   protected abstract String getPrimaryStyle();
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();

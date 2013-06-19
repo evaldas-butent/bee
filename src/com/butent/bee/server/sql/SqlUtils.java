@@ -612,7 +612,7 @@ public class SqlUtils {
   }
 
   public static IsExpression right(String source, String field, int len) {
-    return left(field(source, field), len);
+    return right(field(source, field), len);
   }
 
   public static IsExpression round(IsExpression expr, int precision) {
@@ -689,6 +689,12 @@ public class SqlUtils {
 
   public static IsExpression substring(String source, String field, int pos, int len) {
     return substring(field(source, field), pos, len);
+  }
+
+  public static String table(String schema, String table) {
+    Assert.notEmpty(schema);
+    Assert.notEmpty(table);
+    return BeeUtils.join(".", schema, table);
   }
 
   public static String temporaryName() {

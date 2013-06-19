@@ -71,7 +71,7 @@ public abstract class SqlBuilder {
           query.append(", ");
         }
         SqlField field = fieldList.get(i);
-        query.append(field.getName().getSqlString(this))
+        query.append(SqlUtils.name(field.getName()).getSqlString(this))
             .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
 
         if (field.isNotNull()) {
@@ -116,41 +116,45 @@ public abstract class SqlBuilder {
    */
   protected String getInsert(SqlInsert si) {
     Assert.notNull(si);
-    Assert.state(!si.isEmpty());
 
     StringBuilder query = new StringBuilder("INSERT INTO ");
 
-    query.append(SqlUtils.name(si.getTarget()).getSqlString(this));
+    query.append(SqlUtils.name(si.getTarget()).getSqlString(this))
+        .append(" (");
+    int c = 0;
 
-    List<IsExpression> fieldList = si.getFields();
-
-    query.append(" (");
-
-    for (int i = 0; i < fieldList.size(); i++) {
-      if (i > 0) {
-        query.append(", ");
+    for (String field : si.getFields()) {
+      if (c > 0) {
+        query.append(",");
       }
-      IsExpression field = fieldList.get(i);
-      query.append(field.getSqlString(this));
+      query.append(SqlUtils.name(field).getSqlString(this));
+      c++;
     }
     query.append(") ");
 
     if (si.getDataSource() != null) {
       query.append(si.getDataSource().getSqlString(this));
     } else {
-      List<IsExpression> valueList = si.getValues();
+      query.append("VALUES ");
 
-      if (!BeeUtils.isEmpty(valueList)) {
-        query.append("VALUES (");
+      List<IsExpression[]> data = si.getData();
 
-        for (int i = 0; i < valueList.size(); i++) {
+      if (data != null) {
+        for (int i = 0; i < data.size(); i++) {
           if (i > 0) {
-            query.append(", ");
+            query.append(",");
           }
-          IsExpression value = valueList.get(i);
-          query.append(value.getSqlString(this));
+          query.append("(");
+
+          for (int j = 0; j < data.get(i).length; j++) {
+            if (j > 0) {
+              query.append(",");
+            }
+            IsExpression value = data.get(i)[j];
+            query.append(value.getSqlString(this));
+          }
+          query.append(")");
         }
-        query.append(")");
       }
     }
     return query.toString();

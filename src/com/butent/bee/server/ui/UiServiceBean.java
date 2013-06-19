@@ -24,6 +24,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
@@ -114,6 +115,8 @@ public class UiServiceBean {
   SearchBean search;
   @EJB
   InitializationBean ib;
+  @EJB
+  TecDocBean tcd;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -711,6 +714,18 @@ public class UiServiceBean {
       response = buildDbSchema(Splitter.onPattern("[ ,]").trimResults().omitEmptyStrings()
           .split(schema));
 
+    } else if (BeeUtils.same(cmd, "tecdoc")) {
+      tcd.suckTecdoc();
+      response = ResponseObject.info("TecDoc SUCKED OFF");
+
+    } else if (BeeUtils.same(cmd, "motonet")) {
+      tcd.suckMotonet();
+      response = ResponseObject.info("Motonet SUCKED OFF");
+
+    } else if (BeeUtils.same(cmd, "tcd")) {
+      tcd.justDoIt();
+      response = ResponseObject.info("Tcd transforming...");
+
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);
       if (sys.isTable(tbl)) {
@@ -836,4 +851,5 @@ public class UiServiceBean {
   private ResponseObject updateRow(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
+
 }

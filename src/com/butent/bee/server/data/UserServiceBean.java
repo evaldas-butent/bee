@@ -21,10 +21,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -179,7 +179,7 @@ public class UserServiceBean {
     return Localizations.getMessages(getLocale());
   }
 
-  public String getRoleName(long roleId) {
+  public String getRoleName(Long roleId) {
     Assert.contains(roleCache, roleId);
     return roleCache.get(roleId);
   }
@@ -195,11 +195,11 @@ public class UserServiceBean {
     return userCache.inverse().get(key(user));
   }
 
-  public String getUserName(long userId) {
+  public String getUserName(Long userId) {
     return userCache.get(userId);
   }
 
-  public long[] getUserRoles(long userId) {
+  public long[] getUserRoles(Long userId) {
     UserInfo userInfo = getUserInfo(userId);
 
     if (userInfo != null) {
@@ -212,28 +212,58 @@ public class UserServiceBean {
     return userCache.keySet();
   }
 
-  public String getUserSign(long userId) {
-    return getUserInfo(userId).getUserData().getUserSign();
+  public String getUserSign(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+
+    if (userInfo != null) {
+      return userInfo.getUserData().getUserSign();
+    }
+    return null;
   }
 
   public boolean hasEventRight(String object, RightsState state) {
-    return getCurrentUserInfo().getUserData().hasEventRight(object, state);
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasEventRight(object, state);
+    }
+    return false;
   }
 
   public boolean hasFormRight(String object, RightsState state) {
-    return getCurrentUserInfo().getUserData().hasFormRight(object, state);
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasFormRight(object, state);
+    }
+    return false;
   }
 
   public boolean hasGridRight(String object, RightsState state) {
-    return getCurrentUserInfo().getUserData().hasGridRight(object, state);
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasGridRight(object, state);
+    }
+    return false;
   }
 
   public boolean hasMenuRight(String object, RightsState state) {
-    return getCurrentUserInfo().getUserData().hasMenuRight(object, state);
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasMenuRight(object, state);
+    }
+    return false;
   }
 
   public boolean hasModuleRight(String object, RightsState state) {
-    return getCurrentUserInfo().getUserData().hasModuleRight(object, state);
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasModuleRight(object, state);
+    }
+    return false;
   }
 
   @Lock(LockType.WRITE)
@@ -331,7 +361,7 @@ public class UserServiceBean {
       UserInfo user = new UserInfo(userData)
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_PROPERTIES));
-      
+
       userData.setProperty(COL_PERSON, row.getValue(COL_PERSON));
       userData.setProperty(COL_PHOTO, row.getValue(COL_PHOTO));
 
@@ -421,7 +451,7 @@ public class UserServiceBean {
     for (long userId : getUsers()) {
       UserInfo info = getUserInfo(userId);
 
-      if (info.isOnline()) {
+      if (info != null && info.isOnline()) {
         logout(info.getUserData().getLogin());
       }
     }
@@ -431,7 +461,7 @@ public class UserServiceBean {
     return getUserInfo(getCurrentUserId());
   }
 
-  private UserInfo getUserInfo(long userId) {
+  private UserInfo getUserInfo(Long userId) {
     return infoCache.get(getUserName(userId));
   }
 
@@ -455,7 +485,7 @@ public class UserServiceBean {
     return rights;
   }
 
-  private boolean hasRight(long userId, RightsObjectType type, String object, RightsState state) {
+  private boolean hasRight(Long userId, RightsObjectType type, String object, RightsState state) {
     Assert.notEmpty(object);
 
     if (state == null) {

@@ -154,7 +154,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   private BiMap<String, Integer> columns = HashBiMap.create(0);
-  private List<String[]> rows = Lists.newArrayListWithExpectedSize(0);
+  private List<String[]> rows = Lists.newArrayList();
   private Map<Integer, Map<String, Integer>> indexes = null;
 
   public SimpleRowSet(String[] cols) {

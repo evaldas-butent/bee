@@ -1,13 +1,6 @@
 package com.butent.bee.server.sql;
 
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_FIELD;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_ID;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_MODE;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TIME;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TX;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_USER;
-import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_VALUE;
-import static com.butent.bee.server.data.SystemBean.AUDIT_USER;
+import static com.butent.bee.server.data.SystemBean.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

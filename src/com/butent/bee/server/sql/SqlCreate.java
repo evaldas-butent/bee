@@ -39,8 +39,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
      * 
      * @return a field name as an expression
      */
-    public IsExpression getName() {
-      return SqlUtils.name(name);
+    public String getName() {
+      return name;
     }
 
     /**
@@ -74,7 +74,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   private String target;
   private final boolean temporary;
-  private List<SqlField> fieldList = new ArrayList<SqlField>();
+  private final List<SqlField> fieldList = new ArrayList<SqlField>();
 
   private SqlSelect dataSource;
 
@@ -259,7 +259,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
    */
   public SqlField getField(String field) {
     for (SqlField fld : fieldList) {
-      if (BeeUtils.same(fld.name, field)) {
+      if (BeeUtils.same(fld.getName(), field)) {
         return fld;
       }
     }

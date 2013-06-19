@@ -64,10 +64,14 @@ public class EcKeeper {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        dispatchMessages(response);
-        EcItemList items = getResponseItems(response);
-        if (items != null) {
-          callback.accept(items);
+        response.notify(BeeKeeper.getScreen());
+
+        if (!response.hasErrors()) {
+          // dispatchMessages(response);
+          EcItemList items = getResponseItems(response);
+          if (items != null) {
+            callback.accept(items);
+          }
         }
       }
     });
@@ -105,10 +109,7 @@ public class EcKeeper {
 
   private static EcItemList getResponseItems(ResponseObject response) {
     if (response != null && response.hasResponse(EcItemList.class)) {
-      EcItemList items = EcItemList.restore(response.getResponseAsString());
-      if (!items.isEmpty()) {
-        return items;
-      }
+      return EcItemList.restore(response.getResponseAsString());
     }
     return null;
   }

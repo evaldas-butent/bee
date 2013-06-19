@@ -29,7 +29,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -56,6 +55,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.sql.DataSource;
 
 /**
  * Manages SQL related requests from client side.
@@ -69,7 +69,11 @@ public class QueryServiceBean {
    * Is a private interface for SQL processing.
    */
 
-  private abstract class SqlHandler<T> {
+  public interface ResultSetProcessor<T> {
+    T processResultSet(ResultSet rs) throws SQLException;
+  }
+
+  private abstract class SqlHandler<T> implements ResultSetProcessor<T> {
 
     public T processError(SQLException ex) {
       String error = null;
@@ -94,8 +98,6 @@ public class QueryServiceBean {
         throw new BeeRuntimeException(ex);
       }
     }
-
-    public abstract T processResultSet(ResultSet rs) throws SQLException;
 
     public abstract T processUpdateCount(int updateCount);
   }
@@ -127,24 +129,29 @@ public class QueryServiceBean {
       BeeDataSource bds = dsb.locateDs(dsn);
 
       if (bds != null) {
-        String engine;
-        Connection con = null;
-        try {
-          con = bds.getDs().getConnection();
-          engine = con.getMetaData().getDatabaseProductName();
-
-        } catch (SQLException e) {
-          logger.error(e);
-          engine = null;
-        } finally {
-          JdbcUtils.closeConnection(con);
-        }
-        sqlEngine = SqlEngine.detectEngine(engine);
-
-        if (sqlEngine == null) {
-          logger.severe("DSN:", dsn, "Unknown SQL engine:", engine);
-        }
+        sqlEngine = dbEngine(bds.getDs());
       }
+    }
+    return sqlEngine;
+  }
+
+  public SqlEngine dbEngine(DataSource ds) {
+    SqlEngine sqlEngine = null;
+
+    if (ds != null) {
+      String engine;
+      Connection con = null;
+      try {
+        con = ds.getConnection();
+        engine = con.getMetaData().getDatabaseProductName();
+
+      } catch (SQLException e) {
+        logger.error(e);
+        engine = null;
+      } finally {
+        JdbcUtils.closeConnection(con);
+      }
+      sqlEngine = SqlEngine.detectEngine(engine);
     }
     return sqlEngine;
   }
@@ -206,7 +213,7 @@ public class QueryServiceBean {
   public Object doSql(String sql) {
     Assert.notEmpty(sql);
 
-    return processSql(sql, new SqlHandler<Object>() {
+    return processSql(null, sql, new SqlHandler<Object>() {
       @Override
       public Object processError(SQLException ex) {
         logger.error(ex);
@@ -239,19 +246,34 @@ public class QueryServiceBean {
   }
 
   public SimpleRowSet getData(IsQuery query) {
-    Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-
-    activateTables(query);
-
-    return processSql(query.getQuery(), new SqlHandler<SimpleRowSet>() {
+    return getData(null, query, new ResultSetProcessor<SimpleRowSet>() {
       @Override
       public SimpleRowSet processResultSet(ResultSet rs) throws SQLException {
         return rsToSimpleRowSet(rs);
       }
+    });
+  }
+
+  public <T> T getData(DataSource ds, IsQuery query, final ResultSetProcessor<T> callback) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+
+    String sql;
+
+    if (ds == null) {
+      activateTables(query);
+      sql = query.getQuery();
+    } else {
+      sql = query.getSqlString(SqlBuilderFactory.getBuilder(dbEngine(ds)));
+    }
+    return processSql(ds, sql, new SqlHandler<T>() {
+      @Override
+      public T processResultSet(ResultSet rs) throws SQLException {
+        return callback.processResultSet(rs);
+      }
 
       @Override
-      public SimpleRowSet processUpdateCount(int updateCount) {
+      public T processUpdateCount(int updateCount) {
         throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
@@ -455,7 +477,7 @@ public class QueryServiceBean {
     Assert.notNull(si);
 
     String target = si.getTarget();
-    boolean requiresId = (si.getDataSource() == null) && sys.isTable(target);
+    boolean requiresId = !si.isMultipleInsert() && sys.isTable(target);
     long id = 0;
 
     Assert.state(requiresId || !si.isEmpty());
@@ -469,7 +491,7 @@ public class QueryServiceBean {
       String idFld = sys.getIdName(target);
 
       if (si.hasField(idFld)) {
-        id = ((Value) si.getValue(idFld).getValue()).getLong();
+        id = (Long) si.getValue(idFld).getValue();
       } else {
         id = ig.getId(target);
         si.addConstant(idFld, id);
@@ -544,7 +566,7 @@ public class QueryServiceBean {
 
     activateTables(query);
 
-    ResponseObject res = processSql(query.getQuery(), new SqlHandler<ResponseObject>() {
+    ResponseObject res = processSql(null, query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
         throw new BeeRuntimeException("Data modification query must not return a ResultSet");
@@ -612,7 +634,7 @@ public class QueryServiceBean {
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
     sys.postViewEvent(event);
 
-    return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
+    return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         event.setRowset(rsToBeeRowSet(rs, view));
@@ -627,7 +649,7 @@ public class QueryServiceBean {
     });
   }
 
-  private <T> T processSql(String sql, SqlHandler<T> callback) {
+  private <T> T processSql(DataSource ds, String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
     Assert.notNull(callback);
 
@@ -635,17 +657,22 @@ public class QueryServiceBean {
     Statement stmt = null;
     ResultSet rs = null;
     T result = null;
+    DataSource dataSource = ds;
 
-    logger.debug("SQL:", sql);
-
-    try {
+    if (dataSource == null) {
       String dsn = SqlBuilderFactory.getDsn();
       BeeDataSource bds = dsb.locateDs(dsn);
 
       if (bds == null) {
-        throw new SQLException("Data source name [" + dsn + "] not found");
+        result = callback.processError(new SQLException("Data source [" + dsn + "] not found"));
+        return result;
       }
-      con = bds.getDs().getConnection();
+      dataSource = bds.getDs();
+    }
+    logger.debug("SQL:", sql);
+
+    try {
+      con = dataSource.getConnection();
       stmt = con.createStatement();
 
       long start = System.nanoTime();
