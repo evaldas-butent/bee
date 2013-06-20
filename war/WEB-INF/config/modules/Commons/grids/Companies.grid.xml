@@ -7,13 +7,13 @@
     <DataColumn name="Name" visible="true" />
     <DataColumn name="TypeName" caption="Statusas" />
     <DataColumn name="GroupName" caption="Grupė" />
-
+    <DataColumn name="PriorityName" caption="Prioritetas" />
     <DataColumn name="Code" />
-    <DataColumn name="VATCode" />
-
+    <DataColumn name="VATCode" visible="false" />
+    <DataColumn name="ExchangeCode" caption="Biržos kodas" visible="false" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
-
+    <DataColumn name="Fax" caption="Faksas" visible="false" />
     <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
@@ -26,7 +26,7 @@
     <DataColumn name="CountryName" caption="Šalis" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-">
+      filterOptions="-" visible="false">
       <renderer type="flag" />
     </CalcColumn>
   </columns>
