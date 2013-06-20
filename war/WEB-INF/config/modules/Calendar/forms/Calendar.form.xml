@@ -3,18 +3,26 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="Calendar" viewName="Calendars" caption="Kalendorius">
 
-  <FlowPanel>
-    <br/>
-    <InputText source="Name" caption="Pavadinimas:" decorator="caption-top" 
-      d:rootStyle="margin-left: 1em; float: left;" />
-    <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 300px;"
-      decorator="caption-top" d:rootStyle="margin-left: 5%; float: left;" />
-    <DataSelector source="Owner" caption="Savininkas:" style="width: 200px;"
-       decorator="caption-top" d:rootStyle="margin-right: 1em; float: right;" />
-    
+  <FlowPanel style="display: -webkit-flex;">
+  <Table>
+    <row>
+      <InputText source="Name" caption="=name"
+        d:rootStyle="margin-left: 1em; float: left;" d:style="margin-right:5px;" style="margin-right:10px;" />
+      <DataSelector source="Owner" caption="=owner" style="width: 200px;"
+        d:rootStyle="margin-right: 1em; float: right;" d:style="margin-right:5px;" />
+    </row>
+    <row style="margin-left:13px">
+      <cell colSpan="2">
+        <InputArea source="Description" caption="=description"
+          visibleLines="3" style="width: 443px; margin-left: 45px;"
+          d:rootStyle="margin-left: 11px; width:80px; margin-right:8px; float: left;" />
+      </cell>
+    </row>
+  </Table>
+  
     <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 120px; bottom: 1ex;">
       <page>
         <text>Resursų tipai</text>
@@ -32,7 +40,6 @@
         <text>=appointmentTypes</text>
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
       </page>
-      
       <page>
         <text>Nustatymai</text>
         <xi:include href="widgets/Settings.widget.xml" />
