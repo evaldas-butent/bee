@@ -55,13 +55,12 @@ public class Stars {
   private static final List<ImageResource> list = Lists.newArrayList();
 
   static {
+    list.add(resources.starGreen());
     list.add(resources.starYellow());
-    list.add(resources.starOrange());
     list.add(resources.starRed());
+    list.add(resources.starOrange());
     list.add(resources.starPurple());
     list.add(resources.starBlue());
-    list.add(resources.starGreen());
-
     list.add(resources.bangRed());
     list.add(resources.bangYellow());
     list.add(resources.checkGreen());

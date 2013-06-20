@@ -73,6 +73,8 @@ import java.util.List;
 
 class TaskList {
 
+  private static final Integer DEFAULT_STAR_COUNT = 3;
+
   public interface SlackTemplate extends SafeHtmlTemplates {
     @Template("<div class=\"bee-crm-SlackLate-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackLate-label\">{1}</div>")
     SafeHtml late(SafeStyles barStyles, String label);
@@ -201,8 +203,8 @@ class TaskList {
         }
 
         final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-
-        EditorAssistant.editStarCell(event, source, new Consumer<Integer>() {
+        final Integer starCount = DEFAULT_STAR_COUNT;
+        EditorAssistant.editStarCell(starCount, event, source, new Consumer<Integer>() {
           @Override
           public void accept(Integer parameter) {
             updateStar(event, source, parameter);

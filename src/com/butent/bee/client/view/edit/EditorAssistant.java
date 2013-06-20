@@ -83,7 +83,7 @@ public class EditorAssistant {
     }
   }
 
-  public static void editStarCell(EditStartEvent event, final CellSource source,
+  public static void editStarCell(Integer starCount, EditStartEvent event, final CellSource source,
       final Consumer<Integer> updater) {
 
     Assert.notNull(event);
@@ -135,7 +135,7 @@ public class EditorAssistant {
       }
 
     } else {
-      Global.getMsgBoxen().pickStar(oldValue, element, new ChoiceCallback() {
+      Global.getMsgBoxen().pickStar(starCount,oldValue, element, new ChoiceCallback() {
         @Override
         public void onCancel() {
           refocus();

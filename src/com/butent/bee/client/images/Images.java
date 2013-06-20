@@ -81,6 +81,9 @@ public class Images {
 
     @Source("closeSmall.png")
     ImageResource closeSmall();
+    
+    @Source("closeSmall2.png")
+    ImageResource closeSmall2();
 
     @Source("configure.png")
     ImageResource configure();

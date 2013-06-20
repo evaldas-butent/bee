@@ -405,15 +405,18 @@ public class MessageBoxes {
     return Window.confirm(BeeUtils.buildLines(lines));
   }
 
-  public void pickStar(Integer defaultValue, Element target, final ChoiceCallback callback) {
+  public void pickStar(Integer starCount, Integer defaultValue, Element target, final ChoiceCallback callback) {
     Assert.notNull(callback);
 
     final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_STAR_PICKER);
 
     TabBar cluster = new TabBar(STYLE_STAR_CLUSTER, Orientation.HORIZONTAL);
 
-    int size = Stars.count();
-    for (int i = 0; i < size; i++) {
+    if (!BeeUtils.isNonNegative(starCount)) {
+      starCount = Stars.count();
+    }
+    
+    for (int i = 0; i < starCount; i++) {
       Image image = new Image(Stars.get(i));
       cluster.addItem(image);
     }
