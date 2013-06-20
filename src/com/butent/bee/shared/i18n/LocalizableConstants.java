@@ -44,7 +44,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String company();
 
+  String companyActivities();
+
   String companyCode();
+
+  String companySize();
 
   String companyVATCode();
 
@@ -54,13 +58,21 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String createNewRow();
 
+  String creator();
+
   String date();
+
+  String description();
 
   String deselectAll();
 
   String doFilter();
 
   String email();
+
+  String ended();
+
+  String exchangeCode();
 
   String fax();
 
@@ -78,11 +90,17 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String filterNullLabel();
 
+  String group();
+
   String initialFilter();
 
   String item();
 
+  String location();
+
   String mobile();
+
+  String name();
 
   String newPassword();
 
@@ -108,6 +126,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String oldPasswordIsRequired();
 
+  String ordinal();
+
+  String owner();
+
   String period();
 
   String persons();
@@ -116,15 +138,33 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String postIndex();
 
+  String priority();
+
   String questionLogout();
+
+  String registered();
 
   String removeFilter();
 
   String repeatNewPassword();
 
+  String resource();
+
+  String responsibleEmployee();
+
+  String responsiblePerson();
+
   String saveChanges();
 
   String saveFilter();
+
+  String scheduledEndingDate();
+
+  String scheduledEndingTime();
+
+  String scheduledStartingDate();
+
+  String scheduledStartingTime();
 
   String selectAll();
 
@@ -132,11 +172,21 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String sorry();
 
+  String startDate();
+
+  String status();
+
+  String style();
+
+  String summary();
+
   String tabControl();
 
   String tooLittleData();
 
   String totalOf();
+
+  String type();
 
   String unit();
 
