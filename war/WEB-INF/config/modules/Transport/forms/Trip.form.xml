@@ -7,7 +7,6 @@
   xmlns:d="http://www.butent.com/decorator"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-
   name="Trip" viewName="Trips" caption="Reisas"
   width="900" height="600"
   >
