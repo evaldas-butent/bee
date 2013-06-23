@@ -227,3 +227,48 @@
 .bee-ec-ItemPanel-manufacturer-selected {
   color: red;
 }
+
+.bee-ec-searchByCar-carPanel {
+  margin-top: 2ex;
+  margin-left: 2em;
+}
+
+.bee-ec-searchByCar-attribute-manufacturer,
+.bee-ec-searchByCar-attribute-model,
+.bee-ec-searchByCar-attribute-year,
+.bee-ec-searchByCar-attribute-engine {
+  display: inline-block;
+  margin-right: 1em;
+  padding: 4px 8px 4px 8px;
+  cursor: pointer;
+  background-color: WhiteSmoke;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 3px 3px 0px 0px;
+}
+
+.bee-ec-searchByCar-dialog-manufacturer,
+.bee-ec-searchByCar-dialog-model,
+.bee-ec-searchByCar-dialog-year,
+.bee-ec-searchByCar-dialog-engine {
+  border: 2px solid #b4b4b4;
+  padding: 5px;
+  background-color: white;
+}
+
+.bee-ec-IndexSelector-itemContainer {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow: auto;
+  padding-right: 1em;
+}
+.bee-ec-IndexSelector-item:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 255, 0.5);
+  color: white;
+}
+.bee-ec-IndexSelector-counter {
+  font-weight: bold;
+  text-align: right;
+}

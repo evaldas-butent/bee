@@ -55,11 +55,39 @@ public class EcConstants {
   public static final String SVC_GENERAL_ITEMS = "generalItems";
   public static final String SVC_BIKE_ITEMS = "bikeItems";
 
+  public static final String SVC_GET_CAR_MANUFACTURERS = "getCarManufacturers";
+  public static final String SVC_GET_CAR_MODELS = "getCarModels";
+  public static final String SVC_GET_CAR_TYPES = "getCarTypes";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
   public static final String VAR_OFFSET = VAR_PREFIX + "offset";
   public static final String VAR_LIMIT = VAR_PREFIX + "limit";
+
+  public static final String VAR_MANUFACTURER = VAR_PREFIX + "manufacturer";
+  public static final String VAR_MODEL = VAR_PREFIX + "model";
+
+  public static final String TBL_TCD_MODELS = "TcdModels";
+  public static final String TBL_TCD_TYPES = "TcdTypes";
+
+  public static final String COL_TCD_MODEL_ID = "ModelID";
+  public static final String COL_TCD_MODEL_NAME = "ModelName";
+  public static final String COL_TCD_MANUFACTURER = "Manufacturer";
+
+  public static final String COL_TCD_TYPE_ID = "TypeID";
+  public static final String COL_TCD_TYPE_NAME = "TypeName";
+  public static final String COL_TCD_PRODUCED_FROM = "ProducedFrom";
+  public static final String COL_TCD_PRODUCED_TO = "ProducedTo";
+  public static final String COL_TCD_CCM = "Ccm";
+  public static final String COL_TCD_KW_FROM = "KwFrom";
+  public static final String COL_TCD_KW_TO = "KwTo";
+  public static final String COL_TCD_CYLINDERS = "Cylinders";
+  public static final String COL_TCD_MAX_WEIGHT = "MaxWeight";
+  public static final String COL_TCD_ENGINE = "Engine";
+  public static final String COL_TCD_FUEL = "Fuel";
+  public static final String COL_TCD_BODY = "Body";
+  public static final String COL_TCD_AXLE = "Axle";
   
   private EcConstants() {
   }

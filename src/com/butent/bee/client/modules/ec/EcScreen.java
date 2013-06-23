@@ -190,7 +190,7 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
-    return Pair.of(ClientLogManager.getLogPanel(), 0);
+    return Pair.of(ClientLogManager.getLogPanel(), 200);
   }
 
   @Override
@@ -236,7 +236,7 @@ public class EcScreen extends ScreenImpl {
     shell.restore();
 
     Simple wrapper = new Simple(shell);
-    return Pair.of(wrapper, 0);
+    return Pair.of(wrapper, 200);
   }
 
   private HtmlTable createCartTable() {

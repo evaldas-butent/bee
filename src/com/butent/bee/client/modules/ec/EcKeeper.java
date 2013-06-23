@@ -13,14 +13,36 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.modules.ec.EcCarModel;
+import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItemList;
 
+import java.util.List;
+
 public class EcKeeper {
+  
+  private static final EcData data = new EcData(); 
 
   public static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(EC_MODULE);
     args.addQueryItem(EC_METHOD, method);
     return args;
+  }
+
+  public static void dispatchMessages(ResponseObject response) {
+    if (response != null && response.hasMessages()) {
+      for (ResponseMessage message : response.getMessages()) {
+        LogLevel level = message.getLevel();
+
+        if (level == LogLevel.ERROR) {
+          BeeKeeper.getScreen().notifySevere(message.getMessage());
+        } else if (level == LogLevel.WARNING) {
+          BeeKeeper.getScreen().notifyWarning(message.getMessage());
+        } else {
+          BeeKeeper.getScreen().notifyInfo(message.getMessage());
+        }
+      }
+    }
   }
 
   public static void doGlobalSearch(String query) {
@@ -41,7 +63,24 @@ public class EcKeeper {
       }
     });
   }
+  
+  public static void getCarManufacturers(Consumer<List<String>> callback) {
+    Assert.notNull(callback);
+    data.getCarManufacturers(callback);
+  }
 
+  public static void getCarModels(String manufacturer, Consumer<List<EcCarModel>> callback) {
+    Assert.notEmpty(manufacturer);
+    Assert.notNull(callback);
+    data.getCarModels(manufacturer, callback);
+  }
+
+  public static void getCarTypes(Integer modelId, Consumer<List<EcCarType>> callback) {
+    Assert.notNull(modelId);
+    Assert.notNull(callback);
+    data.getCarTypes(modelId, callback);
+  }
+  
   public static String getContactsUrl() {
     return Settings.getProperty("ecContacts");
   }
@@ -89,22 +128,6 @@ public class EcKeeper {
         }
       }
     });
-  }
-
-  private static void dispatchMessages(ResponseObject response) {
-    if (response != null && response.hasMessages()) {
-      for (ResponseMessage message : response.getMessages()) {
-        LogLevel level = message.getLevel();
-
-        if (level == LogLevel.ERROR) {
-          BeeKeeper.getScreen().notifySevere(message.getMessage());
-        } else if (level == LogLevel.WARNING) {
-          BeeKeeper.getScreen().notifyWarning(message.getMessage());
-        } else {
-          BeeKeeper.getScreen().notifyInfo(message.getMessage());
-        }
-      }
-    }
   }
 
   private static EcItemList getResponseItems(ResponseObject response) {

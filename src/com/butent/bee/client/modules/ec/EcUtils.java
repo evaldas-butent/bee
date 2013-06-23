@@ -13,7 +13,7 @@ import java.util.List;
 
 public class EcUtils {
   
-  private static List<String> colors = Lists.newArrayList(Color.getNames().values()); 
+  private static List<String> colors = Lists.newArrayList(Color.getNames().values());
   
   public static Widget randomPicture(int min, int max) {
     CustomDiv widget = new CustomDiv();
@@ -32,7 +32,7 @@ public class EcUtils {
     
     return widget;
   }
-  
+
   public static String renderPrice(int price) {
     if (price > 0) {
       String s = BeeUtils.toLeadingZeroes(price, 3);
@@ -41,6 +41,14 @@ public class EcUtils {
     } else {
       return BeeConst.STRING_EMPTY;
     }
+  }
+  
+  public static String string(Double value) {
+    return (value == null) ? null : BeeUtils.toString(value);
+  }
+  
+  public static String string(Integer value) {
+    return (value == null) ? null : value.toString();
   }
 
   private EcUtils() {

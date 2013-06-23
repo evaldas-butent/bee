@@ -11,12 +11,16 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.EcCarModel;
+import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemList;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -66,6 +70,13 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_OE_NUMBER)) {
       response = searchByOeNumber(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_CAR_MANUFACTURERS)) {
+      response = getCarManufacturers();
+    } else if (BeeUtils.same(svc, SVC_GET_CAR_MODELS)) {
+      response = getCarModels(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPES)) {
+      response = getCarTypes(reqInfo);
+      
     } else if (BeeUtils.same(svc, "ITEM_INFO")) {
       response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
 
@@ -119,10 +130,80 @@ public class EcModuleBean implements BeeModule {
     return new EcItemList(items);
   }
 
+  private ResponseObject getCarManufacturers() {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFrom(TBL_TCD_MODELS)
+        .addFields(TBL_TCD_MODELS, COL_TCD_MANUFACTURER)
+        .addOrder(TBL_TCD_MODELS, COL_TCD_MANUFACTURER);
+    
+    return ResponseObject.response(qs.getColumn(query));
+  }
+
+  private ResponseObject getCarModels(RequestInfo reqInfo) {
+    String manufacturer = reqInfo.getParameter(VAR_MANUFACTURER);
+    if (BeeUtils.isEmpty(manufacturer)) {
+      return ResponseObject.parameterNotFound(VAR_MANUFACTURER);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TCD_MODELS)
+        .addFromInner(TBL_TCD_TYPES, 
+            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addMin(TBL_TCD_TYPES, COL_TCD_PRODUCED_FROM)
+        .addMax(TBL_TCD_TYPES, COL_TCD_PRODUCED_TO)
+        .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MANUFACTURER, manufacturer))
+        .addGroup(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
+    
+    SimpleRowSet rowSet = qs.getData(query);
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(manufacturer));
+    }
+
+    List<EcCarModel> carModels = Lists.newArrayList();
+    for (SimpleRow row : rowSet) {
+      carModels.add(new EcCarModel(row));
+    }
+    
+    return ResponseObject.response(carModels);
+  }
+  
+  private ResponseObject getCarTypes(RequestInfo reqInfo) {
+    String modelId = reqInfo.getParameter(VAR_MODEL);
+    if (!BeeUtils.isPositiveInt(modelId)) {
+      return ResponseObject.parameterNotFound(VAR_MODEL);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TCD_MODELS)
+        .addFromInner(TBL_TCD_TYPES, 
+            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
+            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
+            COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MODEL_ID, modelId))
+        .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
+    
+    SimpleRowSet rowSet = qs.getData(query);
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(modelId));
+    }
+    
+    List<EcCarType> carTypes = Lists.newArrayList();
+    for (SimpleRow row : rowSet) {
+      carTypes.add(new EcCarType(row));
+    }
+    
+    return ResponseObject.response(carTypes);
+  }
+
   private ResponseObject getFeaturedAndNoveltyItems() {
     return ResponseObject.response(generateItems(BeeUtils.randomInt(1, 30)));
   }
-
+  
   private ResponseObject getItemInfo(long id) {
     SqlSelect query = new SqlSelect()
         .addFields("TcdCategories", "CategoryName", "CategoryID", "ParentID")
