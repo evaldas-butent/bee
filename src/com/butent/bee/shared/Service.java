@@ -11,6 +11,7 @@ public class Service {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
+  public static final String UPLOAD_SERVICE_PREFIX = "upd_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
   public static final String DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
@@ -149,11 +150,16 @@ public class Service {
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
+  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
+  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
+  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
+
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
   public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
 
+  public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
   
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";

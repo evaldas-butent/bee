@@ -402,8 +402,6 @@ public class StyleUtils {
   public static final String CSS_TEXT_TRANSFORM = "text-transform";
   public static final String CSS_LETTER_SPACING = "letter-spacing";
 
-  public static final String USER_PHOTO = "bee-UserPhoto";
-  
   public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
       buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
 

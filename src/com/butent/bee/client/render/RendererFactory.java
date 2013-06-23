@@ -147,6 +147,10 @@ public class RendererFactory {
       case FILE_ICON:
         renderer = new FileIconRenderer(source);
         break;
+        
+      case PHOTO:
+        renderer = new PhotoRenderer(source);
+        break;
 
       default:
         logger.severe("renderer", type.name(), "not supported");

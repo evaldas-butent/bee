@@ -322,6 +322,7 @@ public enum FormWidget {
   private static final String ATTR_INLINE = "inline";
 
   private static final String ATTR_URL = "url";
+  private static final String ATTR_ALT = "alt";
   private static final String ATTR_TAB_INDEX = "tabIndex";
 
   private static final String ATTR_LEFT = "left";
@@ -740,6 +741,11 @@ public enum FormWidget {
           } else {
             widget = new Image();
           }
+        }
+        
+        String alt = attributes.get(ATTR_ALT);
+        if (!BeeUtils.isEmpty(alt)) {
+          ((Image) widget).setAlt(alt);
         }
         break;
 

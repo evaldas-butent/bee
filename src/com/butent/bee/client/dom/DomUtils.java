@@ -3,6 +3,7 @@ package com.butent.bee.client.dom;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -1261,11 +1262,12 @@ public class DomUtils {
     }
   }
 
-  public static boolean isImageElement(Element el) {
-    if (el == null) {
+  public static boolean isImageElement(JavaScriptObject obj) {
+    if (obj != null && Element.is(obj)) {
+      return Element.as(obj).getTagName().equalsIgnoreCase(TAG_IMG);
+    } else { 
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_IMG);
   }
 
   public static boolean isInputElement(Element el) {

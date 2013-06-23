@@ -91,7 +91,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
           Queries.insert(TBL_REQUEST_FILES, columns,
               Lists.newArrayList(request, BeeUtils.toString(file), fileName));
         } else {
-          FileUtils.upload(fileInfo, new Callback<Long>() {
+          FileUtils.uploadFile(fileInfo, new Callback<Long>() {
             @Override
             public void onSuccess(Long result) {
               Queries.insert(TBL_REQUEST_FILES, columns,

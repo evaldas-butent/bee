@@ -209,7 +209,6 @@ public class CommonsConstants {
   
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
-  public static final String ALS_PHOTO_FILE_NAME = "PhotoFileName";
 
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";

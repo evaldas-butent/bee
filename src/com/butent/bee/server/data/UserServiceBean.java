@@ -340,9 +340,9 @@ public class UserServiceBean {
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, COL_LOGIN, UserData.FLD_COMPANY_PERSON, COL_PROPERTIES)
+        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_COMPANY_PERSON, COL_PROPERTIES)
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
-        .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME, COL_PHOTO)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
@@ -354,16 +354,13 @@ public class UserServiceBean {
 
       userCache.put(userId, login);
 
-      UserData userData = new UserData(userId, login, row.getValue(UserData.FLD_FIRST_NAME),
-          row.getValue(UserData.FLD_LAST_NAME), row.getLong(UserData.FLD_COMPANY_PERSON),
-          row.getLong(COL_COMPANY));
+      UserData userData = new UserData(userId, login,
+          row.getValue(COL_FIRST_NAME), row.getValue(COL_LAST_NAME), row.getValue(COL_PHOTO),
+          row.getLong(COL_COMPANY_PERSON), row.getLong(COL_COMPANY), row.getLong(COL_PERSON));
 
       UserInfo user = new UserInfo(userData)
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_PROPERTIES));
-
-      userData.setProperty(COL_PERSON, row.getValue(COL_PERSON));
-      userData.setProperty(COL_PHOTO, row.getValue(COL_PHOTO));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -410,8 +407,7 @@ public class UserServiceBean {
       logger.info("User logged in:", user, BeeUtils.parenthesize(data.getUserSign()));
 
     } else if (BeeUtils.isEmpty(getUsers())) {
-      response.setResponse(new UserData(-1, user, null, null, null, null)
-          .setProperty("dsn", SqlBuilderFactory.getDsn()));
+      response.setResponse(new UserData(-1, user).setProperty("dsn", SqlBuilderFactory.getDsn()));
       logger.warning("Anonymous user logged in:", user);
 
     } else {

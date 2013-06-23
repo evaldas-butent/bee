@@ -422,7 +422,7 @@ public class DocumentHandler {
     final Holder<Integer> latch = Holder.of(files.size());
 
     for (final NewFileInfo fileInfo : files) {
-      FileUtils.upload(fileInfo, new Callback<Long>() {
+      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
         @Override
         public void onSuccess(Long result) {
           BeeRow row = DataUtils.createEmptyRow(columns.size());

@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.modules.commons.FileStorageBean;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -39,21 +38,73 @@ public class UploadServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    Assert.untouchable();
+    doPost(req, resp);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    handleFileUpload(req, resp);
-  }
 
-  private void handleFileUpload(HttpServletRequest req, HttpServletResponse resp) {
-    long start = System.currentTimeMillis();
-    String prefix = getClass().getSimpleName() + ":";
-    
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
     parameters.putAll(HttpUtils.getParameters(req, true));
+
+    String response;
+    
+    String service = parameters.get(Service.RPC_VAR_SVC);
+    if (BeeUtils.same(service, Service.UPLOAD_FILE)) {
+      response = uploadFile(req, parameters);
+    } else if (BeeUtils.same(service, Service.UPLOAD_PHOTO)) {
+      response = uploadPhoto(req, parameters);
+    } else if (BeeUtils.same(service, Service.DELETE_PHOTO)) {
+      response = deletePhoto(parameters);
+    } else {
+      response = BeeUtils.joinWords(getClass().getSimpleName(), service, "service not recognized");
+      logger.severe(response);
+    }
+
+    ContentType ctp = ContentType.TEXT;
+    resp.setContentType(CommUtils.getMediaType(ctp));
+    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+
+    try {
+      PrintWriter writer = resp.getWriter();
+      writer.print(response);
+      writer.flush();
+    } catch (IOException ex) {
+      logger.error(ex);
+    }
+  }
+
+  private String deletePhoto(Map<String, String> parameters) {
+    String fileName = parameters.get(Service.VAR_FILE_NAME);
+
+    if (BeeUtils.isEmpty(fileName)) {
+      String message = "photo file name not specified";
+      logger.severe(message);
+      return message;
+    
+    } else if (fs.photoExists(fileName)) {
+      boolean deleted = fs.deletePhoto(fileName);
+
+      if (deleted) {
+        logger.info("photo deleted:", fileName);
+        return fileName.trim();
+      } else {
+        String message = "cannot delete existing photo: " + fileName;
+        logger.severe(message);
+        return message;
+      }
+
+    } else {
+      String message = "photo not found: " + fileName;
+      logger.warning(message);
+      return message;
+    }
+  }
+
+  private String uploadFile(HttpServletRequest req, Map<String, String> parameters) {
+    long start = System.currentTimeMillis();
+    String prefix = "file upload:";
     
     String fileName = parameters.get(Service.VAR_FILE_NAME);
     String mimeType = parameters.get(Service.VAR_FILE_TYPE);
@@ -86,17 +137,56 @@ public class UploadServlet extends HttpServlet {
         response = prefix + BeeUtils.notEmpty(ex.getMessage(), ex.getClass().getSimpleName());
       }
     }
+    
+    return response;
+  }
+  
+  private String uploadPhoto(HttpServletRequest req, Map<String, String> parameters) {
+    String fileName = parameters.get(Service.VAR_FILE_NAME);
+    if (BeeUtils.isEmpty(fileName)) {
+      String message = "photo file name not specified";
+      logger.severe(message);
+      return message;
+    }
 
-    ContentType ctp = ContentType.TEXT;
-    resp.setContentType(CommUtils.getMediaType(ctp));
-    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
-
+    String oldPhoto = parameters.get(Service.VAR_OLD_VALUE);
+    if (!BeeUtils.isEmpty(oldPhoto)) {
+      boolean deleted = fs.deletePhoto(oldPhoto);
+      if (deleted) {
+        logger.info("old photo deleted:", oldPhoto);
+      } else {
+        logger.warning("cannot delete old photo:", oldPhoto);
+      }
+    }
+    
+    if (fs.photoExists(fileName)) {
+      boolean deleted = fs.deletePhoto(fileName);
+      if (deleted) {
+        logger.info("existing photo deleted:", fileName);
+      } else {
+        String message = "cannot delete existing photo: " + fileName;
+        logger.severe(message);
+        return message;
+      }
+    }
+    
+    long start = System.currentTimeMillis();
+    String response;
+    
     try {
-      PrintWriter writer = resp.getWriter();
-      writer.print(response);
-      writer.flush();
+      boolean stored = fs.storePhoto(req.getInputStream(), fileName);
+      if (stored) {
+        logger.info(TimeUtils.elapsedSeconds(start), "stored photo:", fileName);
+        response = fileName.trim();
+      } else {
+        response = BeeUtils.joinWords("photo not stored:", fileName);
+      }
+
     } catch (IOException ex) {
       logger.error(ex);
+      response = BeeUtils.notEmpty(ex.getMessage(), ex.getClass().getSimpleName());
     }
+    
+    return response;
   }
 }

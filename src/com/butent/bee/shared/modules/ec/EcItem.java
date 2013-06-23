@@ -12,7 +12,7 @@ import java.util.Collection;
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ID, CODE, NAME, SUPPLIER, STOCK
+    ID, CODE, NAME, SUPPLIER, STOCK, LIST_PRICE, PRICE
   }
 
   public static EcItem restore(String s) {
@@ -33,6 +33,9 @@ public class EcItem implements BeeSerializable {
 
   private int stock1;
   private final int stock2;
+  
+  private int listPrice;
+  private int price;
 
   private int quantity = 1;
 
@@ -90,6 +93,14 @@ public class EcItem implements BeeSerializable {
         case SUPPLIER:
           setSupplier(value);
           break;
+          
+        case LIST_PRICE:
+          this.listPrice = BeeUtils.toInt(value);
+          break;
+
+        case PRICE:
+          this.price = BeeUtils.toInt(value);
+          break;
       }
     }
   }
@@ -106,12 +117,20 @@ public class EcItem implements BeeSerializable {
     return id;
   }
 
+  public int getListPrice() {
+    return listPrice;
+  }
+
   public String getManufacturer() {
     return manufacturer;
   }
 
   public String getName() {
     return name;
+  }
+
+  public int getPrice() {
+    return price;
   }
 
   public int getQuantity() {
@@ -173,19 +192,45 @@ public class EcItem implements BeeSerializable {
         case SUPPLIER:
           arr[i++] = supplier;
           break;
+
+        case LIST_PRICE:
+          arr[i++] = listPrice;
+          break;
+
+        case PRICE:
+          arr[i++] = price;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
   }
-
+  
   public EcItem setCode(String code) {
     this.code = code;
     return this;
   }
 
+  public EcItem setListPrice(Double listPrice) {
+    this.listPrice = BeeUtils.isDouble(listPrice) ? BeeUtils.round(listPrice * 100) : 0;
+    return this;
+  }
+  
+  public void setListPrice(int listPrice) {
+    this.listPrice = listPrice;
+  }
+
   public EcItem setName(String name) {
     this.name = name;
     return this;
+  }
+
+  public EcItem setPrice(Double price) {
+    this.price = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
+    return this;
+  }
+
+  public void setPrice(int price) {
+    this.price = price;
   }
 
   public EcItem setQuantity(int quantity) {

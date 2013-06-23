@@ -6,16 +6,16 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
-import com.butent.bee.server.sql.SqlDelete;
+//import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
+//import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.BeeUtils;
+//import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -24,9 +24,9 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
-import pl.motonet.ArrayOfString;
-import pl.motonet.WSMotoOferta;
-import pl.motonet.WSMotoOfertaSoap;
+//import pl.motonet.ArrayOfString;
+//import pl.motonet.WSMotoOferta;
+//import pl.motonet.WSMotoOfertaSoap;
 
 @Stateless
 @LocalBean
@@ -165,54 +165,54 @@ public class TecDocBean {
 
   @Asynchronous
   public void suckMotonet() {
-    String motonet = "TcdMotonet";
-
-    logger.info(motonet, "Waiting for webService data...");
-
-    WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
-    ArrayOfString data = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
-
-    if (data == null || data.getString().size() == 1) {
-      logger.info(motonet, "webService returned no data");
-    } else {
-      logger.info(motonet, "webService returned", data.getString().size(),
-          "rows. Inserting data...");
-
-      if (qs.dbTableExists(sys.getDbName(), sys.getDbSchema(), motonet)) {
-        qs.updateData(SqlUtils.dropTable(motonet));
-      }
-      qs.updateData(new SqlCreate(motonet, false)
-          .addLong("ArticleID", false)
-          .addString("Prefix", 10, true)
-          .addString("Index", 50, true)
-          .addString("SearchNr", 50, true)
-          .addDecimal("Remainder", 1, 0, false)
-          .addDecimal("Price", 10, 2, false));
-
-      for (String item : data.getString()) {
-        String[] values = item.split("[|]", 8);
-
-        qs.insertData(new SqlInsert(motonet)
-            .addConstant("Prefix", values[0])
-            .addConstant("Index", values[1])
-            .addConstant("SearchNr", values[1].replaceAll("[^A-Za-z0-9]", "").toUpperCase())
-            .addConstant("Remainder", BeeUtils.toNonNegativeInt(BeeUtils.toInt(values[3])))
-            .addConstant("Price", BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
-      }
-      logger.info(motonet, "insert finished. Indexing data...");
-
-      qs.updateData(SqlUtils.createIndex(motonet, "IK_" + motonet + "SearchNr",
-          Lists.newArrayList("SearchNr"), false));
-
-      logger.info(motonet, "indexing finished");
-    }
-    String tcdAnalogs = SqlUtils.table("TecDoc", "TcdAnalogs");
-
-    qs.updateData(new SqlUpdate("TcdMotonet")
-        .addExpression("ArticleID", SqlUtils.field(tcdAnalogs, "ArticleID"))
-        .setFrom(tcdAnalogs, SqlUtils.joinUsing("TcdMotonet", tcdAnalogs, "SearchNr")));
-
-    qs.updateData(new SqlDelete(motonet).setWhere(SqlUtils.isNull(motonet, "ArticleID")));
+//    String motonet = "TcdMotonet";
+//
+//    logger.info(motonet, "Waiting for webService data...");
+//
+//    WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
+//    ArrayOfString data = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
+//
+//    if (data == null || data.getString().size() == 1) {
+//      logger.info(motonet, "webService returned no data");
+//    } else {
+//      logger.info(motonet, "webService returned", data.getString().size(),
+//          "rows. Inserting data...");
+//
+//      if (qs.dbTableExists(sys.getDbName(), sys.getDbSchema(), motonet)) {
+//        qs.updateData(SqlUtils.dropTable(motonet));
+//      }
+//      qs.updateData(new SqlCreate(motonet, false)
+//          .addLong("ArticleID", false)
+//          .addString("Prefix", 10, true)
+//          .addString("Index", 50, true)
+//          .addString("SearchNr", 50, true)
+//          .addDecimal("Remainder", 1, 0, false)
+//          .addDecimal("Price", 10, 2, false));
+//
+//      for (String item : data.getString()) {
+//        String[] values = item.split("[|]", 8);
+//
+//        qs.insertData(new SqlInsert(motonet)
+//            .addConstant("Prefix", values[0])
+//            .addConstant("Index", values[1])
+//            .addConstant("SearchNr", values[1].replaceAll("[^A-Za-z0-9]", "").toUpperCase())
+//            .addConstant("Remainder", BeeUtils.toNonNegativeInt(BeeUtils.toInt(values[3])))
+//            .addConstant("Price", BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+//      }
+//      logger.info(motonet, "insert finished. Indexing data...");
+//
+//      qs.updateData(SqlUtils.createIndex(motonet, "IK_" + motonet + "SearchNr",
+//          Lists.newArrayList("SearchNr"), false));
+//
+//      logger.info(motonet, "indexing finished");
+//    }
+//    String tcdAnalogs = SqlUtils.table("TecDoc", "TcdAnalogs");
+//
+//    qs.updateData(new SqlUpdate("TcdMotonet")
+//        .addExpression("ArticleID", SqlUtils.field(tcdAnalogs, "ArticleID"))
+//        .setFrom(tcdAnalogs, SqlUtils.joinUsing("TcdMotonet", tcdAnalogs, "SearchNr")));
+//
+//    qs.updateData(new SqlDelete(motonet).setWhere(SqlUtils.isNull(motonet, "ArticleID")));
   }
 
   @Asynchronous

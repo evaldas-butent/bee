@@ -2,6 +2,7 @@ package com.butent.bee.server.io;
 
 import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.File;

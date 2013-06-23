@@ -197,7 +197,7 @@ public class Mobile extends ScreenImpl {
     Label user = new Label();
     StyleUtils.setHorizontalPadding(user, 5);
     hor.add(user);
-    setSignature(user);
+    setUserSignature(user);
 
     int right = addLogToggle(p);
     p.addLeftRightTop(hor, pct + 12, CssUnit.PCT, right, CssUnit.PX, 1, CssUnit.PX);

@@ -75,7 +75,7 @@ public class Bee implements EntryPoint {
   private void load(Map<String, String> data) {
     UserData userData = UserData.restore(data.get(Service.LOGIN));
     BeeKeeper.getUser().setUserData(userData);
-    BeeKeeper.getScreen().updateSignature(userData);
+    BeeKeeper.getScreen().updateUserData(userData);
 
     BeeKeeper.getMenu().restore(data.get(Service.LOAD_MENU));
 

@@ -294,7 +294,7 @@ public class NewMailMessage extends AbstractFormInterceptor
     } else {
       attachments.put(fileName, 0L);
 
-      FileUtils.upload(event.getSelectedItem(), new Callback<Long>() {
+      FileUtils.uploadFile(event.getSelectedItem(), new Callback<Long>() {
         @Override
         public void onFailure(String... reason) {
           if (attachments.containsKey(fileName)) {

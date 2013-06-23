@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -76,13 +77,13 @@ public class RelationUtils {
           continue;
         }
 
-        if (BeeUtils.same(vc.getField(), UserData.FLD_FIRST_NAME)) {
+        if (BeeUtils.same(vc.getField(), CommonsConstants.COL_FIRST_NAME)) {
           row.setValue(index, userData.getFirstName());
           result++;
-        } else if (BeeUtils.same(vc.getField(), UserData.FLD_LAST_NAME)) {
+        } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_LAST_NAME)) {
           row.setValue(index, userData.getLastName());
           result++;
-        } else if (BeeUtils.same(vc.getField(), UserData.FLD_COMPANY_PERSON)) {
+        } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_COMPANY_PERSON)) {
           row.setValue(index, userData.getCompanyPerson());
           result++;
         }

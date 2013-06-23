@@ -172,7 +172,7 @@ class TaskBuilder extends AbstractFormInterceptor {
           Lists.newArrayList(COL_TASK, COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : files) {
-        FileUtils.upload(fileInfo, new Callback<Long>() {
+        FileUtils.uploadFile(fileInfo, new Callback<Long>() {
           @Override
           public void onSuccess(Long result) {
             for (long taskId : tasks) {

@@ -20,6 +20,8 @@ public interface LocalizableEcConstants {
 
   String ecCategoryTires();
 
+  String ecClientPrice();
+
   String ecContacts();
 
   String ecCreditLimit();
@@ -95,6 +97,8 @@ public interface LocalizableEcConstants {
   String ecItemVoltage();
 
   String ecItemWidth();
+
+  String ecListPrice();
 
   String ecMaxedOut();
 

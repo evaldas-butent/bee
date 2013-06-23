@@ -7,7 +7,7 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.io.FileNameUtils;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -15,6 +15,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.io.IoConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -44,12 +45,23 @@ public class FileStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileStorageBean.class);
 
+  private static final int BUFFER_SIZE = 8192;
+
   @EJB
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
 
   private final Object lock = new Object();
+  
+  public boolean deletePhoto(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return false;
+    }
+    
+    File file = new File(getPhotoDir(), BeeUtils.trim(fileName));
+    return file.exists() && file.delete();
+  }
 
   public List<StoredFile> getFiles() {
     List<StoredFile> files = Lists.newArrayList();
@@ -68,12 +80,21 @@ public class FileStorageBean {
 
       sf.setFileDate(DateTime.restore(row.getValue(versionName)));
 
-      sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
+      sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }
     return files;
   }
 
+  public boolean photoExists(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return false;
+    }
+    
+    File file = new File(getPhotoDir(), BeeUtils.trim(fileName));
+    return file.exists();
+  }
+  
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     MessageDigest md = null;
 
@@ -90,7 +111,7 @@ public class FileStorageBean {
     tmp.deleteOnExit();
     OutputStream out = new DigestOutputStream(new FileOutputStream(tmp), md);
 
-    byte buffer[] = new byte[8 * 1024];
+    byte buffer[] = new byte[BUFFER_SIZE];
     int bytesRead;
 
     try {
@@ -146,5 +167,44 @@ public class FileStorageBean {
       }
     }
     return id;
+  }
+  
+  public boolean storePhoto(InputStream is, String fileName) {
+    File dir = getPhotoDir();
+    if (!dir.exists() && !dir.mkdirs()) {
+      logger.severe("cannot create", dir.getPath());
+      return false;
+    }
+    
+    File file = new File(dir, BeeUtils.trim(fileName));
+
+    byte buffer[] = new byte[BUFFER_SIZE];
+    int bytesRead;
+
+    OutputStream out = null;
+    boolean ok;
+
+    try {
+      out = new FileOutputStream(file);
+      while ((bytesRead = is.read(buffer)) > 0) {
+        out.write(buffer, 0, bytesRead);
+      }
+      out.flush();
+      ok = true;
+
+    } catch (IOException ex) {
+      logger.severe(ex);
+      ok = false;
+    }
+    
+    FileUtils.closeQuietly(out);
+    if (!ok && file.exists()) {
+      file.delete();
+    }
+    return ok;
+  }
+  
+  private File getPhotoDir() {
+    return new File(Config.IMAGES_DIR, IoConstants.PHOTO_DIR);
   }
 }

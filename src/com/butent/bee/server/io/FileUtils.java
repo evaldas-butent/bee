@@ -3,9 +3,10 @@ package com.butent.bee.server.io;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.io.FileNameUtils;
+import com.butent.bee.shared.io.FileNameUtils.Component;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;

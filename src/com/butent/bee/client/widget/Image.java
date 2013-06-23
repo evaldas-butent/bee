@@ -102,6 +102,10 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
     return "img";
   }
 
+  public String getUrl() {
+    return getImageElement().getSrc();
+  }
+  
   public int getWidth() {
     return getImageElement().getWidth();
   }

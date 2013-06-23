@@ -181,11 +181,18 @@ body {
   top: 35px;
   border-collapse: collapse;
 }
+.bee-UserPhotoContainer {
+  margin-right: 1em;
+}
+.bee-UserPhoto {
+  max-width: 30px;
+  max-height: 30px;
+  cursor: default;
+}
 .bee-UserExitContainer {
-  margin-left: 1em;
-  margin-top: 5px;
   width: 20px;
   height: 27px;
+  margin-left: 1em;
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -246,7 +253,7 @@ body {
 
 .bee-MenuItem-label {
   padding-left: 5px;
-  padding-top:5px; 
+  padding-top: 5px; 
   padding-right: 5px;
   cursor: pointer;
   font-family: Verdana;
@@ -254,7 +261,7 @@ body {
 
 .bee-MenuPopup .bee-MenuItem-label {
   font-size: 13px;
-   padding-left: 25px; 
+  padding-left: 25px; 
 }
 
 .bee-MenuPopup td:hover {
@@ -404,7 +411,7 @@ body {
 
 .bee-Header-commandPanel {
   margin-left: auto;
-
+  margin-right: 3em;
   border-collapse: collapse;
 }
 .bee-Header-commandPanel .bee-Button {
@@ -1809,10 +1816,6 @@ body {
   border: 1px solid silver;
 }
 
-.bee-InputArea{
-	width: 155px;
-}
-
 .bee-TextBox,
 .bee-InputArea {
   padding: 1px 2px;
@@ -1869,6 +1872,11 @@ div:focus,
   border: 1px solid darkgreen;
 }
 
+.bee-Photo-embedded {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .companyInfo-label, .companyInfo-item {
   display: inline-block;
   margin-right: 4px;
@@ -1880,16 +1888,4 @@ div:focus,
 
 .companyInfo-name .companyInfo-item {
   font-weight: bold;
-}
-
-.bee-PersonPhoto {
-  height: 100%;
-}
-
-.bee-UserPhoto {
-  max-height: 30px;
-  max-width:  40px;
-  vertical-align: middle;
-  margin-right: 4px;
-  cursor: default;
 }

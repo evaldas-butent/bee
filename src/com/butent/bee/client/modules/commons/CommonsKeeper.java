@@ -66,6 +66,7 @@ public class CommonsKeeper {
   public static void register() {
     FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
     FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
+    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
 
     BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
       @Override
@@ -82,9 +83,6 @@ public class CommonsKeeper {
         GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
       }
     });
-
-    GridFactory.registerGridInterceptor(GRID_PERSONS, new PersonsGridInterceptor());
-    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

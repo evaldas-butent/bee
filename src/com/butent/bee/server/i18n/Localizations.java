@@ -3,13 +3,13 @@ package com.butent.bee.server.i18n;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.io.ExtensionFilter;
-import com.butent.bee.server.io.FileNameUtils;
-import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.io.FileNameUtils;
+import com.butent.bee.shared.io.FileNameUtils.Component;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;

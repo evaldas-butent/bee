@@ -135,20 +135,19 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject searchByItemCode(RequestInfo reqInfo) {
-    // return doGlobalSearch(reqInfo);
-
     String code = reqInfo.getParameter(VAR_QUERY);
-    int limit = BeeUtils.toInt(reqInfo.getParameter("Limit"));
-    int offset = BeeUtils.toInt(reqInfo.getParameter("Offset"));
-
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.error("No search criteria defined");
     }
-    String searchCode = code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
 
+    int offset = BeeUtils.toInt(reqInfo.getParameter(VAR_OFFSET));
+    int limit = BeeUtils.toInt(reqInfo.getParameter(VAR_LIMIT));
+
+    String searchCode = code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
     if (BeeUtils.length(searchCode) < 3) {
       return ResponseObject.error("Search code must be at least 3 characters length:", searchCode);
     }
+
     SqlSelect query = new SqlSelect()
         .addFields("TcdArticles", "ArticleID", "ArticleNr", "ArticleName", "Supplier")
         .addField("TcdAnalogs", "Supplier", "AnalogSupplier")
@@ -168,15 +167,23 @@ public class EcModuleBean implements BeeModule {
     if (offset > 0) {
       query.setOffset(offset);
     }
+
     List<EcItem> items = Lists.newArrayList();
 
     for (SimpleRow row : qs.getData(query)) {
-      items.add(new EcItem(row.getLong("ArticleID"))
-          .setName(row.getValue("ArticleName"))
-          .setCode(row.getValue("ArticleNr"))
-          .setSupplier(BeeUtils.notEmpty(row.getValue("AnalogSupplier"),
-              row.getValue("Supplier")))
-          .setStock(row.getInt("Remainder")));
+      EcItem item = new EcItem(row.getLong("ArticleID"));
+      item.setName(row.getValue("ArticleName"));
+      item.setCode(row.getValue("ArticleNr"));
+      item.setSupplier(BeeUtils.notEmpty(row.getValue("AnalogSupplier"), row.getValue("Supplier")));
+      item.setStock(row.getInt("Remainder"));
+      
+      Double price = row.getDouble("Price");
+      if (BeeUtils.isPositive(price)) {
+        item.setListPrice(price * (1 + Math.random() * 0.5));
+        item.setPrice(price);
+      }
+
+      items.add(item);
     }
     return ResponseObject.response(new EcItemList(items));
   }

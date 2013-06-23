@@ -11,7 +11,8 @@ public enum RendererType {
   TOKEN("token", false),
   FLAG("flag", true),
   STAR("star", true),
-  FILE_ICON("fileIcon", true);
+  FILE_ICON("fileIcon", true),
+  PHOTO("photo", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

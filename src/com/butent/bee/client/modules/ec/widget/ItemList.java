@@ -22,6 +22,7 @@ import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
@@ -49,6 +50,8 @@ public class ItemList extends Simple {
   private static final String STYLE_STOCK_1 = EcStyles.name(STYLE_PRIMARY, "stock1");
   private static final String STYLE_STOCK_2 = EcStyles.name(STYLE_PRIMARY, "stock2");
   private static final String STYLE_QUANTITY = EcStyles.name(STYLE_PRIMARY, "quantity");
+  private static final String STYLE_LIST_PRICE = EcStyles.name(STYLE_PRIMARY, "listPrice");
+  private static final String STYLE_PRICE = EcStyles.name(STYLE_PRIMARY, "price");
   private static final String STYLE_CART = EcStyles.name(STYLE_PRIMARY, "cart");
 
   private static final String STYLE_ITEM_NAME = EcStyles.name(STYLE_PRIMARY, "name");
@@ -61,13 +64,15 @@ public class ItemList extends Simple {
   private static final String STYLE_ITEM_CATEGORY = EcStyles.name(STYLE_PRIMARY, "category");
 
   private static final String STYLE_INFO_CONTAINER = "-container";
-  private static final String STYLE_INFO_LABEL = "-label";
+  private static final String STYLE_LABEL = "-label";
 
   private static final int COL_PICTURE = 0;
   private static final int COL_INFO = 1;
   private static final int COL_STOCK_1 = 2;
   private static final int COL_STOCK_2 = 3;
-  private static final int COL_QUANTITY = 4;
+  private static final int COL_LIST_PRICE = 4;
+  private static final int COL_PRICE = 5;
+  private static final int COL_QUANTITY = 6;
 
   private final HtmlTable table;
 
@@ -108,6 +113,14 @@ public class ItemList extends Simple {
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
       table.setWidget(row, COL_STOCK_2, wrh2);
+      
+      Label listPriceLabel = new Label(Localized.constants.ecListPrice());
+      EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
+      table.setWidget(row, COL_LIST_PRICE, listPriceLabel);
+      
+      Label priceLabel = new Label(Localized.constants.ecClientPrice());
+      EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
+      table.setWidget(row, COL_PRICE, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
 
@@ -144,7 +157,7 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(code)) {
       Flow codeContainer = new Flow(STYLE_ITEM_CODE + STYLE_INFO_CONTAINER);
 
-      CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + STYLE_INFO_LABEL);
+      CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + STYLE_LABEL);
       codeLabel.setText(Localized.constants.ecItemCode());
       codeContainer.add(codeLabel);
 
@@ -159,7 +172,7 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(supplier)) {
       Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + STYLE_INFO_CONTAINER);
 
-      CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + STYLE_INFO_LABEL);
+      CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + STYLE_LABEL);
       supplierLabel.setText(Localized.constants.ecItemSupplier());
       supplierContainer.add(supplierLabel);
 
@@ -212,7 +225,7 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(manufacturer)) {
       Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + STYLE_INFO_CONTAINER);
 
-      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + STYLE_INFO_LABEL);
+      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + STYLE_LABEL);
       manufacturerLabel.setText(Localized.constants.ecItemManufacturer());
       manufacturerContainer.add(manufacturerLabel);
 
@@ -227,7 +240,7 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(category)) {
       Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + STYLE_INFO_CONTAINER);
 
-      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + STYLE_INFO_LABEL);
+      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + STYLE_LABEL);
       categoryLabel.setText(Localized.constants.ecItemCategory());
       categoryContainer.add(categoryLabel);
 
@@ -259,6 +272,18 @@ public class ItemList extends Simple {
     if (stock2 != null) {
       table.setWidgetAndStyle(row, COL_STOCK_2, stock2, STYLE_STOCK_2);
     }
+    
+    int listPrice = item.getListPrice();
+    int price = item.getPrice();
+    
+    if (listPrice > price) {
+      Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
+      table.setWidgetAndStyle(row, COL_LIST_PRICE, listPriceWidget, STYLE_LIST_PRICE);
+    }
+    if (price > 0) {
+      Widget priceWidget = renderPrice(price, STYLE_PRICE);
+      table.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
+    }
 
     Widget qty = renderQuantity(item.getQuantity());
     if (qty != null) {
@@ -272,6 +297,22 @@ public class ItemList extends Simple {
     return EcUtils.randomPicture(30, 100);
   }
 
+  private Widget renderPrice(int price, String style) {
+    String stylePrefix = style + "-";
+
+    Flow panel = new Flow();
+    
+    InlineLabel value = new InlineLabel(EcUtils.renderPrice(price));
+    value.addStyleName(stylePrefix + "value");
+    panel.add(value);
+
+    InlineLabel currency = new InlineLabel("Lt");
+    currency.addStyleName(stylePrefix + "currency");
+    panel.add(currency);
+
+    return panel;
+  }
+  
   private Widget renderQuantity(int quantity) {
     String stylePrefix = STYLE_QUANTITY + "-";
 

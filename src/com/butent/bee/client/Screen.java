@@ -66,5 +66,5 @@ public interface Screen extends Module, NotificationListener {
 
   void updateProgress(String id, double value);
   
-  void updateSignature(UserData userData);
+  void updateUserData(UserData userData);
 }

@@ -37,7 +37,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.render.ImageRenderer;
+import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -1238,7 +1238,7 @@ class TaskEditor extends AbstractFormInterceptor {
         Lists.newArrayList(COL_TASK, COL_TASK_EVENT, COL_FILE, COL_CAPTION));
 
     for (final NewFileInfo fileInfo : files) {
-      FileUtils.upload(fileInfo, new Callback<Long>() {
+      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
         @Override
         public void onSuccess(Long result) {
           List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
@@ -1390,34 +1390,29 @@ class TaskEditor extends AbstractFormInterceptor {
 
     panel.add(display);
   }
-  
+
   private void showError(String message) {
     Global.showError("Klaida", Lists.newArrayList(message));
   }
 
   private void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns, List<StoredFile> files,
-      Table<String, String, Long> durations) {
+      Table<String, String, Long> durations, boolean renderPhoto) {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
-    Flow colPhoto = new Flow();
-    colPhoto.addStyleName(STYLE_EVENT_COL + CommonsConstants.COL_PHOTO);
-    ImageRenderer imgr =
-        new ImageRenderer(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns), DataUtils
-            .getColumnIndex(COL_PUBLISHER_FIRST_NAME, columns), ImageRenderer.CSS_CLASS_STYLE_NAME);
-    String render = imgr.render(row);
-    
-    if (BeeUtils.isEmpty(render)) {
-      Image img = new Image(Global.getImages().silverChatIcon());
-      img.setStyleName(StyleUtils.USER_PHOTO);
-      render = img.toString();
+    if (renderPhoto) {
+      Flow colPhoto = new Flow();
+      colPhoto.addStyleName(STYLE_EVENT_COL + CommonsConstants.COL_PHOTO);
+
+      String photo = row.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns));
+      if (!BeeUtils.isEmpty(photo)) {
+        Image image = new Image(PhotoRenderer.getUrl(photo));
+        image.addStyleName(STYLE_EVENT + CommonsConstants.COL_PHOTO);
+        colPhoto.add(image);
+      }
+
+      container.add(colPhoto);
     }
-
-    Widget widget = new CustomDiv(STYLE_EVENT + CommonsConstants.COL_PHOTO);
-    widget.getElement().setInnerHTML(render);
-
-    colPhoto.add(widget);
-    container.add(colPhoto);
 
     int c = 0;
     Flow col0 = new Flow();
@@ -1513,8 +1508,20 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Table<String, String, Long> durations = TreeBasedTable.create();
 
+    boolean hasPhoto = false;
+    int photoIndex = rowSet.getColumnIndex(CommonsConstants.COL_PHOTO);
+    if (photoIndex >= 0) {
+      for (BeeRow row : rowSet.getRows()) {
+        if (!BeeUtils.isEmpty(row.getString(photoIndex))) {
+          hasPhoto = true;
+          break;
+        }
+      }
+    }
+
     for (BeeRow row : rowSet.getRows()) {
-      showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations);
+      showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
+          hasPhoto);
     }
 
     showExtensions(form, rowSet);
@@ -1530,7 +1537,7 @@ class TaskEditor extends AbstractFormInterceptor {
       });
     }
   }
-  
+
   private void showExtensions(FormView form, BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return;

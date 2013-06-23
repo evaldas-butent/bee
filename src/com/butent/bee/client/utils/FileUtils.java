@@ -12,7 +12,9 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -40,6 +42,60 @@ public class FileUtils {
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
 
+  public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
+    Assert.notEmpty(photoFileName);
+
+    Map<String, String> parameters = createParameters(Service.DELETE_PHOTO, photoFileName);
+
+    final XMLHttpRequest xhr = createXhr();
+    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    
+    addSessionId(xhr);
+
+    xhr.setOnload(new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        if (xhr.getStatus() == Response.SC_OK) {
+          String response = xhr.getResponseText();
+
+          if (BeeUtils.same(response, photoFileName)) {
+            logger.info("deleted photo", photoFileName);
+            logger.addSeparator();
+            
+            if (callback != null) {
+              callback.onSuccess(photoFileName);
+            }
+
+          } else {
+            String msg = BeeUtils.joinWords("delete", photoFileName, "response:", response);
+            logger.warning(msg);
+            if (callback != null) {
+              callback.onFailure(msg);
+            }
+          }
+
+        } else {
+          String msg = BeeUtils.joinWords("delete", photoFileName, "response status:",
+              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+          logger.severe(msg);
+          if (callback != null) {
+            callback.onFailure(msg);
+          }
+        }
+      }
+    });
+    
+    xhr.send();
+  }
+
+  public static String generatePhotoFileName(String originalFileName) {
+    String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
+        System.currentTimeMillis());
+    String ext = FileNameUtils.getExtension(originalFileName);
+    
+    return BeeUtils.isEmpty(ext) ? name : FileNameUtils.addExtension(name, ext);
+  }
+
   public static FileList getFiles(NativeEvent event) {
     Assert.notNull(event);
 
@@ -63,7 +119,7 @@ public class FileUtils {
     }
     return result;
   }
-
+  
   public static String getUrl(String fileName, Long fileId) {
     Map<String, String> parameters = Maps.newHashMap();
     parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
@@ -72,7 +128,7 @@ public class FileUtils {
     return RpcUtils.addQueryString(GWT.getModuleBaseURL() + OPEN_URL,
         RpcUtils.buildQueryString(parameters, true));
   }
-
+  
   public static String sizeToText(Long size) {
     long sz = BeeUtils.unbox(size);
     String prfx = "MB";
@@ -91,7 +147,7 @@ public class FileUtils {
     return Math.round(sz * 10d / c) / 10d + prfx;
   }
 
-  public static void upload(NewFileInfo fileInfo, final Callback<Long> callback) {
+  public static void uploadFile(NewFileInfo fileInfo, final Callback<Long> callback) {
     Assert.notNull(fileInfo);
     Assert.notNull(callback);
 
@@ -99,24 +155,17 @@ public class FileUtils {
     final String fileType = fileInfo.getType();
     final long fileSize = fileInfo.getSize();
 
-    Map<String, String> parameters = Maps.newHashMap();
-    parameters.put(Service.VAR_FILE_NAME, fileName);
+    Map<String, String> parameters = createParameters(Service.UPLOAD_FILE, fileName);
+
     parameters.put(Service.VAR_FILE_TYPE, fileType);
     parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
 
-    final String progressId = (fileSize > MIN_FILE_SIZE_FOR_PROGRESS)
-        ? BeeKeeper.getScreen().createProgress(fileName, fileSize) : null;
-
-    String url = RpcUtils.addQueryString(GWT.getModuleBaseURL() + UPLOAD_URL,
-        RpcUtils.buildQueryString(parameters, true));
+    final String progressId = maybeCreateProgress(fileName, fileSize);
 
     final XMLHttpRequest xhr = createXhr();
-    xhr.open(RequestBuilder.POST.toString(), url, true);
-
-    String sid = BeeKeeper.getUser().getSessionId();
-    if (!BeeUtils.isEmpty(sid)) {
-      xhr.setRequestHeader(Service.RPC_VAR_SID, sid);
-    }
+    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    
+    addSessionId(xhr);
 
     final long start = System.currentTimeMillis();
 
@@ -154,6 +203,77 @@ public class FileUtils {
       }
     });
 
+    addProgressListener(xhr, progressId);
+    xhr.send(fileInfo.getFile());
+  }
+
+  public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
+      final Callback<String> callback) {
+
+    Assert.notNull(fileInfo);
+    Assert.notEmpty(photoFileName);
+    Assert.notNull(callback);
+
+    final String originalFileName = fileInfo.getName();
+    final long fileSize = fileInfo.getSize();
+
+    Map<String, String> parameters = createParameters(Service.UPLOAD_PHOTO, photoFileName);
+
+    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
+    if (!BeeUtils.isEmpty(oldPhoto)) {
+      parameters.put(Service.VAR_OLD_VALUE, oldPhoto.trim());
+    }
+
+    final String progressId = maybeCreateProgress(originalFileName, fileSize);
+
+    final XMLHttpRequest xhr = createXhr();
+    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    
+    addSessionId(xhr);
+
+    final long start = System.currentTimeMillis();
+
+    xhr.setOnload(new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        if (progressId != null) {
+          BeeKeeper.getScreen().closeProgress(progressId);
+        }
+
+        if (xhr.getStatus() == Response.SC_OK) {
+          String response = xhr.getResponseText();
+
+          if (BeeUtils.same(response, photoFileName)) {
+            logger.info(TimeUtils.elapsedSeconds(start), originalFileName, "size:", fileSize);
+            logger.info("uploaded as:", photoFileName);
+            logger.addSeparator();
+
+            callback.onSuccess(photoFileName);
+
+          } else {
+            String msg = BeeUtils.joinWords("upload", originalFileName, "response:", response);
+            logger.warning(msg);
+            callback.onFailure(msg);
+          }
+
+        } else {
+          String msg = BeeUtils.joinWords("upload", originalFileName, "response status:",
+              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+          logger.severe(msg);
+          callback.onFailure(msg);
+        }
+      }
+    });
+    
+    addProgressListener(xhr, progressId);
+    xhr.send(fileInfo.getFile());
+  }
+  
+  static native double getLastModifiedMillis(File file) /*-{
+    return file.lastModifiedDate.getTime();
+  }-*/;
+  
+  private static void addProgressListener(XMLHttpRequest xhr, final String progressId) {
     if (progressId != null) {
       xhr.getUpload().setOnprogress(new EventListener() {
         @Override
@@ -162,20 +282,40 @@ public class FileUtils {
         }
       });
     }
-
-    xhr.send(fileInfo.getFile());
   }
 
-  static native double getLastModifiedMillis(File file) /*-{
-    return file.lastModifiedDate.getTime();
-  }-*/;
+  private static void addSessionId(XMLHttpRequest xhr) {
+    String sid = BeeKeeper.getUser().getSessionId();
+    if (!BeeUtils.isEmpty(sid)) {
+      xhr.setRequestHeader(Service.RPC_VAR_SID, sid);
+    }
+  }
+  
+  private static Map<String, String> createParameters(String service, String fileName) {
+    Map<String, String> parameters = Maps.newHashMap();
 
+    parameters.put(Service.RPC_VAR_SVC, service);
+    parameters.put(Service.VAR_FILE_NAME, fileName);
+    
+    return parameters;
+  }
+  
   private static XMLHttpRequest createXhr() {
     return createXhr(Browser.getWindow());
   }
 
   private static XMLHttpRequest createXhr(Window window) {
     return window.newXMLHttpRequest();
+  }
+  
+  private static String getUploadUrl(Map<String, String> parameters) {
+    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + UPLOAD_URL,
+        RpcUtils.buildQueryString(parameters, true));
+  }
+  
+  private static String maybeCreateProgress(String caption, long size) {
+    return (size > MIN_FILE_SIZE_FOR_PROGRESS)
+        ? BeeKeeper.getScreen().createProgress(caption, size) : null;
   }
 
   private FileUtils() {

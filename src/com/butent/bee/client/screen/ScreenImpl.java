@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
@@ -27,14 +28,14 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
@@ -63,7 +64,8 @@ public class ScreenImpl implements Screen {
 
   private HasWidgets menuPanel = null;
 
-  private IdentifiableWidget signature = null;
+  private HasWidgets userPhotoContainer = null;
+  private HasText userSignature = null;
 
   private Notification notification = null;
 
@@ -332,23 +334,24 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void updateSignature(UserData userData) {
-    if (userData != null && getSignature() != null) {
-      String userSign = userData.getUserSign();
-      Long photoId = Settings.showUserPhoto() ? userData.getPhotoId() : null;
-
-      String html;
-      if (photoId == null) {
-        html = userSign;
-      } else {
-        Image img = new Image(FileUtils.getUrl(userSign, photoId));
-        img.setAlt(userSign);
-        img.addStyleName(StyleUtils.USER_PHOTO);
-
-        html = img.toString() + userSign;
+  public void updateUserData(UserData userData) {
+    if (userData != null) {
+      if (getUserPhotoContainer() != null) {
+        getUserPhotoContainer().clear();
+      
+        String photoFileName = userData.getPhotoFileName();
+        if (!BeeUtils.isEmpty(photoFileName)) {
+          Image image = new Image(PhotoRenderer.getUrl(photoFileName));
+          image.setAlt(userData.getLogin());
+          image.addStyleName("bee-UserPhoto");
+          
+          getUserPhotoContainer().add(image);
+        }
       }
 
-      getSignature().getElement().setInnerHTML(html);
+      if (getUserSignature() != null) {
+        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
+      }
     }
   }
 
@@ -425,11 +428,17 @@ public class ScreenImpl implements Screen {
 
   protected Widget createUserContainer() {
     Horizontal userContainer = new Horizontal();
+    
+    if (Settings.showUserPhoto()) {
+      Flow photoContainer = new Flow("bee-UserPhotoContainer");
+      userContainer.add(photoContainer);
+      setUserPhotoContainer(photoContainer);
+    }
 
-    Html user = new Html();
-    user.addStyleName("bee-UserSignature");
-    userContainer.add(user);
-    setSignature(user);
+    Label signature = new Label();
+    signature.addStyleName("bee-UserSignature");
+    userContainer.add(signature);
+    setUserSignature(signature);
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
@@ -465,10 +474,6 @@ public class ScreenImpl implements Screen {
 
   protected String getScreenStyle() {
     return "bee-Screen";
-  }
-
-  protected IdentifiableWidget getSignature() {
-    return signature;
   }
 
   protected IdentifiableWidget initCenter() {
@@ -542,8 +547,12 @@ public class ScreenImpl implements Screen {
     this.screenPanel = screenPanel;
   }
 
-  protected void setSignature(IdentifiableWidget signature) {
-    this.signature = signature;
+  protected void setUserPhotoContainer(HasWidgets userPhotoContainer) {
+    this.userPhotoContainer = userPhotoContainer;
+  }
+
+  protected void setUserSignature(HasText userSignature) {
+    this.userSignature = userSignature;
   }
 
   private CentralScrutinizer getCentralScrutinizer() {
@@ -556,6 +565,14 @@ public class ScreenImpl implements Screen {
 
   private Panel getProgressPanel() {
     return progressPanel;
+  }
+
+  private HasWidgets getUserPhotoContainer() {
+    return userPhotoContainer;
+  }
+
+  private HasText getUserSignature() {
+    return userSignature;
   }
 
   private void setCentralScrutinizer(CentralScrutinizer centralScrutinizer) {

@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -30,6 +31,16 @@ public class EcUtils {
     }
     
     return widget;
+  }
+  
+  public static String renderPrice(int price) {
+    if (price > 0) {
+      String s = BeeUtils.toLeadingZeroes(price, 3);
+      int len = s.length();
+      return s.substring(0, len - 2) + BeeConst.STRING_POINT + s.substring(len - 2);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
   }
 
   private EcUtils() {

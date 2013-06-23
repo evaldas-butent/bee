@@ -3457,7 +3457,7 @@ public class CliWorker {
 
         for (final NewFileInfo fi : files) {
           logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-          FileUtils.upload(fi, new Callback<Long>() {
+          FileUtils.uploadFile(fi, new Callback<Long>() {
             @Override
             public void onSuccess(Long result) {
               logger.debug("uploaded", fi.getName(), ", result:", result);

@@ -92,6 +92,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String group();
 
+  String imageUploadFailed();
+  
   String initialFilter();
 
   String item();

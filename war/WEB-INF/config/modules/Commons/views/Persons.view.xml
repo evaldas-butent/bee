@@ -40,9 +40,6 @@
     </SimpleJoin>
 
     <SimpleColumn name="Photo" />
-    <SimpleJoin name="Photo" joinType="LEFT">
-      <SimpleColumn alias="PhotoFileName" name="Name"/>
-    </SimpleJoin>     
   </Columns>
   <Order>
     <OrderBy column="LastName" />

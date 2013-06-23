@@ -3,13 +3,12 @@
   
   name="Persons"
   idName="PersonID"
-  x="304" y="276"
   >
   <Fields>
-    <String name="FirstName" precision="30" notNull="true" label="Vardas" />
-    <String name="LastName" precision="30" label="Pavardė" />
-    <Date name="DateOfBirth" label="Gimimo data" />
+    <String name="FirstName" precision="30" notNull="true" label="=firstName" />
+    <String name="LastName" precision="30" label="=lastName" />
+    <Date name="DateOfBirth" label="=dateOfBirth" />
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
-    <Relation name="Photo" relation="Files" cascade="SET_NULL"/>
+    <String name="Photo" precision="100" label="=photo" />
   </Fields>
 </Table>

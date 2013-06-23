@@ -16,8 +16,8 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -249,7 +249,7 @@ public class CrmModuleBean implements BeeModule {
             int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
 
             for (BeeRow row : rowSet.getRows()) {
-              String icon = FileNameUtils.getExtensionIcon(row.getString(fnIndex));
+              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
               if (!BeeUtils.isEmpty(icon)) {
                 row.setProperty(PROP_ICON, icon);
               }
@@ -730,7 +730,7 @@ public class CrmModuleBean implements BeeModule {
           file.getLong(CommonsConstants.COL_FILE_SIZE),
           file.getValue(CommonsConstants.COL_FILE_TYPE));
 
-      sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
+      sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }
     return ResponseObject.response(files);
@@ -784,7 +784,7 @@ public class CrmModuleBean implements BeeModule {
         sf.setCaption(caption);
       }
 
-      sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
+      sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       result.add(sf);
     }
 

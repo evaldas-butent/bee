@@ -12,11 +12,9 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages {
 
   String endSession(String appName);
   
-  String exceededFileSize();
+  String fileSizeExceeded(long size, long max);
 
-  String imageUploadFailed();
-
-  String invalidImageFileType(String fileName);
+  String invalidImageFileType(String fileName, String type);
 
   String keyNotFound(String key);
 

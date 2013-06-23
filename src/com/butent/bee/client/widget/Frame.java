@@ -9,17 +9,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 import elemental.client.Browser;
-
-import elemental.html.StyleElement;
-
-import elemental.html.HeadElement;
-
-import elemental.html.Window;
-
 import elemental.dom.Document;
-
+import elemental.html.HeadElement;
 import elemental.html.IFrameElement;
-
+import elemental.html.StyleElement;
+import elemental.html.Window;
 import elemental.js.dom.JsElement;
 import elemental.js.html.JsIFrameElement;
 
