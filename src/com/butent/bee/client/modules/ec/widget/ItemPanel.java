@@ -12,7 +12,6 @@ import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcItem;
-import com.butent.bee.shared.modules.ec.EcItemList;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -51,12 +50,12 @@ public class ItemPanel extends Flow {
     super(EcStyles.name(STYLE_PRIMARY));
   }
   
-  public ItemPanel(EcItemList ecItemList) {
+  public ItemPanel(List<EcItem> ecItems) {
     this();
-    render(ecItemList);
+    render(ecItems);
   }
 
-  public void render(EcItemList ecItemList) {
+  public void render(List<EcItem> ecItems) {
     if (!isEmpty()) {
       clear();
     }
@@ -70,9 +69,9 @@ public class ItemPanel extends Flow {
       selectedManufacturers.clear();
     }
 
-    int size = ecItemList.size();
+    int size = ecItems.size();
     for (int i = 0; i < size; i++) {
-      EcItem ecItem = ecItemList.get(i);
+      EcItem ecItem = ecItems.get(i);
       items.add(ecItem);
 
       for (String group : ecItem.getGroups()) {

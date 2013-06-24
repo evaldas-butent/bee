@@ -7,8 +7,10 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.ec.EcItemList;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class FeaturedAndNovelty extends Flow {
 
@@ -19,10 +21,10 @@ public class FeaturedAndNovelty extends Flow {
   private static final String STYLE_CONTAINER = "container";
   private static final String STYLE_ITEM = "item";
 
-  public FeaturedAndNovelty(EcItemList ecItemList) {
+  public FeaturedAndNovelty(List<EcItem> items) {
     super(EcStyles.name("FeaturedAndNovelty"));
 
-    int total = ecItemList.size();
+    int total = items.size();
     int featuredCount = BeeUtils.randomInt(0, total + 1);
     int noveltyCount = total - featuredCount;
 

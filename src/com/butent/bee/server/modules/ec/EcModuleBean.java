@@ -22,7 +22,6 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
-import com.butent.bee.shared.modules.ec.EcItemList;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -76,7 +75,10 @@ public class EcModuleBean implements BeeModule {
       response = getCarModels(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPES)) {
       response = getCarTypes(reqInfo);
-      
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEM_MANUFACTURERS)) {
+      response = getItemManufacturers();
+
     } else if (BeeUtils.same(svc, "ITEM_INFO")) {
       response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
 
@@ -121,13 +123,12 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
-  private EcItemList generateItems(int count) {
+  private List<EcItem> generateItems(int count) {
     List<EcItem> items = Lists.newArrayList();
-
     for (int i = 0; i < count; i++) {
       items.add(new EcItem(0));
     }
-    return new EcItemList(items);
+    return items;
   }
 
   private ResponseObject getCarManufacturers() {
@@ -135,7 +136,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_MODELS)
         .addFields(TBL_TCD_MODELS, COL_TCD_MANUFACTURER)
         .addOrder(TBL_TCD_MODELS, COL_TCD_MANUFACTURER);
-    
+
     return ResponseObject.response(qs.getColumn(query));
   }
 
@@ -147,7 +148,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_TCD_MODELS)
-        .addFromInner(TBL_TCD_TYPES, 
+        .addFromInner(TBL_TCD_TYPES,
             SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
         .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
         .addMin(TBL_TCD_TYPES, COL_TCD_PRODUCED_FROM)
@@ -155,20 +156,21 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MANUFACTURER, manufacturer))
         .addGroup(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
         .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
-    
+
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(manufacturer));
+      return ResponseObject
+          .warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(manufacturer));
     }
 
     List<EcCarModel> carModels = Lists.newArrayList();
     for (SimpleRow row : rowSet) {
       carModels.add(new EcCarModel(row));
     }
-    
+
     return ResponseObject.response(carModels);
   }
-  
+
   private ResponseObject getCarTypes(RequestInfo reqInfo) {
     String modelId = reqInfo.getParameter(VAR_MODEL);
     if (!BeeUtils.isPositiveInt(modelId)) {
@@ -177,7 +179,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_TCD_MODELS)
-        .addFromInner(TBL_TCD_TYPES, 
+        .addFromInner(TBL_TCD_TYPES,
             SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
         .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
         .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
@@ -186,33 +188,44 @@ public class EcModuleBean implements BeeModule {
             COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
         .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MODEL_ID, modelId))
         .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
-    
+
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(modelId));
     }
-    
+
     List<EcCarType> carTypes = Lists.newArrayList();
     for (SimpleRow row : rowSet) {
       carTypes.add(new EcCarType(row));
     }
-    
+
     return ResponseObject.response(carTypes);
   }
 
   private ResponseObject getFeaturedAndNoveltyItems() {
     return ResponseObject.response(generateItems(BeeUtils.randomInt(1, 30)));
   }
-  
+
   private ResponseObject getItemInfo(long id) {
-    SqlSelect query = new SqlSelect()
-        .addFields("TcdCategories", "CategoryName", "CategoryID", "ParentID")
-        .addFrom("TcdArticleCategories")
-        .addFromInner("TcdCategories",
-            SqlUtils.joinUsing("TcdArticleCategories", "TcdCategories", "CategoryID"))
-        .setWhere(SqlUtils.equals("TcdArticleCategories", "ArticleID", id));
+    SqlSelect query =
+        new SqlSelect()
+            .addFields(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_NAME, COL_TCD_CATEGORY_ID,
+                COL_TCD_PARENT_ID)
+            .addFrom(TBL_TCD_ARTICLE_CATEGORIES)
+            .addFromInner(TBL_TCD_CATEGORIES, SqlUtils.joinUsing(TBL_TCD_ARTICLE_CATEGORIES,
+                TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID))
+            .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID, id));
 
     return ResponseObject.response(qs.getData(query));
+  }
+
+  private ResponseObject getItemManufacturers() {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFrom(TBL_TCD_ARTICLES)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_SUPPLIER)
+        .addOrder(TBL_TCD_ARTICLES, COL_TCD_SUPPLIER);
+
+    return ResponseObject.response(qs.getColumn(query));
   }
 
   private ResponseObject searchByItemCode(RequestInfo reqInfo) {
@@ -230,17 +243,21 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFields("TcdArticles", "ArticleID", "ArticleNr", "ArticleName", "Supplier")
-        .addField("TcdAnalogs", "Supplier", "AnalogSupplier")
-        .addSum("TcdMotonet", "Remainder")
-        .addMax("TcdMotonet", "Price")
-        .addFrom("TcdAnalogs")
-        .addFromInner("TcdArticles", SqlUtils.joinUsing("TcdAnalogs", "TcdArticles", "ArticleID"))
-        .addFromLeft("TcdMotonet", SqlUtils.joinUsing("TcdArticles", "TcdMotonet", "ArticleID"))
-        .setWhere(SqlUtils.equals("TcdAnalogs", "SearchNr", searchCode))
-        .addGroup("TcdArticles", "ArticleID", "ArticleNr", "ArticleName", "Supplier")
-        .addGroup("TcdAnalogs", "Supplier")
-        .addOrder("TcdArticles", "ArticleID");
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+            COL_TCD_SUPPLIER)
+        .addField(TBL_TCD_ANALOGS, COL_TCD_SUPPLIER, ALS_TCD_ANALOG_SUPPLIER)
+        .addSum(TBL_TCD_MOTONET, COL_TCD_REMAINDER)
+        .addMax(TBL_TCD_MOTONET, COL_TCD_PRICE)
+        .addFrom(TBL_TCD_ANALOGS)
+        .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(TBL_TCD_ANALOGS, TBL_TCD_ARTICLES,
+            COL_TCD_ARTICLE_ID))
+        .addFromLeft(TBL_TCD_MOTONET, SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_MOTONET,
+            COL_TCD_ARTICLE_ID))
+        .setWhere(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, searchCode))
+        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+            COL_TCD_SUPPLIER)
+        .addGroup(TBL_TCD_ANALOGS, COL_TCD_SUPPLIER)
+        .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID);
 
     if (limit > 0) {
       query.setLimit(limit);
@@ -257,7 +274,7 @@ public class EcModuleBean implements BeeModule {
       item.setCode(row.getValue("ArticleNr"));
       item.setSupplier(BeeUtils.notEmpty(row.getValue("AnalogSupplier"), row.getValue("Supplier")));
       item.setStock(row.getInt("Remainder"));
-      
+
       Double price = row.getDouble("Price");
       if (BeeUtils.isPositive(price)) {
         item.setListPrice(price * (1 + Math.random() * 0.5));
@@ -266,7 +283,7 @@ public class EcModuleBean implements BeeModule {
 
       items.add(item);
     }
-    return ResponseObject.response(new EcItemList(items));
+    return ResponseObject.response(items);
   }
 
   private ResponseObject searchByOeNumber(RequestInfo reqInfo) {

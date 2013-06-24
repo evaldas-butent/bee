@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -15,7 +17,9 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
-import com.butent.bee.shared.modules.ec.EcItemList;
+import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
@@ -55,8 +59,8 @@ public class EcKeeper {
       @Override
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);
-        EcItemList items = getResponseItems(response);
-        if (items != null) {
+        List<EcItem> items = getResponseItems(response);
+        if (!BeeUtils.isEmpty(items)) {
           ItemPanel widget = new ItemPanel(items);
           BeeKeeper.getScreen().updateActivePanel(widget);
         }
@@ -85,6 +89,11 @@ public class EcKeeper {
     return Settings.getProperty("ecContacts");
   }
 
+  public static void getItemManufacturers(Consumer<List<String>> callback) {
+    Assert.notNull(callback);
+    data.getItemManufacturers(callback);
+  }
+  
   public static String getTermsUrl() {
     return Settings.getProperty("ecTerms");
   }
@@ -92,7 +101,7 @@ public class EcKeeper {
   public static void register() {
   }
 
-  public static void searchItems(String service, String query, final Consumer<EcItemList> callback) {
+  public static void searchItems(String service, String query, final Consumer<List<EcItem>> callback) {
     Assert.notEmpty(service);
     Assert.notEmpty(query);
     Assert.notNull(callback);
@@ -106,8 +115,8 @@ public class EcKeeper {
         response.notify(BeeKeeper.getScreen());
 
         if (!response.hasErrors()) {
-          // dispatchMessages(response);
-          EcItemList items = getResponseItems(response);
+           dispatchMessages(response);
+          List<EcItem> items = getResponseItems(response);
           if (items != null) {
             callback.accept(items);
           }
@@ -121,8 +130,8 @@ public class EcKeeper {
       @Override
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);
-        EcItemList items = getResponseItems(response);
-        if (items != null) {
+        List<EcItem> items = getResponseItems(response);
+        if (!BeeUtils.isEmpty(items)) {
           FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
           BeeKeeper.getScreen().updateActivePanel(widget);
         }
@@ -130,11 +139,17 @@ public class EcKeeper {
     });
   }
 
-  private static EcItemList getResponseItems(ResponseObject response) {
-    if (response != null && response.hasResponse(EcItemList.class)) {
-      return EcItemList.restore(response.getResponseAsString());
+  private static List<EcItem> getResponseItems(ResponseObject response) {
+    List<EcItem> items = Lists.newArrayList();
+    if (response != null) {
+      String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+      if (arr != null) {
+        for (String s : arr) {
+          items.add(EcItem.restore(s));
+        }
+      }
     }
-    return null;
+    return items;
   }
 
   private EcKeeper() {

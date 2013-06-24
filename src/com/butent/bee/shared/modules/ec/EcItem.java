@@ -45,9 +45,6 @@ public class EcItem implements BeeSerializable {
   }
 
   private EcItem() {
-    // this.code = BeeUtils.randomString(10, 10, '0', '9');
-    // this.name = BeeUtils.randomString(6, 30, 'a', 'z');
-
     this.groups = Sets.newHashSet();
     int cnt = BeeUtils.randomInt(1, 6);
     for (int i = 0; i < cnt; i++) {
@@ -57,9 +54,6 @@ public class EcItem implements BeeSerializable {
     }
 
     this.manufacturer = "Gamintojas " + BeeUtils.randomInt(1, 10);
-    // this.supplier = BeeUtils.randomString(6, 10, 'A', 'Z');
-
-    // this.stock1 = BeeUtils.randomInt(0, 10);
     this.stock2 = BeeUtils.randomInt(0, 2) * BeeUtils.randomInt(1, 100);
   }
 

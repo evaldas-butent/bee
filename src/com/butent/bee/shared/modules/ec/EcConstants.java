@@ -59,6 +59,8 @@ public class EcConstants {
   public static final String SVC_GET_CAR_MODELS = "getCarModels";
   public static final String SVC_GET_CAR_TYPES = "getCarTypes";
 
+  public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -68,9 +70,31 @@ public class EcConstants {
   public static final String VAR_MANUFACTURER = VAR_PREFIX + "manufacturer";
   public static final String VAR_MODEL = VAR_PREFIX + "model";
 
+  public static final String TBL_TCD_ARTICLES = "TcdArticles";
+  public static final String TBL_TCD_ANALOGS = "TcdAnalogs";
+
+  public static final String TBL_TCD_CATEGORIES = "TcdCategories";
+  public static final String TBL_TCD_ARTICLE_CATEGORIES = "TcdArticleCategories";
+
   public static final String TBL_TCD_MODELS = "TcdModels";
   public static final String TBL_TCD_TYPES = "TcdTypes";
+  public static final String TBL_TCD_TYPE_ARTICLES = "TcdTypeArticles";
 
+  public static final String TBL_TCD_MOTONET = "TcdMotonet";
+
+  public static final String COL_TCD_ARTICLE_ID = "ArticleID";
+  public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
+  public static final String COL_TCD_ARTICLE_NAME = "ArticleName";
+  public static final String COL_TCD_SUPPLIER = "Supplier"; 
+  
+  public static final String COL_TCD_SEARCH_NR = "SearchNr";
+  public static final String COL_TCD_KIND = "Kind";
+  public static final String COL_TCD_ANALOG_NR = "AnalogNr";
+  
+  public static final String COL_TCD_CATEGORY_ID = "CategoryID";
+  public static final String COL_TCD_PARENT_ID = "ParentID";
+  public static final String COL_TCD_CATEGORY_NAME = "CategoryName";
+  
   public static final String COL_TCD_MODEL_ID = "ModelID";
   public static final String COL_TCD_MODEL_NAME = "ModelName";
   public static final String COL_TCD_MANUFACTURER = "Manufacturer";
@@ -88,6 +112,13 @@ public class EcConstants {
   public static final String COL_TCD_FUEL = "Fuel";
   public static final String COL_TCD_BODY = "Body";
   public static final String COL_TCD_AXLE = "Axle";
+
+  public static final String COL_TCD_PREFIX = "Prefix";
+  public static final String COL_TCD_INDEX = "Index";
+  public static final String COL_TCD_REMAINDER = "Remainder";
+  public static final String COL_TCD_PRICE = "Price";
+
+  public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier"; 
   
   private EcConstants() {
   }

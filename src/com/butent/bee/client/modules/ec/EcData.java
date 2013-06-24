@@ -10,9 +10,9 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -23,6 +23,8 @@ class EcData {
   private final List<String> carManufacturers = Lists.newArrayList();
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
   private final Map<Integer, List<EcCarType>> carTypesByModel = Maps.newHashMap();
+
+  private final List<String> itemManufacturers = Lists.newArrayList();
 
   EcData() {
     super();
@@ -35,14 +37,14 @@ class EcData {
         @Override
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
-          LogUtils.getRootLogger().debug(response.getType(), response.getResponseAsString().length());
-          
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (arr != null) {
             carManufacturers.clear();
             for (String manufacturer : arr) {
-              carManufacturers.add(manufacturer);
+              if (!BeeUtils.isEmpty(manufacturer)) {
+                carManufacturers.add(manufacturer);
+              }
             }
 
             callback.accept(carManufacturers);
@@ -67,8 +69,6 @@ class EcData {
         @Override
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
-          LogUtils.getRootLogger().debug(response.getType(), response.getResponseAsString().length());
-          
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (arr != null) {
@@ -97,8 +97,6 @@ class EcData {
         @Override
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
-          LogUtils.getRootLogger().debug(response.getType(), response.getResponseAsString().length());
-          
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (arr != null) {
@@ -114,5 +112,31 @@ class EcData {
       });
     }
   }
-  
+
+  void getItemManufacturers(final Consumer<List<String>> callback) {
+    if (itemManufacturers.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_MANUFACTURERS);
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            itemManufacturers.clear();
+            for (String manufacturer : arr) {
+              if (!BeeUtils.isEmpty(manufacturer)) {
+                itemManufacturers.add(manufacturer);
+              }
+            }
+
+            callback.accept(itemManufacturers);
+          }
+        }
+      });
+      
+    } else {
+      callback.accept(itemManufacturers);
+    }
+  }
 }

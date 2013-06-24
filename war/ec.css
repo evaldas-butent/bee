@@ -250,7 +250,8 @@
 .bee-ec-searchByCar-dialog-manufacturer,
 .bee-ec-searchByCar-dialog-model,
 .bee-ec-searchByCar-dialog-year,
-.bee-ec-searchByCar-dialog-engine {
+.bee-ec-searchByCar-dialog-engine,
+.bee-ec-searchByManufacturer-manufacturer-dialog {
   border: 2px solid #b4b4b4;
   padding: 5px;
   background-color: white;

@@ -7,7 +7,9 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemSelector;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.modules.ec.EcItemList;
+import com.butent.bee.shared.modules.ec.EcItem;
+
+import java.util.List;
 
 class SearchByItem extends EcView implements SelectionHandler<String> {
   
@@ -26,9 +28,9 @@ class SearchByItem extends EcView implements SelectionHandler<String> {
 
   @Override
   public void onSelection(SelectionEvent<String> event) {
-    EcKeeper.searchItems(service, event.getSelectedItem(), new Consumer<EcItemList>() {
+    EcKeeper.searchItems(service, event.getSelectedItem(), new Consumer<List<EcItem>>() {
       @Override
-      public void accept(EcItemList input) {
+      public void accept(List<EcItem> input) {
         itemPanel.render(input);
       }
     });
