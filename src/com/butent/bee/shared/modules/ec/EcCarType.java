@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.ec;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -216,6 +217,10 @@ public class EcCarType implements BeeSerializable {
     return typeName;
   }
 
+  public boolean isProduced(int year) {
+    return EcUtils.isProduced(getProducedFrom(), getProducedTo(), year);
+  }
+  
   @Override
   public String serialize() {
     Serial[] members = Serial.values();

@@ -64,7 +64,7 @@
 }  
 .bee-ec-cartRowInactive .bee-ec-cartTable-label {
   color: #888;
-}  
+}
 
 .bee-ec-cartInactive {
   width: 12px;
@@ -247,6 +247,16 @@
   border-radius: 3px 3px 0px 0px;
 }
 
+.bee-ec-searchByCar-attribute-disabled {
+  visibility: hidden;
+}
+.bee-ec-searchByCar-attribute-hasValue {
+  color: #00d;
+}
+.bee-ec-searchByCar-attribute-active {
+  color: red !important;
+}
+
 .bee-ec-searchByCar-dialog-manufacturer,
 .bee-ec-searchByCar-dialog-model,
 .bee-ec-searchByCar-dialog-year,
@@ -255,6 +265,10 @@
   border: 2px solid #b4b4b4;
   padding: 5px;
   background-color: white;
+}
+
+.bee-ec-searchByCar-dialog-year .bee-ec-IndexSelector-search {
+  width: 60px;
 }
 
 .bee-ec-IndexSelector-itemContainer {
