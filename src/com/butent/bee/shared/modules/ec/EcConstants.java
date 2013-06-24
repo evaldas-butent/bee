@@ -47,6 +47,8 @@ public class EcConstants {
 
   public static final String SVC_GLOBAL_SEARCH = "globalSearch";
 
+  public static final String SVC_GET_CATEGORIES = "getCategories";
+
   public static final String SVC_SEARCH_BY_ITEM_CODE = "searchByItemCode";
   public static final String SVC_SEARCH_BY_OE_NUMBER = "searchByOeNumber";
   public static final String SVC_SEARCH_BY_CAR = "searchByCar";
@@ -59,11 +61,10 @@ public class EcConstants {
   public static final String SVC_GET_CAR_MODELS = "getCarModels";
   public static final String SVC_GET_CAR_TYPES = "getCarTypes";
 
-  public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
-
-  public static final String SVC_GET_CATEGORIES = "getCategories";
-
   public static final String SVC_GET_ITEMS_BY_CAR_TYPE = "getItemsByCarType";
+
+  public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
+  public static final String SVC_GET_ITEMS_BY_MANUFACTURER = "getItemsByManufacturer";
   
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 

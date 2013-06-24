@@ -61,7 +61,6 @@ public class ItemList extends Simple {
 
   private static final String STYLE_ITEM_MANUFACTURER =
       EcStyles.name(STYLE_PRIMARY, "manufacturer");
-  private static final String STYLE_ITEM_CATEGORY = EcStyles.name(STYLE_PRIMARY, "category");
 
   private static final String STYLE_INFO_CONTAINER = "-container";
   private static final String STYLE_LABEL = "-label";
@@ -99,7 +98,8 @@ public class ItemList extends Simple {
       int row = 0;
 
       if (items.size() > 1) {
-        Label caption = new Label(Localized.constants.ecFoundItems());
+        Label caption = new Label(BeeUtils.joinWords(Localized.constants.ecFoundItems(),
+            BeeUtils.bracket(items.size())));
         EcStyles.add(caption, STYLE_PRIMARY, "caption");
         table.setWidget(row, COL_PICTURE, caption);
       }
@@ -150,6 +150,12 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(name)) {
       Label itemName = new Label(name);
       itemName.addStyleName(STYLE_ITEM_NAME);
+      
+      String categoryNames = BeeUtils.join(BeeConst.STRING_EOL, EcKeeper.getCategoryNames(item));
+      if (!BeeUtils.isEmpty(categoryNames)) {
+        itemName.setTitle(categoryNames);
+      }
+      
       panel.add(itemName);
     }
 
@@ -234,22 +240,6 @@ public class ItemList extends Simple {
       manufacturerContainer.add(itemManufacturer);
 
       panel.add(manufacturerContainer);
-    }
-
-    String category = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-        EcKeeper.getCategoryNames(item));
-    if (!BeeUtils.isEmpty(category)) {
-      Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + STYLE_INFO_CONTAINER);
-
-      CustomSpan categoryLabel = new CustomSpan(STYLE_ITEM_CATEGORY + STYLE_LABEL);
-      categoryLabel.setText(Localized.constants.ecItemCategory());
-      categoryContainer.add(categoryLabel);
-
-      CustomSpan itemCategory = new CustomSpan(STYLE_ITEM_CATEGORY);
-      itemCategory.setText(category);
-      categoryContainer.add(itemCategory);
-
-      panel.add(categoryContainer);
     }
 
     return panel;

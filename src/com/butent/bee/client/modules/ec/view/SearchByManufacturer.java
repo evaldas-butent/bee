@@ -6,6 +6,11 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -15,7 +20,9 @@ import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -78,6 +85,21 @@ class SearchByManufacturer extends EcView {
       
       manufacturerWidget.setText(manufacturer);
       manufacturerWidget.addStyleName(STYLE_MANUFACTURER + "selected");
+      
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_MANUFACTURER);
+      params.addDataItem(VAR_MANUFACTURER, selectedManufacturer);
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          List<EcItem> items = EcKeeper.getResponseItems(response);
+
+          if (!BeeUtils.isEmpty(items)) {
+            EcKeeper.renderItems(itemPanel, items);
+          }
+        }
+      });
     }
   }
   

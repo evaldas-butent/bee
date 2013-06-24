@@ -299,6 +299,11 @@
   cursor: pointer;
 }
 
+.bee-ec-searchByManufacturer-manufacturer-widget {
+  margin-top: 2ex;
+  margin-left: 2em;
+}
+
 .bee-ec-IndexSelector-itemContainer {
   margin-top: 5px;
   margin-bottom: 5px;
