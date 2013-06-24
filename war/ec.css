@@ -271,6 +271,34 @@
   width: 60px;
 }
 
+.bee-ec-searchByCar-type-panel {
+  margin-top: 1ex;
+  margin-left: 2em;
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.bee-ec-searchByCar-type-table {
+  border-collapse: collapse;
+  margin: 1ex 1em;
+}
+.bee-ec-searchByCar-type-headerRow td {
+  text-align: center;
+  padding: 3px;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc; 
+}
+.bee-ec-searchByCar-type-selectableRow > td {
+  padding: 3px 1em;
+}
+.bee-ec-searchByCar-type-selectableRow:hover {
+  background-color: #dfd;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .bee-ec-IndexSelector-itemContainer {
   margin-top: 5px;
   margin-bottom: 5px;

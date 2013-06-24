@@ -12,6 +12,8 @@ public interface LocalizableEcConstants {
 
   String ecCarPower();
 
+  String ecCarProduced();
+
   String ecCarYear();
 
   String ecCategoryBatteries();

@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.ec.view;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -10,8 +11,12 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
 
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
+
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
@@ -27,6 +32,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -178,8 +184,15 @@ class SearchByCar extends EcView {
         openEngines();
       }
     });
+    
+    Binder.addClickHandler(typePanel, new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        onTypePanelClick(event);
+      }
+    });
   }
-
+  
   @Override
   protected String getPrimaryStyle() {
     return "searchByCar";
@@ -264,6 +277,15 @@ class SearchByCar extends EcView {
 
       refreshAttributeWidgets();
       renderTypes();
+    }
+  }
+
+  private void onTypePanelClick(ClickEvent event) {
+    TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
+    int index = DomUtils.getDataIndex(element);
+    
+    if (index > 0) {
+      LogUtils.getRootLogger().debug("click", index);
     }
   }
 
@@ -462,6 +484,25 @@ class SearchByCar extends EcView {
     HtmlTable table = new HtmlTable(STYLE_TYPE + "table");
 
     int row = 0;
+    int col = 0;
+
+    table.setText(row, col++, Localized.constants.ecCarProduced());
+    table.setText(row, col++, Localized.constants.ecCarEngine());
+
+    table.setText(row, col++, Localized.constants.ecCarPower());
+
+    table.setText(row, col++, COL_TCD_CCM);
+    table.setText(row, col++, COL_TCD_CYLINDERS);
+    table.setText(row, col++, COL_TCD_MAX_WEIGHT);
+
+    table.setText(row, col++, COL_TCD_ENGINE);
+    table.setText(row, col++, COL_TCD_FUEL);
+    table.setText(row, col++, COL_TCD_BODY);
+    table.setText(row, col++, COL_TCD_AXLE);
+
+    table.getRowFormatter().addStyleName(row, STYLE_TYPE + "headerRow");
+    row++;
+
     for (EcCarType type : types) {
       if (getYear() != null && !type.isProduced(getYear())) {
         continue;
@@ -470,17 +511,14 @@ class SearchByCar extends EcView {
         continue;
       }
 
-      int col = 0;
+      col = 0;
 
       table.setText(row, col++,
           EcUtils.renderProduced(type.getProducedFrom(), type.getProducedTo()));
       table.setText(row, col++, type.getTypeName());
+      table.setText(row, col++, type.getPower());
 
       table.setText(row, col++, EcUtils.string(type.getCcm()));
-
-      table.setText(row, col++, EcUtils.string(type.getKwFrom()));
-      table.setText(row, col++, EcUtils.string(type.getKwTo()));
-
       table.setText(row, col++, EcUtils.string(type.getCylinders()));
       table.setText(row, col++, EcUtils.string(type.getMaxWeight()));
 
@@ -488,10 +526,13 @@ class SearchByCar extends EcView {
       table.setText(row, col++, type.getFuel());
       table.setText(row, col++, type.getBody());
       table.setText(row, col++, type.getAxle());
+      
+      DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 
+      table.getRowFormatter().addStyleName(row, STYLE_TYPE + "selectableRow");
       row++;
     }
-
+    
     typePanel.clear();
     typePanel.add(table);
   }

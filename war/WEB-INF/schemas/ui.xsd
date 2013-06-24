@@ -192,6 +192,7 @@
       <xs:enumeration value="cancel" />
       <xs:enumeration value="close" />
       <xs:enumeration value="closeSmall" />
+      <xs:enumeration value="closeSmallRed" />
       <xs:enumeration value="configure" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="descending" />

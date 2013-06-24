@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -199,6 +200,14 @@ public class EcCarType implements BeeSerializable {
 
   public String getModelName() {
     return modelName;
+  }
+  
+  public String getPower() {
+    if (BeeUtils.isPositive(getKwFrom())) {
+      return BeeUtils.join(BeeConst.STRING_MINUS, getKwFrom(), getKwTo()) + " kW";
+    } else {
+      return null;
+    }
   }
 
   public Integer getProducedFrom() {
