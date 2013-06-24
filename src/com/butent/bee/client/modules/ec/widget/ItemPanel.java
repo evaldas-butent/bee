@@ -4,11 +4,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
@@ -19,14 +23,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class ItemPanel extends Flow {
+public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 
   private static final String STYLE_PRIMARY = "ItemPanel";
-  private static final String STYLE_GROUPS = STYLE_PRIMARY + "-groups";
+  private static final String STYLE_CATEGORIES = STYLE_PRIMARY + "-categories";
   private static final String STYLE_MANUFACTURERS = STYLE_PRIMARY + "-manufacturers";
   private static final String STYLE_ITEMS = STYLE_PRIMARY + "-items";
 
-  private static final String STYLE_GROUP = STYLE_PRIMARY + "-group";
+  private static final String STYLE_CATEGORY = STYLE_PRIMARY + "-category";
   private static final String STYLE_MANUFACTURER = STYLE_PRIMARY + "-manufacturer";
 
   private static final String STYLE_WRAPPER = "wrapper";
@@ -35,13 +39,14 @@ public class ItemPanel extends Flow {
   private static final String STYLE_SELECTABLE = "selectable";
   private static final String STYLE_LABEL = "label";
   private static final String STYLE_SELECTED = "selected";
+  private static final String STYLE_TREE = "tree";
 
   private final List<EcItem> items = Lists.newArrayList();
 
-  private final List<String> groups = Lists.newArrayList();
+  private final Set<Integer> categories = Sets.newHashSet();
   private final List<String> manufacturers = Lists.newArrayList();
 
-  private final Set<String> selectedGroups = Sets.newHashSet();
+  private final Set<Integer> selectedCategories = Sets.newHashSet();
   private final Set<String> selectedManufacturers = Sets.newHashSet();
 
   private Flow manufacturerWrapper = null;
@@ -50,18 +55,30 @@ public class ItemPanel extends Flow {
   public ItemPanel() {
     super(EcStyles.name(STYLE_PRIMARY));
   }
-  
+
+  @Override
+  public void onSelection(SelectionEvent<TreeItem> event) {
+    Object userObject = event.getSelectedItem().getUserObject();
+    Integer category = (userObject instanceof Integer) ? (Integer) userObject : null;
+
+    selectedCategories.clear();
+    if (category != null) {
+      selectedCategories.add(category);
+    }
+    refreshManufacturersAndItems();
+  }
+
   public void render(List<EcItem> ecItems) {
     if (!isEmpty()) {
       clear();
     }
-    
+
     if (!items.isEmpty()) {
       items.clear();
-      groups.clear();
+      categories.clear();
       manufacturers.clear();
-      
-      selectedGroups.clear();
+
+      selectedCategories.clear();
       selectedManufacturers.clear();
     }
 
@@ -70,11 +87,7 @@ public class ItemPanel extends Flow {
       EcItem ecItem = ecItems.get(i);
       items.add(ecItem);
 
-      for (String group : EcKeeper.getCategoryNames(ecItem)) {
-        if (!groups.contains(group)) {
-          groups.add(group);
-        }
-      }
+      categories.addAll(ecItem.getCategoryList());
 
       String manufacturer = ecItem.getManufacturer();
       if (!BeeUtils.isEmpty(manufacturer) && !manufacturers.contains(manufacturer)) {
@@ -82,18 +95,15 @@ public class ItemPanel extends Flow {
       }
     }
 
-    if (groups.size() > 1) {
-      Collections.sort(groups);
-    }
     if (manufacturers.size() > 1) {
       Collections.sort(manufacturers);
     }
 
-    boolean showGroups = size > 1 && !groups.isEmpty();
+    boolean showCategories = size > 1 && !categories.isEmpty();
     boolean showManufacturers = size > 1 && !manufacturers.isEmpty();
 
-    if (showGroups) {
-      add(renderGroups());
+    if (showCategories) {
+      add(renderCategories());
     }
     if (showManufacturers) {
       this.manufacturerWrapper = new Flow();
@@ -109,15 +119,15 @@ public class ItemPanel extends Flow {
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
     add(itemWrapper);
   }
-  
-  private List<EcItem> filterByGroup(List<EcItem> input) {
-    if (selectedGroups.isEmpty() || selectedGroups.size() >= groups.size()) {
+
+  private List<EcItem> filterByCategory(List<EcItem> input) {
+    if (selectedCategories.isEmpty() || selectedCategories.size() >= categories.size()) {
       return input;
 
     } else {
       List<EcItem> result = Lists.newArrayList();
       for (EcItem item : input) {
-        if (BeeUtils.containsAny(selectedGroups, EcKeeper.getCategoryNames(item))) {
+        if (BeeUtils.containsAny(selectedCategories, item.getCategoryList())) {
           result.add(item);
         }
       }
@@ -158,75 +168,60 @@ public class ItemPanel extends Flow {
   }
 
   private void refreshItems() {
-    itemWrapper.render(filterByManufacturer(filterByGroup(items)));
+    itemWrapper.render(filterByManufacturer(filterByCategory(items)));
   }
 
   private void refreshManufacturersAndItems() {
-    List<EcItem> filteredByGroup = filterByGroup(items);
+    List<EcItem> filteredByCategory = filterByCategory(items);
 
     if (manufacturerWrapper == null) {
-      itemWrapper.render(filteredByGroup);
+      itemWrapper.render(filteredByCategory);
     } else {
-      List<String> filteredManufacturers = getManufacturers(filteredByGroup);
+      List<String> filteredManufacturers = getManufacturers(filteredByCategory);
       if (!selectedManufacturers.isEmpty()) {
         selectedManufacturers.retainAll(filteredManufacturers);
       }
 
       renderManufacturers(filteredManufacturers);
-      itemWrapper.render(filterByManufacturer(filteredByGroup));
+      itemWrapper.render(filterByManufacturer(filteredByCategory));
     }
   }
 
-  private Widget renderGroup(final String group, boolean selectable) {
-    if (selectable) {
-      final CheckBox checkBox = new CheckBox(group);
-      EcStyles.add(checkBox, STYLE_GROUP, STYLE_SELECTABLE);
-
-      checkBox.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          boolean selected = checkBox.getValue();
-          checkBox.setStyleName(EcStyles.name(STYLE_GROUP, STYLE_SELECTED), selected);
-
-          if (selected) {
-            selectedGroups.add(group);
-          } else {
-            selectedGroups.remove(group);
-          }
-          refreshManufacturersAndItems();
-        }
-      });
-
-      return checkBox;
-
-    } else {
-      Label label = new Label(group);
-      EcStyles.add(label, STYLE_GROUP, STYLE_LABEL);
-      return label;
-    }
-  }
-
-  private Widget renderGroups() {
-    boolean selectable = items.size() > 1 && groups.size() > 1;
+  private Widget renderCategories() {
+    boolean selectable = items.size() > 1 && categories.size() > 1;
 
     Flow panel = new Flow();
-    EcStyles.add(panel, STYLE_GROUPS, STYLE_WRAPPER);
+    EcStyles.add(panel, STYLE_CATEGORIES, STYLE_WRAPPER);
     if (selectable) {
-      EcStyles.add(panel, STYLE_GROUPS, STYLE_SELECTABLE);
+      EcStyles.add(panel, STYLE_CATEGORIES, STYLE_SELECTABLE);
     }
 
-    String caption = selectable
-        ? Localized.constants.ecSelectCategory() : Localized.constants.ecItemCategory();
-    Label label = new Label(caption);
-    EcStyles.add(label, STYLE_GROUPS, STYLE_CAPTION);
-    panel.add(label);
+    if (!selectable) {
+      Label caption = new Label(Localized.constants.ecItemCategory());
+      EcStyles.add(caption, STYLE_CATEGORIES, STYLE_CAPTION);
+      panel.add(caption);
+    }
 
     Flow container = new Flow();
-    EcStyles.add(container, STYLE_GROUPS, STYLE_CONTAINER);
+    EcStyles.add(container, STYLE_CATEGORIES, STYLE_CONTAINER);
 
-    for (String group : groups) {
-      container.add(renderGroup(group, selectable));
+    if (selectable) {
+      Tree tree = EcKeeper.buildCategoryTree(categories);
+      EcStyles.add(tree, STYLE_CATEGORIES, STYLE_TREE);
+
+      tree.addSelectionHandler(this);
+
+      container.add(tree);
+
+    } else {
+      for (Integer category : categories) {
+        Label label = new Label(EcKeeper.getCategoryName(category));
+        EcStyles.add(label, STYLE_CATEGORY, STYLE_LABEL);
+
+        container.add(label);
+      }
     }
+
     panel.add(container);
 
     return panel;
@@ -236,7 +231,7 @@ public class ItemPanel extends Flow {
     if (selectable) {
       final CheckBox checkBox = new CheckBox(manufacturer);
       EcStyles.add(checkBox, STYLE_MANUFACTURER, STYLE_SELECTABLE);
-      
+
       if (selectedManufacturers.contains(manufacturer)) {
         checkBox.setValue(true);
         checkBox.addStyleName(EcStyles.name(STYLE_MANUFACTURER, STYLE_SELECTED));

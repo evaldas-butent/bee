@@ -120,6 +120,7 @@ class SearchByCar extends EcView {
   private Integer modelIndex = null;
 
   private final List<EcCarType> types = Lists.newArrayList();
+  private Integer typeId = null;
 
   private final List<String> years = Lists.newArrayList();
   private Integer year = null;
@@ -188,7 +189,7 @@ class SearchByCar extends EcView {
         openEngines();
       }
     });
-    
+
     Binder.addClickHandler(typePanel, new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -196,7 +197,7 @@ class SearchByCar extends EcView {
       }
     });
   }
-  
+
   @Override
   protected String getPrimaryStyle() {
     return "searchByCar";
@@ -220,6 +221,10 @@ class SearchByCar extends EcView {
 
   private Integer getModelIndex() {
     return modelIndex;
+  }
+
+  private Integer getTypeId() {
+    return typeId;
   }
 
   private Integer getYear() {
@@ -276,7 +281,7 @@ class SearchByCar extends EcView {
     UiHelper.closeDialog(yearSelector);
     if (BeeUtils.isIndex(years, index)) {
       setYear(BeeUtils.toIntOrNull(years.get(index)));
-      
+
       resetEngine();
 
       refreshAttributeWidgets();
@@ -286,11 +291,14 @@ class SearchByCar extends EcView {
 
   private void onTypePanelClick(ClickEvent event) {
     TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
-    int typeId = DomUtils.getDataIndex(element);
-    
-    if (typeId > 0) {
+    int id = DomUtils.getDataIndex(element);
+
+    if (id > 0) {
+      setTypeId(id);
+      renderTypes();
+
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
-      params.addQueryItem(VAR_TYPE, typeId);
+      params.addQueryItem(VAR_TYPE, id);
 
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
         @Override
@@ -519,13 +527,22 @@ class SearchByCar extends EcView {
 
     table.getRowFormatter().addStyleName(row, STYLE_TYPE + "headerRow");
     row++;
+    
+    String rowStyle = STYLE_TYPE + ((getTypeId() == null) ? "selectableRow" : "selectedRow");
 
     for (EcCarType type : types) {
-      if (getYear() != null && !type.isProduced(getYear())) {
-        continue;
-      }
-      if (!BeeUtils.isEmpty(getEngine()) && !getEngine().equals(type.getTypeName())) {
-        continue;
+      if (getTypeId() != null) {
+        if (!getTypeId().equals(type.getTypeId())) {
+          continue;
+        }
+
+      } else {
+        if (getYear() != null && !type.isProduced(getYear())) {
+          continue;
+        }
+        if (!BeeUtils.isEmpty(getEngine()) && !getEngine().equals(type.getTypeName())) {
+          continue;
+        }
       }
 
       col = 0;
@@ -543,13 +560,13 @@ class SearchByCar extends EcView {
       table.setText(row, col++, type.getFuel());
       table.setText(row, col++, type.getBody());
       table.setText(row, col++, type.getAxle());
-      
+
       DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 
-      table.getRowFormatter().addStyleName(row, STYLE_TYPE + "selectableRow");
+      table.getRowFormatter().addStyleName(row, rowStyle);
       row++;
     }
-    
+
     typePanel.clear();
     typePanel.add(table);
   }
@@ -568,6 +585,7 @@ class SearchByCar extends EcView {
   private void resetTypes() {
     types.clear();
     typePanel.clear();
+    setTypeId(null);
 
     resetYear();
   }
@@ -590,6 +608,10 @@ class SearchByCar extends EcView {
 
   private void setModelIndex(Integer modelIndex) {
     this.modelIndex = modelIndex;
+  }
+
+  private void setTypeId(Integer typeId) {
+    this.typeId = typeId;
   }
 
   private void setYear(Integer year) {

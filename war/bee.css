@@ -916,7 +916,7 @@ body {
   white-space: nowrap;
 }
 
-.bee-TreeItem-imageCell,.bee-TreeItem-contentCell {
+.bee-TreeItem-imageCell, .bee-TreeItem-contentCell {
   vertical-align: middle;
 }
 

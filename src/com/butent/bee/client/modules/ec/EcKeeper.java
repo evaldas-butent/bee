@@ -10,6 +10,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
+import com.butent.bee.client.tree.Tree;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -21,12 +22,18 @@ import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 public class EcKeeper {
   
   private static final EcData data = new EcData(); 
 
+  public static Tree buildCategoryTree(Collection<Integer> categoryIds) {
+    Assert.notEmpty(categoryIds);
+    return data.buildCategoryTree(categoryIds);
+  }
+  
   public static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(EC_MODULE);
     args.addQueryItem(EC_METHOD, method);
@@ -92,6 +99,11 @@ public class EcKeeper {
     data.getCarTypes(modelId, callback);
   }
 
+  public static String getCategoryName(Integer categoryId) {
+    Assert.notNull(categoryId);
+    return data.getCategoryName(categoryId);
+  }
+  
   public static List<String> getCategoryNames(EcItem item) {
     Assert.notNull(item);
     return data.getCategoryNames(item);

@@ -1,36 +1,76 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class EcData {
-  
+
   private final List<String> carManufacturers = Lists.newArrayList();
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
   private final Map<Integer, List<EcCarType>> carTypesByModel = Maps.newHashMap();
 
   private final Map<Integer, String> categoryNames = Maps.newHashMap();
 
+  private final Set<Integer> categoryRoots = Sets.newHashSet();
+  private final Multimap<Integer, Integer> categoryByParent = HashMultimap.create();
+  private final Map<Integer, Integer> categoryByChild = Maps.newHashMap();
+
   private final List<String> itemManufacturers = Lists.newArrayList();
 
   EcData() {
     super();
+  }
+
+  Tree buildCategoryTree(Collection<Integer> ids) {
+    Set<Integer> roots = Sets.newHashSet();
+    Multimap<Integer, Integer> data = HashMultimap.create();
+    
+    for (int id : ids) {
+      Integer parent = getParent(id, ids);
+      if (parent == null) {
+        roots.add(id);
+      } else {
+        data.put(parent, id);
+      }
+    }
+
+    Tree tree = new Tree();
+
+    TreeItem rootItem = new TreeItem(Localized.constants.ecSelectCategory());
+    tree.addItem(rootItem);
+
+    for (int id : roots) {
+      TreeItem treeItem = createCategoryTreeItem(id);
+      rootItem.addItem(treeItem);
+      
+      fillTree(data, id, treeItem);
+    }
+
+    return tree;
   }
   
   void ensureCategoeries(final Consumer<Boolean> callback) {
@@ -44,25 +84,35 @@ class EcData {
 
           if (arr != null) {
             categoryNames.clear();
+            categoryRoots.clear();
+            categoryByParent.clear();
+            categoryByChild.clear();
 
             for (int i = 0; i < arr.length; i += 3) {
               int id = BeeUtils.toInt(arr[i]);
               int parent = BeeUtils.toInt(arr[i + 1]);
               String name = arr[i + 2];
-              
+
               categoryNames.put(id, name);
+
+              if (parent > 0) {
+                categoryByParent.put(parent, id);
+                categoryByChild.put(id, parent);
+              } else {
+                categoryRoots.add(id);
+              }
             }
 
             callback.accept(true);
           }
         }
       });
-      
+
     } else {
       callback.accept(true);
     }
   }
-  
+
   void getCarManufacturers(final Consumer<List<String>> callback) {
     if (carManufacturers.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CAR_MANUFACTURERS);
@@ -84,7 +134,7 @@ class EcData {
           }
         }
       });
-      
+
     } else {
       callback.accept(carManufacturers);
     }
@@ -109,7 +159,7 @@ class EcData {
             for (String s : arr) {
               carModels.add(EcCarModel.restore(s));
             }
-            carModelsByManufacturer.put(manufacturer, carModels);            
+            carModelsByManufacturer.put(manufacturer, carModels);
 
             callback.accept(carModels);
           }
@@ -137,7 +187,7 @@ class EcData {
             for (String s : arr) {
               carTypes.add(EcCarType.restore(s));
             }
-            carTypesByModel.put(modelId, carTypes);            
+            carTypesByModel.put(modelId, carTypes);
 
             callback.accept(carTypes);
           }
@@ -145,10 +195,14 @@ class EcData {
       });
     }
   }
-  
+
+  String getCategoryName(int categoryId) {
+    return categoryNames.get(categoryId);
+  }
+
   List<String> getCategoryNames(EcItem item) {
     List<String> names = Lists.newArrayList();
-    
+
     List<Integer> categoryIds = item.getCategoryList();
     for (Integer categoryId : categoryIds) {
       String name = categoryNames.get(categoryId);
@@ -156,7 +210,7 @@ class EcData {
         names.add(name);
       }
     }
-    
+
     return names;
   }
   
@@ -181,9 +235,37 @@ class EcData {
           }
         }
       });
-      
+
     } else {
       callback.accept(itemManufacturers);
     }
+  }
+
+  private TreeItem createCategoryTreeItem(int id) {
+    TreeItem treeItem = new TreeItem(categoryNames.get(id));
+    treeItem.setUserObject(id);
+    
+    return treeItem;
+  }
+
+  private void fillTree(Multimap<Integer, Integer> data, int parent, TreeItem parentItem) {
+    if (data.containsKey(parent)) {
+      for (int id : data.get(parent)) {
+        TreeItem childItem = createCategoryTreeItem(id);
+        parentItem.addItem(childItem);
+        
+        fillTree(data, id, childItem);
+      }
+    }
+  }
+
+  private Integer getParent(int categoryId, Collection<Integer> filter) {
+    for (Integer parent = categoryByChild.get(categoryId); parent != null; parent =
+        categoryByChild.get(parent)) {
+      if (filter.contains(parent)) {
+        return parent;
+      }
+    }
+    return null;
   }
 }
