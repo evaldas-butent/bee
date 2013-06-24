@@ -236,7 +236,8 @@ public class ItemList extends Simple {
       panel.add(manufacturerContainer);
     }
 
-    String category = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, item.getGroups());
+    String category = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
+        EcKeeper.getCategoryNames(item));
     if (!BeeUtils.isEmpty(category)) {
       Flow categoryContainer = new Flow(STYLE_ITEM_CATEGORY + STYLE_INFO_CONTAINER);
 
@@ -285,7 +286,7 @@ public class ItemList extends Simple {
       table.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
     }
 
-    Widget qty = renderQuantity(item.getQuantity());
+    Widget qty = renderQuantity(1);
     if (qty != null) {
       table.setWidgetAndStyle(row, COL_QUANTITY, qty, STYLE_QUANTITY);
     }

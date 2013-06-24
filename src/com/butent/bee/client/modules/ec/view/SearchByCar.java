@@ -13,6 +13,9 @@ import com.google.gwt.user.client.ui.HasEnabled;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -31,10 +34,11 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -282,10 +286,23 @@ class SearchByCar extends EcView {
 
   private void onTypePanelClick(ClickEvent event) {
     TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
-    int index = DomUtils.getDataIndex(element);
+    int typeId = DomUtils.getDataIndex(element);
     
-    if (index > 0) {
-      LogUtils.getRootLogger().debug("click", index);
+    if (typeId > 0) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
+      params.addQueryItem(VAR_TYPE, typeId);
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          List<EcItem> items = EcKeeper.getResponseItems(response);
+
+          if (!BeeUtils.isEmpty(items)) {
+            EcKeeper.renderItems(itemPanel, items);
+          }
+        }
+      });
     }
   }
 

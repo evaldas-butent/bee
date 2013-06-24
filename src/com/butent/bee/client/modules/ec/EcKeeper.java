@@ -48,7 +48,7 @@ public class EcKeeper {
       }
     }
   }
-
+  
   public static void doGlobalSearch(String query) {
     Assert.notEmpty(query);
 
@@ -61,18 +61,25 @@ public class EcKeeper {
         dispatchMessages(response);
         List<EcItem> items = getResponseItems(response);
         if (!BeeUtils.isEmpty(items)) {
-          ItemPanel widget = new ItemPanel(items);
+          ItemPanel widget = new ItemPanel();
           BeeKeeper.getScreen().updateActivePanel(widget);
+
+          renderItems(widget, items);
         }
       }
     });
+  }
+
+  public static void ensureCategoeries(final Consumer<Boolean> callback) {
+    Assert.notNull(callback);
+    data.ensureCategoeries(callback);
   }
   
   public static void getCarManufacturers(Consumer<List<String>> callback) {
     Assert.notNull(callback);
     data.getCarManufacturers(callback);
   }
-
+  
   public static void getCarModels(String manufacturer, Consumer<List<EcCarModel>> callback) {
     Assert.notEmpty(manufacturer);
     Assert.notNull(callback);
@@ -84,14 +91,32 @@ public class EcKeeper {
     Assert.notNull(callback);
     data.getCarTypes(modelId, callback);
   }
+
+  public static List<String> getCategoryNames(EcItem item) {
+    Assert.notNull(item);
+    return data.getCategoryNames(item);
+  }
   
   public static String getContactsUrl() {
     return Settings.getProperty("ecContacts");
   }
-
+  
   public static void getItemManufacturers(Consumer<List<String>> callback) {
     Assert.notNull(callback);
     data.getItemManufacturers(callback);
+  }
+
+  public static List<EcItem> getResponseItems(ResponseObject response) {
+    List<EcItem> items = Lists.newArrayList();
+    if (response != null) {
+      String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+      if (arr != null) {
+        for (String s : arr) {
+          items.add(EcItem.restore(s));
+        }
+      }
+    }
+    return items;
   }
   
   public static String getTermsUrl() {
@@ -99,6 +124,20 @@ public class EcKeeper {
   }
 
   public static void register() {
+  }
+
+  public static void renderItems(final ItemPanel panel, final List<EcItem> items) {
+    Assert.notNull(panel);
+    Assert.notNull(items);
+    
+    ensureCategoeries(new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (BeeUtils.isTrue(input)) {
+          panel.render(items);
+        }
+      }
+    });
   }
 
   public static void searchItems(String service, String query, final Consumer<List<EcItem>> callback) {
@@ -137,19 +176,6 @@ public class EcKeeper {
         }
       }
     });
-  }
-
-  private static List<EcItem> getResponseItems(ResponseObject response) {
-    List<EcItem> items = Lists.newArrayList();
-    if (response != null) {
-      String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
-      if (arr != null) {
-        for (String s : arr) {
-          items.add(EcItem.restore(s));
-        }
-      }
-    }
-    return items;
   }
 
   private EcKeeper() {

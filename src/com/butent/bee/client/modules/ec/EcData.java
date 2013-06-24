@@ -12,6 +12,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -24,10 +25,42 @@ class EcData {
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
   private final Map<Integer, List<EcCarType>> carTypesByModel = Maps.newHashMap();
 
+  private final Map<Integer, String> categoryNames = Maps.newHashMap();
+
   private final List<String> itemManufacturers = Lists.newArrayList();
 
   EcData() {
     super();
+  }
+  
+  void ensureCategoeries(final Consumer<Boolean> callback) {
+    if (categoryNames.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CATEGORIES);
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            categoryNames.clear();
+
+            for (int i = 0; i < arr.length; i += 3) {
+              int id = BeeUtils.toInt(arr[i]);
+              int parent = BeeUtils.toInt(arr[i + 1]);
+              String name = arr[i + 2];
+              
+              categoryNames.put(id, name);
+            }
+
+            callback.accept(true);
+          }
+        }
+      });
+      
+    } else {
+      callback.accept(true);
+    }
   }
   
   void getCarManufacturers(final Consumer<List<String>> callback) {
@@ -84,7 +117,7 @@ class EcData {
       });
     }
   }
-  
+
   void getCarTypes(final int modelId, final Consumer<List<EcCarType>> callback) {
     if (carTypesByModel.containsKey(modelId)) {
       callback.accept(carTypesByModel.get(modelId));
@@ -112,7 +145,21 @@ class EcData {
       });
     }
   }
-
+  
+  List<String> getCategoryNames(EcItem item) {
+    List<String> names = Lists.newArrayList();
+    
+    List<Integer> categoryIds = item.getCategoryList();
+    for (Integer categoryId : categoryIds) {
+      String name = categoryNames.get(categoryId);
+      if (name != null) {
+        names.add(name);
+      }
+    }
+    
+    return names;
+  }
+  
   void getItemManufacturers(final Consumer<List<String>> callback) {
     if (itemManufacturers.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_MANUFACTURERS);

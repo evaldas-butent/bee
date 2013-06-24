@@ -1,60 +1,50 @@
 package com.butent.bee.shared.modules.ec;
 
-import com.google.common.collect.Sets;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collection;
+import java.util.List;
 
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ID, CODE, NAME, SUPPLIER, STOCK, LIST_PRICE, PRICE
+    ID, CODE, NAME, SUPPLIER, CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
   }
 
+  public static final Splitter CATEGORY_SPLITTER =
+      Splitter.on(EcConstants.CATEGORY_SEPARATOR).trimResults().omitEmptyStrings();
+  
   public static EcItem restore(String s) {
     EcItem item = new EcItem();
     item.deserialize(s);
     return item;
   }
 
-  private long id;
+  private int id;
 
   private String code;
   private String name;
 
-  private final Collection<String> groups;
-
-  private final String manufacturer;
   private String supplier;
 
+  private String categories;
+
   private int stock1;
-  private final int stock2;
-  
+  private int stock2;
+
   private int listPrice;
   private int price;
 
-  private int quantity = 1;
-
-  public EcItem(long id) {
-    this();
+  public EcItem(int id) {
     this.id = id;
   }
 
   private EcItem() {
-    this.groups = Sets.newHashSet();
-    int cnt = BeeUtils.randomInt(1, 6);
-    for (int i = 0; i < cnt; i++) {
-      char ch = BeeUtils.randomChar('a', 'z');
-      String group = String.valueOf(ch).toUpperCase() + BeeUtils.replicate(ch, 5);
-      groups.add(group);
-    }
-
-    this.manufacturer = "Gamintojas " + BeeUtils.randomInt(1, 10);
-    this.stock2 = BeeUtils.randomInt(0, 2) * BeeUtils.randomInt(1, 100);
   }
 
   @Override
@@ -69,7 +59,7 @@ public class EcItem implements BeeSerializable {
 
       switch (member) {
         case ID:
-          this.id = BeeUtils.toLong(value);
+          this.id = BeeUtils.toInt(value);
           break;
 
         case CODE:
@@ -80,14 +70,22 @@ public class EcItem implements BeeSerializable {
           setName(value);
           break;
 
-        case STOCK:
-          setStock(BeeUtils.toInt(value));
-          break;
-
         case SUPPLIER:
           setSupplier(value);
           break;
-          
+
+        case CATEGORIES:
+          setCategories(value);
+          break;
+
+        case STOCK_1:
+          setStock1(BeeUtils.toInt(value));
+          break;
+
+        case STOCK_2:
+          setStock2(BeeUtils.toInt(value));
+          break;
+
         case LIST_PRICE:
           this.listPrice = BeeUtils.toInt(value);
           break;
@@ -99,15 +97,26 @@ public class EcItem implements BeeSerializable {
     }
   }
 
+  public String getCategories() {
+    return categories;
+  }
+  
+  public List<Integer> getCategoryList() {
+    List<Integer> result = Lists.newArrayList();
+
+    if (getCategories() != null) {
+      for (String s : CATEGORY_SPLITTER.split(getCategories())) {
+        result.add(BeeUtils.toInt(s));
+      }
+    }
+    return result;
+  }
+
   public String getCode() {
     return code;
   }
 
-  public Collection<String> getGroups() {
-    return groups;
-  }
-
-  public long getId() {
+  public int getId() {
     return id;
   }
 
@@ -116,7 +125,7 @@ public class EcItem implements BeeSerializable {
   }
 
   public String getManufacturer() {
-    return manufacturer;
+    return supplier;
   }
 
   public String getName() {
@@ -125,10 +134,6 @@ public class EcItem implements BeeSerializable {
 
   public int getPrice() {
     return price;
-  }
-
-  public int getQuantity() {
-    return quantity;
   }
 
   public int getStock1() {
@@ -147,8 +152,10 @@ public class EcItem implements BeeSerializable {
     return true;
   }
 
-  public boolean hasGroup(String group) {
-    return groups.contains(group);
+  public boolean hasCategory(int category) {
+    return categories != null
+        && categories.contains(EcConstants.CATEGORY_SEPARATOR + category
+            + EcConstants.CATEGORY_SEPARATOR);
   }
 
   public boolean isFeatured() {
@@ -179,12 +186,20 @@ public class EcItem implements BeeSerializable {
           arr[i++] = name;
           break;
 
-        case STOCK:
+        case SUPPLIER:
+          arr[i++] = supplier;
+          break;
+
+        case CATEGORIES:
+          arr[i++] = categories;
+          break;
+
+        case STOCK_1:
           arr[i++] = stock1;
           break;
 
-        case SUPPLIER:
-          arr[i++] = supplier;
+        case STOCK_2:
+          arr[i++] = stock2;
           break;
 
         case LIST_PRICE:
@@ -198,7 +213,12 @@ public class EcItem implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
-  
+
+  public EcItem setCategories(String categories) {
+    this.categories = categories;
+    return this;
+  }
+
   public EcItem setCode(String code) {
     this.code = code;
     return this;
@@ -208,7 +228,7 @@ public class EcItem implements BeeSerializable {
     this.listPrice = BeeUtils.isDouble(listPrice) ? BeeUtils.round(listPrice * 100) : 0;
     return this;
   }
-  
+
   public void setListPrice(int listPrice) {
     this.listPrice = listPrice;
   }
@@ -227,13 +247,13 @@ public class EcItem implements BeeSerializable {
     this.price = price;
   }
 
-  public EcItem setQuantity(int quantity) {
-    this.quantity = quantity;
+  public EcItem setStock1(int stock1) {
+    this.stock1 = stock1;
     return this;
   }
 
-  public EcItem setStock(int stock) {
-    this.stock1 = stock;
+  public EcItem setStock2(int stock2) {
+    this.stock2 = stock2;
     return this;
   }
 

@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
@@ -50,11 +51,6 @@ public class ItemPanel extends Flow {
     super(EcStyles.name(STYLE_PRIMARY));
   }
   
-  public ItemPanel(List<EcItem> ecItems) {
-    this();
-    render(ecItems);
-  }
-
   public void render(List<EcItem> ecItems) {
     if (!isEmpty()) {
       clear();
@@ -74,7 +70,7 @@ public class ItemPanel extends Flow {
       EcItem ecItem = ecItems.get(i);
       items.add(ecItem);
 
-      for (String group : ecItem.getGroups()) {
+      for (String group : EcKeeper.getCategoryNames(ecItem)) {
         if (!groups.contains(group)) {
           groups.add(group);
         }
@@ -121,7 +117,7 @@ public class ItemPanel extends Flow {
     } else {
       List<EcItem> result = Lists.newArrayList();
       for (EcItem item : input) {
-        if (BeeUtils.containsAny(selectedGroups, item.getGroups())) {
+        if (BeeUtils.containsAny(selectedGroups, EcKeeper.getCategoryNames(item))) {
           result.add(item);
         }
       }

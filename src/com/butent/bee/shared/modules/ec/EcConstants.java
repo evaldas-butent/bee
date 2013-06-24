@@ -61,6 +61,10 @@ public class EcConstants {
 
   public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
 
+  public static final String SVC_GET_CATEGORIES = "getCategories";
+
+  public static final String SVC_GET_ITEMS_BY_CAR_TYPE = "getItemsByCarType";
+  
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -69,6 +73,7 @@ public class EcConstants {
 
   public static final String VAR_MANUFACTURER = VAR_PREFIX + "manufacturer";
   public static final String VAR_MODEL = VAR_PREFIX + "model";
+  public static final String VAR_TYPE = VAR_PREFIX + "type";
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
   public static final String TBL_TCD_ANALOGS = "TcdAnalogs";
@@ -119,6 +124,8 @@ public class EcConstants {
   public static final String COL_TCD_PRICE = "Price";
 
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier"; 
+
+  public static final String CATEGORY_SEPARATOR = ","; 
   
   private EcConstants() {
   }

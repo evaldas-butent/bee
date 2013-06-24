@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.ec;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
@@ -26,6 +27,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -60,6 +62,9 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.same(svc, SVC_FEATURED_AND_NOVELTY)) {
       response = getFeaturedAndNoveltyItems();
 
+    } else if (BeeUtils.same(svc, SVC_GET_CATEGORIES)) {
+      response = getCategories();
+
     } else if (BeeUtils.same(svc, SVC_GLOBAL_SEARCH)) {
       response = doGlobalSearch(reqInfo);
 
@@ -76,6 +81,9 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPES)) {
       response = getCarTypes(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_CAR_TYPE)) {
+      response = getItemsByCarType(reqInfo);
+      
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_MANUFACTURERS)) {
       response = getItemManufacturers();
 
@@ -109,6 +117,12 @@ public class EcModuleBean implements BeeModule {
   public void init() {
   }
 
+  private String createTempArticleIds(SqlSelect query) {
+    String tmp = qs.sqlCreateTemp(query);
+    qs.sqlIndex(tmp, COL_TCD_ARTICLE_ID);
+    return tmp;
+  }
+
   private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
     String query = reqInfo.getParameter(VAR_QUERY);
     if (BeeUtils.isEmpty(query)) {
@@ -129,6 +143,43 @@ public class EcModuleBean implements BeeModule {
       items.add(new EcItem(0));
     }
     return items;
+  }
+
+  private Map<Integer, String> getArticleCategories(String tempArticleIds) {
+    Map<Integer, String> result = Maps.newHashMap();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID, COL_TCD_CATEGORY_ID)
+        .addFrom(TBL_TCD_ARTICLE_CATEGORIES)
+        .addFromInner(tempArticleIds, SqlUtils.joinUsing(tempArticleIds,
+            TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID))
+        .addOrder(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID, COL_TCD_CATEGORY_ID);
+
+    SimpleRowSet data = qs.getData(query);
+    if (!DataUtils.isEmpty(data)) {
+      int lastArt = 0;
+      StringBuilder sb = new StringBuilder();
+
+      for (SimpleRow row : data) {
+        int art = row.getInt(COL_TCD_ARTICLE_ID);
+        int cat = row.getInt(COL_TCD_CATEGORY_ID);
+
+        if (art != lastArt) {
+          if (sb.length() > 0) {
+            result.put(lastArt, sb.toString());
+            lastArt = art;
+            sb = new StringBuilder();
+          }
+        }
+        sb.append(CATEGORY_SEPARATOR).append(cat);
+      }
+
+      if (sb.length() > 0) {
+        result.put(lastArt, sb.toString());
+      }
+    }
+
+    return result;
   }
 
   private ResponseObject getCarManufacturers() {
@@ -202,6 +253,36 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(carTypes);
   }
 
+  private ResponseObject getCategories() {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID, COL_TCD_PARENT_ID,
+            COL_TCD_CATEGORY_NAME)
+        .addFrom(TBL_TCD_CATEGORIES)
+        .addOrder(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID);
+    
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      String msg = TBL_TCD_CATEGORIES + ": data not available";
+      logger.warning(msg);
+      return ResponseObject.error(msg);
+    }
+    
+    int rc = data.getNumberOfRows();
+    int cc = data.getNumberOfColumns();
+
+    String[] arr = new String[rc * cc];
+    int i = 0;
+    
+    for (String[] row : data.getRows()) {
+      for (int j = 0; j < cc; j++) {
+        arr[i * cc + j] = row[j];
+      }
+      i++;
+    }
+
+    return ResponseObject.response(arr);
+  }
+
   private ResponseObject getFeaturedAndNoveltyItems() {
     return ResponseObject.response(generateItems(BeeUtils.randomInt(1, 30)));
   }
@@ -218,7 +299,7 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(qs.getData(query));
   }
-
+  
   private ResponseObject getItemManufacturers() {
     SqlSelect query = new SqlSelect().setDistinctMode(true)
         .addFrom(TBL_TCD_ARTICLES)
@@ -228,10 +309,81 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(qs.getColumn(query));
   }
 
+  private List<EcItem> getItems(SqlSelect query) {
+    List<EcItem> items = Lists.newArrayList();
+
+    String tempArticleIds = createTempArticleIds(query);
+
+    SqlSelect articleQuery = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+            COL_TCD_SUPPLIER)
+        .addSum(TBL_TCD_MOTONET, COL_TCD_REMAINDER)
+        .addMax(TBL_TCD_MOTONET, COL_TCD_PRICE)
+        .addFrom(tempArticleIds)
+        .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLES,
+            COL_TCD_ARTICLE_ID))
+        .addFromLeft(TBL_TCD_MOTONET, SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_MOTONET,
+            COL_TCD_ARTICLE_ID))
+        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+            COL_TCD_SUPPLIER)
+        .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID);
+
+    SimpleRowSet articleData = qs.getData(articleQuery);
+    if (!DataUtils.isEmpty(articleData)) {
+      for (SimpleRow row : articleData) {
+        EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID));
+
+        item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
+        item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
+        item.setSupplier(row.getValue(COL_TCD_SUPPLIER));
+
+        item.setStock1(row.getInt(COL_TCD_REMAINDER));
+
+        Double price = row.getDouble(COL_TCD_PRICE);
+        if (BeeUtils.isPositive(price)) {
+          item.setListPrice(price * (1 + Math.random() * 0.5));
+          item.setPrice(price);
+        }
+
+        items.add(item);
+      }
+    }
+
+    if (!items.isEmpty()) {
+      Map<Integer, String> articleCategories = getArticleCategories(tempArticleIds);
+      for (EcItem item : items) {
+        item.setCategories(articleCategories.get(item.getId()));
+      }
+    }
+
+    qs.sqlDropTemp(tempArticleIds);
+
+    return items;
+  }
+
+  private ResponseObject getItemsByCarType(RequestInfo reqInfo) {
+    String typeId = reqInfo.getParameter(VAR_TYPE);
+    if (!BeeUtils.isPositiveInt(typeId)) {
+      return ResponseObject.parameterNotFound(VAR_TYPE);
+    }
+
+    SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+        .addFrom(TBL_TCD_TYPE_ARTICLES)
+        .addFields(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE_ID)
+        .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_TYPE_ID, typeId));
+    
+    List<EcItem> items = getItems(articleIdQuery);
+    if (items.isEmpty()) {
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(typeId));
+    } else {
+      return ResponseObject.response(items);
+    }
+  }
+
   private ResponseObject searchByItemCode(RequestInfo reqInfo) {
     String code = reqInfo.getParameter(VAR_QUERY);
     if (BeeUtils.isEmpty(code)) {
-      return ResponseObject.error("No search criteria defined");
+      return ResponseObject.parameterNotFound(VAR_QUERY);
     }
 
     int offset = BeeUtils.toInt(reqInfo.getParameter(VAR_OFFSET));
@@ -269,13 +421,14 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = Lists.newArrayList();
 
     for (SimpleRow row : qs.getData(query)) {
-      EcItem item = new EcItem(row.getLong("ArticleID"));
-      item.setName(row.getValue("ArticleName"));
-      item.setCode(row.getValue("ArticleNr"));
-      item.setSupplier(BeeUtils.notEmpty(row.getValue("AnalogSupplier"), row.getValue("Supplier")));
-      item.setStock(row.getInt("Remainder"));
+      EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID));
+      item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
+      item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
+      item.setSupplier(BeeUtils.notEmpty(row.getValue(ALS_TCD_ANALOG_SUPPLIER),
+          row.getValue(COL_TCD_SUPPLIER)));
+      item.setStock1(row.getInt(COL_TCD_REMAINDER));
 
-      Double price = row.getDouble("Price");
+      Double price = row.getDouble(COL_TCD_PRICE);
       if (BeeUtils.isPositive(price)) {
         item.setListPrice(price * (1 + Math.random() * 0.5));
         item.setPrice(price);
