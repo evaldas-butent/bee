@@ -2,46 +2,47 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
+  <!ENTITY row "display: -webkit-flex;">
   <!ENTITY inline "display:inline-block;">
   <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
   <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY size "minWidth: 110px; maxWidth:140px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="NewRequest" viewName="Requests" caption="Naujas užklausimas"
-  width="600"
-  >
+  name="NewRequest" viewName="Requests" caption="=newRequest"
+  width="610" height="320">
   <FlowPanel style="padding: 10px 2px 2px 10px;">
-    <FlowPanel style="&section;">
-      <Label html="Data" class="bee-required" style="&labelLeft;" />
-      <InputDateTime source="Date" style="&inline; width:110px;" />
-      <Label html="Užsakovas" class="bee-required" style="&labelRight; width:120px;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=date" class="bee-required" style="&inline; text-align:right; width:80px; padding-top:1px; margin-right: 5px" />
+      <InputDateTime source="Date" style="&inline; width:120px;" />
+      <Label text="=customer" class="bee-required" style="&inline; width:132px; padding-top:1px; text-align:right; margin-right: 4px" />
       <DataSelector source="Customer" style="&inline; width:200px;" />
     </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label html="Kontaktai" style="&labelLeft;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=contacts" style="&inline; width:75px; padding-top:1px; text-align:right; padding-right: 11px" />
       <InputText source="Contacts" style="&inline; width:110px;" />
-      <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;" 
+      <Label text="=personContact" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
+      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
         choiceColumns="FirstName LastName CompanyName" options="Customer" />
     </FlowPanel>
     
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Užklausimas" class="bee-required" style="&labelLeft; vertical-align:top;" />
-      <InputArea source="Content" visibleLines="8" style="width:400px;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=request" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
+      <InputArea source="Content" visibleLines="8" style="width:490px;" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Vadybininkas" style="&labelLeft;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=manager" style="&inline; width:85px; padding-top:1px;" />
       <DataSelector source="Manager" style="&inline; width:200px;" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Bylos" style="&labelLeft; vertical-align:top;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=documentFiles" style="&labelLeft; vertical-align:top;" />
       <FileCollector name="Files" editableColumns="name" style="&inline;">
         <face resource="attachment" />
       </FileCollector>

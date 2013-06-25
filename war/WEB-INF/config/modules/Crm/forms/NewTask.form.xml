@@ -5,119 +5,121 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<hr/>">
+  <!ENTITY row "display: -webkit-flex;">
 
-  <!ENTITY lbl1 "&inline; width: 128px; padding-top: 1px;">
-  <!ENTITY top1 "float: left; width: 128px; padding-top: 1px;">
-  <!ENTITY inp2 "&inline; width: 150px;">
-  <!ENTITY inp2x "&inline; width: 500px;">
+  <!ENTITY lbl1 "&inline; max-width: 128px;min-width: 110px;  text-align:right; padding-right:8px;  min-height:20px; max-height:20px; padding-top: 1px;">
+  <!ENTITY top1 "float: left; text-align:right; padding-right:8px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY inp2 "&inline; max-width: 150px; min-width:150px;">
+  <!ENTITY inp2x "&inline; width: 540px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 20px;">
+
   <!ENTITY inp4 "&inline;">
 
-  <!ENTITY dateStyle "&inline; width: 90px;">
-  <!ENTITY timeStyle "&inline; width: 50px; margin-left: 10px;">
+  <!ENTITY dateStyle "&inline; min-width:90px; max-width: 90px;">
+  <!ENTITY timeStyle "&inline; min-width:50px; max-width:50px; width: 50px; margin-left: 10px;">
   <!ENTITY timeStep "30">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewTask" caption="Nauja užduotis" width="650" height="520">
+  name="NewTask" caption="=newTask" width="650" height="520">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <FlowPanel style="&section;">
-      <Label html="Užduočių šablonas:" style="&lbl1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=taskTemplate" style="&top1;" />
       <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
         newRowEnabled="false" style="&inp2;" />
-      <Label html="Prioritetas:" style="&inline; width: 122px; padding-top: 1px; margin-left: 20px;" />
-      <Radio source="Priority" itemKey="TaskPriority" style="&inp4;" />
+      <Label text="=priority" style="&inline; width: 128px; text-align:right; padding-right:8px; padding-top: 1px; " />
+      <Radio source="Priority" itemKey="TaskPriority" style="&inp4; min-width:200px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label html="Pradžios data:" style="&lbl1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=startingDate" style="&lbl1;" />
       <InputDate name="Start_Date" style="&dateStyle;" />
       <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label html="Numatoma trukmė:" style="&lbl3;" />
-      <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />
+      <Label text="=expectedDuration" style="&lbl3;" />
+      <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; min-width: 50px;max-width: 50px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label html="Pabaigos data:" style="&lbl1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=endingDate" style="&lbl1;" />
       <InputDate name="End_Date" style="&dateStyle;" />
       <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label html="Įmonė:" style="&lbl3;" />
+      <Label text="=company" style="&inline; width: 107px; text-align:right; padding-right:21px; padding-top: 1px; margin-left: 20px;" />
       <DataSelector source="Company" editPopup="true" style="&inp4; width: 202px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label html="Priminimas:" style="&lbl1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=taskReminder" style="&lbl1;" />
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
         style="&inp2;" />
-      <Label html="Kontaktinis asmuo:" style="&lbl3;" />
+      <Label text="=personContact" style="&lbl3;" />
       <DataSelector source="Contact" style="&inp4; width: 202px;" editPopup="true"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" options="Company" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Tema:" class="bee-required" style="&lbl1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=taskTheme" class="bee-required" style="&lbl1;min-width:70px;" />
       <InputText source="Summary" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label html="Aprašymas:" style="&top1;" />
-      <InputArea source="Description" style="width: 500px; height: 60px;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=description" style="&top1; padding-right:12px;" />
+      <InputArea source="Description" style="width: 540px; height: 60px;" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Bylos:" style="&top1;" />
+    <FlowPanel style="&section; &row; ">
+      <Label text="=documentFiles" style="&top1; min-width:60px;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Vykdytojai:" class="bee-required" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=taskExecutors" class="bee-required" style="&top1; padding-right:12px;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;"
         label="Vykdytojai" required="true" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label html="Stebėtojai:" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=taskObservers" style="&top1; min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Susijusi su:" style="&header;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=relatedTo" style="&header;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label text="=companies" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=companies" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label text="=persons" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=persons" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label text="=appointments" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=appointments" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label text="=tasks" style="&top1;" />
+    <FlowPanel style="&section; &row;">
+      <Label text="=tasks" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
