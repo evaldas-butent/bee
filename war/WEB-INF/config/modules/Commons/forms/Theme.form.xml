@@ -3,15 +3,21 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Theme" viewName="Themes" caption="Spalvų tema">
+  name="Theme" viewName="Themes" caption="=colorTheme">
 
-  <FlowPanel class="flexBox-vertical">
-    <HorizontalPanel style="border-spacing: 32px;" verticalAlignment="top">
-      <InputText source="Name" caption="Pavadinimas:" decorator="caption-top" />
-      <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
-        decorator="caption-top" />
-      <DataSelector source="DefaultColorName" caption="Pagrindinė spalva:" decorator="caption-top" />
-    </HorizontalPanel>
+  <FlowPanel style="-webkit -flex">
+    <Table>
+      <row>
+        <InputText source="Name" caption="=colorTitle" d:style="padding-right:8px;" style="margin-right:8px;" />
+        <DataSelector source="DefaultColorName" caption="=defaultColor" d:style="padding-right:8px;" />
+      </row>
+      <row>
+        <cell colSpan="2">
+          <InputArea source="Description" caption="=colorDescription" visibleLines="3" d:style="width:70px; margin-right:5px; margin-left:4px;"
+            style="width: 432px;" />
+        </cell>
+      </row>
+    </Table>
 
     <ChildGrid class="flexible" name="ThemeColors" relColumn="Theme" />
   </FlowPanel>

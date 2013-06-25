@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE Form [
+  <!ENTITY lbl "padding-right: 5px">
+]>
+
 <Disclosure xmlns="http://www.butent.com/widget"
   xmlns:d="http://www.butent.com/decorator"
   xmlns:ui="http://www.butent.com/ui"
@@ -10,33 +15,33 @@
   <FlowPanel style="position:relative;" >
     <Table>
       <row>
-        <Label text="=phones" horizontalAlignment="right" />
+        <Label text="=phones" horizontalAlignment="right" style="&lbl;" />
 	    <InputText source="Phone" style="width: 200px;"  horizontalAlignment="left" />
-	    <Label text="=mobile" horizontalAlignment="right" />
+	    <Label text="=mobile" horizontalAlignment="right"  style="&lbl;" />
 	    <InputText source="Mobile" style="width: 168px;" horizontalAlignment="left" />
-	    <Label text="=fax" horizontalAlignment="right" />
+	    <Label text="=fax" horizontalAlignment="right" style="&lbl;"/>
 	    <InputText source="Fax" style="width: 100%;" horizontalAlignment="left" />
 	  </row>
       <row>
-	    <Label text="=email" horizontalAlignment="right" />	   
-        <DataSelector source="EmailId" style="width: 200px" horizontalAlignment="left">
+	    <Label text="=email" horizontalAlignment="right" style="&lbl;" />	   
+        <DataSelector source="EmailId" style="width: 200px; margin-right: 10px;" horizontalAlignment="left">
           <renderToken source="Label" suffix=" " />
           <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
         </DataSelector>	      
 	    
-	    <Label text="=website" horizontalAlignment="right" />
+	    <Label text="=website" horizontalAlignment="right" style="&lbl;" />
 	      <cell colSpan="3"> 	
 	        <InputText source="Website"  style="width: 100%" horizontalAlignment="left"/>
 	      </cell>	      
 	    </row>
 	    <row>	      
-	      <Label text="=address" horizontalAlignment="right" />
+	      <Label text="=address" horizontalAlignment="right" style="&lbl;" />
 	      <cell colSpan="5">
 	        <InputText source="Address" style="width: 100%;" horizontalAlignment="left" />
 	      </cell>
 	    </row>
  	    <row>
-	      <Label text="=city" horizontalAlignment="right" />
+	      <Label text="=city" horizontalAlignment="right" style="&lbl;" />
 	      <DataSelector source="City"  style="width: 200px;" horizontalAlignment="left">
 	        <selectorColumn source="Name" />
 	        <selectorColumn source="CountryName" />
@@ -45,7 +50,7 @@
 	        </selectorColumn>
 	      </DataSelector>
 	    
-	      <Label text="=country" horizontalAlignment="right" />
+	      <Label text="=country" horizontalAlignment="right" style="&lbl;"/>
 	      <FlowPanel class="flex-horizontal">	
 	        <Table>
 	          <row>
@@ -62,11 +67,11 @@
 	        </Table>
 	      </FlowPanel>
 	      
-	      <Label text="=postIndex"  horizontalAlignment="right" />
+	      <Label text="=postIndex"  horizontalAlignment="right" style="&lbl;"/>
 	      <InputText source="PostIndex" style="width: 100%;" horizontalAlignment="left"/> 
 	    </row>
 	    <row>
-	      <Label text="=socialContacts" horizontalAlignment="right" />
+	      <Label text="=socialContacts" horizontalAlignment="right" style="&lbl;"/>
 	      <cell colSpan="5">
 	        <InputText source="SocialContacts" style="width: 100%;" horizontalAlignment="left" />
 	      </cell>

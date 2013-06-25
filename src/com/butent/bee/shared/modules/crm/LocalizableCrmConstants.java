@@ -1,10 +1,30 @@
 package com.butent.bee.shared.modules.crm;
 
 public interface LocalizableCrmConstants {
+  
+  String author();
+  
+  String createdOn();
+  
+  String creditDays();
+  
+  String creditLimit();
+  
+  String creditTolerance();
+  
+  String customer();
 
   String documentFileExists();
 
   String durationType();
+  
+  String endingDate();
+  
+  String expectedDuration();
+  
+  String financialInfo();
+  
+  String financialState();  
 
   String hideZeroTimes();
 
@@ -13,8 +33,32 @@ public interface LocalizableCrmConstants {
   String hoursByTypes();
 
   String hoursByUsers();
+  
+  String informationSource();
+  
+  String limitCurrency();
+  
+  String manager();
+  
+  String newRequest();
+  
+  String newTask();
+  
+  String rating();
+  
+  String relationship();
+  
+  String relationshipInfo();
+  
+  String request();
+  
+  String result();
 
   String spentTime();
+  
+  String startingDate();
+  
+  String taskExecutors();
 
   String taskFilterAll();
 
@@ -40,6 +84,10 @@ public interface LocalizableCrmConstants {
   
   String taskLabelStarred();
   
+  String taskObservers();
+  
+  String taskReminder();
+  
   String taskStatusActive();
   
   String taskStatusApproved();
@@ -53,4 +101,8 @@ public interface LocalizableCrmConstants {
   String taskStatusScheduled();
   
   String taskStatusSuspended();
+  
+  String taskTemplate();
+  
+  String taskTheme();
 }

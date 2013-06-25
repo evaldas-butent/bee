@@ -1,99 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE Form [
+  <!ENTITY lbl1 "width: 85px; margin-right: 1em; text-align: right">
+]>
+
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
-  
+
   name="Company"
   viewName="Companies"
-  caption="Klientas"
+  caption="=client"
   width="800"
   height="500"
   >
   <FlowPanel class="flexBox-vertical">
     <VerticalPanel>
       <FlowPanel style="position:relative; width: 790px; height: 90px;">
-        <InputText source="Name" caption="Pavadinimas:" style="width: 200px;" d:size="100"
-          d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 10px;" />
-        <DataSelector source="CompanyType" caption="Statusas:" style="width: 80px;" d:size="50"
-          d:unit="px" d:rootStyle="position:absolute; left: 330px; top: 10px;" />
-        <DataSelector source="CompanyGroup" caption="Grupė:" style="width: 80px;" d:size="50"
-          d:unit="px" d:rootStyle="position:absolute; left: 480px; top: 10px;" />
-        <DataSelector source="CompanyPriority" caption="Prioritetas:" style="width: 80px;" d:size="50"
-          d:unit="px" d:rootStyle="position:absolute; left: 640px; top: 10px;" />
+  <Table >
+    <row>
+      <Label text="=name" style="width: 90px; margin-right: 8px; text-align: right" class="bee-required" />
+      <InputText source="Name" style="width: 200px;"  />
+      <Label text="=status" style="&lbl1;" />
+      <DataSelector source="CompanyType" style="width: 80px;"  />
+      <Label text="=group" style="width: 45px; margin-right: 1em; text-align: right" />
+      <DataSelector source="CompanyGroup" style="width: 80px;"  />
+      <Label text="=priority" style="width: 70px; margin-right: 1em; text-align: right" />
+      <DataSelector source="CompanyPriority" style="width: 64px;" />
+    </row>
+  </Table>
 
-        <InputText source="Code" caption="Įmonės kodas:" style="width: 160px;" d:size="100"
-          d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 50px;" />
-        <InputText source="VATCode" caption="PVM kodas:" style="width: 120px;" upperCase="true"
-          d:size="80" d:unit="px" d:rootStyle="position:absolute; left: 290px; top: 50px;" />
-        <InputText source="ExchangeCode" caption="Biržos kodas:" style="width: 120px;" d:size="100"
-          d:unit="px" d:rootStyle="position:absolute; left: 510px; top: 50px;" />
+  <Table >
+    <row>
+      <Label text="=companyCode" style="&lbl1;" />
+      <InputText source="Code" style="width: 200px;" d:size="93" d:unit="px" />
+      <Label text="=companyVATCode" style="&lbl1;" />
+      <InputText source="VATCode" style="width: 120px;" upperCase="true" d:size="78" d:unit="px" />
+      <Label text="=exchangeCode" style="width: 100px; margin-right: 1em; text-align: right" />
+      <InputText source="ExchangeCode" style="width: 140px;" d:size="90" d:unit="px" />
+    </row>
+  </Table> 
       </FlowPanel>
       <xi:include href="widgets/ContactInfo.widget.xml" />
     </VerticalPanel>
 
-    <TabbedPages class="flexible" style="margin-top: 15px;" >
+    <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>
-        <text>Kontaktiniai asmenys</text>
+        <text>=personContacts</text>
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
       <page>
-      	<text>Atsakomybės</text>
+      	<text>=responsibilities</text>
        	<ChildGrid name="CompanyUsers" relColumn="Company" />
       </page>
       <page>
-        <text>Papildoma informacija</text>
+        <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
           <Table>
           	 <row>
-          	   <Label html="Įmonės dydis:" />
+          	   <Label text="=companySize" />
           	   <DataSelector source="CompanySize" style="width: 100px;" />
-          	   <Label html="Informacijos šaltinis:" />
-          	   <DataSelector source="InformationSource"  style="width: 100px;"/>
+          	   <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;" />
+          	   <DataSelector source="InformationSource" style="width: 100px;" />
           	 </row>
           	 <row>
-          	   <Label html="Įmonės veiklos:" />
+          	   <Label text="=companyActivities" style="margin-right: 5px" />
           	   <cell colSpan="3">
                  <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                   label="Įmonės veiklos" />
+                   label="companieActivities" style="width: 338px;" />
           	   </cell>
           	 </row>
           	 <row>
-          	   <Label html="Reitingas:" />
+          	   <Label text="=rating" />
           	   <InputText source="Rating" style="width:100px;" />
           	 </row>
           </Table>
         </FlowPanel>
       </page>
       <page>
-        <text>Sąryšio informacija</text>
+        <text>=relationshipInfo</text>
         <FlowPanel style="margin:5px;">
           <Table>
             <row>
-              <DataSelector source="CompanyRelationType" caption="Sąryšis:" style="width: 75px;"
-               d:size="50" d:unit="px" />
+              <DataSelector source="CompanyRelationType" caption="=relationship" style="width: 75px;"
+               d:size="52" d:unit="px" />
             </row>
             <row>
-              <DataSelector source="CompanyRelationTypeState" caption="Būsena:" style="width: 75px;"
-              d:size="50" d:unit="px" />
+              <DataSelector source="CompanyRelationTypeState" caption="=status" style="width: 75px;"
+              d:size="53" d:unit="px" />
             </row>
           </Table>
         </FlowPanel>
       </page>
       <page>
-        <text>Finansinė informacija</text>
+        <text>=financialInfo</text>
         <FlowPanel>
-          <InputDecimal source="CreditLimit1" caption="Kredito limitas:" style="width: 100px;"
+          <InputDecimal source="CreditLimit1" caption="=creditLimit" style="width: 100px;"
             d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 20px;" />
-          <InputDecimal source="CreditLimit2" caption="Kredito tolerancija:" style="width: 100px;"
-            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 20px;" />
-          <DataSelector source="LimitCurrency" caption="Limito valiuta:" style="width: 40px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 60px;"
+          <InputDecimal source="CreditLimit2" caption="=creditTolerance" style="width: 100px;"
+            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 275px; top: 20px;" />
+          <DataSelector source="LimitCurrency" caption="=limitCurrency" style="width: 40px;"
+            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 45px;"
             editEnabled="false" />
-          <InputInteger source="CreditDays" caption="Kredito dienos:" style="width: 40px;"
-            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 60px;" />
-          <DataSelector source="FinancialState" caption="Mokumas:" style="width: 100px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 100px;" />
+          <InputInteger source="CreditDays" caption="=creditDays" style="width: 40px;"
+            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 275px; top: 45px;" />
+          <DataSelector source="FinancialState" caption="Mokumas" style="width: 145px;"
+            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 70px;" />
         </FlowPanel>
       </page>
       <page>
@@ -101,7 +114,7 @@
         <ChildGrid name="RelatedDocuments" relColumn="Company" />
       </page>
       <page>
-        <text>Pastabos</text>
+        <text>=notes</text>
         <InputArea source="Notes" />
       </page>  
     </TabbedPages>
