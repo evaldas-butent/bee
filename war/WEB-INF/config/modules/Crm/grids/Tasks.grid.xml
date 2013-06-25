@@ -5,7 +5,7 @@
   
   name="Tasks" viewName="Tasks" caption="=tasks"
   cacheData="false" asyncThreshold="-1" favorite="Summary"
-  flexShrink="1"
+  flexShrink="1" order="TaskId desc"
   >
   <columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"

@@ -5,7 +5,7 @@
   
   name="Documents" viewName="Documents" caption="=documents"
   newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1" flexShrink="1" order="DocumentID desc"
   >
   
   <west size="200" splitterSize="2">

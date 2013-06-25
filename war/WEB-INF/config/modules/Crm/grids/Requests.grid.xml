@@ -4,11 +4,11 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="Requests" viewName="Requests" caption="Užklausimai"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1" flexShrink="1" order="RequestID desc"
   >
   <columns>
     <IdColumn name="ID" />
-    <DataColumn name="Date" caption="Data" width="100" />
+    <DataColumn name="Date" caption="Data" width="100"/>
     <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" 
       filterOptions="empty" />
     <RelColumn name="Customer" caption="Klientas" minWidth="100" />
