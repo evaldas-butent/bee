@@ -32,6 +32,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -297,7 +298,7 @@ public class ItemList extends Simple {
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
 
-    InlineLabel currency = new InlineLabel("Lt");
+    InlineLabel currency = new InlineLabel(EcConstants.CURRENCY);
     currency.addStyleName(stylePrefix + "currency");
     panel.add(currency);
 

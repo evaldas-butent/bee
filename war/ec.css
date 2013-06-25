@@ -89,6 +89,7 @@
 
 .bee-ec-FeaturedAndNovelty {
   margin-left: 1em;
+  margin-right: 1em;
   overflow: auto;
 }
 .bee-ec-Featured-label,
@@ -100,11 +101,78 @@
 .bee-ec-Featured-container,
 .bee-ec-Novelty-container {
   border: 5px ridge #ccc;
+  overflow: auto;
 }
+.bee-ec-Featured-table,
+.bee-ec-Novelty-table {
+  border-collapse: collapse;
+}
+.bee-ec-Featured-table td,
+.bee-ec-Novelty-table td {
+  padding: 1ex 3em 1ex 1em;
+}
+
 .bee-ec-Featured-item,
 .bee-ec-Novelty-item {
-  display: inline-block;
-  margin: 10px;
+  position: relative;
+  width: 280px;
+  height: 180px;
+}
+
+.bee-ec-Featured-banner,
+.bee-ec-Novelty-banner {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  background-color: #b00;
+  color: white;
+  font-family: Verdana;
+  font-size: medium;
+  padding: 5px 10px; 
+  transform: rotate(350deg);
+  -webkit-transform: rotate(350deg);
+}
+.bee-ec-Featured-picture,
+.bee-ec-Novelty-picture {
+  position: absolute;
+  top: 60px;
+  left: 0;
+}
+
+.bee-ec-Featured-name,
+.bee-ec-Novelty-name {
+  position: absolute;
+  top: 20px;
+  height: 44px;
+  left: 120px;
+  overflow: hidden;
+  font-size: medium;
+  font-weight: bold;
+}
+.bee-ec-Featured-code,
+.bee-ec-Novelty-code {
+  position: absolute;
+  top: 68px;
+  left: 120px;
+  font-weight: bold;
+}
+.bee-ec-Featured-price,
+.bee-ec-Novelty-price {
+  position: absolute;
+  top: 100px;
+  left: 120px;
+  font-size: medium;
+  font-weight: bold;
+  color: red;
+}
+.bee-ec-Featured-drill,
+.bee-ec-Novelty-drill {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  background-color: #b00;
+  color: white;
+  font-family: Verdana;
 }
 
 .bee-ec-View {

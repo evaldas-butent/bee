@@ -32,6 +32,8 @@ public interface LocalizableEcConstants {
 
   String ecDoSearch();
 
+  String ecFeaturedBanner();
+
   String ecFeaturedItems();
 
   String ecFinancialInformation();
@@ -104,6 +106,8 @@ public interface LocalizableEcConstants {
 
   String ecMaxedOut();
 
+  String ecNoveltyBanner();
+
   String ecNoveltyItems();
 
   String ecOrder();
@@ -155,6 +159,8 @@ public interface LocalizableEcConstants {
   String ecShoppingCartMain();
 
   String ecShoppingCartMainShort();
+
+  String ecShowDetails();
 
   String ecStockAsk();
 

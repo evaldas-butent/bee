@@ -127,6 +127,8 @@ public class EcConstants {
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier"; 
 
   public static final String CATEGORY_SEPARATOR = ","; 
+
+  public static final String CURRENCY = "Lt"; 
   
   private EcConstants() {
   }
