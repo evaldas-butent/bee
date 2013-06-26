@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="AssessmentOrders" viewName="Assessments" caption="Vertinimo užsakymai"
-  flexGrow="1" flexShrink="1" disabledActions="add"
+  flexGrow="1" flexShrink="1" disabledActions="add" order="AssessorID desc"
   >
   <north size="40">
     <w:HorizontalPanel>
