@@ -5,7 +5,6 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<hr/>">
-  <!ENTITY row "display: -webkit-flex;">
 
   <!ENTITY lbl1 "&inline; max-width: 128px;min-width: 110px;  text-align:right; padding-right:8px;  min-height:20px; max-height:20px; padding-top: 1px;">
   <!ENTITY top1 "float: left; text-align:right; padding-right:8px; max-width: 128px; padding-top: 1px;">
@@ -27,7 +26,7 @@
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=taskTemplate" style="&top1;" />
       <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
         newRowEnabled="false" style="&inp2;" />
@@ -35,7 +34,7 @@
       <Radio source="Priority" itemKey="TaskPriority" style="&inp4; min-width:200px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=startingDate" style="&lbl1;" />
       <InputDate name="Start_Date" style="&dateStyle;" />
       <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
@@ -43,7 +42,7 @@
       <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; min-width: 50px;max-width: 50px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=endingDate" style="&lbl1;" />
       <InputDate name="End_Date" style="&dateStyle;" />
       <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
@@ -51,7 +50,7 @@
       <DataSelector source="Company" editPopup="true" style="&inp4; width: 202px;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=taskReminder" style="&lbl1;" />
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
         style="&inp2;" />
@@ -62,18 +61,18 @@
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=taskTheme" class="bee-required" style="&lbl1;min-width:70px;" />
       <InputText source="Summary" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=description" style="&top1; padding-right:12px;" />
       <InputArea source="Description" style="width: 540px; height: 60px;" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section; &row; ">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=documentFiles" style="&top1; min-width:60px;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
@@ -81,44 +80,44 @@
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=taskExecutors" class="bee-required" style="&top1; padding-right:12px;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;"
         label="Vykdytojai" required="true" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=taskObservers" style="&top1; min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=relatedTo" style="&header;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=companies" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=persons" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=appointments" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
-    <FlowPanel style="&section; &row;">
+    <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=tasks" style="&top1;min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
         renderColumns="Summary ExecutorFirstName ExecutorLastName"

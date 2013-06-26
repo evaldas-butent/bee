@@ -5,7 +5,7 @@
   
   name="Theme" viewName="Themes" caption="=colorTheme">
 
-  <FlowPanel style="-webkit -flex">
+  <FlowPanel>
     <Table>
       <row>
         <InputText source="Name" caption="=colorTitle" d:style="padding-right:8px;" style="margin-right:8px;" />

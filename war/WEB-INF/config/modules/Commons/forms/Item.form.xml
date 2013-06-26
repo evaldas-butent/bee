@@ -11,13 +11,13 @@
   name="Item" width="650" height="250"
   >
   <FlowPanel style="margin: 2ex 1em 0 1em;">
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label text="=name" class="bee-required" style="&lbl1;" />
       <InputText source="Name" style="width: 500px;" />
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label text="=article" style="&lbl1;" />
       <InputText source="Article" />
       <Label text="=itemUnits" horizontalAlignment="right" class="bee-required" style="margin-right: 5px; width: 86px; margin-left: 2px;" />
@@ -25,7 +25,7 @@
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label text="=barcode" style="&lbl1;" />
       <InputText source="Barcode" />
       <Label text="=sellingPrice" horizontalAlignment="right" style="&lbl2; margin-left: 15px;" />
@@ -34,13 +34,13 @@
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <CheckBox source="Vat" text="=vat" style="margin-right:13px; margin-left:20px;" />
       <InputDecimal source="VatPercent" caption="%" decorator="caption-right" style="width: 30px; margin-left: 4px;" />
     </FlowPanel>
     &separator;
 
-    <FlowPanel style="&row;">
+    <FlowPanel class="flexBox-horizontal">
       <Label text="=itemCategories" style="&lbl1;" />
       <MultiSelector viewName="CategoryTree" property="CategList" renderColumns="ParentName Name"
         style="width: 500px;" />
