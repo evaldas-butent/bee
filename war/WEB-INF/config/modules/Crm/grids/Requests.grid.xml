@@ -6,6 +6,14 @@
   name="Requests" viewName="Requests" caption="Užklausimai"
   flexGrow="1" flexShrink="1" order="RequestID desc"
   >
+
+  <north size="40">
+    <w:HorizontalPanel style="border-spacing: 8px 0px">
+      <w:CheckBox name="Registred" text="=requestShowRegistered" checked="true"/>
+      <w:CheckBox name="Finished" text="=requestShowFinished" />
+    </w:HorizontalPanel>
+  </north>
+
   <columns>
     <IdColumn name="ID" />
     <DataColumn name="Date" caption="Data" width="100"/>
@@ -22,9 +30,10 @@
     </DataColumn>
 
     <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
+    <DataColumn name="Result" visible="false"/>
   </columns>
   
-  <predefinedFilter name="Executing" label="Vykdomi">
+  <!-- <predefinedFilter name="Executing" label="Vykdomi">
     <column name="Finished" emptyValues="true" />
-  </predefinedFilter>
+  </predefinedFilter> -->
 </Grid>

@@ -10,6 +10,7 @@ import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -66,6 +67,8 @@ public class CrmKeeper {
 
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
     FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
+
+    GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
 
     BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       @Override

@@ -235,6 +235,7 @@ public class CrmConstants {
   public static final String COL_PERSON_COMPANY_NAME = "PersonCompanyName";
 
   public static final String COL_REQUEST = "Request";
+  public static final String COL_REQUEST_DATE = "Date";
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_FINISHED = "Finished";
@@ -261,6 +262,8 @@ public class CrmConstants {
 
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
+
+  public static final String GRID_REQUESTS = "Requests";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";

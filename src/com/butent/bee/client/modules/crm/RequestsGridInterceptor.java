@@ -1,0 +1,75 @@
+package com.butent.bee.client.modules.crm;
+
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.data.filter.ColumnNotEmptyFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
+
+public class RequestsGridInterceptor extends AbstractGridInterceptor {
+  
+  private static final String REGISTRED_WIDGET_NAME = "Registred";
+  private static final String FINISHED_WIDGET_NAME = "Finished";
+
+  private InputBoolean registred = null;
+  private InputBoolean finished = null;
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (widget instanceof InputBoolean) {
+      InputBoolean w = (InputBoolean) widget;
+
+      if (BeeUtils.same(name, REGISTRED_WIDGET_NAME)) {
+        registred = w;
+      } else if (BeeUtils.same(name, FINISHED_WIDGET_NAME)) {
+        finished = w;
+      } else {
+        w = null;
+      }
+      if (w != null) {
+        w.addValueChangeHandler(new ValueChangeHandler<String>() {
+          @Override
+          public void onValueChange(ValueChangeEvent<String> event) {
+            getGridPresenter().handleAction(Action.REFRESH);
+          }
+        });
+      }
+    }
+  }
+
+  @Override
+  public void beforeRefresh(GridPresenter presenter) {
+    presenter.getDataProvider().setParentFilter("CustomFilter", getFilter());
+  }
+
+  @Override
+  public void onShow(GridPresenter presenter) {
+    presenter.handleAction(Action.REFRESH);
+  }
+
+  private Filter getFilter() {
+    Filter filter = null;
+
+    if (registred != null && BooleanValue.unpack(registred.getValue())) {
+      filter = ColumnNotEmptyFilter.notEmpty(CrmConstants.COL_REQUEST_DATE);
+    }
+    if (finished == null || !BooleanValue.unpack(finished.getValue())) {
+      filter = Filter.and(filter, Filter.isEmpty(CrmConstants.COL_REQUEST_FINISHED));
+    }    
+    if (finished != null && BooleanValue.unpack(finished.getValue())) {
+      filter = Filter.or(filter, Filter.isNot(Filter.isEmpty(CrmConstants.COL_REQUEST_FINISHED)));
+    }
+    return filter;
+  }
+}
