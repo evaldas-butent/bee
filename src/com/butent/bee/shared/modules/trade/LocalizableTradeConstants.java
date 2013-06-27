@@ -8,6 +8,8 @@ public interface LocalizableTradeConstants {
   
   String itemCategories();
   
+  String itemCategoryTree();
+
   String itemUnits();
 
   String price();

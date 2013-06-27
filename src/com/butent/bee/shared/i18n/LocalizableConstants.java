@@ -36,6 +36,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String clients();
 
+  String clientStatus();
+
   String closeTab();
 
   String color();
@@ -127,6 +129,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String initialFilter();
 
   String item();
+  
+  String itemCategories();
   
   String length();
 

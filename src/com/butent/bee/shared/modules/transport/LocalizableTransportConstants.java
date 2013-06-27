@@ -142,6 +142,8 @@ public interface LocalizableTransportConstants {
   
   String transportationPrice();
   
+  String transportationServicesTypes();
+
   String transportOrder();
 
   String tripDuration();
