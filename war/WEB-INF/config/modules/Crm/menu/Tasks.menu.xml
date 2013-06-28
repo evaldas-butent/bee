@@ -6,15 +6,12 @@ name="Tasks" label="=tasks" order="30"
   <Item name="Requests" label="Užklausimai" service="grid" parameters="Requests"/>
   <Item name="NewRequest" label="Naujas užklausimas" service="new" parameters="Requests" />
 
-  <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" separator="true" />
+  <Item name="NewTask" label="Nauja užduotis" service="new" parameters="Tasks" separator="true" />
+  <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" />
   <Item name="DelegatedTasks" label="Deleguotos" service="task_list" parameters="d" />
   <Item name="ObservedTasks" label="Stebimos" service="task_list" parameters="o" />
 
   <Item name="AllTasks" label="Užduočių sąrašas" service="task_list" parameters="g" separator="true" />
-
-  <Item name="NewTask" label="Nauja užduotis" service="new" parameters="Tasks" separator="true" />
-
-  <Item name="TaskDurations" label="Registruoti laikai" service="grid" parameters="TaskDurations" separator="true" />
 
 <!--   <Item name="RecurringTasks" label="Periodinės užduotys" service="grid" parameters="RecurringTasks" separator="true" /> -->
 <!--   <Item name="NewRecurringTask" label="Nauja periodinė užduotis" service="new" parameters="RecurringTasks" /> -->

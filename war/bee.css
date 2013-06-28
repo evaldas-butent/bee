@@ -1889,6 +1889,13 @@ body {
   max-height: 100%;
 }
 
+.bee-removeFilter{
+  position: relative;
+  top: -10px;
+  left: -10px;
+  cursor: pointer;
+}
+
 .companyInfo-label, .companyInfo-item {
   display: inline-block;
   margin-right: 4px;
