@@ -14,51 +14,57 @@
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 1ex;">
       <FlowPanel class="flexBox-horizontal">
-        <Label html="Vardas, pavardė:" class="bee-required" style="&lbl;" />
+        <Label text="=driverName" class="bee-required" style="&lbl;" />
         <DataSelector source="CompanyPerson" style="&w2;" 
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 
-        <Label html="Grupės:" class="bee-required" style="&lbl;" />
+        <Label text="=vehicleGroupsShort" class="bee-required" style="&lbl;" />
         <ChildSelector viewName="TransportGroups" childTable="DriverGroups" required="true"
           label="Grupės" />
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label html="Įmonė:" style="&lbl;" />
+        <Label text="=company" class="bee-companyInfo-label" style="&lbl;" />
         <TextLabel source="CompanyName" />
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label html="Pareigos:" style="&lbl;" />
-        <TextLabel source="Position" style="&w2;" />
+        <Label text="=driverPosition" class="bee-companyInfo-label" style="&lbl;" />
+        <TextLabel source="PositionName" style="&w2;" />
 
-        <Label html="Stažas nuo:" style="&lbl;" />
-        <InputDate source="Experience" style="&inpdt;" minValue="1960" />
+        <Label text="=driverExperience" style="&lbl;" />
+        <SimplePanel style="&w2;">
+          <InputDate source="Experience" style="&inpdt;" minValue="1960" />
+        </SimplePanel>
       </FlowPanel>
       &separator;
         
       <FlowPanel class="flexBox-horizontal">
-        <Label html="Telefonai:" style="&lbl;" />
+        <Label text="=phones" class="bee-companyInfo-label" style="&lbl;" />
         <TextLabel source="Phone" style="&w2;" />
 
-        <Label html="El.paštas:" style="&lbl;" />
-        <TextLabel>
-          <renderToken source="Label" suffix=" " />
-          <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
-        </TextLabel>
+
+        <Label text="=driverStartingDate" style="&lbl;" />
+        <SimplePanel style="&w2;">
+          <InputDate source="StartDate" style="&inpdt;" />
+        </SimplePanel>
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label html="Dirba nuo:" style="&lbl;" />
-        <SimplePanel style="&w2;">
-          <InputDate source="StartDate" style="&inpdt;" />
-        </SimplePanel>
+        <Label text="=email" class="bee-companyInfo-label" style="&lbl;" />
+        <TextLabel style="&w2;">
+          <renderToken source="Label" suffix=" " />
+          <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+        </TextLabel>
+      
 
-        <Label html="Atleistas:" style="&lbl;" />
-        <InputDate source="EndDate" style="&inpdt; color: red;" />
+        <Label text="=driverEndingDate" style="&lbl;" />
+        <SimplePanel style="&w2;">
+           <InputDate source="EndDate" style="&inpdt; color: red;" />
+          </SimplePanel>
       </FlowPanel>
       &separator;
     </FlowPanel>
@@ -69,15 +75,15 @@
         <ChildGrid name="RelatedDocuments" relColumn="Driver" />
       </page>
       <page>
-        <text>Reisai</text>
+        <text>=trips</text>
         <ChildGrid name="DriverTrips" relColumn="Driver" />
       </page>
       <page>
-        <text>Nebuvimas darbe</text>
+        <text>=driverAbsence</text>
         <ChildGrid name="DriverAbsence" relColumn="Driver" />
       </page>
       <page>
-        <text>Pastabos</text>
+        <text>=notes</text>
         <InputArea source="Notes" />
       </page>  
     </TabbedPages>

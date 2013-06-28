@@ -1886,6 +1886,10 @@ div:focus,
   content: ":";
 }
 
+.bee-companyInfo-label:after {
+  content: ":";
+}
+
 .companyInfo-name .companyInfo-item {
   font-weight: bold;
 }

@@ -19,13 +19,14 @@
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" />
-
         <SimpleJoin name="Email" joinType="LEFT">
           <SimpleColumn name="Email" />
           <SimpleColumn name="Label" />
         </SimpleJoin>
       </SimpleJoin>
-      <SimpleColumn name="Position" />
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PositionName"/>
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="StartDate" />
