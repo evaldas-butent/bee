@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="Branch" viewName="Branches" caption="=branch"
+  height="300" width="800"
+  >
+  <FlowPanel>
+    <FlowPanel class="flexBox-horizontal-top" style="margin: 2ex 2em;">
+      <Label text="=name" class="bee-required" style="margin-right: 1em;" />
+      <InputText source="Name" style="width: 200px" />
+      <Label text="=description" style="margin-left: 3em; margin-right: 1em;" />
+      <InputArea source="Description" visibleLines="4" style="width: 400px;" />
+    </FlowPanel>
+
+    <xi:include href="widgets/ContactInfo.widget.xml" />
+  </FlowPanel>
+</f:Form>  

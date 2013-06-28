@@ -12,10 +12,11 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class MenuPositionCallback implements PositionCallback {
-  private Element parent = null;
-  private Element item = null;
-  private MenuPopup popup = null;
-  private boolean vertical = false;
+
+  private final Element parent;
+  private final Element item;
+  private final MenuPopup popup;
+  private final boolean vertical;
 
   public MenuPositionCallback(Element parent, Element item, MenuPopup popup,
       boolean vertical) {
@@ -51,5 +52,4 @@ public class MenuPositionCallback implements PositionCallback {
 
     popup.setPopupPosition(x, y);
   }
-
 }

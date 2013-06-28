@@ -11,13 +11,12 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
 
 public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasGridView, Printable,
-    HasCaption, HandlesHistory, HasWidgetSupplier {
+    HandlesHistory, HasWidgetSupplier {
 
   void bind();
 

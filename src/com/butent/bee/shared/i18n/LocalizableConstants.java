@@ -20,11 +20,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String article();
 
+  String branch();
+
   String cancel();
 
   String changedValues();
 
   String changePassword();
+
+  String chief();
 
   String chooseFiles();
 
@@ -39,6 +43,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String clientStatus();
 
   String closeTab();
+
+  String code();
 
   String color();
   
@@ -129,8 +135,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String initialFilter();
 
   String item();
-  
-  String itemCategories();
   
   String length();
 
@@ -260,6 +264,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   
   String volume();
   
+  String warehouse();
+
   String weight();
   
   String width();

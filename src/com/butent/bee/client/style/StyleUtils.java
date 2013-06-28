@@ -343,6 +343,7 @@ public class StyleUtils {
   public static final String NAME_REQUIRED = "bee-required";
   public static final String NAME_HAS_DEFAULTS = "bee-hasDefaults";
   public static final String NAME_RESIZABLE = "bee-resizable";
+  public static final String NAME_FOCUSABLE = "bee-focusable";
 
   public static final String NAME_BOLD = "bee-font-bold";
   public static final String NAME_ITALIC = "bee-font-italic";
@@ -427,7 +428,7 @@ public class StyleUtils {
   private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
   private static String styleTransform = null;
-  
+
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
@@ -438,7 +439,7 @@ public class StyleUtils {
     }
     return cnt;
   }
-  
+
   public static String addClassName(String classes, String className) {
     Assert.notEmpty(className);
     if (BeeUtils.isEmpty(classes)) {
@@ -1072,9 +1073,12 @@ public class StyleUtils {
         continue;
       }
 
-      JsCSSRuleList rules = sheet.getRules();
+      JsCSSRuleList rules = sheet.getCssRules();
       if (rules == null) {
-        continue;
+        rules = sheet.getRules();
+        if (rules == null) {
+          continue;
+        }
       }
 
       for (int j = 0; j < rules.length(); j++) {
@@ -2157,7 +2161,7 @@ public class StyleUtils {
 
     setStyleName(el, primary + BeeConst.CHAR_MINUS + style.trim(), add);
   }
-  
+
   public static void setStyleName(Element el, String st, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(st);
@@ -2517,7 +2521,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     zeroWidth(obj.getElement());
   }
-  
+
   private static String camelize(String name) {
     return NameUtils.camelize(name, NAME_DELIMITER);
   }

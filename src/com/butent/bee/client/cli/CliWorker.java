@@ -1251,6 +1251,11 @@ public class CliWorker {
 
         Printer.print(new Printable() {
           @Override
+          public String getCaption() {
+            return id;
+          }
+
+          @Override
           public Element getPrintElement() {
             return root;
           }
@@ -3179,11 +3184,15 @@ public class CliWorker {
       for (int i = 0; i < sheetCnt; i++) {
         JsCSSStyleSheet sheet = (JsCSSStyleSheet) sheets.item(i);
         if (sheet == null) {
+          PropertyUtils.addExtended(lst, "sheet", i, "null");
           continue;
         }
 
-        JsCSSRuleList rules = sheet.getRules();
-
+        JsCSSRuleList rules = sheet.getCssRules();
+        if (rules == null) {
+          rules = sheet.getRules();
+        }
+        
         int len = (rules == null) ? 0 : rules.length();
         PropertyUtils.addExtended(lst, "sheet " + BeeUtils.progress(i + 1, sheetCnt), "rules", len);
 

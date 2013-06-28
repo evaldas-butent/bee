@@ -8,7 +8,6 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.List;
 
@@ -16,8 +15,8 @@ import java.util.List;
  * Requires implementing classes to have methods for creating forms and getting their content.
  */
 
-public interface FormContainerView extends View, Printable, HasCaption, HasWidgetSupplier,
-    HandlesStateChange, HasDomain {
+public interface FormContainerView extends View, Printable, HasWidgetSupplier, HandlesStateChange,
+    HasDomain {
 
   void bind();
 

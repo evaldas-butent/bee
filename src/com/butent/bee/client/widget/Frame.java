@@ -44,6 +44,10 @@ public class Frame extends Widget implements IdentifiableWidget {
     return ((JsElement) getContentDocument().getBody()).cast();
   }
 
+  public Document getContentDocument() {
+    return getIFrameElement().getContentDocument();
+  }
+  
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -52,6 +56,10 @@ public class Frame extends Widget implements IdentifiableWidget {
   @Override
   public String getIdPrefix() {
     return "frame";
+  }
+
+  public IFrameElement getIFrameElement() {
+    return (JsIFrameElement) getElement().cast();
   }
   
   public void injectStyleSheet(String css) {
@@ -68,7 +76,7 @@ public class Frame extends Widget implements IdentifiableWidget {
     
     head.appendChild(style);
   }
-
+  
   public boolean isEmpty() {
     if (getContentDocument() == null) {
       return true;
@@ -77,7 +85,7 @@ public class Frame extends Widget implements IdentifiableWidget {
     Element body = getBody();
     return body == null || body.getChildCount() <= 0;
   }
-  
+
   public void print() {
     getContentWindow().print();
   }
@@ -103,16 +111,8 @@ public class Frame extends Widget implements IdentifiableWidget {
     getIFrameElement().setSrc(url);
   }
   
-  private Document getContentDocument() {
-    return getIFrameElement().getContentDocument();
-  }
-
   private Window getContentWindow() {
     return getIFrameElement().getContentWindow(); 
-  }
-  
-  private IFrameElement getIFrameElement() {
-    return (JsIFrameElement) getElement().cast();
   }
   
   private void init() {

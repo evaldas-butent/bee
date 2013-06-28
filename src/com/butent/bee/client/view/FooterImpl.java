@@ -67,6 +67,11 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   }
 
   @Override
+  public String getCaption() {
+    return null;
+  }
+
+  @Override
   public int getHeight() {
     return HEIGHT;
   }

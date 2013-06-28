@@ -6,7 +6,6 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.Set;
@@ -15,7 +14,7 @@ import java.util.Set;
  * Contains requirements for data header implementing classes.
  */
 
-public interface HeaderView extends View, IndexedPanel, Printable, HasCaption {
+public interface HeaderView extends View, IndexedPanel, Printable {
 
   void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options,
       Set<Action> enabledActions, Set<Action> disabledActions, Set<Action> hiddenActions);

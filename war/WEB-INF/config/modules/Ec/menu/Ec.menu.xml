@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="Ec" label="=ecMenu" order="100"
+>
+  <Item name="Branches" label="=branches" service="grid" parameters="Branches" />
+  <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses" />
+</Entry>

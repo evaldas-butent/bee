@@ -40,6 +40,18 @@ body {
   -ms-flex-align: center;
 }
 
+.flexBox-horizontal-top {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
 .flexBox-horizontal-space-between {
   display: flex;
   display: -webkit-flex;
@@ -1832,7 +1844,7 @@ body {
   margin: 0;
 }
 
-div:focus,
+.bee-focusable:focus,
 .bee-TextBox:focus,
 .bee-ListBox:focus,
 .bee-InputArea:focus,

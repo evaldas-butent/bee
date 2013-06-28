@@ -112,7 +112,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final CalendarWidget calendar;
   private final Html dateBox;
 
-  private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, Orientation.HORIZONTAL);
+  private final TabBar viewTabs;
   private final List<ViewType> views = Lists.newArrayList();
 
   private final Timer timer;
@@ -169,8 +169,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    int viewIndex = updateViews(settings);
-
+    this.viewTabs = new TabBar(STYLE_VIEW_PREFIX, Orientation.HORIZONTAL);
+    viewTabs.setKeyboardNavigationEnabled(false);
+    
     viewTabs.addSelectionHandler(new SelectionHandler<Integer>() {
       @Override
       public void onSelection(SelectionEvent<Integer> event) {
@@ -250,6 +251,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     updateUcAttendees(ucAttendees, false);
 
+    int viewIndex = updateViews(settings);
     activateView(views.get(viewIndex));
   }
 

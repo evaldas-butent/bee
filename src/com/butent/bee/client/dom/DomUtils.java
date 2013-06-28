@@ -101,11 +101,11 @@ public class DomUtils {
 
   public static final int MAX_GENERATIONS = 1000;
 
+  public static final String ALL_TAGS = "*";
+
   private static final String DEFAULT_NAME_PREFIX = "b";
 
   private static final String ID_SEPARATOR = "-";
-
-  private static final String ALL_TAGS = "*";
 
   private static int idCounter = 0;
 

@@ -49,6 +49,8 @@ public class DialogBox extends Popup implements Printable {
 
   private final Flow container = new Flow();
   private final Flow header = new Flow();
+  
+  private final String caption;
 
   protected DialogBox(String caption) {
     this(caption, null);
@@ -71,6 +73,8 @@ public class DialogBox extends Popup implements Printable {
     header.add(captionWidget);
 
     container.add(header);
+    
+    this.caption = caption;
 
     enableDragging();
   }
@@ -84,6 +88,11 @@ public class DialogBox extends Popup implements Printable {
 
       header.add(widget);
     }
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   @Override

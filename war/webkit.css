@@ -98,7 +98,7 @@ input[type="checkbox"]:checked {
   margin: 0 3px -5px 0;
 }
 
-div:focus,
+.bee-focusable:focus,
 .bee-TextBox:focus,
 .bee-ListBox:focus,
 .bee-InputArea:focus,
@@ -112,5 +112,18 @@ div:focus,
 }
 
 @media print {
-  body {-webkit-print-color-adjust: exact;}
+  body {
+    -webkit-print-color-adjust: exact;
+  }
+  .bee-tr-chart-shipment-day-empty {
+    background-image: none !important;
+    border-top: thick solid white;
+    box-sizing: border-box;    
+  }
+  .bee-tr-dtb-Trip-void,
+  .bee-tr-vtb-Trip-void {
+    background-image: none !important;
+    border: thick solid lightgray;
+    box-sizing: border-box;
+  }
 }

@@ -54,6 +54,7 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -1005,7 +1006,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         item.getElement().getStyle().setColor(fc);
       }
 
-      colorWidget.addItem(item);
+      colorWidget.addItem(item, StyleUtils.NAME_FOCUSABLE);
       colors.add(color);
     }
 

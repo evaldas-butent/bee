@@ -7,7 +7,7 @@
   <!ENTITY separator "<hr/>">
 
   <!ENTITY lbl1 "&inline; max-width: 128px;min-width: 110px;  text-align:right; padding-right:8px;  min-height:20px; max-height:20px; padding-top: 1px;">
-  <!ENTITY top1 "float: left; text-align:right; padding-right:8px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY top1 "text-align: right; padding-right:8px; max-width: 128px; padding-top: 1px;">
   <!ENTITY inp2 "&inline; max-width: 150px; min-width:150px;">
   <!ENTITY inp2x "&inline; width: 540px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 20px;">

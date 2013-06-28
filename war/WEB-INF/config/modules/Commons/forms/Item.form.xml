@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY row "display: -webkit-flex;">
   <!ENTITY separator '<div style="height: 5px; visibility: hidden;"/>'>
   <!ENTITY lbl1 "width: 73px; margin-right: 1em; text-align: right">
   <!ENTITY lbl2 "width: 80px; margin-right: 1em; text-align: right">

@@ -9,7 +9,6 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
@@ -98,7 +97,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
               break;
           }
           
-          if (!BeeConst.isUndef(navigateTo) && navigateTo != index) {
+          if (!BeeConst.isUndef(navigateTo) && navigateTo != index 
+              && isKeyboardNavigationEnabled()) {
             TabBar.this.focusTab(navigateTo);
           }
           break;
@@ -129,6 +129,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   private final String stylePrefix;
 
   private Tab selectedTab = null;
+  
+  private boolean keyboardNavigationEnabled = true;
 
   public TabBar(Orientation orientation) {
     this(DEFAULT_STYLE_PREFIX, orientation);
@@ -166,21 +168,25 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     addItems(Captions.getCaptions(captionKey));
   }
 
-  public void addItem(SafeHtml html) {
-    addItem(html.asString(), true);
-  }
-
   @Override
   public void addItem(String text) {
-    insertTab(text, getItemCount());
+    addItem(text, false);
   }
 
   public void addItem(String text, boolean asHTML) {
-    insertTab(text, asHTML, getItemCount());
+    addItem(text, asHTML, null);
+  }
+
+  public void addItem(String text, boolean asHTML, String styleName) {
+    insertTab(text, asHTML, getItemCount(), styleName);
   }
 
   public void addItem(Widget widget) {
-    insertTab(widget, getItemCount());
+    addItem(widget, null);
+  }
+  
+  public void addItem(Widget widget, String styleName) {
+    insertTab(widget, getItemCount(), styleName);
   }
 
   @Override
@@ -259,11 +265,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
-  public void insertTab(SafeHtml html, int beforeIndex) {
-    insertTab(html.asString(), true, beforeIndex);
-  }
-
-  public void insertTab(String text, boolean asHTML, int beforeIndex) {
+  public void insertTab(String text, boolean asHTML, int beforeIndex, String styleName) {
     checkInsertBeforeTabIndex(beforeIndex);
 
     Label item = new Label();
@@ -274,15 +276,15 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
     
     StyleUtils.setWordWrap(item.getElement(), false);
-    insertTabWidget(item, beforeIndex);
+    insertTabWidget(item, beforeIndex, styleName);
   }
 
   public void insertTab(String text, int beforeIndex) {
-    insertTab(text, false, beforeIndex);
+    insertTab(text, false, beforeIndex, null);
   }
 
-  public void insertTab(Widget widget, int beforeIndex) {
-    insertTabWidget(widget, beforeIndex);
+  public void insertTab(Widget widget, int beforeIndex, String styleName) {
+    insertTabWidget(widget, beforeIndex, styleName);
   }
 
   @Override
@@ -293,6 +295,10 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
+  }
+
+  public boolean isKeyboardNavigationEnabled() {
+    return keyboardNavigationEnabled;
   }
 
   public boolean isTabEnabled(int index) {
@@ -367,7 +373,11 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       addItems(items);
     }
   }
-
+  
+  public void setKeyboardNavigationEnabled(boolean keyboardNavigationEnabled) {
+    this.keyboardNavigationEnabled = keyboardNavigationEnabled;
+  }
+  
   public void setTabEnabled(int index, boolean enabled) {
     checkTabIndex(index, 0);
 
@@ -376,20 +386,24 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     setStyleName(wrapper.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
   }
   
-  protected void insertTabWidget(Widget widget, int beforeIndex) {
+  protected void insertTabWidget(Widget widget, int beforeIndex, String styleName) {
     checkInsertBeforeTabIndex(beforeIndex);
 
     Tab wrapper = new Tab(widget);
     wrapper.addStyleName(stylePrefix + STYLE_ITEM);
     wrapper.addStyleName(getStyle(STYLE_ITEM));
+    
+    if (!BeeUtils.isEmpty(styleName)) {
+      wrapper.addStyleName(styleName);
+    }
 
     panel.insert(wrapper, beforeIndex);
   }
-  
+
   private void checkInsertBeforeTabIndex(int beforeIndex) {
     Assert.betweenInclusive(beforeIndex, 0, getItemCount());
   }
-  
+
   private void checkTabIndex(int index, int min) {
     Assert.betweenExclusive(index, min, getItemCount());
   }

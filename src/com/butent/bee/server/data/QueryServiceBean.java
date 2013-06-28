@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -491,7 +492,12 @@ public class QueryServiceBean {
       String idFld = sys.getIdName(target);
 
       if (si.hasField(idFld)) {
-        id = (Long) si.getValue(idFld).getValue();
+        Object value = si.getValue(idFld).getValue();
+        if (value instanceof Long) {
+          id = (Long) value;
+        } else if (value instanceof Value) {
+          id = ((Value) value).getLong();
+        }
       } else {
         id = ig.getId(target);
         si.addConstant(idFld, id);

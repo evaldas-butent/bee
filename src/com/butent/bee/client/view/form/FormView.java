@@ -27,7 +27,6 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +37,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, DndWidget,
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, DndWidget,
     EditEndEvent.Handler, SaveChangesEvent.Handler, RequiresResize, Printable {
 
   void applyOptions(String options);

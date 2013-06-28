@@ -28,6 +28,11 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   private boolean enabled = true;
 
+  @Override
+  public String getCaption() {
+    return null;
+  }
+
   public HasDataTable getDisplay() {
     return display;
   }
