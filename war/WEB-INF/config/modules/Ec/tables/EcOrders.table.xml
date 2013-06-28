@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="EcOrders"
+  idName="OrderID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=ecOrderDate" />
+    <String name="Number" precision="30" label="=ecOrderNumber" />
+
+    <Integer name="Status" notNull="true" defValue="0" label="=ecOrderStatus" />
+
+    <Relation name="Client" relation="EcClients" notNull="true" label="=ecClient" />
+    <Relation name="Manager" relation="EcManagers" label="=ecManager" />
+
+    <Relation name="DeliveryMethod" relation="DeliveryMethods" label="=ecDeliveryMethod" />
+    <Text name="DeliveryAddress" label="=ecOrderDeliveryAddress" />
+
+    <Boolean name="CopyByMail" label="=ecOrderCopyByMail" />
+
+    <Text name="ClientComment" label="=ecOrderCommentClient" />
+    <Text name="ManagerComment" label="=ecOrderCommentManager" />
+
+    <Relation name="RejectionReason" relation="RejectionReasons" label="=ecRejectionReason" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

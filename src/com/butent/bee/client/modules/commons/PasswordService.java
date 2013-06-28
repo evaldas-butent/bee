@@ -5,7 +5,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.EventUtils;
@@ -14,24 +18,70 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-class PasswordService {
+public class PasswordService {
   
   private static final String STYLE_DIALOG = "bee-ChangePassword";
   private static final int MAX_PASSWORD_LENGTH = 30;
+  
+  public static void change() {
+    final Long userId = BeeKeeper.getUser().getUserId();
+    if (userId == null) {
+      return;
+    }
+    
+    final String viewName = CommonsConstants.VIEW_USERS;
+    final String colName = CommonsConstants.COL_PASSWORD;
+    
+    final int index = Data.getColumnIndex(viewName, colName);
+    if (index < 0) {
+      return; 
+    }
+    
+    Queries.getRow(viewName, userId, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        openDialog(result, index, new Consumer<String>() {
+          @Override
+          public void accept(String input) {
+            Queries.update(viewName, userId, colName, new TextValue(input));
+          }
+        });
+      }
+    });
+  }
 
   static void changePassword(final FormView userForm) {
     Assert.notNull(userForm);
+
+    IsRow row = userForm.getActiveRow();
+    int index = userForm.getDataIndex(CommonsConstants.COL_PASSWORD);
     
-    IsRow userRow = userForm.getActiveRow();
+    openDialog(row, index, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        userForm.updateCell(CommonsConstants.COL_PASSWORD, input);
+      }
+    });
+  }
+  
+  private static boolean isEnter(KeyDownEvent event) {
+    return event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER
+        && !EventUtils.hasModifierKey(event.getNativeEvent());
+  }
+  
+  private static void openDialog(IsRow userRow, int passwordIndex,
+      final Consumer<String> callback) {
+
     Assert.notNull(userRow);
-    
-    int passwordIndex = userForm.getDataIndex(CommonsConstants.COL_PASSWORD);
     Assert.nonNegative(passwordIndex);
 
     final String oldPass = userRow.getString(passwordIndex);
@@ -123,14 +173,8 @@ class PasswordService {
 
       @Override
       public void onSuccess() {
-        userForm.updateCell(CommonsConstants.COL_PASSWORD,
-            Codec.md5(BeeUtils.trim(inpNew.getValue())));
+        callback.accept(Codec.md5(BeeUtils.trim(inpNew.getValue())));
       }
     }, STYLE_DIALOG);
-  }
-  
-  private static boolean isEnter(KeyDownEvent event) {
-    return event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER
-        && !EventUtils.hasModifierKey(event.getNativeEvent());
   }
 }

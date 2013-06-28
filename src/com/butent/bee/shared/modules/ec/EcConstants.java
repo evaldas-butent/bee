@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.HasCaption;
 
 public class EcConstants {
@@ -33,6 +34,48 @@ public class EcConstants {
 
     public String getService() {
       return service;
+    }
+  }
+
+  public enum ClientType implements HasCaption {
+    COMPANY(Localized.constants.ecClientTypeCompany()),
+    PERSON(Localized.constants.ecClientTypePerson());
+    
+    private final String caption;
+
+    private ClientType(String caption) {
+      this.caption = caption;
+    }
+    
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+  
+  public enum EcOrderStatus implements HasCaption {
+    NEW(Localized.constants.ecOrderStatusNew()),
+    ACTIVE(Localized.constants.ecOrderStatusActive()),
+    REJECTED(Localized.constants.ecOrderStatusRejected());
+
+    public static boolean in(int status, TaskStatus... statuses) {
+      for (TaskStatus ts : statuses) {
+        if (ts.ordinal() == status) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private final String caption;
+
+    private EcOrderStatus(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
     }
   }
   

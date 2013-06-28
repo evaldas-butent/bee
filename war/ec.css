@@ -325,7 +325,8 @@
 }
 
 .bee-ec-searchByCar-attribute-disabled {
-  visibility: hidden;
+  opacity: 0.4;
+  cursor: default !important; 
 }
 .bee-ec-searchByCar-attribute-hasValue {
   color: #00d;

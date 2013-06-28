@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.ec.view;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -201,6 +202,18 @@ class SearchByCar extends EcView {
   @Override
   protected String getPrimaryStyle() {
     return "searchByCar";
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        openManufacturers();
+      }
+    });
   }
 
   private String getEngine() {

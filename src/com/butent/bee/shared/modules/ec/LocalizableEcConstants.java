@@ -24,6 +24,10 @@ public interface LocalizableEcConstants {
 
   String ecClientPrice();
 
+  String ecClientTypeCompany();
+
+  String ecClientTypePerson();
+
   String ecContacts();
 
   String ecCreditLimit();
@@ -86,8 +90,6 @@ public interface LocalizableEcConstants {
 
   String ecItemOriginalNumber();
 
-  String ecItemQuantity();
-
   String ecItemSeason();
 
   String ecItemSpeedIndex();
@@ -114,23 +116,23 @@ public interface LocalizableEcConstants {
 
   String ecOrderAmount();
 
-  String ecOrderComment();
-
   String ecOrderDate();
 
   String ecOrderDeliveryAddress();
 
-  String ecOrderDeliveryTerms();
-
   String ecOrderItems();
-
-  String ecOrderManager();
 
   String ecOrderNumber();
 
   String ecOrdersSubmitted();
 
   String ecOrderStatus();
+
+  String ecOrderStatusActive();
+
+  String ecOrderStatusNew();
+  
+  String ecOrderStatusRejected();
 
   String ecOrderSubmissionDate();
 

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="EcRegistrations"
+  idName="RegistrationID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" label="=ecClientRegistrationDate" defExpr="CURRENT_TIME" />
+    <Integer name="Type" notNull="true" label="=ecClientType" />
+
+    <Relation name="Branch" relation="Branches" notNull="true" label="=branch" />
+
+    <String name="CompanyName" precision="100" label="=ecClientCompanyName" />
+    <String name="CompanyCode" precision="30" label="=ecClientCompanyCode" />
+    <String name="VatCode" precision="30" label="=ecClientVatCode" />
+    <Boolean name="VatPayer" label="=ecClientVatPayer" />
+
+    <String name="PersonCode" precision="30" label="=ecClientPersonCode" />
+
+    <String name="FirstName" precision="30" notNull="true" label="=ecClientFirstName" />
+    <String name="LastName" precision="30" notNull="true" label="=ecClientLastName" />
+
+    <String name="Email" precision="255" notNull="true" label="=email" />
+    <String name="Phone" precision="50" notNull="true" label="=phone" />
+    <String name="City" precision="30" notNull="true" label="=city" />
+    <String name="Address" precision="100" notNull="true" label="=address" />
+    <String name="PostIndex" precision="20" notNull="true" label="=postIndex" />
+
+    <String name="Country" precision="60" label="=country" />
+
+    <Text name="Activity" label="=ecClientActivity" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

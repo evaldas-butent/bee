@@ -28,6 +28,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -439,6 +440,13 @@ public class ScreenImpl implements Screen {
     signature.addStyleName("bee-UserSignature");
     userContainer.add(signature);
     setUserSignature(signature);
+    
+    signature.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        PasswordService.change();
+      }
+    });
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");

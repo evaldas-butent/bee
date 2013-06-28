@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="EcClients"
+  idName="ClientID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" unique="true" relation="Users" />
+
+    <DateTime name="Registered" notNull="true" label="=ecClientRegistrationDate" defExpr="CURRENT_TIME" />
+    <Integer name="Type" notNull="true" label="=ecClientType" />
+
+    <Relation name="PrimaryBranch" relation="Branches" notNull="true" label="=ecBranchPrimary" />
+    <Relation name="SecondaryBranch" relation="Branches" label="=ecBranchSecondary" />
+
+    <Relation name="Manager" relation="EcManagers" label="=ecManager" />
+
+    <String name="PersonCode" precision="30" label="=ecClientPersonCode" />
+
+    <Text name="Activity" label="=ecClientActivity" />
+    
+    <Boolean name="CreditLimitWarning" label="=ecClientCreditLimitWarning" />
+    
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

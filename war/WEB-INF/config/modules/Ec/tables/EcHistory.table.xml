@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="EcHistory"
+  idName="HistoryID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+
+    <String name="Service" precision="60" />
+    <String name="Query" precision="60" />
+
+    <Integer name="Count" />
+    <Long name="Duration" />
+  </Fields>
+</Table>

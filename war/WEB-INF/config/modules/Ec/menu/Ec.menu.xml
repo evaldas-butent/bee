@@ -3,6 +3,21 @@
 
 name="Ec" label="=ecMenu" order="100"
 >
-  <Item name="Branches" label="=branches" service="grid" parameters="Branches" />
+  <Item name="EcOrders" label="=ecOrders" service="grid" parameters="EcOrders" />
+
+  <Item name="EcRegistrations" label="=ecRegistrations" service="grid" parameters="EcRegistrations" separator="true" />
+  <Item name="EcClients" label="=ecClients" service="grid" parameters="EcClients" />
+
+  <Item name="EcManagers" label="=ecManagers" service="grid" parameters="EcManagers" separator="true" />
+
+  <Item name="Branches" label="=branches" service="grid" parameters="Branches" separator="true" />
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses" />
+
+  <Item name="DeliveryMethods" label="=ecDeliveryMethods" service="grid" parameters="DeliveryMethods" separator="true" />
+  <Item name="RejectionReasons" label="=ecRejectionReasons" service="grid" parameters="RejectionReasons" />
+
+  <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory" separator="true" />
+
+  <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="form" parameters="TermsOfDelivery" separator="true" />
+  <Item name="EcContacts" label="=ecContacts" service="form" parameters="EcContacts" />
 </Entry>

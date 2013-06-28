@@ -201,6 +201,9 @@ body {
   max-height: 30px;
   cursor: default;
 }
+.bee-UserSignature {
+  cursor: pointer;
+}
 .bee-UserExitContainer {
   width: 20px;
   height: 27px;
