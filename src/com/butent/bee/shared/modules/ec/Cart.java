@@ -1,0 +1,185 @@
+package com.butent.bee.shared.modules.ec;
+
+import com.google.common.collect.Lists;
+
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+
+import java.util.List;
+
+public class Cart implements BeeSerializable {
+
+  private enum Serial {
+    DELIVERY_ADDRESS, DELIVERY_METHOD, COPY_BY_MAIL, COMMENT, ITEMS
+  }
+
+  public static Cart restore(String s) {
+    Cart cart = new Cart();
+    cart.deserialize(s);
+    return cart;
+  }
+
+  private String deliveryAddress = null;
+  private Long deliveryMethod = null;
+
+  private Boolean copyByMail = null;
+
+  private String comment = null;
+
+  private final List<CartItem> items = Lists.newArrayList();
+
+  public Cart() {
+    super();
+  }
+
+  public void add(EcItem ecItem, int quantity) {
+    if (ecItem != null && quantity > 0) {
+      CartItem item = getItem(ecItem.getId());
+
+      if (item == null) {
+        items.add(new CartItem(ecItem, quantity));
+      } else {
+        item.add(quantity);
+      }
+    }
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      Serial member = members[i];
+      String value = arr[i];
+
+      switch (member) {
+        case DELIVERY_ADDRESS:
+          setDeliveryAddress(value);
+          break;
+
+        case DELIVERY_METHOD:
+          setDeliveryMethod(BeeUtils.toLongOrNull(value));
+          break;
+
+        case COPY_BY_MAIL:
+          setCopyByMail(BeeUtils.toBooleanOrNull(value));
+          break;
+
+        case COMMENT:
+          setComment(value);
+          break;
+
+        case ITEMS:
+          items.clear();
+          String[] itemArr = Codec.beeDeserializeCollection(value);
+          if (itemArr != null) {
+            for (String it : itemArr) {
+              items.add(CartItem.restore(it));
+            }
+          }
+          break;
+      }
+    }
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public Boolean getCopyByMail() {
+    return copyByMail;
+  }
+
+  public String getDeliveryAddress() {
+    return deliveryAddress;
+  }
+
+  public Long getDeliveryMethod() {
+    return deliveryMethod;
+  }
+
+  public List<CartItem> getItems() {
+    return items;
+  }
+
+  public boolean isEmpty() {
+    return items.isEmpty();
+  }
+
+  @Override
+  public String serialize() {
+    Serial[] members = Serial.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
+
+    for (Serial member : members) {
+      switch (member) {
+        case DELIVERY_ADDRESS:
+          arr[i++] = getDeliveryAddress();
+          break;
+
+        case DELIVERY_METHOD:
+          arr[i++] = getDeliveryMethod();
+          break;
+
+        case COPY_BY_MAIL:
+          arr[i++] = getCopyByMail();
+          break;
+
+        case COMMENT:
+          arr[i++] = getComment();
+          break;
+
+        case ITEMS:
+          arr[i++] = items;
+          break;
+      }
+    }
+    return Codec.beeSerialize(arr);
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public void setCopyByMail(Boolean copyByMail) {
+    this.copyByMail = copyByMail;
+  }
+
+  public void setDeliveryAddress(String deliveryAddress) {
+    this.deliveryAddress = deliveryAddress;
+  }
+
+  public void setDeliveryMethod(Long deliveryMethod) {
+    this.deliveryMethod = deliveryMethod;
+  }
+
+  public int totalCents() {
+    int total = 0;
+    for (CartItem item : items) {
+      total += item.getQuantity() * item.getEcItem().getPrice();
+    }
+    return total;
+  }
+  
+  public int totalQuantity() {
+    int total = 0;
+    for (CartItem item : items) {
+      total += item.getQuantity();
+    }
+    return total;
+  }
+  
+  private CartItem getItem(int id) {
+    for (CartItem item : items) {
+      if (item.getEcItem().getId() == id) {
+        return item;
+      }
+    }
+    return null;
+  }
+}

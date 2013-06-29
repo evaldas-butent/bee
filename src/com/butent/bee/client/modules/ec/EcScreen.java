@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,7 +14,6 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
@@ -25,7 +23,6 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
@@ -33,10 +30,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.EnumMap;
 
 import elemental.events.KeyboardEvent.KeyCode;
 
@@ -74,25 +68,11 @@ public class EcScreen extends ScreenImpl {
     }
   }
 
-  private static final int CART_COL_CAPTION = 0;
-  private static final int CART_COL_SIZE = 1;
-  private static final int CART_COL_ACTIVE = 2;
-
   private InputText searchBox = null;
   private CommandWidget activeCommand = null;
 
-  private final EnumMap<CartType, Integer> cartSize;
-  private CartType activeCart = CartType.MAIN;
-
-  private HtmlTable cartTable = null;
-
   public EcScreen() {
     super();
-
-    this.cartSize = Maps.newEnumMap(CartType.class);
-    for (CartType cartType : CartType.values()) {
-      cartSize.put(cartType, 0);
-    }
   }
 
   @Override
@@ -106,15 +86,6 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-  }
-
-  public void addToCart(int count) {
-    CartType cartType = getActiveCart();
-
-    int size = cartSize.get(cartType) + count;
-    cartSize.put(cartType, size);
-
-    getCartTable().setText(cartType.ordinal(), CART_COL_SIZE, renderCartSize(cartType));
   }
 
   @Override
@@ -239,26 +210,6 @@ public class EcScreen extends ScreenImpl {
     return Pair.of(wrapper, 200);
   }
 
-  private HtmlTable createCartTable() {
-    String style = "cartTable";
-    HtmlTable table = new HtmlTable();
-    EcStyles.add(table, style);
-
-    for (CartType cartType : CartType.values()) {
-      int row = cartType.ordinal();
-      
-      Label label = new Label(cartType.getLabel());
-      table.setWidgetAndStyle(row, CART_COL_CAPTION, label, EcStyles.name(style, "label"));
-
-      table.setText(row, CART_COL_SIZE, renderCartSize(cartType));
-    }
-
-    renderCartActivity(table);
-
-    setCartTable(table);
-    return table;
-  }
-
   private void createCommands(HasWidgets container) {
     String panelStyle = "commandPanel";
 
@@ -317,8 +268,7 @@ public class EcScreen extends ScreenImpl {
 
     container.add(searchOther);
 
-    HtmlTable carts = createCartTable();
-    container.add(carts);
+    container.add(EcKeeper.getCartlist());
   }
 
   private Widget createCommandWidget(String service, String html) {
@@ -368,78 +318,16 @@ public class EcScreen extends ScreenImpl {
     }
   }
 
-  private CartType getActiveCart() {
-    return activeCart;
-  }
-
   private CommandWidget getActiveCommand() {
     return activeCommand;
-  }
-
-  private HtmlTable getCartTable() {
-    return cartTable;
   }
 
   private InputText getSearchBox() {
     return searchBox;
   }
 
-  private Widget renderActiveCart() {
-    Image image = new Image("images/shopping_cart.png");
-    image.setAlt("cart");
-
-    return image;
-  }
-
-  private void renderCartActivity(HtmlTable table) {
-    String activeRowStyle = EcStyles.name("cartRowActive");
-    String inactiveRowStyle = EcStyles.name("cartRowInactive");
-
-    for (CartType cartType : CartType.values()) {
-      int row = cartType.ordinal();
-
-      if (getActiveCart() == cartType) {
-        table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderActiveCart(),
-            EcStyles.name("cartActive"));
-        table.getRowFormatter().removeStyleName(row, inactiveRowStyle);
-        table.getRowFormatter().addStyleName(row, activeRowStyle);
-
-      } else {
-        table.setWidgetAndStyle(row, CART_COL_ACTIVE, renderInactiveCart(cartType),
-            EcStyles.name("cartInactive"));
-        table.getRowFormatter().removeStyleName(row, activeRowStyle);
-        table.getRowFormatter().addStyleName(row, inactiveRowStyle);
-      }
-    }
-  }
-
-  private String renderCartSize(CartType cartType) {
-    return BeeUtils.parenthesize(cartSize.get(cartType));
-  }
-
-  private Widget renderInactiveCart(final CartType cartType) {
-    CustomDiv widget = new CustomDiv();
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        setActiveCart(cartType);
-        renderCartActivity(getCartTable());
-      }
-    });
-
-    return widget;
-  }
-
-  private void setActiveCart(CartType activeCart) {
-    this.activeCart = activeCart;
-  }
-
   private void setActiveCommand(CommandWidget activeCommand) {
     this.activeCommand = activeCommand;
-  }
-
-  private void setCartTable(HtmlTable cartTable) {
-    this.cartTable = cartTable;
   }
 
   private void setSearchBox(InputText searchBox) {

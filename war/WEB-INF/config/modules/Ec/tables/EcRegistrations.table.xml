@@ -13,7 +13,6 @@
     <String name="CompanyName" precision="100" label="=ecClientCompanyName" />
     <String name="CompanyCode" precision="30" label="=ecClientCompanyCode" />
     <String name="VatCode" precision="30" label="=ecClientVatCode" />
-    <Boolean name="VatPayer" label="=ecClientVatPayer" />
 
     <String name="PersonCode" precision="30" label="=ecClientPersonCode" />
 

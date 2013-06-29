@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
@@ -29,6 +30,12 @@ public class EcKeeper {
   
   private static final EcData data = new EcData(); 
 
+  private static final CartList cartList = new CartList(); 
+
+  public static void addToCart(EcItem ecItem, int quantity) {
+    cartList.addToCart(ecItem, quantity);
+  }
+  
   public static Tree buildCategoryTree(Collection<Integer> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
@@ -188,6 +195,10 @@ public class EcKeeper {
         }
       }
     });
+  }
+
+  static CartList getCartlist() {
+    return cartList;
   }
 
   private EcKeeper() {

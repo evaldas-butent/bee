@@ -15,7 +15,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcKeeper;
-import com.butent.bee.client.modules.ec.EcScreen;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.tree.Tree;
@@ -277,7 +276,7 @@ public class ItemList extends Simple {
       table.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
     }
 
-    Widget qty = renderQuantity(1);
+    Widget qty = renderQuantity(item, 1);
     if (qty != null) {
       table.setWidgetAndStyle(row, COL_QUANTITY, qty, STYLE_QUANTITY);
     }
@@ -294,7 +293,7 @@ public class ItemList extends Simple {
 
     Flow panel = new Flow();
     
-    InlineLabel value = new InlineLabel(EcUtils.renderPrice(price));
+    InlineLabel value = new InlineLabel(EcUtils.renderCents(price));
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
 
@@ -305,7 +304,7 @@ public class ItemList extends Simple {
     return panel;
   }
   
-  private Widget renderQuantity(int quantity) {
+  private Widget renderQuantity(final EcItem item, int quantity) {
     String stylePrefix = STYLE_QUANTITY + "-";
 
     Horizontal panel = new Horizontal();
@@ -349,8 +348,8 @@ public class ItemList extends Simple {
       @Override
       public void onClick(ClickEvent event) {
         int value = input.getIntValue();
-        if (value > 0 && BeeKeeper.getScreen() instanceof EcScreen) {
-          ((EcScreen) BeeKeeper.getScreen()).addToCart(value);
+        if (value > 0) {
+          EcKeeper.addToCart(item, value);
           input.setValue(0);
         }
       }

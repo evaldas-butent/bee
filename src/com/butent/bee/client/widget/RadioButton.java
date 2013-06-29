@@ -14,7 +14,7 @@ public class RadioButton extends CheckBox {
 
   private Boolean oldValue;
 
-  private RadioButton(String name) {
+  public RadioButton(String name) {
     super(Document.get().createRadioInputElement(name));
 
     sinkEvents(Event.ONCLICK | Event.ONMOUSEUP | Event.ONBLUR | Event.ONKEYDOWN);

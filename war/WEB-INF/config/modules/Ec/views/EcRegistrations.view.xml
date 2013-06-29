@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcRegistrations" source="EcRegistrations" caption="=ecRegistrations"
+  editForm="EcRegistration"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Type" />
+
+    <SimpleColumn name="Branch" />
+    <SimpleJoin joinType="LEFT" name="Branch">
+      <SimpleColumn alias="BranchName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CompanyName" />
+    <SimpleColumn name="CompanyCode" />
+    <SimpleColumn name="VatCode" />
+
+    <SimpleColumn name="PersonCode" />
+
+    <SimpleColumn name="FirstName" />
+    <SimpleColumn name="LastName" />
+
+    <SimpleColumn name="Email" />
+    <SimpleColumn name="Phone" />
+
+    <SimpleColumn name="City" />
+    <SimpleColumn name="Address" />
+    <SimpleColumn name="PostIndex" />
+
+    <SimpleColumn name="Country" />
+
+    <SimpleColumn name="Activity" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

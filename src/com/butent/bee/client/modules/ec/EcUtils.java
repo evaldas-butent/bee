@@ -67,13 +67,13 @@ public class EcUtils {
     return widget;
   }
   
-  public static String renderPrice(int price) {
-    if (price > 0) {
-      String s = BeeUtils.toLeadingZeroes(price, 3);
+  public static String renderCents(int cents) {
+    if (cents >= 0) {
+      String s = BeeUtils.toLeadingZeroes(cents, 3);
       int len = s.length();
       return s.substring(0, len - 2) + BeeConst.STRING_POINT + s.substring(len - 2);
     } else {
-      return BeeConst.STRING_EMPTY;
+      return BeeConst.STRING_MINUS + renderCents(-cents);
     }
   }
   

@@ -162,6 +162,8 @@ public interface LocalizableEcConstants {
 
   String ecShoppingCartMainShort();
 
+  String ecShoppingCartTotal();
+
   String ecShowDetails();
 
   String ecStockAsk();

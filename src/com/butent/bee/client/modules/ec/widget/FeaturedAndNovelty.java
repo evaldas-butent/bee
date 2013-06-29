@@ -113,7 +113,7 @@ public class FeaturedAndNovelty extends Flow {
     int price = item.getPrice();
     if (price > 0) {
       String priceInfo = BeeUtils.joinWords(Localized.constants.price() + BeeConst.STRING_COLON,
-          EcUtils.renderPrice(price), EcConstants.CURRENCY);
+          EcUtils.renderCents(price), EcConstants.CURRENCY);
       Label itemPrice = new Label(priceInfo);
       EcStyles.add(itemPrice, primaryStyle, STYLE_PRICE);
       panel.add(itemPrice);
