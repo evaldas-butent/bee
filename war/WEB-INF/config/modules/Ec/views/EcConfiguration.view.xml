@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcConfiguration" source="EcConfiguration"
+  >
+  <Columns>
+    <SimpleColumn name="TodShow" />
+    <SimpleColumn name="TodUrl" />
+    <SimpleColumn name="TodHtml" />
+
+    <SimpleColumn name="ContactsShow" />
+    <SimpleColumn name="ContactsUrl" />
+    <SimpleColumn name="ContactsHtml" />
+  </Columns>
+</View>

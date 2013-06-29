@@ -136,6 +136,8 @@ public class UiServiceBean {
       response = doSql(reqInfo);
     } else if (BeeUtils.same(svc, Service.QUERY)) {
       response = getViewData(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_VALUE)) {
+      response = getValue(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_DATA)) {
       response = getData(reqInfo);
 
@@ -561,6 +563,25 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.response(info);
+  }
+
+  private ResponseObject getValue(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+
+    Filter filter = ComparisonFilter.compareId(BeeUtils.toLong(rowId));
+
+    BeeRowSet rowSet = qs.getViewData(viewName, filter, null, BeeConst.UNDEF, BeeConst.UNDEF,
+        Lists.newArrayList(column));
+
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.response(null, String.class).addWarning("row not found", viewName,
+          rowId);
+    } else {
+      String value = rowSet.getString(0, column);
+      return ResponseObject.response(value, String.class);
+    }
   }
 
   private ResponseObject getViewData(RequestInfo reqInfo) {

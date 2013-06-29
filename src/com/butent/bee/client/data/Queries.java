@@ -173,7 +173,7 @@ public class Queries {
   public static void deleteRow(String viewName, long rowId) {
     delete(viewName, ComparisonFilter.compareId(rowId), null);
   }
-  
+
   public static void deleteRow(String viewName, long rowId, long version) {
     deleteRow(viewName, rowId, version, null);
   }
@@ -471,6 +471,27 @@ public class Queries {
     return getRowSet(viewName, columns, null, null, callback);
   }
 
+  public static void getValue(final String viewName, long rowId, String column,
+      final Callback<String> callback) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(column);
+    Assert.notNull(callback);
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_ROW_ID, BeeUtils.toString(rowId), Service.VAR_COLUMN, column);
+
+    ParameterList params = new ParameterList(Service.GET_VALUE, RpcParameter.Section.QUERY, lst);
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.GET_VALUE, viewName, response, String.class, callback)) {
+          callback.onSuccess(response.getResponseAsString());
+        }
+      }
+    });
+  }
+
   public static int insert(String viewName, List<BeeColumn> columns, IsRow row,
       RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -492,14 +513,14 @@ public class Queries {
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values) {
     insert(viewName, columns, values, null, null);
   }
-  
+
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values,
       Collection<RowChildren> children, final RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(columns);
     Assert.notEmpty(values);
     Assert.isTrue(columns.size() == values.size());
-    
+
     BeeRow row = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
     if (!BeeUtils.isEmpty(children)) {
       row.setChildren(children);
@@ -523,7 +544,7 @@ public class Queries {
   public static void update(String viewName, long rowId, String column, Value value) {
     update(viewName, ComparisonFilter.compareId(rowId), column, value, null);
   }
-  
+
   public static void update(final String viewName, Filter filter, String column, Value value,
       final IntCallback callback) {
     Assert.notEmpty(viewName);
@@ -557,7 +578,7 @@ public class Queries {
     Assert.notNull(newRow);
 
     BeeRowSet rs = DataUtils.getUpdated(viewName, columns, oldRow, newRow, children);
-    
+
     if (!DataUtils.isEmpty(rs)) {
       updateRow(rs, callback);
       return rs.getNumberOfColumns();
@@ -565,7 +586,7 @@ public class Queries {
     } else if (!BeeUtils.isEmpty(children)) {
       updateChildren(viewName, oldRow.getId(), children, callback);
       return children.size();
-      
+
     } else {
       return 0;
     }
@@ -574,12 +595,12 @@ public class Queries {
   public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, Collection<RowChildren> children,
       RowCallback callback) {
-    
+
     if (BeeUtils.isEmpty(columns) && !BeeUtils.isEmpty(children)) {
       updateChildren(viewName, rowId, children, callback);
       return;
     }
-    
+
     Assert.notEmpty(viewName);
     Assert.notNull(columns);
     Assert.notNull(oldValues);
@@ -608,7 +629,7 @@ public class Queries {
   public static void updateCell(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.UPDATE_CELL, rowSet, callback);
   }
-  
+
   public static void updateChildren(final String viewName, long rowId,
       Collection<RowChildren> children, final RowCallback callback) {
 
@@ -619,7 +640,7 @@ public class Queries {
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_ROW_ID, rowId, Service.VAR_CHILDREN, Codec.beeSerialize(children));
 
-    ParameterList parameters = new ParameterList(Service.UPDATE_RELATED_VALUES, 
+    ParameterList parameters = new ParameterList(Service.UPDATE_RELATED_VALUES,
         RpcParameter.Section.DATA, lst);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {

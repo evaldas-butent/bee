@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="RejectionReasons" source="RejectionReasons"
+  caption="=ecRejectionReasons" newRowCaption="=ecRejectionReasonNew"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

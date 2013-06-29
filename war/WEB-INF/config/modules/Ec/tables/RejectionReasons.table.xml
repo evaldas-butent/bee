@@ -6,5 +6,6 @@
   >
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="=ecRejectionReason" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

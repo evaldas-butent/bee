@@ -54,6 +54,7 @@ public class Service {
   public static final String MAIL = DATA_SERVICE_PREFIX + "mail";
   public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
   public static final String QUERY = DATA_SERVICE_PREFIX + "query";
+  public static final String GET_VALUE = DATA_SERVICE_PREFIX + "get_value";
   public static final String GET_DATA = DATA_SERVICE_PREFIX + "get_data";
   public static final String GET_DATA_INFO = DATA_SERVICE_PREFIX + "data_info";
   public static final String GET_VIEW_INFO = DATA_SERVICE_PREFIX + "view_info";

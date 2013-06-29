@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="RejectionReasons" viewName="RejectionReasons" caption="=ecRejectionReasons"
+  flexGrow="1" flexShrink="1"
+  >
+  <body height="50" />
+  <columns>
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Notes" flexShrink="2" />
+  </columns>
+</Grid>

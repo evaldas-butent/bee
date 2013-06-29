@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="EcConfiguration"
+  idName="ConfigurationID"
+  >
+  <Fields>
+    <Integer name="TodShow" />
+    <String name="TodUrl" precision="200" />
+    <Text name="TodHtml" />
+
+    <Integer name="ContactsShow" />
+    <String name="ContactsUrl" precision="200" />
+    <Text name="ContactsHtml" />
+  </Fields>
+</Table>
