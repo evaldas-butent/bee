@@ -10,6 +10,8 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages {
 
   String allValuesIdentical(String label, String value, String count);
 
+  String dataNotAvailable(String key);
+
   String endSession(String appName);
   
   String fileSizeExceeded(long size, long max);

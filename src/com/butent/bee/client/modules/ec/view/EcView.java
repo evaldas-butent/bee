@@ -5,7 +5,6 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 
 public abstract class EcView extends Flow {
 
@@ -34,14 +33,6 @@ public abstract class EcView extends Flow {
       ecView = new GeneralItems();
     } else if (EcConstants.SVC_BIKE_ITEMS.equals(service)) {
       ecView = new BikeItems();
-
-    } else {
-      for (CartType cartType : CartType.values()) {
-        if (cartType.getService().equals(service)) {
-          ecView = new ShoppingCart(cartType);
-          break;
-        }
-      }
     }
 
     if (ecView != null) {

@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -13,18 +11,15 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
@@ -35,41 +30,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import elemental.events.KeyboardEvent.KeyCode;
 
 public class EcScreen extends ScreenImpl {
-
-  private class CommandWidget {
-
-    private static final String STYLE_NAME = "Command";
-    private static final String STYLE_ACTIVE = "active";
-
-    private final String service;
-    private final Widget widget;
-
-    private CommandWidget(String service, String html) {
-      this.service = service;
-      this.widget = new InternalLink(html);
-
-      EcStyles.add(widget, STYLE_NAME);
-      EcStyles.add(widget, STYLE_NAME, service);
-
-      Binder.addClickHandler(widget, new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          doCommand(CommandWidget.this);
-        }
-      });
-    }
-
-    private void activate() {
-      EcStyles.add(widget, STYLE_NAME, STYLE_ACTIVE);
-    }
-
-    private void deactivate() {
-      EcStyles.remove(widget, STYLE_NAME, STYLE_ACTIVE);
-    }
-  }
-
-  private InputText searchBox = null;
-  private CommandWidget activeCommand = null;
 
   public EcScreen() {
     super();
@@ -117,10 +77,7 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void onLoad() {
-    if (getSearchBox() != null) {
-      getSearchBox().setFocus(true);
-    }
-
+    EcKeeper.getSearchBox().setFocus(true);
     EcKeeper.showFeaturedAndNoveltyItems();
   }
 
@@ -272,12 +229,13 @@ public class EcScreen extends ScreenImpl {
   }
 
   private Widget createCommandWidget(String service, String html) {
-    CommandWidget commandWidget = new CommandWidget(service, html);
-    return commandWidget.widget;
+    EcCommandWidget commandWidget = new EcCommandWidget(service, html);
+    return commandWidget.getWidget();
   }
 
   private Widget createGlobalSearch() {
-    final InputText input = new InputText();
+    final InputText input = EcKeeper.getSearchBox();
+
     DomUtils.setSearch(input);
     DomUtils.setPlaceholder(input, Localized.constants.ecGlobalSearchPlaceholder());
     EcStyles.add(input, "GlobalSearchBox");
@@ -297,40 +255,6 @@ public class EcScreen extends ScreenImpl {
     Simple container = new Simple(input);
     EcStyles.add(container, "GlobalSearchContainer");
 
-    setSearchBox(input);
-
     return container;
-  }
-
-  private void doCommand(CommandWidget commandWidget) {
-    EcView ecView = EcView.create(commandWidget.service);
-    if (ecView != null) {
-      updateActivePanel(ecView);
-    }
-
-    if (getActiveCommand() == null || !getActiveCommand().service.equals(commandWidget.service)) {
-      if (getActiveCommand() != null) {
-        getActiveCommand().deactivate();
-      }
-
-      setActiveCommand(commandWidget);
-      getActiveCommand().activate();
-    }
-  }
-
-  private CommandWidget getActiveCommand() {
-    return activeCommand;
-  }
-
-  private InputText getSearchBox() {
-    return searchBox;
-  }
-
-  private void setActiveCommand(CommandWidget activeCommand) {
-    this.activeCommand = activeCommand;
-  }
-
-  private void setSearchBox(InputText searchBox) {
-    this.searchBox = searchBox;
   }
 }

@@ -3,12 +3,16 @@ package com.butent.bee.client.modules.ec.widget;
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.Label;
@@ -63,6 +67,12 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
       setWidgetAndStyle(row, COL_ACTIVATE, activity, STYLE_ACTIVATE);
 
       Label label = new Label(cartType.getLabel());
+      label.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          onLabelClick(event);
+        }
+      });
       setWidgetAndStyle(row, COL_LABEL, label, STYLE_LABEL);
 
       Label info = new Label(renderInfo(cart));
@@ -78,22 +88,24 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
       row++;
     }
   }
-
+  
   public void addToCart(EcItem ecItem, int quantity) {
     CartType cartType = getActiveCartType();
     carts.get(cartType).add(ecItem, quantity);
-    
+
     refresh(cartType);
   }
   
+  public Cart getCart(CartType cartType) {
+    return carts.get(cartType);
+  }
+
   @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
-    if (event.getSource() instanceof Widget && BeeUtils.isTrue(event.getValue())) {
-      TableRowElement rowElement =
-          DomUtils.getParentRow(((Widget) event.getSource()).getElement(), false);
+    if (BeeUtils.isTrue(event.getValue())) {
+      Integer newRow = getEventRow(event);
 
-      if (rowElement != null) {
-        int newRow = rowElement.getRowIndex();
+      if (newRow != null) {
         CartType newType = typesToRows.inverse().get(newRow);
 
         if (newType != null && newType != getActiveCartType()) {
@@ -113,13 +125,41 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   public void refresh(CartType cartType) {
     updateInfo(cartType);
     updateTitle(cartType);
-    
+
     getRowFormatter().setStyleName(typesToRows.get(cartType), STYLE_HAS_ITEMS,
         !carts.get(cartType).isEmpty());
   }
 
+  public boolean removeFromCart(CartType cartType, EcItem ecItem) {
+    if (cartType != null && carts.get(cartType).remove(ecItem)) {
+      refresh(cartType);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   private CartType getActiveCartType() {
     return activeCartType;
+  }
+
+  private Integer getEventRow(GwtEvent<?> event) {
+    if (event.getSource() instanceof Widget) {
+      TableRowElement rowElement =
+          DomUtils.getParentRow(((Widget) event.getSource()).getElement(), false);
+
+      if (rowElement != null) {
+        return rowElement.getRowIndex();
+      }
+    }
+    return null;
+  }
+
+  private void onLabelClick(ClickEvent event) {
+    CartType type = typesToRows.inverse().get(getEventRow(event));
+    if (type != null && !getCart(type).isEmpty()) {
+      EcKeeper.openCart(type);
+    }
   }
 
   private String renderInfo(Cart cart) {

@@ -14,7 +14,7 @@
     <Relation name="Manager" relation="EcManagers" label="=ecManager" />
 
     <Relation name="DeliveryMethod" relation="DeliveryMethods" label="=ecDeliveryMethod" />
-    <Text name="DeliveryAddress" label="=ecOrderDeliveryAddress" />
+    <Text name="DeliveryAddress" label="=ecDeliveryAddress" />
 
     <Boolean name="CopyByMail" label="=ecOrderCopyByMail" />
 

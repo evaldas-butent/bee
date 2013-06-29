@@ -16,6 +16,7 @@ import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
@@ -40,6 +41,8 @@ class EcData {
   private final Map<Integer, Integer> categoryByChild = Maps.newHashMap();
 
   private final List<String> itemManufacturers = Lists.newArrayList();
+
+  private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
 
   EcData() {
     super();
@@ -212,6 +215,32 @@ class EcData {
     }
 
     return names;
+  }
+
+  void getDeliveryMethods(final Consumer<List<DeliveryMethod>> callback) {
+    if (!deliveryMethods.isEmpty()) {
+      callback.accept(deliveryMethods);
+
+    } else {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_DELIVERY_METHODS);
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            deliveryMethods.clear();
+            for (String s : arr) {
+              deliveryMethods.add(DeliveryMethod.restore(s));
+            }
+
+            callback.accept(deliveryMethods);
+          }
+        }
+      });
+    }
   }
   
   void getItemManufacturers(final Consumer<List<String>> callback) {

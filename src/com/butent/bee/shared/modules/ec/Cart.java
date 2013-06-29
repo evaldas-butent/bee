@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class Cart implements BeeSerializable {
@@ -45,7 +46,7 @@ public class Cart implements BeeSerializable {
       }
     }
   }
-
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -108,6 +109,18 @@ public class Cart implements BeeSerializable {
 
   public boolean isEmpty() {
     return items.isEmpty();
+  }
+
+  public boolean remove(EcItem ecItem) {
+    for (Iterator<CartItem> it = items.iterator(); it.hasNext();) {
+      CartItem item = it.next();
+      
+      if (item.getEcItem().equals(ecItem)) {
+        it.remove();
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

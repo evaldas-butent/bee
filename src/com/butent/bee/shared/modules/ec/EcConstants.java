@@ -6,53 +6,46 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.HasCaption;
 
 public class EcConstants {
-  
+
   public enum CartType implements HasCaption {
-    MAIN(Localized.constants.ecShoppingCartMain(),
-        Localized.constants.ecShoppingCartMainShort(), "shoppingCartMain"),
+    MAIN(Localized.constants.ecShoppingCartMain(), Localized.constants.ecShoppingCartMainShort()),
     ALTERNATIVE(Localized.constants.ecShoppingCartAlternative(),
-        Localized.constants.ecShoppingCartAlternativeShort(), "shoppingCartAlternative");
-    
+        Localized.constants.ecShoppingCartAlternativeShort());
+
     private final String caption;
     private final String label;
-    private final String service;
 
-    private CartType(String caption, String label, String service) {
+    private CartType(String caption, String label) {
       this.caption = caption;
       this.label = label;
-      this.service = service;
     }
-    
+
     @Override
     public String getCaption() {
       return caption;
     }
-    
+
     public String getLabel() {
       return label;
-    }
-
-    public String getService() {
-      return service;
     }
   }
 
   public enum ClientType implements HasCaption {
     COMPANY(Localized.constants.ecClientTypeCompany()),
     PERSON(Localized.constants.ecClientTypePerson());
-    
+
     private final String caption;
 
     private ClientType(String caption) {
       this.caption = caption;
     }
-    
+
     @Override
     public String getCaption() {
       return caption;
     }
   }
-  
+
   public enum EcOrderStatus implements HasCaption {
     NEW(Localized.constants.ecOrderStatusNew()),
     ACTIVE(Localized.constants.ecOrderStatusActive()),
@@ -78,10 +71,10 @@ public class EcConstants {
       return caption;
     }
   }
-  
+
   public static final String EC_MODULE = "Ec";
   public static final String EC_METHOD = EC_MODULE + "Method";
-  
+
   public static final String SVC_FEATURED_AND_NOVELTY = "featuredAndNovelty";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
@@ -108,7 +101,9 @@ public class EcConstants {
 
   public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
   public static final String SVC_GET_ITEMS_BY_MANUFACTURER = "getItemsByManufacturer";
-  
+
+  public static final String SVC_GET_DELIVERY_METHODS = "getDeliveryMethods";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -118,6 +113,8 @@ public class EcConstants {
   public static final String VAR_MANUFACTURER = VAR_PREFIX + "manufacturer";
   public static final String VAR_MODEL = VAR_PREFIX + "model";
   public static final String VAR_TYPE = VAR_PREFIX + "type";
+
+  public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
   public static final String TBL_TCD_ANALOGS = "TcdAnalogs";
@@ -131,19 +128,23 @@ public class EcConstants {
 
   public static final String TBL_TCD_MOTONET = "TcdMotonet";
 
+  public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
+  public static final String COL_DELIVERY_METHOD_NAME = "Name";
+  public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
+
   public static final String COL_TCD_ARTICLE_ID = "ArticleID";
   public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";
-  public static final String COL_TCD_SUPPLIER = "Supplier"; 
-  
+  public static final String COL_TCD_SUPPLIER = "Supplier";
+
   public static final String COL_TCD_SEARCH_NR = "SearchNr";
   public static final String COL_TCD_KIND = "Kind";
   public static final String COL_TCD_ANALOG_NR = "AnalogNr";
-  
+
   public static final String COL_TCD_CATEGORY_ID = "CategoryID";
   public static final String COL_TCD_PARENT_ID = "ParentID";
   public static final String COL_TCD_CATEGORY_NAME = "CategoryName";
-  
+
   public static final String COL_TCD_MODEL_ID = "ModelID";
   public static final String COL_TCD_MODEL_NAME = "ModelName";
   public static final String COL_TCD_MANUFACTURER = "Manufacturer";
@@ -167,12 +168,12 @@ public class EcConstants {
   public static final String COL_TCD_REMAINDER = "Remainder";
   public static final String COL_TCD_PRICE = "Price";
 
-  public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier"; 
+  public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 
-  public static final String CATEGORY_SEPARATOR = ","; 
+  public static final String CATEGORY_SEPARATOR = ",";
 
-  public static final String CURRENCY = "Lt"; 
-  
+  public static final String CURRENCY = "Lt";
+
   private EcConstants() {
   }
 }

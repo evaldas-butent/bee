@@ -2,23 +2,33 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.ec.EcConstants.*;
+import static com.butent.bee.shared.modules.ec.EcConstants.EC_METHOD;
+import static com.butent.bee.shared.modules.ec.EcConstants.EC_MODULE;
+import static com.butent.bee.shared.modules.ec.EcConstants.SVC_FEATURED_AND_NOVELTY;
+import static com.butent.bee.shared.modules.ec.EcConstants.SVC_GLOBAL_SEARCH;
+import static com.butent.bee.shared.modules.ec.EcConstants.VAR_QUERY;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.modules.ec.view.EcView;
+import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.modules.ec.Cart;
+import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -30,12 +40,16 @@ public class EcKeeper {
   
   private static final EcData data = new EcData(); 
 
+  private static final InputText searchBox = new InputText();
+
   private static final CartList cartList = new CartList(); 
 
+  private static EcCommandWidget activeCommand = null;
+  
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
   }
-  
+
   public static Tree buildCategoryTree(Collection<Integer> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
@@ -74,16 +88,18 @@ public class EcKeeper {
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);
         List<EcItem> items = getResponseItems(response);
+
         if (!BeeUtils.isEmpty(items)) {
+          resetActiveCommand();
+
           ItemPanel widget = new ItemPanel();
           BeeKeeper.getScreen().updateActivePanel(widget);
-
           renderItems(widget, items);
         }
       }
     });
   }
-
+  
   public static void ensureCategoeries(final Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
@@ -93,13 +109,13 @@ public class EcKeeper {
     Assert.notNull(callback);
     data.getCarManufacturers(callback);
   }
-  
+
   public static void getCarModels(String manufacturer, Consumer<List<EcCarModel>> callback) {
     Assert.notEmpty(manufacturer);
     Assert.notNull(callback);
     data.getCarModels(manufacturer, callback);
   }
-
+  
   public static void getCarTypes(Integer modelId, Consumer<List<EcCarType>> callback) {
     Assert.notNull(modelId);
     Assert.notNull(callback);
@@ -119,7 +135,7 @@ public class EcKeeper {
   public static String getContactsUrl() {
     return Settings.getProperty("ecContacts");
   }
-  
+
   public static void getItemManufacturers(Consumer<List<String>> callback) {
     Assert.notNull(callback);
     data.getItemManufacturers(callback);
@@ -141,10 +157,35 @@ public class EcKeeper {
   public static String getTermsUrl() {
     return Settings.getProperty("ecTerms");
   }
+  
+  public static void openCart(final CartType cartType) {
+    data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
+      @Override
+      public void accept(List<DeliveryMethod> input) {
+        Cart cart = cartList.getCart(cartType);
+        ShoppingCart widget = new ShoppingCart(cartType, cart, input);
+
+        resetActiveCommand();
+        searchBox.clearValue();
+
+        BeeKeeper.getScreen().updateActivePanel(widget);
+      }
+    });
+  }
+  
+  public static Cart refreshCart(CartType cartType) {
+    cartList.refresh(cartType);
+    return cartList.getCart(cartType);
+  }
 
   public static void register() {
   }
 
+  public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
+    cartList.removeFromCart(cartType, ecItem);
+    return cartList.getCart(cartType);
+  }
+  
   public static void renderItems(final ItemPanel panel, final List<EcItem> items) {
     Assert.notNull(panel);
     Assert.notNull(items);
@@ -189,7 +230,10 @@ public class EcKeeper {
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);
         List<EcItem> items = getResponseItems(response);
+
         if (!BeeUtils.isEmpty(items)) {
+          resetActiveCommand();
+
           FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
           BeeKeeper.getScreen().updateActivePanel(widget);
         }
@@ -197,8 +241,36 @@ public class EcKeeper {
     });
   }
 
+  static void doCommand(EcCommandWidget commandWidget) {
+    EcView ecView = EcView.create(commandWidget.getService());
+    if (ecView != null) {
+      searchBox.clearValue();
+      BeeKeeper.getScreen().updateActivePanel(ecView);
+    }
+
+    if (activeCommand == null || !activeCommand.getService().equals(commandWidget.getService())) {
+      if (activeCommand != null) {
+        activeCommand.deactivate();
+      }
+
+      activeCommand = commandWidget;
+      activeCommand.activate();
+    }
+  }
+  
   static CartList getCartlist() {
     return cartList;
+  }
+
+  static InputText getSearchBox() {
+    return searchBox;
+  }
+
+  private static void resetActiveCommand() {
+    if (activeCommand != null) {
+      activeCommand.deactivate();
+      activeCommand = null;
+    }
   }
 
   private EcKeeper() {

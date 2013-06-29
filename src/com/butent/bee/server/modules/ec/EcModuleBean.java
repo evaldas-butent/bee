@@ -20,6 +20,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
@@ -88,6 +89,9 @@ public class EcModuleBean implements BeeModule {
       response = getItemManufacturers();
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_MANUFACTURER)) {
       response = getItemsByManufacturer(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_DELIVERY_METHODS)) {
+      response = getDeliveryMethods();
 
     } else if (BeeUtils.same(svc, "ITEM_INFO")) {
       response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
@@ -283,6 +287,28 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(arr);
   }
 
+  private ResponseObject getDeliveryMethods() {
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_DELIVERY_METHODS)
+        .addFields(TBL_DELIVERY_METHODS, COL_DELIVERY_METHOD_ID, COL_DELIVERY_METHOD_NAME,
+            COL_DELIVERY_METHOD_NOTES)
+        .addOrder(TBL_DELIVERY_METHODS, COL_DELIVERY_METHOD_NAME);
+
+    SimpleRowSet rowSet = qs.getData(query);
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.warning(usr.getLocalizableMesssages().dataNotAvailable(
+          usr.getLocalizableConstants().ecDeliveryMethods()));
+    }
+
+    List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
+    for (SimpleRow row : rowSet) {
+      deliveryMethods.add(new DeliveryMethod(row.getLong(COL_DELIVERY_METHOD_ID),
+          row.getValue(COL_DELIVERY_METHOD_NAME), row.getValue(COL_DELIVERY_METHOD_NOTES)));
+    }
+
+    return ResponseObject.response(deliveryMethods);
+  }
+  
   private ResponseObject getFeaturedAndNoveltyItems() {
     int offset = BeeUtils.randomInt(0, 100) * 100;
     int limit = BeeUtils.randomInt(1, 30);

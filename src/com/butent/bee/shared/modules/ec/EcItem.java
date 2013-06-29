@@ -97,10 +97,15 @@ public class EcItem implements BeeSerializable {
     }
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return (obj instanceof EcItem) && id == ((EcItem) obj).id;
+  }
+  
   public String getCategories() {
     return categories;
   }
-  
+
   public List<Integer> getCategoryList() {
     List<Integer> result = Lists.newArrayList();
 
@@ -156,6 +161,11 @@ public class EcItem implements BeeSerializable {
     return categories != null
         && categories.contains(EcConstants.CATEGORY_SEPARATOR + category
             + EcConstants.CATEGORY_SEPARATOR);
+  }
+
+  @Override
+  public int hashCode() {
+    return id;
   }
 
   public boolean isFeatured() {

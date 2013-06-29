@@ -34,6 +34,12 @@ public interface LocalizableEcConstants {
 
   String ecDebt();
 
+  String ecDeliveryAddress();
+
+  String ecDeliveryMethod();
+
+  String ecDeliveryMethods();
+
   String ecDoSearch();
 
   String ecFeaturedBanner();
@@ -118,8 +124,6 @@ public interface LocalizableEcConstants {
 
   String ecOrderDate();
 
-  String ecOrderDeliveryAddress();
-
   String ecOrderItems();
 
   String ecOrderNumber();
@@ -162,6 +166,10 @@ public interface LocalizableEcConstants {
 
   String ecShoppingCartMainShort();
 
+  String ecShoppingCartRemove();
+
+  String ecShoppingCartSubmit();
+  
   String ecShoppingCartTotal();
 
   String ecShowDetails();
