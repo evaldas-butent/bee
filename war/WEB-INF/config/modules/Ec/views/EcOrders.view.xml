@@ -33,10 +33,15 @@
       <SimpleColumn alias="ManagerUser" name="User" />
       <SimpleJoin name="User" joinType="LEFT">
         <SimpleColumn alias="ManagerCompanyPerson" name="CompanyPerson" />
+
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
             <SimpleColumn alias="ManagerFirstName" name="FirstName" />
             <SimpleColumn alias="ManagerLastName" name="LastName" />
+          </SimpleJoin>
+
+          <SimpleJoin name="Company" joinType="LEFT">
+            <SimpleColumn alias="ManagerCompanyName" name="Name" />
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>

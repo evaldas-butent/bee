@@ -1,18 +1,26 @@
 package com.butent.bee.server.modules.ec;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.ViewEventHandler;
+import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -44,6 +52,8 @@ public class EcModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
 
+  @EJB
+  SystemBean sys;
   @EJB
   UserServiceBean usr;
   @EJB
@@ -128,6 +138,64 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void setItemProperties(ViewQueryEvent event) {
+        if (event.isAfter() && BeeUtils.same(event.getViewName(), VIEW_ORDER_ITEMS)) {
+          BeeRowSet orderItems = event.getRowset();
+          if (DataUtils.isEmpty(orderItems)) {
+            return;
+          }
+          
+          int itemIndex = orderItems.getColumnIndex(COL_ORDER_ITEM_ID);
+          if (itemIndex <= 0) {
+            return;
+          }
+          
+          Multimap<Integer, Integer> itemIdToRowIndex = HashMultimap.create();          
+
+          for (int i = 0; i < orderItems.getNumberOfRows(); i++) {
+            Integer itemId = orderItems.getInteger(i, itemIndex);
+            if (BeeUtils.isPositive(itemId)) {
+              itemIdToRowIndex.put(itemId, i);
+            }
+          }
+          if (itemIdToRowIndex.isEmpty()) {
+            return;
+          }
+          
+          SqlSelect ss = new SqlSelect();
+          ss.addFrom(TBL_TCD_ARTICLES);
+          ss.addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME,
+              COL_TCD_ARTICLE_NR);
+          
+          ss.setWhere(SqlUtils.inList(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID,
+              itemIdToRowIndex.keySet()));
+          
+          SimpleRowSet articleData = qs.getData(ss);
+          if (DataUtils.isEmpty(articleData)) {
+            return;
+          }
+          
+          int idIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_ID);
+          int nameIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_NAME);
+          int nrIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_NR);
+          
+          for (SimpleRow articleRow : articleData) {
+            Integer itemId = articleRow.getInt(idIndex);
+            String name = articleRow.getValue(nameIndex);
+            String nr = articleRow.getValue(nrIndex);
+            
+            for (Integer rowIndex : itemIdToRowIndex.get(itemId)) {
+              BeeRow row = orderItems.getRow(rowIndex);
+              
+              row.setProperty(COL_TCD_ARTICLE_NAME, name);             
+              row.setProperty(COL_TCD_ARTICLE_NR, nr);             
+            }
+          }
+        }
+      }
+    });
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -590,6 +658,8 @@ public class EcModuleBean implements BeeModule {
       insItem.addConstant(COL_ORDER_ITEM_ID, cartItem.getEcItem().getId());
 
       insItem.addConstant(COL_ORDER_ITEM_QUANTITY_ORDERED, cartItem.getQuantity());
+      insItem.addConstant(COL_ORDER_ITEM_QUANTITY_SUBMIT, cartItem.getQuantity());
+
       insItem.addConstant(COL_ORDER_ITEM_PRICE, cartItem.getEcItem().getRealPrice());
       
       ResponseObject itemResponse = qs.insertDataWithResponse(insItem);

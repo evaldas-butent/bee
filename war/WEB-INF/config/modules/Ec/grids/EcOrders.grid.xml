@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
+  editForm="EcOrder"
   flexGrow="1" flexShrink="1"
   >
   <columns>
@@ -11,8 +12,17 @@
 
     <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" />
 
-    <RelColumn name="Client" visible="true" />
-    <RelColumn name="Manager" visible="true" />
+    <RelColumn name="Client" visible="true">
+      <renderToken source="ClientFirstName" />
+      <renderToken source="ClientLastName" />
+      <renderToken source="ClientCompanyName" prefix=", " />
+    </RelColumn>
+
+    <RelColumn name="Manager" visible="true">
+      <renderToken source="ManagerFirstName" />
+      <renderToken source="ManagerLastName" />
+      <renderToken source="ManagerCompanyName" prefix=", " />
+    </RelColumn>
 
     <RelColumn name="DeliveryMethod" />
     <DataColumn name="DeliveryAddress" visible="false" />

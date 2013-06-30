@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 1ex;"></div>'>
+  <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="EcOrder" viewName="EcOrders" caption="=ecOrder" showRowId="true"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel style="margin-top: 1ex; margin-bottom: 2ex;">
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecOrderDate" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" style="&inp;" />
+
+        <Label text="=ecOrderNumber" style="&lbl;" />
+        <InputText source="Number" style="&inp;" />
+
+        <Label text="=ecOrderStatus" style="margin-left: 3em; margin-right: 10px;" />
+        <ListBox source="Status" itemKey="EcOrderStatus" readOnly="true" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecClient" class="bee-required" style="&lbl;" />
+        <DataSelector source="Client" style="&inp;">
+          <renderToken source="ClientFirstName" />
+          <renderToken source="ClientLastName" />
+          <renderToken source="ClientCompanyName" prefix=", " />
+        </DataSelector>
+
+        <Label text="=ecManager" style="&lbl;" />
+        <DataSelector source="Manager" style="&inp;">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+          <renderToken source="ManagerCompanyName" prefix=", " />
+        </DataSelector>
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecDeliveryMethod" style="&lbl;" />
+        <DataSelector source="DeliveryMethod" style="&inp;" />
+
+        <Label text="=ecDeliveryAddress" style="&lbl;" />
+        <InputArea source="DeliveryAddress" style="&inp; height: 40px;" />
+      </FlowPanel>
+      &separator;
+      
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecOrderCommentClient" style="&lbl;" />
+        <InputArea source="ClientComment" style="&inp; height: 40px;" />
+
+        <Label text="=ecOrderCommentManager" style="&lbl;" />
+        <InputArea source="ManagerComment" style="&inp; height: 40px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <CheckBox text="=ecOrderCopyByMail" source="CopyByMail"
+          style="width: 250px; margin-left: 100px;" />
+        <Label text="=ecRejectionReason" style="&lbl;" />
+        <DataSelector source="RejectionReason" style="&inp;" />
+      </FlowPanel>
+
+    </FlowPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=ecOrderItems</text>
+        <ChildGrid name="EcOrderItems" relColumn="Order" />
+      </page>
+      <page>
+        <text>=notes</text>
+        <InputArea source="Notes" />
+      </page>  
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>
