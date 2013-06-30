@@ -18,6 +18,6 @@ name="Ec" label="=ecMenu" order="100"
 
   <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory" separator="true" />
 
-  <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="form" parameters="TermsOfDelivery" separator="true" />
-  <Item name="EcContacts" label="=ecContacts" service="form" parameters="EcContacts" />
+  <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery" separator="true" />
+  <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
 </Entry>

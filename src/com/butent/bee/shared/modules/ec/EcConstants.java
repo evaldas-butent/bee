@@ -78,8 +78,8 @@ public class EcConstants {
   public static final String SVC_FEATURED_AND_NOVELTY = "featuredAndNovelty";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
-  public static final String SVC_TERMS_OF_DELIVERY = "termsOfDelivery";
-  public static final String SVC_CONTACTS = "contacts";
+  public static final String SVC_SHOW_TERMS_OF_DELIVERY = "showTermsOfDelivery";
+  public static final String SVC_SHOW_CONTACTS = "showContacts";
 
   public static final String SVC_GLOBAL_SEARCH = "globalSearch";
 
@@ -105,6 +105,10 @@ public class EcConstants {
   public static final String SVC_GET_DELIVERY_METHODS = "getDeliveryMethods";
 
   public static final String SVC_SUBMIT_ORDER = "submitOrder";
+
+  public static final String SVC_GET_CONFIGURATION = "getConfiguration";
+  public static final String SVC_CLEAR_CONFIGURATION = "clearConfiguration";
+  public static final String SVC_SAVE_CONFIGURATION = "saveConfiguration";
 
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
@@ -167,10 +171,9 @@ public class EcConstants {
   public static final String COL_CLIENT_CREDIT_LIMIT_WARNING = "CreditLimitWarning";
   public static final String COL_CLIENT_NOTES = "Notes";
 
-  public static final String COL_CONFIG_TOD_SHOW = "TodShow";
+  public static final String COL_CONFIG_ID = "ConfigurationID";
   public static final String COL_CONFIG_TOD_URL = "TodUrl";
   public static final String COL_CONFIG_TOD_HTML = "TodHtml";
-  public static final String COL_CONFIG_CONTACTS_SHOW = "ContactsShow";
   public static final String COL_CONFIG_CONTACTS_URL = "ContactsUrl";
   public static final String COL_CONFIG_CONTACTS_HTML = "ContactsHtml";
 

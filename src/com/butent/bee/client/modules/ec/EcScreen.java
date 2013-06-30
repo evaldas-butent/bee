@@ -179,8 +179,8 @@ public class EcScreen extends ScreenImpl {
 
     container.add(fin);
 
-    boolean hasTerms = !BeeUtils.isEmpty(EcKeeper.getTermsUrl());
-    boolean hasContacts = !BeeUtils.isEmpty(EcKeeper.getContactsUrl());
+    boolean hasTerms = true;
+    boolean hasContacts = true;
 
     if (hasTerms || hasContacts) {
       Horizontal info = new Horizontal();
@@ -188,11 +188,12 @@ public class EcScreen extends ScreenImpl {
       EcStyles.add(info, panelStyle, "info");
 
       if (hasTerms) {
-        info.add(createCommandWidget(EcConstants.SVC_TERMS_OF_DELIVERY,
+        info.add(createCommandWidget(EcConstants.SVC_SHOW_TERMS_OF_DELIVERY,
             Localized.constants.ecTermsOfDelivery()));
       }
       if (hasContacts) {
-        info.add(createCommandWidget(EcConstants.SVC_CONTACTS, Localized.constants.ecContacts()));
+        info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
+            Localized.constants.ecContacts()));
       }
 
       container.add(info);

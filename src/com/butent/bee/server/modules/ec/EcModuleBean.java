@@ -17,8 +17,11 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -110,6 +113,13 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SUBMIT_ORDER)) {
       response = submitOrder(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIGURATION)) {
+      response = getConfiguration();
+    } else if (BeeUtils.same(svc, SVC_SAVE_CONFIGURATION)) {
+      response = saveConfiguration(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_CLEAR_CONFIGURATION)) {
+      response = clearConfiguration(reqInfo);
+
     } else if (BeeUtils.same(svc, "ITEM_INFO")) {
       response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
 
@@ -196,6 +206,22 @@ public class EcModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject clearConfiguration(RequestInfo reqInfo) {
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(SVC_CLEAR_CONFIGURATION, Service.VAR_COLUMN);
+    }
+
+    if (updateConfiguration(column, null)) {
+      return ResponseObject.response(column);
+    } else {
+      String message = BeeUtils.joinWords(SVC_CLEAR_CONFIGURATION, column,
+          "cannot clear configuration");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -331,7 +357,7 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(carTypes);
   }
-
+  
   private ResponseObject getCategories() {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID, COL_TCD_PARENT_ID,
@@ -361,7 +387,28 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(arr);
   }
+  
+  private ResponseObject getConfiguration() {
+    BeeRowSet rowSet = qs.getViewData(VIEW_CONFIGURATION);
+    if (rowSet == null) {
+      return ResponseObject.error("cannot read", VIEW_CONFIGURATION);
+    }
+    
+    Map<String, String> result = Maps.newHashMap();
+    if (rowSet.isEmpty()) {
+      for (BeeColumn column : rowSet.getColumns()) {
+        result.put(column.getId(), null);
+      }
+    } else {
+      BeeRow row = rowSet.getRow(0);
+      for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
+        result.put(rowSet.getColumnId(i), row.getString(i));
+      }
+    }
 
+    return ResponseObject.response(result);
+  }
+  
   private SimpleRowSet getCurrentClientInfo(String... fields) {
     return qs.getData(new SqlSelect().addFrom(TBL_CLIENTS).addFields(TBL_CLIENTS, fields)
         .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
@@ -402,7 +449,7 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = getItems(articleIdQuery);
     return ResponseObject.response(items);
   }
-
+  
   private ResponseObject getItemInfo(long id) {
     SqlSelect query =
         new SqlSelect()
@@ -518,6 +565,27 @@ public class EcModuleBean implements BeeModule {
 
   private int getLimit(RequestInfo reqInfo) {
     return BeeUtils.positive(BeeUtils.toInt(reqInfo.getParameter(VAR_LIMIT)), 100);
+  }
+
+  private ResponseObject saveConfiguration(RequestInfo reqInfo) {
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(SVC_SAVE_CONFIGURATION, Service.VAR_COLUMN);
+    }
+
+    String value = reqInfo.getParameter(Service.VAR_VALUE);
+    if (BeeUtils.isEmpty(value)) {
+      return ResponseObject.parameterNotFound(SVC_SAVE_CONFIGURATION, Service.VAR_VALUE);
+    }
+    
+    if (updateConfiguration(column, value)) {
+      return ResponseObject.response(column);
+    } else {
+      String message = BeeUtils.joinWords(SVC_SAVE_CONFIGURATION, column,
+          "cannot save configuration");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
   }
 
   private ResponseObject searchByItemCode(RequestInfo reqInfo) {
@@ -669,5 +737,32 @@ public class EcModuleBean implements BeeModule {
     }
     
     return response;
+  }
+
+  private boolean updateConfiguration(String column, String value) {
+    BeeRowSet rowSet = qs.getViewData(VIEW_CONFIGURATION);
+    
+    if (DataUtils.isEmpty(rowSet)) {
+      if (BeeUtils.isEmpty(value)) {
+        return true;
+      } else {
+        SqlInsert ins = new SqlInsert(TBL_CONFIGURATION).addConstant(column, value);
+
+        ResponseObject response = qs.insertDataWithResponse(ins);
+        return !response.hasErrors();
+      }
+
+    } else {
+      String oldValue = rowSet.getString(0, column);
+      if (BeeUtils.equalsTrimRight(value, oldValue)) {
+        return true;
+      } else {
+        SqlUpdate upd = new SqlUpdate(TBL_CONFIGURATION).addConstant(column, value);
+        upd.setWhere(SqlUtils.equals(TBL_CONFIGURATION, COL_CONFIG_ID, rowSet.getRow(0).getId()));
+
+        ResponseObject response = qs.updateDataWithResponse(upd);
+        return !response.hasErrors();
+      }
+    }
   }
 }

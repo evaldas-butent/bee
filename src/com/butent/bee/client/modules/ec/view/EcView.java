@@ -1,5 +1,10 @@
 package com.butent.bee.client.modules.ec.view;
 
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_HTML;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_URL;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_HTML;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_URL;
+
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.ui.UiHelper;
@@ -14,10 +19,12 @@ public abstract class EcView extends Flow {
     if (EcConstants.SVC_FINANCIAL_INFORMATION.equals(service)) {
       ecView = new FinancialInformation();
 
-    } else if (EcConstants.SVC_TERMS_OF_DELIVERY.equals(service)) {
-      ecView = new TermsOfDelivery();
-    } else if (EcConstants.SVC_CONTACTS.equals(service)) {
-      ecView = new Contacts();
+    } else if (EcConstants.SVC_SHOW_TERMS_OF_DELIVERY.equals(service)) {
+      ecView = new HtmlViewer(Localized.constants.ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
+          COL_CONFIG_TOD_HTML);
+    } else if (EcConstants.SVC_SHOW_CONTACTS.equals(service)) {
+      ecView = new HtmlViewer(Localized.constants.ecContacts(), COL_CONFIG_CONTACTS_URL,
+          COL_CONFIG_CONTACTS_HTML);
 
     } else if (EcConstants.SVC_SEARCH_BY_ITEM_CODE.equals(service)) {
       ecView = new SearchByItem(service, Localized.constants.ecItemCode());

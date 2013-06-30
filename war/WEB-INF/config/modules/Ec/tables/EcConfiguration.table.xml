@@ -5,11 +5,9 @@
   idName="ConfigurationID"
   >
   <Fields>
-    <Integer name="TodShow" />
     <String name="TodUrl" precision="200" />
     <Text name="TodHtml" />
 
-    <Integer name="ContactsShow" />
     <String name="ContactsUrl" precision="200" />
     <Text name="ContactsHtml" />
   </Fields>

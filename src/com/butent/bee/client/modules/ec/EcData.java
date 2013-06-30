@@ -14,6 +14,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -43,6 +44,8 @@ class EcData {
   private final List<String> itemManufacturers = Lists.newArrayList();
 
   private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
+
+  private final Map<String, String> configuration = Maps.newHashMap();
 
   EcData() {
     super();
@@ -216,7 +219,53 @@ class EcData {
 
     return names;
   }
+  
+  void saveConfiguration(final String key, final String value) {
+    ParameterList params;
 
+    if (BeeUtils.isEmpty(value)) {
+      params = EcKeeper.createArgs(SVC_CLEAR_CONFIGURATION);
+      params.addDataItem(Service.VAR_COLUMN, key);
+    } else {
+      params = EcKeeper.createArgs(SVC_SAVE_CONFIGURATION);
+      params.addQueryItem(Service.VAR_COLUMN, key);
+      params.addDataItem(Service.VAR_VALUE, value);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        EcKeeper.dispatchMessages(response);
+        if (BeeUtils.same(key, response.getResponseAsString())) {
+          configuration.put(key, value);
+        }
+      }
+    });
+  }
+
+  void getConfiguration(final Consumer<Map<String, String>> callback) {
+    if (configuration.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CONFIGURATION);
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+
+          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          if (!map.isEmpty()) {
+            configuration.clear();
+            configuration.putAll(map);
+
+            callback.accept(map);
+          }
+        }
+      });
+
+    } else {
+      callback.accept(configuration);
+    }
+  }
+  
   void getDeliveryMethods(final Consumer<List<DeliveryMethod>> callback) {
     if (!deliveryMethods.isEmpty()) {
       callback.accept(deliveryMethods);

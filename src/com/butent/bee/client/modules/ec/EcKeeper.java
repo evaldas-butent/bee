@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Settings;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.ec.view.EcView;
@@ -14,11 +14,14 @@ import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.view.HtmlEditor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -31,17 +34,18 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class EcKeeper {
-  
-  private static final EcData data = new EcData(); 
+
+  private static final EcData data = new EcData();
 
   private static final InputText searchBox = new InputText();
 
-  private static final CartList cartList = new CartList(); 
+  private static final CartList cartList = new CartList();
 
   private static EcCommandWidget activeCommand = null;
-  
+
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
   }
@@ -50,7 +54,7 @@ public class EcKeeper {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
   }
-  
+
   public static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(EC_MODULE);
     args.addQueryItem(EC_METHOD, method);
@@ -72,7 +76,7 @@ public class EcKeeper {
       }
     }
   }
-  
+
   public static void doGlobalSearch(String query) {
     Assert.notEmpty(query);
 
@@ -95,12 +99,12 @@ public class EcKeeper {
       }
     });
   }
-  
+
   public static void ensureCategoeries(final Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
   }
-  
+
   public static void getCarManufacturers(Consumer<List<String>> callback) {
     Assert.notNull(callback);
     data.getCarManufacturers(callback);
@@ -115,7 +119,7 @@ public class EcKeeper {
   public static Cart getCart(CartType cartType) {
     return cartList.getCart(cartType);
   }
-  
+
   public static void getCarTypes(Integer modelId, Consumer<List<EcCarType>> callback) {
     Assert.notNull(modelId);
     Assert.notNull(callback);
@@ -126,14 +130,15 @@ public class EcKeeper {
     Assert.notNull(categoryId);
     return data.getCategoryName(categoryId);
   }
-  
+
   public static List<String> getCategoryNames(EcItem item) {
     Assert.notNull(item);
     return data.getCategoryNames(item);
   }
-  
-  public static String getContactsUrl() {
-    return Settings.getProperty("ecContacts");
+
+  public static void getConfiguration(Consumer<Map<String, String>> callback) {
+    Assert.notNull(callback);
+    data.getConfiguration(callback);
   }
 
   public static void getItemManufacturers(Consumer<List<String>> callback) {
@@ -153,11 +158,7 @@ public class EcKeeper {
     }
     return items;
   }
-  
-  public static String getTermsUrl() {
-    return Settings.getProperty("ecTerms");
-  }
-  
+
   public static void openCart(final CartType cartType) {
     data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
       @Override
@@ -172,7 +173,7 @@ public class EcKeeper {
       }
     });
   }
-  
+
   public static Cart refreshCart(CartType cartType) {
     cartList.refresh(cartType);
     return getCart(cartType);
@@ -182,20 +183,36 @@ public class EcKeeper {
     String key = Captions.register(EcClientType.class);
     Captions.registerColumn(VIEW_REGISTRATIONS, COL_REGISTRATION_TYPE, key);
     Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_TYPE, key);
-    
+
     key = Captions.register(EcOrderStatus.class);
     Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
+
+    BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        editConfigurationHtml(Localized.constants.ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
+            COL_CONFIG_TOD_HTML);
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback("edit_ec_contacts", new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        editConfigurationHtml(Localized.constants.ecContacts(), COL_CONFIG_CONTACTS_URL,
+            COL_CONFIG_CONTACTS_HTML);
+      }
+    });
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
     cartList.removeFromCart(cartType, ecItem);
     return getCart(cartType);
   }
-  
+
   public static void renderItems(final ItemPanel panel, final List<EcItem> items) {
     Assert.notNull(panel);
     Assert.notNull(items);
-    
+
     ensureCategoeries(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
@@ -213,7 +230,7 @@ public class EcKeeper {
       cartList.refresh(cartType);
     }
   }
-  
+
   public static void searchItems(String service, String query, final Consumer<List<EcItem>> callback) {
     Assert.notEmpty(service);
     Assert.notEmpty(query);
@@ -228,7 +245,7 @@ public class EcKeeper {
         response.notify(BeeKeeper.getScreen());
 
         if (!response.hasErrors()) {
-           dispatchMessages(response);
+          dispatchMessages(response);
           List<EcItem> items = getResponseItems(response);
           if (items != null) {
             callback.accept(items);
@@ -271,13 +288,39 @@ public class EcKeeper {
       activeCommand.activate();
     }
   }
-  
+
   static CartList getCartlist() {
     return cartList;
   }
 
   static InputText getSearchBox() {
     return searchBox;
+  }
+  
+  private static void editConfigurationHtml(final String caption, final String urlColumn,
+      final String htmlColumn) {
+
+    data.getConfiguration(new Consumer<Map<String, String>>() {
+      @Override
+      public void accept(Map<String, String> input) {
+        final String url = input.get(urlColumn);
+        final String html = input.get(htmlColumn);
+
+        HtmlEditor editor = new HtmlEditor(caption, url, html, new BiConsumer<String, String>() {
+          @Override
+          public void accept(String newUrl, String newHtml) {
+            if (!BeeUtils.equalsTrim(url, newUrl)) {
+              data.saveConfiguration(urlColumn, newUrl);
+            }
+            if (!BeeUtils.equalsTrim(html, newHtml)) {
+              data.saveConfiguration(htmlColumn, newHtml);
+            }
+          }
+        });
+
+        BeeKeeper.getScreen().updateActivePanel(editor);
+      }
+    });
   }
 
   private static void resetActiveCommand() {

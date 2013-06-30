@@ -513,3 +513,12 @@
   right: 1em;
   font-size: medium;
 }
+
+.bee-ec-htmlViewer-html {
+  position: absolute;
+  top: 1ex;
+  bottom: 1ex;
+  left: 1em;
+  right: 1em;
+  overflow: auto;
+}
