@@ -111,6 +111,10 @@ public class EcKeeper {
     Assert.notNull(callback);
     data.getCarModels(manufacturer, callback);
   }
+
+  public static Cart getCart(CartType cartType) {
+    return cartList.getCart(cartType);
+  }
   
   public static void getCarTypes(Integer modelId, Consumer<List<EcCarType>> callback) {
     Assert.notNull(modelId);
@@ -158,7 +162,7 @@ public class EcKeeper {
     data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
       @Override
       public void accept(List<DeliveryMethod> input) {
-        Cart cart = cartList.getCart(cartType);
+        Cart cart = getCart(cartType);
         ShoppingCart widget = new ShoppingCart(cartType, cart, input);
 
         resetActiveCommand();
@@ -171,7 +175,7 @@ public class EcKeeper {
   
   public static Cart refreshCart(CartType cartType) {
     cartList.refresh(cartType);
-    return cartList.getCart(cartType);
+    return getCart(cartType);
   }
 
   public static void register() {
@@ -185,7 +189,7 @@ public class EcKeeper {
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
     cartList.removeFromCart(cartType, ecItem);
-    return cartList.getCart(cartType);
+    return getCart(cartType);
   }
   
   public static void renderItems(final ItemPanel panel, final List<EcItem> items) {
@@ -202,6 +206,14 @@ public class EcKeeper {
     });
   }
 
+  public static void resetCart(CartType cartType) {
+    Cart cart = getCart(cartType);
+    if (cart != null) {
+      cart.reset();
+      cartList.refresh(cartType);
+    }
+  }
+  
   public static void searchItems(String service, String query, final Consumer<List<EcItem>> callback) {
     Assert.notEmpty(service);
     Assert.notEmpty(query);

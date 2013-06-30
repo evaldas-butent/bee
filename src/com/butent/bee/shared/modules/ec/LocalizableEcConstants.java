@@ -38,6 +38,8 @@ public interface LocalizableEcConstants {
 
   String ecDeliveryMethod();
 
+  String ecDeliveryMethodRequired();
+
   String ecDeliveryMethods();
 
   String ecDoSearch();
@@ -139,6 +141,8 @@ public interface LocalizableEcConstants {
   String ecOrderStatusRejected();
 
   String ecOrderSubmissionDate();
+
+  String ecOrderSubmitted();
 
   String ecRegister();
 

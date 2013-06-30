@@ -104,6 +104,8 @@ public class EcConstants {
 
   public static final String SVC_GET_DELIVERY_METHODS = "getDeliveryMethods";
 
+  public static final String SVC_SUBMIT_ORDER = "submitOrder";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -113,6 +115,8 @@ public class EcConstants {
   public static final String VAR_MANUFACTURER = VAR_PREFIX + "manufacturer";
   public static final String VAR_MODEL = VAR_PREFIX + "model";
   public static final String VAR_TYPE = VAR_PREFIX + "type";
+
+  public static final String VAR_CART = VAR_PREFIX + "cart";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
   public static final String TBL_CLIENTS = "EcClients";
@@ -151,6 +155,7 @@ public class EcConstants {
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
   public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
 
+  public static final String COL_CLIENT_ID = "ClientID";
   public static final String COL_CLIENT_USER = "User";
   public static final String COL_CLIENT_REGISTERED = "Registered";
   public static final String COL_CLIENT_TYPE = "Type";

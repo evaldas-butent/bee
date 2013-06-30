@@ -34,7 +34,7 @@ public class Cart implements BeeSerializable {
   public Cart() {
     super();
   }
-
+  
   public void add(EcItem ecItem, int quantity) {
     if (ecItem != null && quantity > 0) {
       CartItem item = getItem(ecItem.getId());
@@ -46,7 +46,7 @@ public class Cart implements BeeSerializable {
       }
     }
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -86,7 +86,7 @@ public class Cart implements BeeSerializable {
       }
     }
   }
-
+  
   public String getComment() {
     return comment;
   }
@@ -121,6 +121,11 @@ public class Cart implements BeeSerializable {
       }
     }
     return false;
+  }
+
+  public void reset() {
+    setComment(null);
+    items.clear();
   }
 
   @Override

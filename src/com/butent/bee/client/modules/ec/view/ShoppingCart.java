@@ -11,6 +11,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -26,6 +28,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
@@ -113,6 +116,36 @@ public class ShoppingCart extends Split {
   }
 
   private void doSubmit() {
+    Cart cart = EcKeeper.getCart(cartType);
+    if (cart == null || cart.isEmpty()) {
+      return;
+    }
+    
+    if (cart.getDeliveryMethod() == null) {
+      BeeKeeper.getScreen().notifyWarning(Localized.constants.ecDeliveryMethodRequired());
+      return;
+    }
+    
+    final String amount = EcUtils.renderCents(cart.totalCents());
+
+    ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
+    params.addDataItem(EcConstants.VAR_CART, cart.serialize());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        EcKeeper.dispatchMessages(response);
+
+        if (response.hasResponse(Long.class)) {
+          EcKeeper.resetCart(cartType);
+          BeeKeeper.getScreen().closeWidget(ShoppingCart.this);
+          
+          Global.inform(Localized.constants.ecOrderSubmitted(),
+              Localized.messages.ecOrderId(response.getResponseAsString()),
+              Localized.messages.ecOrderTotal(amount, EcConstants.CURRENCY));
+        }
+      }
+    });
   }
 
   private int getInt(HasText widget) {
@@ -232,7 +265,7 @@ public class ShoppingCart extends Split {
     for (DeliveryMethod deliveryMethod : deliveryMethods) {
       input.addItem(deliveryMethod.getName());
     }
-    
+
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {

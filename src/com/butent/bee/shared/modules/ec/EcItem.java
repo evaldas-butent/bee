@@ -140,6 +140,10 @@ public class EcItem implements BeeSerializable {
   public int getPrice() {
     return price;
   }
+  
+  public double getRealPrice() {
+    return price / 100d;
+  }
 
   public int getStock1() {
     return stock1;
