@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcManagers" viewName="EcManagers" caption="=ecManagers"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+      choiceColumns="Login FirstName LastName CompanyName" visible="true" />
+
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+    <DataColumn name="CompanyName" caption="=company" />
+
+    <DataColumn name="TabNr" visible="true" />
+
+    <RelColumn name="ReportOrder" />
+
+    <DataColumn name="Notes" />
+  </columns>
+</Grid>

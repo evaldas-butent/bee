@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcHistory" source="EcHistory" caption="=ecUserActions"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="Service" />
+    <SimpleColumn name="Query" />
+
+    <SimpleColumn name="Count" />
+    <SimpleColumn name="Duration" />
+
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleColumn name="Login" />
+
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn alias="CompanyName" name="Name" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

@@ -5,7 +5,7 @@
   idName="ClientID"
   >
   <Fields>
-    <Relation name="User" notNull="true" unique="true" relation="Users" />
+    <Relation name="User" notNull="true" unique="true" relation="Users" label="=user" />
 
     <DateTime name="Registered" notNull="true" label="=ecClientRegistrationDate" defExpr="CURRENT_TIME" />
     <Integer name="Type" notNull="true" label="=ecClientType" />

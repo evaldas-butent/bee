@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcOrders" source="EcOrders" caption="=ecOrders"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Number" />
+
+    <SimpleColumn name="Status" />
+
+    <SimpleColumn name="Client" />
+    <SimpleJoin name="Client" joinType="LEFT">
+      <SimpleColumn alias="ClientUser" name="User" />
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleColumn alias="ClientCompanyPerson" name="CompanyPerson" />
+
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn alias="ClientFirstName" name="FirstName" />
+            <SimpleColumn alias="ClientLastName" name="LastName" />
+          </SimpleJoin>
+  
+          <SimpleJoin name="Company" joinType="LEFT">
+            <SimpleColumn alias="ClientCompanyName" name="Name" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn alias="ManagerUser" name="User" />
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleColumn alias="ManagerCompanyPerson" name="CompanyPerson" />
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn alias="ManagerFirstName" name="FirstName" />
+            <SimpleColumn alias="ManagerLastName" name="LastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="DeliveryMethod" />
+    <SimpleJoin name="DeliveryMethod" joinType="LEFT">
+      <SimpleColumn alias="DeliveryMethodName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DeliveryAddress" />
+    <SimpleColumn name="CopyByMail" />
+
+    <SimpleColumn name="ClientComment" />
+    <SimpleColumn name="ManagerComment" />
+
+    <SimpleColumn name="RejectionReason" />
+    <SimpleJoin name="RejectionReason" joinType="LEFT">
+      <SimpleColumn alias="RejectionReasonName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+</View>
+ 

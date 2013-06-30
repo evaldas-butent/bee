@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcOrders" viewName="EcOrders" caption="=ecOrders"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <IdColumn name="ID" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Number" visible="false" />
+
+    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" />
+
+    <RelColumn name="Client" visible="true" />
+    <RelColumn name="Manager" visible="true" />
+
+    <RelColumn name="DeliveryMethod" />
+    <DataColumn name="DeliveryAddress" visible="false" />
+    <DataColumn name="CopyByMail" visible="false" />
+
+    <DataColumn name="ClientComment" visible="false" />
+    <DataColumn name="ManagerComment" visible="false" />
+
+    <RelColumn name="RejectionReason" visible="false" />
+
+    <DataColumn name="Notes" visible="false" />
+  </columns>
+</Grid>

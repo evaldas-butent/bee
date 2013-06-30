@@ -5,8 +5,8 @@
   idName="HistoryID"
   >
   <Fields>
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
 
     <String name="Service" precision="60" />
     <String name="Query" precision="60" />

@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.ec.view;
 
 import com.google.common.base.Strings;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
@@ -65,6 +67,10 @@ public class ShoppingCart extends Split {
   private static final int COL_PRICE = 4;
   private static final int COL_REMOVE = 5;
 
+  private static final int SIZE_NORTH = 32;
+  private static final int SIZE_SOUTH = 100;
+  private static final int MARGIN_SOUTH = 25;
+
   private final CartType cartType;
   private final List<DeliveryMethod> deliveryMethods;
 
@@ -85,6 +91,27 @@ public class ShoppingCart extends Split {
     renderItems(cart.getItems());
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        int containerHeight = BeeUtils.positive(getOffsetHeight(),
+            BeeKeeper.getScreen().getActivePanelHeight());
+        int itemsHeight = itemTable.getOffsetHeight();
+
+        if (itemsHeight > 0 && containerHeight > itemsHeight) {
+          int southHeight = containerHeight - SIZE_NORTH - itemsHeight - MARGIN_SOUTH;
+          if (southHeight > SIZE_SOUTH) {
+            setDirectionSize(Direction.SOUTH, southHeight, true);
+          }
+        }
+      }
+    });
+  }
+
   private void doSubmit() {
   }
 
@@ -103,7 +130,7 @@ public class ShoppingCart extends Split {
     Label caption = new Label(cartType.getCaption());
     caption.addStyleName(STYLE_PRIMARY + "-caption");
 
-    addNorth(caption, 30);
+    addNorth(caption, SIZE_NORTH);
   }
 
   private void initSouth(Cart cart) {
@@ -139,7 +166,7 @@ public class ShoppingCart extends Split {
       panel.add(submitWidget);
     }
 
-    addSouth(panel, 100);
+    addSouth(panel, SIZE_SOUTH);
   }
 
   private Widget renderComment(final Cart cart) {
@@ -205,16 +232,22 @@ public class ShoppingCart extends Split {
     for (DeliveryMethod deliveryMethod : deliveryMethods) {
       input.addItem(deliveryMethod.getName());
     }
-    input.deselect();
+    
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        input.deselect();
 
-    if (cart.getDeliveryMethod() != null) {
-      for (int i = 0; i < deliveryMethods.size(); i++) {
-        if (cart.getDeliveryMethod().equals(deliveryMethods.get(i).getId())) {
-          input.setSelectedIndex(i);
-          break;
+        if (cart.getDeliveryMethod() != null) {
+          for (int i = 0; i < deliveryMethods.size(); i++) {
+            if (cart.getDeliveryMethod().equals(deliveryMethods.get(i).getId())) {
+              input.setSelectedIndex(i);
+              break;
+            }
+          }
         }
       }
-    }
+    });
 
     input.addBlurHandler(new BlurHandler() {
       @Override
@@ -337,7 +370,7 @@ public class ShoppingCart extends Split {
       public void onClick(ClickEvent event) {
         int value = getInt(valueWidget) + 1;
         setInt(valueWidget, value);
-        
+
         item.setQuantity(value);
         Cart cart = EcKeeper.refreshCart(cartType);
         updateTotal(cart);
@@ -367,7 +400,7 @@ public class ShoppingCart extends Split {
 
     return panel;
   }
-  
+
   private Widget renderRemove(final CartItem item) {
     Image remove = new Image("images/shoppingcart_remove.png");
     remove.setAlt("remove");

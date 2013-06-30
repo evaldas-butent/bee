@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcManagers" source="EcManagers" caption="=ecManagers"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleColumn name="Login" />
+
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn alias="CompanyName" name="Name" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TabNr" />
+    
+    <SimpleColumn name="ReportOrder" />
+    <SimpleJoin name="ReportOrder" joinType="LEFT">
+      <SimpleColumn alias="ReminderName" name="Name" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+    <OrderBy column="CompanyName" />
+  </Order>
+</View>
+ 

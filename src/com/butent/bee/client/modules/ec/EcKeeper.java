@@ -2,11 +2,7 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.ec.EcConstants.EC_METHOD;
-import static com.butent.bee.shared.modules.ec.EcConstants.EC_MODULE;
-import static com.butent.bee.shared.modules.ec.EcConstants.SVC_FEATURED_AND_NOVELTY;
-import static com.butent.bee.shared.modules.ec.EcConstants.SVC_GLOBAL_SEARCH;
-import static com.butent.bee.shared.modules.ec.EcConstants.VAR_QUERY;
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
@@ -28,8 +24,8 @@ import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
-import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -179,6 +175,12 @@ public class EcKeeper {
   }
 
   public static void register() {
+    String key = Captions.register(EcClientType.class);
+    Captions.registerColumn(VIEW_REGISTRATIONS, COL_REGISTRATION_TYPE, key);
+    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_TYPE, key);
+    
+    key = Captions.register(EcOrderStatus.class);
+    Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {

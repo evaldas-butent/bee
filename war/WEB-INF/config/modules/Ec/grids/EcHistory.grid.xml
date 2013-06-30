@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcHistory" viewName="EcHistory" caption="=ecUserActions"
+  order="Date desc" cacheData="false" asyncThreshold="-1"
+  flexGrow="1" flexShrink="1" disabledActions="add"
+  >
+  <columns>
+    <DataColumn name="Date" visible="true" />
+
+    <RelColumn name="User" renderColumns="Login" editEnabled="true" />
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+    <DataColumn name="CompanyName" />
+
+    <DataColumn name="Service" visible="true" />
+    <DataColumn name="Query" visible="true" />
+
+    <DataColumn name="Count" />
+    <DataColumn name="Duration" />
+  </columns>
+</Grid>

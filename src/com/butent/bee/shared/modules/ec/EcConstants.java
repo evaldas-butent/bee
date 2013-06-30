@@ -30,13 +30,13 @@ public class EcConstants {
     }
   }
 
-  public enum ClientType implements HasCaption {
+  public enum EcClientType implements HasCaption {
     COMPANY(Localized.constants.ecClientTypeCompany()),
     PERSON(Localized.constants.ecClientTypePerson());
 
     private final String caption;
 
-    private ClientType(String caption) {
+    private EcClientType(String caption) {
       this.caption = caption;
     }
 
@@ -115,6 +115,15 @@ public class EcConstants {
   public static final String VAR_TYPE = VAR_PREFIX + "type";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
+  public static final String TBL_CLIENTS = "EcClients";
+  public static final String TBL_CONFIGURATION = "EcConfiguration";
+  public static final String TBL_HISTORY = "EcHistory";
+  public static final String TBL_MANAGERS = "EcManagers";
+  public static final String TBL_ORDER_ITEMS = "EcOrderItems";
+  public static final String TBL_ORDERS = "EcOrders";
+  public static final String TBL_REGISTRATIONS = "EcRegistrations";
+  public static final String TBL_REJECTION_REASONS = "RejectionReasons";
+  public static final String TBL_SHOPPING_CARTS = "ShoppingCarts";
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
   public static final String TBL_TCD_ANALOGS = "TcdAnalogs";
@@ -128,10 +137,98 @@ public class EcConstants {
 
   public static final String TBL_TCD_MOTONET = "TcdMotonet";
 
+  public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
+  public static final String VIEW_CLIENTS = "EcClients";
+  public static final String VIEW_CONFIGURATION = "EcConfiguration";
+  public static final String VIEW_HISTORY = "EcHistory";
+  public static final String VIEW_MANAGERS = "EcManagers";
+  public static final String VIEW_ORDER_ITEMS = "EcOrderItems";
+  public static final String VIEW_ORDERS = "EcOrders";
+  public static final String VIEW_REGISTRATIONS = "EcRegistrations";
+  public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
+  
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
   public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
 
+  public static final String COL_CLIENT_USER = "User";
+  public static final String COL_CLIENT_REGISTERED = "Registered";
+  public static final String COL_CLIENT_TYPE = "Type";
+  public static final String COL_CLIENT_PRIMARY_BRANCH = "PrimaryBranch";
+  public static final String COL_CLIENT_SECONDARY_BRANCH = "SecondaryBranch";
+  public static final String COL_CLIENT_MANAGER = "Manager";
+  public static final String COL_CLIENT_PERSON_CODE = "PersonCode";
+  public static final String COL_CLIENT_ACTIVITY = "Activity";
+  public static final String COL_CLIENT_CREDIT_LIMIT_WARNING = "CreditLimitWarning";
+  public static final String COL_CLIENT_NOTES = "Notes";
+
+  public static final String COL_CONFIG_TOD_SHOW = "TodShow";
+  public static final String COL_CONFIG_TOD_URL = "TodUrl";
+  public static final String COL_CONFIG_TOD_HTML = "TodHtml";
+  public static final String COL_CONFIG_CONTACTS_SHOW = "ContactsShow";
+  public static final String COL_CONFIG_CONTACTS_URL = "ContactsUrl";
+  public static final String COL_CONFIG_CONTACTS_HTML = "ContactsHtml";
+
+  public static final String COL_HISTORY_DATE = "Date";
+  public static final String COL_HISTORY_USER = "User";
+  public static final String COL_HISTORY_SERVICE = "Service";
+  public static final String COL_HISTORY_QUERY = "Query";
+  public static final String COL_HISTORY_COUNT = "Count";
+  public static final String COL_HISTORY_DURATION = "Duration";
+
+  public static final String COL_MANAGER_USER = "User";
+  public static final String COL_MANAGER_TAB_NR = "TabNr";
+  public static final String COL_MANAGER_REPORT_ORDER = "ReportOrder";
+  public static final String COL_MANAGER_NOTES = "Notes";
+
+  public static final String COL_ORDER_ITEM_ORDER_ID = "Order";
+  public static final String COL_ORDER_ITEM_ID = "Item";
+  public static final String COL_ORDER_ITEM_QUANTITY_ORDERED = "QuantityOrdered";
+  public static final String COL_ORDER_ITEM_QUANTITY_SUBMIT = "QuantitySubmit";
+  public static final String COL_ORDER_ITEM_PRICE = "Price";
+  public static final String COL_ORDER_ITEM_NOTE = "Note";
+
+  public static final String COL_ORDER_DATE = "Date";
+  public static final String COL_ORDER_NUMBER = "Number";
+  public static final String COL_ORDER_STATUS = "Status";
+  public static final String COL_ORDER_CLIENT = "Client";
+  public static final String COL_ORDER_MANAGER = "Manager";
+  public static final String COL_ORDER_DELIVERY_METHOD = "DeliveryMethod";
+  public static final String COL_ORDER_DELIVERY_ADDRESS = "DeliveryAddress";
+  public static final String COL_ORDER_COPY_BY_MAIL = "CopyByMail";
+  public static final String COL_ORDER_CLIENT_COMMENT = "ClientComment";
+  public static final String COL_ORDER_MANAGER_COMMENT = "ManagerComment";
+  public static final String COL_ORDER_REJECTION_REASON = "RejectionReason";
+  public static final String COL_ORDER_NOTES = "Notes";
+
+  public static final String COL_REGISTRATION_DATE = "Date";
+  public static final String COL_REGISTRATION_TYPE = "Type";
+  public static final String COL_REGISTRATION_BRANCH = "Branch";
+  public static final String COL_REGISTRATION_COMPANY_NAME = "CompanyName";
+  public static final String COL_REGISTRATION_COMPANY_CODE = "CompanyCode";
+  public static final String COL_REGISTRATION_VAT_CODE = "VatCode";
+  public static final String COL_REGISTRATION_PERSON_CODE = "PersonCode";
+  public static final String COL_REGISTRATION_FIRST_NAME = "FirstName";
+  public static final String COL_REGISTRATION_LAST_NAME = "LastName";
+  public static final String COL_REGISTRATION_EMAIL = "Email";
+  public static final String COL_REGISTRATION_PHONE = "Phone";
+  public static final String COL_REGISTRATION_CITY = "City";
+  public static final String COL_REGISTRATION_ADDRESS = "Address";
+  public static final String COL_REGISTRATION_POST_INDEX = "PostIndex";
+  public static final String COL_REGISTRATION_COUNTRY = "Country";
+  public static final String COL_REGISTRATION_ACTIVITY = "Activity";
+  public static final String COL_REGISTRATION_NOTES = "Notes";
+
+  public static final String COL_REJECTION_REASON_NAME = "Name";
+  public static final String COL_REJECTION_REASON_NOTES = "Notes";
+
+  public static final String COL_SHOPPING_CART_CREATED = "Created";
+  public static final String COL_SHOPPING_CART_CLIENT = "Client";
+  public static final String COL_SHOPPING_CART_TYPE = "CartType";
+  public static final String COL_SHOPPING_CART_ITEM = "Item";
+  public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
+  public static final String COL_SHOPPING_CART_PRICE = "Price";
+  
   public static final String COL_TCD_ARTICLE_ID = "ArticleID";
   public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";

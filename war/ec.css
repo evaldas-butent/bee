@@ -452,7 +452,7 @@
 
 .bee-ec-shoppingCart-total {
   position: absolute;
-  top: 1ex;
+  top: 5px;
   right: 1em;
   font-size: medium;
   font-weight: bold;
@@ -460,13 +460,13 @@
 
 .bee-ec-shoppingCart-address-panel {
   position: absolute;
-  top: 1ex;
-  bottom: 1ex;
+  top: 5px;
+  height: 80px;
   left: 1em;
   width: 25%;
 }
 .bee-ec-shoppingCart-address-label {
-  margin-left: 1em;
+  margin-left: 2px;
 }
 .bee-ec-shoppingCart-address-input {
   position: absolute;
@@ -478,7 +478,7 @@
 
 .bee-ec-shoppingCart-method-panel {
   position: absolute;
-  top: 1ex;
+  top: 5px;
   left: 27%;
   width: 15%;
 }
@@ -491,13 +491,13 @@
 
 .bee-ec-shoppingCart-comment-panel {
   position: absolute;
-  top: 1ex;
-  bottom: 1ex;
+  top: 5px;
+  height: 80px;
   left: 45%;
   width: 30%;
 }
 .bee-ec-shoppingCart-comment-label {
-  margin-left: 1em;
+  margin-left: 2px;
 }
 .bee-ec-shoppingCart-comment-input {
   position: absolute;
@@ -509,7 +509,7 @@
 
 .bee-ec-shoppingCart-submit {
   position: absolute;
-  bottom: 1ex;
+  top: 50px;
   right: 1em;
   font-size: medium;
 }

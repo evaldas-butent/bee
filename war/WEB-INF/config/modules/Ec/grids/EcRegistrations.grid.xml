@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcRegistrations" viewName="EcRegistrations" caption="=ecRegistrations"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <DataColumn name="Date" visible="true" />
+
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+
+    <RelColumn name="Branch" visible="true" />
+
+    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
+    <DataColumn name="CompanyName" visible="true" />
+    <DataColumn name="CompanyCode" visible="false" />
+    <DataColumn name="VatCode" visible="false" />
+
+    <DataColumn name="PersonCode" visible="false" />
+
+    <DataColumn name="Email" visible="true" />
+    <DataColumn name="Phone" visible="true" />
+
+    <DataColumn name="City" />
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" />
+
+    <DataColumn name="Country" visible="false" />
+
+    <DataColumn name="Actvity" visible="false" />
+    <DataColumn name="Notes" visible="false" />
+  </columns>
+</Grid>

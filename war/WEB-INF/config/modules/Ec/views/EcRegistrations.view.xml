@@ -2,7 +2,6 @@
 <View xmlns="http://www.butent.com/view"
 
   name="EcRegistrations" source="EcRegistrations" caption="=ecRegistrations"
-  editForm="EcRegistration"
   >
   <Columns>
     <SimpleColumn name="Date" />

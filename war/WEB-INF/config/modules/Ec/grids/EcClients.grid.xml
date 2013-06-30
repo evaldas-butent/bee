@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcClients" viewName="EcClients" caption="=ecClients"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+      choiceColumns="Login FirstName LastName CompanyName" visible="true" />
+
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+    <DataColumn name="CompanyName" caption="=company" />
+
+    <DataColumn name="Type" itemKey="EcClientType" />
+
+    <RelColumn name="PrimaryBranch" visible="true" />
+    <RelColumn name="SecondaryBranch" />
+
+    <RelColumn name="Manager" visible="true" />
+
+    <DataColumn name="CreditLimitWarning" visible="false" />
+    <DataColumn name="Registered" visible="false" />
+    <DataColumn name="PersonCode" visible="false" />
+    <DataColumn name="Actvity" visible="false" />
+    <DataColumn name="Notes" visible="false" />
+  </columns>
+</Grid>

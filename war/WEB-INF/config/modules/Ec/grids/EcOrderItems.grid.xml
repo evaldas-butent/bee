@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="EcOrderItems" viewName="EcOrderItems"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <PropColumn name="ArticleName" type="string" minWidth="200" label="=ecItemName" />
+    <PropColumn name="ArticleNr" type="string" minWidth="100" label="=ecItemCode" />
+  
+    <DataColumn name="QuantityOrdered" />
+    <DataColumn name="QuantitySubmit" />
+
+    <DataColumn name="Price" />
+
+    <DataColumn name="Note" />
+  </columns>
+</Grid>
