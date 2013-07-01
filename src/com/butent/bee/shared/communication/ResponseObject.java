@@ -71,6 +71,8 @@ public class ResponseObject implements BeeSerializable {
   private Object response = null;
   private String type = null;
   private boolean isArrayType = false;
+  
+  private int size = 0;
 
   public ResponseObject addError(Object... err) {
     messages.add(new ResponseMessage(LogLevel.ERROR, ArrayUtils.joinWords(err)));
@@ -112,7 +114,7 @@ public class ResponseObject implements BeeSerializable {
     }
     return this;
   }
-  
+
   public ResponseObject addWarning(Object... obj) {
     messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
     return this;
@@ -154,7 +156,7 @@ public class ResponseObject implements BeeSerializable {
       }
     }
   }
-
+  
   public String[] getErrors() {
     return getMessageArray(LogLevel.ERROR);
   }
@@ -189,11 +191,15 @@ public class ResponseObject implements BeeSerializable {
 
     return res;
   }
-  
+
   public String getResponseAsString() {
     return (String) getResponse();
   }
 
+  public int getSize() {
+    return size;
+  }
+  
   public String getType() {
     return type;
   }
@@ -313,6 +319,11 @@ public class ResponseObject implements BeeSerializable {
       setType(response.getClass());
     }
     this.response = response;
+    return this;
+  }
+
+  public ResponseObject setSize(int size) {
+    this.size = size;
     return this;
   }
 

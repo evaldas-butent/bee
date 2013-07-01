@@ -11,7 +11,7 @@
     <RelColumn name="User" renderColumns="Login" editEnabled="true" />
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" />
-    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyName" caption="=company" />
 
     <DataColumn name="Service" visible="true" />
     <DataColumn name="Query" visible="true" />
