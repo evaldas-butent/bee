@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -22,12 +23,15 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -38,6 +42,8 @@ import java.util.Map;
 
 public class EcKeeper {
 
+  private static final BeeLogger logger = LogUtils.getLogger(EcKeeper.class);
+  
   private static final EcData data = new EcData();
 
   private static final InputText searchBox = new InputText();
@@ -86,8 +92,17 @@ public class EcKeeper {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
+        long millis = System.currentTimeMillis();
+        if (Global.isDebug()) {
+          logger.debug(SVC_GLOBAL_SEARCH, "response received");
+        }
+
         dispatchMessages(response);
         List<EcItem> items = getResponseItems(response);
+
+        if (Global.isDebug()) {
+          logger.debug("deserialized", items.size(), TimeUtils.elapsedMillis(millis));
+        }
 
         if (!BeeUtils.isEmpty(items)) {
           resetActiveCommand();

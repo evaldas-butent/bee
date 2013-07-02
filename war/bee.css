@@ -834,11 +834,6 @@ body {
   background-color: WhiteSmoke;
 }
 
-.bee-Frame {
-  width: 100%;
-  height: 100%;
-}
-
 .bee-required:after {
   content: "*";
   color: red;

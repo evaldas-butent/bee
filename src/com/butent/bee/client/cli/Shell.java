@@ -14,9 +14,12 @@ public class Shell extends InputArea {
 
   private static final String STORAGE_KEY = "shell";
 
-  public Shell() {
+  public Shell(String styleName) {
     super();
-    addStyleName("bee-Shell");
+    if (!BeeUtils.isEmpty(styleName)) {
+      addStyleName(styleName);
+    }
+
     sinkEvents(Event.ONKEYDOWN | Event.ONCLICK);
   }
 

@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.ec.view;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_HTML;
 import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_URL;
 import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_HTML;
@@ -8,6 +10,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_URL;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 
@@ -61,5 +64,11 @@ public abstract class EcView extends Flow {
   protected void onLoad() {
     super.onLoad();
     UiHelper.focus(this);
+  }
+  
+  protected Widget renderNoData(String key) {
+    Label label = new Label(Localized.messages.dataNotAvailable(key));
+    EcStyles.add(label, "noData");
+    return label;
   }
 }

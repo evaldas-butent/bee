@@ -197,9 +197,7 @@
 
         <page>
           <InlineLabel html="Frame" />
-          <ResizePanel>
-            <Frame url="http://uncyclopedia.org/wiki/Main_Page" />
-          </ResizePanel>
+          <Frame url="http://uncyclopedia.org/wiki/Main_Page" style="width: 100%; height: 100%;" />
         </page>
 
         <page>

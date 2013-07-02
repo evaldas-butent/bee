@@ -4,7 +4,6 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Frame;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -44,7 +43,7 @@ class HtmlViewer extends EcView {
           add(widget);
         
         } else {
-          add(new Label(caption));
+          add(renderNoData(caption));
         }
       }
     });

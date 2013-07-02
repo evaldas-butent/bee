@@ -190,6 +190,7 @@
 
 .bee-ec-ItemList-table {
   border-collapse: collapse;
+  table-layout: fixed;
 }
 .bee-ec-ItemList-headerRow td {
   text-align: center;
@@ -514,6 +515,10 @@
   font-size: medium;
 }
 
+.bee-ec-htmlViewer-frame {
+  width: 99%;
+  height: 99%;
+}
 .bee-ec-htmlViewer-html {
   position: absolute;
   top: 1ex;
@@ -521,4 +526,15 @@
   left: 1em;
   right: 1em;
   overflow: auto;
+}
+
+.bee-ec-noData {
+  margin-left: 2em;
+  margin-top: 2ex;
+  font-weight: bolder;
+}
+
+.bee-ec-shell {
+  width: 100%;
+  height: 99%;
 }

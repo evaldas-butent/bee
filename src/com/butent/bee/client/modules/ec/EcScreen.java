@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -11,6 +12,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
@@ -118,7 +121,7 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
-    return Pair.of(ClientLogManager.getLogPanel(), 200);
+    return Pair.of(ClientLogManager.getLogPanel(), 0);
   }
 
   @Override
@@ -158,13 +161,11 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
-    Shell shell = new Shell();
-    shell.setStyleName(EcStyles.name("shell"));
-
+    Shell shell = new Shell(EcStyles.name("shell"));
     shell.restore();
 
     Simple wrapper = new Simple(shell);
-    return Pair.of(wrapper, 200);
+    return Pair.of(wrapper, 0);
   }
 
   private void createCommands(HasWidgets container) {
@@ -244,11 +245,22 @@ public class EcScreen extends ScreenImpl {
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCode.ENTER) {
+        int keyCode = event.getNativeKeyCode();
+        
+        if (keyCode == KeyCode.ENTER) {
           String query = BeeUtils.trim(input.getValue());
           if (!BeeUtils.isEmpty(query)) {
             EcKeeper.doGlobalSearch(query);
           }
+
+        } else if (EventUtils.isArrowKey(keyCode) && input.isEmpty()) {
+          Direction direction = (keyCode == KeyCodes.KEY_LEFT || keyCode == KeyCodes.KEY_UP)
+              ? Direction.WEST : Direction.EAST;
+              
+          int oldSize = getScreenPanel().getDirectionSize(direction);
+          int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
+          
+          getScreenPanel().setDirectionSize(direction, newSize, true);
         }
       }
     });

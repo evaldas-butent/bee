@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
@@ -16,7 +17,10 @@ import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -24,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 
 public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
+
+  private static final BeeLogger logger = LogUtils.getLogger(ItemPanel.class);
 
   private static final String STYLE_PRIMARY = "ItemPanel";
   private static final String STYLE_CATEGORIES = STYLE_PRIMARY + "-categories";
@@ -69,6 +75,8 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
   }
 
   public void render(List<EcItem> ecItems) {
+    long millis = System.currentTimeMillis();
+
     if (!isEmpty()) {
       clear();
     }
@@ -94,6 +102,13 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
         manufacturers.add(manufacturer);
       }
     }
+    
+    boolean debug = Global.isDebug();
+    if (debug) {
+      logger.debug("cat", categories.size(), "man", manufacturers.size(),
+          TimeUtils.elapsedMillis(millis));
+      millis = System.currentTimeMillis();
+    }
 
     if (manufacturers.size() > 1) {
       Collections.sort(manufacturers);
@@ -104,13 +119,22 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 
     if (showCategories) {
       add(renderCategories());
+      if (debug) {
+        logger.debug("cat rendered", TimeUtils.elapsedMillis(millis));
+        millis = System.currentTimeMillis();
+      }
     }
+
     if (showManufacturers) {
       this.manufacturerWrapper = new Flow();
       EcStyles.add(manufacturerWrapper, STYLE_MANUFACTURERS, STYLE_WRAPPER);
 
       renderManufacturers(manufacturers);
       add(manufacturerWrapper);
+      if (debug) {
+        logger.debug("man rendered", TimeUtils.elapsedMillis(millis));
+        millis = System.currentTimeMillis();
+      }
     } else {
       this.manufacturerWrapper = null;
     }
@@ -118,6 +142,10 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     this.itemWrapper = new ItemList(items);
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
     add(itemWrapper);
+    
+    if (debug) {
+      logger.debug("items rendered", TimeUtils.elapsedMillis(millis));
+    }
   }
 
   private List<EcItem> filterByCategory(List<EcItem> input) {

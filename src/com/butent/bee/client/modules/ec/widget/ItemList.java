@@ -126,6 +126,9 @@ public class ItemList extends Simple {
 
       row++;
       for (EcItem item : items) {
+        if (row > 500) {
+          break;
+        }
         renderItem(row++, item);
       }
     }
