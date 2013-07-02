@@ -20,6 +20,8 @@ public interface BeeLogger {
 
   void log(LogLevel level, Object... messages);
 
+  void setLevel(LogLevel level);
+
   void severe(Object... messages);
 
   void warning(Object... messages);

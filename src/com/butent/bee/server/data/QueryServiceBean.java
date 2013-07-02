@@ -493,9 +493,8 @@ public class QueryServiceBean {
 
       if (si.hasField(idFld)) {
         Object value = si.getValue(idFld).getValue();
-        if (value instanceof Long) {
-          id = (Long) value;
-        } else if (value instanceof Value) {
+
+        if (value instanceof Value) {
           id = ((Value) value).getLong();
         }
       } else {

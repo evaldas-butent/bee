@@ -93,8 +93,9 @@ public class ClientLogger implements BeeLogger {
     }
   }
 
-  public void setLevel(Level lvl) {
-    logger.setLevel(lvl);
+  @Override
+  public void setLevel(LogLevel level) {
+    logger.setLevel(level.getLevel());
   }
 
   @Override

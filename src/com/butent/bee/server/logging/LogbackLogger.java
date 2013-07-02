@@ -12,6 +12,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LocationAwareLogger;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 public class LogbackLogger implements BeeLogger {
 
   private static final String FQCN = BeeLoggerWrapper.class.getName();
@@ -109,6 +112,28 @@ public class LogbackLogger implements BeeLogger {
       case WARNING:
         warning(messages);
         break;
+    }
+  }
+
+  @Override
+  public void setLevel(LogLevel level) {
+    if (logger instanceof Logger) {
+      switch (level) {
+        case DEBUG:
+          ((Logger) logger).setLevel(Level.DEBUG);
+          break;
+        case ERROR:
+          ((Logger) logger).setLevel(Level.ERROR);
+          break;
+        case INFO:
+          ((Logger) logger).setLevel(Level.INFO);
+          break;
+        case WARNING:
+          ((Logger) logger).setLevel(Level.WARN);
+          break;
+      }
+    } else {
+      warning("Logger", logger.getName(), "is not an instance of", Logger.class.getName());
     }
   }
 

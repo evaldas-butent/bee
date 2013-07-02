@@ -146,8 +146,8 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_CLEAR_CONFIGURATION)) {
       response = clearConfiguration(reqInfo);
 
-    } else if (BeeUtils.same(svc, "ITEM_INFO")) {
-      response = getItemInfo(BeeUtils.toLong(reqInfo.getParameter("ID")));
+    } else if (BeeUtils.same(svc, SVC_GET_ITEM_ANALOGS)) {
+      response = getItemAnalogs(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -478,17 +478,19 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(items);
   }
   
-  private ResponseObject getItemInfo(long id) {
-    SqlSelect query =
-        new SqlSelect()
-            .addFields(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_NAME, COL_TCD_CATEGORY_ID,
-                COL_TCD_PARENT_ID)
-            .addFrom(TBL_TCD_ARTICLE_CATEGORIES)
-            .addFromInner(TBL_TCD_CATEGORIES, SqlUtils.joinUsing(TBL_TCD_ARTICLE_CATEGORIES,
-                TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID))
-            .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID, id));
+  private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
+    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter("ID"));
 
-    return ResponseObject.response(qs.getData(query));
+    SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID)
+        .addFrom(TBL_TCD_ANALOGS)
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, new SqlSelect()
+            .addFields(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR)
+            .addFrom(TBL_TCD_ANALOGS)
+            .setWhere(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id, "Kind", 1))),
+            SqlUtils.notEqual(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id)));
+
+    return ResponseObject.response(getItems(articleIdQuery));
   }
 
   private ResponseObject getItemManufacturers() {
@@ -507,16 +509,20 @@ public class EcModuleBean implements BeeModule {
     String tempArticleIds = createTempArticleIds(query);
 
     SqlSelect articleQuery = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
-            COL_TCD_SUPPLIER)
-        .addSum(TBL_TCD_MOTONET, COL_TCD_REMAINDER)
-        .addMax(TBL_TCD_MOTONET, COL_TCD_PRICE)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_NAME, COL_TCD_SUPPLIER)
+        .addMax(TBL_TCD_ARTICLE_BRANDS, COL_TCD_PRICE)
+        .addSum(TBL_TCD_STOCKS, COL_TCD_REMAINDER)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLES,
             COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_MOTONET, SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_MOTONET,
-            COL_TCD_ARTICLE_ID))
-        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+        .addFromLeft(TBL_TCD_ARTICLE_BRANDS,
+            SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS,
+                COL_TCD_ARTICLE_ID))
+        .addFromLeft(TBL_TCD_STOCKS,
+            SqlUtils.joinUsing(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_STOCKS, "ButentID"))
+        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_NAME,
             COL_TCD_SUPPLIER)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_ID);
 
@@ -529,7 +535,7 @@ public class EcModuleBean implements BeeModule {
         item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
         item.setSupplier(row.getValue(COL_TCD_SUPPLIER));
 
-        item.setStock1(row.getInt(COL_TCD_REMAINDER));
+        item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
         item.setStock2(BeeUtils.randomInt(0, 20) * BeeUtils.randomInt(0, 2));
 
         Double price = row.getDouble(COL_TCD_PRICE);
@@ -641,20 +647,25 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_NAME,
             COL_TCD_SUPPLIER)
-        .addField(TBL_TCD_ANALOGS, COL_TCD_SUPPLIER, ALS_TCD_ANALOG_SUPPLIER)
-        .addSum(TBL_TCD_MOTONET, COL_TCD_REMAINDER)
-        .addMax(TBL_TCD_MOTONET, COL_TCD_PRICE)
+        .addFields(TBL_TCD_ANALOGS, COL_TCD_BRAND)
+        .addMax(TBL_TCD_ARTICLE_BRANDS, COL_TCD_PRICE)
+        .addSum(TBL_TCD_STOCKS, COL_TCD_REMAINDER)
         .addFrom(TBL_TCD_ANALOGS)
         .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(TBL_TCD_ANALOGS, TBL_TCD_ARTICLES,
             COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_MOTONET, SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_MOTONET,
-            COL_TCD_ARTICLE_ID))
+        .addFromLeft(TBL_TCD_ARTICLE_BRANDS,
+            SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS,
+                COL_TCD_ARTICLE_ID))
+        .addFromLeft(TBL_TCD_STOCKS,
+            SqlUtils.joinUsing(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_STOCKS, "ButentID"))
         .setWhere(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, searchCode))
-        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
+        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_NAME,
             COL_TCD_SUPPLIER)
-        .addGroup(TBL_TCD_ANALOGS, COL_TCD_SUPPLIER)
+        .addGroup(TBL_TCD_ANALOGS, COL_TCD_BRAND)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID);
 
     if (limit > 0) {
@@ -670,9 +681,9 @@ public class EcModuleBean implements BeeModule {
       EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID));
       item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
       item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
-      item.setSupplier(BeeUtils.notEmpty(row.getValue(ALS_TCD_ANALOG_SUPPLIER),
+      item.setSupplier(BeeUtils.notEmpty(row.getValue(COL_TCD_BRAND),
           row.getValue(COL_TCD_SUPPLIER)));
-      item.setStock1(row.getInt(COL_TCD_REMAINDER));
+      item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
 
       Double price = row.getDouble(COL_TCD_PRICE);
       if (BeeUtils.isPositive(price)) {

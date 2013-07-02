@@ -743,6 +743,10 @@ public class UiServiceBean {
       tcd.suckMotonet();
       response = ResponseObject.info("Motonet SUCKED OFF");
 
+    } else if (BeeUtils.same(cmd, "butent")) {
+      tcd.suckButent();
+      response = ResponseObject.info("Butent SUCKED OFF");
+
     } else if (BeeUtils.same(cmd, "tcd")) {
       tcd.justDoIt();
       response = ResponseObject.info("Tcd transforming...");

@@ -467,19 +467,9 @@ public class XmlUtils {
     return lst;
   }
 
-  public static Map<String, String> getElements(String xml, String ignore) {
-    Assert.notEmpty(xml);
+  public static Map<String, String> getElements(NodeList nodes, String ignore) {
+    Assert.notNull(nodes);
     Map<String, String> ret = new HashMap<String, String>();
-
-    Document doc = fromString(xml);
-    if (doc == null) {
-      return ret;
-    }
-
-    NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
-    if (nodes == null) {
-      return ret;
-    }
 
     Element el;
     String tg, txt;
@@ -501,6 +491,22 @@ public class XmlUtils {
       }
     }
     return ret;
+  }
+
+  public static Map<String, String> getElements(String xml, String ignore) {
+    Assert.notEmpty(xml);
+    Map<String, String> ret = new HashMap<String, String>();
+
+    Document doc = fromString(xml);
+    if (doc == null) {
+      return ret;
+    }
+
+    NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
+    if (nodes == null) {
+      return ret;
+    }
+    return getElements(nodes, ignore);
   }
 
   public static List<Element> getElementsByLocalName(Node parent, String tagName) {
@@ -565,7 +571,7 @@ public class XmlUtils {
   public static Element getFirstChildElement(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-   
+
     NodeList nodes = parent.getChildNodes();
     if (isEmpty(nodes)) {
       return null;

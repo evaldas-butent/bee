@@ -101,6 +101,7 @@ public class EcConstants {
 
   public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
   public static final String SVC_GET_ITEMS_BY_MANUFACTURER = "getItemsByManufacturer";
+  public static final String SVC_GET_ITEM_ANALOGS = "getItemAnalogs";
 
   public static final String SVC_GET_DELIVERY_METHODS = "getDeliveryMethods";
 
@@ -143,7 +144,8 @@ public class EcConstants {
   public static final String TBL_TCD_TYPES = "TcdTypes";
   public static final String TBL_TCD_TYPE_ARTICLES = "TcdTypeArticles";
 
-  public static final String TBL_TCD_MOTONET = "TcdMotonet";
+  public static final String TBL_TCD_ARTICLE_BRANDS = "TcdArticleBrands";
+  public static final String TBL_TCD_STOCKS = "TcdStocks";
 
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
   public static final String VIEW_CLIENTS = "EcClients";
@@ -268,10 +270,10 @@ public class EcConstants {
   public static final String COL_TCD_BODY = "Body";
   public static final String COL_TCD_AXLE = "Axle";
 
-  public static final String COL_TCD_PREFIX = "Prefix";
-  public static final String COL_TCD_INDEX = "Index";
-  public static final String COL_TCD_REMAINDER = "Remainder";
+  public static final String COL_TCD_REMAINDER = "Stock";
   public static final String COL_TCD_PRICE = "Price";
+
+  public static final String COL_TCD_BRAND = "Brand";
 
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 

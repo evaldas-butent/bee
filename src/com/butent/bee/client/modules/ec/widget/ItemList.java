@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.ec.widget;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -17,8 +15,8 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
@@ -26,10 +24,7 @@ import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
@@ -113,11 +108,11 @@ public class ItemList extends Simple {
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
       table.setWidget(row, COL_STOCK_2, wrh2);
-      
+
       Label listPriceLabel = new Label(Localized.constants.ecListPrice());
       EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
       table.setWidget(row, COL_LIST_PRICE, listPriceLabel);
-      
+
       Label priceLabel = new Label(Localized.constants.ecClientPrice());
       EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
       table.setWidget(row, COL_PRICE, priceLabel);
@@ -134,18 +129,6 @@ public class ItemList extends Simple {
     }
   }
 
-  private void fillTree(Multimap<String, Pair<String, String>> data, String parent,
-      TreeItem tree) {
-
-    if (data.containsKey(parent)) {
-      for (Pair<String, String> info : data.get(parent)) {
-        TreeItem item = new TreeItem(info.getB());
-        tree.addItem(item);
-        fillTree(data, info.getA(), item);
-      }
-    }
-  }
-
   private Widget renderInfo(final EcItem item) {
     Flow panel = new Flow();
 
@@ -153,12 +136,12 @@ public class ItemList extends Simple {
     if (!BeeUtils.isEmpty(name)) {
       Label itemName = new Label(name);
       itemName.addStyleName(STYLE_ITEM_NAME);
-      
+
       String categoryNames = BeeUtils.join(BeeConst.STRING_EOL, EcKeeper.getCategoryNames(item));
       if (!BeeUtils.isEmpty(categoryNames)) {
         itemName.setTitle(categoryNames);
       }
-      
+
       panel.add(itemName);
     }
 
@@ -200,7 +183,7 @@ public class ItemList extends Simple {
       analogs.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          ParameterList params = EcKeeper.createArgs("ITEM_INFO");
+          ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
           params.addDataItem("ID", item.getId());
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -209,20 +192,17 @@ public class ItemList extends Simple {
               response.notify(BeeKeeper.getScreen());
 
               if (!response.hasErrors()) {
-                Multimap<String, Pair<String, String>> subTree = HashMultimap.create();
+                List<EcItem> items = EcKeeper.getResponseItems(response);
 
-                for (SimpleRow row : SimpleRowSet.restore((String) response.getResponse())) {
-                  subTree.put(row.getValue("ParentID"),
-                      Pair.of(row.getValue("CategoryID"), row.getValue("CategoryName")));
+                if (!BeeUtils.isEmpty(items)) {
+                  ItemPanel itemPanel = new ItemPanel();
+                  itemPanel.setHeight("600px");
+                  StyleUtils.setOverflow(itemPanel.getElement(), ScrollBars.VERTICAL, "auto");
+                  EcKeeper.renderItems(itemPanel, items);
+                  Global.getMsgBoxen().showWidget(itemPanel);
+                } else {
+                  BeeKeeper.getScreen().notifyWarning("Nėra duoemnų");
                 }
-                Tree tree = new Tree();
-
-                TreeItem root = new TreeItem("Kategorijos");
-                tree.addItem(root);
-                fillTree(subTree, null, root);
-                root.setOpenRecursive(true, false);
-
-                Global.getMsgBoxen().showWidget(tree);
               }
             }
           });
@@ -266,10 +246,10 @@ public class ItemList extends Simple {
     if (stock2 != null) {
       table.setWidgetAndStyle(row, COL_STOCK_2, stock2, STYLE_STOCK_2);
     }
-    
+
     int listPrice = item.getListPrice();
     int price = item.getPrice();
-    
+
     if (listPrice > price) {
       Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
       table.setWidgetAndStyle(row, COL_LIST_PRICE, listPriceWidget, STYLE_LIST_PRICE);
@@ -295,7 +275,7 @@ public class ItemList extends Simple {
     String stylePrefix = style + "-";
 
     Flow panel = new Flow();
-    
+
     InlineLabel value = new InlineLabel(EcUtils.renderCents(price));
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
@@ -306,7 +286,7 @@ public class ItemList extends Simple {
 
     return panel;
   }
-  
+
   private Widget renderQuantity(final EcItem item, int quantity) {
     String stylePrefix = STYLE_QUANTITY + "-";
 

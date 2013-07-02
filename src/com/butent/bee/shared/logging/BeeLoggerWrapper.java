@@ -77,6 +77,13 @@ public class BeeLoggerWrapper implements BeeLogger {
   }
 
   @Override
+  public void setLevel(LogLevel level) {
+    if (initLogger()) {
+      logger.setLevel(level);
+    }
+  }
+
+  @Override
   public void severe(Object... messages) {
     if (initLogger()) {
       logger.severe(messages);
