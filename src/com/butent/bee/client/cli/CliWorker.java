@@ -2619,12 +2619,21 @@ public class CliWorker {
       public void run() {
         long time = System.currentTimeMillis();
 
-        for (Prog prog : list) {
+        for (final Prog prog : list) {
           if (prog.id == null) {
             if (prog.start < time && prog.finish > time) {
               String caption = BeeUtils.toString(prog.start - now) +
                   "-" + BeeUtils.toString(prog.finish - now);
-              prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max);
+              
+              Image close = new Image(Global.getImages().closeSmallRed());
+              close.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  BeeKeeper.getScreen().closeProgress(prog.id);
+                }
+              });
+              
+              prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max, close);
             }
 
           } else if (prog.finish > time) {

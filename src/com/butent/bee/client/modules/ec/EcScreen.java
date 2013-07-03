@@ -113,6 +113,10 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
+  protected void hideProgressPanel() {
+  }
+
+  @Override
   protected IdentifiableWidget initCenter() {
     return new CustomDiv();
   }
@@ -158,12 +162,24 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
+  protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
+    Flow panel = new Flow(EcStyles.name("ProgressPanel"));
+    setProgressPanel(panel);
+
+    return Pair.of(panel, 18);
+  }
+
+  @Override
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     Shell shell = new Shell(EcStyles.name("shell"));
     shell.restore();
 
     Simple wrapper = new Simple(shell);
     return Pair.of(wrapper, 0);
+  }
+
+  @Override
+  protected void showProgressPanel() {
   }
 
   private void createCommands(HasWidgets container) {

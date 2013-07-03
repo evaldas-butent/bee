@@ -434,7 +434,7 @@ public class Search {
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
-  private static final int MIN_SEARCH_PHRASE_LENGHT = 3;
+  private static final int MIN_SEARCH_PHRASE_LENGTH = 3;
 
   private Panel searchPanel = null;
   private InputText input = null;
@@ -535,9 +535,9 @@ public class Search {
     final String value = getInput().getValue();
     if (!BeeUtils.isEmpty(value)) {
 
-      if (value.trim().length() < MIN_SEARCH_PHRASE_LENGHT) {
-        BeeKeeper.getScreen().notifyWarning("Ieškoma frazė turi būti sudaryta bent iš",
-            BeeUtils.toString(MIN_SEARCH_PHRASE_LENGHT), "simbolių");
+      if (value.trim().length() < MIN_SEARCH_PHRASE_LENGTH) {
+        BeeKeeper.getScreen().notifyWarning(
+            Localized.messages.minSearchQueryLength(MIN_SEARCH_PHRASE_LENGTH));
         return;
       }
 

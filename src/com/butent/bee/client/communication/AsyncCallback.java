@@ -68,7 +68,13 @@ public class AsyncCallback implements RequestCallback {
 
     if (info == null) {
       logger.warning("Rpc info not available");
+    } else if (info.isCanceled()) {
+      info.done();
+      logger.debug("<", qid, "canceled");
+      finalizeResponse();
+      return;
     }
+
     if (BeeUtils.isEmpty(svc)) {
       logger.warning("Rpc service", BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
     }

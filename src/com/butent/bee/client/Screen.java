@@ -30,7 +30,7 @@ public interface Screen extends Module, NotificationListener {
 
   boolean containsDomainEntry(Domain domain, Long key);
   
-  String createProgress(String caption, double max);
+  String createProgress(String caption, Double max, IdentifiableWidget closeBox);
 
   int getActivePanelHeight();
 

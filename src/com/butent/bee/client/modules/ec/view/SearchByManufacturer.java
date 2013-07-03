@@ -9,9 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -21,7 +19,6 @@ import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,17 +101,13 @@ class SearchByManufacturer extends EcView {
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_MANUFACTURER);
       params.addDataItem(VAR_MANUFACTURER, selectedManufacturer);
 
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          EcKeeper.dispatchMessages(response);
-          List<EcItem> items = EcKeeper.getResponseItems(response);
-
-          if (!BeeUtils.isEmpty(items)) {
-            EcKeeper.renderItems(itemPanel, items);
-          }
-        }
-      });
+      EcKeeper.requestItems(SVC_GET_ITEMS_BY_MANUFACTURER, selectedManufacturer, params,
+          new Consumer<List<EcItem>>() {
+            @Override
+            public void accept(List<EcItem> items) {
+              EcKeeper.renderItems(itemPanel, items);
+            }
+          });
     }
   }
   
@@ -138,6 +131,8 @@ class SearchByManufacturer extends EcView {
         
         Popup popup = new Popup(OutsideClick.CLOSE, STYLE_MANUFACTURER + "dialog");
         popup.setWidget(manufacturerSelector);
+
+        popup.setHideOnEscape(true);
         popup.showRelativeTo(manufacturerWidget.getElement());
         
         manufacturerSelector.focus();

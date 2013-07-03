@@ -229,6 +229,11 @@ public class RpcFactory implements Module {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data, callback, timeout);
   }
 
+  public int makeRequest(ParameterList params, ResponseCallback callback) {
+    RequestBuilder.Method meth = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET; 
+    return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
+  }
+  
   @Override
   public void onExit() {
   }

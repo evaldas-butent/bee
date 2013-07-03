@@ -1,24 +1,14 @@
 package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_CLIENT_TYPE;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_HTML;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_URL;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_HTML;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_URL;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_ORDER_STATUS;
-import static com.butent.bee.shared.modules.ec.EcConstants.COL_REGISTRATION_TYPE;
-import static com.butent.bee.shared.modules.ec.EcConstants.EC_METHOD;
-import static com.butent.bee.shared.modules.ec.EcConstants.EC_MODULE;
-import static com.butent.bee.shared.modules.ec.EcConstants.SVC_FEATURED_AND_NOVELTY;
-import static com.butent.bee.shared.modules.ec.EcConstants.SVC_GLOBAL_SEARCH;
-import static com.butent.bee.shared.modules.ec.EcConstants.VAR_QUERY;
-import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_CLIENTS;
-import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_ORDERS;
-import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_REGISTRATIONS;
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -30,15 +20,14 @@ import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -56,11 +45,12 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class EcKeeper {
 
   private static final BeeLogger logger = LogUtils.getLogger(EcKeeper.class);
-  
+
   private static final EcData data = new EcData();
 
   private static final InputText searchBox = new InputText();
@@ -70,7 +60,9 @@ public class EcKeeper {
   private static EcCommandWidget activeCommand = null;
 
   private static boolean debug = false;
-  
+
+  private static Set<EcRequest> pendingRequests = Sets.newHashSet();
+
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
   }
@@ -79,7 +71,20 @@ public class EcKeeper {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
   }
-  
+
+  public static boolean checkResponse(EcRequest request, ResponseObject response) {
+    boolean pending = pendingRequests.contains(request);
+    if (isDebug()) {
+      logger.debug(request.getService(), request.getQuery());
+      logger.debug("response received", request.elapsedMillis(), pending);
+    }
+
+    if (pending) {
+      dispatchMessages(response);
+    }
+    return pending && response.hasResponse();
+  }
+
   public static void closeView(IdentifiableWidget view) {
     BeeKeeper.getScreen().closeWidget(view);
     showFeaturedAndNoveltyItems();
@@ -92,51 +97,27 @@ public class EcKeeper {
   }
 
   public static void dispatchMessages(ResponseObject response) {
-    if (response != null && response.hasMessages()) {
-      for (ResponseMessage message : response.getMessages()) {
-        LogLevel level = message.getLevel();
-
-        if (level == LogLevel.ERROR) {
-          BeeKeeper.getScreen().notifySevere(message.getMessage());
-        } else if (level == LogLevel.WARNING) {
-          BeeKeeper.getScreen().notifyWarning(message.getMessage());
-        } else {
-          BeeKeeper.getScreen().notifyInfo(message.getMessage());
-        }
-      }
+    if (response != null) {
+      response.notify(BeeKeeper.getScreen());
     }
   }
 
   public static void doGlobalSearch(String query) {
-    Assert.notEmpty(query);
+    if (!checkSearchQuery(query)) {
+      return;
+    }
 
-    final long start = System.currentTimeMillis();
-    
     ParameterList params = createArgs(SVC_GLOBAL_SEARCH);
     params.addDataItem(VAR_QUERY, query);
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    
+    requestItems(SVC_GLOBAL_SEARCH, query, params, new Consumer<List<EcItem>>() {
       @Override
-      public void onResponse(ResponseObject response) {
-        long millis = System.currentTimeMillis();
-        if (isDebug()) {
-          logger.debug("response received", TimeUtils.elapsedMillis(start));
-        }
+      public void accept(List<EcItem> items) {
+        resetActiveCommand();
 
-        dispatchMessages(response);
-        List<EcItem> items = getResponseItems(response);
-
-        if (isDebug()) {
-          logger.debug("deserialized", items.size(), TimeUtils.elapsedMillis(millis));
-        }
-
-        if (!BeeUtils.isEmpty(items)) {
-          resetActiveCommand();
-
-          ItemPanel widget = new ItemPanel();
-          BeeKeeper.getScreen().updateActivePanel(widget);
-          renderItems(widget, items);
-        }
+        ItemPanel widget = new ItemPanel();
+        BeeKeeper.getScreen().updateActivePanel(widget);
+        renderItems(widget, items);
       }
     });
   }
@@ -144,6 +125,17 @@ public class EcKeeper {
   public static void ensureCategoeries(final Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
+  }
+  
+  public static void finalizeRequest(EcRequest request, boolean remove) {
+    if (request.hasProgress()) {
+      BeeKeeper.getScreen().closeProgress(request.getProgressId());
+      request.setProgressId(null);
+    }
+
+    if (remove) {
+      pendingRequests.remove(request);
+    }
   }
 
   public static void getCarManufacturers(Consumer<List<String>> callback) {
@@ -189,21 +181,63 @@ public class EcKeeper {
 
   public static List<EcItem> getResponseItems(ResponseObject response) {
     List<EcItem> items = Lists.newArrayList();
+
     if (response != null) {
+      long millis = System.currentTimeMillis();
+
       String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
       if (arr != null) {
         for (String s : arr) {
           items.add(EcItem.restore(s));
         }
       }
+
+      if (isDebug()) {
+        logger.debug("deserialized items", items.size(), TimeUtils.elapsedMillis(millis));
+      }
     }
+
     return items;
   }
 
   public static boolean isDebug() {
     return debug;
   }
-  
+
+  public static EcRequest maybeCreateRequest(String service, String query) {
+    if (!pendingRequests.isEmpty()) {
+      for (EcRequest request : pendingRequests) {
+        if (request.sameService(service) && request.sameQuery(query)) {
+          return null;
+        }
+      }
+
+      for (EcRequest request : pendingRequests) {
+        finalizeRequest(request, false);
+      }
+      pendingRequests.clear();
+    }
+
+    return new EcRequest(service, query);
+  }
+
+  public static void onRequestStart(final EcRequest request, int requestId) {
+    request.setRequestId(requestId);
+
+    Image cancel = new Image(Global.getImages().closeSmall());
+    cancel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        cancelRequest(request);
+      }
+    });
+
+    String progressId = BeeKeeper.getScreen().createProgress(request.getQuery(), null, cancel);
+    request.setProgressId(progressId);
+
+    pendingRequests.add(request);
+  }
+
   public static void openCart(final CartType cartType) {
     data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
       @Override
@@ -268,6 +302,35 @@ public class EcKeeper {
     });
   }
 
+  public static void requestItems(String service, String query, ParameterList params,
+      final Consumer<List<EcItem>> callback) {
+
+    Assert.notEmpty(service);
+    Assert.notNull(params);
+    Assert.notNull(callback);
+
+    final EcRequest request = maybeCreateRequest(service, query);
+    if (request == null) {
+      return;
+    }
+
+    int requestId = BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(request, response)) {
+          List<EcItem> items = getResponseItems(response);
+          if (!items.isEmpty()) {
+            callback.accept(items);
+          }
+        }
+
+        finalizeRequest(request, true);
+      }
+    });
+
+    onRequestStart(request, requestId);
+  }
+
   public static void resetCart(CartType cartType) {
     Cart cart = getCart(cartType);
     if (cart != null) {
@@ -276,43 +339,29 @@ public class EcKeeper {
     }
   }
 
-  public static void searchItems(String service, String query, final Consumer<List<EcItem>> callback) {
-    Assert.notEmpty(service);
-    Assert.notEmpty(query);
-    Assert.notNull(callback);
+  public static void searchItems(String service, String query,
+      final Consumer<List<EcItem>> callback) {
+
+    if (!checkSearchQuery(query)) {
+      return;
+    }
 
     ParameterList params = createArgs(service);
     params.addDataItem(VAR_QUERY, query);
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(BeeKeeper.getScreen());
-
-        if (!response.hasErrors()) {
-          dispatchMessages(response);
-          List<EcItem> items = getResponseItems(response);
-          if (items != null) {
-            callback.accept(items);
-          }
-        }
-      }
-    });
+    requestItems(service, query, params, callback);
   }
 
   public static void showFeaturedAndNoveltyItems() {
-    BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_FEATURED_AND_NOVELTY), new ResponseCallback() {
+    ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
+
+    requestItems(SVC_FEATURED_AND_NOVELTY, null, params, new Consumer<List<EcItem>>() {
       @Override
-      public void onResponse(ResponseObject response) {
-        dispatchMessages(response);
-        List<EcItem> items = getResponseItems(response);
-
-        if (!BeeUtils.isEmpty(items)) {
-          resetActiveCommand();
-
-          FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
-          BeeKeeper.getScreen().updateActivePanel(widget);
-        }
+      public void accept(List<EcItem> items) {
+        resetActiveCommand();
+        
+        FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
+        BeeKeeper.getScreen().updateActivePanel(widget);
       }
     });
   }
@@ -345,7 +394,22 @@ public class EcKeeper {
   static InputText getSearchBox() {
     return searchBox;
   }
-  
+
+  private static void cancelRequest(EcRequest request) {
+    BeeKeeper.getRpc().cancelRequest(request.getRequestId());
+    finalizeRequest(request, true);
+  }
+
+  private static boolean checkSearchQuery(String query) {
+    if (BeeUtils.hasLength(BeeUtils.trim(query), MIN_SEARCH_QUERY_LENGTH)) {
+      return true;
+    } else {
+      BeeKeeper.getScreen().notifyWarning(
+          Localized.messages.minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
+      return false;
+    }
+  }
+
   private static void editConfigurationHtml(final String caption, final String urlColumn,
       final String htmlColumn) {
 

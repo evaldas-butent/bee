@@ -126,6 +126,10 @@ public class RpcInfo {
     return wasPending;
   }
 
+  public int done() {
+    return duration.finish();
+  }
+
   public int end(ContentType ctp, String data, int size, int rows,
       int cols, int msgCnt, Collection<ResponseMessage> messages) {
     int r = done();
@@ -334,11 +338,11 @@ public class RpcInfo {
   public String getTimeoutString() {
     return duration.getTimeoutAsTime();
   }
-
+  
   public Object getUserData() {
     return userData;
   }
-  
+
   public boolean isCanceled() {
     return getStates().contains(State.CANCELED);
   }
@@ -443,9 +447,5 @@ public class RpcInfo {
 
   public void setUserData(Object userData) {
     this.userData = userData;
-  }
-
-  private int done() {
-    return duration.finish();
   }
 }

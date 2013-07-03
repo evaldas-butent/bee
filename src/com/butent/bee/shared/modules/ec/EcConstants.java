@@ -281,6 +281,8 @@ public class EcConstants {
 
   public static final String CURRENCY = "Lt";
 
+  public static final int MIN_SEARCH_QUERY_LENGTH = 3;
+  
   private EcConstants() {
   }
 }

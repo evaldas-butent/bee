@@ -1419,12 +1419,11 @@ body {
   margin-left: 2em;
   margin-top: 2px;
 }
-.bee-ProgressCaption {
-}
 .bee-ProgressItem .bee-Progress {
-  margin: 0 3px 1px 3px;
+  margin: 0 3px 1px 5px;
 }
-.bee-ProgressPercent {
+.bee-ProgressClose {
+  margin-right: 5px;
 }
 
 .bee-FileCollector-panel, .bee-FileGroup-panel {

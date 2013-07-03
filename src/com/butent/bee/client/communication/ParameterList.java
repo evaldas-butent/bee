@@ -229,6 +229,15 @@ public class ParameterList extends ArrayList<RpcParameter> {
     return service;
   }
 
+  public boolean hasData() {
+    for (RpcParameter item : this) {
+      if (item.getSection() == Section.DATA) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   public boolean hasParameter(String name) {
     Assert.notEmpty(name);
     boolean ok = false;

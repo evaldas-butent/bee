@@ -20,6 +20,8 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages {
 
   String keyNotFound(String key);
 
+  String minSearchQueryLength(int min);
+
   String not(String value);
 
   String rowsRetrieved(int cnt);

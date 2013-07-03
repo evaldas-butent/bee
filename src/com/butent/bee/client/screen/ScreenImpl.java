@@ -111,12 +111,12 @@ public class ScreenImpl implements Screen {
       if (item != null) {
         getProgressPanel().remove(item);
         if (!getProgressPanel().iterator().hasNext()) {
-          getScreenPanel().setWidgetSize(getProgressPanel(), 0);
+          hideProgressPanel();
         }
       }
     }
   }
-
+  
   @Override
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
@@ -129,10 +129,10 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public String createProgress(String caption, double max) {
+  public String createProgress(String caption, Double max, IdentifiableWidget closeBox) {
     if (getProgressPanel() != null) {
       if (!getProgressPanel().iterator().hasNext()) {
-        getScreenPanel().setWidgetSize(getProgressPanel(), 32);
+        showProgressPanel();
       }
 
       Flow item = new Flow();
@@ -144,8 +144,13 @@ public class ScreenImpl implements Screen {
         item.add(label);
       }
 
-      Progress progress = new Progress(max);
+      Progress progress = (max == null) ? new Progress() : new Progress(max);
       item.add(progress);
+      
+      if (closeBox != null) {
+        closeBox.addStyleName("bee-ProgressClose");
+        item.add(closeBox);
+      }
 
       DoubleLabel percent = new DoubleLabel(Format.getDefaultPercentFormat(), true);
       item.addStyleName("bee-ProgressPercent");
@@ -157,7 +162,7 @@ public class ScreenImpl implements Screen {
       return null;
     }
   }
-
+  
   @Override
   public int getActivePanelHeight() {
     Tile activeTile = getWorkspace().getActiveTile();
@@ -487,16 +492,20 @@ public class ScreenImpl implements Screen {
     return "bee-Screen";
   }
 
+  protected void hideProgressPanel() {
+    getScreenPanel().setWidgetSize(getProgressPanel(), 0);
+  }
+
   protected IdentifiableWidget initCenter() {
     Workspace area = new Workspace();
     setWorkspace(area);
     return area;
   }
-  
+
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
     return Pair.of(ClientLogManager.getLogPanel(), ClientLogManager.getInitialPanelSize());
   }
-
+  
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
@@ -554,6 +563,10 @@ public class ScreenImpl implements Screen {
     this.notification = notification;
   }
 
+  protected void setProgressPanel(Panel progressPanel) {
+    this.progressPanel = progressPanel;
+  }
+
   protected void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
   }
@@ -564,6 +577,10 @@ public class ScreenImpl implements Screen {
 
   protected void setUserSignature(HasText userSignature) {
     this.userSignature = userSignature;
+  }
+
+  protected void showProgressPanel() {
+    getScreenPanel().setWidgetSize(getProgressPanel(), 32);
   }
 
   private CentralScrutinizer getCentralScrutinizer() {
@@ -592,10 +609,6 @@ public class ScreenImpl implements Screen {
 
   private void setCommandPanel(HasWidgets commandPanel) {
     this.commandPanel = commandPanel;
-  }
-
-  private void setProgressPanel(Panel progressPanel) {
-    this.progressPanel = progressPanel;
   }
 
   private void setWorkspace(Workspace workspace) {

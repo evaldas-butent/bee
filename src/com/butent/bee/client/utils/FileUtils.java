@@ -315,7 +315,7 @@ public class FileUtils {
   
   private static String maybeCreateProgress(String caption, long size) {
     return (size > MIN_FILE_SIZE_FOR_PROGRESS)
-        ? BeeKeeper.getScreen().createProgress(caption, size) : null;
+        ? BeeKeeper.getScreen().createProgress(caption, (double) size, null) : null;
   }
 
   private FileUtils() {

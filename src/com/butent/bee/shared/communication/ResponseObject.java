@@ -269,18 +269,14 @@ public class ResponseObject implements BeeSerializable {
     if (notificator != null && hasMessages()) {
       for (ResponseMessage message : getMessages()) {
         switch (message.getLevel()) {
-          case DEBUG:
-            Assert.unsupported();
-            break;
           case ERROR:
             notificator.notifySevere(message.getMessage());
-            break;
-          case INFO:
-            notificator.notifyInfo(message.getMessage());
             break;
           case WARNING:
             notificator.notifyWarning(message.getMessage());
             break;
+          default:
+            notificator.notifyInfo(message.getMessage());
         }
       }
     }
