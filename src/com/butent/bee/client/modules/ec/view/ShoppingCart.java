@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.ec.view;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -120,12 +121,12 @@ public class ShoppingCart extends Split {
     if (cart == null || cart.isEmpty()) {
       return;
     }
-    
+
     if (cart.getDeliveryMethod() == null) {
       BeeKeeper.getScreen().notifyWarning(Localized.constants.ecDeliveryMethodRequired());
       return;
     }
-    
+
     final String amount = EcUtils.renderCents(cart.totalCents());
 
     ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
@@ -138,11 +139,11 @@ public class ShoppingCart extends Split {
 
         if (response.hasResponse(Long.class)) {
           EcKeeper.resetCart(cartType);
-          BeeKeeper.getScreen().closeWidget(ShoppingCart.this);
-          
-          Global.inform(Localized.constants.ecOrderSubmitted(),
-              Localized.messages.ecOrderId(response.getResponseAsString()),
-              Localized.messages.ecOrderTotal(amount, EcConstants.CURRENCY));
+          EcKeeper.closeView(ShoppingCart.this);
+
+          Global.showInfo(Localized.constants.ecOrderSubmitted(),
+              Lists.newArrayList(Localized.messages.ecOrderId(response.getResponseAsString()),
+                  Localized.messages.ecOrderTotal(amount, EcConstants.CURRENCY)));
         }
       }
     });
@@ -444,7 +445,7 @@ public class ShoppingCart extends Split {
         Cart cart = EcKeeper.removeFromCart(cartType, item.getEcItem());
         if (cart != null) {
           if (cart.isEmpty()) {
-            BeeKeeper.getScreen().closeWidget(ShoppingCart.this);
+            EcKeeper.closeView(ShoppingCart.this);
           } else {
             renderItems(cart.getItems());
             updateTotal(cart);

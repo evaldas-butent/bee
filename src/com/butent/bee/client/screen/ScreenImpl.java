@@ -30,6 +30,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
@@ -159,12 +160,14 @@ public class ScreenImpl implements Screen {
 
   @Override
   public int getActivePanelHeight() {
-    return getWorkspace().getActiveTile().getOffsetHeight();
+    Tile activeTile = getWorkspace().getActiveTile();
+    return (activeTile == null) ? 0 : activeTile.getOffsetHeight();
   }
 
   @Override
   public int getActivePanelWidth() {
-    return getWorkspace().getActiveTile().getOffsetWidth();
+    Tile activeTile = getWorkspace().getActiveTile();
+    return (activeTile == null) ? 0 : activeTile.getOffsetWidth();
   }
 
   @Override

@@ -99,6 +99,9 @@ class SearchByCar extends EcView {
   private static final String STYLE_ATTRIBUTE_HAS_VALUE = STYLE_ATTRIBUTE + "hasValue";
   private static final String STYLE_ATTRIBUTE_ACTIVE = STYLE_ATTRIBUTE + "active";
 
+  private static final String STYLE_TYPE_PANEL = STYLE_TYPE + "panel";
+  private static final String STYLE_HAS_TYPES = STYLE_TYPE_PANEL + "-notEmpty";
+
   private final CarAttributeWidget manufacturerWidget;
   private final IndexSelector manufacturerSelector;
 
@@ -144,7 +147,7 @@ class SearchByCar extends EcView {
     this.engineWidget = new CarAttributeWidget(STYLE_ATTRIBUTE + STYLE_ENGINE);
     this.engineSelector = new IndexSelector(STYLE_SELECTOR + STYLE_ENGINE);
 
-    this.typePanel = new Flow(STYLE_TYPE + "panel");
+    this.typePanel = new Flow(STYLE_TYPE_PANEL);
     this.itemPanel = new ItemPanel();
   }
 
@@ -166,28 +169,36 @@ class SearchByCar extends EcView {
     manufacturerWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        openManufacturers();
+        if (manufacturerWidget.isEnabled()) {
+          openManufacturers();
+        }
       }
     });
 
     modelWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        openModels();
+        if (modelWidget.isEnabled()) {
+          openModels();
+        }
       }
     });
 
     yearWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        openYears();
+        if (yearWidget.isEnabled()) {
+          openYears();
+        }
       }
     });
 
     engineWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        openEngines();
+        if (engineWidget.isEnabled()) {
+          openEngines();
+        }
       }
     });
 
@@ -248,6 +259,9 @@ class SearchByCar extends EcView {
     UiHelper.closeDialog(engineSelector);
     if (BeeUtils.isIndex(engines, index)) {
       setEngine(engines.get(index));
+      setTypeId(null);
+      
+      resetItems();
 
       refreshAttributeWidgets();
       renderTypes();
@@ -289,13 +303,15 @@ class SearchByCar extends EcView {
       }
     });
   }
-
+  
   private void onSelectYear(int index) {
     UiHelper.closeDialog(yearSelector);
     if (BeeUtils.isIndex(years, index)) {
       setYear(BeeUtils.toIntOrNull(years.get(index)));
+      setTypeId(null);
 
       resetEngine();
+      resetItems();
 
       refreshAttributeWidgets();
       renderTypes();
@@ -308,6 +324,8 @@ class SearchByCar extends EcView {
 
     if (id > 0) {
       setTypeId(id);
+      
+      resetItems();
       renderTypes();
 
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
@@ -582,10 +600,18 @@ class SearchByCar extends EcView {
 
     typePanel.clear();
     typePanel.add(table);
+    
+    typePanel.addStyleName(STYLE_HAS_TYPES);
   }
 
   private void resetEngine() {
     setEngine(null);
+  }
+
+  private void resetItems() {
+    if (!itemPanel.isEmpty()) {
+      itemPanel.clear();
+    }
   }
 
   private void resetModel() {
@@ -597,9 +623,14 @@ class SearchByCar extends EcView {
 
   private void resetTypes() {
     types.clear();
+    
     typePanel.clear();
-    setTypeId(null);
+    typePanel.removeStyleName(STYLE_HAS_TYPES);
 
+    setTypeId(null);
+    
+    resetItems();
+    
     resetYear();
   }
 

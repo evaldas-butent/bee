@@ -86,6 +86,7 @@ import com.butent.bee.client.layout.Layout;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -250,10 +251,7 @@ public class CliWorker {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_INFO);
 
     } else if (z.equals("debug")) {
-      if (!BeeUtils.isEmpty(args)) {
-        Global.setDebug(BeeConst.isTrue(args));
-      }
-      logger.debug("debug", Global.isDebug());
+      setDebug(args);
 
     } else if (z.startsWith("decor")) {
       if (BeeUtils.isEmpty(args)) {
@@ -791,7 +789,7 @@ public class CliWorker {
           Global.showError(Lists.newArrayList("No DSN's available"));
 
         } else if (dsns.size() == 1) {
-          Global.inform("Only one DSN is available:", dsns.get(0));
+          inform("Only one DSN is available:", dsns.get(0));
 
         } else {
           Horizontal panel = new Horizontal();
@@ -925,11 +923,12 @@ public class CliWorker {
         match = Wildcards.isLike(input, expr);
       }
     }
-    Global.inform(mode, NameUtils.addName("input", input), NameUtils.addName("pattern", expr),
+    
+    inform(mode, NameUtils.addName("input", input), NameUtils.addName("pattern", expr),
         NameUtils.addName("case", sens ? "sensitive" : (insens ? "insensitive" : defCase)),
         NameUtils.addName("match", BeeUtils.toString(match)));
   }
-
+  
   private static void doLocale(String[] arr) {
     String mode = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(mode)) {
@@ -1063,7 +1062,7 @@ public class CliWorker {
     if (BeeUtils.isEmpty(xpr)) {
       Global.sayHuh(v);
     } else {
-      Global.inform(xpr, JsUtils.evalToString(xpr));
+      inform(xpr, JsUtils.evalToString(xpr));
     }
   }
 
@@ -1101,7 +1100,7 @@ public class CliWorker {
           fileGroup.render((String) response.getResponse());
 
           if (fileGroup.isEmpty()) {
-            Global.inform("files not available");
+            inform("files not available");
             return;
           }
 
@@ -1170,6 +1169,11 @@ public class CliWorker {
     }
 
     BeeKeeper.getRpc().makeGetRequest(params);
+  }
+
+  private static void inform(String... messages) {
+    List<String> lst = Lists.newArrayList(messages);
+    Global.showInfo(lst);
   }
 
   private static void playAudio(final String src) {
@@ -1317,7 +1321,7 @@ public class CliWorker {
     }
 
     if (element != null) {
-      Global.inform(DomUtils.transformElement(element));
+      inform(DomUtils.transformElement(element));
       return;
     }
 
@@ -1373,7 +1377,7 @@ public class CliWorker {
                       }
                     });
               } else {
-                Global.inform("Value has not changed", area.getDigest());
+                inform("Value has not changed", area.getDigest());
               }
             }
           });
@@ -1402,7 +1406,7 @@ public class CliWorker {
                           if (resp.hasResponse(Resource.class)) {
                             InputArea res =
                                 new InputArea(new Resource((String) resp.getResponse()));
-                            Global.inform(res.getValue());
+                            inform(res.getValue());
                           } else {
                             showError("Wrong response received");
                           }
@@ -1529,6 +1533,19 @@ public class CliWorker {
     }
 
     raf.start();
+  }
+
+  private static void setDebug(String args) {
+    if (BeeUtils.same(args, "ec")) {
+      logger.debug(args, "debug", EcKeeper.toggleDebug());
+    } else {
+      if (BeeUtils.isEmpty(args)) {
+        Global.setDebug(true);
+      } else if (!"?".equals(args)) {
+        Global.setDebug(BeeConst.isTrue(args));
+      }
+      logger.debug("debug", Global.isDebug());
+    }
   }
 
   private static void showBrowser(String[] arr) {
@@ -2003,7 +2020,7 @@ public class CliWorker {
     } else {
       Element elem = Document.get().getElementById(id);
       if (elem == null) {
-        Global.inform("element id", id, "not found");
+        inform("element id", id, "not found");
         return;
       }
 
@@ -2049,7 +2066,7 @@ public class CliWorker {
   }
 
   private static void showError(String... messages) {
-    Global.showError(null, Lists.newArrayList(messages), null, "Whatever");
+    Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
   }
 
   private static void showExtData(List<ExtendedProperty> data) {
@@ -2162,7 +2179,7 @@ public class CliWorker {
       return;
     }
     if (fnc.length() <= 5) {
-      Global.inform(v, fnc.join());
+      inform(v, fnc.join());
       return;
     }
 
@@ -2666,7 +2683,7 @@ public class CliWorker {
 
   private static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
-      Global.inform("RpcList empty");
+      inform("RpcList empty");
     } else {
       Global.showGrid(new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
@@ -2823,7 +2840,7 @@ public class CliWorker {
 
   private static void showSupport(String args) {
     List<Property> data = Features.getInfo();
-    
+
     if (BeeUtils.isEmpty(args)) {
       showPropData(data);
 
@@ -2834,12 +2851,12 @@ public class CliWorker {
           filtered.add(p);
         }
       }
-      
+
       if (filtered.isEmpty()) {
         showError("feature not tested:", args);
       } else if (filtered.size() == 1) {
         Property p = filtered.get(0);
-        Global.inform(p.getName(), p.getValue());
+        inform(p.getName(), p.getValue());
       } else {
         showPropData(filtered);
       }
@@ -3136,7 +3153,7 @@ public class CliWorker {
     int len = BeeKeeper.getStorage().length();
 
     if (parCnt <= 1 && len <= 0) {
-      Global.inform("Storage empty");
+      inform("Storage empty");
       return;
     }
 
@@ -3150,13 +3167,13 @@ public class CliWorker {
     if (parCnt == 1) {
       if (key.equals(BeeConst.STRING_MINUS)) {
         BeeKeeper.getStorage().clear();
-        Global.inform(BeeUtils.joinWords(len, "items cleared"));
+        inform(BeeUtils.joinWords(len, "items cleared"));
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
           showError(Localized.messages.keyNotFound(key));
         } else {
-          Global.inform(key, z);
+          inform(key, z);
         }
       }
       return;
@@ -3166,10 +3183,10 @@ public class CliWorker {
 
     if (key.equals(BeeConst.STRING_MINUS)) {
       BeeKeeper.getStorage().removeItem(value);
-      Global.inform(value, "removed");
+      inform(value, "removed");
     } else {
       BeeKeeper.getStorage().setItem(key, value);
-      Global.inform("Storage", NameUtils.addName(key, value));
+      inform("Storage", NameUtils.addName(key, value));
     }
   }
 
@@ -3192,7 +3209,7 @@ public class CliWorker {
         if (rules == null) {
           rules = sheet.getRules();
         }
-        
+
         int len = (rules == null) ? 0 : rules.length();
         PropertyUtils.addExtended(lst, "sheet " + BeeUtils.progress(i + 1, sheetCnt), "rules", len);
 
@@ -3209,7 +3226,7 @@ public class CliWorker {
     if (!v.contains("{")) {
       Element elem = Document.get().getElementById(arr[1]);
       if (elem == null) {
-        Global.inform("element id", arr[1], "not found");
+        inform("element id", arr[1], "not found");
         return;
       }
 
@@ -3231,7 +3248,7 @@ public class CliWorker {
       }
 
       if (BeeUtils.isEmpty(info)) {
-        Global.inform("element id", arr[1], "has no style");
+        inform("element id", arr[1], "has no style");
       } else {
         showPropData(info);
       }
@@ -3389,7 +3406,7 @@ public class CliWorker {
     TranslationCallback callback = new TranslationCallback() {
       @Override
       protected void onCallback(String translation) {
-        Global.inform(info, translation);
+        inform(info, translation);
       }
     };
 

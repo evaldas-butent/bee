@@ -147,7 +147,7 @@ public class MenuManager implements Module {
 
   public void showMenuInfo() {
     if (roots.isEmpty()) {
-      Global.inform("menu empty");
+      Global.showInfo(Lists.newArrayList("menu empty"));
       return;
     }
     Tree tree = new Tree();

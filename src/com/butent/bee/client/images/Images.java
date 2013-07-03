@@ -139,6 +139,9 @@ public class Images {
     @Source("html.png")
     ImageResource html();
 
+    @Source("information.png")
+    ImageResource information();
+
     @Source("last.png")
     ImageResource last();
 
@@ -374,6 +377,8 @@ public class Images {
     map.put(key("greenSmall"), resources.greenSmall());
 
     map.put(key("html"), resources.html());
+
+    map.put(key("information"), resources.information());
 
     map.put(key("last"), resources.last());
 

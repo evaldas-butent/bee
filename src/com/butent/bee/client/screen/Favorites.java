@@ -286,7 +286,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     Item item = group.find(viewName, row.getId());
     if (item != null) {
-      Global.inform("Row is already bookmarked as", item.getHtml());
+      Global.showInfo(Lists.newArrayList("Row is already bookmarked as", item.getHtml()));
       return;
     }
 

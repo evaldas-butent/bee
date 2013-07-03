@@ -121,8 +121,8 @@ public class BeeConst {
   public static final char ARROW_UP = '\u2191';
   public static final char ARROW_DOWN = '\u2193';
 
-  public static final String CHAR_FALSE = "fFnN0";
-  public static final String CHAR_TRUE = "tTyY1";
+  public static final String CHAR_FALSE = "fFnN0-";
+  public static final String CHAR_TRUE = "tTyY1+";
 
   public static final int COMPARE_UNKNOWN = -2;
   public static final int COMPARE_LESS = -1;

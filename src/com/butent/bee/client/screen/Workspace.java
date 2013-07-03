@@ -470,12 +470,16 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
 
       panel.remove(tile);
-      resizePage(pageIndex);
 
       if (wasActive) {
         Tile nearestTile = panel.getNearestTile(tileIndex);
         panel.setActiveTileId(nearestTile.getId());
+
+        resizePage(pageIndex);
+        
         nearestTile.activate(pageIndex == getSelectedIndex());
+      } else {
+        resizePage(pageIndex);
       }
 
     } else if (getPageCount() > 1) {

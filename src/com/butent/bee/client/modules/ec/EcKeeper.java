@@ -2,10 +2,23 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.ec.EcConstants.*;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CLIENT_TYPE;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_HTML;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_CONTACTS_URL;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_HTML;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_CONFIG_TOD_URL;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_ORDER_STATUS;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_REGISTRATION_TYPE;
+import static com.butent.bee.shared.modules.ec.EcConstants.EC_METHOD;
+import static com.butent.bee.shared.modules.ec.EcConstants.EC_MODULE;
+import static com.butent.bee.shared.modules.ec.EcConstants.SVC_FEATURED_AND_NOVELTY;
+import static com.butent.bee.shared.modules.ec.EcConstants.SVC_GLOBAL_SEARCH;
+import static com.butent.bee.shared.modules.ec.EcConstants.VAR_QUERY;
+import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_CLIENTS;
+import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_ORDERS;
+import static com.butent.bee.shared.modules.ec.EcConstants.VIEW_REGISTRATIONS;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -15,6 +28,7 @@ import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -30,6 +44,9 @@ import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants.CartType;
+import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
+import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
@@ -52,6 +69,8 @@ public class EcKeeper {
 
   private static EcCommandWidget activeCommand = null;
 
+  private static boolean debug = false;
+  
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
   }
@@ -59,6 +78,11 @@ public class EcKeeper {
   public static Tree buildCategoryTree(Collection<Integer> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
+  }
+  
+  public static void closeView(IdentifiableWidget view) {
+    BeeKeeper.getScreen().closeWidget(view);
+    showFeaturedAndNoveltyItems();
   }
 
   public static ParameterList createArgs(String method) {
@@ -86,6 +110,8 @@ public class EcKeeper {
   public static void doGlobalSearch(String query) {
     Assert.notEmpty(query);
 
+    final long start = System.currentTimeMillis();
+    
     ParameterList params = createArgs(SVC_GLOBAL_SEARCH);
     params.addDataItem(VAR_QUERY, query);
 
@@ -93,14 +119,14 @@ public class EcKeeper {
       @Override
       public void onResponse(ResponseObject response) {
         long millis = System.currentTimeMillis();
-        if (Global.isDebug()) {
-          logger.debug(SVC_GLOBAL_SEARCH, "response received");
+        if (isDebug()) {
+          logger.debug("response received", TimeUtils.elapsedMillis(start));
         }
 
         dispatchMessages(response);
         List<EcItem> items = getResponseItems(response);
 
-        if (Global.isDebug()) {
+        if (isDebug()) {
           logger.debug("deserialized", items.size(), TimeUtils.elapsedMillis(millis));
         }
 
@@ -174,6 +200,10 @@ public class EcKeeper {
     return items;
   }
 
+  public static boolean isDebug() {
+    return debug;
+  }
+  
   public static void openCart(final CartType cartType) {
     data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
       @Override
@@ -285,6 +315,10 @@ public class EcKeeper {
         }
       }
     });
+  }
+
+  public static boolean toggleDebug() {
+    return debug = !isDebug();
   }
 
   static void doCommand(EcCommandWidget commandWidget) {

@@ -180,10 +180,6 @@ public class Global implements Module {
     return styleSheets;
   }
 
-  public static void inform(String... messages) {
-    msgBoxen.showInfo(messages);
-  }
-
   public static void inputString(String caption, String prompt, StringCallback callback) {
     inputString(caption, prompt, callback, null);
   }
@@ -248,15 +244,19 @@ public class Global implements Module {
     return msgBoxen.nativeConfirm(lines);
   }
 
-  public static void sayHuh(String... messages) {
-    int n = (messages == null) ? 0 : messages.length;
-    String[] arr = new String[n + 1];
-    arr[0] = "Huh ?";
-
-    for (int i = 0; i < n; i++) {
-      arr[i + 1] = messages[i];
+  public static void sayHuh(String... huhs) {
+    String caption;
+    List<String> messages;
+    
+    if (huhs == null) {
+      caption = null;
+      messages = Lists.newArrayList("Huh");
+    } else {
+      caption = "Huh";
+      messages = Lists.newArrayList(huhs);
     }
-    inform(arr);
+    
+    messageBox(caption, Icon.QUESTION, messages, Lists.newArrayList("kthxbai"), 0, null);
   }
 
   public static void setDebug(boolean debug) {
@@ -272,7 +272,7 @@ public class Global implements Module {
     if (!BeeUtils.isEmpty(message)) {
       messages.add(message);
     }
-
+    
     showError(messages);
   }
 
@@ -295,6 +295,32 @@ public class Global implements Module {
     if (grid != null) {
       BeeKeeper.getScreen().updateActivePanel(grid);
     }
+  }
+  
+  public static void showInfo(List<String> messages) {
+    showInfo(null, messages, null, null);
+  }
+  
+  public static void showInfo(String message) {
+    List<String> messages = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(message)) {
+      messages.add(message);
+    }
+
+    showInfo(messages);
+  }
+  
+  public static void showInfo(String caption, List<String> messages) {
+    showInfo(caption, messages, null, null);
+  }
+  
+  public static void showInfo(String caption, List<String> messages, String dialogStyle) {
+    showInfo(caption, messages, dialogStyle, null);
+  }
+
+  public static void showInfo(String caption, List<String> messages, String dialogStyle,
+      String closeHtml) {
+    msgBoxen.showInfo(caption, messages, dialogStyle, closeHtml);
   }
 
   public static void showModalGrid(String caption, IsTable<?, ?> table) {

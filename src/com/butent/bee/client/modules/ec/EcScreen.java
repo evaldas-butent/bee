@@ -30,8 +30,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import elemental.events.KeyboardEvent.KeyCode;
-
 public class EcScreen extends ScreenImpl {
 
   public EcScreen() {
@@ -247,7 +245,7 @@ public class EcScreen extends ScreenImpl {
       public void onKeyDown(KeyDownEvent event) {
         int keyCode = event.getNativeKeyCode();
         
-        if (keyCode == KeyCode.ENTER) {
+        if (keyCode == KeyCodes.KEY_ENTER) {
           String query = BeeUtils.trim(input.getValue());
           if (!BeeUtils.isEmpty(query)) {
             EcKeeper.doGlobalSearch(query);

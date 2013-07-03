@@ -5,6 +5,12 @@ import com.google.gwt.resources.client.ImageResource;
 import com.butent.bee.client.Global;
 
 public enum Icon {
+  INFORMATION {
+    @Override
+    public ImageResource getImageResource() {
+      return Global.getImages().information();
+    }
+  },
   QUESTION {
     @Override
     public ImageResource getImageResource() {

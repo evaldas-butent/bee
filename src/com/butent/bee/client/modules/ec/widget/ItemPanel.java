@@ -8,7 +8,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
@@ -63,6 +62,20 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
   }
 
   @Override
+  public void clear() {
+    super.clear();
+
+    if (!items.isEmpty()) {
+      items.clear();
+      categories.clear();
+      manufacturers.clear();
+
+      selectedCategories.clear();
+      selectedManufacturers.clear();
+    }
+  }
+
+  @Override
   public void onSelection(SelectionEvent<TreeItem> event) {
     Object userObject = event.getSelectedItem().getUserObject();
     Integer category = (userObject instanceof Integer) ? (Integer) userObject : null;
@@ -81,15 +94,6 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
       clear();
     }
 
-    if (!items.isEmpty()) {
-      items.clear();
-      categories.clear();
-      manufacturers.clear();
-
-      selectedCategories.clear();
-      selectedManufacturers.clear();
-    }
-
     int size = ecItems.size();
     for (int i = 0; i < size; i++) {
       EcItem ecItem = ecItems.get(i);
@@ -103,7 +107,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
       }
     }
     
-    boolean debug = Global.isDebug();
+    boolean debug = EcKeeper.isDebug();
     if (debug) {
       logger.debug("cat", categories.size(), "man", manufacturers.size(),
           TimeUtils.elapsedMillis(millis));

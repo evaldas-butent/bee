@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -96,7 +97,8 @@ public class Mobile extends ScreenImpl {
 
   @Override
   public void showInfo() {
-    Global.inform(String.valueOf(getActivePanelWidth()), String.valueOf(getActivePanelHeight()));
+    Global.showInfo(Lists.newArrayList(String.valueOf(getActivePanelWidth()),
+        String.valueOf(getActivePanelHeight())));
   }
 
   @Override

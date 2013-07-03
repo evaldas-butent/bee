@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.BeeKeeper;
@@ -31,13 +32,13 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
     public void execute() {
       InputArea area = getTextArea();
       if (!area.isValueChanged()) {
-        Global.inform("Value has not changed", area.getDigest());
+        Global.showInfo(Lists.newArrayList("Value has not changed", area.getDigest()));
         return;
       }
 
       String v = area.getValue();
       if (BeeUtils.isEmpty(v)) {
-        Global.inform("Value is empty, not saved");
+        Global.showInfo(Lists.newArrayList("Value is empty, not saved"));
         return;
       }
 
@@ -61,7 +62,7 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
       BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
       area.onAfterSave(digest);
 
-      Global.inform("Sent to", path, digest);
+      Global.showInfo(Lists.newArrayList("Sent to", path, digest));
     }
   }
 

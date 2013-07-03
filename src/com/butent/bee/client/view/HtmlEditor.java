@@ -1,6 +1,7 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -49,9 +51,6 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   private static final String STYLE_SUFFIX_URL = "-url";
   private static final String STYLE_SUFFIX_HTML = "-html";
   private static final String STYLE_SUFFIX_TEXT = "-text";
-
-  private static final String STYLE_SUFFIX_EMPTY = "-empty";
-  private static final String STYLE_SUFFIX_NOT_EMPTY = "-notEmpty";
 
   private final String caption;
 
@@ -196,7 +195,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
         break;
 
       default:
-        logger.info(getCaption(), action, "not implemented");
+        logger.warning(getCaption(), action, "not implemented");
     }
   }
 
@@ -217,7 +216,13 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   @Override
   public void onResize() {
     super.onResize();
-    updateSizes();
+    
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        updateSizes();
+      }
+    });
   }
 
   @Override
@@ -286,7 +291,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
           updateUrl(value);
         }
       }
-    }, getCurrentUrl());
+    }, getCurrentUrl(), 100, 300, CssUnit.PX);
   }
 
   private String getCurrentHtml() {
@@ -308,23 +313,16 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   private void initCanvas() {
     if (hasUrl()) {
       urlFrame.setUrl(getCurrentUrl());
-      urlFrame.addStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_NOT_EMPTY);
-
     } else {
-      urlFrame.addStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_EMPTY);
-      StyleUtils.setSize(urlFrame, 0, 0);
+      StyleUtils.hideDisplay(urlFrame);
     }
 
     if (hasHtml()) {
       htmlLabel.setHTML(getCurrentHtml());
-      htmlLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_NOT_EMPTY);
-
       textLabel.setText(getCurrentHtml());
-      textLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_NOT_EMPTY);
-
     } else {
-      htmlLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_EMPTY);
-      textLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_EMPTY);
+      StyleUtils.hideDisplay(htmlLabel);
+      StyleUtils.hideDisplay(textLabel);
     }
   }
 
@@ -388,25 +386,20 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
     }
 
     if (hasHtml()) {
+      if (!had) {
+        StyleUtils.unhideDisplay(htmlLabel);
+        StyleUtils.unhideDisplay(textLabel);
+      }
+
       htmlLabel.setHTML(getCurrentHtml());
       textLabel.setText(getCurrentHtml());
-
-      if (!had) {
-        htmlLabel.removeStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_EMPTY);
-        textLabel.removeStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_EMPTY);
-      }
-      htmlLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_NOT_EMPTY);
-      textLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_NOT_EMPTY);
 
     } else if (had) {
       htmlLabel.setHTML(BeeConst.STRING_EMPTY);
       textLabel.setText(BeeConst.STRING_EMPTY);
 
-      htmlLabel.removeStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_NOT_EMPTY);
-      textLabel.removeStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_NOT_EMPTY);
-
-      htmlLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_HTML + STYLE_SUFFIX_EMPTY);
-      textLabel.addStyleName(STYLE_LABEL + STYLE_SUFFIX_TEXT + STYLE_SUFFIX_EMPTY);
+      StyleUtils.hideDisplay(htmlLabel);
+      StyleUtils.hideDisplay(textLabel);
     }
   }
 
@@ -415,16 +408,20 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
       return;
     }
 
-    int width = BeeUtils.positive(canvas.getOffsetWidth(),
-        BeeKeeper.getScreen().getActivePanelWidth());
-    int height = BeeUtils.positive(canvas.getOffsetHeight(),
-        BeeKeeper.getScreen().getActivePanelHeight());
+    int width = canvas.getOffsetWidth();
+    if (width <= 0) {
+      width = BeeKeeper.getScreen().getActivePanelWidth();
+    }
+    int height = canvas.getOffsetHeight();
+    if (height <= 0) {
+      height = BeeKeeper.getScreen().getActivePanelHeight();
+    }
 
-    int margin = 5;
-
-    if (width <= 20 || height <= 20) {
+    if (width <= 10 || height <= 10) {
       return;
     }
+
+    int margin = BeeUtils.resize(Math.min(width, height), 30, 1000, 0, 20);
 
     if (hasUrl() && hasHtml()) {
       StyleUtils.setLeft(urlFrame, margin);
@@ -444,12 +441,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
       StyleUtils.setTop(urlFrame, margin);
       StyleUtils.setSize(urlFrame, width - margin * 2, height - margin * 2);
 
-      StyleUtils.setSize(htmlLabel, 0, 0);
-      StyleUtils.setSize(textLabel, 0, 0);
-
     } else if (hasHtml()) {
-      StyleUtils.setSize(urlFrame, 0, 0);
-
       StyleUtils.setLeft(htmlLabel, margin);
       StyleUtils.setTop(htmlLabel, margin);
       StyleUtils.setSize(htmlLabel, width / 2 - margin * 2, height - margin * 2);
@@ -469,16 +461,14 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
     }
 
     if (hasUrl()) {
-      urlFrame.setUrl(getCurrentUrl());
       if (!had) {
-        urlFrame.removeStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_EMPTY);
+        StyleUtils.unhideDisplay(urlFrame);
       }
-      urlFrame.addStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_NOT_EMPTY);
+      urlFrame.setUrl(getCurrentUrl());
 
     } else if (had) {
       urlFrame.setUrl(BeeConst.STRING_EMPTY);
-      urlFrame.removeStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_NOT_EMPTY);
-      urlFrame.addStyleName(STYLE_FRAME + STYLE_SUFFIX_URL + STYLE_SUFFIX_EMPTY);
+      StyleUtils.hideDisplay(urlFrame);
     }
   }
 }

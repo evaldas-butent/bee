@@ -355,10 +355,12 @@
   margin-top: 1ex;
   margin-left: 2em;
   margin-right: 2em;
-  background-color: white;
-  border: 1px solid #ccc;
   max-height: 400px;
   overflow: auto;
+}
+.bee-ec-searchByCar-type-panel-notEmpty {
+  background-color: white;
+  border: 1px solid #ccc;
 }
 
 .bee-ec-searchByCar-type-table {

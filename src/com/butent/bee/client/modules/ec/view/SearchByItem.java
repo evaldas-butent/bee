@@ -28,6 +28,8 @@ class SearchByItem extends EcView implements SelectionHandler<String> {
 
   @Override
   public void onSelection(SelectionEvent<String> event) {
+    itemPanel.clear();
+
     EcKeeper.searchItems(service, event.getSelectedItem(), new Consumer<List<EcItem>>() {
       @Override
       public void accept(List<EcItem> input) {

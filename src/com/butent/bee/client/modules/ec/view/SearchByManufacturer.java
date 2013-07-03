@@ -99,6 +99,8 @@ class SearchByManufacturer extends EcView {
       manufacturerWidget.setText(manufacturer);
       manufacturerWidget.addStyleName(STYLE_MANUFACTURER + "selected");
       
+      itemPanel.clear();
+      
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_MANUFACTURER);
       params.addDataItem(VAR_MANUFACTURER, selectedManufacturer);
 

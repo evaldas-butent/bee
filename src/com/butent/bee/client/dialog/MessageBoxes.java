@@ -10,7 +10,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.IndexedPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,7 +24,6 @@ import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -405,7 +403,8 @@ public class MessageBoxes {
     return Window.confirm(BeeUtils.buildLines(lines));
   }
 
-  public void pickStar(int starCount, Integer defaultValue, Element target, final ChoiceCallback callback) {
+  public void pickStar(int starCount, Integer defaultValue, Element target,
+      final ChoiceCallback callback) {
     Assert.notNull(callback);
 
     final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_STAR_PICKER);
@@ -472,27 +471,14 @@ public class MessageBoxes {
         null, null);
   }
 
-  public void showInfo(String... messages) {
-    Assert.notNull(messages);
+  public void showInfo(String caption, List<String> messages, String dialogStyle,
+      String closeHtml) {
 
-    Vertical panel = new Vertical();
-    for (String s : messages) {
-      panel.add(new Label(s));
-    }
+    List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
+        Localized.constants.ok()));
 
-    CloseButton close = new CloseButton(Localized.constants.ok());
-
-    panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    panel.add(close);
-
-    Popup popup = new Popup(OutsideClick.CLOSE);
-    popup.setWidget(panel);
-
-    popup.setHideOnEscape(true);
-    popup.setAnimationEnabled(true);
-
-    popup.center();
-    close.setFocus(true);
+    display(caption, Icon.INFORMATION, messages, options, 0, null, BeeConst.UNDEF, dialogStyle,
+        null, null, null);
   }
 
   public void showTable(String caption, IsTable<?, ?> table) {

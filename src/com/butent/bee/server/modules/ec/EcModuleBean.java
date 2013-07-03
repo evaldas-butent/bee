@@ -466,7 +466,7 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getFeaturedAndNoveltyItems() {
     int offset = BeeUtils.randomInt(0, 100) * 100;
-    int limit = BeeUtils.randomInt(1, 30);
+    int limit = BeeUtils.randomInt(5, 30);
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFrom(TBL_TCD_ARTICLES)
