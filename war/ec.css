@@ -264,6 +264,13 @@
   display: block;
 }
 
+.bee-ec-ItemList-more {
+  margin-top: 3px;
+  margin-left: 2em;
+  font-size: medium;
+  color: #00d;
+}
+
 .bee-ec-ItemPanel {
   margin-left: 1em;
   margin-top: 2ex;

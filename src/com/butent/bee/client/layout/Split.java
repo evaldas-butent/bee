@@ -681,7 +681,9 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
         "Top", style.getTop(),
         "Bottom", style.getBottom(),
         "Width", style.getWidth(),
-        "Height", style.getHeight());
+        "Height", style.getHeight(),
+        "Offset Width", w.getOffsetWidth(),
+        "Offset Height", w.getOffsetHeight());
 
     if (isSplitter(w)) {
       info.addAll(((Splitter) w).getInfo());

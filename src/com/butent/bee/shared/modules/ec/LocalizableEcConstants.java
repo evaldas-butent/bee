@@ -116,6 +116,8 @@ public interface LocalizableEcConstants {
 
   String ecMaxedOut();
 
+  String ecMoreItems();
+
   String ecNoveltyBanner();
 
   String ecNoveltyItems();

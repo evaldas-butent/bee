@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -11,12 +12,12 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.ScrollBars;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
@@ -32,7 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ItemList extends Simple {
+public class ItemList extends Flow {
 
   private static final String STYLE_PRIMARY = "ItemList";
   private static final String STYLE_WAREHOUSE = "warehouse";
@@ -68,28 +69,49 @@ public class ItemList extends Simple {
   private static final int COL_PRICE = 5;
   private static final int COL_QUANTITY = 6;
 
-  private final HtmlTable table;
+  private static final int PAGE_SIZE = 50;
 
-  public ItemList() {
+  private final HtmlTable table;
+  private final Button moreWidget;
+
+  private final List<EcItem> data = Lists.newArrayList();  
+
+  public ItemList(List<EcItem> items) {
+    this();
+    render(items);
+  }
+  
+  private ItemList() {
     super();
     addStyleName(EcStyles.name(STYLE_PRIMARY));
 
     this.table = new HtmlTable();
     EcStyles.add(table, STYLE_PRIMARY, "table");
-    setWidget(table);
-  }
-
-  public ItemList(List<EcItem> items) {
-    this();
-    render(items);
+    add(table);
+    
+    this.moreWidget = new Button(Localized.constants.ecMoreItems());
+    EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
+    moreWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        showMoreItems();
+      }
+    });
+    add(moreWidget);
   }
 
   public void render(List<EcItem> items) {
     if (!table.isEmpty()) {
       table.clear();
     }
+    StyleUtils.hideDisplay(moreWidget);
 
+    if (!data.isEmpty()) {
+      data.clear();
+    }
+    
     if (!BeeUtils.isEmpty(items)) {
+      data.addAll(items);
       int row = 0;
 
       if (items.size() > 1) {
@@ -118,13 +140,19 @@ public class ItemList extends Simple {
       table.setWidget(row, COL_PRICE, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
-
+      
+      int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
+      
       row++;
       for (EcItem item : items) {
-        if (row > 500) {
+        if (row > pageSize) {
           break;
         }
         renderItem(row++, item);
+      }
+      
+      if (pageSize < items.size()) {
+        StyleUtils.unhideDisplay(moreWidget);
       }
     }
   }
@@ -346,5 +374,22 @@ public class ItemList extends Simple {
   private Widget renderStock(int stock) {
     String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.constants.ecStockAsk();
     return new Label(text);
+  }
+
+  private void showMoreItems() {
+    int pageStart = table.getRowCount() - 1;
+    int more = data.size() - pageStart;
+    
+    if (more > 0) {
+      int pageSize = (more > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : more;
+      
+      for (int i = pageStart; i < pageStart + pageSize; i++) {
+        renderItem(i + 1, data.get(i));
+      }
+      
+      if (pageSize >= more) {
+        StyleUtils.hideDisplay(moreWidget);
+      }
+    }
   }
 }

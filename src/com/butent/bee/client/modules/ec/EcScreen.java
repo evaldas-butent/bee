@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -25,7 +26,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -79,7 +79,7 @@ public class EcScreen extends ScreenImpl {
   @Override
   public void onLoad() {
     EcKeeper.getSearchBox().setFocus(true);
-    EcKeeper.showFeaturedAndNoveltyItems();
+    EcKeeper.showFeaturedAndNoveltyItems(true);
   }
 
   @Override
@@ -89,8 +89,8 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void showInfo() {
-    Global.showModalGrid(getName(),
-        new ExtendedPropertiesData(getScreenPanel().getExtendedInfo(), false));
+    Global.showInfo(getName(), Lists.newArrayList("Center Width " + getActivePanelWidth(),
+        "Center Height " + getActivePanelHeight()));
   }
 
   @Override
@@ -134,7 +134,7 @@ public class EcScreen extends ScreenImpl {
     Widget logo = createLogo(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        EcKeeper.showFeaturedAndNoveltyItems();
+        EcKeeper.showFeaturedAndNoveltyItems(false);
       }
     });
 

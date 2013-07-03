@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Panel;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
@@ -87,7 +88,7 @@ public class EcKeeper {
 
   public static void closeView(IdentifiableWidget view) {
     BeeKeeper.getScreen().closeWidget(view);
-    showFeaturedAndNoveltyItems();
+    showFeaturedAndNoveltyItems(true);
   }
 
   public static ParameterList createArgs(String method) {
@@ -352,12 +353,15 @@ public class EcKeeper {
     requestItems(service, query, params, callback);
   }
 
-  public static void showFeaturedAndNoveltyItems() {
+  public static void showFeaturedAndNoveltyItems(final boolean checkView) {
     ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
 
     requestItems(SVC_FEATURED_AND_NOVELTY, null, params, new Consumer<List<EcItem>>() {
       @Override
       public void accept(List<EcItem> items) {
+        if (checkView && BeeKeeper.getScreen().getActiveWidget() instanceof Panel) {
+          return;
+        }
         resetActiveCommand();
         
         FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
