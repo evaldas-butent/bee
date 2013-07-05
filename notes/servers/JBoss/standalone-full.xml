@@ -44,21 +44,18 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-...
+
 <!--    <subsystem xmlns="urn:jboss:domain:pojo:1.0"/> -->
-...
+
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.1">
             <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" deployment-timeout="600" />
         </subsystem>
-...
+    </profile>
+
     <interfaces>
-...
         <interface name="public">
             <inet-address value="${jboss.bind.address:0.0.0.0}"/>
         </interface>
-...
     </interfaces>
-...
-    </profile>
 </server>
         
