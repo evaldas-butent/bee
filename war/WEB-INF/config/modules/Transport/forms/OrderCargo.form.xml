@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
-  width="900" height="600"
+  width="900" height="750"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
@@ -23,7 +23,7 @@
     </FlowPanel>
     &separator;
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <TabbedPages style="height: 150px; width: 480px">
+      <TabbedPages style="height: 300px; width: 480px">
         <page>
           <text>Krovos informacija</text>
           <FlowPanel>

@@ -112,6 +112,8 @@ public interface LocalizableTransportConstants {
   
   String primeCost();
   
+  String ref();
+
   String refNumber();
   
   String route();

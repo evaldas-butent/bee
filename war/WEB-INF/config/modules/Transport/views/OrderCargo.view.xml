@@ -14,6 +14,10 @@
       <SimpleColumn name="Date" alias="LoadingDate" />
       <SimpleColumn name="Terminal" alias="LoadingTerminal" />
       <SimpleColumn name="Contact" alias="LoadingContact" />
+      <SimpleColumn name="Company" alias="LoadingCompany"/>
+      <SimpleJoin  name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="LoadingCompanyName"/>
+      </SimpleJoin>
       <SimpleColumn name="Address" alias="LoadingAddress" />
       <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
 
@@ -32,6 +36,10 @@
       <SimpleColumn name="Date" alias="UnloadingDate" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
       <SimpleColumn name="Contact" alias="UnloadingContact" />
+      <SimpleColumn name="Company" alias="UnloadingCompany"/>
+      <SimpleJoin joinType="LEFT" name="Company">
+        <SimpleColumn name="Name" alias="UnloadingCompanyName"/>
+      </SimpleJoin>
       <SimpleColumn name="Address" alias="UnloadingAddress" />
       <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
 

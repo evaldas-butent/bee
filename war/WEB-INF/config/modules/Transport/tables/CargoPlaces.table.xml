@@ -9,6 +9,7 @@
     <DateTime name="Date" label="=date" />
     <String name="Terminal" precision="30" label="=terminal" />
     <String name="Contact" precision="50" label="=contact" />
+    <Relation name="Company" relation="Companies" />
     <String name="Address" precision="100" label="=address" />
     <String name="PostIndex" precision="20" label="=postIndex" />
     <Relation name="City" relation="Cities" label="=city" />

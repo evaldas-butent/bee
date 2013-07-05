@@ -13,7 +13,11 @@
       <InputDateTime source="LoadingDate" style="width: 110px;" />
     </row>
     <row>
-      <Label text="=contact" horizontalAlignment="right" />
+    <Label text="=company" horizontalAlignment="right"/>
+   <DataSelector source="LoadingCompany"/>
+    </row>
+    <row>
+      <Label text="=personContact" horizontalAlignment="right" />
       <InputText source="LoadingContact" />
     </row>
     <row>
@@ -50,8 +54,8 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=terminal" horizontalAlignment="right" />
-      <InputText source="LoadingTerminal" />
+      <Label text="=ref" horizontalAlignment="right" />
+      <InputArea source="LoadingTerminal" style="wdith:155px;" />
     </row>
   </Table>
 
@@ -66,7 +70,11 @@
       <InputDateTime source="UnloadingDate" style="width: 110px;" />
     </row>
     <row>
-      <Label text="=contact" horizontalAlignment="right" />
+      <Label text="=company" horizontalAlignment="right"/>
+      <DataSelector source="UnloadingCompany"/>
+    </row>
+    <row>
+      <Label text="=personContact" horizontalAlignment="right" />
       <InputText source="UnloadingContact" />
     </row>
     <row>
@@ -103,8 +111,8 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=terminal" horizontalAlignment="right" />
-      <InputText source="UnloadingTerminal" />
+      <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />
+      <InputArea source="UnloadingTerminal" style="wdith:155px;" />
     </row>
   </Table>
 </HorizontalPanel>
