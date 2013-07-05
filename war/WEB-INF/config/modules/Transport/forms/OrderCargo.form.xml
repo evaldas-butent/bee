@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
-  width="900" height="750"
+  width="925" height="750"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
@@ -42,20 +42,21 @@
       <FlowPanel class="flexBox-vertical" style="margin:10px; margin-top:35px;">
       	<Table>
       	  <row>
-      	    <DataSelector source="ShippingTerm" caption="Pristatymo sąlygos"
-              d:size="120" d:unit="px" style="width:50px; float:right;"/>
+      	    <Label text="Krovinio vertė" horizontalAlignment="right" />
+              <FlowPanel>
+              <InputCurrency source="Value" />
+      	      <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:3px;"/>
+            </FlowPanel>
             <CheckBox source="Partial" html="Dalinis" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	  	<InputInteger source="ExchangeOfPalettes" caption="Palečių keitimas"  style="width:50px; float:right;" />
+      	  	<Label text="Pakrauti km" horizontalAlignment="right" />
+      	  	<InputDecimal source="LoadedKilometers" />
             <CheckBox source="Outsized" html="Negabaritinis" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	    <FlowPanel>
-        	  <InputCurrency source="Value" caption="Krovinio vertė" style="width:60px;" d:rootStyle="display:inline-block;" />
-        	  <DataSelector source="ValueCurrency" editEnabled="false"
-                style="width:40px; display:inline-block; margin-left:3px;" />
-      	    </FlowPanel>
+            <Label text="Tušti km"  horizontalAlignment="right" />
+            <InputDecimal source="EmptyKilometers" />
             <CheckBox source="Dangerous" html="Pavojingas" style="margin:3px;"/>
       	  </row>
       	</Table>
@@ -64,8 +65,8 @@
     &separator;
     <Table>
       <row>
-        <Label html="CMR" horizontalAlignment="right" />
-        <InputText source="Cmr" />
+        <Label text="Pristatymo sąlygos" horizontalAlignment="right" />
+        <DataSelector source="ShippingTerm" />
         <Label html="Svoris" horizontalAlignment="right" />
         <InputDecimal source="Weight" format="#.000" />
         <Label html="Ilgis" horizontalAlignment="right" />
@@ -73,8 +74,8 @@
         <Label html="Pastabos" />
       </row>
       <row>
-        <Label html="Numeris" horizontalAlignment="right" />
-        <InputText source="Number" />
+        <Label text="Palečių keitimas" horizontalAlignment="right" />
+        <InputInteger source="ExchangeOfPalettes" />
         <Label html="Tūris" horizontalAlignment="right" />
         <InputDecimal format="#.000" scale="1" source="Volume" />
         <Label html="Plotis" horizontalAlignment="right" />
@@ -87,16 +88,16 @@
         </cell>
       </row>
       <row>
-        <Label html="Pakrauti km" horizontalAlignment="right" />
-        <InputDecimal source="LoadedKilometers" />
+        <Label html="CMR" horizontalAlignment="right" />
+        <InputText source="Cmr" />
         <Label html="LDM" horizontalAlignment="right" />
         <InputDecimal source="LDM" format="#.00" />
         <Label html="Aukštis" horizontalAlignment="right" />
         <InputDecimal source="Height" format="#.00" />        
       </row>
       <row>
-        <Label html="Tušti km" horizontalAlignment="right" />
-        <InputDecimal source="EmptyKilometers" />
+        <Label html="Numeris" horizontalAlignment="right" />
+        <InputText source="Number" />
         <Label html="Kiekis" horizontalAlignment="right" />
         <InputInteger source="Quantity" />
         <Label html="Paletės" horizontalAlignment="right" />

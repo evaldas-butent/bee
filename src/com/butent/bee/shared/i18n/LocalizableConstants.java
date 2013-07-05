@@ -68,6 +68,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String companySize();
 
+  String companyStatus();
+
   String companyVATCode();
 
   String contact();

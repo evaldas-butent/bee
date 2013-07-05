@@ -22,7 +22,7 @@
     <row>
       <Label text="=name" style="width: 90px; margin-right: 8px; text-align: right" class="bee-required" />
       <InputText source="Name" style="width: 200px;"  />
-      <Label text="=status" style="&lbl1;" />
+      <Label text="=companyStatus" style="&lbl1;" />
       <DataSelector source="CompanyType" style="width: 80px;"  />
       <Label text="=group" style="width: 45px; margin-right: 1em; text-align: right" />
       <DataSelector source="CompanyGroup" style="width: 80px;"  />
