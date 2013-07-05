@@ -23,7 +23,7 @@
   <configs>
     <config name="server-config">
       <security-service activate-default-principal-to-role-mapping="true">
-        <auth-realm name="DBRealm" classname="com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm">
+        <auth-realm name="DBRealm" classname="com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm">
           <property name="user-name-column" value="&quot;Login&quot;"></property>
           <property name="password-column" value="&quot;Password&quot;"></property>
           <property name="group-name-column" value="'BEEUser'"></property>
