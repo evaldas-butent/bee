@@ -30,9 +30,9 @@ public class BeeDataSource {
   public static final int STATUS_OPEN = 1;
   public static final int STATUS_CLOSED = 2;
 
-  private String dsn = null;
-  private DataSource ds = null;
-  private Connection conn = null;
+  private String dsn;
+  private DataSource ds;
+  private Connection conn;
 
   private int status = STATUS_UNKNOWN;
   private List<SQLException> errors = new ArrayList<SQLException>();
@@ -70,8 +70,14 @@ public class BeeDataSource {
   }
 
   public List<ExtendedProperty> getDbInfo() throws SQLException {
-    ResultSet rs, z;
-    String nm, k, v, s;
+    ResultSet rs;
+    ResultSet z;
+
+    String nm;
+    String k;
+    String v;
+    String s;
+    
     int c;
     boolean ok;
 
@@ -250,11 +256,12 @@ public class BeeDataSource {
     try {
       rs = dbMd.getFunctions(null, null, null);
       c = JdbcUtils.getSize(rs);
-      rs.close();
       s = BeeUtils.bracket(c);
     } catch (SQLException ex) {
       c = 0;
       s = ex.getMessage();
+    } finally {
+      rs.close();
     }
 
     PropertyUtils.addExtended(lst, "Functions", null, s);
@@ -331,7 +338,7 @@ public class BeeDataSource {
         z.close();
 
         v = "Table count " + (c > 0 ? BeeUtils.toString(c) : "unknown");
-      } catch (Exception ex) {
+      } catch (SQLException ex) {
         s = null;
         v = ex.getMessage();
         ok = false;
@@ -394,14 +401,14 @@ public class BeeDataSource {
           NameUtils.addName("Create", rs.getString("CREATE_PARAMS")));
 
       switch (rs.getInt("NULLABLE")) {
-        case (DatabaseMetaData.typeNoNulls): {
+        case DatabaseMetaData.typeNoNulls:
           s = BeeConst.NO;
           break;
-        }
-        case (DatabaseMetaData.typeNullable): {
+
+        case DatabaseMetaData.typeNullable:
           s = BeeConst.YES;
           break;
-        }
+
         default:
           s = null;
       }
@@ -411,22 +418,22 @@ public class BeeDataSource {
           rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
 
       switch (rs.getInt("SEARCHABLE")) {
-        case (DatabaseMetaData.typePredNone): {
+        case DatabaseMetaData.typePredNone:
           s = BeeConst.NO;
           break;
-        }
-        case (DatabaseMetaData.typeSearchable): {
+
+        case DatabaseMetaData.typeSearchable:
           s = BeeConst.YES;
           break;
-        }
-        case (DatabaseMetaData.typePredBasic): {
+ 
+        case DatabaseMetaData.typePredBasic:
           s = "except LIKE";
           break;
-        }
-        case (DatabaseMetaData.typePredChar): {
+
+        case DatabaseMetaData.typePredChar:
           s = "only LIKE";
           break;
-        }
+
         default:
           s = null;
       }

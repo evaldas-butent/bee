@@ -170,11 +170,11 @@ import elemental.js.stylesheets.JsStyleSheetList;
  * Contains the engine for processing client side command line interface commands.
  */
 
-public class CliWorker {
+public final class CliWorker {
 
   private static final BeeLogger logger = LogUtils.getLogger(CliWorker.class);
 
-  private static boolean cornified = false;
+  private static boolean cornified;
 
   public static boolean execute(String line) {
     if (BeeUtils.isEmpty(line)) {
@@ -187,40 +187,40 @@ public class CliWorker {
     String z = arr[0].toLowerCase();
     String args = (arr.length > 1) ? v.substring(z.length()).trim() : BeeConst.STRING_EMPTY;
 
-    if (z.equals("?")) {
+    if ("?".equals(z)) {
       whereAmI();
 
     } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
       doAjaxKeys(arr);
 
-    } else if (z.equals("audio")) {
+    } else if ("audio".equals(z)) {
       playAudio(args);
 
-    } else if (z.equals("browser") || z.startsWith("wind")) {
+    } else if ("browser".equals(z) || z.startsWith("wind")) {
       showBrowser(arr);
 
-    } else if (z.equals("cache")) {
+    } else if ("cache".equals(z)) {
       showExtData(Global.getCache().getExtendedInfo());
 
     } else if (z.startsWith("cap")) {
       showCaptions();
 
-    } else if (z.equals("canvas")) {
+    } else if ("canvas".equals(z)) {
       new CanvasDemo().start();
 
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       doScreen(arr);
 
-    } else if (z.equals("charset")) {
+    } else if ("charset".equals(z)) {
       getCharsets();
 
     } else if (z.startsWith("cho")) {
       showChoice(arr);
 
-    } else if (z.equals("class")) {
+    } else if ("class".equals(z)) {
       getClassInfo(args);
 
-    } else if (z.equals("clear")) {
+    } else if ("clear".equals(z)) {
       clear(args);
 
     } else if (z.startsWith("client")) {
@@ -241,16 +241,16 @@ public class CliWorker {
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
 
-    } else if (z.startsWith("conn") || z.equals("http")) {
+    } else if (z.startsWith("conn") || "http".equals(z)) {
       BeeKeeper.getRpc().invoke("connectionInfo");
 
-    } else if (z.equals("cornify")) {
+    } else if ("cornify".equals(z)) {
       cornify(arr);
 
     } else if (z.startsWith("dbinf")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_INFO);
 
-    } else if (z.equals("debug")) {
+    } else if ("debug".equals(z)) {
       setDebug(args);
 
     } else if (z.startsWith("decor")) {
@@ -266,7 +266,7 @@ public class CliWorker {
     } else if (z.startsWith("dim")) {
       showDimensions(args);
 
-    } else if (z.equals("dsn")) {
+    } else if ("dsn".equals(z)) {
       doDsn();
 
     } else if (z.startsWith("dt")) {
@@ -275,44 +275,44 @@ public class CliWorker {
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
 
-    } else if (z.equals("eval")) {
+    } else if ("eval".equals(z)) {
       eval(v, arr);
 
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
 
-    } else if (z.equals("files") || z.startsWith("repo")) {
+    } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
 
     } else if (z.startsWith("flag")) {
       showFlags(arr);
 
-    } else if (z.equals("font") && arr.length == 2) {
+    } else if ("font".equals(z) && arr.length == 2) {
       showFont(arr[1]);
 
-    } else if (z.equals("form") && arr.length == 2) {
+    } else if ("form".equals(z) && arr.length == 2) {
       FormFactory.openForm(arr[1]);
 
-    } else if (z.startsWith("forminf") || z.equals("ff")) {
+    } else if (z.startsWith("forminf") || "ff".equals(z)) {
       showPropData(FormFactory.getInfo());
 
-    } else if (z.equals("fs")) {
+    } else if ("fs".equals(z)) {
       getFs();
 
-    } else if (z.equals("gen")) {
+    } else if ("gen".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.joinWords(arr[1], arr[2],
           ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
 
-    } else if (z.equals("geo")) {
+    } else if ("geo".equals(z)) {
       showGeo();
 
-    } else if (z.equals("grid") && arr.length == 2) {
+    } else if ("grid".equals(z) && arr.length == 2) {
       GridFactory.openGrid(arr[1]);
 
     } else if (z.startsWith("gridinf")) {
       GridFactory.showGridInfo(args);
 
-    } else if (z.equals("gwt")) {
+    } else if ("gwt".equals(z)) {
       showGwt();
 
     } else if (BeeUtils.inList(z, "h5", "html5") || z.startsWith("supp") || z.startsWith("feat")) {
@@ -321,7 +321,7 @@ public class CliWorker {
     } else if (z.startsWith("hist")) {
       Global.showModalGrid("History", new PropertiesData(Historian.getInstance().getInfo()));
 
-    } else if (z.equals("id")) {
+    } else if ("id".equals(z)) {
       showElement(v, arr);
 
     } else if (z.startsWith("image")) {
@@ -330,10 +330,10 @@ public class CliWorker {
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
 
-    } else if (z.startsWith("inp") && z.contains("box") || z.equals("prompt")) {
+    } else if (z.startsWith("inp") && z.contains("box") || "prompt".equals(z)) {
       showInputBox(arr);
 
-    } else if (z.equals("jdbc")) {
+    } else if ("jdbc".equals(z)) {
       doJdbc(args);
 
     } else if (BeeUtils.inList(z, "keys", "pk")) {
@@ -342,28 +342,28 @@ public class CliWorker {
     } else if (z.startsWith("like") && arr.length >= 3) {
       doLike(arr);
 
-    } else if (z.equals("loaders")) {
+    } else if ("loaders".equals(z)) {
       BeeKeeper.getRpc().invoke("loaderInfo");
 
-    } else if (z.equals("locale")) {
+    } else if ("locale".equals(z)) {
       doLocale(arr);
 
-    } else if (z.equals("log")) {
+    } else if ("log".equals(z)) {
       doLog(arr);
 
-    } else if (z.equals("menu")) {
+    } else if ("menu".equals(z)) {
       doMenu(args);
 
-    } else if (z.equals("meter")) {
+    } else if ("meter".equals(z)) {
       showMeter(arr);
 
-    } else if (z.equals("md5")) {
+    } else if ("md5".equals(z)) {
       digest(v);
 
-    } else if (z.equals("nf") && arr.length >= 3) {
+    } else if ("nf".equals(z) && arr.length >= 3) {
       logger.info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
 
-    } else if (z.equals("notify") && arr.length >= 2) {
+    } else if ("notify".equals(z) && arr.length >= 2) {
       showNotes(args);
 
     } else if (BeeUtils.inList(z, "p", "prop")) {
@@ -378,16 +378,16 @@ public class CliWorker {
     } else if (z.startsWith("print")) {
       print(args);
 
-    } else if (z.equals("progress")) {
+    } else if ("progress".equals(z)) {
       showProgress(arr);
 
-    } else if (z.equals("rebuild")) {
+    } else if ("rebuild".equals(z)) {
       rebuildSomething(args);
 
-    } else if (z.equals("rpc")) {
+    } else if ("rpc".equals(z)) {
       showRpc();
 
-    } else if (z.equals("scale")) {
+    } else if ("scale".equals(z)) {
       scale(arr);
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
@@ -396,37 +396,37 @@ public class CliWorker {
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
 
-    } else if (z.equals("settings")) {
+    } else if ("settings".equals(z)) {
       showPropData(Settings.getInfo());
 
     } else if (z.startsWith("sheets")) {
       Global.showGrid(new PropertiesData(Global.getStylesheets()));
 
-    } else if (z.equals("size") && arr.length >= 2) {
+    } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);
 
-    } else if (z.equals("slider")) {
+    } else if ("slider".equals(z)) {
       showSlider(arr);
 
-    } else if (z.equals("sql")) {
+    } else if ("sql".equals(z)) {
       doSql(args);
 
-    } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
+    } else if ("stacking".equals(z) || z.startsWith("zind") || z.startsWith("z-ind")) {
       showPropData(Stacking.getInfo());
 
     } else if (z.startsWith("stor")) {
       storage(arr);
 
-    } else if (z.equals("style")) {
+    } else if ("style".equals(z)) {
       style(v, arr);
 
-    } else if (z.equals("svg")) {
+    } else if ("svg".equals(z)) {
       showSvg(arr);
 
-    } else if (z.equals("table")) {
+    } else if ("table".equals(z)) {
       showTableInfo(args);
 
-    } else if (z.equals("tables")) {
+    } else if ("tables".equals(z)) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
 
     } else if (z.startsWith("tile")) {
@@ -435,7 +435,7 @@ public class CliWorker {
     } else if (z.startsWith("tran") || z.startsWith("detec")) {
       translate(arr, z.startsWith("detec"));
 
-    } else if (z.equals("uc") || "unicode".startsWith(z)) {
+    } else if ("uc".equals(z) || "unicode".startsWith(z)) {
       unicode(arr);
 
     } else if (z.startsWith("unit")) {
@@ -447,7 +447,7 @@ public class CliWorker {
     } else if (z.startsWith("user")) {
       showPropData(BeeKeeper.getUser().getInfo());
 
-    } else if (z.equals("video")) {
+    } else if ("video".equals(z)) {
       playVideo(args);
 
     } else if (z.startsWith("view")) {
@@ -456,16 +456,16 @@ public class CliWorker {
     } else if (z.startsWith("viz")) {
       Showcase.open();
 
-    } else if (z.equals("vm")) {
+    } else if ("vm".equals(z)) {
       BeeKeeper.getRpc().invoke("vmInfo");
 
-    } else if (z.equals("widget") && arr.length >= 2) {
+    } else if ("widget".equals(z) && arr.length >= 2) {
       showWidgetInfo(arr);
 
-    } else if (z.equals("wf") || z.startsWith("suppl")) {
+    } else if ("wf".equals(z) || z.startsWith("suppl")) {
       showWidgetSuppliers();
 
-    } else if (z.equals("mail")) {
+    } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
     } else {
@@ -519,12 +519,12 @@ public class CliWorker {
     }
 
     Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
-      private int counter = 0;
+      private int counter;
 
       @Override
       public boolean execute() {
         cornifyAdd();
-        return (++counter < cnt);
+        return ++counter < cnt;
       }
     }, delay);
   }
@@ -923,12 +923,12 @@ public class CliWorker {
         match = Wildcards.isLike(input, expr);
       }
     }
-    
+
     inform(mode, NameUtils.addName("input", input), NameUtils.addName("pattern", expr),
         NameUtils.addName("case", sens ? "sensitive" : (insens ? "insensitive" : defCase)),
         NameUtils.addName("match", BeeUtils.toString(match)));
   }
-  
+
   private static void doLocale(String[] arr) {
     String mode = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(mode)) {
@@ -1429,6 +1429,7 @@ public class CliWorker {
     });
   }
 
+  // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
 
@@ -1440,16 +1441,18 @@ public class CliWorker {
     }
   }-*/;
 
+  // CHECKSTYLE:ON
+
   private static void scale(String[] arr) {
 
-    class Raf extends RafCallback {
+    final class Raf extends RafCallback {
       private double fromX = 1.0;
       private double fromY = 1.0;
 
       private double toX = 0.1;
       private double toY = 0.1;
 
-      private Style style = null;
+      private Style style;
 
       private Raf(double duration) {
         super(duration);
@@ -1465,12 +1468,12 @@ public class CliWorker {
         double x;
         double y;
 
-        if (elapsed < duration / 2) {
-          x = BeeUtils.rescale(elapsed, 0, duration / 2, fromX, toX);
-          y = BeeUtils.rescale(elapsed, 0, duration / 2, fromY, toY);
+        if (elapsed < getDuration() / 2) {
+          x = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromX, toX);
+          y = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromY, toY);
         } else {
-          x = BeeUtils.rescale(elapsed, duration / 2, duration, toX, fromX);
-          y = BeeUtils.rescale(elapsed, duration / 2, duration, toY, fromY);
+          x = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toX, fromX);
+          y = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toY, fromY);
         }
 
         StyleUtils.setTransformScale(style, x, y);
@@ -1588,7 +1591,14 @@ public class CliWorker {
     }
 
     if (!bro && !wnd && !loc && !nav && !scr && !typ && !prf && !doc) {
-      bro = wnd = loc = nav = scr = typ = prf = doc = true;
+      bro = true;
+      wnd = true;
+      loc = true;
+      nav = true;
+      scr = true;
+      typ = true;
+      prf = true;
+      doc = true;
     }
 
     List<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
@@ -1764,7 +1774,7 @@ public class CliWorker {
         String key = keys.get(row);
         String value = names.get(key);
 
-        if (value.length() != 7 || !value.substring(0, 1).equals("#")) {
+        if (value.length() != 7 || !"#".equals(value.substring(0, 1))) {
           logger.warning(key, value);
         }
 
@@ -2263,8 +2273,8 @@ public class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = Localized.constants.ok();
-    String cancelHtml = Localized.constants.cancel();
+    String confirmHtml = Localized.getConstants().ok();
+    String cancelHtml = Localized.getConstants().cancel();
 
     boolean required = true;
 
@@ -2384,17 +2394,19 @@ public class CliWorker {
         widget = new TextBox();
         DomUtils.setInputType(widget, type);
 
-        if (type.equals("search")) {
+        if ("search".equals(type)) {
           if (Features.supportsAttributePlaceholder()) {
             widget.getElement().setAttribute("placeholder", "Search...");
             widget.getElement().setAttribute("results", "0");
           }
-        } else if (type.equals("number")) {
+
+        } else if ("number".equals(type)) {
           widget.getElement().setAttribute("min", "0");
           widget.getElement().setAttribute("max", "20");
           widget.getElement().setAttribute("step", "2");
           widget.getElement().setAttribute("value", "4");
-        } else if (type.equals("range")) {
+
+        } else if ("range".equals(type)) {
           widget.getElement().setAttribute("min", "0");
           widget.getElement().setAttribute("max", "50");
           widget.getElement().setAttribute("step", "5");
@@ -2429,8 +2441,10 @@ public class CliWorker {
     double optimum = 50;
 
     String pars = "<>vlho";
-    int p = -1, j;
-    String s, z;
+    int p = -1;
+    int j;
+    String s;
+    String z;
     char c;
 
     for (int i = 1; i < arr.length; i++) {
@@ -2586,12 +2600,12 @@ public class CliWorker {
       maxDuration = TimeUtils.MILLIS_PER_MINUTE;
     }
 
-    class Prog {
+    final class Prog {
       final double max;
       final long start;
       final long finish;
 
-      String id = null;
+      String id;
 
       private Prog(double max, long start, long finish) {
         super();
@@ -2613,7 +2627,7 @@ public class CliWorker {
     }
 
     Timer timer = new Timer() {
-      private int closed = 0;
+      private int closed;
 
       @Override
       public void run() {
@@ -2622,9 +2636,9 @@ public class CliWorker {
         for (final Prog prog : list) {
           if (prog.id == null) {
             if (prog.start < time && prog.finish > time) {
-              String caption = BeeUtils.toString(prog.start - now) +
-                  "-" + BeeUtils.toString(prog.finish - now);
-              
+              String caption =
+                  BeeUtils.toString(prog.start - now) + "-" + BeeUtils.toString(prog.finish - now);
+
               Image close = new Image(Global.getImages().closeSmallRed());
               close.addClickHandler(new ClickHandler() {
                 @Override
@@ -2632,7 +2646,7 @@ public class CliWorker {
                   BeeKeeper.getScreen().closeProgress(prog.id);
                 }
               });
-              
+
               prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max, close);
             }
 
@@ -2710,11 +2724,11 @@ public class CliWorker {
 
     int pos = 2;
 
-    if (html.equals("[") && len > 3) {
+    if ("[".equals(html) && len > 3) {
       pos = len;
       StringBuilder sb = new StringBuilder(arr[2]);
       for (int i = 3; i < len; i++) {
-        if (arr[i].equals("]")) {
+        if ("]".equals(arr[i])) {
           pos = i + 1;
           break;
         }
@@ -2792,8 +2806,10 @@ public class CliWorker {
     int ticks = 10;
 
     String pars = "v<>slt";
-    int p = -1, j;
-    String s, z;
+    int p = -1;
+    int j;
+    String s;
+    String z;
     char c;
 
     for (int i = 1; i < arr.length; i++) {
@@ -3052,24 +3068,24 @@ public class CliWorker {
     Font font = null;
     Integer containerSize = null;
 
-    if (len > 1) {
-      for (int i = 1; i < len; i++) {
-        if (arr[i] == "f" && i < len - 1) {
-          font = Font.parse(ArrayUtils.slice(arr, i + 1));
-          break;
-        }
-        if (arr[i] == "c" && i < len - 1) {
-          containerSize = BeeUtils.toInt(arr[i + 1]);
-          i++;
-          continue;
-        }
-
-        if (BeeUtils.isDouble(arr[i])) {
-          value = BeeUtils.toDouble(arr[i]);
-        } else {
-          unit = CssUnit.parse(arr[i]);
-        }
+    int i = 1;
+    while (i < len) {
+      if ("f".equals(arr[i]) && i < len - 1) {
+        font = Font.parse(ArrayUtils.slice(arr, i + 1));
+        break;
       }
+      if ("c".equals(arr[i]) && i < len - 1) {
+        containerSize = BeeUtils.toInt(arr[i + 1]);
+        i += 2;
+        continue;
+      }
+
+      if (BeeUtils.isDouble(arr[i])) {
+        value = BeeUtils.toDouble(arr[i]);
+      } else {
+        unit = CssUnit.parse(arr[i]);
+      }
+      i++;
     }
 
     List<CssUnit> units = Lists.newArrayList();
@@ -3180,7 +3196,7 @@ public class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
-          showError(Localized.messages.keyNotFound(key));
+          showError(Localized.getMessages().keyNotFound(key));
         } else {
           inform(key, z);
         }
@@ -3284,7 +3300,7 @@ public class CliWorker {
             end = true;
             continue;
           }
-          if (arr[i].equals("+")) {
+          if ("+".equals(arr[i])) {
             immediate = true;
             continue;
           }

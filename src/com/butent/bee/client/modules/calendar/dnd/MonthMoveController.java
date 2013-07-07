@@ -24,7 +24,7 @@ public class MonthMoveController implements MoveEvent.Handler {
 
   private int headerHeight;
 
-  private AppointmentWidget appointmentWidget = null;
+  private AppointmentWidget appointmentWidget;
   private int relativeLeft;
   private int relativeTop;
 

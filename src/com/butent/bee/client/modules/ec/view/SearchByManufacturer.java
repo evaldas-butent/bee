@@ -36,12 +36,12 @@ class SearchByManufacturer extends EcView {
   private final ItemPanel itemPanel;
   
   private final List<String> manufacturers = Lists.newArrayList();
-  private String manufacturer = null;
+  private String manufacturer;
   
   SearchByManufacturer() {
     super();
     
-    this.manufacturerWidget = new Button(Localized.constants.ecItemManufacturer());
+    this.manufacturerWidget = new Button(Localized.getConstants().ecItemManufacturer());
     manufacturerWidget.addStyleName(STYLE_MANUFACTURER + "widget");
     
     this.manufacturerSelector = new IndexSelector(STYLE_MANUFACTURER + "selector");

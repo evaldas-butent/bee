@@ -17,12 +17,12 @@ import com.butent.bee.shared.utils.Property;
 import java.util.Collections;
 import java.util.List;
 
-public class Previewer implements NativePreviewHandler, HasInfo {
+public final class Previewer implements NativePreviewHandler, HasInfo {
   
   public interface PreviewConsumer extends Consumer<NativePreviewEvent> {
   }
   
-  private static class ComparableHandler implements Comparable<ComparableHandler> {
+  private static final class ComparableHandler implements Comparable<ComparableHandler> {
     private final int index;
     private final PreviewHandler handler;
 
@@ -102,7 +102,7 @@ public class Previewer implements NativePreviewHandler, HasInfo {
   private final List<PreviewHandler> handlers = Lists.newArrayList();
   private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
 
-  private int modalCount = 0;
+  private int modalCount;
 
   private Previewer() {
     Event.addNativePreviewHandler(this);

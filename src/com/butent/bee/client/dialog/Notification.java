@@ -38,7 +38,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
    * Manages notification message and it's level and text.
    */
 
-  private class Message {
+  private final class Message {
     private final LogLevel level;
     private final List<String> lines;
 
@@ -133,15 +133,14 @@ public class Notification extends Composite implements PreviewHandler, Identifia
   }
 
   /**
-   * Contains a list of possible notification states
+   * Contains a list of possible notification states.
    */
-
   private enum State {
     PENDING, OPENING, SHOWING, CLOSING
   }
 
-  public static int defaultOpenDuration = 500;
-  public static int defaultCloseDuration = 500;
+  public static final int DEFAULT_OPEN_DURATION = 500;
+  public static final int DEFAULT_CLOSE_DURATION = 500;
 
   private static final String STYLE_CONTAINER = "bee-NotificationContainer";
   private static final String STYLE_MESSAGES = "bee-NotificationMessages";
@@ -153,8 +152,8 @@ public class Notification extends Composite implements PreviewHandler, Identifia
 
   private final MoleAnimation animation = new MoleAnimation();
 
-  private int openDuration = defaultOpenDuration;
-  private int closeDuration = defaultCloseDuration;
+  private int openDuration = DEFAULT_OPEN_DURATION;
+  private int closeDuration = DEFAULT_CLOSE_DURATION;
 
   private State state = State.PENDING;
 
@@ -280,7 +279,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
     Previewer.ensureUnregistered(this);
   }
 
-  private Element createTextElement() {
+  private static Element createTextElement() {
     DivElement element = Document.get().createDivElement();
     element.setId(DomUtils.createUniqueId("note-text"));
     element.setClassName(STYLE_TEXT);

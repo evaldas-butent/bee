@@ -65,7 +65,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.List;
 
-public class TransportHandler {
+public final class TransportHandler {
 
   private static class CargoFormHandler extends AbstractFormInterceptor {
     @Override
@@ -107,7 +107,7 @@ public class TransportHandler {
     }
   }
 
-  private static class Profit implements ClickHandler {
+  private static final class Profit implements ClickHandler {
     private final String idName;
 
     private Profit(String idName) {
@@ -157,8 +157,8 @@ public class TransportHandler {
       implements SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
-    private IsRow selectedType = null;
-    private TreePresenter typeTree = null;
+    private IsRow selectedType;
+    private TreePresenter typeTree;
 
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -206,7 +206,7 @@ public class TransportHandler {
       return true;
     }
 
-    private Filter getFilter(Long type) {
+    private static Filter getFilter(Long type) {
       if (type == null) {
         return null;
       } else {
@@ -305,7 +305,7 @@ public class TransportHandler {
     private Integer kmIndex;
     private BeeColumn kmColumn;
 
-    private Integer scale = null;
+    private Integer scale;
 
     @Override
     public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
@@ -375,7 +375,8 @@ public class TransportHandler {
     }
 
     @Override
-    public void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription) {
+    public void beforeCreate(List<? extends IsColumn> dataColumns,
+        GridDescription gridDescription) {
 
       viewName = gridDescription.getViewName();
       speedFromIndex = Data.getColumnIndex(viewName, "SpeedometerFrom");
@@ -404,8 +405,8 @@ public class TransportHandler {
       implements SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
-    private IsRow selectedModel = null;
-    private TreePresenter modelTree = null;
+    private IsRow selectedModel;
+    private TreePresenter modelTree;
 
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -453,7 +454,7 @@ public class TransportHandler {
       return true;
     }
 
-    private Filter getFilter(Long model) {
+    private static Filter getFilter(Long model) {
       if (model == null) {
         return null;
       } else {

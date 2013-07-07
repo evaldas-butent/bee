@@ -86,7 +86,7 @@ public enum ValueType {
     } else if ((this == LONG) && (value instanceof Number)) {
       ret = new LongValue(((Number) value).longValue());
     } else if ((this == DECIMAL) && (value instanceof BigDecimal)) {
-      ret = new DecimalValue(((BigDecimal) value));
+      ret = new DecimalValue((BigDecimal) value);
     } else if ((this == NUMBER) && (value instanceof Number)) {
       ret = new NumberValue(((Number) value).doubleValue());
     } else if ((this == BOOLEAN) && (value instanceof Boolean)) {

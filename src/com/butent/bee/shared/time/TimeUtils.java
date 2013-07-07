@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Contains methods for date/time calculations.
  */
-public class TimeUtils {
+public final class TimeUtils {
 
   public static final int FIELD_ERA = 0;
 

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Relation implements BeeSerializable, HasInfo, HasViewName {
+public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   public enum Caching {
     NONE, QUERY, LOCAL, GLOBAL
@@ -111,34 +111,34 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   private final Map<String, String> attributes = Maps.newHashMap();
 
-  private String viewName = null;
+  private String viewName;
 
-  private Filter filter = null;
-  private Order order = null;
+  private Filter filter;
+  private Order order;
 
-  private Caching caching = null;
-  private Operator operator = null;
+  private Caching caching;
+  private Operator operator;
 
-  private RendererDescription rowRendererDescription = null;
-  private Calculation rowRender = null;
-  private List<RenderableToken> rowRenderTokens = null;
+  private RendererDescription rowRendererDescription;
+  private Calculation rowRender;
+  private List<RenderableToken> rowRenderTokens;
 
-  private String itemKey = null;
+  private String itemKey;
 
   private final List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
   private final List<String> choiceColumns = Lists.newArrayList();
   private final List<String> searchableColumns = Lists.newArrayList();
 
-  private MenuConstants.ITEM_TYPE itemType = null;
-  private Integer visibleLines = null;
+  private MenuConstants.ITEM_TYPE itemType;
+  private Integer visibleLines;
 
-  private String originalTarget = null;
+  private String originalTarget;
   private final List<String> originalRenderColumns = Lists.newArrayList();
 
-  private RenderMode renderMode = null;
+  private RenderMode renderMode;
 
-  private String targetViewName = null;
+  private String targetViewName;
 
   private Relation() {
   }
@@ -481,20 +481,17 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
             ViewColumn vc = targetInfo.getViewColumn(columnId);
 
             if (vc != null) {
-              if (sourceInfo == null) {
-                fields.add(vc.getField());
-              } else {
-                int index = sourceInfo.getColumnIndexBySource(vc.getTable(), vc.getField(),
-                    vc.getLevel() - 1);
-                if (!BeeConst.isUndef(index)) {
-                  fields.add(sourceInfo.getColumnId(index));
-                }
+              int index = sourceInfo.getColumnIndexBySource(vc.getTable(), vc.getField(),
+                  vc.getLevel() - 1);
+              if (!BeeConst.isUndef(index)) {
+                fields.add(sourceInfo.getColumnId(index));
               }
             }
           }
           if (!fields.isEmpty()) {
             colNames.addAll(sourceInfo.parseColumns(fields));
           }
+
         } else if (renderSource()) {
           colNames.addAll(renderColumns.get());
         }
@@ -641,7 +638,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     this.visibleLines = visibleLines;
   }
 
-  private String deduceViewName(DataInfo dataInfo, List<String> columns) {
+  private static String deduceViewName(DataInfo dataInfo, List<String> columns) {
     if (!BeeUtils.isEmpty(columns)) {
       for (String colName : columns) {
         String result = deduceViewName(dataInfo, colName);
@@ -653,13 +650,14 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return null;
   }
 
-  private String deduceViewName(DataInfo dataInfo, String colName) {
+  private static String deduceViewName(DataInfo dataInfo, String colName) {
     return dataInfo.getEditableRelationView(colName);
   }
 
-  private String deduceViewName(DataInfo.Provider provider, DataInfo targetInfo,
+  private static String deduceViewName(DataInfo.Provider provider, DataInfo targetInfo,
       String target, List<String> renderColumns, List<String> displCols, List<String> searchCols,
       List<String> selectorColumnNames) {
+
     String result = null;
 
     if (BeeUtils.isEmpty(target) && BeeUtils.isEmpty(renderColumns) && BeeUtils.isEmpty(displCols)
@@ -704,7 +702,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return result;
   }
 
-  private List<String> deriveRenderColumns(DataInfo targetInfo, String original, String resolved) {
+  private static List<String> deriveRenderColumns(DataInfo targetInfo, String original,
+      String resolved) {
     if (!BeeUtils.same(original, resolved) && targetInfo.containsColumn(original)) {
       ViewColumn vc = targetInfo.getViewColumn(original);
       if (vc != null && vc.getLevel() > 0) {
@@ -719,7 +718,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return getAttributes().get(name);
   }
 
-  private List<String> getDefaultColumnNames(DataInfo dataInfo) {
+  private static List<String> getDefaultColumnNames(DataInfo dataInfo) {
     List<String> result = Lists.newArrayList();
 
     for (BeeColumn column : dataInfo.getColumns()) {
@@ -743,11 +742,12 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return result;
   }
 
-  private String resolveTarget(DataInfo dataInfo, String colName) {
+  private static String resolveTarget(DataInfo dataInfo, String colName) {
     return dataInfo.getEditableRelationSource(colName);
   }
 
-  private String resolveTarget(DataInfo targetInfo, String target, List<String> renderColumns) {
+  private static String resolveTarget(DataInfo targetInfo, String target,
+      List<String> renderColumns) {
     String result = null;
 
     if (!BeeUtils.isEmpty(target)) {

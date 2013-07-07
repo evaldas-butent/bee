@@ -18,7 +18,7 @@ import org.junit.Test;
  */
 public class TestDateTime {
 
-  public DateTime varDate;
+  private DateTime varDate;
 
   @Before
   public void setUp() throws Exception {
@@ -47,6 +47,7 @@ public class TestDateTime {
     assertEquals(System.currentTimeMillis(), varDate.getTime(), 1000);
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testDateTimeDate() {
     DateTime dt = new DateTime(new java.util.Date());
@@ -110,8 +111,6 @@ public class TestDateTime {
 
     dt = null;
     assertEquals(false, varDate.equals(dt));
-
-    assertEquals(false, varDate.equals(null));
   }
 
   @Test

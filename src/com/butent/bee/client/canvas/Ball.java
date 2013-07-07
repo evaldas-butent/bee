@@ -8,12 +8,13 @@ import com.google.gwt.canvas.dom.client.CssColor;
  */
 
 public class Ball extends SpringObject {
-  public CssColor color;
-  public double posZ, velZ, goalZ;
-  public double radius;
-  public Vector startPos;
-  public double startPosZ;
-  public double startRadius;
+  private CssColor color;
+  private double posZ;
+  private double velZ;
+  private double goalZ;
+  private double radius;
+  private Vector startPos;
+  private double startRadius;
 
   public Ball(double x, double y, double z, double radius, int r, int g, int b) {
     this(new Vector(x, y), z, radius, CssColor.make(r, g, b));
@@ -27,29 +28,32 @@ public class Ball extends SpringObject {
     this.goalZ = startPosZ;
     this.radius = radius;
     this.startPos = new Vector(start);
-    this.startPosZ = startPosZ;
     this.startRadius = radius;
   }
 
   public void draw(Context2d context) {
     context.setFillStyle(color);
     context.beginPath();
-    context.arc(pos.x, pos.y, radius, 0, Math.PI * 2.0, true);
+    context.arc(getPos().getX(), getPos().getY(), radius, 0, Math.PI * 2.0, true);
     context.closePath();
     context.fill();
+  }
+
+  public Vector getStartPos() {
+    return startPos;
   }
 
   @Override
   public void update() {
     super.update();
 
-    Vector dh = Vector.sub(startPos, pos);
+    Vector dh = Vector.sub(startPos, getPos());
     double dist = dh.mag();
     goalZ = dist / 100.0 + 1.0;
     double dgZ = goalZ - posZ;
-    double aZ = dgZ * springStrength;
+    double aZ = dgZ * SPRING_STRENGTH;
     velZ += aZ;
-    velZ *= friction;
+    velZ *= FRICTION;
     posZ += velZ;
 
     radius = startRadius * posZ;

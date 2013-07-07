@@ -19,7 +19,7 @@ public class SortEvent extends GwtEvent<SortEvent.Handler> {
     void onSort(SortEvent event);
   }
 
-  private static Type<Handler> TYPE;
+  private static final Type<Handler> TYPE = new Type<Handler>();
 
   public static SortEvent fire(HasHandlers source, Order sortList) {
     SortEvent event = new SortEvent(sortList);
@@ -30,12 +30,9 @@ public class SortEvent extends GwtEvent<SortEvent.Handler> {
   }
 
   public static Type<Handler> getType() {
-    if (TYPE == null) {
-      TYPE = new Type<Handler>();
-    }
     return TYPE;
   }
-
+  
   private final Order order;
 
   protected SortEvent(Order order) {

@@ -7,7 +7,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 /**
  * Contains methods used for logging, changing logging level.
  */
-public class LogUtils {
+public final class LogUtils {
 
   private static BeeLoggerFactory loggerFactory;
 

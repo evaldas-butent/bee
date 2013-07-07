@@ -40,19 +40,19 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private boolean valueNumeric = false;
-  private int valueStartIndex = 0;
+  private boolean valueNumeric;
+  private int valueStartIndex;
 
   private int minSize = BeeConst.UNDEF;
   private int maxSize = BeeConst.UNDEF;
 
-  private boolean changePending = false;
+  private boolean changePending;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public BeeListBox() {
     super();

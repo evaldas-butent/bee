@@ -9,7 +9,8 @@ import java.util.Map;
  * Contains core information about available external APIs in the system.
  */
 
-public class AjaxKeyRepository {
+public final class AjaxKeyRepository {
+
   private static Map<String, String> keys = new HashMap<String, String>();
 
   static {

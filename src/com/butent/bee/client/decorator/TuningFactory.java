@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class TuningFactory {
+public final class TuningFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(TuningFactory.class);
 

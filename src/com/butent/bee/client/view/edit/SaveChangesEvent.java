@@ -16,7 +16,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> implements Consumable {
+public final class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> implements
+    Consumable {
 
   public interface Handler extends EventHandler {
     void onSaveChanges(SaveChangesEvent event);
@@ -52,7 +53,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   public static Type<Handler> getType() {
     return TYPE;
   }
-  
+
   public static SaveChangesEvent of(ReadyForUpdateEvent event) {
     Assert.notNull(event);
 
@@ -64,18 +65,18 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
 
   private final IsRow oldRow;
   private final IsRow newRow;
-  
+
   private final List<BeeColumn> columns;
-  
+
   private final List<String> oldValues;
   private final List<String> newValues;
-  
+
   private final Collection<RowChildren> children;
-  
+
   private final RowCallback callback;
-  
-  private boolean consumed = false;
-  
+
+  private boolean consumed;
+
   private SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, Collection<RowChildren> children,
       RowCallback callback) {
@@ -93,7 +94,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   public void consume() {
     setConsumed(true);
   }
-  
+
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
@@ -102,7 +103,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   public RowCallback getCallback() {
     return callback;
   }
-  
+
   public Collection<RowChildren> getChildren() {
     return children;
   }
@@ -143,7 +144,7 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> impleme
   public boolean isEmpty() {
     return columns.isEmpty() && BeeUtils.isEmpty(children);
   }
-  
+
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;

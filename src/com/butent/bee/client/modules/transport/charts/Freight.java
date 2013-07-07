@@ -30,7 +30,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Set;
 
-class Freight extends OrderCargo {
+final class Freight extends OrderCargo {
 
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
@@ -70,7 +70,7 @@ class Freight extends OrderCargo {
 
   private final Long cargoTripVersion;
 
-  private String tripTitle = null;
+  private String tripTitle;
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
@@ -201,12 +201,8 @@ class Freight extends OrderCargo {
   private boolean isTarget(Object data) {
     if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && data instanceof Freight) {
       return !Objects.equal(getTripId(), ((Freight) data).getTripId());
-
-    } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo) {
-      return true;
-
     } else {
-      return false;
+      return DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo;
     }
   }
 }

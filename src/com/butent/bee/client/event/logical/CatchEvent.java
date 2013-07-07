@@ -5,7 +5,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
-public class CatchEvent<T> extends GwtEvent<CatchEvent.CatchHandler<T>> {
+public final class CatchEvent<T> extends GwtEvent<CatchEvent.CatchHandler<T>> {
 
   public interface HasCatchHandlers<T> extends HasHandlers {
     HandlerRegistration addCatchHandler(CatchHandler<T> handler);
@@ -15,7 +15,7 @@ public class CatchEvent<T> extends GwtEvent<CatchEvent.CatchHandler<T>> {
     void onCatch(CatchEvent<T> event);
   }
 
-  private static Type<CatchHandler<?>> TYPE;
+  private static final Type<CatchHandler<?>> TYPE = new Type<CatchHandler<?>>();
 
   public static <T> void fire(HasCatchHandlers<T> source, T packet, T destination) {
     if (TYPE != null) {
@@ -25,9 +25,6 @@ public class CatchEvent<T> extends GwtEvent<CatchEvent.CatchHandler<T>> {
   }
 
   public static Type<CatchHandler<?>> getType() {
-    if (TYPE == null) {
-      TYPE = new Type<CatchHandler<?>>();
-    }
     return TYPE;
   }
 
@@ -39,9 +36,9 @@ public class CatchEvent<T> extends GwtEvent<CatchEvent.CatchHandler<T>> {
     this.destination = destination;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes" })
   @Override
-  public final Type<CatchHandler<T>> getAssociatedType() {
+  public Type<CatchHandler<T>> getAssociatedType() {
     return (Type) TYPE;
   }
 

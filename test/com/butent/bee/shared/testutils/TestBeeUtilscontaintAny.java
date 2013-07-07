@@ -43,7 +43,8 @@ public class TestBeeUtilscontaintAny extends TestCase {
 
   boolean expected;
 
-  Set<ValueType> value1, value2;
+  Set<ValueType> value1;
+  Set<ValueType> value2;
 
   public TestBeeUtilscontaintAny(boolean expected, Set<ValueType> value1, Set<ValueType> value2) {
     this.expected = expected;

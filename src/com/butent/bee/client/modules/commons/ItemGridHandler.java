@@ -37,7 +37,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   private static final String FILTER_KEY = "f1";
   private final boolean services;
 
-  private IsRow selectedCategory = null;
+  private IsRow selectedCategory;
 
   ItemGridHandler(boolean showServices) {
     this.services = showServices;
@@ -156,7 +156,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
     return selectedCategory;
   }
 
-  private Filter getFilter(Long category) {
+  private static Filter getFilter(Long category) {
     if (category == null) {
       return null;
     } else {

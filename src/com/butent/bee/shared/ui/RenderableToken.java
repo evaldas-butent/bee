@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class RenderableToken implements BeeSerializable, HasInfo {
+public final class RenderableToken implements BeeSerializable, HasInfo {
 
   private enum Serial {
     SOURCE, PREFIX, SUFFIX, ADD_PREFIX_WHEN_EMPTY, ADD_SUFFIX_WHEN_EMPTY, FORMAT, SCALE
@@ -68,16 +68,16 @@ public class RenderableToken implements BeeSerializable, HasInfo {
     return result;
   }
   
-  private String source = null;
+  private String source;
 
-  private String prefix = null;
-  private String suffix = null;
+  private String prefix;
+  private String suffix;
 
-  private Boolean addPrefixWhenEmpty = null;
-  private Boolean addSuffixWhenEmpty = null;
+  private Boolean addPrefixWhenEmpty;
+  private Boolean addSuffixWhenEmpty;
 
-  private String format = null;
-  private Integer scale = null;
+  private String format;
+  private Integer scale;
 
   private RenderableToken() {
     super();

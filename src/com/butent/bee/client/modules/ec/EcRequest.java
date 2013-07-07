@@ -13,7 +13,7 @@ public class EcRequest {
   private final String service;
   private final String query;
   
-  private String progressId = null;
+  private String progressId;
   private int requestId = BeeConst.UNDEF;
   
   public EcRequest(String service, String query) {

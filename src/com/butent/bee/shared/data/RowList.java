@@ -12,18 +12,17 @@ import java.util.List;
  * principle.
  */
 
-public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> extends
-    AbstractTable<RowType, ColType> {
-  private final ListSequence<RowType> rows;
+public abstract class RowList<R extends IsRow, C extends IsColumn> extends AbstractTable<R, C> {
+  private final ListSequence<R> rows;
 
   public RowList() {
     super();
-    this.rows = new ListSequence<RowType>();
+    this.rows = new ListSequence<R>();
   }
 
-  public RowList(List<RowType> rows) {
+  public RowList(List<R> rows) {
     super();
-    this.rows = new ListSequence<RowType>(rows);
+    this.rows = new ListSequence<R>(rows);
   }
 
   @Override
@@ -37,13 +36,13 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   }
 
   @Override
-  public RowType getRow(int rowIndex) {
+  public R getRow(int rowIndex) {
     assertRowIndex(rowIndex);
     return getRows().get(rowIndex);
   }
 
   @Override
-  public ListSequence<RowType> getRows() {
+  public ListSequence<R> getRows() {
     return rows;
   }
 
@@ -53,7 +52,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
     getRows().remove(rowIndex);
   }
 
-  public void setRows(List<RowType> list) {
+  public void setRows(List<R> list) {
     this.rows.setValues(list);
   }
 
@@ -63,7 +62,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      Collections.sort(getRows().getList(), new RowOrdering<RowType>(getColumns(), sortInfo));
+      Collections.sort(getRows().getList(), new RowOrdering<R>(getColumns(), sortInfo));
     }
   }
 
@@ -75,7 +74,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   }
 
   @Override
-  protected void insertRow(int rowIndex, RowType row) {
+  protected void insertRow(int rowIndex, R row) {
     Assert.betweenInclusive(rowIndex, 0, getNumberOfRows());
     getRows().insert(rowIndex, row);
   }

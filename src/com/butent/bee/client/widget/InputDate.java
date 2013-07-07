@@ -41,10 +41,10 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   
   private static final String STYLE_POPUP = "bee-DateBox-popup";
 
-  private DateTimeFormat format = null;
+  private DateTimeFormat format;
 
-  private HasDateValue minDate = null;
-  private HasDateValue maxDate = null;
+  private HasDateValue minDate;
+  private HasDateValue maxDate;
 
   private int stepValue = BeeConst.UNDEF;
 
@@ -161,8 +161,8 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   }
 
   @Override
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
+  public void setDateTimeFormat(DateTimeFormat dtFormat) {
+    this.format = dtFormat;
   }
 
   public void setMaxDate(HasDateValue maxDate) {
@@ -200,7 +200,8 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     setValue(oldValue);
     if (!handleChar(charCode)) {
       if (BeeUtils.isDigit(charCode)) {

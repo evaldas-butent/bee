@@ -51,7 +51,7 @@ public class GwtConstants extends GwtLocalizable {
     }
   }
 
-  private Object getDefaultValue(Method method) {
+  private static Object getDefaultValue(Method method) {
     Class<?> type = method.getReturnType();
     if (type.equals(String.class)) {
       DefaultStringValue ann = method.getAnnotation(DefaultStringValue.class);

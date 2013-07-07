@@ -27,12 +27,12 @@ public class DayMoveController implements MoveEvent.Handler {
   private final CalendarView calendarView;
   private final Element scrollArea;
 
-  private CalendarSettings settings = null;
+  private CalendarSettings settings;
 
   private JustDate date;
   private int columnCount;
 
-  private AppointmentWidget appointmentWidget = null;
+  private AppointmentWidget appointmentWidget;
   private int relativeLeft;
   private int relativeTop;
 
@@ -47,12 +47,12 @@ public class DayMoveController implements MoveEvent.Handler {
 
   private int columnWidth;
 
-  private boolean scrollEnabled = false;
+  private boolean scrollEnabled;
 
   private int pointerOffsetX;
   private int pointerOffsetY;
   
-  private Element positioner = null;
+  private Element positioner;
   private int selectedColumn = BeeConst.UNDEF;
   private int selectedMinutes = BeeConst.UNDEF;
   
@@ -391,8 +391,8 @@ public class DayMoveController implements MoveEvent.Handler {
     int column = (getRelativeLeft() + getPointerOffsetX()) / getColumnWidth();
     column = BeeUtils.clamp(column, 0, getColumnCount() - 1);
     
-    int y = Math.min((getRelativeTop() + getPointerOffsetY()) / getSettings().getPixelsPerInterval() 
-        * getSettings().getPixelsPerInterval(), getMaxTop());
+    int y = Math.min((getRelativeTop() + getPointerOffsetY()) 
+        / getSettings().getPixelsPerInterval() * getSettings().getPixelsPerInterval(), getMaxTop());
     int minutes = CalendarUtils.getMinutes(y, getSettings());
     
     if (getPositioner() != null 

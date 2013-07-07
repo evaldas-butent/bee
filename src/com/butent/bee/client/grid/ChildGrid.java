@@ -55,15 +55,15 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
   private final boolean disablable;
 
-  private GridInterceptor gridInterceptor = null;
-  private GridDescription gridDescription = null;
-  private GridPresenter presenter = null;
+  private GridInterceptor gridInterceptor;
+  private GridDescription gridDescription;
+  private GridPresenter presenter;
 
-  private IsRow pendingRow = null;
-  private Boolean pendingEnabled = null;
+  private IsRow pendingRow;
+  private Boolean pendingEnabled;
 
-  private String parentId = null;
-  private HandlerRegistration parentRowReg = null;
+  private String parentId;
+  private HandlerRegistration parentRowReg;
 
   public ChildGrid(String gridName, int parentIndex, String relSource,
       GridFactory.GridOptions gridOptions, boolean disablable) {

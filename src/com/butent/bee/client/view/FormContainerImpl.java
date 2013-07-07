@@ -45,26 +45,26 @@ import java.util.List;
 public class FormContainerImpl extends Split implements FormContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
-  private String headerId = null;
-  private String footerId = null;
-  private String commandId = null;
+  private String headerId;
+  private String footerId;
+  private String commandId;
 
   private int commandHeight = 36;
 
-  private boolean hasSearch = false;
+  private boolean hasSearch;
 
-  private Evaluator rowMessage = null;
+  private Evaluator rowMessage;
 
   private boolean enabled = true;
 
-  private String currentCaption = null;
+  private String currentCaption;
 
-  private boolean hasData = false;
+  private boolean hasData;
   private int initialRowCount = BeeConst.UNDEF;
 
-  private boolean started = false;
+  private boolean started;
 
   public FormContainerImpl() {
     super(-1);

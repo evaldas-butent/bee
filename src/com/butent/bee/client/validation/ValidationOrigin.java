@@ -4,14 +4,14 @@ public enum ValidationOrigin {
   CELL, FORM, GRID;
 
   public boolean isCell() {
-    return CELL.equals(this);
+    return this == CELL;
   }
   
   public boolean isForm() {
-    return FORM.equals(this);
+    return this == FORM;
   }
 
   public boolean isGrid() {
-    return GRID.equals(this);
+    return this == GRID;
   }
 }

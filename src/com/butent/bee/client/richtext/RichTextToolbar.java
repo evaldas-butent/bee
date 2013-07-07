@@ -242,7 +242,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
   private final Command accept;
   
-  private boolean waiting = false;
+  private boolean waiting;
 
   public RichTextToolbar(Editor editor, RichTextArea richText, boolean embedded) {
     this.area = richText;
@@ -256,49 +256,94 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       firstRow.add(createSpacer(1.0, CssUnit.EM));
     }
 
-    firstRow.add(undo = createButton(Global.getImages().undo(), "Undo"));
-    firstRow.add(redo = createButton(Global.getImages().redo(), "Redo"));
-    firstRow.add(removeFormat = createButton(images.removeFormat(), "Remove Formatting"));
+    this.undo = createButton(Global.getImages().undo(), "Undo");
+    firstRow.add(undo);
+
+    this.redo = createButton(Global.getImages().redo(), "Redo");
+    firstRow.add(redo);
+
+    this.removeFormat = createButton(images.removeFormat(), "Remove Formatting");
+    firstRow.add(removeFormat);
+    
     firstRow.add(createSpacer());
 
-    firstRow.add(bold = createToggle(images.bold(), "Toggle Bold"));
-    firstRow.add(italic = createToggle(images.italic(), "Toggle Italic"));
-    firstRow.add(underline = createToggle(images.underline(), "Toggle Underline"));
-    firstRow.add(subscript = createToggle(images.subscript(), "Toggle Subscript"));
-    firstRow.add(superscript = createToggle(images.superscript(), "Toggle Superscript"));
-    firstRow.add(strikethrough = createToggle(images.strikeThrough(), "Toggle Strikethrough"));
+    this.bold = createToggle(images.bold(), "Toggle Bold");
+    firstRow.add(bold);
+
+    this.italic = createToggle(images.italic(), "Toggle Italic");
+    firstRow.add(italic);
+
+    this.underline = createToggle(images.underline(), "Toggle Underline");
+    firstRow.add(underline);
+
+    this.subscript = createToggle(images.subscript(), "Toggle Subscript");
+    firstRow.add(subscript);
+    
+    this.superscript = createToggle(images.superscript(), "Toggle Superscript");
+    firstRow.add(superscript);
+
+    this.strikethrough = createToggle(images.strikeThrough(), "Toggle Strikethrough");
+    firstRow.add(strikethrough);
+
     firstRow.add(createSpacer());
 
-    firstRow.add(justifyLeft = createButton(images.justifyLeft(), "Left Justify"));
-    firstRow.add(justifyCenter = createButton(images.justifyCenter(), "Center"));
-    firstRow.add(justifyRight = createButton(images.justifyRight(), "Right Justify"));
-    firstRow.add(indent = createButton(images.indent(), "Indent Right"));
-    firstRow.add(outdent = createButton(images.outdent(), "Indent Left"));
+    this.justifyLeft = createButton(images.justifyLeft(), "Left Justify");
+    firstRow.add(justifyLeft);
+
+    this.justifyCenter = createButton(images.justifyCenter(), "Center");
+    firstRow.add(justifyCenter);
+
+    this.justifyRight = createButton(images.justifyRight(), "Right Justify");
+    firstRow.add(justifyRight);
+
+    this.indent = createButton(images.indent(), "Indent Right");
+    firstRow.add(indent);
+
+    this.outdent = createButton(images.outdent(), "Indent Left");
+    firstRow.add(outdent);
+    
     firstRow.add(createSpacer());
     
     if (formatter.queryCommandSupported("InsertHTML")) {
-      firstRow.add(insertHtml = createButton(Global.getImages().html(), "Insert HTML"));
+      this.insertHtml = createButton(Global.getImages().html(), "Insert HTML");
+      firstRow.add(insertHtml);
     } else {
       insertHtml = null;
     }
 
-    firstRow.add(hr = createButton(images.hr(), "Insert Horizontal Rule"));
-    firstRow.add(ol = createButton(images.ol(), "Insert Ordered List"));
-    firstRow.add(ul = createButton(images.ul(), "Insert Unordered List"));
+    this.hr = createButton(images.hr(), "Insert Horizontal Rule");
+    firstRow.add(hr);
+    
+    this.ol = createButton(images.ol(), "Insert Ordered List");
+    firstRow.add(ol);
+
+    this.ul = createButton(images.ul(), "Insert Unordered List");
+    firstRow.add(ul);
+
     firstRow.add(createSpacer());
 
-    firstRow.add(insertImage = createButton(images.insertImage(), "Insert Image"));
-    firstRow.add(createLink = createButton(images.createLink(), "Create Link"));
+    this.insertImage = createButton(images.insertImage(), "Insert Image");
+    firstRow.add(insertImage);
+
+    this.createLink = createButton(images.createLink(), "Create Link");
+    firstRow.add(createLink);
     
     if (!embedded) {
       firstRow.add(createSpacer(1.0, CssUnit.EM));
       firstRow.add(new Image(Global.getImages().close(), new EditorFactory.Cancel(editor)));
     }
 
-    secondRow.add(backColors = createColorList("Background"));
-    secondRow.add(foreColors = createColorList("Foreground"));
-    secondRow.add(fonts = createFontList());
-    secondRow.add(fontSizes = createFontSizes());
+    this.backColors = createColorList("Background");
+    secondRow.add(backColors);
+
+    this.foreColors = createColorList("Foreground");
+    secondRow.add(foreColors);
+
+    this.fonts = createFontList();
+    secondRow.add(fonts);
+
+    this.fontSizes = createFontSizes();
+    secondRow.add(fontSizes);
 
     firstRow.addStyleName(STYLE_ROW);
     secondRow.addStyleName(STYLE_ROW);
@@ -393,11 +438,11 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     return lb;
   }
 
-  private Widget createSpacer() {
+  private static Widget createSpacer() {
     return createSpacer(5.0, CssUnit.PX);
   }
 
-  private Widget createSpacer(Double width, CssUnit unit) {
+  private static Widget createSpacer(Double width, CssUnit unit) {
     Html spacer = new Html();
     spacer.setWidth(StyleUtils.toCssLength(width, unit));
     return spacer;
@@ -424,7 +469,8 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       public void onSuccess(String value) {
         setWaiting(false);
         procedure.accept(value);
-      }}, defaultValue);
+      } 
+    }, defaultValue);
   }
   
   private void setWaiting(boolean waiting) {

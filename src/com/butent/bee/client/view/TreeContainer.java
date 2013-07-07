@@ -28,7 +28,7 @@ import java.util.Map;
 public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
     CatchEvent.CatchHandler<TreeItem> {
 
-  private class ActionListener extends Command {
+  private final class ActionListener extends Command {
     private final Action action;
 
     private ActionListener(Action action) {
@@ -46,7 +46,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private static final String STYLE_NAME = "bee-TreeView";
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
   private boolean enabled = true;
   private final Tree tree;
   private final Map<Long, TreeItem> items = Maps.newHashMap();

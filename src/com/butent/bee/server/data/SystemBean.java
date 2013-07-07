@@ -1141,7 +1141,7 @@ public class SystemBean {
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {
-          boolean extMode = (i > 0);
+          boolean extMode = i > 0;
           Collection<XmlField> fields = extMode ? xmlTable.extFields : xmlTable.fields;
 
           if (!BeeUtils.isEmpty(fields)) {
@@ -1235,7 +1235,6 @@ public class SystemBean {
                 body = trigger.oracle;
                 break;
               case GENERIC:
-                body = null;
                 break;
             }
             if (!BeeUtils.isEmpty(body)) {
@@ -1450,7 +1449,7 @@ public class SystemBean {
     }
   }
 
-  private void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
+  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
     if (!BeeUtils.isEmpty(objectName)) {
       cache.remove(BeeUtils.normalize(objectName));
     }

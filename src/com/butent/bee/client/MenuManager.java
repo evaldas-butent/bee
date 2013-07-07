@@ -58,7 +58,7 @@ public class MenuManager implements Module {
 
   public boolean drawMenu() {
     IdentifiableWidget w = createMenu(0, roots, null);
-    boolean ok = (w != null);
+    boolean ok = w != null;
 
     if (ok) {
       BeeKeeper.getScreen().updateMenu(w);
@@ -164,7 +164,7 @@ public class MenuManager implements Module {
   public void start() {
   }
 
-  private void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
+  private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
     String txt = LocaleUtils.maybeLocalize(item.getLabel());
     String svc = null;
     String opt = null;
@@ -250,7 +250,7 @@ public class MenuManager implements Module {
     }
     IdentifiableWidget rw = createWidget(layout, level);
 
-    boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
+    boolean lastLevel = level >= MenuConstants.MAX_MENU_DEPTH - 1;
 
     for (Menu entry : entries) {
       List<Menu> children = null;
@@ -269,7 +269,7 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private IdentifiableWidget createWidget(String layout, int level) {
+  private static IdentifiableWidget createWidget(String layout, int level) {
     IdentifiableWidget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
@@ -307,7 +307,7 @@ public class MenuManager implements Module {
     return w;
   }
 
-  private BAR_TYPE getBarType(boolean table) {
+  private static BAR_TYPE getBarType(boolean table) {
     return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
   }
 
@@ -316,7 +316,7 @@ public class MenuManager implements Module {
     return getLayouts().get(idx);
   }
 
-  private void prepareWidget(IdentifiableWidget w) {
+  private static void prepareWidget(IdentifiableWidget w) {
     if (w instanceof MenuBar) {
       ((MenuBar) w).prepare();
     }

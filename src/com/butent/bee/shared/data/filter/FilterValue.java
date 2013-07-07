@@ -7,7 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class FilterValue implements BeeSerializable {
+public final class FilterValue implements BeeSerializable {
 
   public static FilterValue of(String value) {
     return new FilterValue(value, null);
@@ -26,8 +26,8 @@ public class FilterValue implements BeeSerializable {
     return filterValue;
   }
 
-  private String value = null;
-  private Boolean emptyValues = null;
+  private String value;
+  private Boolean emptyValues;
   
   private FilterValue() {
   }

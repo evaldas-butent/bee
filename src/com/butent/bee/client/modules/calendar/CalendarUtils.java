@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class CalendarUtils {
+public final class CalendarUtils {
 
   private static final String PERIOD_SEPARATOR = " - ";
 
@@ -324,5 +324,8 @@ public class CalendarUtils {
   
   private static boolean intersects(Appointment appointment, long min, long max) {
     return appointment.getStartMillis() < max && appointment.getEndMillis() > min;
+  }
+
+  private CalendarUtils() {
   }
 }

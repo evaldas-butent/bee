@@ -3,7 +3,7 @@ package com.butent.bee.shared.time;
 /**
  * Contains methods for date/time calculations.
  */
-public class Grego {
+public final class Grego {
 
   public static final int IDX_YEAR = 0;
   public static final int IDX_MONTH = 1;
@@ -104,8 +104,8 @@ public class Grego {
    */
   public static int fieldsToDay(int year, int month, int dom) {
     int y = year - 1;
-    int julian = 365 * y + floorDivide(y, 4) + (JULIAN_1_CE - 3) +
-        floorDivide(y, 400) - floorDivide(y, 100) + 2;
+    int julian = 365 * y + floorDivide(y, 4) + (JULIAN_1_CE - 3) 
+        + floorDivide(y, 400) - floorDivide(y, 100) + 2;
     if (month > 1 && month <= 12) {
       julian += DAYS_BEFORE[month + (isLeapYear(year) ? 11 : -1)];
     }
@@ -113,7 +113,7 @@ public class Grego {
     if (dom > 0) {
       julian += dom;
     } else if (dom < 0) {
-      julian += (dom + 1);
+      julian += dom + 1;
     } else {
       julian++;
     }

@@ -24,7 +24,7 @@ public class TableColumn implements HasInfo, IsColumn {
   
   private String pattern;
   
-  private CustomProperties properties = null;
+  private CustomProperties properties;
   
   private int precision = BeeConst.UNDEF;
 

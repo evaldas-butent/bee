@@ -43,7 +43,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private final int renderCount;
 
-  private SimpleRowSet data = null;
+  private SimpleRowSet data;
 
   private final List<String> values = Lists.newArrayList();
 

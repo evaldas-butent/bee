@@ -29,6 +29,7 @@ public class TestSqlUpdate {
   public void tearDown() throws Exception {
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testGetSqlString() {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
@@ -55,6 +56,7 @@ public class TestSqlUpdate {
         .getSqlString(builder));
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testIsEmpty() {
     SqlUpdate update = new SqlUpdate("target");

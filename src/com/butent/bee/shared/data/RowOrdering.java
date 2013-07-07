@@ -11,7 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Comparator;
 import java.util.List;
 
-public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
+public class RowOrdering<R extends IsRow> implements Comparator<R> {
 
   private final List<Integer> indexes = Lists.newArrayList();
   private final List<Boolean> ascending = Lists.newArrayList();
@@ -52,7 +52,7 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
   }
 
   @Override
-  public int compare(RowType row1, RowType row2) {
+  public int compare(R row1, R row2) {
     if (row1 == row2) {
       return BeeConst.COMPARE_EQUAL;
     }

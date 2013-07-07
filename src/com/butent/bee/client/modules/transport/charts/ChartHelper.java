@@ -53,7 +53,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.List;
 
-public class ChartHelper {
+public final class ChartHelper {
 
   static final int DEFAULT_MOVER_WIDTH = 3;
   static final int DEFAULT_MOVER_HEIGHT = 3;
@@ -1039,9 +1039,9 @@ public class ChartHelper {
   private static int getDaySeparatorWidth(JustDate date, int dayWidth, int index, int count) {
     if (DAY_SEPARATOR_WIDTH > 0
         && dayWidth > DAY_SEPARATOR_WIDTH * 2
-        && (index == count - 1
-            || date.getDom() == 1
-            || TimeUtils.isMore(date, TimeUtils.today()) && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
+        && (index == count - 1 || date.getDom() == 1
+            || TimeUtils.isMore(date, TimeUtils.today()) 
+            && dayWidth >= MIN_DAY_WIDTH_FOR_SEPARATOR)) {
       return DAY_SEPARATOR_WIDTH;
     } else {
       return 0;

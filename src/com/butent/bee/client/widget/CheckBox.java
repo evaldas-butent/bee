@@ -26,7 +26,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
   private final InputElement inputElem;
   private final LabelElement labelElem;
   
-  private boolean valueChangeHandlerInitialized = false;
+  private boolean valueChangeHandlerInitialized;
 
   public CheckBox() {
     this(Document.get().createCheckInputElement());

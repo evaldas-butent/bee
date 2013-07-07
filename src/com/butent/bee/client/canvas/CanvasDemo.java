@@ -33,7 +33,8 @@ public class CanvasDemo {
   BallGroup ballGroup;
   Lens lens;
 
-  int mouseX, mouseY;
+  int mouseX;
+  int mouseY;
 
   int refreshRate = 25;
   int height = 400;

@@ -26,6 +26,7 @@ import java.util.Date;
 /**
  * Tests {@link com.butent.bee.server.sql.IsExpression}.
  */
+@SuppressWarnings("static-method")
 public class TestIsExpression {
 
   @Before
@@ -44,9 +45,8 @@ public class TestIsExpression {
     sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
         "pair2", "pair3"), "Name1");
 
-    assertEquals(
-        "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN pair2 ELSE pair3 END AS Name1 FROM Table1",
-        sql.getQuery());
+    assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+        + "THEN pair2 ELSE pair3 END AS Name1 FROM Table1", sql.getQuery());
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11", "field12");
@@ -55,9 +55,8 @@ public class TestIsExpression {
     sql.addExpr(
         SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
             SqlUtils.name("field22"), "pair3"), "Name1");
-    assertEquals(
-        "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN field22 ELSE pair3 END AS Name1 FROM Table1",
-        sql.getQuery());
+    assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+        + "THEN field22 ELSE pair3 END AS Name1 FROM Table1", sql.getQuery());
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11", "field12");
@@ -66,9 +65,8 @@ public class TestIsExpression {
     sql.addExpr(
         SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
             SqlUtils.constant("field22"), "pair3"), "Name1");
-    assertEquals(
-        "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN 'field22' ELSE pair3 END AS Name1 FROM Table1",
-        sql.getQuery());
+    assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+        + "THEN 'field22' ELSE pair3 END AS Name1 FROM Table1", sql.getQuery());
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11", "field12");
@@ -77,9 +75,8 @@ public class TestIsExpression {
     sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
         "pair2", "pair3", "pair4", "pair5"), "Name1");
 
-    assertEquals(
-        "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN pair2 WHEN 'pair3' THEN pair4 ELSE pair5 END AS Name1 FROM Table1",
-        sql.getQuery());
+    assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+        + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE pair5 END AS Name1 FROM Table1", sql.getQuery());
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11", "field12");
@@ -88,9 +85,8 @@ public class TestIsExpression {
     sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
         "pair2", "pair3", "pair4", null), "Name1");
 
-    assertEquals(
-        "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN pair2 WHEN 'pair3' THEN pair4 ELSE null END AS Name1 FROM Table1",
-        sql.getQuery());
+    assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+        + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE null END AS Name1 FROM Table1", sql.getQuery());
 
     try {
       sql = new SqlSelect();
@@ -100,9 +96,8 @@ public class TestIsExpression {
       sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
           "pair2", "pair3", "pair4", ""), "Name1");
 
-      assertEquals(
-          "SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' THEN pair2 WHEN 'pair3' THEN pair4 ELSE  END AS Name1 FROM Table1",
-          sql.getQuery());
+      assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
+          + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE  END AS Name1 FROM Table1", sql.getQuery());
     } catch (BeeRuntimeException e) {
       assertTrue(false);
     } catch (Exception e) {
@@ -191,9 +186,8 @@ public class TestIsExpression {
       sql.addExpr(SqlUtils.sqlCase(null, "pair1", "pair2", "pair3",
           "pair4", ""), "Name1");
 
-      assertEquals(
-          "SELECT Table1.field11, Table1.field12, CASE null WHEN 'pair1' THEN pair2 WHEN 'pair3' THEN pair4 ELSE  END AS Name1 FROM Table1",
-          sql.getQuery());
+      assertEquals("SELECT Table1.field11, Table1.field12, CASE null WHEN 'pair1' "
+          + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE  END AS Name1 FROM Table1", sql.getQuery());
 
     } catch (BeeRuntimeException e) {
       assertTrue(true);
@@ -215,14 +209,14 @@ public class TestIsExpression {
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
 
-    IsExpression clause = SqlUtils.bitAnd("Table1", "field1", "val1"); // SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"),
+    IsExpression clause = SqlUtils.bitAnd("Table1", "field1", "val1"); 
+    // SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"),
     // "Something val"));
 
     select.addExpr(clause, "expr1");
 
-    assertEquals(
-        "SELECT Table1.field1, Table1.field2, Table1.field3, (Table1.field1 & val1) AS expr1 FROM Table1",
-        select.getQuery());
+    assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3, "
+        + "(Table1.field1 & val1) AS expr1 FROM Table1", select.getQuery());
   }
 
   @Test
@@ -231,14 +225,15 @@ public class TestIsExpression {
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
-    IsExpression clause = SqlUtils.bitAnd("Table1", "field1", "val1"); // SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"),
+    IsExpression clause = SqlUtils.bitAnd("Table1", "field1", "val1");
+    // SqlUtils.and(SqlUtils.equal(SqlUtils.name("field1"),
     // "Something val"));
 
     select.addExpr(clause, "expr1");
 
     assertEquals(
-        "SELECT \"Table1\".\"field1\", \"Table1\".\"field2\", \"Table1\".\"field3\", BITAND(\"Table1\".\"field1\", val1) AS \"expr1\" FROM \"Table1\"",
-        select.getQuery());
+        "SELECT \"Table1\".\"field1\", \"Table1\".\"field2\", \"Table1\".\"field3\", "
+        + "BITAND(\"Table1\".\"field1\", val1) AS \"expr1\" FROM \"Table1\"", select.getQuery());
   }
 
   @Test
@@ -361,9 +356,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DECIMAL, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT [Table1].[field1], CAST([Table1].[field2] AS NUMERIC(5, 10)) AS [TB1] FROM [Table1]",
-        s.getQuery());
+    assertEquals("SELECT [Table1].[field1], CAST([Table1].[field2] AS NUMERIC(5, 10)) AS [TB1] "
+        + "FROM [Table1]", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -432,9 +426,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DOUBLE, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BINARY_DOUBLE) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BINARY_DOUBLE) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -442,9 +435,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.CHAR, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS CHAR(5)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS CHAR(5)) AS \"TB1\" "
+        + "FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -452,9 +444,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DECIMAL, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -462,9 +453,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.BOOLEAN, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(1)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(1)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -472,9 +462,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.INTEGER, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(10)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(10)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -482,9 +471,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATE, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(10)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(10)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -492,9 +480,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.LONG, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(19)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(19)) AS "
+        + "\"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -502,9 +489,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATETIME, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(19)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(19)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -512,9 +498,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.STRING, -5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NVARCHAR2(-5)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NVARCHAR2(-5)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     /* PODTGRE SQL */
 
@@ -525,9 +510,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DOUBLE, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS DOUBLE PRECISION) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS DOUBLE PRECISION) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -535,9 +519,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.CHAR, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS CHAR(5)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS CHAR(5)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -545,9 +528,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DECIMAL, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -555,9 +537,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.BOOLEAN, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(1)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(1)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -565,9 +546,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.INTEGER, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS INTEGER) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS INTEGER) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -575,9 +555,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATE, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS INTEGER) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS INTEGER) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -585,9 +564,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.LONG, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BIGINT) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BIGINT) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -595,9 +573,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATETIME, 5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BIGINT) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BIGINT) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -605,9 +582,8 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.STRING, -5, 10), "TB1");
 
-    assertEquals(
-        "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS VARCHAR(-5)) AS \"TB1\" FROM \"Table1\"",
-        s.getQuery());
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS VARCHAR(-5)) "
+        + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
   }
 
   @Test
@@ -636,9 +612,8 @@ public class TestIsExpression {
     select.addFrom(select2, "alias2");
 
     IsExpression ce4 = SqlUtils.expression(select);
-    assertEquals(
-        "SELECT users.username AS vardas FROM users, (SELECT phones.phone_names AS tel_vardai FROM phones) alias2",
-        ce4.getSqlString(SqlBuilderFactory.getBuilder()));
+    assertEquals("SELECT users.username AS vardas FROM users, (SELECT phones.phone_names "
+        + "AS tel_vardai FROM phones) alias2", ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
     select2.addField("JUnit", "method_names", "klases");
@@ -676,8 +651,8 @@ public class TestIsExpression {
     select.addFrom(select2, "alias2");
 
     IsExpression ce4 = SqlUtils.expression(select);
-    assertEquals(
-        "SELECT [users].[username] AS [vardas] FROM [users], (SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]) [alias2]",
+    assertEquals("SELECT [users].[username] AS [vardas] FROM [users], "
+        + "(SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]) [alias2]",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -717,8 +692,8 @@ public class TestIsExpression {
     select.addFrom(select2, "alias2");
 
     IsExpression ce4 = SqlUtils.expression(select);
-    assertEquals(
-        "SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", (SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
+    assertEquals("SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", "
+        + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -758,8 +733,8 @@ public class TestIsExpression {
     select.addFrom(select2, "alias2");
 
     IsExpression ce4 = SqlUtils.expression(select);
-    assertEquals(
-        "SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", (SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
+    assertEquals("SELECT \"users\".\"username\" AS \"vardas\" FROM \"users\", "
+        + "(SELECT \"phones\".\"phone_names\" AS \"tel_vardai\" FROM \"phones\") \"alias2\"",
         ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     select2 = select2.reset();
@@ -897,8 +872,8 @@ public class TestIsExpression {
 
     IsExpression ie4oracle = SqlUtils
         .name("Select * from table where name=\"tester\" or table1.type=table.*.concret.type");
-    assertEquals(
-        "\"Select * from table where name=\"tester\" or table1\".\"type=table\".*.\"concret\".\"type\"",
+    assertEquals("\"Select * from table where name=\"tester\" or "
+        + "table1\".\"type=table\".*.\"concret\".\"type\"",
         ie4oracle.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iepg = SqlUtils.name("A longer name");
@@ -915,8 +890,8 @@ public class TestIsExpression {
 
     IsExpression ie4pg = SqlUtils
         .name("Select * from table where name=\"tester\" or table1.type=table.*.concret.type");
-    assertEquals(
-        "\"Select * from table where name=\"tester\" or table1\".\"type=table\".*.\"concret\".\"type\"",
+    assertEquals("\"Select * from table where name=\"tester\" or "
+        + "table1\".\"type=table\".*.\"concret\".\"type\"",
         ie4pg.getSqlString(SqlBuilderFactory.getBuilder()));
   }
 
@@ -936,8 +911,8 @@ public class TestIsExpression {
         SqlUtils.field("Table3", "field1"));
     select.addExpr(expr, "expr1");
 
-    assertEquals(
-        "SELECT Table1.field1, CASE WHEN value1 = 'pirmadienis' THEN Table2.field1 ELSE Table3.field1 END AS expr1 FROM Table1",
+    assertEquals("SELECT Table1.field1, CASE WHEN value1 = 'pirmadienis' THEN Table2.field1 ELSE "
+        + "Table3.field1 END AS expr1 FROM Table1",
         select.getQuery());
   }
 

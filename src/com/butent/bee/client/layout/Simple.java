@@ -31,7 +31,7 @@ import com.butent.bee.shared.State;
 
 public class Simple extends SimplePanel implements DndWidget, RequiresResize, ProvidesResize {
 
-  private State targetState = null;
+  private State targetState;
   
   public Simple() {
     super();

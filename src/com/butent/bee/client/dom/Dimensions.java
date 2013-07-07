@@ -30,20 +30,20 @@ public class Dimensions implements HasInfo, HasDimensions {
     return (unit == null) ? DEFAULT_UNIT : unit;
   }
 
-  private CssUnit widthUnit = null;
-  private Double widthValue = null;
-  private CssUnit heightUnit = null;
-  private Double heightValue = null;
+  private CssUnit widthUnit;
+  private Double widthValue;
+  private CssUnit heightUnit;
+  private Double heightValue;
 
-  private CssUnit minHeightUnit = null;
-  private Double minHeightValue = null;
-  private CssUnit minWidthUnit = null;
-  private Double minWidthValue = null;
+  private CssUnit minHeightUnit;
+  private Double minHeightValue;
+  private CssUnit minWidthUnit;
+  private Double minWidthValue;
 
-  private CssUnit maxHeightUnit = null;
-  private Double maxHeightValue = null;
-  private CssUnit maxWidthUnit = null;
-  private Double maxWidthValue = null;
+  private CssUnit maxHeightUnit;
+  private Double maxHeightValue;
+  private CssUnit maxWidthUnit;
+  private Double maxWidthValue;
 
   public Dimensions() {
   }
@@ -495,7 +495,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     }
   }
 
-  private void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
+  private static void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
     if (value == null) {
       return;
     }
@@ -506,7 +506,7 @@ public class Dimensions implements HasInfo, HasDimensions {
     }
   }
 
-  private String toCssLength(Double value, CssUnit unit) {
+  private static String toCssLength(Double value, CssUnit unit) {
     if (value == null) {
       return BeeConst.STRING_EMPTY;
     }

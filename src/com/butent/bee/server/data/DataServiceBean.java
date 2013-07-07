@@ -127,8 +127,11 @@ public class DataServiceBean {
     String before = "before:";
     String after = "after:";
 
-    boolean vb, ok;
-    int v1, v2, vu;
+    boolean vb;
+    boolean ok;
+    int v1;
+    int v2;
+    int vu;
 
     BeeConnection bc = new BeeConnection(conn);
 

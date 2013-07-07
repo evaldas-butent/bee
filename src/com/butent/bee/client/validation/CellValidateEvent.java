@@ -12,8 +12,8 @@ public class CellValidateEvent {
   private final CellValidation cellValidation;
   private final ValidationOrigin validationOrigin;
 
-  private ValidationPhase validationPhase = null;
-  private boolean canceled = false;
+  private ValidationPhase validationPhase;
+  private boolean canceled;
 
   public CellValidateEvent(CellValidation cellValidation, ValidationOrigin validationOrigin) {
     super();

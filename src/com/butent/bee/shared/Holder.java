@@ -34,7 +34,7 @@ public class Holder<T> {
     return value == null;
   }
 
-  public void set(T value) {
-    this.value = value;
+  public void set(T v) {
+    this.value = v;
   }
 }

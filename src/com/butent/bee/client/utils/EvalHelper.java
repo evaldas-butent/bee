@@ -18,7 +18,7 @@ import java.util.List;
  * Handles creation of Javascript objects and conversion of other types of objects into them.
  */
 
-public class EvalHelper {
+public final class EvalHelper {
 
   public static JavaScriptObject createJso(List<? extends IsColumn> columns) {
     Assert.notNull(columns);

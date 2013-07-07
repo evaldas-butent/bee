@@ -65,7 +65,7 @@ import java.util.List;
 
 public class Search {
 
-  private static class ResultPanel extends Flow implements HandlesDeleteEvents,
+  private static final class ResultPanel extends Flow implements HandlesDeleteEvents,
       HandlesUpdateEvents, Presenter, View, Printable {
 
     private static final String STYLE_RESULT_CONTAINER = "bee-SearchResultContainer";
@@ -315,7 +315,7 @@ public class Search {
       return size;
     }
 
-    private boolean removeResultWidget(ResultWidget widget) {
+    private static boolean removeResultWidget(ResultWidget widget) {
       Widget container = widget.getParent();
       if (container instanceof HasWidgets) {
         return ((HasWidgets) container).remove(widget);
@@ -333,7 +333,7 @@ public class Search {
     }
   }
 
-  private static class ResultWidget extends CustomWidget implements HasViewName {
+  private static final class ResultWidget extends CustomWidget implements HasViewName {
 
     private static final String STYLE_RESULT_ROW = "bee-SearchResultRow";
     private static final String STYLE_RESULT_MATCH = "bee-SearchResultMatch";
@@ -436,8 +436,8 @@ public class Search {
 
   private static final int MIN_SEARCH_PHRASE_LENGTH = 3;
 
-  private Panel searchPanel = null;
-  private InputText input = null;
+  private Panel searchPanel;
+  private InputText input;
 
   Search() {
     super();
@@ -510,7 +510,7 @@ public class Search {
     return searchPanel;
   }
 
-  private void processResults(String query, List<SearchResult> results) {
+  private static void processResults(String query, List<SearchResult> results) {
     if (results.size() == 1) {
       RowEditor.openRow(results.get(0).getViewName(), results.get(0).getRow(), false);
     } else {
@@ -526,7 +526,7 @@ public class Search {
     this.searchPanel = panel;
   }
 
-  private void showResults(String query, List<SearchResult> results) {
+  private static void showResults(String query, List<SearchResult> results) {
     ResultPanel resultPanel = new ResultPanel(query, results);
     BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
@@ -537,7 +537,7 @@ public class Search {
 
       if (value.trim().length() < MIN_SEARCH_PHRASE_LENGTH) {
         BeeKeeper.getScreen().notifyWarning(
-            Localized.messages.minSearchQueryLength(MIN_SEARCH_PHRASE_LENGTH));
+            Localized.getMessages().minSearchQueryLength(MIN_SEARCH_PHRASE_LENGTH));
         return;
       }
 
@@ -560,7 +560,7 @@ public class Search {
           }
 
           if (results.isEmpty()) {
-            BeeKeeper.getScreen().notifyWarning(value, Localized.constants.nothingFound());
+            BeeKeeper.getScreen().notifyWarning(value, Localized.getConstants().nothingFound());
           } else {
             ModuleManager.maybeInitialize(new Command() {
               @Override

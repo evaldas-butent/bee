@@ -25,7 +25,7 @@ public abstract class CalendarView {
   
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
   
-  private CalendarWidget calendarWidget = null;
+  private CalendarWidget calendarWidget;
 
   public void attach(CalendarWidget widget) {
     this.calendarWidget = widget;

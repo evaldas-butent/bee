@@ -41,7 +41,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Map;
 
-public class GridSettings {
+public final class GridSettings {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridSettings.class);
 
@@ -115,7 +115,7 @@ public class GridSettings {
     wrapper.add(table);
 
     DndHelper.makeTarget(wrapper, Lists.newArrayList(DND_CONTENT_TYPE), null,
-        DndHelper.alwaysTarget, new BiConsumer<DropEvent, Object>() {
+        DndHelper.ALWAYS_TARGET, new BiConsumer<DropEvent, Object>() {
           @Override
           public void accept(DropEvent t, Object u) {
             if (u instanceof Integer) {
@@ -124,7 +124,7 @@ public class GridSettings {
           }
         });
 
-    Global.inputWidget(Localized.constants.settings(), wrapper, new InputCallback() {
+    Global.inputWidget(Localized.getConstants().settings(), wrapper, new InputCallback() {
       @Override
       public void onSuccess() {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
@@ -246,13 +246,13 @@ public class GridSettings {
 
   private static void ensureColumnIndexes() {
     ensureGridIndexes();
-    if (ColumnConfig.dataColumns.isEmpty()) {
+    if (ColumnConfig.getDataColumns().isEmpty()) {
       ColumnConfig.ensureIndexes(Data.getColumns(ColumnDescription.VIEW_COLUMN_SETTINGS));
     }
   }
 
   private static void ensureGridIndexes() {
-    if (GridConfig.dataColumns.isEmpty()) {
+    if (GridConfig.getDataColumns().isEmpty()) {
       GridConfig.ensureIndexes(Data.getColumns(GridDescription.VIEW_GRID_SETTINGS));
     }
   }
@@ -374,8 +374,8 @@ public class GridSettings {
 
     } else if (!BeeUtils.isEmpty(value)) {
       List<BeeColumn> columns = Lists.newArrayList();
-      columns.add(GridConfig.dataColumns.get(GridConfig.userIndex));
-      columns.add(GridConfig.dataColumns.get(GridConfig.keyIndex));
+      columns.add(GridConfig.getDataColumns().get(GridConfig.userIndex));
+      columns.add(GridConfig.getDataColumns().get(GridConfig.keyIndex));
 
       List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key);
 
@@ -394,17 +394,17 @@ public class GridSettings {
 
   private static void saveGridSetting(final String key, int index, String value) {
     Assert.notEmpty(key);
-    Assert.isIndex(GridConfig.dataColumns, index);
+    Assert.isIndex(GridConfig.getDataColumns(), index);
 
-    final BeeColumn dataColumn = GridConfig.dataColumns.get(index);
+    final BeeColumn dataColumn = GridConfig.getDataColumns().get(index);
     final String newValue = GridUtils.normalizeValue(value);
 
     GridConfig gridConfig = grids.get(key);
     if (gridConfig == null) {
       if (newValue != null) {
         List<BeeColumn> columns = Lists.newArrayList();
-        columns.add(GridConfig.dataColumns.get(GridConfig.userIndex));
-        columns.add(GridConfig.dataColumns.get(GridConfig.keyIndex));
+        columns.add(GridConfig.getDataColumns().get(GridConfig.userIndex));
+        columns.add(GridConfig.getDataColumns().get(GridConfig.keyIndex));
         columns.add(dataColumn);
 
         List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key, newValue);

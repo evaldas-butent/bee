@@ -25,7 +25,7 @@ import java.util.List;
 
 public class EnumFilterSupplier extends AbstractFilterSupplier {
 
-  private static class DataItem {
+  private static final class DataItem {
     private final int index;
     private final String count;
 

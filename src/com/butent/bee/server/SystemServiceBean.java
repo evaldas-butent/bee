@@ -83,7 +83,7 @@ public class SystemServiceBean {
     return response;
   }
 
-  private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String cnm = reqInfo.getParameter(Service.VAR_CLASS_NAME);
     String pck = reqInfo.getParameter(Service.VAR_PACKAGE_LIST);
 
@@ -126,7 +126,7 @@ public class SystemServiceBean {
     }
   }
 
-  private void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
     String src = reqInfo.getContent();
 
     if (BeeUtils.length(src) <= 0) {
@@ -149,7 +149,7 @@ public class SystemServiceBean {
     }
   }
   
-  private ResponseObject getFlags() {
+  private static ResponseObject getFlags() {
     Map<String, String> flags = Maps.newHashMap(); 
 
     File dir = new File(Config.IMAGES_DIR, IoConstants.FLAG_DIR);
@@ -182,7 +182,7 @@ public class SystemServiceBean {
     return ResponseObject.response(flags);
   }
 
-  private ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {
     String mode = reqInfo.getParameter(0);
     if (BeeUtils.same(mode, "cs")) {
       buff.addExtendedProperties(FileUtils.getCharsets());
@@ -244,7 +244,8 @@ public class SystemServiceBean {
 
         long totSize = 0;
         long lastMod = 0;
-        long x, y;
+        long x;
+        long y;
         int idx = 0;
 
         for (File fl : files) {
@@ -322,7 +323,7 @@ public class SystemServiceBean {
     return null;
   }
 
-  private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
     long start = System.currentTimeMillis();
 
     String uri = reqInfo.getParameter(Service.RPC_VAR_URI);

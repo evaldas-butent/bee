@@ -104,7 +104,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
     }
   }
 
-  private String key(NewFileInfo fileInfo) {
+  private static String key(NewFileInfo fileInfo) {
     return BeeUtils.joinWords(fileInfo.getName(), fileInfo.getSize());
   }
 }

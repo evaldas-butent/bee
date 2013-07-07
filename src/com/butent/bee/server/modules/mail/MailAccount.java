@@ -38,7 +38,7 @@ public class MailAccount {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailAccount.class);
 
-  private String error = null;
+  private String error;
 
   private final Protocol storeProtocol;
   private final String storeHost;
@@ -85,16 +85,16 @@ public class MailAccount {
       storePort = data.getInt(COL_STORE_SPORT);
       storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD)) ? null :
-          Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
+      storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD)) 
+          ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
       storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
 
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
       transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD)) ? null :
-          Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
+      transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD)) 
+          ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
       transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
 
       accountId = data.getLong(COL_ACCOUNT);
@@ -313,6 +313,7 @@ public class MailAccount {
         logger.debug("Disconnecting from store...");
         store.close();
       } catch (MessagingException e) {
+        logger.warning(e);
       }
     }
   }
@@ -377,7 +378,7 @@ public class MailAccount {
     if (!isStoredRemotedly(source)) {
       return;
     }
-    boolean isTarget = (target != null && target.isConnected());
+    boolean isTarget = target != null && target.isConnected();
 
     if (!move && !isTarget) {
       return;
@@ -433,6 +434,7 @@ public class MailAccount {
         try {
           remoteSource.close(false);
         } catch (MessagingException e) {
+          logger.warning(e);
         }
       }
       disconnectFromStore(store);
@@ -495,6 +497,7 @@ public class MailAccount {
           logger.debug("Closing folder:", folder.getName());
           folder.close(false);
         } catch (MessagingException e) {
+          logger.warning(e);
         }
       }
       disconnectFromStore(store);
@@ -510,7 +513,7 @@ public class MailAccount {
     sysFolders.put(sysFolder, id);
   }
 
-  private boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
+  private static boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
       throws MessagingException {
     if (name.indexOf(newFolder.getSeparator()) >= 0) {
       throw new MessagingException("Invalid folder name: " + name);
@@ -526,7 +529,7 @@ public class MailAccount {
     return true;
   }
 
-  private List<Message> getMessageReferences(Folder remoteSource, long[] uids)
+  private static List<Message> getMessageReferences(Folder remoteSource, long[] uids)
       throws MessagingException {
 
     logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
@@ -534,8 +537,8 @@ public class MailAccount {
 
     for (Message message : msgs) {
       if (message == null) {
-        throw new MessagingException("Not all messages where returned by UIDs. " +
-            "Folder resynchronization required.");
+        throw new MessagingException("Not all messages where returned by UIDs. "
+            + "Folder resynchronization required.");
       }
     }
     return Lists.newArrayList(msgs);

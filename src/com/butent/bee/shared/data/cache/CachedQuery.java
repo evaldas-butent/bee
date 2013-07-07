@@ -155,11 +155,11 @@ class CachedQuery extends SimpleCache<Integer, Long> {
     this.rowCount = rowCount;
   }
 
-  private String transformFilter(Filter flt) {
+  private static String transformFilter(Filter flt) {
     return (flt == null) ? BeeConst.STRING_EMPTY : flt.toString();
   }
 
-  private String transformOrder(Order ord) {
+  private static String transformOrder(Order ord) {
     return (ord == null) ? BeeConst.STRING_EMPTY : ord.toString();
   }
 }

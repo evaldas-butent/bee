@@ -228,51 +228,43 @@ public class EcItem implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
-  public EcItem setCategories(String categories) {
+  public void setCategories(String categories) {
     this.categories = categories;
-    return this;
   }
 
-  public EcItem setCode(String code) {
+  public void setCode(String code) {
     this.code = code;
-    return this;
   }
 
-  public EcItem setListPrice(Double listPrice) {
+  public void setListPrice(Double listPrice) {
     this.listPrice = BeeUtils.isDouble(listPrice) ? BeeUtils.round(listPrice * 100) : 0;
-    return this;
   }
 
   public void setListPrice(int listPrice) {
     this.listPrice = listPrice;
   }
 
-  public EcItem setName(String name) {
+  public void setName(String name) {
     this.name = name;
-    return this;
   }
 
-  public EcItem setPrice(Double price) {
+  public void setPrice(Double price) {
     this.price = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
-    return this;
   }
 
   public void setPrice(int price) {
     this.price = price;
   }
 
-  public EcItem setStock1(int stock1) {
+  public void setStock1(int stock1) {
     this.stock1 = stock1;
-    return this;
   }
 
-  public EcItem setStock2(int stock2) {
+  public void setStock2(int stock2) {
     this.stock2 = stock2;
-    return this;
   }
 
-  public EcItem setSupplier(String supplier) {
+  public void setSupplier(String supplier) {
     this.supplier = supplier;
-    return this;
   }
 }

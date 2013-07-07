@@ -291,7 +291,7 @@ public class GridLoaderBean {
     return grid;
   }
 
-  private GridComponentDescription getComponent(Element parent, String tagName) {
+  private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 
@@ -309,7 +309,7 @@ public class GridLoaderBean {
     return new GridComponentDescription(style, attributes);
   }
 
-  private EditorDescription getEditor(Element parent) {
+  private static EditorDescription getEditor(Element parent) {
     Assert.notNull(parent);
 
     Element element = XmlUtils.getFirstChildElement(parent, TAG_EDITOR);
@@ -344,7 +344,7 @@ public class GridLoaderBean {
     return editor;
   }
 
-  private Relation getRelation(Element element) {
+  private static Relation getRelation(Element element) {
     Assert.notNull(element);
 
     RendererDescription rowRenderer = null;
@@ -385,7 +385,7 @@ public class GridLoaderBean {
         rowRender, rowRenderTokens);
   }
 
-  private RendererDescription getRenderer(Element parent, String tagName,
+  private static RendererDescription getRenderer(Element parent, String tagName,
       EditorDescription editor) {
     Assert.notNull(parent);
 
@@ -397,7 +397,7 @@ public class GridLoaderBean {
     }
   }
 
-  private RendererDescription getRenderer(Element element, EditorDescription editor) {
+  private static RendererDescription getRenderer(Element element, EditorDescription editor) {
     if (element == null) {
       return null;
     }
@@ -437,7 +437,7 @@ public class GridLoaderBean {
     return renderer;
   }
 
-  private List<RenderableToken> getRenderTokens(Element parent, String tagName) {
+  private static List<RenderableToken> getRenderTokens(Element parent, String tagName) {
     if (parent == null) {
       return null;
     }
@@ -456,7 +456,7 @@ public class GridLoaderBean {
     return result;
   }
 
-  private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
+  private static boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
 
     ColType colType = columnDescription.getColType();
@@ -515,7 +515,7 @@ public class GridLoaderBean {
     return ok;
   }
 
-  private void xmlToColumn(Element src, ColumnDescription dst) {
+  private static void xmlToColumn(Element src, ColumnDescription dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -682,7 +682,7 @@ public class GridLoaderBean {
     }
   }
 
-  private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
+  private static void xmlToGrid(Element src, GridDescription dst, BeeView view) {
     Assert.notNull(src);
     Assert.notNull(dst);
 

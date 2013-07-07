@@ -5,14 +5,16 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 
+// CHECKSTYLE:OFF
 import sun.misc.CRC16;
+// CHECKSTYLE:ON
 
 /**
  * Enables to control whether information package was sent correctly through the internet by using
  * crc16, crc32 and adler32 checksum functions.
  */
 
-public class Checksum {
+public final class Checksum {
   public static String adler32(byte[] arr) {
     Adler32 cs = new Adler32();
     cs.update(arr);

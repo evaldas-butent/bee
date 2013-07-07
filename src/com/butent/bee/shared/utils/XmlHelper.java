@@ -9,7 +9,7 @@ import com.butent.bee.shared.Assert;
 import java.util.Collection;
 import java.util.Map;
 
-public class XmlHelper {
+public final class XmlHelper {
 
   public static final String DEFAULT_PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 

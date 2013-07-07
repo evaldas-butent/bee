@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class NameUtils {
+public final class NameUtils {
 
   public static final char QUALIFIED_NAME_SEPARATOR = ':';
 
@@ -29,7 +29,7 @@ public class NameUtils {
     }
   };
 
-  private static int nameCounter = 0;
+  private static int nameCounter;
 
   public static String addName(String nm, int v) {
     return addName(nm, String.valueOf(v));

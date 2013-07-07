@@ -36,9 +36,9 @@ import java.util.Set;
 
 public class HeaderSilverImpl extends Flow implements HeaderView {
 
-  private class ActionListener extends Command {
+  private final class ActionListener extends Command {
     private final Action action;
-    private long lastTime = 0L;
+    private long lastTime;
 
     private ActionListener(Action action) {
       super();
@@ -84,7 +84,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
   private final Label captionWidget = new Label();
   private final Label messageWidget = new Label();
@@ -142,7 +142,8 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      Widget removeFilter = createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions);
+      Widget removeFilter = createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER,
+          hiddenActions);
       removeFilter.removeStyleName(STYLE_CONTROL);
       removeFilter.addStyleName(STYLE_REMOVE);
       add(removeFilter);
@@ -334,7 +335,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     return commandPanel;
   }
 
-  private boolean hasAction(Action action, boolean def,
+  private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
     if (def) {
       return !BeeUtils.contains(disabledActions, action);

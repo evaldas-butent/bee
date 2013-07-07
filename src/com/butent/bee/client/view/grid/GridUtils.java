@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class GridUtils {
+final class GridUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridUtils.class);
 

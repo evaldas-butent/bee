@@ -34,7 +34,7 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
   private String service;
   private String options;
   
-  private boolean consumed = false;
+  private boolean consumed;
 
   public RowActionEvent(String viewName, IsRow row, String service) {
     this(viewName, row, service, null);

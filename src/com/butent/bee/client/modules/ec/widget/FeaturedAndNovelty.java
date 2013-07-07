@@ -41,7 +41,7 @@ public class FeaturedAndNovelty extends Flow {
     int noveltyCount = total - featuredCount;
 
     if (featuredCount > 0) {
-      Label featuredLabel = new Label(Localized.constants.ecFeaturedItems());
+      Label featuredLabel = new Label(Localized.getConstants().ecFeaturedItems());
       EcStyles.add(featuredLabel, STYLE_FEATURED, STYLE_LABEL);
       add(featuredLabel);
 
@@ -51,7 +51,7 @@ public class FeaturedAndNovelty extends Flow {
       Horizontal featuredTable = new Horizontal();
       EcStyles.add(featuredTable, STYLE_FEATURED, STYLE_TABLE);
       
-      String banner = Localized.constants.ecFeaturedBanner();
+      String banner = Localized.getConstants().ecFeaturedBanner();
       for (int i = 0; i < featuredCount; i++) {
         featuredTable.add(renderItem(items.get(i), STYLE_FEATURED, banner));
       }
@@ -61,7 +61,7 @@ public class FeaturedAndNovelty extends Flow {
     }
 
     if (noveltyCount > 0) {
-      Label noveltyLabel = new Label(Localized.constants.ecNoveltyItems());
+      Label noveltyLabel = new Label(Localized.getConstants().ecNoveltyItems());
       EcStyles.add(noveltyLabel, STYLE_NOVELTY, STYLE_LABEL);
       add(noveltyLabel);
 
@@ -71,7 +71,7 @@ public class FeaturedAndNovelty extends Flow {
       Horizontal noveltyTable = new Horizontal();
       EcStyles.add(noveltyTable, STYLE_NOVELTY, STYLE_TABLE);
       
-      String banner = Localized.constants.ecNoveltyBanner();
+      String banner = Localized.getConstants().ecNoveltyBanner();
       for (int i = featuredCount; i < total; i++) {
         noveltyTable.add(renderItem(items.get(i), STYLE_NOVELTY, banner));
       }
@@ -81,7 +81,7 @@ public class FeaturedAndNovelty extends Flow {
     }
   }
   
-  private Widget renderItem(EcItem item, String primaryStyle, String bannerText) {
+  private static Widget renderItem(EcItem item, String primaryStyle, String bannerText) {
     Flow panel = new Flow(EcStyles.name(primaryStyle, STYLE_ITEM));
     
     if (!BeeUtils.isEmpty(bannerText)) {
@@ -112,14 +112,14 @@ public class FeaturedAndNovelty extends Flow {
     
     int price = item.getPrice();
     if (price > 0) {
-      String priceInfo = BeeUtils.joinWords(Localized.constants.price() + BeeConst.STRING_COLON,
-          EcUtils.renderCents(price), EcConstants.CURRENCY);
+      String priceInfo = BeeUtils.joinWords(Localized.getConstants().price() 
+          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
       Label itemPrice = new Label(priceInfo);
       EcStyles.add(itemPrice, primaryStyle, STYLE_PRICE);
       panel.add(itemPrice);
     }
     
-    Button details = new Button(Localized.constants.ecShowDetails());
+    Button details = new Button(Localized.getConstants().ecShowDetails());
     EcStyles.add(details, primaryStyle, STYLE_DRILL);
     panel.add(details);
     

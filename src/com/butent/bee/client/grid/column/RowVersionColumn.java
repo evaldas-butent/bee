@@ -17,10 +17,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDateTimeFormat {
 
-  public static DateTimeFormat defaultFormat = DateTimeFormat.getFormat("yy-MM-dd HH:mm:ss.SSS");
+  private static final DateTimeFormat DEFAULT_FORMAT =
+      DateTimeFormat.getFormat("yy-MM-dd HH:mm:ss.SSS");
 
   public RowVersionColumn() {
-    this(defaultFormat);
+    this(DEFAULT_FORMAT);
   }
 
   public RowVersionColumn(DateTimeFormat format) {
@@ -52,7 +53,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   public String getStyleSuffix() {
     return "version";
   }
-  
+
   @Override
   public DateTime getValue(IsRow row) {
     if (row == null) {
@@ -65,7 +66,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   public ValueType getValueType() {
     return ValueType.DATE_TIME;
   }
-  
+
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     if (getCell() instanceof HasDateTimeFormat) {

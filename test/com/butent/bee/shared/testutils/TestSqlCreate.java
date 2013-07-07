@@ -18,6 +18,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.server.sql.SqlCreate}.
  */
+@SuppressWarnings("static-method")
 public class TestSqlCreate {
 
   @Before
@@ -106,8 +107,10 @@ public class TestSqlCreate {
     create3.addDecimal("numeric field", 10, 10, false);
     create3.addString("string field", 7, false);
 
-    assertEquals(
-        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, char CHAR(25) NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, int field INTEGER NOT NULL, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
+    assertEquals("CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, "
+        + "char CHAR(25) NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, "
+        + "int field INTEGER NOT NULL, long field BIGINT, numeric field NUMERIC(10, 10), "
+        + "string field VARCHAR(7))",
         create3.getSqlString(builder3));
 
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
@@ -119,8 +122,8 @@ public class TestSqlCreate {
     create.addDouble("kaina", false);
     create.addDate("data", false);
     create.getSqlString(builder);
-    assertEquals(
-        "CREATE TEMPORARY TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" DOUBLE PRECISION, \"data\" BIGINT)",
+    assertEquals("CREATE TEMPORARY TABLE \"Target\" (\"arIvykdyta\" "
+        + "NUMERIC(1) NOT NULL, \"kaina\" DOUBLE PRECISION, \"data\" BIGINT)",
         create.getSqlString(builder));
 
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
@@ -138,8 +141,10 @@ public class TestSqlCreate {
     create.addChar("char field", 2, false);
 
     create.getSqlString(builder);
-    assertEquals(
-        "CREATE TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" BINARY_DOUBLE, \"data\" NUMERIC(19), \"kiek\" NUMERIC(10), \"millis\" NUMERIC(19), \"dateTime\" NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" CHAR(2))",
+    assertEquals("CREATE TABLE \"Target\" (\"arIvykdyta\" "
+        + "NUMERIC(1) NOT NULL, \"kaina\" BINARY_DOUBLE, \"data\" "
+        + "NUMERIC(19), \"kiek\" NUMERIC(10), \"millis\" NUMERIC(19), \"dateTime\" "
+        + "NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" CHAR(2))",
         create.getSqlString(builder));
   }
 
@@ -166,8 +171,9 @@ public class TestSqlCreate {
     create4.addDecimal("numeric field", 10, 10, false);
     create4.addString("string field", 7, false);
 
-    assertEquals(
-        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
+    assertEquals("CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, data BIGINT, "
+        + "datetime BIGINT, double value DOUBLE, long field BIGINT, "
+        + "numeric field NUMERIC(10, 10), string field VARCHAR(7))",
         create4.getSqlString(builder4));
 
     IsExpression expression = SqlUtils.name(create5.getField("bool2").getName());

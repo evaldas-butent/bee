@@ -60,9 +60,9 @@ public class DateTimeFormat {
   }
 
   private static class PatternPart {
-    public String text;
-    public int count;
-    public boolean abutStart;
+    private String text;
+    private int count;
+    private boolean abutStart;
 
     public PatternPart(String txt, int cnt) {
       text = txt;
@@ -216,7 +216,7 @@ public class DateTimeFormat {
       default:
         throw new IllegalArgumentException("Unexpected predefined format " + predef);
     }
-    
+
     return getFormat(pattern, LocaleInfo.getCurrentLocale(), dtfi);
   }
 
@@ -224,7 +224,7 @@ public class DateTimeFormat {
     return getFormat(pattern, LocaleInfo.getCurrentLocale(), getDefaultDateTimeFormatInfo());
   }
 
-  protected static DateTimeFormat getFormat(String pattern, LocaleInfo localeInfo, 
+  protected static DateTimeFormat getFormat(String pattern, LocaleInfo localeInfo,
       DateTimeFormatInfo dtfi) {
 
     DateTimeFormatInfo defaultDtfi = getDefaultDateTimeFormatInfo();
@@ -295,7 +295,9 @@ public class DateTimeFormat {
     }
 
     StringBuffer toAppendTo = new StringBuffer(64);
-    int j, n = pattern.length();
+    int j;
+    int n = pattern.length();
+
     for (int i = 0; i < n;) {
       char ch = pattern.charAt(i);
       if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
@@ -347,7 +349,7 @@ public class DateTimeFormat {
   public boolean hasFractionalSeconds() {
     return getPattern().indexOf('S') >= 0;
   }
-  
+
   public boolean hasHours() {
     return getPattern().indexOf('H') >= 0 || getPattern().indexOf('h') >= 0;
   }
@@ -355,12 +357,12 @@ public class DateTimeFormat {
   public boolean hasMinutes() {
     return getPattern().contains("mm");
   }
-  
+
   public boolean hasSeconds() {
     return getPattern().indexOf('s') >= 0;
   }
 
-  public DateTime parse(String text) throws IllegalArgumentException {
+  public DateTime parse(String text) {
     return parse(text, false);
   }
 
@@ -379,7 +381,7 @@ public class DateTimeFormat {
     return result;
   }
 
-  public DateTime parseStrict(String text) throws IllegalArgumentException {
+  public DateTime parseStrict(String text) {
     return parse(text, true);
   }
 
@@ -389,22 +391,22 @@ public class DateTimeFormat {
 
   private void addPart(StringBuffer buf, int count) {
     if (buf.length() > 0) {
-      patternParts.add((new PatternPart(buf.toString(), count)));
+      patternParts.add(new PatternPart(buf.toString(), count));
       buf.setLength(0);
     }
   }
 
-  private void format0To11Hours(StringBuffer buf, int count, HasDateValue date) {
+  private static void format0To11Hours(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getHour() % 12;
     zeroPaddingNumber(buf, value, count);
   }
 
-  private void format0To23Hours(StringBuffer buf, int count, HasDateValue date) {
+  private static void format0To23Hours(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getHour();
     zeroPaddingNumber(buf, value, count);
   }
 
-  private void format1To12Hours(StringBuffer buf, int count, HasDateValue date) {
+  private static void format1To12Hours(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getHour() % 12;
     if (value == 0) {
       zeroPaddingNumber(buf, 12, count);
@@ -413,7 +415,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void format24Hours(StringBuffer buf, int count, HasDateValue date) {
+  private static void format24Hours(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getHour();
     if (value == 0) {
       zeroPaddingNumber(buf, 24, count);
@@ -430,7 +432,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatDayOfMonth(StringBuffer buf, int count, HasDateValue date) {
+  private static void formatDayOfMonth(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getDom();
     zeroPaddingNumber(buf, value, count);
   }
@@ -455,7 +457,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatFractionalSeconds(StringBuffer buf, int count, HasDateValue date) {
+  private static void formatFractionalSeconds(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getMillis();
     if (value < 0) {
       value = 1000 - -value % 1000;
@@ -480,7 +482,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatMinutes(StringBuffer buf, int count, HasDateValue date) {
+  private static void formatMinutes(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getMinute();
     zeroPaddingNumber(buf, value, count);
   }
@@ -511,7 +513,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatSeconds(StringBuffer buf, int count, HasDateValue date) {
+  private static void formatSeconds(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getSecond();
     zeroPaddingNumber(buf, value, count);
   }
@@ -542,7 +544,8 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatTimeZone(StringBuffer buf, int count, HasDateValue date, TimeZone timeZone) {
+  private static void formatTimeZone(StringBuffer buf, int count, HasDateValue date,
+      TimeZone timeZone) {
     if (count < 4) {
       buf.append(timeZone.getShortName(date));
     } else {
@@ -550,7 +553,8 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatTimeZoneRFC(StringBuffer buf, int count, HasDateValue date, TimeZone timeZone) {
+  private static void formatTimeZoneRFC(StringBuffer buf, int count, HasDateValue date,
+      TimeZone timeZone) {
     if (count < 3) {
       buf.append(timeZone.getRFCTimeZoneString(date));
     } else if (count == 3) {
@@ -560,7 +564,7 @@ public class DateTimeFormat {
     }
   }
 
-  private void formatYear(StringBuffer buf, int count, HasDateValue date) {
+  private static void formatYear(StringBuffer buf, int count, HasDateValue date) {
     int value = date.getYear();
     if (value < 0) {
       value = -value;
@@ -578,7 +582,7 @@ public class DateTimeFormat {
     }
   }
 
-  private int getNextCharCountInPattern(String patt, int start) {
+  private static int getNextCharCountInPattern(String patt, int start) {
     char ch = patt.charAt(start);
     int next = start + 1;
     while (next < patt.length() && patt.charAt(next) == ch) {
@@ -603,18 +607,19 @@ public class DateTimeFormat {
     }
   }
 
-  private boolean isNumeric(PatternPart part) {
+  private static boolean isNumeric(PatternPart part) {
     if (part.count <= 0) {
       return false;
     }
     int i = NUMERIC_FORMAT_CHARS.indexOf(part.text.charAt(0));
-    return (i > 1 || (i >= 0 && part.count < 3));
+    return i > 1 || (i >= 0 && part.count < 3);
   }
 
-  private int matchString(String text, int start, String[] data, int[] pos) {
+  private static int matchString(String text, int start, String[] data, int[] pos) {
     int count = data.length;
 
-    int bestMatchLength = 0, bestMatch = -1;
+    int bestMatchLength = 0;
+    int bestMatch = -1;
     String textInLowerCase = text.substring(start).toLowerCase();
     for (int i = 0; i < count; ++i) {
       int length = data[i].length();
@@ -703,7 +708,7 @@ public class DateTimeFormat {
     return parsePos[0] - start;
   }
 
-  private int parseInt(String text, int[] pos) {
+  private static int parseInt(String text, int[] pos) {
     int ret = 0;
     int ind = pos[0];
     if (ind >= text.length()) {
@@ -783,7 +788,7 @@ public class DateTimeFormat {
     identifyAbutStart();
   }
 
-  private boolean parseTimeZoneOffset(String text, int[] pos, DateRecord cal) {
+  private static boolean parseTimeZoneOffset(String text, int[] pos, DateRecord cal) {
     if (pos[0] >= text.length()) {
       cal.setTzOffset(0);
       return true;
@@ -833,7 +838,7 @@ public class DateTimeFormat {
     return true;
   }
 
-  private void skipSpace(String text, int[] pos) {
+  private static void skipSpace(String text, int[] pos) {
     while (pos[0] < text.length() && WHITE_SPACE.indexOf(text.charAt(pos[0])) >= 0) {
       ++(pos[0]);
     }
@@ -1026,7 +1031,7 @@ public class DateTimeFormat {
     return true;
   }
 
-  private boolean subParseFractionalSeconds(int value, int start, int end, DateRecord cal) {
+  private static boolean subParseFractionalSeconds(int value, int start, int end, DateRecord cal) {
     int i = end - start;
     int v = value;
 
@@ -1098,7 +1103,7 @@ public class DateTimeFormat {
     return false;
   }
 
-  private boolean subParseTimeZoneInGMT(String text, int start, int[] pos, DateRecord cal) {
+  private static boolean subParseTimeZoneInGMT(String text, int start, int[] pos, DateRecord cal) {
     if (text.startsWith(GMT, start)) {
       pos[0] = start + GMT.length();
       return parseTimeZoneOffset(text, pos, cal);
@@ -1111,7 +1116,7 @@ public class DateTimeFormat {
     return parseTimeZoneOffset(text, pos, cal);
   }
 
-  private boolean subParseYear(String text, int[] pos, int start, int value,
+  private static boolean subParseYear(String text, int[] pos, int start, int value,
       PatternPart part, DateRecord cal) {
     char ch = ' ';
     int v = value;
@@ -1142,7 +1147,7 @@ public class DateTimeFormat {
     return true;
   }
 
-  private void zeroPaddingNumber(StringBuffer buf, int value, int minWidth) {
+  private static void zeroPaddingNumber(StringBuffer buf, int value, int minWidth) {
     int b = NUMBER_BASE;
     for (int i = 0; i < minWidth - 1; i++) {
       if (value < b) {

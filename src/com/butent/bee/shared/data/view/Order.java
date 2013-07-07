@@ -23,7 +23,7 @@ import java.util.List;
 
 public class Order implements BeeSerializable {
 
-  public static class Column implements BeeSerializable {
+  public static final class Column implements BeeSerializable {
 
     private final String name;
     private final List<String> sources;

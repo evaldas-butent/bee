@@ -13,7 +13,7 @@ import java.util.List;
  * requirements.
  */
 
-class CompoundCondition implements HasConditions {
+final class CompoundCondition implements HasConditions {
 
   static CompoundCondition and(IsCondition... conditions) {
     return new CompoundCondition(CompoundType.AND, conditions);

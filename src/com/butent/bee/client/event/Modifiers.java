@@ -22,10 +22,10 @@ public class Modifiers {
     return m.isShiftKey() || m.isCtrlKey() || m.isAltKey() || m.isMetaKey();
   }
 
-  private boolean shiftKey = false;
-  private boolean ctrlKey = false;
-  private boolean altKey = false;
-  private boolean metaKey = false;
+  private boolean shiftKey;
+  private boolean ctrlKey;
+  private boolean altKey;
+  private boolean metaKey;
 
   public Modifiers(NativeEvent event) {
     if (event != null) {

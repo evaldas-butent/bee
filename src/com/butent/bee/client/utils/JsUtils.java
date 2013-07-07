@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.client.utils;
 
 import com.google.common.collect.Lists;
@@ -15,7 +16,7 @@ import java.util.List;
  * Contains javascript related utility functions, like array operations or type conversions.
  */
 
-public class JsUtils {
+public final class JsUtils {
 
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof (obj) != "object") {

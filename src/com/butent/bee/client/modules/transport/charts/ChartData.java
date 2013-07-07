@@ -13,13 +13,13 @@ import java.util.List;
 
 class ChartData {
 
-  static class Item implements Comparable<Item> {
+  static final class Item implements Comparable<Item> {
     private final String name;
     private final Long id;
 
     private int count;
 
-    private boolean selected = false;
+    private boolean selected;
     private boolean enabled = true;
 
     private boolean wasSelected;
@@ -91,21 +91,21 @@ class ChartData {
   }
 
   enum Type implements HasCaption {
-    DRIVER(Localized.constants.drivers()),
-    DRIVER_GROUP(Localized.constants.driverGroupsShort()),
-    CARGO(Localized.constants.cargos()),
-    CUSTOMER(Localized.constants.transportationCustomers()),
-    LOADING(Localized.constants.cargoLoading()),
-    ORDER(Localized.constants.transportationOrders()),
-    ORDER_STATUS(Localized.constants.transportationOrderStatuses()),
-    PLACE(Localized.constants.cargoHandlingPlaces()),
-    TRAILER(Localized.constants.trailers()),
-    TRIP(Localized.constants.trips()),
-    TRUCK(Localized.constants.trucks()),
-    UNLOADING(Localized.constants.cargoUnloading()),
-    VEHICLE_GROUP(Localized.constants.vehicleGroupsShort()),
-    VEHICLE_MODEL(Localized.constants.vehicleModelsShort()),
-    VEHICLE_TYPE(Localized.constants.vehicleTypesShort());
+    DRIVER(Localized.getConstants().drivers()),
+    DRIVER_GROUP(Localized.getConstants().driverGroupsShort()),
+    CARGO(Localized.getConstants().cargos()),
+    CUSTOMER(Localized.getConstants().transportationCustomers()),
+    LOADING(Localized.getConstants().cargoLoading()),
+    ORDER(Localized.getConstants().transportationOrders()),
+    ORDER_STATUS(Localized.getConstants().transportationOrderStatuses()),
+    PLACE(Localized.getConstants().cargoHandlingPlaces()),
+    TRAILER(Localized.getConstants().trailers()),
+    TRIP(Localized.getConstants().trips()),
+    TRUCK(Localized.getConstants().trucks()),
+    UNLOADING(Localized.getConstants().cargoUnloading()),
+    VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
+    VEHICLE_MODEL(Localized.getConstants().vehicleModelsShort()),
+    VEHICLE_TYPE(Localized.getConstants().vehicleTypesShort());
 
     private final String caption;
 
@@ -123,8 +123,8 @@ class ChartData {
 
   private final List<Item> items = Lists.newArrayList();
 
-  private int numberOfSelectedItems = 0;
-  private int numberOfDisabledItems = 0;
+  private int numberOfSelectedItems;
+  private int numberOfDisabledItems;
 
   ChartData(Type type) {
     this.type = type;

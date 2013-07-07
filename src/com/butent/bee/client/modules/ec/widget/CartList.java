@@ -143,7 +143,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     return activeCartType;
   }
 
-  private Integer getEventRow(GwtEvent<?> event) {
+  private static Integer getEventRow(GwtEvent<?> event) {
     if (event.getSource() instanceof Widget) {
       TableRowElement rowElement =
           DomUtils.getParentRow(((Widget) event.getSource()).getElement(), false);
@@ -162,11 +162,11 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     }
   }
 
-  private String renderInfo(Cart cart) {
+  private static String renderInfo(Cart cart) {
     return BeeUtils.parenthesize(cart.totalQuantity());
   }
 
-  private String renderTitle(Cart cart) {
+  private static String renderTitle(Cart cart) {
     if (cart == null || cart.isEmpty()) {
       return BeeConst.STRING_EMPTY;
 
@@ -183,7 +183,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
         sb.append(BeeConst.CHAR_EOL);
       }
 
-      sb.append(Localized.constants.ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
+      sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
       sb.append(EcUtils.renderCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 

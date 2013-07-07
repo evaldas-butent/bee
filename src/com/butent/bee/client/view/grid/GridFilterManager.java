@@ -111,7 +111,7 @@ public class GridFilterManager {
 
   private final Flow contentPanel = new Flow(STYLE_CONTENT);
 
-  private Filter externalFilter = null;
+  private Filter externalFilter;
 
   public GridFilterManager(GridView gridView, FilterConsumer filterConsumer) {
     super();
@@ -135,7 +135,7 @@ public class GridFilterManager {
     externalFilter = queryFilter;
     retainValues();
 
-    DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
+    DialogBox dialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
 
     buildContentPanel();
     dialog.setWidget(contentPanel);
@@ -154,7 +154,7 @@ public class GridFilterManager {
     }
   }
 
-  private Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
+  private static Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
     List<FilterComponent> components = Lists.newArrayList();
 
     if (!BeeUtils.isEmpty(values)) {
@@ -166,7 +166,7 @@ public class GridFilterManager {
     return components;
   }
 
-  private Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
+  private static Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
     Map<String, FilterValue> values = Maps.newHashMap();
 
     if (!BeeUtils.isEmpty(components)) {
@@ -215,8 +215,8 @@ public class GridFilterManager {
     supplierPanel.addStyleName(STYLE_SUPPLIER_PANEL);
     contentPanel.add(supplierPanel);
 
-    if (!valuesByColumn.isEmpty() &&
-        !Global.getFilters().contains(gridKey, asComponents(valuesByColumn))) {
+    if (!valuesByColumn.isEmpty() 
+        && !Global.getFilters().contains(gridKey, asComponents(valuesByColumn))) {
       Widget saveWidget = createSaveWidget();
       contentPanel.add(saveWidget);
     }
@@ -288,7 +288,7 @@ public class GridFilterManager {
     panel.add(icon);
 
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
-    message.setText(Localized.constants.saveFilter());
+    message.setText(Localized.getConstants().saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
 
@@ -426,7 +426,7 @@ public class GridFilterManager {
           }
 
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.constants.nothingFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
           if (columnInfo == null) {
             updateFilterValues(valuesByColumn, false);
           } else {

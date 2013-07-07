@@ -39,6 +39,7 @@ public abstract class TextBasedProtocolClientHandler extends SimpleChannelHandle
     try {
       closeOnFlush(serverInChannel);
     } catch (Exception ex) {
+      logger.warning(ex);
     }
   }
 

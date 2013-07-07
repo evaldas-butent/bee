@@ -21,7 +21,7 @@ import java.util.Properties;
  * related).
  */
 
-public class SystemInfo {
+public final class SystemInfo {
   /**
    * Compares two specified packages with each other.
    */
@@ -33,7 +33,7 @@ public class SystemInfo {
     }
   }
 
-  private static PackageComparator packageComparator = null;
+  private static PackageComparator packageComparator;
 
   public static long freeMemory() {
     return Runtime.getRuntime().freeMemory();
@@ -112,7 +112,9 @@ public class SystemInfo {
     PropertyUtils.addExtended(lst, "Current Time Millis", System.currentTimeMillis());
     PropertyUtils.addExtended(lst, "Nano Time", System.nanoTime());
 
-    int i, c;
+    int i;
+    int c;
+
     Map<String, String> env = System.getenv();
     if (env != null) {
       i = 0;

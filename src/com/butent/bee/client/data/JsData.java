@@ -15,9 +15,9 @@ import java.util.List;
  * Enables operations with columns in data tables seen in user interface.
  */
 
-public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
+public class JsData<C extends IsColumn> extends StringMatrix<C> {
 
-  public JsData(JsArrayString data, List<ColType> columns) {
+  public JsData(JsArrayString data, List<C> columns) {
     this(data, 0, columns);
   }
 
@@ -25,7 +25,7 @@ public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
     this(data, 0, columnLabels);
   }
 
-  public JsData(JsArrayString data, int start, List<ColType> columns) {
+  public JsData(JsArrayString data, int start, List<C> columns) {
     super(columns);
     Assert.notNull(columns);
     initData(data, start, columns.size());

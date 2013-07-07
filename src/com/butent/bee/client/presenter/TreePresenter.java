@@ -79,12 +79,12 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   @SuppressWarnings("unused")
   private final String orderName; // TODO implement order column
   private final String relationName;
-  private Long relationId = null;
+  private Long relationId;
   private final Calculation calculation;
-  private List<BeeColumn> dataColumns = null;
-  private Evaluator evaluator = null;
+  private List<BeeColumn> dataColumns;
+  private Evaluator evaluator;
   private final Element editor;
-  private FormView formView = null;
+  private FormView formView;
 
   public TreePresenter(TreeView view, String source, String parentName,
       String orderName, String relationName, Calculation calc, Element editorForm) {
@@ -225,7 +225,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   private void edit(final IsRow item) {
-    final boolean addMode = (item == null);
+    final boolean addMode = item == null;
     final IsRow row;
 
     if (addMode) {

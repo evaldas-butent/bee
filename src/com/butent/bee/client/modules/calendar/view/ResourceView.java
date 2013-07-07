@@ -35,8 +35,8 @@ public class ResourceView extends CalendarView {
   private final MultiDayPanel viewMulti = new MultiDayPanel();
   private final AppointmentPanel viewBody = new AppointmentPanel();
 
-  private DayMoveController moveController = null;
-  private ResizeController resizeController = null;
+  private DayMoveController moveController;
+  private ResizeController resizeController;
 
   public ResourceView() {
     super();

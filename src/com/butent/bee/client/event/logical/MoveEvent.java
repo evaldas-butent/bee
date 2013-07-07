@@ -8,7 +8,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 
-public class MoveEvent extends GwtEvent<MoveEvent.Handler> {
+public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
   
   public interface Handler extends EventHandler {
     void onMove(MoveEvent event);

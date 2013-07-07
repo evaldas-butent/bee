@@ -51,7 +51,7 @@ import java.util.Set;
  * Contains utility user interface creation functions like setting and getting horizontal alignment.
  */
 
-public class UiHelper {
+public final class UiHelper {
 
   private static final BeeLogger logger = LogUtils.getLogger(UiHelper.class);
 

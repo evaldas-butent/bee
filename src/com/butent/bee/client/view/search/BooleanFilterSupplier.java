@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class BooleanFilterSupplier extends AbstractFilterSupplier {
   
-  private Boolean value = null;
+  private Boolean value;
 
   public BooleanFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);
@@ -100,13 +100,13 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(0, 1, empty);
 
-    Button all = new Button(Localized.constants.filterAll());
+    Button all = new Button(Localized.getConstants().filterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        boolean changed = (value != null);
+        boolean changed = value != null;
         value = null;
         update(changed);
       }
@@ -114,7 +114,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(1, 0, all);
 
-    Button cancel = new Button(Localized.constants.cancel());
+    Button cancel = new Button(Localized.getConstants().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {
@@ -129,7 +129,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
     return container;
   }
   
-  private Boolean getBoolean(FilterValue filterValue) {
+  private static Boolean getBoolean(FilterValue filterValue) {
     if (filterValue == null) {
       return null;
     } else if (filterValue.hasValue()) {
@@ -143,7 +143,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
   private String getLabelForEmpty() {
     return BeeUtils.isEmpty(getColumnLabel()) 
-        ? NULL_VALUE_LABEL : Localized.messages.not(getColumnLabel());
+        ? NULL_VALUE_LABEL : Localized.getMessages().not(getColumnLabel());
   }
   
   private String getLabelForNotEmpty() {

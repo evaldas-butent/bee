@@ -40,8 +40,8 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CITIES)) {
       handleCities(event);
 
-    } else if (event.isNewRow() &&
-        BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
+    } else if (event.isNewRow() 
+        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
       handleNewPersons(event);
 
     } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
@@ -51,7 +51,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private void handleCities(SelectorEvent event) {
+  private static void handleCities(SelectorEvent event) {
     if (!event.isChanged()) {
       return;
     }
@@ -183,7 +183,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private void handleEmails(SelectorEvent event) {
+  private static void handleEmails(SelectorEvent event) {
     if (!event.isNewRow()) {
       return;
     }
@@ -192,7 +192,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     event.consume();
   }
 
-  private void handleNewPersons(SelectorEvent event) {
+  private static void handleNewPersons(SelectorEvent event) {
     if (!event.isNewRow()) {
       return;
     }

@@ -17,10 +17,9 @@ import java.util.List;
 /**
  * Tests {@link com.butent.bee.shared.utils.BeeUtils}.
  */
-@SuppressWarnings("static-access")
+@SuppressWarnings("static-method")
 public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
-  private BeeUtils beeUtils;
   private final boolean allowLogging = false;
 
   @Override
@@ -43,65 +42,65 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testAllEmpty() {
-    assertEquals(false, beeUtils.allEmpty("a", null));
-    assertEquals(true, beeUtils.allEmpty(" ", null));
+    assertEquals(false, BeeUtils.allEmpty("a", null));
+    assertEquals(true, BeeUtils.allEmpty(" ", null));
   }
 
   @Test
   public void testAllNotEmpty() {
-    assertEquals(false, beeUtils.allNotEmpty("x", null));
-    assertEquals(true, beeUtils.allNotEmpty("a", "b"));
+    assertEquals(false, BeeUtils.allNotEmpty("x", null));
+    assertEquals(true, BeeUtils.allNotEmpty("a", "b"));
   }
 
   @Test
   public void testBetweenExclusive() {
-    assertEquals(true, beeUtils.betweenExclusive(5, 5, 10));
-    assertEquals(false, beeUtils.betweenExclusive(1, 5, 10));
-    assertEquals(false, beeUtils.betweenExclusive(10, 5, 10));
-    assertEquals(false, beeUtils.betweenExclusive(100, 5, 10));
+    assertEquals(true, BeeUtils.betweenExclusive(5, 5, 10));
+    assertEquals(false, BeeUtils.betweenExclusive(1, 5, 10));
+    assertEquals(false, BeeUtils.betweenExclusive(10, 5, 10));
+    assertEquals(false, BeeUtils.betweenExclusive(100, 5, 10));
   }
 
   @Test
   public void testBetweenInclusive() {
-    assertEquals(true, beeUtils.betweenInclusive(5, 5, 10));
-    assertEquals(false, beeUtils.betweenInclusive(1, 5, 10));
-    assertEquals(true, beeUtils.betweenInclusive(10, 5, 10));
-    assertEquals(false, beeUtils.betweenInclusive(100, 5, 10));
+    assertEquals(true, BeeUtils.betweenInclusive(5, 5, 10));
+    assertEquals(false, BeeUtils.betweenInclusive(1, 5, 10));
+    assertEquals(true, BeeUtils.betweenInclusive(10, 5, 10));
+    assertEquals(false, BeeUtils.betweenInclusive(100, 5, 10));
   }
 
   @Test
   public void testBracket() {
-    assertEquals("[Win]", beeUtils.bracket("Win"));
-    assertEquals("", beeUtils.bracket(""));
-    assertEquals("", beeUtils.bracket(null));
-    assertEquals("[Win Win]", beeUtils.bracket("Win Win"));
+    assertEquals("[Win]", BeeUtils.bracket("Win"));
+    assertEquals("", BeeUtils.bracket(""));
+    assertEquals("", BeeUtils.bracket(null));
+    assertEquals("[Win Win]", BeeUtils.bracket("Win Win"));
   }
 
   @Test
   public void testClamp() {
-    assertEquals(10, beeUtils.clamp(5, 10, 15));
-    assertEquals(15, beeUtils.clamp(20, 1, 15));
-    assertEquals(5, beeUtils.clamp(5, 1, 15));
-    assertEquals(10.0, beeUtils.clamp(5.0, 10.0, 15.0));
-    assertEquals(15.0, beeUtils.clamp(20.0, 1.0, 15.0));
-    assertEquals(5.0, beeUtils.clamp(5.0, 1.00, 15.0));
-    assertEquals(10.0, beeUtils.clamp(5, 10.0, 15.0));
-    assertEquals(1.0, beeUtils.clamp(Double.MAX_VALUE * 5, 1.0, 15.0));
-    assertEquals(15.0, beeUtils.clamp(Double.MAX_VALUE * 5, Double.MAX_VALUE * 5, 15.0));
-    assertEquals(Double.POSITIVE_INFINITY, beeUtils.clamp(Double.MAX_VALUE * 5,
+    assertEquals(10, BeeUtils.clamp(5, 10, 15));
+    assertEquals(15, BeeUtils.clamp(20, 1, 15));
+    assertEquals(5, BeeUtils.clamp(5, 1, 15));
+    assertEquals(10.0, BeeUtils.clamp(5.0, 10.0, 15.0));
+    assertEquals(15.0, BeeUtils.clamp(20.0, 1.0, 15.0));
+    assertEquals(5.0, BeeUtils.clamp(5.0, 1.00, 15.0));
+    assertEquals(10.0, BeeUtils.clamp(5, 10.0, 15.0));
+    assertEquals(1.0, BeeUtils.clamp(Double.MAX_VALUE * 5, 1.0, 15.0));
+    assertEquals(15.0, BeeUtils.clamp(Double.MAX_VALUE * 5, Double.MAX_VALUE * 5, 15.0));
+    assertEquals(Double.POSITIVE_INFINITY, BeeUtils.clamp(Double.MAX_VALUE * 5,
         Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.clamp(5.0, 1, 15));
-    assertEquals(5.0, beeUtils.clamp(5.0, Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.clamp(5.0, 2.0, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.clamp(5.0, Double.MAX_VALUE * 5, 10.0));
+    assertEquals(5.0, BeeUtils.clamp(5.0, 1, 15));
+    assertEquals(5.0, BeeUtils.clamp(5.0, Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
+    assertEquals(5.0, BeeUtils.clamp(5.0, 2.0, Double.MAX_VALUE * 5));
+    assertEquals(5.0, BeeUtils.clamp(5.0, Double.MAX_VALUE * 5, 10.0));
   }
 
   @Test
   public void testClip() {
-    assertEquals("This i...[6/18]", beeUtils.clip("This is a sentence", 6));
-    assertEquals("", beeUtils.clip("", 6));
-    assertEquals("Win", beeUtils.clip("Win", 6));
-    assertEquals("Win", beeUtils.clip("Win          ", 6));
+    assertEquals("This i...[6/18]", BeeUtils.clip("This is a sentence", 6));
+    assertEquals("", BeeUtils.clip("", 6));
+    assertEquals("Win", BeeUtils.clip("Win", 6));
+    assertEquals("Win", BeeUtils.clip("Win          ", 6));
   }
 
   @Test
@@ -115,28 +114,28 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     testc2.add(2);
     testc2.add(10);
 
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare("", ""));
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare("Compare", "Compare"));
-    assertEquals(true, beeUtils.compare("Aompare", "Compare") < 0);
-    assertEquals(true, beeUtils.compare("Compare", "Aompare") > 0);
-    assertEquals(true, beeUtils.compare(null, "Aompare") < 0);
-    assertEquals(true, beeUtils.compare("Compare", null) > 0);
-    assertEquals(true, beeUtils.compare(7, 6) > 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare(6, 6));
-    assertEquals(true, beeUtils.compare(5, 6) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("", ""));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("Compare", "Compare"));
+    assertEquals(true, BeeUtils.compare("Aompare", "Compare") < 0);
+    assertEquals(true, BeeUtils.compare("Compare", "Aompare") > 0);
+    assertEquals(true, BeeUtils.compare(null, "Aompare") < 0);
+    assertEquals(true, BeeUtils.compare("Compare", null) > 0);
+    assertEquals(true, BeeUtils.compare(7, 6) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(6, 6));
+    assertEquals(true, BeeUtils.compare(5, 6) < 0);
 
-    assertEquals(true, beeUtils.compare('a', 'c') < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare('c', 'c'));
-    assertEquals(false, beeUtils.compare('c', 'a') < 0);
+    assertEquals(true, BeeUtils.compare('a', 'c') < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare('c', 'c'));
+    assertEquals(false, BeeUtils.compare('c', 'a') < 0);
 
-    assertEquals(true, beeUtils.compare(true, false) > 0);
-    assertEquals(true, beeUtils.compare(false, true) < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare(true, true));
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare(false, false));
+    assertEquals(true, BeeUtils.compare(true, false) > 0);
+    assertEquals(true, BeeUtils.compare(false, true) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(true, true));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(false, false));
 
-    assertEquals(BeeConst.COMPARE_EQUAL, beeUtils.compare(5.0, 5.0));
-    assertEquals(true, beeUtils.compare(-2.0, 5.69) < 0);
-    assertEquals(true, beeUtils.compare(5.11, 3.0) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(5.0, 5.0));
+    assertEquals(true, BeeUtils.compare(-2.0, 5.69) < 0);
+    assertEquals(true, BeeUtils.compare(5.11, 3.0) > 0);
   }
 
   @Test
@@ -149,36 +148,37 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testDelete() {
-    assertEquals("", beeUtils.delete(null, 0, 5));
-    assertEquals("", beeUtils.delete("", 0, 5));
-    assertEquals("", beeUtils.delete("This is a string", -5, 88));
-    assertEquals(" a string", beeUtils.delete("This is a string", -5, 7));
-    assertEquals("This is a string", beeUtils.delete("This is a string", 30, 5));
-    assertEquals("", beeUtils.delete("This is a string", 0, 50));
-    assertEquals("Thi", beeUtils.delete("This is a string", 3, 50));
-    assertEquals("Thiis a string", beeUtils.delete("This is a string", 3, 5));
+    assertEquals("", BeeUtils.delete(null, 0, 5));
+    assertEquals("", BeeUtils.delete("", 0, 5));
+    assertEquals("", BeeUtils.delete("This is a string", -5, 88));
+    assertEquals(" a string", BeeUtils.delete("This is a string", -5, 7));
+    assertEquals("This is a string", BeeUtils.delete("This is a string", 30, 5));
+    assertEquals("", BeeUtils.delete("This is a string", 0, 50));
+    assertEquals("Thi", BeeUtils.delete("This is a string", 3, 50));
+    assertEquals("Thiis a string", BeeUtils.delete("This is a string", 3, 5));
 
-    assertEquals("This is a string", beeUtils.delete("This is a string", -5, -10));
-    assertEquals("This is a string", beeUtils.delete("This is a string", -10, -5));
-    assertEquals("s is a string", beeUtils.delete("This is a string", -5, 3));
-    assertEquals("This is a string", beeUtils.delete("This is a string", 80, 40));
+    assertEquals("This is a string", BeeUtils.delete("This is a string", -5, -10));
+    assertEquals("This is a string", BeeUtils.delete("This is a string", -10, -5));
+    assertEquals("s is a string", BeeUtils.delete("This is a string", -5, 3));
+    assertEquals("This is a string", BeeUtils.delete("This is a string", 80, 40));
   }
 
   @Test
   public void testEqualsTrim() {
-    assertEquals(true, beeUtils.equalsTrim("", ""));
-    assertEquals(true, beeUtils.equalsTrim("   ", "   "));
-    assertEquals(true, beeUtils.equalsTrim("   This is a sentence", "This is a sentence     "));
-    assertEquals(true, beeUtils.equalsTrim("   This is a sentence \n\t", "This is a sentence     "));
-    assertEquals(true, beeUtils.equalsTrim(null, null));
-    assertEquals(false, beeUtils.equalsTrim("5", null));
-    assertEquals(false, beeUtils.equalsTrim(null, "5"));
+    assertEquals(true, BeeUtils.equalsTrim("", ""));
+    assertEquals(true, BeeUtils.equalsTrim("   ", "   "));
+    assertEquals(true, BeeUtils.equalsTrim("   This is a sentence", "This is a sentence     "));
+    assertEquals(true, BeeUtils.equalsTrim("   This is a sentence \n\t",
+        "This is a sentence     "));
+    assertEquals(true, BeeUtils.equalsTrim(null, null));
+    assertEquals(false, BeeUtils.equalsTrim("5", null));
+    assertEquals(false, BeeUtils.equalsTrim(null, "5"));
   }
 
   @Test
   public void testExp10() {
-    assertEquals(100, beeUtils.exp10(2));
-    assertEquals(1000, beeUtils.exp10(3));
+    assertEquals(100, BeeUtils.exp10(2));
+    assertEquals(1000, BeeUtils.exp10(3));
   }
 
   @Test
@@ -198,30 +198,30 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
     List<String> rez3 = new ArrayList<String>();
 
-    assertEquals(rez1, beeUtils.filterContext(testc1, "text"));
-    assertEquals(rez2, beeUtils.filterContext(testc1, "text2"));
-    assertEquals(rez3, beeUtils.filterContext(testc1, "texx"));
-    assertEquals(rez3, beeUtils.filterContext(testc1, ""));
-    assertEquals(testc2, beeUtils.filterContext(testc2, "text"));
+    assertEquals(rez1, BeeUtils.filterContext(testc1, "text"));
+    assertEquals(rez2, BeeUtils.filterContext(testc1, "text2"));
+    assertEquals(rez3, BeeUtils.filterContext(testc1, "texx"));
+    assertEquals(rez3, BeeUtils.filterContext(testc1, ""));
+    assertEquals(testc2, BeeUtils.filterContext(testc2, "text"));
   }
 
   @Test
   public void testFitStart() {
-    assertEquals(0, beeUtils.fitStart(0, 5, 10));
-    assertEquals(-5, beeUtils.fitStart(0, 15, 10));
-    assertEquals(4, beeUtils.fitStart(5, 6, 10));
+    assertEquals(0, BeeUtils.fitStart(0, 5, 10));
+    assertEquals(-5, BeeUtils.fitStart(0, 15, 10));
+    assertEquals(4, BeeUtils.fitStart(5, 6, 10));
   }
 
   @Test
   public void testFromHex() {
-    assertEquals("$", new String(beeUtils.fromHex("24")));
-    assertEquals("]", new String(beeUtils.fromHex("005D")));
-    assertEquals("]]", new String(beeUtils.fromHex("005D005D")));
-    assertEquals("]", new String(beeUtils.fromHex("005d")));
-    assertEquals("!P", new String(beeUtils.fromHex("210050")));
-    assertEquals("]]", new String(beeUtils.fromHex("005d005d")));
-    assertEquals(null, beeUtils.fromHex("242Z"));
-    assertEquals(null, beeUtils.fromHex(null));
+    assertEquals("$", new String(BeeUtils.fromHex("24")));
+    assertEquals("]", new String(BeeUtils.fromHex("005D")));
+    assertEquals("]]", new String(BeeUtils.fromHex("005D005D")));
+    assertEquals("]", new String(BeeUtils.fromHex("005d")));
+    assertEquals("!P", new String(BeeUtils.fromHex("210050")));
+    assertEquals("]]", new String(BeeUtils.fromHex("005d005d")));
+    assertEquals(null, BeeUtils.fromHex("242Z"));
+    assertEquals(null, BeeUtils.fromHex(null));
   }
 
   @Test
@@ -232,20 +232,20 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testGetPrefix() {
-    assertEquals("for example", beeUtils.getPrefix("for example, this test...", ','));
-    assertEquals("", beeUtils.getPrefix(", bad example", ','));
-    assertEquals("", beeUtils.getPrefix("There is not a seperator", ','));
-    assertEquals("", beeUtils.getPrefix("for example, this test...", '\0'));
-    assertEquals("for example, t", beeUtils.getPrefix("for example, t\0his test...", '\0'));
-    assertEquals("", beeUtils.getPrefix(null, '\0'));
+    assertEquals("for example", BeeUtils.getPrefix("for example, this test...", ','));
+    assertEquals("", BeeUtils.getPrefix(", bad example", ','));
+    assertEquals("", BeeUtils.getPrefix("There is not a seperator", ','));
+    assertEquals("", BeeUtils.getPrefix("for example, this test...", '\0'));
+    assertEquals("for example, t", BeeUtils.getPrefix("for example, t\0his test...", '\0'));
+    assertEquals("", BeeUtils.getPrefix(null, '\0'));
 
-    assertEquals("for example", beeUtils.getPrefix("for example, this test...", ","));
-    assertEquals("", beeUtils.getPrefix(", bad example", ","));
-    assertEquals("", beeUtils.getPrefix("There is not a seperator", ","));
-    assertEquals("", beeUtils.getPrefix("for example, this test...", "\0"));
-    assertEquals("for example, t", beeUtils.getPrefix("for example, t\0his test...", "\0"));
-    assertEquals("for example,", beeUtils.getPrefix("for example, this test...", "this"));
-    assertEquals("", beeUtils.getPrefix("for example, this test...", null));
+    assertEquals("for example", BeeUtils.getPrefix("for example, this test...", ","));
+    assertEquals("", BeeUtils.getPrefix(", bad example", ","));
+    assertEquals("", BeeUtils.getPrefix("There is not a seperator", ","));
+    assertEquals("", BeeUtils.getPrefix("for example, this test...", "\0"));
+    assertEquals("for example, t", BeeUtils.getPrefix("for example, t\0his test...", "\0"));
+    assertEquals("for example,", BeeUtils.getPrefix("for example, this test...", "this"));
+    assertEquals("", BeeUtils.getPrefix("for example, this test...", null));
   }
 
   @Test
@@ -259,101 +259,101 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
     rez1.add("simple text");
 
-    assertEquals("simple text", beeUtils.getQuietly(testc1, 1));
-    assertEquals(null, beeUtils.getQuietly(testc1, -1));
-    assertEquals(null, beeUtils.getQuietly(testc2, 5));
+    assertEquals("simple text", BeeUtils.getQuietly(testc1, 1));
+    assertEquals(null, BeeUtils.getQuietly(testc1, -1));
+    assertEquals(null, BeeUtils.getQuietly(testc2, 5));
   }
 
   @Test
   public void testGetSuffix() {
-    assertEquals("this test...", beeUtils.getSuffix("for example, this test...", ','));
-    assertEquals("", beeUtils.getSuffix(" bad example,", ','));
-    assertEquals("", beeUtils.getSuffix("There is not a seperator", ','));
-    assertEquals("", beeUtils.getSuffix("for example, this test...", '\0'));
-    assertEquals("his test...", beeUtils.getSuffix("for example, t\0his test...", '\0'));
-    assertEquals("", beeUtils.getSuffix(null, '\0'));
+    assertEquals("this test...", BeeUtils.getSuffix("for example, this test...", ','));
+    assertEquals("", BeeUtils.getSuffix(" bad example,", ','));
+    assertEquals("", BeeUtils.getSuffix("There is not a seperator", ','));
+    assertEquals("", BeeUtils.getSuffix("for example, this test...", '\0'));
+    assertEquals("his test...", BeeUtils.getSuffix("for example, t\0his test...", '\0'));
+    assertEquals("", BeeUtils.getSuffix(null, '\0'));
 
-    assertEquals("test...", beeUtils.getSuffix("for example, this ,test...", ","));
-    assertEquals("", beeUtils.getSuffix(", bad example,", ","));
-    assertEquals("", beeUtils.getSuffix("There is not a seperator", ","));
-    assertEquals("", beeUtils.getSuffix("for example, this test...", "\0"));
-    assertEquals("his test...", beeUtils.getSuffix("for example, t\0his test...", "\0"));
-    assertEquals("test...", beeUtils.getSuffix("for example, this test...", "this"));
-    assertEquals("", beeUtils.getSuffix("for example, this test...", null));
+    assertEquals("test...", BeeUtils.getSuffix("for example, this ,test...", ","));
+    assertEquals("", BeeUtils.getSuffix(", bad example,", ","));
+    assertEquals("", BeeUtils.getSuffix("There is not a seperator", ","));
+    assertEquals("", BeeUtils.getSuffix("for example, this test...", "\0"));
+    assertEquals("his test...", BeeUtils.getSuffix("for example, t\0his test...", "\0"));
+    assertEquals("test...", BeeUtils.getSuffix("for example, this test...", "this"));
+    assertEquals("", BeeUtils.getSuffix("for example, this test...", null));
   }
 
   @Test
   public void testIfString() {
-    assertEquals("test", beeUtils.notEmpty("test", "not"));
-    assertEquals("not", beeUtils.notEmpty(null, "not"));
-    assertEquals("test", beeUtils.notEmpty("test", null));
-    assertEquals("not", beeUtils.notEmpty("", "not"));
-    assertEquals(null, beeUtils.notEmpty("", null));
-    assertEquals("", beeUtils.notEmpty("", ""));
+    assertEquals("test", BeeUtils.notEmpty("test", "not"));
+    assertEquals("not", BeeUtils.notEmpty(null, "not"));
+    assertEquals("test", BeeUtils.notEmpty("test", null));
+    assertEquals("not", BeeUtils.notEmpty("", "not"));
+    assertEquals(null, BeeUtils.notEmpty("", null));
+    assertEquals("", BeeUtils.notEmpty("", ""));
   }
 
   @Test
   public void testInList() {
-    assertEquals(true, beeUtils.inList("text", "this", "is", "a", "text"));
-    assertEquals(false, beeUtils.inList("texts", "this", "is", "a", "text"));
+    assertEquals(true, BeeUtils.inList("text", "this", "is", "a", "text"));
+    assertEquals(false, BeeUtils.inList("texts", "this", "is", "a", "text"));
   }
 
   @Test
   public void testInListSame() {
-    assertEquals(true, beeUtils.inListSame("text", "this", "is", "a", "tExt"));
-    assertEquals(false, beeUtils.inListSame("texts", "this", "is", "a", "text"));
-    assertEquals(true, beeUtils.inListSame("TeXT", "this", "is", "a", "text"));
-    assertEquals(false, beeUtils.inListSame("TEXTS", "this", "is", "a", "text"));
+    assertEquals(true, BeeUtils.inListSame("text", "this", "is", "a", "tExt"));
+    assertEquals(false, BeeUtils.inListSame("texts", "this", "is", "a", "text"));
+    assertEquals(true, BeeUtils.inListSame("TeXT", "this", "is", "a", "text"));
+    assertEquals(false, BeeUtils.inListSame("TEXTS", "this", "is", "a", "text"));
 
-    assertEquals(true, beeUtils.inListSame("text       ", "this", "is", "a", "tExt"));
-    assertEquals(false, beeUtils.inListSame("texts", "this", "is", "a", "      text"));
-    assertEquals(true, beeUtils.inListSame("  \n \0 teXT   ", "this", "is", "a", "text    "));
-    assertEquals(false, beeUtils.inListSame("TS    ", "this", "   is", "a", "text"));
-    assertEquals(true, beeUtils.inListSame("is   ", "this", null, "   is", "text"));
+    assertEquals(true, BeeUtils.inListSame("text       ", "this", "is", "a", "tExt"));
+    assertEquals(false, BeeUtils.inListSame("texts", "this", "is", "a", "      text"));
+    assertEquals(true, BeeUtils.inListSame("  \n \0 teXT   ", "this", "is", "a", "text    "));
+    assertEquals(false, BeeUtils.inListSame("TS    ", "this", "   is", "a", "text"));
+    assertEquals(true, BeeUtils.inListSame("is   ", "this", null, "   is", "text"));
   }
 
   @Test
   public void testInsert() {
-    assertEquals("This is a test", beeUtils.insert("Ths is a test", 2, 'i'));
-    assertEquals("iThs is a test", beeUtils.insert("Ths is a test", 0, 'i'));
-    assertEquals("Ths is a testi", beeUtils.insert("Ths is a test", 13, 'i'));
+    assertEquals("This is a test", BeeUtils.insert("Ths is a test", 2, 'i'));
+    assertEquals("iThs is a test", BeeUtils.insert("Ths is a test", 0, 'i'));
+    assertEquals("Ths is a testi", BeeUtils.insert("Ths is a test", 13, 'i'));
   }
 
   @Test
   public void testIsBoolean() {
-    assertEquals(false, beeUtils.isBoolean(null));
-    assertEquals(false, beeUtils.isBoolean("pick"));
-    assertEquals(false, beeUtils.isBoolean(""));
-    assertEquals(true, beeUtils.isBoolean("true"));
-    assertEquals(true, beeUtils.isBoolean("false"));
-    assertEquals(true, beeUtils.isBoolean("yEs"));
-    assertEquals(true, beeUtils.isBoolean("no"));
+    assertEquals(false, BeeUtils.isBoolean(null));
+    assertEquals(false, BeeUtils.isBoolean("pick"));
+    assertEquals(false, BeeUtils.isBoolean(""));
+    assertEquals(true, BeeUtils.isBoolean("true"));
+    assertEquals(true, BeeUtils.isBoolean("false"));
+    assertEquals(true, BeeUtils.isBoolean("yEs"));
+    assertEquals(true, BeeUtils.isBoolean("no"));
   }
 
   @Test
   public void testIsDigit() {
-    assertEquals(true, beeUtils.isDigit('8'));
-    assertEquals(false, beeUtils.isDigit('c'));
-    assertEquals(false, beeUtils.isDigit('-'));
-    assertEquals(false, beeUtils.isDigit(null));
-    assertEquals(true, beeUtils.isDigit("123"));
-    assertEquals(false, beeUtils.isDigit("12ab"));
-    assertEquals(false, beeUtils.isDigit("ab12"));
-    assertEquals(false, beeUtils.isDigit(""));
+    assertEquals(true, BeeUtils.isDigit('8'));
+    assertEquals(false, BeeUtils.isDigit('c'));
+    assertEquals(false, BeeUtils.isDigit('-'));
+    assertEquals(false, BeeUtils.isDigit(null));
+    assertEquals(true, BeeUtils.isDigit("123"));
+    assertEquals(false, BeeUtils.isDigit("12ab"));
+    assertEquals(false, BeeUtils.isDigit("ab12"));
+    assertEquals(false, BeeUtils.isDigit(""));
   }
 
   @Test
   public void testIsDouble() {
-    assertEquals(true, beeUtils.isDouble((double) 1));
-    assertEquals(true, beeUtils.isDouble((double) 'c'));
-    assertEquals(true, beeUtils.isDouble((double) '5'));
-    assertEquals(true, beeUtils.isDouble(-5.0));
-    assertEquals(false, beeUtils.isDouble(""));
-    assertEquals(false, beeUtils.isDouble((Double) null));
-    assertEquals(false, beeUtils.isDouble("55e"));
-    assertEquals(false, beeUtils.isDouble("e55"));
-    assertEquals(true, beeUtils.isDouble("55"));
-    assertEquals(false, beeUtils.isDouble(Double.MAX_VALUE * 5));
+    assertEquals(true, BeeUtils.isDouble((double) 1));
+    assertEquals(true, BeeUtils.isDouble((double) 'c'));
+    assertEquals(true, BeeUtils.isDouble((double) '5'));
+    assertEquals(true, BeeUtils.isDouble(-5.0));
+    assertEquals(false, BeeUtils.isDouble(""));
+    assertEquals(false, BeeUtils.isDouble((Double) null));
+    assertEquals(false, BeeUtils.isDouble("55e"));
+    assertEquals(false, BeeUtils.isDouble("e55"));
+    assertEquals(true, BeeUtils.isDouble("55"));
+    assertEquals(false, BeeUtils.isDouble(Double.MAX_VALUE * 5));
   }
 
   @Test
@@ -369,42 +369,42 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testIsInt() {
-    assertEquals(false, beeUtils.isInt(null));
-    assertEquals(false, beeUtils.isInt(""));
-    assertEquals(false, beeUtils.isInt("asd"));
-    assertEquals(true, beeUtils.isInt("44444"));
-    assertEquals(false, beeUtils.isInt("3.141123546"));
+    assertEquals(false, BeeUtils.isInt(null));
+    assertEquals(false, BeeUtils.isInt(""));
+    assertEquals(false, BeeUtils.isInt("asd"));
+    assertEquals(true, BeeUtils.isInt("44444"));
+    assertEquals(false, BeeUtils.isInt("3.141123546"));
   }
 
   @Test
   public void testIsLong() {
-    assertEquals(false, beeUtils.isLong(-555555555555555555555555555555555555555.5));
-    assertEquals(true, beeUtils.isLong(-5555.5555555555));
-    assertEquals(false, beeUtils.isLong(555555555555555555555555555555555555555555.555));
+    assertEquals(false, BeeUtils.isLong(-555555555555555555555555555555555555555.5));
+    assertEquals(true, BeeUtils.isLong(-5555.5555555555));
+    assertEquals(false, BeeUtils.isLong(555555555555555555555555555555555555555555.555));
   }
 
   @Test
   public void testIsOrdinal() {
-    assertEquals(true, beeUtils.isOrdinal(State.class, 5));
-    assertEquals(false, beeUtils.isOrdinal(State.class, 500));
+    assertEquals(true, BeeUtils.isOrdinal(State.class, 5));
+    assertEquals(false, BeeUtils.isOrdinal(State.class, 500));
   }
 
   @Test
   public void testIsPositive() {
-    assertEquals(false, beeUtils.isPositiveInt(""));
-    assertEquals(true, beeUtils.isPositiveInt("5"));
-    assertEquals(false, beeUtils.isPositiveInt("-5"));
-    assertEquals(false, beeUtils.isPositive(-5));
-    assertEquals(true, beeUtils.isPositive(5));
-    assertEquals(true, beeUtils.isPositive(5.0));
-    assertEquals(false, beeUtils.isPositive(0.0));
+    assertEquals(false, BeeUtils.isPositiveInt(""));
+    assertEquals(true, BeeUtils.isPositiveInt("5"));
+    assertEquals(false, BeeUtils.isPositiveInt("-5"));
+    assertEquals(false, BeeUtils.isPositive(-5));
+    assertEquals(true, BeeUtils.isPositive(5));
+    assertEquals(true, BeeUtils.isPositive(5.0));
+    assertEquals(false, BeeUtils.isPositive(0.0));
   }
 
   @Test
   public void testIsTrue() {
-    assertEquals(false, beeUtils.isTrue(null));
-    assertEquals(true, beeUtils.isTrue(true));
-    assertEquals(false, beeUtils.isTrue(false));
+    assertEquals(false, BeeUtils.isTrue(null));
+    assertEquals(true, BeeUtils.isTrue(true));
+    assertEquals(false, BeeUtils.isTrue(false));
   }
 
   @Test
@@ -414,17 +414,17 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testLeft() {
-    assertEquals("This is a", beeUtils.left("This is a string", 9));
-    assertEquals("", beeUtils.left("This is a string", -9));
-    assertEquals(null, beeUtils.left(null, 9));
-    assertEquals("This is a", beeUtils.left("This is a", 55));
-    assertEquals("", beeUtils.left("This is a string", 0));
+    assertEquals("This is a", BeeUtils.left("This is a string", 9));
+    assertEquals("", BeeUtils.left("This is a string", -9));
+    assertEquals(null, BeeUtils.left(null, 9));
+    assertEquals("This is a", BeeUtils.left("This is a", 55));
+    assertEquals("", BeeUtils.left("This is a string", 0));
   }
 
   @Test
   public void testLength() {
-    assertEquals(0, beeUtils.length(null));
-    assertEquals(6, beeUtils.length("getout"));
+    assertEquals(0, BeeUtils.length(null));
+    assertEquals(6, BeeUtils.length("getout"));
   }
 
   @Test
@@ -436,66 +436,66 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testNvl() {
-    assertEquals("string", beeUtils.nvl(null, "string"));
-    assertEquals(null, beeUtils.nvl(null, null));
-    assertEquals("stringas", beeUtils.nvl("stringas", null));
+    assertEquals("string", BeeUtils.nvl(null, "string"));
+    assertEquals(null, BeeUtils.nvl(null, null));
+    assertEquals("stringas", BeeUtils.nvl("stringas", null));
   }
 
   @Test
   public void testPadLeft() {
-    assertEquals("     This is a string", beeUtils.padLeft("This is a string", 21, ' '));
-    assertEquals("     ", beeUtils.padLeft("", 5, ' '));
-    assertEquals(null, beeUtils.padLeft(null, 5, ' '));
-    assertEquals("", beeUtils.padLeft("This is a string", 0, ' '));
-    assertEquals("This is a string", beeUtils.padLeft("This is a string", 5, ' '));
+    assertEquals("     This is a string", BeeUtils.padLeft("This is a string", 21, ' '));
+    assertEquals("     ", BeeUtils.padLeft("", 5, ' '));
+    assertEquals(null, BeeUtils.padLeft(null, 5, ' '));
+    assertEquals("", BeeUtils.padLeft("This is a string", 0, ' '));
+    assertEquals("This is a string", BeeUtils.padLeft("This is a string", 5, ' '));
   }
 
   @Test
   public void testParenthesize() {
-    assertEquals("(This is a string)", beeUtils.parenthesize("This is a string"));
-    assertEquals("(5)", beeUtils.parenthesize(5));
-    assertEquals("", beeUtils.parenthesize((Object) null));
+    assertEquals("(This is a string)", BeeUtils.parenthesize("This is a string"));
+    assertEquals("(5)", BeeUtils.parenthesize(5));
+    assertEquals("", BeeUtils.parenthesize((Object) null));
   }
 
   @Test
   public void testProgress() {
-    assertEquals("5/10", beeUtils.progress(5, 10));
-    assertEquals("-5/10", beeUtils.progress(-5, 10));
+    assertEquals("5/10", BeeUtils.progress(5, 10));
+    assertEquals("-5/10", BeeUtils.progress(-5, 10));
   }
 
   @Test
   public void testProper() {
-    assertEquals("", beeUtils.proper(null, ';'));
-    assertEquals("", beeUtils.proper("  ", ';'));
-    assertEquals("S", beeUtils.proper(" s ", null));
-    assertEquals("Ssssss", beeUtils.proper(" ssssss ", null));
-    assertEquals("Ssssss Ssss Aaaa Bbbb", beeUtils.proper(" ssssss.ssss.aaaa.bbbb ", '.'));
+    assertEquals("", BeeUtils.proper(null, ';'));
+    assertEquals("", BeeUtils.proper("  ", ';'));
+    assertEquals("S", BeeUtils.proper(" s ", null));
+    assertEquals("Ssssss", BeeUtils.proper(" ssssss ", null));
+    assertEquals("Ssssss Ssss Aaaa Bbbb", BeeUtils.proper(" ssssss.ssss.aaaa.bbbb ", '.'));
   }
 
   @Test
   public void testRandomInt() {
     for (int i = 0; i < 20; i++) {
-      assertEquals(true, beeUtils.randomInt(5, 10) <= 5 + 5);
-      assertEquals(true, beeUtils.randomInt(5, 10) >= 5);
+      assertEquals(true, BeeUtils.randomInt(5, 10) <= 5 + 5);
+      assertEquals(true, BeeUtils.randomInt(5, 10) >= 5);
     }
   }
 
   @Test
   public void testRandomString() {
     for (int i = 0; i < 20; i++) {
-      assertEquals(true, beeUtils.randomString(5, 10, 'a', 'c').compareTo("cccccccccc") <= 1);
-      assertEquals(true, beeUtils.randomString(5, 10, 'a', 'c').compareTo("aaaaa") >= -1);
-      assertEquals(true, beeUtils.randomString(5, 5, 'a', 'c').length() == 5);
-      assertEquals("aaaaa", beeUtils.randomString(5, 5, 'a', 'a'));
+      assertEquals(true, BeeUtils.randomString(5, 10, 'a', 'c').compareTo("cccccccccc") <= 1);
+      assertEquals(true, BeeUtils.randomString(5, 10, 'a', 'c').compareTo("aaaaa") >= -1);
+      assertEquals(true, BeeUtils.randomString(5, 5, 'a', 'c').length() == 5);
+      assertEquals("aaaaa", BeeUtils.randomString(5, 5, 'a', 'a'));
     }
   }
 
   @Test
   public void testRandomStringIntChar() {
     for (int i = 0; i < 20; i++) {
-      assertEquals(true, beeUtils.randomString(5, "ab").compareTo("bbbbb") <= 1);
-      assertEquals(true, beeUtils.randomString(5, "ab").compareTo("aaaa") >= -1);
-      assertEquals(true, beeUtils.randomString(5, "a").compareTo("aaaaa") == 0);
+      assertEquals(true, BeeUtils.randomString(5, "ab").compareTo("bbbbb") <= 1);
+      assertEquals(true, BeeUtils.randomString(5, "ab").compareTo("aaaa") >= -1);
+      assertEquals(true, BeeUtils.randomString(5, "a").compareTo("aaaaa") == 0);
     }
   }
 
@@ -513,19 +513,19 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testReplace() {
-    assertEquals("text", beeUtils.replace("test", 2, 3, 'x'));
-    assertEquals("texst", beeUtils.replace("test", 2, 3, "xs"));
-    assertEquals("text", beeUtils.replace("test", "s", "x"));
-    assertEquals("test", beeUtils.replace("test", "a", "x"));
+    assertEquals("text", BeeUtils.replace("test", 2, 3, 'x'));
+    assertEquals("texst", BeeUtils.replace("test", 2, 3, "xs"));
+    assertEquals("text", BeeUtils.replace("test", "s", "x"));
+    assertEquals("test", BeeUtils.replace("test", "a", "x"));
 
-    assertEquals("text text", beeUtils.replace("test test", "s", "x", 2));
-    assertEquals("text test", beeUtils.replace("test test", "s", "x", 1));
+    assertEquals("text text", BeeUtils.replace("test test", "s", "x", 2));
+    assertEquals("text test", BeeUtils.replace("test test", "s", "x", 1));
 
-    assertEquals(null, beeUtils.replace(null, "a", "x", 2));
-    assertEquals("test", beeUtils.replace("test", null, "x", 2));
-    assertEquals("test", beeUtils.replace("test", "s", null, 2));
-    assertEquals("test", beeUtils.replace("test", "s", "x", 0));
-    assertEquals(null, beeUtils.replace(null, null, null, 0));
+    assertEquals(null, BeeUtils.replace(null, "a", "x", 2));
+    assertEquals("test", BeeUtils.replace("test", null, "x", 2));
+    assertEquals("test", BeeUtils.replace("test", "s", null, 2));
+    assertEquals("test", BeeUtils.replace("test", "s", "x", 0));
+    assertEquals(null, BeeUtils.replace(null, null, null, 0));
   }
 
   @Test
@@ -536,24 +536,24 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testRound() {
-    assertEquals(3.14, beeUtils.round(3.1412, 2));
-    assertEquals(0.0, beeUtils.round(Double.POSITIVE_INFINITY, 2));
-    assertEquals(3.1, beeUtils.round(3.1412, 1));
-    assertEquals(3.5, beeUtils.round(3.499, 1));
-    assertEquals(3.0, beeUtils.round(3, 5));
-    assertEquals(9.223372036854776E18, beeUtils.round(Long.MAX_VALUE, 5));
-    assertEquals(-9.223372036854776E18, beeUtils.round(Long.MIN_VALUE, 5));
-    assertEquals(0.0, beeUtils.round(Long.valueOf(0), 5));
-    assertEquals(0.0, beeUtils.round(0.0, 5));
+    assertEquals(3.14, BeeUtils.round(3.1412, 2));
+    assertEquals(0.0, BeeUtils.round(Double.POSITIVE_INFINITY, 2));
+    assertEquals(3.1, BeeUtils.round(3.1412, 1));
+    assertEquals(3.5, BeeUtils.round(3.499, 1));
+    assertEquals(3.0, BeeUtils.round(3, 5));
+    assertEquals(9.223372036854776E18, BeeUtils.round(Long.MAX_VALUE, 5));
+    assertEquals(-9.223372036854776E18, BeeUtils.round(Long.MIN_VALUE, 5));
+    assertEquals(0.0, BeeUtils.round(Long.valueOf(0), 5));
+    assertEquals(0.0, BeeUtils.round(0.0, 5));
   }
 
   @Test
   public void testSame() {
-    assertEquals(true, beeUtils.same("pick", " PicK "));
-    assertEquals(false, beeUtils.same(null, " PicK "));
-    assertEquals(false, beeUtils.same("pick", null));
-    assertEquals(true, beeUtils.same("", null));
-    assertEquals(true, beeUtils.same(null, null));
+    assertEquals(true, BeeUtils.same("pick", " PicK "));
+    assertEquals(false, BeeUtils.same(null, " PicK "));
+    assertEquals(false, BeeUtils.same("pick", null));
+    assertEquals(true, BeeUtils.same("", null));
+    assertEquals(true, BeeUtils.same(null, null));
   }
 
   @Test
@@ -565,36 +565,36 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testSplit() {
-    String a[] = {"string epic", "epic", "string", ";"};
+    String[] a = {"string epic", "epic", "string", ";"};
 
-    assertEquals(a[0], beeUtils.split("string epic", ';')[0]);
-    assertEquals(a[2], beeUtils.split("string;epic", ';')[0]);
-    assertEquals(a[1], beeUtils.split("string;epic", ';')[1]);
-    assertEquals(a[2], beeUtils.split("string", ';')[0]);
-    assertEquals(null, beeUtils.split(null, ';'));
-    assertEquals(BeeConst.EMPTY_STRING_ARRAY, beeUtils.split("", ';'));
+    assertEquals(a[0], BeeUtils.split("string epic", ';')[0]);
+    assertEquals(a[2], BeeUtils.split("string;epic", ';')[0]);
+    assertEquals(a[1], BeeUtils.split("string;epic", ';')[1]);
+    assertEquals(a[2], BeeUtils.split("string", ';')[0]);
+    assertEquals(null, BeeUtils.split(null, ';'));
+    assertEquals(BeeConst.EMPTY_STRING_ARRAY, BeeUtils.split("", ';'));
   }
 
   @Test
   public void testStartsSame() {
-    assertEquals(true, beeUtils.startsSame("string", "string and another one"));
-    assertEquals(true, beeUtils.startsSame("str", "string and"));
-    assertEquals(false, beeUtils.startsSame(null, "string and"));
-    assertEquals(false, beeUtils.startsSame("string", null));
-    assertEquals(false, beeUtils.startsSame("", ""));
+    assertEquals(true, BeeUtils.startsSame("string", "string and another one"));
+    assertEquals(true, BeeUtils.startsSame("str", "string and"));
+    assertEquals(false, BeeUtils.startsSame(null, "string and"));
+    assertEquals(false, BeeUtils.startsSame("string", null));
+    assertEquals(false, BeeUtils.startsSame("", ""));
   }
 
   @Test
   public void testToBoolean() {
-    assertEquals(true, beeUtils.toBoolean(1));
-    assertEquals(false, beeUtils.toBoolean(0));
-    assertEquals(false, beeUtils.toBoolean(-5));
-    assertEquals(false, beeUtils.toBoolean("false"));
-    assertEquals(false, beeUtils.toBoolean("no"));
-    assertEquals(true, beeUtils.toBoolean("yes"));
-    assertEquals(true, beeUtils.toBoolean("true"));
-    assertEquals(false, beeUtils.toBoolean("hjjj"));
-    assertEquals(false, beeUtils.toBoolean(null));
+    assertEquals(true, BeeUtils.toBoolean(1));
+    assertEquals(false, BeeUtils.toBoolean(0));
+    assertEquals(false, BeeUtils.toBoolean(-5));
+    assertEquals(false, BeeUtils.toBoolean("false"));
+    assertEquals(false, BeeUtils.toBoolean("no"));
+    assertEquals(true, BeeUtils.toBoolean("yes"));
+    assertEquals(true, BeeUtils.toBoolean("true"));
+    assertEquals(false, BeeUtils.toBoolean("hjjj"));
+    assertEquals(false, BeeUtils.toBoolean(null));
   }
 
   @Test
@@ -607,12 +607,12 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testToDouble() {
-    assertEquals(0.0, beeUtils.toDouble("0.0"));
-    assertEquals(-0.569, beeUtils.toDouble("     -0.569  \r"));
-    assertEquals(3.145, beeUtils.toDouble("3.145"));
-    assertEquals(0.0, beeUtils.toDouble("     -0.5/0 infinity69  \r"));
-    assertEquals(0.0, beeUtils.toDouble("     "));
-    assertEquals(0.0, beeUtils.toDouble(null));
+    assertEquals(0.0, BeeUtils.toDouble("0.0"));
+    assertEquals(-0.569, BeeUtils.toDouble("     -0.569  \r"));
+    assertEquals(3.145, BeeUtils.toDouble("3.145"));
+    assertEquals(0.0, BeeUtils.toDouble("     -0.5/0 infinity69  \r"));
+    assertEquals(0.0, BeeUtils.toDouble("     "));
+    assertEquals(0.0, BeeUtils.toDouble(null));
   }
 
   @Test
@@ -624,39 +624,39 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testToInt() {
-    assertEquals(1, beeUtils.toInt(true));
-    assertEquals(0, beeUtils.toInt(false));
+    assertEquals(1, BeeUtils.toInt(true));
+    assertEquals(0, BeeUtils.toInt(false));
   }
 
   @Test
   public final void testToIntOrNull() {
     assertEquals(null, BeeUtils.toIntOrNull(null));
-    assertEquals(Integer.valueOf(0), BeeUtils.toIntOrNull("asd"));
+    assertEquals(Integer.valueOf(0), BeeUtils.toIntOrNull("0"));
     assertEquals(Integer.valueOf(15), BeeUtils.toIntOrNull("15.0"));
     assertEquals(null, BeeUtils.toIntOrNull(""));
   }
 
   @Test
   public void testToLeadingZeroes() {
-    assertEquals("0010", beeUtils.toLeadingZeroes(10, 4));
-    assertEquals("10", beeUtils.toLeadingZeroes(10, 2));
-    assertEquals("-10", beeUtils.toLeadingZeroes(-10, 15));
+    assertEquals("0010", BeeUtils.toLeadingZeroes(10, 4));
+    assertEquals("10", BeeUtils.toLeadingZeroes(10, 2));
+    assertEquals("-10", BeeUtils.toLeadingZeroes(-10, 15));
   }
 
   @Test
   public void testToLong() {
-    assertEquals(0, beeUtils.toLong("0.5"));
-    assertEquals(0, beeUtils.toLong("0"));
-    assertEquals(-1, beeUtils.toLong("     -1  \r"));
-    assertEquals(3, beeUtils.toLong("3"));
-    assertEquals(0, beeUtils.toLong("     -0.5/0 infinity69  \r"));
-    assertEquals(0, beeUtils.toLong("     "));
+    assertEquals(0, BeeUtils.toLong("0.5"));
+    assertEquals(0, BeeUtils.toLong("0"));
+    assertEquals(-1, BeeUtils.toLong("     -1  \r"));
+    assertEquals(3, BeeUtils.toLong("3"));
+    assertEquals(0, BeeUtils.toLong("     -0.5/0 infinity69  \r"));
+    assertEquals(0, BeeUtils.toLong("     "));
   }
 
   @Test
   public final void testToLongOrNull() {
     assertEquals(null, BeeUtils.toLongOrNull(null));
-    assertEquals(Long.valueOf(0), BeeUtils.toLongOrNull("asd"));
+    assertEquals(Long.valueOf(0), BeeUtils.toLongOrNull("0"));
     assertEquals(Long.valueOf(15), BeeUtils.toLongOrNull("15.0"));
     assertEquals(null, BeeUtils.toLongOrNull(""));
   }
@@ -679,12 +679,12 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testToString() {
-    assertEquals("true", beeUtils.toString(true));
-    assertEquals("false", beeUtils.toString(false));
-    assertEquals("1.2", beeUtils.toString(1.2));
-    assertEquals("5", beeUtils.toString(5));
-    assertEquals("Infinity", beeUtils.toString(Double.POSITIVE_INFINITY));
-    assertEquals("9", beeUtils.toString((long) 9));
+    assertEquals("true", BeeUtils.toString(true));
+    assertEquals("false", BeeUtils.toString(false));
+    assertEquals("1.2", BeeUtils.toString(1.2));
+    assertEquals("5", BeeUtils.toString(5));
+    assertEquals("Infinity", BeeUtils.toString(Double.POSITIVE_INFINITY));
+    assertEquals("9", BeeUtils.toString((long) 9));
   }
 
   @Test
@@ -716,15 +716,15 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testVal() {
-    assertEquals(10, beeUtils.val("abcd 10 efg", true));
-    assertEquals(10, beeUtils.val("10", false));
-    assertEquals(10, beeUtils.val("10.5", false));
-    assertEquals(-10, beeUtils.val("   -10.5", true));
-    assertEquals(0, beeUtils.val("-inf", false));
-    assertEquals(10, beeUtils.val("     10   ", true));
-    assertEquals(0, beeUtils.val("abcd  rft 10 4 6 kl", false));
-    assertEquals(0, beeUtils.val("", false));
-    assertEquals(0, beeUtils.val("         ", true));
-    assertEquals(0, beeUtils.val(null, false));
+    assertEquals(10, BeeUtils.val("abcd 10 efg", true));
+    assertEquals(10, BeeUtils.val("10", false));
+    assertEquals(10, BeeUtils.val("10.5", false));
+    assertEquals(-10, BeeUtils.val("   -10.5", true));
+    assertEquals(0, BeeUtils.val("-inf", false));
+    assertEquals(10, BeeUtils.val("     10   ", true));
+    assertEquals(0, BeeUtils.val("abcd  rft 10 4 6 kl", false));
+    assertEquals(0, BeeUtils.val("", false));
+    assertEquals(0, BeeUtils.val("         ", true));
+    assertEquals(0, BeeUtils.val(null, false));
   }
 }

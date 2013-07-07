@@ -248,7 +248,7 @@ public enum FormWidget {
   DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE)),
   CHILD_TREE("ChildTree", EnumSet.of(Type.IS_CHILD, Type.FOCUSABLE));
 
-  private class HeaderAndContent {
+  private final class HeaderAndContent {
     private final String headerTag;
     private final String headerString;
     private final IdentifiableWidget headerWidget;
@@ -1302,7 +1302,7 @@ public enum FormWidget {
     return hasType(Type.IS_GRID);
   }
 
-  private void addHandler(IdentifiableWidget widget, String event, String handler) {
+  private static void addHandler(IdentifiableWidget widget, String event, String handler) {
     Assert.notNull(widget);
 
     if (BeeUtils.isEmpty(event)) {
@@ -1319,7 +1319,7 @@ public enum FormWidget {
     EventUtils.addDomHandler(widget.asWidget(), event, handler);
   }
 
-  private IdentifiableWidget createFace(Element element) {
+  private static IdentifiableWidget createFace(Element element) {
     Pair<String, Image> faceOptions = getFaceOptions(element);
     final IdentifiableWidget result;
 
@@ -1381,7 +1381,7 @@ public enum FormWidget {
     return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
 
-  private IdentifiableWidget createIfWidget(Element element, String viewName,
+  private static IdentifiableWidget createIfWidget(Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       WidgetInterceptor widgetCallback) {
 
@@ -1395,7 +1395,7 @@ public enum FormWidget {
     return fw.create(element, viewName, columns, widgetDescriptionCallback, widgetCallback);
   }
 
-  private IdentifiableWidget createIfWidgetOrHtmlOrText(Element element, String viewName,
+  private static IdentifiableWidget createIfWidgetOrHtmlOrText(Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetInterceptor widgetCallback) {
     if (element == null) {
       return null;
@@ -1421,7 +1421,7 @@ public enum FormWidget {
     return widget;
   }
 
-  private IdentifiableWidget createOneChild(Element parent, String viewName,
+  private static IdentifiableWidget createOneChild(Element parent, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       WidgetInterceptor widgetCallback) {
 
@@ -1435,7 +1435,7 @@ public enum FormWidget {
     return null;
   }
 
-  private Relation createRelation(String viewName, Map<String, String> attributes,
+  private static Relation createRelation(String viewName, Map<String, String> attributes,
       List<Element> children, Relation.RenderMode renderMode) {
     Relation relation = XmlUtils.getRelation(attributes, children);
 
@@ -1477,7 +1477,7 @@ public enum FormWidget {
     return relation;
   }
 
-  private boolean createTableCell(HtmlTable table, Element element, int row, int col,
+  private static boolean createTableCell(HtmlTable table, Element element, int row, int col,
       String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
       WidgetInterceptor widgetCallback) {
     boolean ok = false;
@@ -1495,7 +1495,7 @@ public enum FormWidget {
 
     } else {
       IdentifiableWidget widget = createIfWidget(element, viewName, columns, wdcb, widgetCallback);
-      ok = (widget != null);
+      ok = widget != null;
       if (ok) {
         table.setWidget(row, col, widget.asWidget());
       }
@@ -1503,7 +1503,7 @@ public enum FormWidget {
     return ok;
   }
 
-  private BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
+  private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
     if (columns == null && attributes == null) {
       return null;
     }
@@ -1515,7 +1515,7 @@ public enum FormWidget {
     return DataUtils.getColumn(source, columns);
   }
 
-  private Edges getEdges(Element element) {
+  private static Edges getEdges(Element element) {
     return new Edges(XmlUtils.getAttributeDouble(element, ATTR_TOP),
         XmlUtils.getAttributeUnit(element, ATTR_TOP_UNIT),
         XmlUtils.getAttributeDouble(element, ATTR_RIGHT),
@@ -1526,7 +1526,7 @@ public enum FormWidget {
         XmlUtils.getAttributeUnit(element, ATTR_LEFT_UNIT));
   }
 
-  private Pair<String, Image> getFaceOptions(Element element) {
+  private static Pair<String, Image> getFaceOptions(Element element) {
     String html = getTextOrHtml(element);
     Image image = null;
 
@@ -1546,7 +1546,7 @@ public enum FormWidget {
     return Pair.of(html, image);
   }
 
-  private String getTextOrHtml(Element element) {
+  private static String getTextOrHtml(Element element) {
     String text = element.getAttribute(UiConstants.ATTR_TEXT);
     if (BeeUtils.isEmpty(text)) {
       return element.getAttribute(UiConstants.ATTR_HTML);
@@ -1578,7 +1578,7 @@ public enum FormWidget {
     return getTypes().contains(type);
   }
 
-  private void initMedia(MediaBase widget, Map<String, String> attributes) {
+  private static void initMedia(MediaBase widget, Map<String, String> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       widget.setAutoplay(false);
       widget.setControls(true);
@@ -1869,7 +1869,7 @@ public enum FormWidget {
     }
   }
 
-  private void setAttributes(IdentifiableWidget widget, Map<String, String> attributes) {
+  private static void setAttributes(IdentifiableWidget widget, Map<String, String> attributes) {
     for (Map.Entry<String, String> attr : attributes.entrySet()) {
       String name = attr.getKey();
       String value = attr.getValue();
@@ -1972,7 +1972,7 @@ public enum FormWidget {
     }
   }
 
-  private void setFace(CustomButton button, String faceName, Element element) {
+  private static void setFace(CustomButton button, String faceName, Element element) {
     Pair<String, Image> options = getFaceOptions(element);
     if (options == null) {
       return;
@@ -2004,12 +2004,12 @@ public enum FormWidget {
 
     if (image != null) {
       face.setHTML(DomUtils.getOuterHtml(image.getElement()));
-    } else if (face != null) {
+    } else {
       face.setHTML(html);
     }
   }
 
-  private void setTableCellAttributes(HtmlTable table, Element element, int row, int col) {
+  private static void setTableCellAttributes(HtmlTable table, Element element, int row, int col) {
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
@@ -2057,7 +2057,7 @@ public enum FormWidget {
     }
   }
 
-  private void setTableRowAttributes(HtmlTable table, Element element, int row) {
+  private static void setTableRowAttributes(HtmlTable table, Element element, int row) {
     String z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
@@ -2072,7 +2072,7 @@ public enum FormWidget {
     }
   }
 
-  private void setVectorCellAttributes(CellVector parent, Element element,
+  private static void setVectorCellAttributes(CellVector parent, Element element,
       IdentifiableWidget cellContent) {
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {

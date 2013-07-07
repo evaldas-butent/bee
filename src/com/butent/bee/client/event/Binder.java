@@ -80,9 +80,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.shared.Assert;
 
-public class Binder {
+public final class Binder {
 
-  private static boolean initialized = false;
+  private static boolean initialized;
   
   private static JavaScriptObject dispatcher;
 
@@ -123,7 +123,8 @@ public class Binder {
     return widget.addDomHandler(handler, ContextMenuEvent.getType());
   }
 
-  public static HandlerRegistration addDoubleClickHandler(Widget widget, DoubleClickHandler handler) {
+  public static HandlerRegistration addDoubleClickHandler(Widget widget,
+      DoubleClickHandler handler) {
     Assert.notNull(widget, "addDoubleClickHandler: widget is null");
     Assert.notNull(handler, "addDoubleClickHandler: handler is null");
 
@@ -362,6 +363,7 @@ public class Binder {
     sinkInput(obj.getElement());
   }
   
+//CHECKSTYLE:OFF  
   private static native void initDispatcher() /*-{
     @com.butent.bee.client.event.Binder::dispatcher = $entry(function(evt) {
       var listener, curElem = this;
@@ -376,6 +378,7 @@ public class Binder {
       }
     });
   }-*/;
+//CHECKSTYLE:ON
   
   private static void maybeInitialize() {
     if (!initialized) {

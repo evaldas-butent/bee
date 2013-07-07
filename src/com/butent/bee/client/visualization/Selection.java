@@ -16,6 +16,7 @@ public class Selection extends JavaScriptObject {
     Handler.addHandler(viz, "select", handler);
   }
 
+//CHECKSTYLE:OFF
   public static native Selection createCellSelection(int row, int column) /*-{
     return {
       'row' : row,

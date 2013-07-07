@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Html extends CustomHasHtml implements HasCommand {
 
-  private Scheduler.ScheduledCommand command = null;
+  private Scheduler.ScheduledCommand command;
 
   public Html() {
     super(Document.get().createDivElement());

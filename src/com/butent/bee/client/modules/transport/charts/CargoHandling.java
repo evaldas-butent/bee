@@ -91,8 +91,8 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo) {
-    return ChartHelper.buildTitle(Localized.constants.intermediateLoading(), loadInfo,
-        Localized.constants.intermediateUnloading(), unloadInfo,
+    return ChartHelper.buildTitle(Localized.getConstants().intermediateLoading(), loadInfo,
+        Localized.getConstants().intermediateUnloading(), unloadInfo,
         notesLabel, notes);
   }
 }

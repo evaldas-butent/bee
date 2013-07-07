@@ -40,12 +40,12 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
   /**
    * Specifies implementing classes to have an image resource.
    */
-  public static interface Resources extends ClientBundle {
+  public interface Resources extends ClientBundle {
     @ImageOptions(flipRtl = true)
     ImageResource subMenuIcon();
   }
 
-  public static AbstractImagePrototype subMenuIcon = null;
+  private static AbstractImagePrototype subMenuIcon;
 
   private static final String STYLENAME_DEFAULT = "bee-MenuBar";
   private static final String STYLENAME_ROOT = "bee-MenuRoot";
@@ -62,7 +62,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   private MenuBar parentMenu;
   private MenuPopup popup;
-  private MenuItem selectedItem = null;
+  private MenuItem selectedItem;
   private MenuBar childMenu;
 
   private final int level;
@@ -97,7 +97,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     this.vertical = vert;
 
     this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;  
-    this.itemType = (it == null) ? MenuItem.defaultType : it;
+    this.itemType = (it == null) ? MenuItem.DEFAULT_TYPE : it;
 
     init(wheel);
     DomUtils.createId(this, getIdPrefix());
@@ -545,7 +545,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     Scheduler.get().scheduleDeferred(item.getCommand());
   }
 
-  private void eatEvent(Event event) {
+  private static void eatEvent(Event event) {
     event.stopPropagation();
     event.preventDefault();
   }
@@ -572,7 +572,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
   }
 
-  private boolean hasCommand(MenuItem item) {
+  private static boolean hasCommand(MenuItem item) {
     if (item == null) {
       return false;
     } else {
@@ -580,7 +580,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
   }
 
-  private boolean hasSubMenu(MenuItem item) {
+  private static boolean hasSubMenu(MenuItem item) {
     if (item == null) {
       return false;
     } else {

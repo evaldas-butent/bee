@@ -46,7 +46,7 @@ import java.util.Map;
 
 class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
-  static class Tile extends Simple implements HasSelectionHandlers<String>, HandlesHistory,
+  static final class Tile extends Simple implements HasSelectionHandlers<String>, HandlesHistory,
       HasInfo, HasCaption, CaptionChangeEvent.HasCaptionChangeHandlers,
       HasActiveWidgetChangeHandlers {
 
@@ -62,7 +62,8 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     @Override
-    public HandlerRegistration addActiveWidgetChangeHandler(ActiveWidgetChangeEvent.Handler handler) {
+    public HandlerRegistration addActiveWidgetChangeHandler(
+        ActiveWidgetChangeEvent.Handler handler) {
       return addHandler(handler, ActiveWidgetChangeEvent.getType());
     }
 
@@ -269,7 +270,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
   }
 
-  private static class Boundary extends Position {
+  private static final class Boundary extends Position {
     private final int width;
     private final int height;
 
@@ -390,13 +391,13 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   }
 
   private static class Position {
-    private int left = 0;
-    private int right = 0;
+    private int left;
+    private int right;
 
-    private int top = 0;
-    private int bottom = 0;
+    private int top;
+    private int bottom;
 
-    private Position() {
+    protected Position() {
       super();
     }
 
@@ -458,10 +459,10 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     return null;
   }
 
-  private String activeTileId = null;
+  private String activeTileId;
 
   private final Map<String, List<String>> tree = Maps.newHashMap();
-  private String rootId = null;
+  private String rootId;
 
   TilePanel(Workspace workspace) {
     super(5);
@@ -547,14 +548,14 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       Direction direction = data.getDirection();
       Orientation orientation = direction.getOrientation();
       int size = data.getSize();
-      
+
       if (tree.containsKey(id)) {
         List<String> children = tree.get(id);
 
         if (!direction.isCenter()) {
           size += getChildrenSize(children, orientation);
         }
-        
+
         int childCount = children.size();
         String substId = children.get(childCount - 1);
 
@@ -568,7 +569,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         tree.remove(id);
 
         Tile substitute = getTileById(substId);
-        
+
         if (id.equals(getRootId())) {
           setRootId(substId);
           convertToCenter(substitute);
@@ -577,15 +578,15 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
           String parentId = getParentTileId(id);
           List<String> siblings = tree.get(parentId);
           siblings.set(siblings.indexOf(id), substId);
-          
+
           if (tree.containsKey(substId)) {
             size -= getChildrenSize(tree.get(substId), orientation);
           }
-          
+
           LayoutData substData = getLayoutData(substitute);
           substData.setDirection(direction);
           substData.setSize(size);
-          
+
           Splitter splitter = getAssociatedSplitter(substitute);
           if (splitter != null) {
             int index = getWidgetIndex(splitter);
@@ -593,13 +594,13 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
             insertSplitter(direction, getSplitterSize(), index);
           }
         }
-        
+
       } else {
         String parentId = getParentTileId(id);
-        
+
         Tile parentTile = getTileById(parentId);
         LayoutData parentData = getLayoutData(parentTile);
-        
+
         if (orientation != null && orientation.equals(parentData.getDirection().getOrientation())) {
           parentData.setSize(parentData.getSize() + size + getSplitterSize());
         }
@@ -696,7 +697,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
       targetData.setSize(newTargetSize);
       layoutChildren();
-      
+
       int minSize = MIN_SIZE - TILE_MARGIN * 2;
       boolean ok = true;
 
@@ -768,7 +769,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   String getActiveTileId() {
     return activeTileId;
   }
-  
+
   Tile getEventTile(Node target) {
     if (target == null) {
       return null;
@@ -850,7 +851,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     for (String tileId : branch) {
       LayoutData data = getLayoutData(getTileById(tileId));
       if (orientation.equals(data.getDirection().getOrientation())) {
-        result += (data.getSize() + getSplitterSize());
+        result += data.getSize() + getSplitterSize();
         if (tree.containsKey(tileId)) {
           result += getChildrenSize(tree.get(tileId), orientation);
         }

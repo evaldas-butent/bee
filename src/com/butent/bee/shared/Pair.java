@@ -13,7 +13,7 @@ import com.butent.bee.shared.utils.Codec;
  * @param <A> type of first object to pair
  * @param <B> type of second object to pair
  */
-public class Pair<A, B> implements BeeSerializable {
+public final class Pair<A, B> implements BeeSerializable {
 
   private enum Serial {
     A, B

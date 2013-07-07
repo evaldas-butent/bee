@@ -37,7 +37,7 @@ public class InputLong extends InputNumber {
 
   @Override
   protected CharMatcher getDefaultCharMatcher() {
-    return InputNumber.intCharMatcher;
+    return InputNumber.INT_CHAR_MATCHER;
   }
 
   @Override

@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
@@ -77,7 +78,7 @@ public class XmlSqlDesigner {
    * Handles xml elements containing information about data fields.
    */
 
-  private static class DataField {
+  private static final class DataField {
     @XmlAttribute
     private String name;
     @XmlAttribute(name = "null")
@@ -111,7 +112,7 @@ public class XmlSqlDesigner {
    * Handles xml elements containing information about data keys.
    */
 
-  private static class DataKey {
+  private static final class DataKey {
     @XmlAttribute
     private KeyType type;
     @XmlElement(name = "part")
@@ -201,8 +202,8 @@ public class XmlSqlDesigner {
         table.keys = Lists.newArrayList(new DataKey(KeyType.PRIMARY, xmlTable.idName));
 
         for (int i = 0; i < 2; i++) {
-          boolean extMode = (i > 0);
-          Collection<XmlField> fields = (extMode ? xmlTable.extFields : xmlTable.fields);
+          boolean extMode = i > 0;
+          Collection<XmlField> fields = extMode ? xmlTable.extFields : xmlTable.fields;
 
           if (!BeeUtils.isEmpty(fields)) {
             for (XmlField xmlField : fields) {

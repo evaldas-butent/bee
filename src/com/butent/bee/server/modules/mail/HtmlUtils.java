@@ -4,7 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.examples.HtmlToPlainText;
 import org.jsoup.safety.Whitelist;
 
-public class HtmlUtils {
+public final class HtmlUtils {
 
   public static String cleanHtml(String dirtyHtml) {
     if (dirtyHtml != null) {

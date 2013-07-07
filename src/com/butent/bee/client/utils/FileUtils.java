@@ -33,7 +33,7 @@ import elemental.html.Window;
 import elemental.js.dom.JsClipboard;
 import elemental.xml.XMLHttpRequest;
 
-public class FileUtils {
+public final class FileUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 

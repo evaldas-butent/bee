@@ -38,9 +38,9 @@ public class TabbedPages extends Flow implements
     CLICK, INSERT, REMOVE, INIT, SCRIPT
   }
 
-  private static class Deck extends Complex {
+  private static final class Deck extends Complex {
 
-    private String visibleId = null;
+    private String visibleId;
     private final Set<String> pendingResize = Sets.newHashSet();
 
     private Deck() {
@@ -133,7 +133,7 @@ public class TabbedPages extends Flow implements
     }
   }
 
-  private class Tab extends Simple implements HasClickHandlers {
+  private final class Tab extends Simple implements HasClickHandlers {
 
     private Tab(Widget child) {
       setWidget(child);
@@ -166,7 +166,7 @@ public class TabbedPages extends Flow implements
 
   private int selectedIndex = BeeConst.UNDEF;
 
-  private ElementSize tabBarSize = null;
+  private ElementSize tabBarSize;
 
   public TabbedPages() {
     this(DEFAULT_STYLE_PREFIX);
@@ -360,7 +360,7 @@ public class TabbedPages extends Flow implements
     Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
   }
 
-  private Widget createTabWidget(String text, boolean asHtml) {
+  private static Widget createTabWidget(String text, boolean asHtml) {
     return asHtml ? new Html(text) : new Label(text);
   }
 

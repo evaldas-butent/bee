@@ -10,7 +10,7 @@ import java.util.List;
 
 public class CellValidationBus implements HasCellValidationHandlers {
 
-  private List<CellValidateEvent.Handler> handlers = null;
+  private List<CellValidateEvent.Handler> handlers;
 
   public CellValidationBus() {
     super();

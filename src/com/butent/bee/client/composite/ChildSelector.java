@@ -19,7 +19,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
-public class ChildSelector extends MultiSelector implements HasFosterParent,
+public final class ChildSelector extends MultiSelector implements HasFosterParent,
     ParentRowEvent.Handler, HasRowChildren {
 
   private static final String ATTR_CHILD_TABLE = "childTable";
@@ -86,10 +86,10 @@ public class ChildSelector extends MultiSelector implements HasFosterParent,
   private final String targetRelColumn;
   private final String sourceRelColumn;
 
-  private Long targetRowId = null;
+  private Long targetRowId;
 
-  private String parentId = null;
-  private HandlerRegistration parentRowReg = null;
+  private String parentId;
+  private HandlerRegistration parentRowReg;
 
   private ChildSelector(Relation relation, String childTable, String targetRelColumn,
       String sourceRelColumn) {

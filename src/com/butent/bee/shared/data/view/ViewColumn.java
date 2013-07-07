@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ViewColumn implements BeeSerializable, HasInfo {
   
-  public static class Level implements Predicate<ViewColumn> {
+  public static final class Level implements Predicate<ViewColumn> {
     
     public static Level of(int level) {
       return new Level(level, null);
@@ -51,7 +51,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     NAME, PARENT, TABLE, FIELD, RELATION, LEVEL, HIDDEN, READ_ONLY, EDITABLE
   }
 
-  public static Predicate<ViewColumn> VISIBLE = new Predicate<ViewColumn>() {
+  public static final Predicate<ViewColumn> VISIBLE = new Predicate<ViewColumn>() {
     @Override
     public boolean apply(ViewColumn input) {
       return (input == null) ? false : !input.isHidden();

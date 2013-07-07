@@ -60,13 +60,14 @@ public class CachedProvider extends Provider {
 
   public CachedProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters, Filter userFilter) {
+      Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters,
+      Filter userFilter) {
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
     Assert.notNull(table);
     this.table = table;
-    this.complete = (userFilter == null);
+    this.complete = userFilter == null;
   }
 
   public void addRow(BeeRow row) {

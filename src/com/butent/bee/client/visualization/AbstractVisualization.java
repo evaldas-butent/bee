@@ -33,6 +33,7 @@ public abstract class AbstractVisualization<E extends AbstractDrawOptions> exten
     return visualization;
   }
 
+//CHECKSTYLE:OFF  
   private static native void fireSelectionEvent(JavaScriptObject jso) /*-{
     $wnd.google.visualization.events.trigger(jso, 'select', null);
   }-*/;
@@ -45,8 +46,9 @@ public abstract class AbstractVisualization<E extends AbstractDrawOptions> exten
       this.gwt_vis.@com.butent.bee.client.visualization.Selectable::setSelections(Lcom/google/gwt/core/client/JsArray;)(selection);
     }
   }-*/;
+//CHECKSTYLE:ON
 
-  protected JavaScriptObject jsVisualization;
+  private JavaScriptObject jsVisualization;
 
   public abstract void draw(AbstractDataTable data, E options);
 

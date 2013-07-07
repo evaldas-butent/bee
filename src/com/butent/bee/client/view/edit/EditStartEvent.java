@@ -62,7 +62,7 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   
   private final boolean readOnly;
 
-  private boolean consumed = false;
+  private boolean consumed;
   
   public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode,
       boolean readOnly) {

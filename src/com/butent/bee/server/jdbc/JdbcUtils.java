@@ -34,7 +34,7 @@ import javax.sql.DataSource;
  * <code>BeeConnection, BeeStatement, BeeResultSet</code>).
  */
 
-public class JdbcUtils {
+public final class JdbcUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(JdbcUtils.class);
 
@@ -97,8 +97,6 @@ public class JdbcUtils {
         con.close();
       } catch (SQLException ex) {
         logger.warning(ex, "Could not close JDBC Connection");
-      } catch (Exception ex) {
-        logger.warning(ex, "Unexpected exception on closing JDBC Connection");
       }
     }
   }
@@ -109,8 +107,6 @@ public class JdbcUtils {
         rs.close();
       } catch (SQLException ex) {
         logger.warning(ex, "Could not close JDBC ResultSet");
-      } catch (Exception ex) {
-        logger.warning(ex, "Unexpected exception on closing JDBC ResultSet");
       }
     }
   }
@@ -121,17 +117,15 @@ public class JdbcUtils {
         stmt.close();
       } catch (SQLException ex) {
         logger.warning(ex, "Could not close JDBC Statement");
-      } catch (Exception ex) {
-        logger.warning(ex, "Unexpected exception on closing JDBC Statement");
       }
     }
   }
 
   public static String concurrencyAsString(int z) {
     switch (z) {
-      case (ResultSet.CONCUR_READ_ONLY):
+      case ResultSet.CONCUR_READ_ONLY:
         return CONCUR_READ_ONLY;
-      case (ResultSet.CONCUR_UPDATABLE):
+      case ResultSet.CONCUR_UPDATABLE:
         return CONCUR_UPDATABLE;
       default:
         return BeeConst.UNKNOWN;
@@ -154,11 +148,11 @@ public class JdbcUtils {
 
   public static String fetchDirectionAsString(int z) {
     switch (z) {
-      case (ResultSet.FETCH_FORWARD):
+      case ResultSet.FETCH_FORWARD:
         return FETCH_FORWARD;
-      case (ResultSet.FETCH_REVERSE):
+      case ResultSet.FETCH_REVERSE:
         return FETCH_REVERSE;
-      case (ResultSet.FETCH_UNKNOWN):
+      case ResultSet.FETCH_UNKNOWN:
         return FETCH_UNKNOWN;
       default:
         return BeeConst.UNKNOWN;
@@ -518,13 +512,13 @@ public class JdbcUtils {
 
   public static String holdabilityAsString(int z) {
     switch (z) {
-      case (ResultSet.CLOSE_CURSORS_AT_COMMIT):
+      case ResultSet.CLOSE_CURSORS_AT_COMMIT:
         return CLOSE_CURSORS_AT_COMMIT;
-      case (ResultSet.HOLD_CURSORS_OVER_COMMIT):
+      case ResultSet.HOLD_CURSORS_OVER_COMMIT:
         return HOLD_CURSORS_OVER_COMMIT;
-      case (BeeConst.INT_FALSE):
+      case BeeConst.INT_FALSE:
         return JdbcConst.FEATURE_NOT_SUPPORTED;
-      case (BeeConst.INT_ERROR):
+      case BeeConst.INT_ERROR:
         return BeeConst.ERROR;
       default:
         return BeeConst.UNKNOWN;
@@ -578,11 +572,11 @@ public class JdbcUtils {
 
   public static String rsTypeAsString(int z) {
     switch (z) {
-      case (ResultSet.TYPE_FORWARD_ONLY):
+      case ResultSet.TYPE_FORWARD_ONLY:
         return TYPE_FORWARD_ONLY;
-      case (ResultSet.TYPE_SCROLL_INSENSITIVE):
+      case ResultSet.TYPE_SCROLL_INSENSITIVE:
         return TYPE_SCROLL_INSENSITIVE;
-      case (ResultSet.TYPE_SCROLL_SENSITIVE):
+      case ResultSet.TYPE_SCROLL_SENSITIVE:
         return TYPE_SCROLL_SENSITIVE;
       default:
         return BeeConst.UNKNOWN;
@@ -642,37 +636,44 @@ public class JdbcUtils {
 
     switch (sqlType) {
       case Types.BOOLEAN:
-      case Types.BIT: {
+      case Types.BIT:
         valueType = ValueType.BOOLEAN;
         break;
-      }
+
       case Types.CHAR:
       case Types.VARCHAR:
         valueType = ValueType.TEXT;
         break;
+      
       case Types.INTEGER:
       case Types.SMALLINT:
       case Types.TINYINT:
         valueType = ValueType.INTEGER;
         break;
+      
       case Types.BIGINT:
         valueType = ValueType.LONG;
         break;
+      
       case Types.DECIMAL:
       case Types.NUMERIC:
         valueType = ValueType.DECIMAL;
         break;
+      
       case Types.REAL:
       case Types.DOUBLE:
       case Types.FLOAT:
         valueType = ValueType.NUMBER;
         break;
+      
       case Types.DATE:
         valueType = ValueType.DATE;
         break;
+      
       case Types.TIME:
         valueType = ValueType.TIME_OF_DAY;
         break;
+      
       case Types.TIMESTAMP:
         valueType = ValueType.DATE_TIME;
         break;
@@ -712,15 +713,15 @@ public class JdbcUtils {
 
   public static String transactionIsolationAsString(int z) {
     switch (z) {
-      case (Connection.TRANSACTION_NONE):
+      case Connection.TRANSACTION_NONE:
         return TRANSACTION_NONE;
-      case (Connection.TRANSACTION_READ_COMMITTED):
+      case Connection.TRANSACTION_READ_COMMITTED:
         return TRANSACTION_READ_COMMITTED;
-      case (Connection.TRANSACTION_READ_UNCOMMITTED):
+      case Connection.TRANSACTION_READ_UNCOMMITTED:
         return TRANSACTION_READ_UNCOMMITTED;
-      case (Connection.TRANSACTION_REPEATABLE_READ):
+      case Connection.TRANSACTION_REPEATABLE_READ:
         return TRANSACTION_REPEATABLE_READ;
-      case (Connection.TRANSACTION_SERIALIZABLE):
+      case Connection.TRANSACTION_SERIALIZABLE:
         return TRANSACTION_SERIALIZABLE;
       default:
         return BeeConst.UNKNOWN;

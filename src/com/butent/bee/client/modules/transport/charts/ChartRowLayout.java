@@ -19,7 +19,7 @@ class ChartRowLayout {
     boolean willItBlend(HasDateRange x, HasDateRange y);
   }
   
-  static class GroupLayout {
+  static final class GroupLayout {
     private final Long groupId;
     
     private final int firstRow;
@@ -51,7 +51,7 @@ class ChartRowLayout {
     }
   }
 
-  static class RowData {
+  static final class RowData {
     private final Long groupId;
     private final List<HasDateRange> rowItems = Lists.newArrayList();
 

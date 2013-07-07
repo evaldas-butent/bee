@@ -14,7 +14,7 @@ import com.butent.bee.shared.time.YearMonth;
 
 class MonthSelector extends Component {
   
-  private class Navigation implements Scheduler.ScheduledCommand {
+  private final class Navigation implements Scheduler.ScheduledCommand {
     private final int months;
     
     private Navigation(int months) {
@@ -77,7 +77,7 @@ class MonthSelector extends Component {
   }
 
   @Override
-  protected void setup() {
+  protected void setUp() {
   }
   
   private boolean isEnabled(YearMonth ym) {

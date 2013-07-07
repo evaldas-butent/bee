@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class WidgetFactory {
+public final class WidgetFactory {
   
   private static final Map<String, WidgetSupplier> suppliers = Maps.newHashMap();
   

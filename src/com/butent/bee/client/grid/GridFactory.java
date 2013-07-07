@@ -74,9 +74,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-public class GridFactory {
+public final class GridFactory {
 
-  public static class GridOptions {
+  public static final class GridOptions {
 
     private final String caption;
     private final String filter;
@@ -290,7 +290,8 @@ public class GridFactory {
     }
   }
 
-  public static Filter getImmutableFilter(GridDescription gridDescription, GridOptions gridOptions) {
+  public static Filter getImmutableFilter(GridDescription gridDescription,
+      GridOptions gridOptions) {
     Assert.notNull(gridDescription);
     if (gridOptions == null || !gridOptions.hasFilter()) {
       return gridDescription.getFilter();

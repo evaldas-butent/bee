@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class NewMailMessage extends AbstractFormInterceptor
+public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<NewFileInfo> {
 
   private class DialogCallback extends InputCallback {
@@ -161,7 +161,7 @@ public class NewMailMessage extends AbstractFormInterceptor
     return newMessage;
   }
 
-  private Long account = null;
+  private Long account;
   private final List<AccountInfo> accounts;
   private final Long draftId;
 
@@ -175,7 +175,7 @@ public class NewMailMessage extends AbstractFormInterceptor
   private Editor contentWidget;
   private final Map<String, Long> attachments = Maps.newLinkedHashMap();
 
-  private ScheduledCommand scheduled = null;
+  private ScheduledCommand scheduled;
 
   private NewMailMessage(Long defaultAccount, List<AccountInfo> availableAccounts,
       Set<Long> to, Set<Long> cc, Set<Long> bcc, String subject, String content,

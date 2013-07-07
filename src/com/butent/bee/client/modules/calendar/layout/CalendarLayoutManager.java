@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class CalendarLayoutManager {
+public final class CalendarLayoutManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarLayoutManager.class);
   

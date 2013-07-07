@@ -101,6 +101,6 @@ public class BeeLoggerWrapper implements BeeLogger {
     if (logger == null) {
       logger = LogUtils.createLogger(loggerName);
     }
-    return (logger != null);
+    return logger != null;
   }
 }

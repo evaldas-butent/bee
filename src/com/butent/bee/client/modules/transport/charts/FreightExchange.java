@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class FreightExchange extends ChartBase {
+final class FreightExchange extends ChartBase {
 
   static final String SUPPLIER_KEY = "freight_exchange";
   private static final String DATA_SERVICE = SVC_GET_FX_DATA;
@@ -105,7 +105,7 @@ class FreightExchange extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.constants.freightExchange();
+    return Localized.getConstants().freightExchange();
   }
 
   @Override

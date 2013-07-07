@@ -46,7 +46,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Creates user interface components for editing values depending on a type of data needed to edit.
  */
 
-public class EditorFactory {
+public final class EditorFactory {
 
   /**
    * Executes edit stop event.
@@ -56,7 +56,7 @@ public class EditorFactory {
     private final HasHandlers editor;
     private final State state;
 
-    private StopCommand(HasHandlers editor, State state) {
+    protected StopCommand(HasHandlers editor, State state) {
       super();
       this.editor = editor;
       this.state = state;

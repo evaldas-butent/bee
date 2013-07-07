@@ -284,10 +284,10 @@ public class UiServiceBean {
     designer.tables = Lists.newArrayList();
 
     for (int i = 0; i < 2; i++) {
-      boolean extMode = (i > 0);
+      boolean extMode = i > 0;
       DataTypeGroup typeGroup = new DataTypeGroup();
       typeGroup.label = BeeUtils.joinWords("SQL", extMode ? "extended" : "", "types");
-      typeGroup.color = (extMode ? "rgb(0,255,0)" : "rgb(255,255,255)");
+      typeGroup.color = extMode ? "rgb(0,255,0)" : "rgb(255,255,255)";
       typeGroup.types = Lists.newArrayList();
 
       for (SqlDataType type : SqlDataType.values()) {

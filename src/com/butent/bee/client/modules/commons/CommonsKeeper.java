@@ -30,7 +30,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CommonsKeeper {
+public final class CommonsKeeper {
 
   private static class UserFormInterceptor extends AbstractFormInterceptor {
     @Override

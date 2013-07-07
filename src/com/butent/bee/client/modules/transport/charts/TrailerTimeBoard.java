@@ -10,7 +10,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 
-class TrailerTimeBoard extends VehicleTimeBoard {
+final class TrailerTimeBoard extends VehicleTimeBoard {
 
   static final String SUPPLIER_KEY = "trailer_time_board";
   private static final String DATA_SERVICE = SVC_GET_TRAILER_TB_DATA;
@@ -32,7 +32,7 @@ class TrailerTimeBoard extends VehicleTimeBoard {
   
   @Override
   public String getCaption() {
-    return Localized.constants.trailerTimeBoard();
+    return Localized.getConstants().trailerTimeBoard();
   }
   
   @Override

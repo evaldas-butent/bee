@@ -64,7 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CalendarKeeper {
+public final class CalendarKeeper {
 
   private static class RowActionHandler implements RowActionEvent.Handler {
     @Override
@@ -73,8 +73,8 @@ public class CalendarKeeper {
         event.consume();
         Long calId = event.getRowId();
         if (DataUtils.isId(calId)) {
-          String calName = event.hasRow() ?
-              Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
+          String calName = event.hasRow() 
+              ? Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
           openCalendar(calId, calName, true);
         }
 
@@ -126,9 +126,9 @@ public class CalendarKeeper {
   private static final Map<String, Long> activePanels = Maps.newHashMap();
   private static final Map<Long, String> activeControllers = Maps.newHashMap();
 
-  private static FormView settingsForm = null;
+  private static FormView settingsForm;
 
-  private static boolean dataLoaded = false;
+  private static boolean dataLoaded;
 
   public static void ensureData(final Command command) {
     if (isDataLoaded()) {
@@ -707,7 +707,7 @@ public class CalendarKeeper {
 
   private static void openCalendar(final long id, final String name, final boolean newPanel) {
 
-    class OpenCommand extends Command {
+    final class OpenCommand extends Command {
       private final long calendarId;
       private final String calendarName;
       private final Callback<IdentifiableWidget> callback;

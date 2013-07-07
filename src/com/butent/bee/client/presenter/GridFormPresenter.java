@@ -213,7 +213,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
   }
 
-  private Complex createContainer(HeaderView headerView, FormView formView, boolean edit) {
+  private static Complex createContainer(HeaderView headerView, FormView formView, boolean edit) {
     Complex formContainer = new Complex();
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
     formContainer.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
@@ -224,7 +224,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return formContainer;
   }
 
-  private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
+  private static HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
     HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));

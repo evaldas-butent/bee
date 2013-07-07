@@ -18,7 +18,7 @@ import java.util.List;
  * filters.
  */
 
-public class Selectors {
+public final class Selectors {
 
   private static final String UNIVERSAL_SELECTOR = "*";
   private static final String SELECTOR_SEPARATOR = ", ";

@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.server.data;
 
 import com.google.common.base.Splitter;
@@ -209,7 +210,7 @@ public class RemoteCall {
     return buildResponse(data);
   }
 
-  private <T> Object buildRequest(Class<T> clazz, String params) {
+  private static <T> Object buildRequest(Class<T> clazz, String params) {
     Object ret = null;
 
     try {
@@ -231,7 +232,7 @@ public class RemoteCall {
     return ret;
   }
 
-  private <T> String buildResponse(T data) {
+  private static <T> String buildResponse(T data) {
     String ret;
 
     try {

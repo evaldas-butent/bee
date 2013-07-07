@@ -64,21 +64,21 @@ public class BeeResultSet {
     return lst;
   }
 
-  private int concurrency = 0;
-  private String cursorName = null;
-  private int fetchDirection = 0;
+  private int concurrency;
+  private String cursorName;
+  private int fetchDirection;
   private int fetchSize = BeeConst.UNDEF;
-  private int holdability = 0;
+  private int holdability;
 
-  private int type = 0;
-  private int columnCount = 0;
+  private int type;
+  private int columnCount;
 
-  private BeeColumn[] columns = null;
+  private BeeColumn[] columns;
   private int maxFieldSize = BeeConst.UNDEF;
   private int maxRows = BeeConst.UNDEF;
   private int queryTimeout = BeeConst.UNDEF;
 
-  private boolean poolable = false;
+  private boolean poolable;
   private final Set<State> states = EnumSet.noneOf(State.class);
 
   private List<Exception> errors = new ArrayList<Exception>();
@@ -451,7 +451,7 @@ public class BeeResultSet {
     return hasState(State.INITIALIZED) && !hasState(State.ERROR);
   }
 
-  private String valueAsString(int v) {
+  private static String valueAsString(int v) {
     if (BeeConst.isUndef(v)) {
       return BeeUtils.joinWords(v, BeeConst.UNKNOWN);
     } else {

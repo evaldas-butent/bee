@@ -211,7 +211,7 @@ public class TimeOfDayValue extends Value {
   
   @Override
   public boolean isNull() {
-    return (this == NULL_VALUE);
+    return this == NULL_VALUE;
   }
 
   @Override

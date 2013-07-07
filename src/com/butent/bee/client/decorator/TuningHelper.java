@@ -19,7 +19,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class TuningHelper {
+public final class TuningHelper {
   
   private static final BeeLogger logger = LogUtils.getLogger(TuningHelper.class);
 

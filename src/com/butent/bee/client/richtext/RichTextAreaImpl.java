@@ -7,32 +7,33 @@ import com.google.gwt.user.client.Timer;
 import com.butent.bee.client.richtext.RichTextArea.FontSize;
 import com.butent.bee.client.richtext.RichTextArea.Justification;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import elemental.events.Event;
 import elemental.events.EventListener;
-
 import elemental.js.dom.JsElement;
-
 import elemental.js.html.JsIFrameElement;
-
 import elemental.html.IFrameElement;
-
 import elemental.client.Browser;
 
 class RichTextAreaImpl implements RichTextArea.Formatter {
 
+  private static final BeeLogger logger = LogUtils.getLogger(RichTextAreaImpl.class);
+      
   private static final String DESIGN_MODE_OFF = "off";
   private static final String DESIGN_MODE_ON = "on";
 
   private final IFrameElement element;
 
-  private String textOrHtml = null;
+  private String textOrHtml;
   private boolean enabled = true;
 
-  private boolean initializing = false;
-  private boolean isPendingFocus = false;
-  private boolean isReady = false;
+  private boolean initializing;
+  private boolean isPendingFocus;
+  private boolean isReady;
 
   RichTextAreaImpl() {
     super();
@@ -306,6 +307,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
       try {
         execCommandAssumingFocus(cmd, param);
       } catch (JavaScriptException ex) {
+        logger.warning(NameUtils.getName(this), "error executing", cmd, param);
       }
     }
   }
@@ -322,6 +324,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
     }
   }
 
+//CHECKSTYLE:OFF
   private native void hookEvents() /*-{
     var elem = this.@com.butent.bee.client.richtext.RichTextAreaImpl::element;
     var wnd = elem.contentWindow;
@@ -365,7 +368,8 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
     wnd.addEventListener('focus', elem.__gwt_focusHandler, true);
     wnd.addEventListener('blur', elem.__gwt_blurHandler, true);
   }-*/;
-
+//CHECKSTYLE:ON
+  
   private void onElementInitialized() {
     if (!initializing) {
       return;
@@ -419,8 +423,8 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
     return element.getContentDocument().queryCommandValue(cmd);
   }
 
-  private void setEnabledImpl(boolean enabled) {
-    String mode = enabled ? DESIGN_MODE_ON : DESIGN_MODE_OFF;
+  private void setEnabledImpl(boolean enbl) {
+    String mode = enbl ? DESIGN_MODE_ON : DESIGN_MODE_OFF;
     element.getContentDocument().setDesignMode(mode);
   }
 

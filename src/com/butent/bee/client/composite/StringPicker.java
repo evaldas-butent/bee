@@ -64,7 +64,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     SafeHtml divSelected(String id, String classes, int tabIndex, SafeHtml cellContent);
   }
 
-  private class BlurHandlerRegistration implements HandlerRegistration {
+  private final class BlurHandlerRegistration implements HandlerRegistration {
     private BlurHandlerRegistration() {
     }
 
@@ -77,7 +77,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   /**
    * Manages a single cell in a string picker component.
    */
-  private static class DefaultCell extends AbstractCell<String> {
+  private static final class DefaultCell extends AbstractCell<String> {
     private DefaultCell() {
     }
 
@@ -89,7 +89,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
-  public static String displaySeparator = ";";
+  public static final String DISPLAY_SEPARATOR = ";";
 
   private static final RenderTemplate RENDER_TEMPLATE = GWT.create(RenderTemplate.class);
 
@@ -98,20 +98,20 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   private static final String STYLE_SELECTED = "bee-StringPicker-selected";
   
   private final List<String> data = Lists.newArrayList();
-  private String value = null;
+  private String value;
 
   private boolean nullable = true;
-  private boolean editing = false;
+  private boolean editing;
   private boolean enabled = true;
 
   private final Map<HandlerRegistration, BlurHandler> blurHandlers = Maps.newHashMap();
-  private HandlerRegistration blurRegistration = null;
+  private HandlerRegistration blurRegistration;
 
-  private boolean selectionPending = false;
+  private boolean selectionPending;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public StringPicker() {
     super(new DefaultCell());
@@ -434,7 +434,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
     for (int i = start; i < end; i++) {
       String item = values.get(i - start);
-      String displayValue = BeeUtils.notEmpty(BeeUtils.getSuffix(item, displaySeparator), item);
+      String displayValue = BeeUtils.notEmpty(BeeUtils.getSuffix(item, DISPLAY_SEPARATOR), item);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
       Context context = new Context(i, 0, getValueKey(item));
@@ -473,8 +473,8 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return blurRegistration;
   }
 
-  private String getItemData(String item) {
-    return BeeUtils.notEmpty(BeeUtils.getPrefix(item, displaySeparator), item);
+  private static String getItemData(String item) {
+    return BeeUtils.notEmpty(BeeUtils.getPrefix(item, DISPLAY_SEPARATOR), item);
   }
 
   private int getItemIndex(String item) {

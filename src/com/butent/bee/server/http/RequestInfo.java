@@ -36,7 +36,7 @@ import javax.servlet.http.HttpSession;
 
 public class RequestInfo implements HasExtendedInfo, HasOptions {
 
-  private static int COUNTER = 0;
+  private static int counter;
 
   private final HttpServletRequest request;
 
@@ -51,19 +51,19 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   private String contentTypeHeader;
   private String content;
   
-  private String id = null;
+  private String id;
 
-  private String service = null;
-  private String locale = null;
+  private String service;
+  private String locale;
 
-  private String separator = null;
-  private String options = null;
+  private String separator;
+  private String options;
 
-  private ContentType contentType = null;
+  private ContentType contentType;
 
   public RequestInfo(HttpServletRequest req) {
     super();
-    COUNTER++;
+    counter++;
 
     this.request = req;
 
@@ -378,11 +378,11 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   @Override
   public String toString() {
     return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
-        BeeUtils.joinOptions("counter", BeeUtils.toString(COUNTER), "method", method, "id", id,
+        BeeUtils.joinOptions("counter", BeeUtils.toString(counter), "method", method, "id", id,
             "service", service, "sep", separator, "opt", options), headers, params);
   }
 
-  private Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
+  private static Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
     if (ac == null) {
       return null;
     }
@@ -396,7 +396,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getAttributeInfo(HttpServletRequest req) {
+  private static Collection<ExtendedProperty> getAttributeInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -418,7 +418,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
+  private static Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -448,7 +448,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getHeaderInfo(HttpServletRequest req) {
+  private static Collection<ExtendedProperty> getHeaderInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -460,7 +460,8 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
     Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Header";
-    String nm, v;
+    String nm;
+    String v;
 
     for (Map.Entry<String, String> el : lst.entrySet()) {
       nm = el.getKey();
@@ -478,7 +479,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getLocaleInfo(HttpServletRequest req) {
+  private static Collection<ExtendedProperty> getLocaleInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -526,7 +527,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
+  private static Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -538,7 +539,8 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
     Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Parameter";
-    String nm, v;
+    String nm;
+    String v;
 
     for (Map.Entry<String, String> el : lst.entrySet()) {
       nm = el.getKey();
@@ -552,14 +554,15 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getServletContextInfo(ServletContext sc) {
+  private static Collection<ExtendedProperty> getServletContextInfo(ServletContext sc) {
     if (sc == null) {
       return null;
     }
 
     Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Servlet Context";
-    String nm, v;
+    String nm;
+    String v;
     int c;
     String[] arr;
 
@@ -632,7 +635,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return info;
   }
 
-  private Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
+  private static Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
     if (hs == null) {
       return null;
     }
@@ -678,7 +681,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     }
   }
 
-  private String[] splitValue(String s) {
+  private static String[] splitValue(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     } else if (s.contains(", ")) {

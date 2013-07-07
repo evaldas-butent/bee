@@ -16,7 +16,7 @@ import java.util.Map;
  * Enables to show response's xml info and to apply unicode test to response messages.
  */
 
-public class ResponseHandler {
+public final class ResponseHandler {
 
   private static final BeeLogger logger = LogUtils.getLogger(ResponseHandler.class);
   
@@ -36,7 +36,7 @@ public class ResponseHandler {
     int reqLen = reqTxt.length();
     int respLen = respTxt.length();
 
-    boolean ok = (reqLen == respLen && reqTxt.equals(respTxt));
+    boolean ok = reqLen == respLen && reqTxt.equals(respTxt);
 
     if (!ok) {
       logger.log(reqLen == respLen ? LogLevel.INFO : LogLevel.WARNING,
@@ -76,7 +76,9 @@ public class ResponseHandler {
     }
 
     String[] arr;
-    String k, v, z;
+    String k;
+    String v;
+    String z;
 
     for (ResponseMessage message : messages) {
       arr = BeeUtils.split(message.getMessage(), BeeConst.CHAR_SPACE);
@@ -102,5 +104,8 @@ public class ResponseHandler {
         logger.warning(k, "req", z, "resp", v);
       }
     }
+  }
+
+  private ResponseHandler() {
   }
 }

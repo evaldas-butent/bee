@@ -226,8 +226,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
         final Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName("bee-mail-FolderAction");
-        edit.setTitle((BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
-            "pavadinimą")));
+        edit.setTitle(BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
+            "pavadinimą"));
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -273,7 +273,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     }
   }
 
-  private void setDndTarget(final Widget label, final SystemFolder sysFolder, final Long folderId) {
+  private static void setDndTarget(final Widget label, final SystemFolder sysFolder,
+      final Long folderId) {
     Binder.addDragEnterHandler(label, new DragEnterHandler() {
       @Override
       public void onDragEnter(DragEnterEvent event) {

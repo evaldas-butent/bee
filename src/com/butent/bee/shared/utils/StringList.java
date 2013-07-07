@@ -279,13 +279,13 @@ public class StringList implements List<String> {
     return list.set(index, trim(element));
   }
 
-  public StringList setTrimLeft(boolean trimLeft) {
-    this.trimLeft = trimLeft;
+  public StringList setTrimLeft(boolean tl) {
+    this.trimLeft = tl;
     return this;
   }
 
-  public StringList setTrimRight(boolean trimRight) {
-    this.trimRight = trimRight;
+  public StringList setTrimRight(boolean tr) {
+    this.trimRight = tr;
     return this;
   }
 

@@ -43,10 +43,10 @@ public class Invocation {
   }
 
   public void loaderInfo(ResponseBuffer buff) {
-    if (JvmUtils.CVF_FAILURE == null) {
+    if (JvmUtils.getCvfFailure() == null) {
       buff.addProperties(JvmUtils.getLoadedClasses());
     } else {
-      buff.addError(JvmUtils.CVF_FAILURE);
+      buff.addError(JvmUtils.getCvfFailure());
     }
   }
 
@@ -62,7 +62,7 @@ public class Invocation {
         }
       }
       if (lc == null) {
-        lc = Localizations.defaultLocale;
+        lc = Localizations.getDefaultLocale();
       }
 
       List<Property> lst = PropertyUtils.createProperties(

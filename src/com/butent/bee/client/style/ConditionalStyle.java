@@ -17,9 +17,9 @@ import java.util.List;
  * Enables using conditional CSS styles for elements of user interface.
  */
 
-public class ConditionalStyle {
+public final class ConditionalStyle {
 
-  private class Entry {
+  private final class Entry {
     private final StyleDescriptor styleDescriptor;
     private final Evaluator evaluator;
 

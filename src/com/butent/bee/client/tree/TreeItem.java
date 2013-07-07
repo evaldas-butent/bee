@@ -27,15 +27,15 @@ import java.util.List;
 
 public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
 
-  private static class TreeItemAnimation extends Animation {
+  private static final class TreeItemAnimation extends Animation {
 
     private static final int DURATION = 200;
     private static final int DURATION_PER_ITEM = 75;
 
-    private Element element = null;
+    private Element element;
     private boolean opening = true;
 
-    private int height = 0;
+    private int height;
 
     private TreeItemAnimation() {
       super();
@@ -137,23 +137,23 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     CONTAINER_ELEM.appendChild(content);
   }
 
-  private List<TreeItem> children = null;
+  private List<TreeItem> children;
 
   private final Element contentElem;
-  private Element childSpanElem = null;
-  private Element imageHolder = null;
+  private Element childSpanElem;
+  private Element imageHolder;
 
   private final boolean isRoot;
 
-  private boolean open = false;
-  private boolean selected = false;
-  private boolean draggable = false;
+  private boolean open;
+  private boolean selected;
+  private boolean draggable;
 
-  private TreeItem parentItem = null;
-  private Tree tree = null;
+  private TreeItem parentItem;
+  private Tree tree;
 
-  private Widget widget = null;
-  private Object userObject = null;
+  private Widget widget;
+  private Object userObject;
 
   public TreeItem() {
     this(false);
@@ -385,30 +385,30 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     setOpen(open, true);
   }
 
-  public void setOpen(boolean open, boolean fireEvents) {
-    if (open && getChildCount() == 0) {
+  public void setOpen(boolean op, boolean fireEvents) {
+    if (op && getChildCount() == 0) {
       return;
     }
 
-    if (this.open != open) {
-      this.open = open;
+    if (this.open != op) {
+      this.open = op;
       updateState(true, true);
 
       if (fireEvents && getTree() != null) {
-        getTree().fireStateChanged(this, open);
+        getTree().fireStateChanged(this, op);
       }
     }
   }
 
-  public void setOpenRecursive(boolean open, boolean fireEvents) {
+  public void setOpenRecursive(boolean op, boolean fireEvents) {
     int n = getChildCount();
     if (n <= 0) {
       return;
     }
 
-    setOpen(open, fireEvents);
+    setOpen(op, fireEvents);
     for (int i = 0; i < n; i++) {
-      getChildren().get(i).setOpenRecursive(open, fireEvents);
+      getChildren().get(i).setOpenRecursive(op, fireEvents);
     }
   }
 
@@ -601,7 +601,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     return getImageHolder() != null;
   }
 
-  private void maybeRemoveItemFromParent(TreeItem item) {
+  private static void maybeRemoveItemFromParent(TreeItem item) {
     if ((item.getParentItem() != null) || (item.getTree() != null)) {
       item.remove();
     }

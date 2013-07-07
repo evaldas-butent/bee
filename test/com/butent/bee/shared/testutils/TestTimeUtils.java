@@ -18,6 +18,7 @@ import java.util.Date;
 /**
  * Tests {@link com.butent.bee.shared.time.TimeUtils}.
  */
+@SuppressWarnings("static-method")
 public class TestTimeUtils {
 
   public static final long MAX_RANDOM_REQUEST = 1000L;

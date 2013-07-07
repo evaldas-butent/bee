@@ -37,8 +37,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, ProvidesResize,
     RequiresResize, HasClickHandlers, HasOptions {
 
-  private State targetState = null;
-  private String options = null;
+  private State targetState;
+  private String options;
 
   public Flow() {
     super();

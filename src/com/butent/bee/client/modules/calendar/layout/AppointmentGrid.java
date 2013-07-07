@@ -45,7 +45,7 @@ public class AppointmentGrid extends Absolute {
     
     int top = 0;
     for (int i = 0; i < TimeUtils.HOURS_PER_DAY; i++) {
-      boolean isWork = (i >= settings.getWorkingHourStart() && i < settings.getWorkingHourEnd());
+      boolean isWork = i >= settings.getWorkingHourStart() && i < settings.getWorkingHourEnd();
 
       CustomDiv major = new CustomDiv();
       major.addStyleName(CalendarStyleManager.MAJOR_TIME_INTERVAL);

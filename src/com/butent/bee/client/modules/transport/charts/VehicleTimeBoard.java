@@ -105,7 +105,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   private int numberWidth = BeeConst.UNDEF;
   private int infoWidth = BeeConst.UNDEF;
 
-  private boolean separateCargo = false;
+  private boolean separateCargo;
 
   private final Set<String> numberPanels = Sets.newHashSet();
   private final Set<String> infoPanels = Sets.newHashSet();

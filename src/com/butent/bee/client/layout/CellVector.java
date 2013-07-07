@@ -13,17 +13,17 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.shared.ui.CssUnit;
 
-public abstract class CellVector extends ComplexPanel implements IdentifiableWidget, HasIndexedWidgets,
-    HasAlignment, InsertPanel, IsHtmlTable {
+public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
+    HasIndexedWidgets, HasAlignment, InsertPanel, IsHtmlTable {
 
   private final Element table;
   private final Element body;
 
-  private HorizontalAlignmentConstant horAlign = null;
-  private VerticalAlignmentConstant vertAlign = null;
-  
-  private String defaultCellClasses = null;
-  private String defaultCellStyles = null;
+  private HorizontalAlignmentConstant horAlign;
+  private VerticalAlignmentConstant vertAlign;
+
+  private String defaultCellClasses;
+  private String defaultCellStyles;
 
   public CellVector() {
     super();
@@ -35,7 +35,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     setElement(table);
 
     DomUtils.createId(table, getIdPrefix());
-    
+
     table.setClassName("bee-CellVector");
   }
 
@@ -45,7 +45,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
       td.addClassName(styleName);
     }
   }
-  
+
   public Element getCell(int index) {
     return getWidgetTd(getWidget(index));
   }
@@ -126,7 +126,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
   public void setDefaultCellStyles(String styles) {
     this.defaultCellStyles = styles;
   }
-  
+
   @Override
   public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
     this.horAlign = align;
@@ -146,7 +146,7 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     Element td = DOM.createTD();
 
     StyleUtils.updateAppearance(td, getDefaultCellClasses(), getDefaultCellStyles());
-    
+
     if (getHorizontalAlignment() != null) {
       setCellHorizontalAlignment(td, getHorizontalAlignment());
     }

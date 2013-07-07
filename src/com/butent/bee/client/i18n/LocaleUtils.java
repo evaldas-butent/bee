@@ -24,7 +24,7 @@ import java.util.List;
  * parameters.
  */
 
-public class LocaleUtils {
+public final class LocaleUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(LocaleUtils.class);
 

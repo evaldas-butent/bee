@@ -26,7 +26,7 @@ import java.util.Set;
  * Contains essential server configuration parameters like directory structure or files blacklist.
  */
 
-public class Config {
+public final class Config {
   private static BeeLogger logger = LogUtils.getLogger(Config.class);
 
   public static final File WAR_DIR;
@@ -47,8 +47,8 @@ public class Config {
   private static final Splitter VALUE_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).trimResults().omitEmptyStrings();
 
-  private static List<Filter> fileBlacklist = null;
-  private static List<String> textExtensions = null;
+  private static List<Filter> fileBlacklist;
+  private static List<String> textExtensions;
 
   static {
     Class<?> z = Config.class;

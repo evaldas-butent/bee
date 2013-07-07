@@ -34,7 +34,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   }
   
   private int days;
-  private int[] fields = null;
+  private int[] fields;
 
   /**
    * Creates new {@code JustDate} object instance with current date.

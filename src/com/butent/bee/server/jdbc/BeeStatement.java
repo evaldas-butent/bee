@@ -595,7 +595,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getResultSetConcurrency() == getConcurrency());
+      ok = stmt.getResultSetConcurrency() == getConcurrency();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -610,7 +610,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getFetchDirection() == getFetchDirection());
+      ok = stmt.getFetchDirection() == getFetchDirection();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -626,7 +626,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getFetchSize() == getFetchSize());
+      ok = stmt.getFetchSize() == getFetchSize();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -641,7 +641,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getResultSetHoldability() == getHoldability());
+      ok = stmt.getResultSetHoldability() == getHoldability();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -657,7 +657,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getMaxFieldSize() == getMaxFieldSize());
+      ok = stmt.getMaxFieldSize() == getMaxFieldSize();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -672,7 +672,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getMaxRows() == getMaxRows());
+      ok = stmt.getMaxRows() == getMaxRows();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -688,7 +688,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.isPoolable() == isPoolable());
+      ok = stmt.isPoolable() == isPoolable();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -703,7 +703,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getQueryTimeout() == getQueryTimeout());
+      ok = stmt.getQueryTimeout() == getQueryTimeout();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -719,7 +719,7 @@ public class BeeStatement {
     boolean ok;
 
     try {
-      ok = (stmt.getResultSetType() == getResultSetType());
+      ok = stmt.getResultSetType() == getResultSetType();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;

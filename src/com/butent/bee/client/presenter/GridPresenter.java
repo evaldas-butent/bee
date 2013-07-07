@@ -77,7 +77,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
     HasGridView, HasViewName, FilterConsumer {
 
-  private class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback extends ConfirmationCallback {
     private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 
@@ -237,7 +237,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.onConfirm();
 
     } else {
-      options.add(Localized.constants.cancel());
+      options.add(Localized.getConstants().cancel());
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
           options, 2, new ChoiceCallback() {
@@ -556,10 +556,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     BeeKeeper.getScreen().closeWidget(getMainView());
   }
 
-  private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter immutableFilter,
-      Map<String, Filter> parentFilters, Filter userFilter, Order order, BeeRowSet rowSet,
-      Provider.Type providerType, CachingPolicy cachingPolicy) {
+  private static Provider createProvider(GridContainerView view, String viewName,
+      List<BeeColumn> columns, String idColumnName, String versionColumnName,
+      Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter, Order order,
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
 
     if (providerType == null) {
       return null;
@@ -597,7 +597,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return provider;
   }
 
-  private GridContainerView createView(GridDescription gridDescription, GridView gridView,
+  private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 

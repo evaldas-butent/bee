@@ -111,7 +111,7 @@ public class FileStorageBean {
     tmp.deleteOnExit();
     OutputStream out = new DigestOutputStream(new FileOutputStream(tmp), md);
 
-    byte buffer[] = new byte[BUFFER_SIZE];
+    byte[] buffer = new byte[BUFFER_SIZE];
     int bytesRead;
 
     try {
@@ -178,7 +178,7 @@ public class FileStorageBean {
     
     File file = new File(dir, BeeUtils.trim(fileName));
 
-    byte buffer[] = new byte[BUFFER_SIZE];
+    byte[] buffer = new byte[BUFFER_SIZE];
     int bytesRead;
 
     OutputStream out = null;
@@ -204,7 +204,7 @@ public class FileStorageBean {
     return ok;
   }
   
-  private File getPhotoDir() {
+  private static File getPhotoDir() {
     return new File(Config.IMAGES_DIR, IoConstants.PHOTO_DIR);
   }
 }

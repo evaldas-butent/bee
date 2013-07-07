@@ -99,17 +99,17 @@ public class Edges {
     return edges;
   }
 
-  private CssUnit bottomUnit = null;
-  private Double bottomValue = null;
+  private CssUnit bottomUnit;
+  private Double bottomValue;
 
-  private CssUnit leftUnit = null;
-  private Double leftValue = null;
+  private CssUnit leftUnit;
+  private Double leftValue;
 
-  private CssUnit rightUnit = null;
-  private Double rightValue = null;
+  private CssUnit rightUnit;
+  private Double rightValue;
 
-  private CssUnit topUnit = null;
-  private Double topValue = null;
+  private CssUnit topUnit;
+  private Double topValue;
 
   public Edges() {
   }
@@ -506,7 +506,7 @@ public class Edges {
     this.topValue = topValue;
   }
 
-  private CssUnit normalizeUnit(CssUnit unit) {
+  private static CssUnit normalizeUnit(CssUnit unit) {
     return (unit == null) ? DEFAULT_UNIT : unit;
   }
   

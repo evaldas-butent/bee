@@ -97,13 +97,13 @@ public class Query extends JavaScriptObject {
   protected Query() {
   }
 
+//CHECKSTYLE:OFF
   public final native void send(Callback callback) /*-{
-    this
-        .send(function(c) {
-          @com.butent.bee.client.visualization.Query::onResponseCallback(Lcom/butent/bee/client/visualization/Query$Callback;Lcom/butent/bee/client/visualization/QueryResponse;)(callback, c);
-        });
+    this.send(function(c) {
+      @com.butent.bee.client.visualization.Query::onResponseCallback(Lcom/butent/bee/client/visualization/Query$Callback;Lcom/butent/bee/client/visualization/QueryResponse;)(callback, c);
+    });
   }-*/;
-
+  
   public final native void setQuery(String query) /*-{
     this.setQuery(query);
   }-*/;
@@ -115,4 +115,5 @@ public class Query extends JavaScriptObject {
   public final native void setTimeout(int seconds) /*-{
     this.setTimeout(seconds);
   }-*/;
+//CHECKSTYLE:ON
 }

@@ -5,7 +5,7 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.shared.time.DateTime;
 
-public class TimeBlockClickEvent extends GwtEvent<TimeBlockClickEvent.Handler> {
+public final class TimeBlockClickEvent extends GwtEvent<TimeBlockClickEvent.Handler> {
 
   public interface Handler extends EventHandler {
     void onTimeBlockClick(TimeBlockClickEvent event);

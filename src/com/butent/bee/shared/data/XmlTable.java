@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.shared.data;
 
 import com.google.common.base.Objects;
@@ -28,7 +29,7 @@ public class XmlTable {
       XmlInteger.class, XmlLong.class, XmlDouble.class, XmlNumeric.class,
       XmlChar.class, XmlString.class, XmlText.class,
       XmlDate.class, XmlDateTime.class,
-      XmlRelation.class})
+      XmlRelation.class })
   public abstract static class XmlField {
     @XmlAttribute
     public String name;
@@ -53,7 +54,7 @@ public class XmlTable {
     @XmlAttribute
     public boolean audit;
 
-    private boolean safe = false;
+    private boolean safe;
 
     @Override
     public boolean equals(Object obj) {
@@ -189,7 +190,7 @@ public class XmlTable {
     }
   }
 
-  @XmlSeeAlso({XmlCheck.class, XmlUnique.class, XmlReference.class})
+  @XmlSeeAlso({XmlCheck.class, XmlUnique.class, XmlReference.class })
   public abstract static class XmlConstraint {
   }
 

@@ -12,6 +12,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.utils.Wildcards}.
  */
+@SuppressWarnings("static-method")
 public class TestWildcards {
 
   @Before

@@ -25,7 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
-public class TradeUtils {
+public final class TradeUtils {
 
   private static final String STYLE_ITEMS = "itemsInfo-";
   private static final String STYLE_ITEMS_TABLE = STYLE_ITEMS + "table";
@@ -56,13 +56,13 @@ public class TradeUtils {
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
         Map<String, String> cols = Maps.newLinkedHashMap();
-        cols.put(COL_NAME, Localized.constants.item());
-        cols.put(COL_ARTICLE, Localized.constants.article());
-        cols.put(COL_QUANTITY, Localized.constants.quantity());
-        cols.put(COL_UNIT, Localized.constants.unit());
-        cols.put(COL_PRICE, Localized.constants.price());
-        cols.put(COL_AMOUNT, Localized.constants.amount());
-        cols.put(COL_VAT, Localized.constants.vat());
+        cols.put(COL_NAME, Localized.getConstants().item());
+        cols.put(COL_ARTICLE, Localized.getConstants().article());
+        cols.put(COL_QUANTITY, Localized.getConstants().quantity());
+        cols.put(COL_UNIT, Localized.getConstants().unit());
+        cols.put(COL_PRICE, Localized.getConstants().price());
+        cols.put(COL_AMOUNT, Localized.getConstants().amount());
+        cols.put(COL_VAT, Localized.getConstants().vat());
 
         HtmlTable table = new HtmlTable();
         table.setStyleName(STYLE_ITEMS_TABLE);
@@ -101,7 +101,7 @@ public class TradeUtils {
             currency = " " + rs.getValue(i, ExchangeUtils.FLD_CURRENCY);
           }
           if (!vatExists) {
-            vatExists = (rs.getDouble(i, COL_VAT) != null);
+            vatExists = rs.getDouble(i, COL_VAT) != null;
           }
           if (BeeUtils.unbox(rs.getBoolean(i, COL_VAT_INCL))) {
             if (BeeUtils.unbox(rs.getBoolean(i, COL_VAT_PERC))) {
@@ -158,7 +158,7 @@ public class TradeUtils {
 
           if (sumIdx > 0) {
             cell = new CustomDiv(STYLE_ITEMS + "totalAmount-label");
-            cell.getElement().setInnerText(Localized.constants.amount());
+            cell.getElement().setInnerText(Localized.getConstants().amount());
             table.setWidget(c, sumIdx - 1, cell);
           }
           if (vatExists) {
@@ -168,7 +168,7 @@ public class TradeUtils {
 
             if (sumIdx > 0) {
               cell = new CustomDiv(STYLE_ITEMS + "totalVat-label");
-              cell.getElement().setInnerText(Localized.constants.vatSum());
+              cell.getElement().setInnerText(Localized.getConstants().vatSum());
               table.setWidget(c, sumIdx - 1, cell);
             }
             cell = new CustomDiv(STYLE_ITEMS + "total");
@@ -177,7 +177,7 @@ public class TradeUtils {
 
             if (sumIdx > 0) {
               cell = new CustomDiv(STYLE_ITEMS + "total-label");
-              cell.getElement().setInnerText(Localized.constants.total());
+              cell.getElement().setInnerText(Localized.getConstants().total());
               table.setWidget(c, sumIdx - 1, cell);
             }
           }
@@ -216,5 +216,8 @@ public class TradeUtils {
             minorName)));
       }
     });
+  }
+
+  private TradeUtils() {
   }
 }

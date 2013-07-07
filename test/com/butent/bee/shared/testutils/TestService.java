@@ -12,6 +12,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.Service}.
  */
+@SuppressWarnings("static-method")
 public class TestService {
 
   @Before

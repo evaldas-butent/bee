@@ -27,7 +27,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class FilterHelper {
+final class FilterHelper {
 
   interface DialogCallback {
 
@@ -221,7 +221,7 @@ class FilterHelper {
     }
 
     if (dataCounter <= 0) {
-      BeeKeeper.getScreen().notifyWarning(Localized.constants.tooLittleData());
+      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().tooLittleData());
       return;
     }
 
@@ -252,7 +252,7 @@ class FilterHelper {
     int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
 
-    final DialogBox dialog = DialogBox.create(Localized.constants.filter(), STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
 
     final Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
@@ -285,7 +285,7 @@ class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
-    Button filter = new Button(Localized.constants.doFilter(), new ClickHandler() {
+    Button filter = new Button(Localized.getConstants().doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         dialog.close();
@@ -295,7 +295,7 @@ class FilterHelper {
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    Button clear = new Button(Localized.constants.clear(), new ClickHandler() {
+    Button clear = new Button(Localized.getConstants().clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         for (Widget widget : dataContainer) {
@@ -361,5 +361,8 @@ class FilterHelper {
         }
       }
     }
+  }
+
+  private FilterHelper() {
   }
 }

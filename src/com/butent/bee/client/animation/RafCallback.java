@@ -6,11 +6,13 @@ import elemental.dom.RequestAnimationFrameCallback;
 
 public abstract class RafCallback implements RequestAnimationFrameCallback {
 
+//CHECKSTYLE:OFF
   private static native int request(RequestAnimationFrameCallback callback) /*-{
     return $wnd.requestAnimationFrame($entry(callback.@elemental.dom.RequestAnimationFrameCallback::onRequestAnimationFrameCallback(D)).bind(callback));
   }-*/;
+//CHECKSTYLE:ON
 
-  protected double duration;
+  private double duration;
 
   private double startTime;
 

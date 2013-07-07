@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ValidationHelper {
+public final class ValidationHelper {
 
   public static final CellValidateEvent.Handler DO_NOT_VALIDATE = new CellValidateEvent.Handler() {
     @Override
@@ -56,7 +56,7 @@ public class ValidationHelper {
       notificationListener.notifySevere(ArrayUtils.toArray(messages));
 
     } else {
-      String arr[] = new String[messages.size() + 1];
+      String[] arr = new String[messages.size() + 1];
       arr[0] = caption;
       
       for (int i = 0; i < messages.size(); i++) {
@@ -143,7 +143,7 @@ public class ValidationHelper {
     }
 
     if (messages.isEmpty() && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      messages.add(Localized.constants.valueRequired());
+      messages.add(Localized.getConstants().valueRequired());
     }
 
     if (messages.isEmpty()) {

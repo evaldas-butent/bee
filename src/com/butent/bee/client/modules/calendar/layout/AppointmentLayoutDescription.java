@@ -9,8 +9,8 @@ public class AppointmentLayoutDescription {
 
   private final Appointment appointment;
 
-  private int fromWeekDay = 0;
-  private int toWeekDay = 0;
+  private int fromWeekDay;
+  private int toWeekDay;
 
   public AppointmentLayoutDescription(int weekDay, Appointment appointment) {
     this(weekDay, weekDay, appointment);

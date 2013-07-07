@@ -10,8 +10,8 @@ import com.butent.bee.shared.HasService;
 
 public abstract class Command implements Scheduler.ScheduledCommand, HasService {
 
-  private String service = null;
-  private String parameters = null;
+  private String service;
+  private String parameters;
 
   public Command() {
     super();

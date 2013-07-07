@@ -66,7 +66,7 @@ import javax.ejb.TransactionAttributeType;
 @LocalBean
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class DataEditorBean {
-  private static class FieldInfo {
+  private static final class FieldInfo {
     private final String tableAlias;
     private final String fieldAlias;
     private final String fieldName;
@@ -85,7 +85,7 @@ public class DataEditorBean {
     }
   }
 
-  private static class TableInfo {
+  private static final class TableInfo {
     private final String tableAlias;
     private final String tableName;
     private final String relation;

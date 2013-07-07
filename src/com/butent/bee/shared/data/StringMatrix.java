@@ -16,9 +16,9 @@ import java.util.List;
  * string matrix principle.
  */
 
-public class StringMatrix<ColType extends IsColumn> extends AbstractTable<StringRow, ColType> {
+public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C> {
 
-  private StringRowArray rows = null;
+  private StringRowArray rows;
 
   public StringMatrix(List<String[]> data, String... columnLabels) {
     super(columnLabels);
@@ -41,7 +41,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     this.rows = new StringRowArray(new StringRow[0]);
   }
 
-  protected StringMatrix(List<ColType> columns) {
+  protected StringMatrix(List<C> columns) {
     super(columns);
   }
 
@@ -60,21 +60,21 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   }
 
   @Override
-  public StringMatrix<ColType> copy() {
-    StringMatrix<ColType> result = new StringMatrix<ColType>(rows);
+  public StringMatrix<C> copy() {
+    StringMatrix<C> result = new StringMatrix<C>(rows);
     copyTableDescription(result);
     return result;
   }
 
   @Override
-  public IsTable<StringRow, ColType> create() {
-    return new StringMatrix<ColType>();
+  public IsTable<StringRow, C> create() {
+    return new StringMatrix<C>();
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public ColType createColumn(ValueType type, String label, String id) {
-    return (ColType) new BeeColumn(type, label, id);
+  public C createColumn(ValueType type, String label, String id) {
+    return (C) new BeeColumn(type, label, id);
   }
 
   @Override

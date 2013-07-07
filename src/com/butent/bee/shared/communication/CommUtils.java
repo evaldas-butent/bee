@@ -17,7 +17,7 @@ import java.util.List;
  * determining type of message type or encoding.
  */
 
-public class CommUtils {
+public final class CommUtils {
 
   public static final char DEFAULT_INFORMATION_SEPARATOR = '\u001d';
 
@@ -32,10 +32,10 @@ public class CommUtils {
 
   public static final String PATH_SEGMENT_SEPARATOR = "/";
   
-  public static ContentType defaultRequestContentType = ContentType.XML;
-  public static ContentType defaultResponseContentType = ContentType.TEXT;
+  public static final ContentType DEFAULT_REQUEST_CONTENT_TYPE = ContentType.XML;
+  public static final ContentType DEFAULT_RESPONSE_CONTENT_TYPE = ContentType.TEXT;
 
-  public static ContentType formResponseContentType = ContentType.HTML;
+  public static final ContentType FORM_RESPONSE_CONTENT_TYPE = ContentType.HTML;
 
   public static String buildContentType(String type) {
     return buildContentType(type, getCharacterEncoding(getContentType(type)));
@@ -90,7 +90,7 @@ public class CommUtils {
     if (BeeUtils.isEmpty(result)) {
       return null;
     }
-    return ResponseObject.restore(getContent(formResponseContentType, result));
+    return ResponseObject.restore(getContent(FORM_RESPONSE_CONTENT_TYPE, result));
   }
 
   public static String getMediaType(ContentType ctp) {
@@ -138,11 +138,11 @@ public class CommUtils {
   }
 
   public static ContentType normalizeRequest(ContentType ctp) {
-    return (ctp == null) ? defaultRequestContentType : ctp;
+    return (ctp == null) ? DEFAULT_REQUEST_CONTENT_TYPE : ctp;
   }
 
   public static ContentType normalizeResponse(ContentType ctp) {
-    return (ctp == null) ? defaultResponseContentType : ctp;
+    return (ctp == null) ? DEFAULT_RESPONSE_CONTENT_TYPE : ctp;
   }
 
   public static String prepareContent(ContentType type, String data) {

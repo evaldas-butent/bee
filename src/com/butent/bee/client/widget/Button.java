@@ -18,7 +18,7 @@ import com.butent.bee.client.utils.HasCommand;
 
 public class Button extends ButtonBase implements IdentifiableWidget, HasCommand {
 
-  private Scheduler.ScheduledCommand command = null;
+  private Scheduler.ScheduledCommand command;
 
   public Button() {
     super(Document.get().createPushButtonElement());

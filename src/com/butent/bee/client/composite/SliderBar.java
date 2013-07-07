@@ -43,14 +43,14 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
   /**
    * Requires that classes implementing this interface have formatLabel method.
    */
-  public static interface LabelFormatter {
+  public interface LabelFormatter {
     String formatLabel(double value);
   }
 
   private class KeyTimer extends Timer {
     private boolean firstRun = true;
     private int repeatDelay = 30;
-    private boolean shiftRight = false;
+    private boolean shiftRight;
     private int multiplier = 1;
 
     @Override
@@ -92,18 +92,18 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
 
   private final Image knobImage;
 
-  private int numLabels = 0;
+  private int numLabels;
   private final List<Element> labelElements = new ArrayList<Element>();
-  private LabelFormatter labelFormatter = null;
+  private LabelFormatter labelFormatter;
 
-  private int numTicks = 0;
+  private int numTicks;
   private final List<Element> tickElements = new ArrayList<Element>();
 
   private final Element lineElement;
-  private int lineLeftOffset = 0;
+  private int lineLeftOffset;
 
-  private boolean slidingKeyboard = false;
-  private boolean slidingMouse = false;
+  private boolean slidingKeyboard;
+  private boolean slidingMouse;
 
   private boolean enabled = true;
 
@@ -111,11 +111,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
 
   public SliderBar(double value, double min, double max, double step) {
     this(value, min, max, step, 0, 0);
@@ -403,8 +403,8 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     }
   }
 
-  public void setCurrentValue(double curValue, boolean fireEvents) {
-    this.curValue = Math.max(minValue, Math.min(maxValue, curValue));
+  public void setCurrentValue(double cv, boolean fireEvents) {
+    this.curValue = Math.max(minValue, Math.min(maxValue, cv));
     double remainder = (this.curValue - minValue) % stepSize;
     this.curValue -= remainder;
 
@@ -489,7 +489,8 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
   }
 
   @Override
@@ -587,7 +588,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
         label.getStyle().setVisibility(Visibility.VISIBLE);
       }
 
-      for (int i = (numLabels + 1); i < labelElements.size(); i++) {
+      for (int i = numLabels + 1; i < labelElements.size(); i++) {
         labelElements.get(i).getStyle().setDisplay(Display.NONE);
       }
     } else {
@@ -635,7 +636,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
         tick.getStyle().setVisibility(Visibility.VISIBLE);
       }
 
-      for (int i = (numTicks + 1); i < tickElements.size(); i++) {
+      for (int i = numTicks + 1; i < tickElements.size(); i++) {
         tickElements.get(i).getStyle().setDisplay(Display.NONE);
       }
     } else {

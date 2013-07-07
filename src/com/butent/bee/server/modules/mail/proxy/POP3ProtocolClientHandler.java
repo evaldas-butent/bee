@@ -7,8 +7,8 @@ import org.jboss.netty.channel.MessageEvent;
 public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
   private String user = "";
-  private StringBuilder mailBody = null;
-  private int state = 0;
+  private StringBuilder mailBody;
+  private int state;
 
   public POP3ProtocolClientHandler(Channel inboundChannel, Object tl, MailProxy proxy) {
     super(inboundChannel, tl, proxy);
@@ -21,7 +21,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
     logger.debug("POP3 MR:", msg);
 
     if (state == 1) {
-      if (msg.equals(".")) {
+      if (".".equals(msg)) {
         proxy.processMessage(mailBody.toString(), user);
         state = 0;
         mailBody = null;

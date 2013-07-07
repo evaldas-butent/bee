@@ -90,71 +90,71 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private ColType colType;
   private String name;
-  private String caption = null;
-  private String label = null;
-  private Boolean readOnly = null;
-  private Integer width = null;
+  private String caption;
+  private String label;
+  private Boolean readOnly;
+  private Integer width;
 
-  private String source = null;
-  private String property = null;
-  private Relation relation = null;
+  private String source;
+  private String property;
+  private Relation relation;
 
-  private Integer minWidth = null;
-  private Integer maxWidth = null;
-  private String autoFit = null;
-  private Flexibility flexibility = null;
+  private Integer minWidth;
+  private Integer maxWidth;
+  private String autoFit;
+  private Flexibility flexibility;
 
-  private Boolean sortable = null;
-  private Boolean visible = null;
+  private Boolean sortable;
+  private Boolean visible;
 
-  private String format = null;
-  private String horAlign = null;
+  private String format;
+  private String horAlign;
 
-  private Boolean hasFooter = null;
+  private Boolean hasFooter;
 
-  private Calculation validation = null;
-  private Calculation editable = null;
-  private Calculation carry = null;
+  private Calculation validation;
+  private Calculation editable;
+  private Calculation carry;
 
-  private RendererDescription rendererDescription = null;
-  private Calculation render = null;
-  private List<RenderableToken> renderTokens = null;
+  private RendererDescription rendererDescription;
+  private Calculation render;
+  private List<RenderableToken> renderTokens;
 
-  private EditorDescription editor = null;
+  private EditorDescription editor;
 
-  private String itemKey = null;
+  private String itemKey;
 
-  private String minValue = null;
-  private String maxValue = null;
+  private String minValue;
+  private String maxValue;
 
-  private Boolean required = null;
+  private Boolean required;
 
-  private ValueType valueType = null;
-  private Integer precision = null;
-  private Integer scale = null;
+  private ValueType valueType;
+  private Integer precision;
+  private Integer scale;
 
-  private List<String> renderColumns = null;
-  private String sortBy = null;
+  private List<String> renderColumns;
+  private String sortBy;
 
-  private String searchBy = null;
-  private FilterSupplierType filterSupplierType = null;
-  private String filterOptions = null;
+  private String searchBy;
+  private FilterSupplierType filterSupplierType;
+  private String filterOptions;
 
-  private StyleDeclaration headerStyle = null;
-  private StyleDeclaration bodyStyle = null;
-  private StyleDeclaration footerStyle = null;
+  private StyleDeclaration headerStyle;
+  private StyleDeclaration bodyStyle;
+  private StyleDeclaration footerStyle;
 
-  private Collection<ConditionalStyleDeclaration> dynStyles = null;
+  private Collection<ConditionalStyleDeclaration> dynStyles;
 
-  private CellType cellType = null;
-  private Boolean cellResizable = null;
+  private CellType cellType;
+  private Boolean cellResizable;
 
-  private RefreshType updateMode = null;
-  private String elementType = null;
+  private RefreshType updateMode;
+  private String elementType;
 
-  private String options = null;
+  private String options;
 
-  private boolean relationInitialized = false;
+  private boolean relationInitialized;
 
   public ColumnDescription(ColType colType, String name) {
     Assert.notNull(colType);

@@ -35,36 +35,36 @@ public class WidgetDescription implements HasInfo {
   private final String widgetId;
   private final String widgetName;
 
-  private String parentName = null;
+  private String parentName;
   
-  private Collection<ConditionalStyleDeclaration> dynStyles = null;
+  private Collection<ConditionalStyleDeclaration> dynStyles;
 
-  private String source = null;
-  private String rowProperty = null;
-  private Relation relation = null;
+  private String source;
+  private String rowProperty;
+  private Relation relation;
 
-  private RendererDescription rendererDescription = null;
-  private Calculation render = null;
-  private List<RenderableToken> renderTokens = null;
+  private RendererDescription rendererDescription;
+  private Calculation render;
+  private List<RenderableToken> renderTokens;
 
-  private String renderColumns = null;
-  private String itemKey = null;
+  private String renderColumns;
+  private String itemKey;
 
-  private String caption = null;
-  private Boolean readOnly = null;
+  private String caption;
+  private Boolean readOnly;
   
-  private Calculation validation = null;
-  private Calculation editable = null;
-  private Calculation carry = null;
+  private Calculation validation;
+  private Calculation editable;
+  private Calculation carry;
 
-  private Boolean required = null;
-  private Boolean nullable = null;
-  private Boolean hasDefaults = null;
+  private Boolean required;
+  private Boolean nullable;
+  private Boolean hasDefaults;
   
-  private boolean disablable = false;
+  private boolean disablable;
   
-  private EditorAction onFocus = null;
-  private RefreshType updateMode = null;
+  private EditorAction onFocus;
+  private RefreshType updateMode;
   
   public WidgetDescription(FormWidget widgetType, String widgetId, String widgetName) {
     this.widgetType = widgetType;
@@ -145,7 +145,8 @@ public class WidgetDescription implements HasInfo {
     }
 
     if (getRendererDescription() != null) {
-      PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
+      PropertyUtils.appendChildrenToProperties(info, "Renderer",
+          getRendererDescription().getInfo());
     }
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());

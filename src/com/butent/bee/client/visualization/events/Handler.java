@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
@@ -9,8 +10,7 @@ import com.butent.bee.client.visualization.visualizations.Visualization;
  */
 
 public abstract class Handler {
-  public static native void addHandler(Visualization<?> viz, String eventName,
-      Handler handler) /*-{
+  public static native void addHandler(Visualization<?> viz, String eventName, Handler handler) /*-{
     var jso = viz.@com.butent.bee.client.visualization.visualizations.Visualization::getJso()();
     var callback = function(event) {
     @com.butent.bee.client.visualization.events.Handler::onCallback(Lcom/butent/bee/client/visualization/events/Handler;Lcom/butent/bee/client/ajaxloader/Properties;)

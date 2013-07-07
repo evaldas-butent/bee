@@ -21,7 +21,9 @@ public class BallGroup {
     double x = (width - 8 * 20) / 2 + 10;
     double y = (height - 8 * 20) / 2 + 10;
     double radius;
-    int r, g, b;
+    int r;
+    int g;
+    int b;
 
     for (int i = 0; i < 8; i++) {
       r = BeeUtils.randomInt(0, 255);
@@ -45,12 +47,12 @@ public class BallGroup {
     Vector d = new Vector(0, 0);
     for (int i = balls.length - 1; i >= 0; i--) {
       Ball ball = balls[i];
-      d.x = mouseX - ball.pos.x;
-      d.y = mouseY - ball.pos.y;
+      d.setX(mouseX - ball.getPos().getX());
+      d.setY(mouseY - ball.getPos().getY());
       if (d.magSquared() < 100 * 100) {
-        ball.goal = Vector.sub(ball.pos, d);
+        ball.setGoal(Vector.sub(ball.getPos(), d));
       } else {
-        ball.goal.set(ball.startPos);
+        ball.getGoal().set(ball.getStartPos());
       }
 
       ball.update();

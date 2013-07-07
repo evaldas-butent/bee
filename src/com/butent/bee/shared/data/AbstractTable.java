@@ -34,13 +34,12 @@ import java.util.Set;
  * {@code addRow} or {@code sort}.
  */
 
-public abstract class AbstractTable<RowType extends IsRow, ColType extends IsColumn> implements
-    IsTable<RowType, ColType> {
+public abstract class AbstractTable<R extends IsRow, C extends IsColumn> implements IsTable<R, C> {
 
-  protected class IndexOrdering implements Comparator<Integer> {
-    private RowOrdering<RowType> rowOrdering;
+  protected final class IndexOrdering implements Comparator<Integer> {
+    private RowOrdering<R> rowOrdering;
 
-    private IndexOrdering(RowOrdering<RowType> rowOrdering) {
+    private IndexOrdering(RowOrdering<R> rowOrdering) {
       this.rowOrdering = rowOrdering;
     }
 
@@ -50,7 +49,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
-  protected class RowIdOrdering implements Comparator<RowType> {
+  protected class RowIdOrdering implements Comparator<R> {
     private final boolean ascending;
 
     RowIdOrdering() {
@@ -62,7 +61,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
 
     @Override
-    public int compare(RowType row1, RowType row2) {
+    public int compare(R row1, R row2) {
       if (row1 == row2) {
         return BeeConst.COMPARE_EQUAL;
       }
@@ -81,17 +80,17 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
-  private List<ColType> columns = Lists.newArrayList();
+  private List<C> columns = Lists.newArrayList();
 
-  private CustomProperties properties = null;
+  private CustomProperties properties;
   private List<DataWarning> warnings = Lists.newArrayList();
 
   public AbstractTable() {
   }
 
-  protected AbstractTable(List<ColType> columns) {
+  protected AbstractTable(List<C> columns) {
     Assert.notNull(columns);
-    for (ColType column : columns) {
+    for (C column : columns) {
       addColumn(column);
     }
   }
@@ -104,13 +103,13 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public int addColumn(ColType column) {
+  public int addColumn(C column) {
     assertNewColumnId(column.getId());
     columns.add(column);
 
     if (getNumberOfRows() > 0) {
       Value nullValue = Value.getNullValueFromValueType(column.getType());
-      for (RowType row : getRows()) {
+      for (R row : getRows()) {
         row.addCell(new TableCell(nullValue));
       }
     }
@@ -133,10 +132,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public int addColumns(Collection<ColType> columnsToAdd) {
+  public int addColumns(Collection<C> columnsToAdd) {
     Assert.notEmpty(columnsToAdd);
     int lastIndex = BeeConst.UNDEF;
-    for (ColType column : columnsToAdd) {
+    for (C column : columnsToAdd) {
       lastIndex = addColumn(column);
     }
     return lastIndex;
@@ -148,16 +147,16 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public int addRow(RowType row) {
+  public int addRow(R row) {
     getRows().add(row);
     return getNumberOfRows() - 1;
   }
 
   @Override
-  public int addRows(Collection<RowType> rowsToAdd) {
+  public int addRows(Collection<R> rowsToAdd) {
     Assert.notNull(rowsToAdd);
     int lastIndex = BeeConst.UNDEF;
-    for (RowType row : rowsToAdd) {
+    for (R row : rowsToAdd) {
       lastIndex = addRow(row);
     }
     return lastIndex;
@@ -229,13 +228,13 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public ColType getColumn(int colIndex) {
+  public C getColumn(int colIndex) {
     assertColumnIndex(colIndex);
     return columns.get(colIndex);
   }
 
   @Override
-  public ColType getColumn(String columnId) {
+  public C getColumn(String columnId) {
     return getColumn(getColumnIndex(columnId));
   }
 
@@ -243,7 +242,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     assertColumnIndex(colIndex);
     List<IsCell> colCells = Lists.newArrayListWithCapacity(getNumberOfRows());
 
-    for (RowType row : getRows()) {
+    for (R row : getRows()) {
       colCells.add(row.getCell(colIndex));
     }
     return colCells;
@@ -321,7 +320,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public List<ColType> getColumns() {
+  public List<C> getColumns() {
     return columns;
   }
 
@@ -334,7 +333,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     assertColumnIndex(colIndex);
     List<Value> values = Lists.newArrayListWithCapacity(getNumberOfRows());
 
-    for (RowType row : getRows()) {
+    for (R row : getRows()) {
       values.add(row.getCell(colIndex).getValue());
     }
     return values;
@@ -359,7 +358,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public List<Value> getDistinctValues(int colIndex) {
     assertColumnIndex(colIndex);
     Set<Value> values = Sets.newTreeSet();
-    for (RowType row : getRows()) {
+    for (R row : getRows()) {
       values.add(row.getCell(colIndex).getValue());
     }
     return Lists.newArrayList(values);
@@ -382,7 +381,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     boolean ok;
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      RowType row = getRow(i);
+      R row = getRow(i);
       ok = true;
       for (RowFilter filter : filters) {
         if (!filter.isMatch(getColumns(), row)) {
@@ -428,7 +427,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public RowType getRowById(long rowId) {
+  public R getRowById(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {
       if (getRow(i).getId() == rowId) {
         return getRow(i);
@@ -486,7 +485,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       rowIndexes.add(i);
     }
 
-    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<RowType>(getColumns(),
+    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<R>(getColumns(),
         sortInfo)));
     return Ints.toArray(rowIndexes);
   }
@@ -521,14 +520,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void insertColumn(int colIndex, ColType column) {
+  public void insertColumn(int colIndex, C column) {
     assertColumnIndex(colIndex);
     assertNewColumnId(column.getId());
 
     columns.add(colIndex, column);
     if (getNumberOfRows() > 0) {
       Value nullValue = Value.getNullValueFromValueType(column.getType());
-      for (RowType row : getRows()) {
+      for (R row : getRows()) {
         row.insertCell(colIndex, new TableCell(nullValue));
       }
     }
@@ -550,10 +549,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void insertRows(int rowIndex, Collection<RowType> rowsToAdd) {
+  public void insertRows(int rowIndex, Collection<R> rowsToAdd) {
     assertRowIndex(rowIndex);
     int idx = rowIndex;
-    for (RowType row : rowsToAdd) {
+    for (R row : rowsToAdd) {
       insertRow(idx++, row);
     }
   }
@@ -573,7 +572,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     assertColumnIndex(colIndex);
     columns.remove(colIndex);
 
-    for (RowType row : getRows()) {
+    for (R row : getRows()) {
       row.removeCell(colIndex);
     }
   }
@@ -626,8 +625,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   @Override
   public void setCell(int rowIndex, int colIndex, Value value, String formattedValue,
-      CustomProperties properties) {
-    setCell(rowIndex, colIndex, new TableCell(value, formattedValue, properties));
+      CustomProperties prp) {
+    setCell(rowIndex, colIndex, new TableCell(value, formattedValue, prp));
   }
 
   @Override
@@ -636,8 +635,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void setColumnProperties(int colIndex, CustomProperties properties) {
-    getColumn(colIndex).setProperties(properties);
+  public void setColumnProperties(int colIndex, CustomProperties prp) {
+    getColumn(colIndex).setProperties(prp);
   }
 
   @Override
@@ -646,7 +645,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void setColumns(List<ColType> columns) {
+  public void setColumns(List<C> columns) {
     this.columns = columns;
   }
 
@@ -656,8 +655,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void setProperties(int rowIndex, int colIndex, CustomProperties properties) {
-    getCell(rowIndex, colIndex).setProperties(properties);
+  public void setProperties(int rowIndex, int colIndex, CustomProperties prp) {
+    getCell(rowIndex, colIndex).setProperties(prp);
   }
 
   @Override
@@ -666,8 +665,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void setRowProperties(int rowIndex, CustomProperties properties) {
-    getRow(rowIndex).setProperties(properties);
+  public void setRowProperties(int rowIndex, CustomProperties prp) {
+    getRow(rowIndex).setProperties(prp);
   }
 
   @Override
@@ -676,14 +675,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public void setRows(Collection<RowType> rows) {
+  public void setRows(Collection<R> rows) {
     clearRows();
     addRows(rows);
   }
 
   @Override
-  public void setTableProperties(CustomProperties properties) {
-    this.properties = properties;
+  public void setTableProperties(CustomProperties prp) {
+    this.properties = prp;
   }
 
   @Override
@@ -762,7 +761,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     StringBuilder sb = new StringBuilder();
 
     for (int rowIndex = 0; rowIndex < getNumberOfRows(); rowIndex++) {
-      RowType row = getRow(rowIndex);
+      R row = getRow(rowIndex);
       for (int cellIndex = 0; cellIndex < row.getCells().size(); cellIndex++) {
         IsCell tableCell = row.getCells().get(cellIndex);
         sb.append(tableCell.toString());
@@ -779,7 +778,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   @Override
-  public boolean updateRow(RowType row) {
+  public boolean updateRow(R row) {
     if (row == null) {
       return false;
     }
@@ -801,30 +800,30 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Assert.isIndex(rowIndex, getNumberOfRows());
   }
 
-  protected void copyColumns(IsTable<RowType, ColType> target) {
+  protected void copyColumns(IsTable<R, C> target) {
     target.setColumns(getColumns());
   }
 
-  protected void copyProperties(IsTable<RowType, ColType> target) {
+  protected void copyProperties(IsTable<R, C> target) {
     if (getTableProperties() != null) {
       target.setTableProperties(getTableProperties().copy());
     }
   }
 
-  protected void copyTableDescription(IsTable<RowType, ColType> target) {
+  protected void copyTableDescription(IsTable<R, C> target) {
     copyColumns(target);
     copyProperties(target);
     copyWarnings(target);
   }
 
-  protected abstract void insertRow(int rowIndex, RowType row);
+  protected abstract void insertRow(int rowIndex, R row);
 
   private void assertNewColumnId(String columnId) {
     Assert.notEmpty(columnId);
     Assert.isFalse(containsColumn(columnId));
   }
 
-  private void copyWarnings(IsTable<RowType, ColType> target) {
+  private void copyWarnings(IsTable<R, C> target) {
     for (DataWarning warning : getWarnings()) {
       target.getWarnings().add(warning);
     }
@@ -834,11 +833,11 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return new TableCell(Value.getNullValueFromValueType(columns.get(colIndex).getType()));
   }
 
-  private RowType createRow() {
+  private R createRow() {
     return createRow(getNumberOfRows() + 1);
   }
 
-  private RowType fillRow(RowType row) {
+  private R fillRow(R row) {
     for (int i = row.getNumberOfCells(); i < columns.size(); i++) {
       row.addCell(createCell(i));
     }

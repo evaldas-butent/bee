@@ -23,9 +23,9 @@ import java.util.Set;
  */
 
 public class RpcInfo {
-  private static int COUNTER = 0;
+  private static int counter;
 
-  public static int MAX_DATA_LEN = 1024;
+  public static final int MAX_DATA_LEN = 1024;
 
   public static final String COL_ID = "Id";
   public static final String COL_SERVICE = "Service";
@@ -62,42 +62,42 @@ public class RpcInfo {
   public static final String COL_USR_DATA = "User Data";
 
   private int id;
-  private String service = null;
+  private String service;
   private RequestBuilder.Method method = RequestBuilder.GET;
 
   private final Set<State> states = EnumSet.noneOf(State.class);
   private final Duration duration;
 
-  private RequestBuilder reqBuilder = null;
-  private Request request = null;
-  private ParameterList reqParams = null;
+  private RequestBuilder reqBuilder;
+  private Request request;
+  private ParameterList reqParams;
 
-  private String reqData = null;
-  private ContentType reqType = null;
+  private String reqData;
+  private ContentType reqType;
   private int reqRows = BeeConst.UNDEF;
   private int reqCols = BeeConst.UNDEF;
   private int reqSize = BeeConst.UNDEF;
 
-  private Response response = null;
-  private Collection<ExtendedProperty> respInfo = null;
+  private Response response;
+  private Collection<ExtendedProperty> respInfo;
 
-  private ContentType respType = null;
-  private String respData = null;
+  private ContentType respType;
+  private String respData;
   private int respRows = BeeConst.UNDEF;
   private int respCols = BeeConst.UNDEF;
   private int respSize = BeeConst.UNDEF;
 
   private int respMsgCnt = BeeConst.UNDEF;
-  private Collection<ResponseMessage> respMessages = null;
+  private Collection<ResponseMessage> respMessages;
 
-  private String errMsg = null;
+  private String errMsg;
 
-  private Object userData = null;
+  private Object userData;
   private ResponseCallback respCallback;
 
   public RpcInfo(RequestBuilder.Method method, String service,
       ParameterList params, ContentType ctp, String data, ResponseCallback callback) {
-    this.id = ++COUNTER;
+    this.id = ++counter;
     this.duration = new Duration();
 
     this.method = method;

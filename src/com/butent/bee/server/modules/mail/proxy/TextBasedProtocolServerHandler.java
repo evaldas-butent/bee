@@ -46,6 +46,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
         closeOnFlush(outboundChannel);
         fac.releaseExternalResources();
       } catch (Exception ex) {
+        logger.warning(ex);
       }
     }
     logger.debug("Client at address", e.getChannel().getRemoteAddress(), "disconnected");

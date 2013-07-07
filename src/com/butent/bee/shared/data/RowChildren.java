@@ -5,7 +5,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class RowChildren implements BeeSerializable {
+public final class RowChildren implements BeeSerializable {
 
   private enum Serial {
     REPOSITORY, PARENT_COLUMN, ROW_ID, CHILD_COLUMN, CHILDREN_IDS

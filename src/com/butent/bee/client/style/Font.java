@@ -30,21 +30,21 @@ import java.util.Map;
  * Enables to operate with various parameters of fonts used by the system.
  */
 
-public class Font implements HasInfo {
+public final class Font implements HasInfo {
 
   public static class Builder {
 
-    private FontStyle style = null;
-    private FontVariant variant = null;
-    private FontWeight weight = null;
-    private FontSize absoluteSize = null;
+    private FontStyle style;
+    private FontVariant variant;
+    private FontWeight weight;
+    private FontSize absoluteSize;
     private double sizeValue = UNKNOWN;
-    private CssUnit sizeCssUnit = null;
-    private String family = null;
+    private CssUnit sizeCssUnit;
+    private String family;
 
-    private String lineHeight = null;
-    private TextTransform textTransform = null;
-    private String letterSpacing = null;
+    private String lineHeight;
+    private TextTransform textTransform;
+    private String letterSpacing;
 
     public Font build() {
       Font result = new Font();

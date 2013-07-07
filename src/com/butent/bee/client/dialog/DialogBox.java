@@ -116,11 +116,8 @@ public class DialogBox extends Popup implements Printable {
 
   @Override
   public boolean onPrint(Element source, Element target) {
-    if (header.getElement().isOrHasChild(source) && StyleUtils.hasClassName(source, STYLE_ACTION)) {
-      return false;
-    } else {
-      return true;
-    }
+    return !header.getElement().isOrHasChild(source)
+        || !StyleUtils.hasClassName(source, STYLE_ACTION);
   }
 
   @Override

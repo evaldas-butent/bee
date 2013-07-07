@@ -63,15 +63,15 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   private Long size;
 
   private String type;
-  private String icon = null;
+  private String icon;
   
-  private DateTime fileDate = null;
-  private String fileVersion = null;
+  private DateTime fileDate;
+  private String fileVersion;
 
-  private String caption = null;
-  private String description = null;
+  private String caption;
+  private String description;
   
-  private Long relatedId = null;
+  private Long relatedId;
   
   public StoredFile(long fileId, String name, Long size, String type) {
     super();

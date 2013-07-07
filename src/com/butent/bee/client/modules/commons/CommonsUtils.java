@@ -21,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
-public class CommonsUtils {
+public final class CommonsUtils {
 
   private static final String STYLE_COMPANY = "companyInfo-";
   private static final String STYLE_COMPANY_ITEM = STYLE_COMPANY + "item";
@@ -50,11 +50,11 @@ public class CommonsUtils {
 
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, null);
-        cols.put(COL_CODE, Localized.constants.companyCode());
-        cols.put(COL_VAT_CODE, Localized.constants.companyVATCode());
-        cols.put(COL_ADDRESS, Localized.constants.address());
+        cols.put(COL_CODE, Localized.getConstants().companyCode());
+        cols.put(COL_VAT_CODE, Localized.getConstants().companyVATCode());
+        cols.put(COL_ADDRESS, Localized.getConstants().address());
         cols.put(COL_PHONE, null);
-        cols.put(COL_EMAIL_ADDRESS, Localized.constants.email());
+        cols.put(COL_EMAIL_ADDRESS, Localized.getConstants().email());
 
         for (String col : cols.keySet()) {
           Object value;
@@ -65,9 +65,9 @@ public class CommonsUtils {
 
           } else if (BeeUtils.same(col, COL_PHONE)) {
             Map<String, String> phones = Maps.newLinkedHashMap();
-            phones.put(COL_PHONE, Localized.constants.phone());
-            phones.put(COL_MOBILE, Localized.constants.mobile());
-            phones.put(COL_FAX, Localized.constants.fax());
+            phones.put(COL_PHONE, Localized.getConstants().phone());
+            phones.put(COL_MOBILE, Localized.getConstants().mobile());
+            phones.put(COL_FAX, Localized.getConstants().fax());
 
             value = new Flow();
 
@@ -117,5 +117,8 @@ public class CommonsUtils {
         target.add(flow);
       }
     });
+  }
+
+  private CommonsUtils() {
   }
 }

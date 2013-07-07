@@ -13,7 +13,7 @@ import java.util.List;
  * Contains methods for transforming data into and from {@code JSON} type data structure.
  */
 
-public class JsonUtils {
+public final class JsonUtils {
 
   public static String getString(JSONObject obj, String key) {
     if (obj == null || BeeUtils.isEmpty(key)) {

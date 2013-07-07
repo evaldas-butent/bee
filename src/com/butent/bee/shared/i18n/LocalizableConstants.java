@@ -182,7 +182,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String owner();
   
-  String palettes();
+  String pallets();
   
   String partial();
 

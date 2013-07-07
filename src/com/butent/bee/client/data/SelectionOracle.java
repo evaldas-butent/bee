@@ -113,7 +113,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
    * Contains fields and methods to handle suggestion related data responses.
    */
 
-  public static class Response {
+  public static final class Response {
 
     private final Collection<Suggestion> suggestions;
     private final boolean moreSuggestions;
@@ -157,7 +157,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
    * information.
    */
 
-  private class PendingRequest {
+  private final class PendingRequest {
     private final Request request;
     private final Callback callback;
 
@@ -188,21 +188,21 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private final Relation.Caching caching;
 
-  private BeeRowSet viewData = null;
-  private BeeRowSet requestData = null;
+  private BeeRowSet viewData;
+  private BeeRowSet requestData;
 
-  private Request lastRequest = null;
-  private PendingRequest pendingRequest = null;
+  private Request lastRequest;
+  private PendingRequest pendingRequest;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
   private final Set<Consumer<Integer>> rowCountChangeHandlers = Sets.newHashSet();
   private final Set<Consumer<BeeRowSet>> dataReceivedHandlers = Sets.newHashSet();
 
-  private boolean dataInitialized = false;
+  private boolean dataInitialized;
 
-  private BeeRowSet translator = null;
+  private BeeRowSet translator;
 
-  private Filter additionalFilter = null;
+  private Filter additionalFilter;
   private final Set<Long> exclusions = Sets.newHashSet();
 
   public SelectionOracle(Relation relation, DataInfo dataInfo) {

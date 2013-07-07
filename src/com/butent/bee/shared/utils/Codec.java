@@ -19,24 +19,24 @@ import java.util.Map;
 /**
  * Contains methods for encypting/decrypting data using various algorithms.
  */
-public class Codec {
+public final class Codec {
   private static final String SERIALIZATION_COLLECTION = "c";
   private static final char[] HEX_CHARS = new char[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
   private static final MessageDigest MD5;
-  private static int mdChunk = 0;
+  private static int mdChunk;
 
-  private static final char[] base64Chars = new char[] {
+  private static final char[] BASE64_CHARS = new char[] {
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
       'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
       'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
-  private static final byte[] base64Values = new byte[128];
-  private static final char base64Pad = '=';
+  private static final byte[] BASE64_VALUES = new byte[128];
+  private static final char BASE64_PAD = '=';
 
-  private static final int[] crc16Table = {
+  private static final int[] CRC16_TABLE = {
       0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241, 0xC601,
       0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440, 0xCC01, 0x0CC0,
       0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40, 0x0A00, 0xCAC1, 0xCB81,
@@ -67,7 +67,7 @@ public class Codec {
       0x4540, 0x8701, 0x47C0, 0x4680, 0x8641, 0x8201, 0x42C0, 0x4380, 0x8341,
       0x4100, 0x81C1, 0x8081, 0x4040};
 
-  private static final int[] crc32Table = {
+  private static final int[] CRC32_TABLE = {
       0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
       0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
       0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -112,7 +112,7 @@ public class Codec {
       0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
       0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
-  private static final int adler32Base = 65521;
+  private static final int ADLER32_BASE = 65521;
 
   static {
     MessageDigest md;
@@ -125,8 +125,8 @@ public class Codec {
   }
 
   static {
-    for (int i = 0; i < base64Chars.length; i++) {
-      base64Values[base64Chars[i]] = (byte) i;
+    for (int i = 0; i < BASE64_CHARS.length; i++) {
+      BASE64_VALUES[BASE64_CHARS[i]] = (byte) i;
     }
   }
 
@@ -143,8 +143,8 @@ public class Codec {
     int s2 = 0;
 
     for (byte b : arr) {
-      s1 = (s1 + (b & 0xff)) % adler32Base;
-      s2 = (s2 + s1) % adler32Base;
+      s1 = (s1 + (b & 0xff)) % ADLER32_BASE;
+      s2 = (s2 + s1) % ADLER32_BASE;
     }
 
     int value = (s2 << 16) | s1;
@@ -323,7 +323,7 @@ public class Codec {
     int crc = 0;
 
     for (byte b : arr) {
-      crc = (crc >>> 8) ^ crc16Table[(crc ^ b) & 0xff];
+      crc = (crc >>> 8) ^ CRC16_TABLE[(crc ^ b) & 0xff];
     }
     return Integer.toHexString(crc);
   }
@@ -350,7 +350,7 @@ public class Codec {
     int crc = 0xffffffff;
 
     for (byte b : arr) {
-      crc = (crc >>> 8) ^ crc32Table[(crc ^ b) & 0xff];
+      crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ b) & 0xff];
     }
     crc = crc ^ 0xffffffff;
     return Integer.toHexString(crc);
@@ -384,7 +384,7 @@ public class Codec {
         if ((z & 1) == 1) {
           z = (z >>> 1) ^ poly;
         } else {
-          z = (z >>> 1);
+          z = z >>> 1;
         }
       }
       crc = (crc >>> 8) ^ z;
@@ -531,10 +531,10 @@ public class Codec {
     data.getChars(0, len, chars, 0);
 
     int olen = 3 * (len / 4);
-    if (chars[len - 2] == base64Pad) {
+    if (chars[len - 2] == BASE64_PAD) {
       --olen;
     }
-    if (chars[len - 1] == base64Pad) {
+    if (chars[len - 1] == BASE64_PAD) {
       --olen;
     }
 
@@ -543,10 +543,10 @@ public class Codec {
     int iidx = 0;
     int oidx = 0;
     while (iidx < len) {
-      int c0 = base64Values[chars[iidx++] & 0xff];
-      int c1 = base64Values[chars[iidx++] & 0xff];
-      int c2 = base64Values[chars[iidx++] & 0xff];
-      int c3 = base64Values[chars[iidx++] & 0xff];
+      int c0 = BASE64_VALUES[chars[iidx++] & 0xff];
+      int c1 = BASE64_VALUES[chars[iidx++] & 0xff];
+      int c2 = BASE64_VALUES[chars[iidx++] & 0xff];
+      int c3 = BASE64_VALUES[chars[iidx++] & 0xff];
       int c24 = (c0 << 18) | (c1 << 12) | (c2 << 6) | c3;
 
       bytes[oidx++] = (byte) (c24 >> 16);
@@ -702,10 +702,10 @@ public class Codec {
       int c2 = (b24 >> 6) & 0x3f;
       int c3 = b24 & 0x3f;
 
-      chars[oidx++] = base64Chars[c0];
-      chars[oidx++] = base64Chars[c1];
-      chars[oidx++] = (charsLeft > 1) ? base64Chars[c2] : base64Pad;
-      chars[oidx++] = (charsLeft > 2) ? base64Chars[c3] : base64Pad;
+      chars[oidx++] = BASE64_CHARS[c0];
+      chars[oidx++] = BASE64_CHARS[c1];
+      chars[oidx++] = (charsLeft > 1) ? BASE64_CHARS[c2] : BASE64_PAD;
+      chars[oidx++] = (charsLeft > 2) ? BASE64_CHARS[c3] : BASE64_PAD;
 
       charsLeft -= 3;
     }

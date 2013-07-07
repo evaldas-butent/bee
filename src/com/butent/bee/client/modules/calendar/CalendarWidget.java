@@ -59,14 +59,14 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     }
   };
 
-  private CalendarView view = null;
+  private CalendarView view;
 
   private JustDate date;
   private int displayedDays = BeeConst.UNDEF;
 
-  private boolean layoutSuspended = false;
-  private boolean layoutPending = false;
-  private boolean scrollPending = false;
+  private boolean layoutSuspended;
+  private boolean layoutPending;
+  private boolean scrollPending;
 
   public CalendarWidget(long calendarId, CalendarSettings settings) {
     super();
@@ -156,15 +156,14 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     int eventType = event.getTypeInt();
 
     switch (eventType) {
-      case Event.ONDBLCLICK: {
+      case Event.ONDBLCLICK:
         if (onDoubleClick(EventUtils.getEventTargetElement(event), event)) {
           event.stopPropagation();
           return;
         }
         break;
-      }
 
-      case Event.ONMOUSEDOWN: {
+      case Event.ONMOUSEDOWN:
         if (event.getButton() == NativeEvent.BUTTON_LEFT
             && EventUtils.isCurrentTarget(event, getElement())) {
           if (onMouseDown(EventUtils.getEventTargetElement(event), event)) {
@@ -174,7 +173,6 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
           }
         }
         break;
-      }
     }
 
     super.onBrowserEvent(event);
@@ -223,9 +221,9 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     }
   }
 
-  public void setAttendees(Collection<Long> attendees, boolean refresh) {
+  public void setAttendees(Collection<Long> atts, boolean refresh) {
     this.attendees.clear();
-    this.attendees.addAll(attendees);
+    this.attendees.addAll(atts);
 
     if (refresh) {
       refresh(true);

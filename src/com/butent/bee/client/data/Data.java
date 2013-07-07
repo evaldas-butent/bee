@@ -21,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class Data {
+public final class Data {
 
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 

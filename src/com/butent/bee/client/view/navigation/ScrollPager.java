@@ -17,13 +17,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ScrollPager extends AbstractPager implements RequiresResize {
 
-  public static int maxHeight = 10000;
+  private static final int MAX_HEIGHT = 10000;
 
   private int lastPos = BeeConst.UNDEF;
-  private long lastHeight = 0;
+  private long lastHeight;
 
-  private boolean isScrolling = false;
-  private boolean isUpdating = false;
+  private boolean isScrolling;
+  private boolean isUpdating;
 
   public ScrollPager() {
     Widget widget = new CustomDiv();
@@ -99,7 +99,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     return NavigationOrigin.SCROLLER;
   }
 
-  private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
+  private static long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
     if (pageSize <= 0 || rowCount < pageSize || widgetHeight <= 0) {
       return 0;
     } else {
@@ -116,10 +116,10 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   }
 
   private int getMaxPosition() {
-    if (lastHeight < maxHeight) {
+    if (lastHeight < MAX_HEIGHT) {
       return (int) lastHeight;
     } else {
-      return maxHeight;
+      return MAX_HEIGHT;
     }
   }
 
@@ -154,7 +154,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     long h = calculateHeight(getPageSize(), getRowCount(), getWidgetHeight());
     if (h >= 0 && h != lastHeight) {
       lastHeight = h;
-      int z = (h < maxHeight) ? (int) h : maxHeight;
+      int z = (h < MAX_HEIGHT) ? (int) h : MAX_HEIGHT;
       StyleUtils.setHeight(getInnerWidget(), z);
     }
   }

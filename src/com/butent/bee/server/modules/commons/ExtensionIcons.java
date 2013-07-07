@@ -12,12 +12,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.io.File;
 import java.util.Map;
 
-public class ExtensionIcons {
+public final class ExtensionIcons {
 
   private static BeeLogger logger = LogUtils.getLogger(ExtensionIcons.class);
   
   private static final Map<String, String> icons = Maps.newHashMap();
-  private static boolean initialized = false;
+  private static boolean initialized;
 
   public static String getIcon(String filename) {
     String extension = FileNameUtils.getExtension(filename);

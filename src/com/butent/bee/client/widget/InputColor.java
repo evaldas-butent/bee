@@ -91,10 +91,10 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
     if (Features.supportsInputColor()) {
       getInputElement().click();
     } else {
-      Global.inputString(Localized.constants.color(), null, new StringCallback(false) {
+      Global.inputString(Localized.getConstants().color(), null, new StringCallback(false) {
         @Override
         public String getMessage(String value) {
-          return validate(value) ? null : Localized.constants.colorIsInvalid();
+          return validate(value) ? null : Localized.getConstants().colorIsInvalid();
         }
 
         @Override

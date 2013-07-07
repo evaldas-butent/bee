@@ -46,7 +46,7 @@ import java.util.Set;
 
 class SearchByCar extends EcView {
 
-  private static class CarAttributeWidget extends CustomDiv implements HasEnabled {
+  private static final class CarAttributeWidget extends CustomDiv implements HasEnabled {
 
     private boolean enabled = true;
 
@@ -116,19 +116,19 @@ class SearchByCar extends EcView {
   private final ItemPanel itemPanel;
 
   private final List<String> manufacturers = Lists.newArrayList();
-  private String manufacturer = null;
+  private String manufacturer;
 
   private final List<EcCarModel> models = Lists.newArrayList();
-  private Integer modelIndex = null;
+  private Integer modelIndex;
 
   private final List<EcCarType> types = Lists.newArrayList();
-  private Integer typeId = null;
+  private Integer typeId;
 
   private final List<String> years = Lists.newArrayList();
-  private Integer year = null;
+  private Integer year;
 
   private final List<String> engines = Lists.newArrayList();
-  private String engine = null;
+  private String engine;
 
   SearchByCar() {
     super();
@@ -339,7 +339,7 @@ class SearchByCar extends EcView {
     }
   }
 
-  private void openAttributeSelector(String styleSuffix, final IndexSelector selector,
+  private static void openAttributeSelector(String styleSuffix, final IndexSelector selector,
       final CarAttributeWidget attributeWidget) {
 
     Popup popup = new Popup(OutsideClick.CLOSE, STYLE_DIALOG + styleSuffix);
@@ -492,32 +492,32 @@ class SearchByCar extends EcView {
     boolean hasManufacturer = !BeeUtils.isEmpty(getManufacturer());
 
     manufacturerWidget.setText(hasManufacturer
-        ? getManufacturer() : Localized.constants.ecCarManufacturer());
+        ? getManufacturer() : Localized.getConstants().ecCarManufacturer());
     manufacturerWidget.setHasValue(hasManufacturer);
 
     boolean modelEnabled = hasManufacturer;
     boolean hasModel = modelEnabled && getModelIndex() != null;
 
-    modelWidget.setText(hasModel ? renderModel(getModel()) : Localized.constants.ecCarModel());
+    modelWidget.setText(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
     modelWidget.setHasValue(hasModel);
     modelWidget.setEnabled(modelEnabled);
 
     boolean yearEnabled = hasModel && !types.isEmpty();
     boolean hasYear = yearEnabled && getYear() != null;
 
-    yearWidget.setText(hasYear ? getYear().toString() : Localized.constants.ecCarYear());
+    yearWidget.setText(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
     yearWidget.setHasValue(hasYear);
     yearWidget.setEnabled(yearEnabled);
 
     boolean engineEnabled = hasModel && !types.isEmpty();
     boolean hasEngine = engineEnabled && !BeeUtils.isEmpty(getEngine());
 
-    engineWidget.setText(hasEngine ? getEngine() : Localized.constants.ecCarEngine());
+    engineWidget.setText(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
     engineWidget.setHasValue(hasEngine);
     engineWidget.setEnabled(engineEnabled);
   }
 
-  private String renderModel(EcCarModel model) {
+  private static String renderModel(EcCarModel model) {
     return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
         EcUtils.renderProduced(model.getProducedFrom(), model.getProducedTo()));
   }
@@ -536,10 +536,10 @@ class SearchByCar extends EcView {
     int row = 0;
     int col = 0;
 
-    table.setText(row, col++, Localized.constants.ecCarProduced());
-    table.setText(row, col++, Localized.constants.ecCarEngine());
+    table.setText(row, col++, Localized.getConstants().ecCarProduced());
+    table.setText(row, col++, Localized.getConstants().ecCarEngine());
 
-    table.setText(row, col++, Localized.constants.ecCarPower());
+    table.setText(row, col++, Localized.getConstants().ecCarPower());
 
     table.setText(row, col++, COL_TCD_CCM);
     table.setText(row, col++, COL_TCD_CYLINDERS);

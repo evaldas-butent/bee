@@ -45,21 +45,21 @@ import elemental.js.util.JsIndexable;
 
 import elemental.js.dom.JsClipboard;
 
-public class DndHelper {
+public final class DndHelper {
 
-  public static final Predicate<Object> alwaysTarget = Predicates.alwaysTrue();
+  public static final Predicate<Object> ALWAYS_TARGET = Predicates.alwaysTrue();
   
   private static final String TRANSFER_TYPE_FILES = "Files";
   private static final String TRANSFER_ITEM_KIND_FILE = "file";
 
-  private static String dataType = null;
+  private static String dataType;
 
-  private static Long dataId = null;
-  private static Long relatedId = null;
+  private static Long dataId;
+  private static Long relatedId;
 
-  private static Object data = null;
+  private static Object data;
 
-  private static MotionEvent motionEvent = null;
+  private static MotionEvent motionEvent;
 
   public static void fillContent(String contentType, Long contentId, Long relId, Object content) {
     setDataType(contentType);

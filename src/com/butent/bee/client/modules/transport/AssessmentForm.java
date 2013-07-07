@@ -295,7 +295,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     private final AssessmentStatus status;
     private final String preconditionError;
-    private FormView formView = null;
+    private FormView formView;
     private int statusIdx;
     private int orderStatusIdx;
     private RowCallback rowCallback;
@@ -482,7 +482,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
     });
   }
 
-  private IsRow currentRow = null;
+  private IsRow currentRow;
 
   private final Button cmdNew = new Button("Užklausimas",
       new StatusUpdater(AssessmentStatus.NEW, null));
@@ -521,7 +521,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
         interceptor = new AssessorsGrid();
       }
       if (interceptor != null) {
-        ChildGrid grid = ((ChildGrid) widget);
+        ChildGrid grid = (ChildGrid) widget;
         grid.setGridInterceptor(interceptor);
         grids.add(grid);
       }

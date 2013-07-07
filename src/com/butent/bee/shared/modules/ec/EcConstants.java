@@ -5,12 +5,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.HasCaption;
 
-public class EcConstants {
+public final class EcConstants {
 
   public enum CartType implements HasCaption {
-    MAIN(Localized.constants.ecShoppingCartMain(), Localized.constants.ecShoppingCartMainShort()),
-    ALTERNATIVE(Localized.constants.ecShoppingCartAlternative(),
-        Localized.constants.ecShoppingCartAlternativeShort());
+    MAIN(Localized.getConstants().ecShoppingCartMain(),
+        Localized.getConstants().ecShoppingCartMainShort()),
+    ALTERNATIVE(Localized.getConstants().ecShoppingCartAlternative(),
+        Localized.getConstants().ecShoppingCartAlternativeShort());
 
     private final String caption;
     private final String label;
@@ -31,8 +32,8 @@ public class EcConstants {
   }
 
   public enum EcClientType implements HasCaption {
-    COMPANY(Localized.constants.ecClientTypeCompany()),
-    PERSON(Localized.constants.ecClientTypePerson());
+    COMPANY(Localized.getConstants().ecClientTypeCompany()),
+    PERSON(Localized.getConstants().ecClientTypePerson());
 
     private final String caption;
 
@@ -47,9 +48,9 @@ public class EcConstants {
   }
 
   public enum EcOrderStatus implements HasCaption {
-    NEW(Localized.constants.ecOrderStatusNew()),
-    ACTIVE(Localized.constants.ecOrderStatusActive()),
-    REJECTED(Localized.constants.ecOrderStatusRejected());
+    NEW(Localized.getConstants().ecOrderStatusNew()),
+    ACTIVE(Localized.getConstants().ecOrderStatusActive()),
+    REJECTED(Localized.getConstants().ecOrderStatusRejected());
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {

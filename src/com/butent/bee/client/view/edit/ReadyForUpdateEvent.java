@@ -48,7 +48,7 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
 
   private final RowCallback callback;
 
-  private boolean consumed = false;
+  private boolean consumed;
 
   public ReadyForUpdateEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
       boolean rowMode, RowCallback callback) {

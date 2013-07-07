@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class SelectorColumn implements BeeSerializable, HasInfo {
+public final class SelectorColumn implements BeeSerializable, HasInfo {
 
   private enum Serial {
     SOURCE, CLASSES, STYLE, HOR_ALIGN, VERT_ALIGN, RENDERER_DESCR, RENDER, RENDER_TOKENS, 
@@ -52,20 +52,20 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
     return column;
   }
 
-  private String source = null;
+  private String source;
 
-  private String classes = null;
-  private String style = null;
+  private String classes;
+  private String style;
 
-  private String horAlign = null;
-  private String vertAlign = null;
+  private String horAlign;
+  private String vertAlign;
 
-  private RendererDescription rendererDescription = null;
-  private Calculation render = null;
-  private List<RenderableToken> renderTokens = null;
+  private RendererDescription rendererDescription;
+  private Calculation render;
+  private List<RenderableToken> renderTokens;
 
-  private String itemKey = null;
-  private List<String> renderColumns = null;
+  private String itemKey;
+  private List<String> renderColumns;
   
   private SelectorColumn() {
   }

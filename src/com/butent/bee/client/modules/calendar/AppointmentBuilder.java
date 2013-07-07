@@ -198,7 +198,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, CommonsConstants.COL_COLOR);
       Long newColor = BeeUtils.getQuietly(colors, colorWidget.getSelectedTab());
       if (oldColor != null && newColor != null && !oldColor.equals(newColor)) {
-        changes.add(Localized.constants.color());
+        changes.add(Localized.getConstants().color());
       }
 
       if (changes.isEmpty()) {
@@ -208,12 +208,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       List<String> messages = Lists.newArrayList();
 
-      String msg = isNew ? Localized.constants.newValues() : Localized.constants.changedValues();
+      String msg = isNew ? Localized.getConstants().newValues()
+          : Localized.getConstants().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, changes));
 
-      messages.add(isNew ?
-          Localized.constants.createNewAppointment() : Localized.constants.saveChanges());
+      messages.add(isNew ? Localized.getConstants().createNewAppointment()
+          : Localized.getConstants().saveChanges());
 
       DecisionCallback callback = new DecisionCallback() {
         @Override
@@ -232,8 +233,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       };
 
-      String cap = isNew ?
-          CalendarKeeper.getAppointmentViewInfo().getNewRowCaption() : getFormView().getCaption();
+      String cap = isNew
+          ? CalendarKeeper.getAppointmentViewInfo().getNewRowCaption() : getFormView().getCaption();
       Global.decide(cap, messages, callback, DialogConstants.DECISION_YES);
     }
 
@@ -252,7 +253,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
-          Lists.newArrayList(Localized.constants.deleteAppointment()), new ConfirmationCallback() {
+          Lists.newArrayList(Localized.getConstants().deleteAppointment()),
+          new ConfirmationCallback() {
             @Override
             public void onConfirm() {
               dialog.close();
@@ -337,16 +339,16 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private final boolean isNew;
 
-  private ModalCallback modalCallback = null;
+  private ModalCallback modalCallback;
 
   private final DateOrTimeWidgetHandler dateOrTimeWidgetHandler = new DateOrTimeWidgetHandler();
   private final PropWidgetHandler propWidgetHandler = new PropWidgetHandler();
 
   private final List<Long> serviceTypes = Lists.newArrayList();
-  private Long defaultServiceType = null;
+  private Long defaultServiceType;
 
   private final List<Long> repairTypes = Lists.newArrayList();
-  private Long defaultRepairType = null;
+  private Long defaultRepairType;
 
   private final List<Long> colors = Lists.newArrayList();
 
@@ -355,33 +357,33 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private final List<Long> reminderTypes = Lists.newArrayList();
 
-  private String serviceTypeWidgetId = null;
-  private String repairTypeWidgetId = null;
+  private String serviceTypeWidgetId;
+  private String repairTypeWidgetId;
 
-  private String resourceWidgetId = null;
-  private String overlapWidgetId = null;
+  private String resourceWidgetId;
+  private String overlapWidgetId;
 
-  private String startDateWidgetId = null;
-  private String startTimeWidgetId = null;
-  private String endDateWidgetId = null;
-  private String endTimeWidgetId = null;
+  private String startDateWidgetId;
+  private String startTimeWidgetId;
+  private String endDateWidgetId;
+  private String endTimeWidgetId;
 
-  private String hourWidgetId = null;
-  private String minuteWidgetId = null;
+  private String hourWidgetId;
+  private String minuteWidgetId;
 
-  private String reminderWidgetId = null;
+  private String reminderWidgetId;
 
-  private String buildInfoWidgetId = null;
+  private String buildInfoWidgetId;
 
   private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, Orientation.HORIZONTAL);
 
-  private boolean saving = false;
+  private boolean saving;
 
-  private boolean overlapVisible = false;
+  private boolean overlapVisible;
   private final List<Appointment> overlappingAppointments = Lists.newArrayList();
 
-  private DateTime lastCheckStart = null;
-  private DateTime lastCheckEnd = null;
+  private DateTime lastCheckStart;
+  private DateTime lastCheckEnd;
 
   private final Set<String> requiredFields = Sets.newHashSet();
 
@@ -897,7 +899,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     return repairTypeWidgetId;
   }
 
-  private List<Long> getResources(IsRow row) {
+  private static List<Long> getResources(IsRow row) {
     return DataUtils.parseIdList(row.getProperty(VIEW_APPOINTMENT_ATTENDEES));
   }
 
@@ -1063,7 +1065,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
   }
 
-  private boolean isEmpty(IsRow row, String columnId) {
+  private static boolean isEmpty(IsRow row, String columnId) {
     return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
   }
 
@@ -1395,7 +1397,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     this.buildInfoWidgetId = buildInfoWidgetId;
   }
 
-  private void setDateBounds(InputDate widget) {
+  private static void setDateBounds(InputDate widget) {
     if (widget.getMinDate() == null) {
       widget.setMinDate(MIN_DATE);
     }
@@ -1457,7 +1459,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     this.saving = saving;
   }
 
-  private void setSelectedIndex(final BeeListBox listBox, int index) {
+  private static void setSelectedIndex(final BeeListBox listBox, int index) {
     if (listBox == null || listBox.isEmpty()) {
       return;
     }
@@ -1511,7 +1513,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       panel.add(widget);
     }
 
-    DialogBox dialog = DialogBox.create(Localized.constants.overlappingAppointments(),
+    DialogBox dialog = DialogBox.create(Localized.getConstants().overlappingAppointments(),
         CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
 

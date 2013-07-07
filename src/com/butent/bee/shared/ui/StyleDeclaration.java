@@ -57,9 +57,9 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
     return style;
   }
 
-  private String className = null;
-  private String inline = null;
-  private String fontDeclaration = null;
+  private String className;
+  private String inline;
+  private String fontDeclaration;
 
   public StyleDeclaration(String className) {
     this(className, null, null);

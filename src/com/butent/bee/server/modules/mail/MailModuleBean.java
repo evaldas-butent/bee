@@ -401,6 +401,7 @@ public class MailModuleBean implements BeeModule {
         try {
           transport.close();
         } catch (MessagingException e) {
+          logger.warning(e);
         }
       }
     }
@@ -554,7 +555,7 @@ public class MailModuleBean implements BeeModule {
     int c = 0;
 
     if (localFolder.isConnected() && sync && account.holdsMessages(remoteFolder)) {
-      boolean uidMode = (remoteFolder instanceof UIDFolder);
+      boolean uidMode = remoteFolder instanceof UIDFolder;
       Long uidValidity = uidMode ? ((UIDFolder) remoteFolder).getUIDValidity() : null;
 
       mail.validateFolder(localFolder, uidValidity);
@@ -594,6 +595,7 @@ public class MailModuleBean implements BeeModule {
           try {
             remoteFolder.close(false);
           } catch (MessagingException e) {
+            logger.warning(e);
           }
         }
       }
@@ -667,6 +669,7 @@ public class MailModuleBean implements BeeModule {
           addresses.add(new InternetAddress(address.getValue(CommonsConstants.COL_EMAIL_ADDRESS),
               address.getValue(CommonsConstants.COL_EMAIL_LABEL), BeeConst.CHARSET_UTF8));
         } catch (UnsupportedEncodingException e) {
+          logger.warning(e);
         }
       }
     }

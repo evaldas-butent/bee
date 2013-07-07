@@ -26,7 +26,7 @@ import java.util.Properties;
  * Initializes or makes available particular localizations.
  */
 
-public class Localizations {
+public final class Localizations {
   /**
    * Contains a list of types, that can be translated into a local language.
    */
@@ -34,14 +34,14 @@ public class Localizations {
     CONSTANTS, MESSAGES
   }
 
-  public static Locale defaultLocale = Locale.getDefault();
+  private static Locale defaultLocale = Locale.getDefault();
 
   private static BeeLogger logger = LogUtils.getLogger(Localizations.class);
 
   private static Locale rootLocale = Locale.ROOT;
 
-  private static Map<Locale, File> availableConstants = null;
-  private static Map<Locale, File> availableMessages = null;
+  private static Map<Locale, File> availableConstants;
+  private static Map<Locale, File> availableMessages;
 
   private static Map<Locale, LocalizableConstants> localizedConstants = Maps.newHashMap();
   private static Map<Locale, LocalizableMessages> localizedMessages = Maps.newHashMap();
@@ -69,6 +69,10 @@ public class Localizations {
   public static LocalizableConstants getConstants(Locale locale) {
     Assert.notNull(locale);
     return ensureConstants(locale);
+  }
+
+  public static Locale getDefaultLocale() {
+    return defaultLocale;
   }
 
   public static Map<String, String> getDictionary(Locale locale) {
@@ -194,7 +198,8 @@ public class Localizations {
         new WildcardFilter(baseName + Wildcards.getFsAny(), Component.BASE_NAME),
         new ExtensionFilter(FileUtils.EXT_PROPERTIES));
 
-    String name, sfx;
+    String name;
+    String sfx;
     Locale locale;
     int cnt = 0;
 

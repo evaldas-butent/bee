@@ -401,7 +401,7 @@ public abstract class SqlBuilder {
       case IS_NULL:
       case NOT_NULL:
         return BeeUtils.joinWords(
-            expression, "IS", (operator == Operator.NOT_NULL ? "NOT" : ""), "NULL");
+            expression, "IS", (operator == Operator.NOT_NULL) ? "NOT" : "", "NULL");
 
       case IN:
         return BeeUtils.joinWords(expression, "IN", value);

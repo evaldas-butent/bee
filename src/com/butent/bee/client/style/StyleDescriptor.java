@@ -19,8 +19,8 @@ public class StyleDescriptor extends StyleDeclaration {
     return new StyleDescriptor(src.getClassName(), src.getInline(), src.getFontDeclaration());
   }
 
-  private Font font = null;
-  private SafeStyles safeStyles = null;
+  private Font font;
+  private SafeStyles safeStyles;
 
   public StyleDescriptor(String className) {
     super(className);

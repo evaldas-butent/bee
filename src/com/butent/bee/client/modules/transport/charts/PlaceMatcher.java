@@ -4,7 +4,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-class PlaceMatcher {
+final class PlaceMatcher {
 
   static PlaceMatcher maybeCreate(Collection<ChartData> data) {
     if (BeeUtils.isEmpty(data)) {

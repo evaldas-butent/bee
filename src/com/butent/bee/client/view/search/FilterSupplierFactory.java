@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class FilterSupplierFactory {
+public final class FilterSupplierFactory {
 
   public static AbstractFilterSupplier getSupplier(String viewName, List<BeeColumn> dataColumns,
       int sourceIndex, String label, List<String> searchColumns, FilterSupplierType type,

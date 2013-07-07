@@ -52,7 +52,7 @@ public class MetaDataBean {
     }
   }
 
-  private void dbInfo(BeeDataSource ds, ResponseBuffer buff) {
+  private static void dbInfo(BeeDataSource ds, ResponseBuffer buff) {
     List<ExtendedProperty> prp = null;
     boolean ok = true;
 
@@ -115,7 +115,7 @@ public class MetaDataBean {
     }
   }
 
-  private void ping(BeeDataSource ds, ResponseBuffer buff) {
+  private static void ping(BeeDataSource ds, ResponseBuffer buff) {
     buff.add(ds.toString());
   }
 

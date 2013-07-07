@@ -34,8 +34,10 @@ public class Lens {
     this.vel = vel;
 
     ArrayList<int[]> calcLensArray = new ArrayList<int[]>(0);
-    int a, b;
+    int a;
+    int b;
     double s = Math.sqrt(radius * radius - mag * mag);
+
     for (int y = -radius; y < radius; y++) {
       for (int x = -radius; x < radius; x++) {
         if (x * x + y * y < s * s) {
@@ -61,13 +63,15 @@ public class Lens {
     front.drawImage(back.getCanvas(), 0, 0);
 
     if (GWT.isScript()) {
-      ImageData frontData = front.getImageData((int) (pos.x - radius), (int) (pos.y - radius),
-          2 * radius, 2 * radius);
+      ImageData frontData = front.getImageData((int) (pos.getX() - radius),
+          (int) (pos.getY() - radius), 2 * radius, 2 * radius);
       CanvasPixelArray frontPixels = frontData.getData();
-      ImageData backData = back.getImageData((int) (pos.x - radius), (int) (pos.y - radius),
-          2 * radius, 2 * radius);
+      ImageData backData = back.getImageData((int) (pos.getX() - radius),
+          (int) (pos.getY() - radius), 2 * radius, 2 * radius);
       CanvasPixelArray backPixels = backData.getData();
-      int srcIdx, dstIdx;
+
+      int srcIdx;
+      int dstIdx;
       for (int i = lensArray.length - 1; i >= 0; i--) {
         dstIdx = 4 * lensArray[i][0];
         srcIdx = 4 * lensArray[i][1];
@@ -75,25 +79,25 @@ public class Lens {
         frontPixels.set(dstIdx + 1, backPixels.get(srcIdx + 1));
         frontPixels.set(dstIdx + 2, backPixels.get(srcIdx + 2));
       }
-      front.putImageData(frontData, (int) (pos.x - radius), (int) (pos.y - radius));
+      front.putImageData(frontData, (int) (pos.getX() - radius), (int) (pos.getY() - radius));
     }
 
     front.setStrokeStyle(strokeStyle);
     front.beginPath();
-    front.arc(pos.x, pos.y, radius, 0, Math.PI * 2, true);
+    front.arc(pos.getX(), pos.getY(), radius, 0, Math.PI * 2, true);
     front.closePath();
     front.stroke();
   }
 
   public void update() {
-    if (pos.x + radius + vel.x > width || pos.x - radius + vel.x < 0) {
-      vel.x *= -1;
+    if (pos.getX() + radius + vel.getX() > width || pos.getX() - radius + vel.getX() < 0) {
+      vel.setX(vel.getX() * -1);
     }
-    if (pos.y + radius + vel.y > height || pos.y - radius + vel.y < 0) {
-      vel.y *= -1;
+    if (pos.getY() + radius + vel.getY() > height || pos.getY() - radius + vel.getY() < 0) {
+      vel.setY(vel.getY() * -1);
     }
 
-    pos.x += vel.x;
-    pos.y += vel.y;
+    pos.setX(pos.getX() + vel.getX());
+    pos.setY(pos.getY() + vel.getY());
   }
 }

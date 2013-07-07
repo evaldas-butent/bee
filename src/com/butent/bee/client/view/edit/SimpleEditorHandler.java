@@ -15,12 +15,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handler, HasCaption {
+public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handler,
+    HasCaption {
 
   public static void observe(String caption, Editor editor) {
     observe(caption, editor, null);
   }
-  
+
   public static void observe(String caption, Editor editor,
       NotificationListener notificationListener) {
     Assert.notNull(editor);
@@ -28,7 +29,7 @@ public class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handle
 
     editor.addKeyDownHandler(handler);
     editor.setHandlesTabulation(true);
-    
+
     editor.addEditStopHandler(handler);
   }
 
@@ -67,7 +68,7 @@ public class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handle
     if (editor.handlesKey(keyCode)) {
       return;
     }
-    
+
     Boolean forward;
 
     switch (keyCode) {
@@ -86,11 +87,11 @@ public class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handle
       case KeyCodes.KEY_DOWN:
         forward = true;
         break;
-      
+
       default:
         forward = null;
     }
-    
+
     if (forward != null) {
       event.preventDefault();
       end(forward);
@@ -117,7 +118,7 @@ public class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handle
   private void normalize() {
     editor.normalizeDisplay(editor.getNormalizedValue());
   }
-  
+
   private boolean validate() {
     List<String> messages = editor.validate(true);
 

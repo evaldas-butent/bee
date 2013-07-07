@@ -66,7 +66,7 @@ class EcData {
 
     Tree tree = new Tree();
 
-    TreeItem rootItem = new TreeItem(Localized.constants.ecSelectCategory());
+    TreeItem rootItem = new TreeItem(Localized.getConstants().ecSelectCategory());
     tree.addItem(rootItem);
 
     for (int id : roots) {

@@ -58,9 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class DriverTimeBoard extends ChartBase {
+final class DriverTimeBoard extends ChartBase {
 
-  private static class Absence implements HasDateRange {
+  private static final class Absence implements HasDateRange {
     private final String name;
     private final String label;
 
@@ -90,7 +90,7 @@ class DriverTimeBoard extends ChartBase {
     }
   }
 
-  private static class DriverTrip implements HasDateRange {
+  private static final class DriverTrip implements HasDateRange {
     private static final String dateFromLabel =
         Data.getColumnLabel(VIEW_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM);
     private static final String dateToLabel =
@@ -181,7 +181,7 @@ class DriverTimeBoard extends ChartBase {
   private final Multimap<Long, Freight> freights = ArrayListMultimap.create();
 
   private int driverWidth = BeeConst.UNDEF;
-  private Color itemColor = null;
+  private Color itemColor;
 
   private DriverTimeBoard() {
     super();
@@ -193,7 +193,7 @@ class DriverTimeBoard extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.constants.driverTimeBoard();
+    return Localized.getConstants().driverTimeBoard();
   }
 
   @Override

@@ -1,6 +1,6 @@
 package com.butent.bee.client.dialog;
 
-public class DialogConstants {
+public final class DialogConstants {
 
   public static final String WIDGET_DIALOG = "dialog";
   public static final String WIDGET_PANEL = "panel";

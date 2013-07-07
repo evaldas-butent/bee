@@ -54,7 +54,7 @@ import java.util.Map;
  * Creates and handles user interface forms.
  */
 
-public class FormFactory {
+public final class FormFactory {
 
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
       HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain {

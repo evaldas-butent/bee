@@ -195,7 +195,7 @@ public class AsyncCallback implements RequestCallback {
     finalizeResponse();
   }
 
-  private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,
+  private static void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,
       Collection<ResponseMessage> messages, int cc, int cnt, String sep) {
     if (info == null) {
       logger.severe("rpc info not available");
@@ -218,11 +218,11 @@ public class AsyncCallback implements RequestCallback {
     }
   }
 
-  private void dispatchResource(String src) {
+  private static void dispatchResource(String src) {
     BeeKeeper.getScreen().updateActivePanel(new ResourceEditor(new Resource(src)));
   }
 
-  private void dispatchResponse(String svc, int cc, JsArrayString arr) {
+  private static void dispatchResponse(String svc, int cc, JsArrayString arr) {
     if (cc > 0) {
       List<BeeColumn> columns = Lists.newArrayList();
       for (int i = 0; i < cc; i++) {
@@ -245,11 +245,11 @@ public class AsyncCallback implements RequestCallback {
     }
   }
 
-  private void finalizeResponse() {
+  private static void finalizeResponse() {
     logger.addSeparator();
   }
 
-  private JsArrayString splitResponse(String txt, String sep, int cnt) {
+  private static JsArrayString splitResponse(String txt, String sep, int cnt) {
     JsArrayString arr = JsUtils.split(txt, sep);
     if (cnt > 0 && arr.length() > cnt) {
       arr.setLength(cnt);

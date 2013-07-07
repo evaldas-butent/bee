@@ -43,7 +43,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
   }
 
   @Override
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
+  public void setDateTimeFormat(DateTimeFormat dtFormat) {
+    this.format = dtFormat;
   }
 }

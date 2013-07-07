@@ -15,7 +15,7 @@ import java.util.Map;
  * Handles a list of images used in the system.
  */
 
-public class Images {
+public final class Images {
 
   public interface Resources extends ClientBundle {
 

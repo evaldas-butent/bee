@@ -33,8 +33,8 @@ public class TableCell implements IsCell {
   }
 
   private Value value;
-  private String formattedValue = null;
-  private CustomProperties properties = null;
+  private String formattedValue;
+  private CustomProperties properties;
 
   public TableCell(TableCell other) {
     this(other.value, other.formattedValue);
@@ -151,9 +151,9 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public void setValue(Value value, String formattedValue) {
-    this.value = value;
-    this.formattedValue = formattedValue;
+  public void setValue(Value v, String formatted) {
+    this.value = v;
+    this.formattedValue = formatted;
   }
 
   @Override

@@ -21,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Manages localized number and date formats.
  */
 
-public class Format {
+public final class Format {
 
   /**
    * Handles default formatting values.
@@ -137,7 +137,7 @@ public class Format {
    * Creates custom number formats with supplied parameters.
    */
 
-  private static class NumberFormatter extends NumberFormat {
+  private static final class NumberFormatter extends NumberFormat {
 
     private NumberFormatter(String pattern) {
       this(pattern, CurrencyList.get().getDefault(), true);
@@ -175,8 +175,8 @@ public class Format {
   private static DateTimeFormat weekdayFullFormat = DateTimeFormat.getFormat("EEEE");
 
   private static Character defaultTrueChar = BeeConst.CHECK_MARK;
-  private static Character defaultFalseChar = null;
-  private static Character defaultNullChar = null;
+  private static Character defaultFalseChar;
+  private static Character defaultNullChar;
 
   public static DateTimeFormat getDateTimeFormat(String pattern) {
     Assert.notEmpty(pattern);
@@ -474,8 +474,8 @@ public class Format {
       isDt = ValueType.isDateOrDateTime(type);
       isNum = ValueType.isNumeric(type);
     } else {
-      isDt = (target instanceof HasDateTimeFormat);
-      isNum = (target instanceof HasNumberFormat);
+      isDt = target instanceof HasDateTimeFormat;
+      isNum = target instanceof HasNumberFormat;
     }
 
     if (isDt) {

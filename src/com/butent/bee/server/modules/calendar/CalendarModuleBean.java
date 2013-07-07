@@ -148,6 +148,7 @@ public class CalendarModuleBean implements BeeModule {
               break;
             }
           } catch (NoSuchObjectLocalException e) {
+            logger.warning(e);
           }
         }
         if (appointmentId != null) {
@@ -163,6 +164,7 @@ public class CalendarModuleBean implements BeeModule {
           logger.debug("Canceled timer:", timer.getInfo());
           timer.cancel();
         } catch (NoSuchObjectLocalException e) {
+          logger.warning(e);
         }
       }
     }
@@ -207,7 +209,7 @@ public class CalendarModuleBean implements BeeModule {
           int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
 
           if (current < from || current > until) {
-            time = new DateTime(((current < from) ? TimeUtils.previousDay(time) : time.getDate()));
+            time = new DateTime((current < from) ? TimeUtils.previousDay(time) : time.getDate());
             time.setTime(time.getTime() + until);
           }
         }
@@ -318,7 +320,7 @@ public class CalendarModuleBean implements BeeModule {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
               }
             } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = ((ViewUpdateEvent) event);
+              ViewUpdateEvent ev = (ViewUpdateEvent) event;
 
               if (DataUtils.contains(ev.getColumns(), COL_STATUS)
                   || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
@@ -332,7 +334,7 @@ public class CalendarModuleBean implements BeeModule {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
               }
             } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = ((ViewUpdateEvent) event);
+              ViewUpdateEvent ev = (ViewUpdateEvent) event;
 
               if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
                   || DataUtils.contains(ev.getColumns(), COL_HOURS)
@@ -464,12 +466,12 @@ public class CalendarModuleBean implements BeeModule {
     }
   }
 
-  private String formatMinutes(int minutes) {
+  private static String formatMinutes(int minutes) {
     return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
         + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
   }
 
-  private void formatTimeColumns(BeeRowSet rowSet, int colFrom, int colTo) {
+  private static void formatTimeColumns(BeeRowSet rowSet, int colFrom, int colTo) {
     for (BeeRow row : rowSet.getRows()) {
       for (int c = colFrom; c <= colTo; c++) {
         Integer value = row.getInteger(c);
@@ -533,7 +535,7 @@ public class CalendarModuleBean implements BeeModule {
     return appointments;
   }
 
-  private Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
+  private static Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
     if (!BeeUtils.isEmpty(attendeeTypes) || !BeeUtils.isEmpty(attendees)) {
       return Filter.or(Filter.any(COL_ATTENDEE_TYPE, attendeeTypes),
           Filter.idIn(attendees));
@@ -852,7 +854,7 @@ public class CalendarModuleBean implements BeeModule {
     return qs.getViewData(VIEW_ATTENDEES, attFilter);
   }
 
-  private Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
+  private static Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
     if (lower != null && upper != null) {
       return Range.closedOpen(lower.getDateTime(), upper.getDateTime());
     } else if (lower != null) {
@@ -864,7 +866,7 @@ public class CalendarModuleBean implements BeeModule {
     }
   }
 
-  private Range<Integer> getHourRange(Integer lower, Integer upper) {
+  private static Range<Integer> getHourRange(Integer lower, Integer upper) {
     if (BeeUtils.isPositive(lower) && BeeUtils.isPositive(upper)) {
       return Range.closedOpen(lower, upper);
     } else if (BeeUtils.isPositive(lower)) {
@@ -1220,7 +1222,7 @@ public class CalendarModuleBean implements BeeModule {
     return qs.updateDataWithResponse(update);
   }
 
-  private Map<Integer, Integer> splitByHour(DateTime start, DateTime end,
+  private static Map<Integer, Integer> splitByHour(DateTime start, DateTime end,
       Range<DateTime> dateRange, Range<Integer> hourRange) {
     Map<Integer, Integer> result = Maps.newHashMap();
     if (start == null || end == null) {
@@ -1250,7 +1252,7 @@ public class CalendarModuleBean implements BeeModule {
     return result;
   }
 
-  private Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end,
+  private static Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end,
       Range<DateTime> range) {
     Map<YearMonth, Integer> result = Maps.newHashMap();
     if (start == null || end == null) {
@@ -1284,7 +1286,7 @@ public class CalendarModuleBean implements BeeModule {
     return result;
   }
 
-  private void totalColumns(BeeRowSet rowSet, int colFrom, int colTo, int colTotal) {
+  private static void totalColumns(BeeRowSet rowSet, int colFrom, int colTo, int colTotal) {
     for (BeeRow row : rowSet.getRows()) {
       int sum = 0;
       for (int c = colFrom; c <= colTo; c++) {
@@ -1297,7 +1299,7 @@ public class CalendarModuleBean implements BeeModule {
     }
   }
 
-  private void totalRows(BeeRowSet rowSet, int colFrom, int colTo, long rowId,
+  private static void totalRows(BeeRowSet rowSet, int colFrom, int colTo, long rowId,
       String caption, int colCaption) {
 
     Integer[] totals = new Integer[colTo - colFrom + 1];

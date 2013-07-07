@@ -83,7 +83,7 @@ import javax.xml.validation.SchemaFactory;
  * Manages XML configuration files used by the system.
  */
 
-public class XmlUtils {
+public final class XmlUtils {
 
   /**
    * Handles XML parsing errors.
@@ -472,7 +472,8 @@ public class XmlUtils {
     Map<String, String> ret = new HashMap<String, String>();
 
     Element el;
-    String tg, txt;
+    String tg;
+    String txt;
 
     for (int i = 0; i < nodes.getLength(); i++) {
       el = asElement(nodes.item(i));

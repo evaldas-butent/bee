@@ -16,7 +16,7 @@ public class Counter {
   }
 
   public synchronized int incCounter() {
-    return (++counter);
+    return ++counter;
   }
 
   public synchronized int setCounter(int c) {

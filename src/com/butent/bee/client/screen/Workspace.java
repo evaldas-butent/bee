@@ -95,7 +95,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private class TabWidget extends Span implements HasCaption {
+  private final class TabWidget extends Span implements HasCaption {
 
     private InlineLabel closeTab;
     private Image newTab;
@@ -105,7 +105,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       InlineLabel dropDown = new InlineLabel(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.addStyleName(getStylePrefix() + "dropDown");
-      dropDown.setTitle(Localized.constants.tabControl());
+      dropDown.setTitle(Localized.getConstants().tabControl());
       add(dropDown);
 
       dropDown.addClickHandler(new ClickHandler() {
@@ -122,7 +122,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       closeTab = new InlineLabel();
       closeTab.addStyleName(getStylePrefix() + "closeTab");
-      closeTab.setTitle(Localized.constants.closeTab());
+      closeTab.setTitle(Localized.getConstants().closeTab());
       closeTab.setVisible(setClose);
       add(closeTab);
 
@@ -136,7 +136,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       newTab = new Image(Global.getImages().silverAdd());
       newTab.addStyleName(getStylePrefix() + "newTab");
-      newTab.setTitle(Localized.constants.newTab());
+      newTab.setTitle(Localized.getConstants().newTab());
       add(newTab);
       
       newTab.addClickHandler(new ClickHandler() {
@@ -578,7 +578,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private void insertEmptyPanel(int before) {
     TilePanel panel = new TilePanel(this);
-    TabWidget tab = new TabWidget(Localized.constants.newTab());
+    TabWidget tab = new TabWidget(Localized.getConstants().newTab());
 
     if (getPageCount() == 1) {
       setStyleOne(false);
@@ -632,24 +632,24 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       case NORTH:
       case SOUTH:
       case WEST:
-        enabled = (index == getSelectedIndex());
+        enabled = index == getSelectedIndex();
         break;
 
       case MAXIMIZE:
-        enabled = (index == getSelectedIndex() && (canGrow(Direction.NORTH)
-            || canGrow(Direction.SOUTH) || canGrow(Direction.WEST) || canGrow(Direction.EAST)));
+        enabled = index == getSelectedIndex() && (canGrow(Direction.NORTH)
+            || canGrow(Direction.SOUTH) || canGrow(Direction.WEST) || canGrow(Direction.EAST));
         break;
 
       case RESTORE:
-        enabled = (index == getSelectedIndex() && !resized.isEmpty());
+        enabled = index == getSelectedIndex() && !resized.isEmpty();
         break;
 
       case UP:
       case DOWN:
       case LEFT:
       case RIGHT:
-        enabled = (index == getSelectedIndex() && !resized.containsKey(action.getDirection())
-            && canGrow(action.getDirection()));
+        enabled = index == getSelectedIndex() && !resized.containsKey(action.getDirection())
+            && canGrow(action.getDirection());
         break;
     }
 
@@ -719,7 +719,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     if (BeeUtils.isEmpty(caption)) {
-      caption = Localized.constants.newTab();
+      caption = Localized.getConstants().newTab();
     }
 
     int index = getPageIndex(tile);

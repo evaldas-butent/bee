@@ -4,10 +4,10 @@ public enum ValidationPhase {
   PRE, DEF, POST;
 
   public boolean isPostValidation() {
-    return POST.equals(this);
+    return POST == this;
   }
   
   public boolean isPreValidation() {
-    return PRE.equals(this);
+    return PRE == this;
   }
 }

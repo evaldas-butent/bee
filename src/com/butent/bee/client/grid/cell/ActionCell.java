@@ -63,9 +63,9 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
 
   private final Type type;
 
-  private String viewName = null;
+  private String viewName;
 
-  private String options = null;
+  private String options;
 
   public ActionCell() {
     this(DEFAULT_TYPE);

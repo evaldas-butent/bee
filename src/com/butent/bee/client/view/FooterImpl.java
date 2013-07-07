@@ -31,11 +31,11 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
 
   private static final int HEIGHT = 26;
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
-  private String pagerId = null;
-  private String searchId = null;
-  private String selectionCounterId = null;
+  private String pagerId;
+  private String searchId;
+  private String selectionCounterId;
 
   private boolean enabled = true;
 

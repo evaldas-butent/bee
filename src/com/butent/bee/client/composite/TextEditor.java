@@ -42,9 +42,9 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   private final String acceptId;
   private final String noesId;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public TextEditor() {
     super();

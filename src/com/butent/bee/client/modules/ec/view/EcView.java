@@ -23,16 +23,16 @@ public abstract class EcView extends Flow {
       ecView = new FinancialInformation();
 
     } else if (EcConstants.SVC_SHOW_TERMS_OF_DELIVERY.equals(service)) {
-      ecView = new HtmlViewer(Localized.constants.ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
+      ecView = new HtmlViewer(Localized.getConstants().ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
           COL_CONFIG_TOD_HTML);
     } else if (EcConstants.SVC_SHOW_CONTACTS.equals(service)) {
-      ecView = new HtmlViewer(Localized.constants.ecContacts(), COL_CONFIG_CONTACTS_URL,
+      ecView = new HtmlViewer(Localized.getConstants().ecContacts(), COL_CONFIG_CONTACTS_URL,
           COL_CONFIG_CONTACTS_HTML);
 
     } else if (EcConstants.SVC_SEARCH_BY_ITEM_CODE.equals(service)) {
-      ecView = new SearchByItem(service, Localized.constants.ecItemCode());
+      ecView = new SearchByItem(service, Localized.getConstants().ecItemCode());
     } else if (EcConstants.SVC_SEARCH_BY_OE_NUMBER.equals(service)) {
-      ecView = new SearchByItem(service, Localized.constants.ecItemOeNumber());
+      ecView = new SearchByItem(service, Localized.getConstants().ecItemOeNumber());
 
     } else if (EcConstants.SVC_SEARCH_BY_CAR.equals(service)) {
       ecView = new SearchByCar();
@@ -67,7 +67,7 @@ public abstract class EcView extends Flow {
   }
   
   protected Widget renderNoData(String key) {
-    Label label = new Label(Localized.messages.dataNotAvailable(key));
+    Label label = new Label(Localized.getMessages().dataNotAvailable(key));
     EcStyles.add(label, "noData");
     return label;
   }

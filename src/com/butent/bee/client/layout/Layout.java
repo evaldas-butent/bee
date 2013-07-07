@@ -24,7 +24,9 @@ public class Layout {
   }
 
   class Layer {
-    final Element container, child;
+    final Element container;
+    final Element child;
+
     Object userObject;
 
     boolean setLeft;
@@ -95,15 +97,15 @@ public class Layout {
       return this.userObject;
     }
 
-    void setBottomHeight(double bottom, CssUnit bottomUnit, double height, CssUnit heightUnit) {
+    void setBottomHeight(double bv, CssUnit bu, double hv, CssUnit hu) {
       this.setTargetBottom = true;
       this.setTargetHeight = true;
       this.setTargetTop = false;
       
-      this.targetBottom = bottom;
-      this.targetHeight = height;
-      this.targetBottomUnit = bottomUnit;
-      this.targetHeightUnit = heightUnit;
+      this.targetBottom = bv;
+      this.targetHeight = hv;
+      this.targetBottomUnit = bu;
+      this.targetHeightUnit = hu;
     }
 
     void setChildHorizontalPosition(Alignment position) {
@@ -114,59 +116,59 @@ public class Layout {
       this.vPos = position;
     }
 
-    void setLeftRight(double left, CssUnit leftUnit, double right, CssUnit rightUnit) {
+    void setLeftRight(double lv, CssUnit lu, double rv, CssUnit ru) {
       this.setTargetLeft = true;
       this.setTargetRight = true;
       this.setTargetWidth = false;
       
-      this.targetLeft = left;
-      this.targetRight = right;
-      this.targetLeftUnit = leftUnit;
-      this.targetRightUnit = rightUnit;
+      this.targetLeft = lv;
+      this.targetRight = rv;
+      this.targetLeftUnit = lu;
+      this.targetRightUnit = ru;
     }
 
-    void setLeftWidth(double left, CssUnit leftUnit, double width, CssUnit widthUnit) {
+    void setLeftWidth(double lv, CssUnit lu, double wv, CssUnit wu) {
       this.setTargetLeft = true;
       this.setTargetWidth = true;
       this.setTargetRight = false;
       
-      this.targetLeft = left;
-      this.targetWidth = width;
-      this.targetLeftUnit = leftUnit;
-      this.targetWidthUnit = widthUnit;
+      this.targetLeft = lv;
+      this.targetWidth = wv;
+      this.targetLeftUnit = lu;
+      this.targetWidthUnit = wu;
     }
 
-    void setRightWidth(double right, CssUnit rightUnit, double width, CssUnit widthUnit) {
+    void setRightWidth(double rv, CssUnit ru, double wv, CssUnit wu) {
       this.setTargetRight = true;
       this.setTargetWidth = true;
       this.setTargetLeft = false;
       
-      this.targetRight = right;
-      this.targetWidth = width;
-      this.targetRightUnit = rightUnit;
-      this.targetWidthUnit = widthUnit;
+      this.targetRight = rv;
+      this.targetWidth = wv;
+      this.targetRightUnit = ru;
+      this.targetWidthUnit = wu;
     }
 
-    void setTopBottom(double top, CssUnit topUnit, double bottom, CssUnit bottomUnit) {
+    void setTopBottom(double tv, CssUnit tu, double bv, CssUnit bu) {
       this.setTargetTop = true;
       this.setTargetBottom = true;
       this.setTargetHeight = false;
       
-      this.targetTop = top;
-      this.targetBottom = bottom;
-      this.targetTopUnit = topUnit;
-      this.targetBottomUnit = bottomUnit;
+      this.targetTop = tv;
+      this.targetBottom = bv;
+      this.targetTopUnit = tu;
+      this.targetBottomUnit = bu;
     }
 
-    void setTopHeight(double top, CssUnit topUnit, double height, CssUnit heightUnit) {
+    void setTopHeight(double tv, CssUnit tu, double hv, CssUnit hu) {
       this.setTargetTop = true;
       this.setTargetHeight = true;
       this.setTargetBottom = false;
       
-      this.targetTop = top;
-      this.targetHeight = height;
-      this.targetTopUnit = topUnit;
-      this.targetHeightUnit = heightUnit;
+      this.targetTop = tv;
+      this.targetHeight = hv;
+      this.targetTopUnit = tu;
+      this.targetHeightUnit = hu;
     }
 
     void setVisible(boolean visible) {
@@ -179,7 +181,7 @@ public class Layout {
   private final List<Layer> layers = Lists.newArrayList();
   private final Element parentElem;
   
-  private Animation animation = null;
+  private Animation animation;
 
   Layout(Element parent) {
     this.parentElem = parent;
@@ -223,29 +225,40 @@ public class Layout {
     }
 
     if (duration == 0) {
-      for (Layer l : layers) {
-        l.left = l.sourceLeft = l.targetLeft;
-        l.top = l.sourceTop = l.targetTop;
-        l.right = l.sourceRight = l.targetRight;
-        l.bottom = l.sourceBottom = l.targetBottom;
-        l.width = l.sourceWidth = l.targetWidth;
-        l.height = l.sourceHeight = l.targetHeight;
+      for (Layer layer : layers) {
+        layer.left = layer.targetLeft;
+        layer.sourceLeft = layer.targetLeft;
 
-        l.setLeft = l.setTargetLeft;
-        l.setTop = l.setTargetTop;
-        l.setRight = l.setTargetRight;
-        l.setBottom = l.setTargetBottom;
-        l.setWidth = l.setTargetWidth;
-        l.setHeight = l.setTargetHeight;
+        layer.top = layer.targetTop;
+        layer.sourceTop = layer.targetTop;
+        
+        layer.right = layer.targetRight;
+        layer.sourceRight = layer.targetRight;
+        
+        layer.bottom = layer.targetBottom;
+        layer.sourceBottom = layer.targetBottom;
+        
+        layer.width = layer.targetWidth;
+        layer.sourceWidth = layer.targetWidth;
 
-        l.leftUnit = l.targetLeftUnit;
-        l.topUnit = l.targetTopUnit;
-        l.rightUnit = l.targetRightUnit;
-        l.bottomUnit = l.targetBottomUnit;
-        l.widthUnit = l.targetWidthUnit;
-        l.heightUnit = l.targetHeightUnit;
+        layer.height = layer.targetHeight;
+        layer.sourceHeight = layer.targetHeight;
 
-        impl.layout(l);
+        layer.setLeft = layer.setTargetLeft;
+        layer.setTop = layer.setTargetTop;
+        layer.setRight = layer.setTargetRight;
+        layer.setBottom = layer.setTargetBottom;
+        layer.setWidth = layer.setTargetWidth;
+        layer.setHeight = layer.setTargetHeight;
+
+        layer.leftUnit = layer.targetLeftUnit;
+        layer.topUnit = layer.targetTopUnit;
+        layer.rightUnit = layer.targetRightUnit;
+        layer.bottomUnit = layer.targetBottomUnit;
+        layer.widthUnit = layer.targetWidthUnit;
+        layer.heightUnit = layer.targetHeightUnit;
+
+        impl.layout(layer);
       }
 
       if (callback != null) {
@@ -278,31 +291,33 @@ public class Layout {
 
       @Override
       protected void onUpdate(double progress) {
-        for (Layer l : layers) {
-          if (l.setTargetLeft) {
-            l.left = l.sourceLeft + (l.targetLeft - l.sourceLeft) * progress;
+        for (Layer layer : layers) {
+          if (layer.setTargetLeft) {
+            layer.left = layer.sourceLeft + (layer.targetLeft - layer.sourceLeft) * progress;
           }
-          if (l.setTargetRight) {
-            l.right = l.sourceRight + (l.targetRight - l.sourceRight) * progress;
+          if (layer.setTargetRight) {
+            layer.right = layer.sourceRight + (layer.targetRight - layer.sourceRight) * progress;
           }
           
-          if (l.setTargetTop) {
-            l.top = l.sourceTop + (l.targetTop - l.sourceTop) * progress;
+          if (layer.setTargetTop) {
+            layer.top = layer.sourceTop + (layer.targetTop - layer.sourceTop) * progress;
           }
-          if (l.setTargetBottom) {
-            l.bottom = l.sourceBottom + (l.targetBottom - l.sourceBottom) * progress;
-          }
-
-          if (l.setTargetWidth) {
-            l.width = l.sourceWidth + (l.targetWidth - l.sourceWidth) * progress;
-          }
-          if (l.setTargetHeight) {
-            l.height = l.sourceHeight + (l.targetHeight - l.sourceHeight) * progress;
+          if (layer.setTargetBottom) {
+            layer.bottom = layer.sourceBottom 
+                + (layer.targetBottom - layer.sourceBottom) * progress;
           }
 
-          impl.layout(l);
+          if (layer.setTargetWidth) {
+            layer.width = layer.sourceWidth + (layer.targetWidth - layer.sourceWidth) * progress;
+          }
+          if (layer.setTargetHeight) {
+            layer.height = layer.sourceHeight 
+                + (layer.targetHeight - layer.sourceHeight) * progress;
+          }
+
+          impl.layout(layer);
           if (callback != null) {
-            callback.onLayout(l, progress);
+            callback.onLayout(layer, progress);
           }
         }
       }
@@ -316,116 +331,116 @@ public class Layout {
     layers.remove(layer);
   }
 
-  private void adjustHorizontalConstraints(int parentWidth, Layer l) {
+  private void adjustHorizontalConstraints(int parentWidth, Layer layer) {
     Orientation orientation = Orientation.HORIZONTAL;
     
-    double leftPx = l.left * getUnitSize(l.leftUnit, orientation);
-    double rightPx = l.right * getUnitSize(l.rightUnit, orientation);
-    double widthPx = l.width * getUnitSize(l.widthUnit, orientation);
+    double leftPx = layer.left * getUnitSize(layer.leftUnit, orientation);
+    double rightPx = layer.right * getUnitSize(layer.rightUnit, orientation);
+    double widthPx = layer.width * getUnitSize(layer.widthUnit, orientation);
 
-    if (l.setLeft && !l.setTargetLeft) {
-      l.setLeft = false;
+    if (layer.setLeft && !layer.setTargetLeft) {
+      layer.setLeft = false;
 
-      if (!l.setWidth) {
-        l.setTargetWidth = true;
-        l.sourceWidth = (parentWidth - (leftPx + rightPx)) 
-            / getUnitSize(l.targetWidthUnit, orientation);
+      if (!layer.setWidth) {
+        layer.setTargetWidth = true;
+        layer.sourceWidth = (parentWidth - (leftPx + rightPx)) 
+            / getUnitSize(layer.targetWidthUnit, orientation);
       } else {
-        l.setTargetRight = true;
-        l.sourceRight = (parentWidth - (leftPx + widthPx)) 
-            / getUnitSize(l.targetRightUnit, orientation);
+        layer.setTargetRight = true;
+        layer.sourceRight = (parentWidth - (leftPx + widthPx)) 
+            / getUnitSize(layer.targetRightUnit, orientation);
       }
 
-    } else if (l.setWidth && !l.setTargetWidth) {
-      l.setWidth = false;
+    } else if (layer.setWidth && !layer.setTargetWidth) {
+      layer.setWidth = false;
 
-      if (!l.setLeft) {
-        l.setTargetLeft = true;
-        l.sourceLeft = (parentWidth - (rightPx + widthPx)) 
-            / getUnitSize(l.targetLeftUnit, orientation);
+      if (!layer.setLeft) {
+        layer.setTargetLeft = true;
+        layer.sourceLeft = (parentWidth - (rightPx + widthPx)) 
+            / getUnitSize(layer.targetLeftUnit, orientation);
       } else {
-        l.setTargetRight = true;
-        l.sourceRight = (parentWidth - (leftPx + widthPx)) 
-            / getUnitSize(l.targetRightUnit, orientation);
+        layer.setTargetRight = true;
+        layer.sourceRight = (parentWidth - (leftPx + widthPx)) 
+            / getUnitSize(layer.targetRightUnit, orientation);
       }
 
-    } else if (l.setRight && !l.setTargetRight) {
-      l.setRight = false;
+    } else if (layer.setRight && !layer.setTargetRight) {
+      layer.setRight = false;
 
-      if (!l.setWidth) {
-        l.setTargetWidth = true;
-        l.sourceWidth = (parentWidth - (leftPx + rightPx)) 
-            / getUnitSize(l.targetWidthUnit, orientation);
+      if (!layer.setWidth) {
+        layer.setTargetWidth = true;
+        layer.sourceWidth = (parentWidth - (leftPx + rightPx)) 
+            / getUnitSize(layer.targetWidthUnit, orientation);
       } else {
-        l.setTargetLeft = true;
-        l.sourceLeft = (parentWidth - (rightPx + widthPx)) 
-            / getUnitSize(l.targetLeftUnit, orientation);
+        layer.setTargetLeft = true;
+        layer.sourceLeft = (parentWidth - (rightPx + widthPx)) 
+            / getUnitSize(layer.targetLeftUnit, orientation);
       }
     }
 
-    l.setLeft = l.setTargetLeft;
-    l.setRight = l.setTargetRight;
-    l.setWidth = l.setTargetWidth;
+    layer.setLeft = layer.setTargetLeft;
+    layer.setRight = layer.setTargetRight;
+    layer.setWidth = layer.setTargetWidth;
 
-    l.leftUnit = l.targetLeftUnit;
-    l.rightUnit = l.targetRightUnit;
-    l.widthUnit = l.targetWidthUnit;
+    layer.leftUnit = layer.targetLeftUnit;
+    layer.rightUnit = layer.targetRightUnit;
+    layer.widthUnit = layer.targetWidthUnit;
   }
 
-  private void adjustVerticalConstraints(int parentHeight, Layer l) {
+  private void adjustVerticalConstraints(int parentHeight, Layer layer) {
     Orientation orientation = Orientation.VERTICAL;
     
-    double topPx = l.top * getUnitSize(l.topUnit, orientation);
-    double bottomPx = l.bottom * getUnitSize(l.bottomUnit, orientation);
-    double heightPx = l.height * getUnitSize(l.heightUnit, orientation);
+    double topPx = layer.top * getUnitSize(layer.topUnit, orientation);
+    double bottomPx = layer.bottom * getUnitSize(layer.bottomUnit, orientation);
+    double heightPx = layer.height * getUnitSize(layer.heightUnit, orientation);
 
-    if (l.setTop && !l.setTargetTop) {
-      l.setTop = false;
+    if (layer.setTop && !layer.setTargetTop) {
+      layer.setTop = false;
 
-      if (!l.setHeight) {
-        l.setTargetHeight = true;
-        l.sourceHeight = (parentHeight - (topPx + bottomPx)) 
-            / getUnitSize(l.targetHeightUnit, orientation);
+      if (!layer.setHeight) {
+        layer.setTargetHeight = true;
+        layer.sourceHeight = (parentHeight - (topPx + bottomPx)) 
+            / getUnitSize(layer.targetHeightUnit, orientation);
       } else {
-        l.setTargetBottom = true;
-        l.sourceBottom = (parentHeight - (topPx + heightPx))
-            / getUnitSize(l.targetBottomUnit, orientation);
+        layer.setTargetBottom = true;
+        layer.sourceBottom = (parentHeight - (topPx + heightPx))
+            / getUnitSize(layer.targetBottomUnit, orientation);
       }
 
-    } else if (l.setHeight && !l.setTargetHeight) {
-      l.setHeight = false;
+    } else if (layer.setHeight && !layer.setTargetHeight) {
+      layer.setHeight = false;
 
-      if (!l.setTop) {
-        l.setTargetTop = true;
-        l.sourceTop = (parentHeight - (bottomPx + heightPx)) 
-            / getUnitSize(l.targetTopUnit, orientation);
+      if (!layer.setTop) {
+        layer.setTargetTop = true;
+        layer.sourceTop = (parentHeight - (bottomPx + heightPx)) 
+            / getUnitSize(layer.targetTopUnit, orientation);
       } else {
-        l.setTargetBottom = true;
-        l.sourceBottom = (parentHeight - (topPx + heightPx))
-            / getUnitSize(l.targetBottomUnit, orientation);
+        layer.setTargetBottom = true;
+        layer.sourceBottom = (parentHeight - (topPx + heightPx))
+            / getUnitSize(layer.targetBottomUnit, orientation);
       }
 
-    } else if (l.setBottom && !l.setTargetBottom) {
-      l.setBottom = false;
+    } else if (layer.setBottom && !layer.setTargetBottom) {
+      layer.setBottom = false;
 
-      if (!l.setHeight) {
-        l.setTargetHeight = true;
-        l.sourceHeight = (parentHeight - (topPx + bottomPx))
-            / getUnitSize(l.targetHeightUnit, orientation);
+      if (!layer.setHeight) {
+        layer.setTargetHeight = true;
+        layer.sourceHeight = (parentHeight - (topPx + bottomPx))
+            / getUnitSize(layer.targetHeightUnit, orientation);
       } else {
-        l.setTargetTop = true;
-        l.sourceTop = (parentHeight - (bottomPx + heightPx))
-            / getUnitSize(l.targetTopUnit, orientation);
+        layer.setTargetTop = true;
+        layer.sourceTop = (parentHeight - (bottomPx + heightPx))
+            / getUnitSize(layer.targetTopUnit, orientation);
       }
     }
 
-    l.setTop = l.setTargetTop;
-    l.setBottom = l.setTargetBottom;
-    l.setHeight = l.setTargetHeight;
+    layer.setTop = layer.setTargetTop;
+    layer.setBottom = layer.setTargetBottom;
+    layer.setHeight = layer.setTargetHeight;
 
-    l.topUnit = l.targetTopUnit;
-    l.bottomUnit = l.targetBottomUnit;
-    l.heightUnit = l.targetHeightUnit;
+    layer.topUnit = layer.targetTopUnit;
+    layer.bottomUnit = layer.targetBottomUnit;
+    layer.heightUnit = layer.targetHeightUnit;
   }
 
   private double getUnitSize(CssUnit unit, Orientation orientation) {

@@ -20,14 +20,14 @@ import java.util.List;
 public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType,
     HasOptions {
 
-  private List<String> searchBy = null;
-  private List<String> sortBy = null;
+  private List<String> searchBy;
+  private List<String> sortBy;
 
-  private String options = null;
+  private String options;
 
   private final List<String> classes = Lists.newArrayList();
   
-  private boolean instantKarma = false;
+  private boolean instantKarma;
 
   public AbstractColumn(Cell<C> cell) {
     super(cell);

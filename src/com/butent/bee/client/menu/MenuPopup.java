@@ -6,8 +6,8 @@ public class MenuPopup extends Popup {
 
   private static final String STYLENAME_DEFAULT = "bee-MenuPopup";
 
-  private MenuBar parentMenu = null;
-  private MenuItem parentItem = null;
+  private MenuBar parentMenu;
+  private MenuItem parentItem;
 
   public MenuPopup(MenuBar bar, MenuItem item) {
     super(OutsideClick.CLOSE);

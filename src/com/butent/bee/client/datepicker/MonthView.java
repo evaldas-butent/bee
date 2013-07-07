@@ -30,15 +30,15 @@ import java.util.List;
 
 class MonthView extends Component implements HasKeyDownHandlers {
 
-  private class DayGrid extends Grid {
+  private final class DayGrid extends Grid {
 
-    private class Cell extends UIObject implements HasEnabled {
+    private final class Cell extends UIObject implements HasEnabled {
 
       private final int index;
       private final JustDate value = new JustDate();
 
       private final String cellStyle;
-      private String dateStyle = null;
+      private String dateStyle;
 
       private boolean enabled = true;
 
@@ -86,8 +86,8 @@ class MonthView extends Component implements HasKeyDownHandlers {
         this.dateStyle = dateStyle;
       }
       
-      private void setText(String value) {
-        DOM.setInnerText(getElement(), value);
+      private void setText(String text) {
+        DOM.setInnerText(getElement(), text);
       }
 
       private void update(JustDate date, boolean enable) {
@@ -164,44 +164,43 @@ class MonthView extends Component implements HasKeyDownHandlers {
 
     @Override
     public void onBrowserEvent(Event event) {
+      Element e;
+      Cell cell;
+      
       switch (DOM.eventGetType(event)) {
-        case Event.ONCLICK: {
-          Cell cell = getCell(event);
+        case Event.ONCLICK:
+          cell = getCell(event);
           if (isActive(cell)) {
             getDatePicker().setValue(cell.value, true);
           }
           break;
-        }
 
-        case Event.ONMOUSEOUT: {
-          Element e = DOM.eventGetFromElement(event);
+        case Event.ONMOUSEOUT:
+          e = DOM.eventGetFromElement(event);
           if (e != null) {
-            Cell cell = elementToCell.get(e);
+            cell = elementToCell.get(e);
             if (cell != null && cell.index == getActiveCellIndex()) {
               activateCell(cell, false);
             }
           }
           break;
-        }
 
-        case Event.ONMOUSEOVER: {
-          Element e = DOM.eventGetToElement(event);
+        case Event.ONMOUSEOVER:
+          e = DOM.eventGetToElement(event);
           if (e != null) {
-            Cell cell = elementToCell.get(e);
+            cell = elementToCell.get(e);
             if (isActive(cell)) {
               activateCell(cell, true);
             }
           }
           break;
-        }
         
-        case Event.ONKEYDOWN: {
+        case Event.ONKEYDOWN:
           if (navigate(event.getKeyCode(), EventUtils.hasModifierKey(event))) {
             event.preventDefault();
             event.stopPropagation();
           }
           break;
-        }
       }
       
       super.onBrowserEvent(event);
@@ -283,7 +282,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
   }
 
   @Override
-  protected void setup() {
+  protected void setUp() {
     initWidget(grid);
     grid.setStyleName(css().days());
   }

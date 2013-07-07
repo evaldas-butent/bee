@@ -22,7 +22,7 @@ import java.util.List;
  * Implements management of an old and new values for cells in user interface.
  */
 
-public class Evaluator extends Calculation {
+public final class Evaluator extends Calculation {
 
   /**
    * Manages default values for such parameters as rowId, rowVersion or CellValue.
@@ -42,10 +42,10 @@ public class Evaluator extends Calculation {
 
     private final JavaScriptObject cellValues;
 
-    private IsRow lastRow = null;
-    private String lastCellValue = null;
-    private String lastOldValue = null;
-    private String lastNewValue = null;
+    private IsRow lastRow;
+    private String lastCellValue;
+    private String lastOldValue;
+    private String lastNewValue;
 
     {
       cellValues = JavaScriptObject.createObject();
@@ -314,6 +314,7 @@ public class Evaluator extends Calculation {
     return evaluator;
   }
   
+//CHECKSTYLE:OFF  
   public static native JavaScriptObject createExprInterpreter(String xpr) /*-{
     return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", "return " + xpr + ";");
   }-*/;
@@ -321,8 +322,9 @@ public class Evaluator extends Calculation {
   public static native JavaScriptObject createFuncInterpreter(String fnc) /*-{
     return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", fnc);
   }-*/;
-
-  private Parameters parameters = null;
+//CHECKSTYLE:ON
+  
+  private Parameters parameters;
 
   private final JavaScriptObject interpeter;
 

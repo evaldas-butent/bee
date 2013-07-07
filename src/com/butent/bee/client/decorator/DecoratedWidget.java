@@ -20,8 +20,8 @@ public class DecoratedWidget extends Panel implements IdentifiableWidget {
   private final JsFunction onInserted;
   private final JsFunction onRemoved;
   
-  private int insertCounter = 0;
-  private int removeCounter = 0;
+  private int insertCounter;
+  private int removeCounter;
 
   public DecoratedWidget(Widget widget, Element element, JsFunction onInserted,
       JsFunction onRemoved) {
@@ -55,7 +55,7 @@ public class DecoratedWidget extends Panel implements IdentifiableWidget {
   @Override
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
-      int counter = 0;
+      int counter;
 
       @Override
       public boolean hasNext() {

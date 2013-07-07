@@ -73,13 +73,13 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   private final String name;
   private final boolean vertical;
-  private int optionCount = 0;
+  private int optionCount;
 
-  private int valueStartIndex = 0;
+  private int valueStartIndex;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public RadioGroup(boolean vertical) {
     this(NameUtils.createUniqueName("optiongroup"), vertical);

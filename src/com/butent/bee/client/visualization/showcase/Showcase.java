@@ -29,12 +29,12 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Initializes visualization demos.
  */
 
-public class Showcase {
+public final class Showcase {
 
   private static final BeeLogger logger = LogUtils.getLogger(Showcase.class);
   
-  private static boolean pomInjected = false;
-  private static boolean pomLoaded = false;
+  private static boolean pomInjected;
+  private static boolean pomLoaded;
 
   public static void open() {
     logger.info("loading api");
@@ -134,10 +134,10 @@ public class Showcase {
 
   private static void injectPom() {
     if (!pomInjected) {
-      DomUtils
-          .injectExternalScript("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.js");
-      DomUtils
-          .injectExternalStyle("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.css");
+      DomUtils.injectExternalScript(
+          "http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.js");
+      DomUtils.injectExternalStyle(
+          "http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.css");
       pomInjected = true;
     }
   }
@@ -147,5 +147,8 @@ public class Showcase {
       pomLoaded = checkPom();
     }
     return pomLoaded;
+  }
+
+  private Showcase() {
   }
 }

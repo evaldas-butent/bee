@@ -20,6 +20,6 @@ import org.junit.runners.Suite.SuiteClasses;
     TestService.class, TestStringArray.class,
     TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
-    TestTimeOfDayValue.class})
+    TestTimeOfDayValue.class })
 public class AllTests {
 }

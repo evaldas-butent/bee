@@ -29,10 +29,10 @@ import com.butent.bee.client.utils.HasCommand;
  */
 public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAllMouseHandlers {
 
-  private ScheduledCommand command = null;
+  private ScheduledCommand command;
 
   private boolean enabled = true;
-  private String styleDisabled = null;
+  private String styleDisabled;
 
   public Image() {
     super(Document.get().createImageElement());

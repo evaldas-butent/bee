@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
-@XmlSeeAlso({MenuEntry.class, MenuItem.class})
+@XmlSeeAlso({MenuEntry.class, MenuItem.class })
 public abstract class Menu implements BeeSerializable {
 
   private enum Serial {

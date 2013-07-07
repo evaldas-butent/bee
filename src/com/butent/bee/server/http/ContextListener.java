@@ -9,7 +9,7 @@ import javax.servlet.ServletContextListener;
  * Initializes and destroys HTTP contexts.
  */
 public class ContextListener implements ServletContextListener {
-  private String attrCnt = null;
+  private String attrCnt;
 
   public ContextListener() {
     super();
@@ -30,5 +30,4 @@ public class ContextListener implements ServletContextListener {
     sce.getServletContext().setAttribute(attrCnt, new Counter());
     sce.getServletContext().log("context initialized");
   }
-
 }

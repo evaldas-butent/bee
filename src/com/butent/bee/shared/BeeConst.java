@@ -5,7 +5,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 /**
  * Stores all default values (databases, boolean, separators etc.).
  */
-public class BeeConst {
+public final class BeeConst {
 
   public enum SqlEngine {
     POSTGRESQL("PostgreSQL"), MSSQL("Microsoft SQL Server"), ORACLE("Oracle"), GENERIC(null);

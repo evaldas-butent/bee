@@ -256,9 +256,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
   String getTitle() {
     return ChartHelper.buildTitle(cargoLabel, cargoDescription,
-        Localized.constants.cargoLoading(), Places.getLoadingInfo(this),
-        Localized.constants.cargoUnloading(), Places.getUnloadingInfo(this),
-        Localized.constants.transportationOrder(), orderName,
+        Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
+        Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
+        Localized.getConstants().transportationOrder(), orderName,
         customerLabel, customerName, notesLabel, notes);
   }
 

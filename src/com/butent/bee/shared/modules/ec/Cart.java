@@ -22,12 +22,12 @@ public class Cart implements BeeSerializable {
     return cart;
   }
 
-  private String deliveryAddress = null;
-  private Long deliveryMethod = null;
+  private String deliveryAddress;
+  private Long deliveryMethod;
 
-  private Boolean copyByMail = null;
+  private Boolean copyByMail;
 
-  private String comment = null;
+  private String comment;
 
   private final List<CartItem> items = Lists.newArrayList();
 

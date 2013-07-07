@@ -111,7 +111,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EventUtils {
+public final class EventUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(EventUtils.class);
 

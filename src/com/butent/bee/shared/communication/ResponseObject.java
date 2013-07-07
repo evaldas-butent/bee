@@ -68,11 +68,11 @@ public class ResponseObject implements BeeSerializable {
   }
 
   private final Collection<ResponseMessage> messages = Lists.newArrayList();
-  private Object response = null;
-  private String type = null;
-  private boolean isArrayType = false;
+  private Object response;
+  private String type;
+  private boolean isArrayType;
   
-  private int size = 0;
+  private int size;
 
   public ResponseObject addError(Object... err) {
     messages.add(new ResponseMessage(LogLevel.ERROR, ArrayUtils.joinWords(err)));
@@ -310,16 +310,16 @@ public class ResponseObject implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
-  public ResponseObject setResponse(Object response) {
-    if (response != null) {
-      setType(response.getClass());
+  public ResponseObject setResponse(Object rsp) {
+    if (rsp != null) {
+      setType(rsp.getClass());
     }
-    this.response = response;
+    this.response = rsp;
     return this;
   }
 
-  public ResponseObject setSize(int size) {
-    this.size = size;
+  public ResponseObject setSize(int z) {
+    this.size = z;
     return this;
   }
 
@@ -344,7 +344,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   private boolean hasResponse(Class<?> clazz, boolean isArray) {
-    boolean ok = (response != null);
+    boolean ok = response != null;
 
     if (ok && clazz != null) {
       ok = (isArrayType() == isArray) && BeeUtils.same(getType(), NameUtils.getClassName(clazz));

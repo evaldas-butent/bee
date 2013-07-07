@@ -71,7 +71,7 @@ public class MonthView extends CalendarView {
 
   private final Map<String, List<Appointment>> moreLabels = Maps.newHashMap();
 
-  private MonthMoveController moveController = null;
+  private MonthMoveController moveController;
 
   private JustDate firstDate;
   private int requiredRows;
@@ -287,7 +287,7 @@ public class MonthView extends CalendarView {
     }
   }
 
-  private JustDate calculateFirstDate(JustDate dayInMonth) {
+  private static JustDate calculateFirstDate(JustDate dayInMonth) {
     JustDate date = TimeUtils.startOfMonth(dayInMonth);
     return TimeUtils.startOfWeek(date, (date.getDow() > 1) ? 0 : -1);
   }
@@ -303,7 +303,7 @@ public class MonthView extends CalendarView {
     this.cellHeight = cellOffsetHeight - dayHeaderHeight;
   }
 
-  private int calculateRequiredRows(JustDate dayInMonth) {
+  private static int calculateRequiredRows(JustDate dayInMonth) {
     int rows = 5;
 
     JustDate firstOfTheMonth = TimeUtils.startOfMonth(dayInMonth);
@@ -346,7 +346,7 @@ public class MonthView extends CalendarView {
   }
   
   private double getRowHeight() {
-    return (canvas.getElement().getClientHeight() - weekDayHeaderHeight) / (double) requiredRows;    
+    return (canvas.getElement().getClientHeight() - weekDayHeaderHeight) / (double) requiredRows;
   }
 
   private void layOnAppointment(long calendarId, Appointment appointment, boolean multi,
@@ -487,7 +487,7 @@ public class MonthView extends CalendarView {
     }
 
     left += marginLeft;
-    width -= (marginLeft + marginRight);
+    width -= marginLeft + marginRight;
 
     int y = weekDayHeaderHeight + row * cellOffsetHeight + dayHeaderHeight + APPOINTMENT_MARGIN_TOP
         + cellPosition * (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP);
@@ -514,7 +514,7 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final DialogBox dialog = DialogBox.create(Localized.constants.selectAppointment(),
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().selectAppointment(),
         CalendarStyleManager.MORE_POPUP);
     
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {

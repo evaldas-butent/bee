@@ -25,7 +25,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class PasswordService {
+public final class PasswordService {
 
   private static final String STYLE_DIALOG = "bee-ChangePassword";
   private static final int MAX_PASSWORD_LENGTH = 30;
@@ -83,18 +83,18 @@ public class PasswordService {
       inpOld = null;
     } else {
       inpOld = new InputPassword(MAX_PASSWORD_LENGTH);
-      table.setText(row, 0, Localized.constants.oldPassword());
+      table.setText(row, 0, Localized.getConstants().oldPassword());
       table.setWidget(row, 1, inpOld);
       row++;
     }
 
     final InputPassword inpNew = new InputPassword(MAX_PASSWORD_LENGTH);
-    table.setText(row, 0, Localized.constants.newPassword());
+    table.setText(row, 0, Localized.getConstants().newPassword());
     table.setWidget(row, 1, inpNew);
     row++;
 
     final InputPassword inpNew2 = new InputPassword(MAX_PASSWORD_LENGTH);
-    table.setText(row, 0, Localized.constants.repeatNewPassword());
+    table.setText(row, 0, Localized.getConstants().repeatNewPassword());
     table.setWidget(row, 1, inpNew2);
     row++;
 
@@ -130,7 +130,7 @@ public class PasswordService {
       }
     });
 
-    Global.inputWidget(Localized.constants.changePassword(), table, new InputCallback() {
+    Global.inputWidget(Localized.getConstants().changePassword(), table, new InputCallback() {
       @Override
       public String getErrorMessage() {
         if (!BeeUtils.isEmpty(oldPass) && inpOld != null) {
@@ -138,11 +138,11 @@ public class PasswordService {
 
           if (BeeUtils.isEmpty(old)) {
             inpOld.setFocus(true);
-            return Localized.constants.oldPasswordIsRequired();
+            return Localized.getConstants().oldPasswordIsRequired();
 
           } else if (!Objects.equal(Codec.md5(old), oldPass)) {
             inpOld.setFocus(true);
-            return Localized.constants.oldPasswordIsInvalid();
+            return Localized.getConstants().oldPasswordIsInvalid();
           }
         }
 
@@ -150,11 +150,11 @@ public class PasswordService {
 
         if (BeeUtils.isEmpty(newPass)) {
           inpNew.setFocus(true);
-          return Localized.constants.newPasswordIsRequired();
+          return Localized.getConstants().newPasswordIsRequired();
 
         } else if (!newPass.equals(BeeUtils.trim(inpNew2.getValue()))) {
           inpNew.setFocus(true);
-          return Localized.constants.newPasswordsDoesNotMatch();
+          return Localized.getConstants().newPasswordsDoesNotMatch();
         }
 
         return super.getErrorMessage();
@@ -165,5 +165,8 @@ public class PasswordService {
         callback.accept(Codec.md5(BeeUtils.trim(inpNew.getValue())));
       }
     }, STYLE_DIALOG);
+  }
+
+  private PasswordService() {
   }
 }

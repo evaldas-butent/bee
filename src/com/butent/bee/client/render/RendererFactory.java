@@ -24,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class RendererFactory {
+public final class RendererFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RendererFactory.class);
 

@@ -5,7 +5,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 
-public class TradeKeeper {
+public final class TradeKeeper {
 
   public static void register() {
   }

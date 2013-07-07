@@ -16,10 +16,10 @@ import java.util.MissingResourceException;
  * Manages a settings array.
  */
 
-public class Settings {
+public final class Settings {
 
-  private static Dictionary settings = null;
-  private static boolean initialized = false;
+  private static Dictionary settings;
+  private static boolean initialized;
 
   public static int getActionSensitivityMillis() {
     return getPropertyInt("actionSensitivityMillis");

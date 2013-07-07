@@ -28,7 +28,7 @@ import java.util.Map.Entry;
  * and dropping keys etc.
  */
 
-public class SqlUtils {
+public final class SqlUtils {
 
   public static IsExpression aggregate(SqlFunction fnc, IsExpression expr) {
     Map<String, Object> params = Maps.newHashMap();
@@ -161,7 +161,8 @@ public class SqlUtils {
     return new SqlCommand(SqlKeyword.DB_FIELDS, params);
   }
 
-  public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table, String refTable) {
+  public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table,
+      String refTable) {
     Map<String, Object> params = Maps.newHashMap();
     params.put("dbName", dbName);
     params.put("dbSchema", dbSchema);
@@ -326,7 +327,8 @@ public class SqlUtils {
     return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 
-  public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
+  public static IsCondition in(String src, String fld, String dst, String dFld,
+      IsCondition clause) {
     SqlSelect query = new SqlSelect()
         .setDistinctMode(true)
         .addFields(dst, dFld)

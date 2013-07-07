@@ -33,11 +33,11 @@ public class Toggle extends CustomButton implements Editor {
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public Toggle() {
     super();

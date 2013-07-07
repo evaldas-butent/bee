@@ -26,7 +26,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
-public class CrmKeeper {
+public final class CrmKeeper {
 
   private static final String COMPANY_TIMES_REPORT = "companytimes";
   private static final String TYPE_HOURS_REPORT = "typehours";
@@ -37,7 +37,7 @@ public class CrmKeeper {
     private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME,
         COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME);
 
-    private DataInfo taskViewInfo = null;
+    private DataInfo taskViewInfo;
 
     @Override
     public void onRowTransform(RowTransformEvent event) {

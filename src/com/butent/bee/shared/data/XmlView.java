@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.shared.data;
 
 import java.util.Collection;
@@ -16,7 +17,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 public class XmlView {
 
   @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlIdColumn.class,
-      XmlAggregateColumn.class, XmlSimpleJoin.class, XmlAggregateJoin.class, XmlExternalJoin.class})
+      XmlAggregateColumn.class, XmlSimpleJoin.class, XmlAggregateJoin.class,
+      XmlExternalJoin.class })
   public abstract static class XmlColumn {
     @XmlAttribute
     public String name;

@@ -364,7 +364,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList();
 
   public static Widget getDefaultFace() {
-    return new Button(Localized.constants.chooseFiles());
+    return new Button(Localized.getConstants().chooseFiles());
   }
 
   public static List<Column> parseColumns(String input) {
@@ -393,8 +393,8 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
   private final List<StoredFile> files = Lists.newArrayList();
 
-  private String caption = null;
-  private String options = null;
+  private String caption;
+  private String options;
 
   private final List<Column> columns = Lists.newArrayList();
   private final List<Column> editable = Lists.newArrayList();

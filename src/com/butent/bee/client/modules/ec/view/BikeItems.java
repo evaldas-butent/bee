@@ -10,7 +10,7 @@ class BikeItems extends EcView {
 
   @Override
   protected void createUi() {
-    add(renderNoData(Localized.constants.ecBikeItems()));
+    add(renderNoData(Localized.getConstants().ecBikeItems()));
   }
 
   @Override

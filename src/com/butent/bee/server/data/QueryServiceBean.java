@@ -808,7 +808,7 @@ public class QueryServiceBean {
     return result;
   }
 
-  private SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
+  private static SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
     List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
     int cc = rsCols.size();
     String[] columns = new String[cc];

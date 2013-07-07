@@ -7,7 +7,7 @@ import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.shared.Assert;
 
-public class OpenEvent extends GwtEvent<OpenEvent.Handler> {
+public final class OpenEvent extends GwtEvent<OpenEvent.Handler> {
   
   public interface HasOpenHandlers extends HasHandlers {
     HandlerRegistration addOpenHandler(Handler handler);

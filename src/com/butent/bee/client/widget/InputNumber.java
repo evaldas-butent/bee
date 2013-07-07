@@ -27,24 +27,24 @@ import java.util.List;
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
 
-  public static final CharMatcher intCharMatcher =
+  public static final CharMatcher INT_CHAR_MATCHER =
       CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
           .or(CharMatcher.is(BeeConst.CHAR_SPACE))
           .or(CharMatcher.is(BeeConst.CHAR_MINUS));
 
-  public static final CharMatcher numCharMatcher = intCharMatcher
+  public static final CharMatcher NUM_CHAR_MATCHER = INT_CHAR_MATCHER
       .or(CharMatcher.is(BeeConst.CHAR_POINT))
       .or(CharMatcher.is(BeeConst.CHAR_COMMA));
   
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
-  private String minValue = null;
-  private String maxValue = null;
+  private String minValue;
+  private String maxValue;
 
   private int stepValue = BeeConst.UNDEF;
 
-  private NumberFormat format = null;
+  private NumberFormat format;
 
   public InputNumber() {
     super();
@@ -126,8 +126,8 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   }
 
   @Override
-  public void setNumberFormat(NumberFormat format) {
-    this.format = format;
+  public void setNumberFormat(NumberFormat numberFormat) {
+    this.format = numberFormat;
   }
 
   @Override
@@ -179,7 +179,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.constants.valueRequired());
+        messages.add(Localized.getConstants().valueRequired());
       }
       return messages;
     }
@@ -216,7 +216,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.constants.valueRequired());
+        messages.add(Localized.getConstants().valueRequired());
       }
       return messages;
     }
@@ -233,7 +233,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   @Override
   protected CharMatcher getDefaultCharMatcher() {
-    return InputNumber.numCharMatcher;
+    return InputNumber.NUM_CHAR_MATCHER;
   }
 
   @Override

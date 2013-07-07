@@ -1180,7 +1180,7 @@ public class TransportModuleBean implements BeeModule {
     qs.sqlIndex(tmpFuels, "Vehicle");
 
     for (int i = 0; i < 2; i++) {
-      boolean plusMode = (i == 0);
+      boolean plusMode = i == 0;
       String fld = plusMode ? "FuelBefore" : "FuelAfter";
 
       tmp = qs.sqlCreateTemp(new SqlSelect()
@@ -1461,7 +1461,7 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(settings);
   }
 
-  private IsCondition tripCondition(IsCondition where) {
+  private static IsCondition tripCondition(IsCondition where) {
     return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
   }
 }

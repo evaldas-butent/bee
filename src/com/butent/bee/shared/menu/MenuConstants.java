@@ -5,7 +5,7 @@ package com.butent.bee.shared.menu;
  * certain criteria (for example {@code isRootLevel} or {@code isValidLayout}.
  */
 
-public class MenuConstants {
+public final class MenuConstants {
 
   /**
    * Contains a list of possible menu types.
@@ -15,17 +15,17 @@ public class MenuConstants {
   }
 
   /**
-   * Lists all possible menu item types
+   * Lists all possible menu item types.
    */
   public enum ITEM_TYPE {
     LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD, ROW
   }
 
-  public static int MAX_MENU_DEPTH = 3;
-  public static int ROOT_MENU_INDEX = 0;
+  public static final int MAX_MENU_DEPTH = 3;
+  public static final int ROOT_MENU_INDEX = 0;
 
-  public static int DEFAULT_ROOT_LIMIT = 0;
-  public static int DEFAULT_ITEM_LIMIT = 0;
+  public static final int DEFAULT_ROOT_LIMIT = 0;
+  public static final int DEFAULT_ITEM_LIMIT = 0;
 
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";
@@ -42,8 +42,8 @@ public class MenuConstants {
   public static final String LAYOUT_BUTTONS_HOR = "buttons horizontal";
   public static final String LAYOUT_BUTTONS_VERT = "buttons vertical";
 
-  public static String DEFAULT_ROOT_LAYOUT = LAYOUT_MENU_HOR;
-  public static String DEFAULT_ITEM_LAYOUT = LAYOUT_MENU_VERT;
+  public static final String DEFAULT_ROOT_LAYOUT = LAYOUT_MENU_HOR;
+  public static final String DEFAULT_ITEM_LAYOUT = LAYOUT_MENU_VERT;
 
   public static final int SEPARATOR_BEFORE = 1;
   public static final int SEPARATOR_AFTER = 2;

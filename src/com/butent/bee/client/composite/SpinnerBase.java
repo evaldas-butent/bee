@@ -83,17 +83,21 @@ public class SpinnerBase {
 
   private List<SpinnerListener> spinnerListeners = new ArrayList<SpinnerListener>();
 
-  private int step, minStep, maxStep;
+  private int step;
+  private int minStep;
+  private int maxStep;
   private int initialSpeed;
 
-  private long value, min, max;
+  private long value;
+  private long min;
+  private long max;
   private boolean constrained;
 
   private boolean enabled = true;
   private boolean increment;
 
   private final Timer timer = new Timer() {
-    private int counter = 0;
+    private int counter;
     private int speed = initialSpeed;
 
     @Override
@@ -364,8 +368,8 @@ public class SpinnerBase {
     this.minStep = minStep;
   }
 
-  public void setValue(long value, boolean fireEvent) {
-    this.value = value;
+  public void setValue(long v, boolean fireEvent) {
+    this.value = v;
     if (fireEvent) {
       fireOnValueChanged();
     }

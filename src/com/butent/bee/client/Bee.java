@@ -72,7 +72,7 @@ public class Bee implements EntryPoint {
     });
   }
 
-  private void load(Map<String, String> data) {
+  private static void load(Map<String, String> data) {
     UserData userData = UserData.restore(data.get(Service.LOGIN));
     BeeKeeper.getUser().setUserData(userData);
     BeeKeeper.getScreen().updateUserData(userData);
@@ -90,7 +90,7 @@ public class Bee implements EntryPoint {
         data.get(ColumnDescription.VIEW_COLUMN_SETTINGS));
   }
 
-  private void start() {
+  private static void start() {
     BeeKeeper.getScreen().onLoad();
 
     ModuleManager.onLoad();

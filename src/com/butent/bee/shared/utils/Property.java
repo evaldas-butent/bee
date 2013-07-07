@@ -11,8 +11,8 @@ import com.butent.bee.shared.BeeSerializable;
  */
 public class Property implements Comparable<Property>, BeeSerializable {
 
-  public static String[] HEADERS = new String[] {"Property", "Value"};
-  public static int HEADER_COUNT = HEADERS.length;
+  public static final String[] HEADERS = new String[] {"Property", "Value"};
+  public static final int HEADER_COUNT = HEADERS.length;
 
   public static Property restore(String s) {
     if (BeeUtils.isEmpty(s)) {

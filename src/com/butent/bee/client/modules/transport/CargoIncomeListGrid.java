@@ -50,7 +50,7 @@ import java.util.Set;
 
 public class CargoIncomeListGrid extends AbstractGridInterceptor {
 
-  private UnboundSelector mainItem = null;
+  private UnboundSelector mainItem;
 
   @Override
   public GridInterceptor getInstance() {
@@ -99,7 +99,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
 
             for (BeeRow row : result.getRows()) {
               if (!itemEmpty) {
-                itemEmpty = (row.getLong(item) == null);
+                itemEmpty = row.getLong(item) == null;
               }
               if (clientUnique) {
                 Long id = BeeUtils.nvl(row.getLong(companyId), row.getLong(payerId),

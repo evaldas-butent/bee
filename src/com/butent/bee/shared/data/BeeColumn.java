@@ -39,12 +39,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     return c;
   }
 
-  private boolean nullable = false;
-  private boolean readOnly = false;
+  private boolean nullable;
+  private boolean readOnly;
   private boolean editable = true;
 
-  private int level = 0;
-  private Pair<DefaultExpression, Object> defaults = null;
+  private int level;
+  private Pair<DefaultExpression, Object> defaults;
 
   public BeeColumn() {
     super(ValueType.TEXT);

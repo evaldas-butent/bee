@@ -28,8 +28,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget>,
     ActiveWidgetChangeEvent.Handler {
 
-  private static class Appliance extends Flow implements HasCloseHandlers<IdentifiableWidget>,
-      HasDomain {
+  private static final class Appliance extends Flow implements
+      HasCloseHandlers<IdentifiableWidget>, HasDomain {
 
     private static final String STYLE_NAME = "bee-Appliance";
 
@@ -202,7 +202,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
     Shell shell = new Shell("bee-Shell");
     shell.restore();
-    
+
     Simple wrapper = new Simple(shell);
 
     add(Domain.ADMIN, wrapper);

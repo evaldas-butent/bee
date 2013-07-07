@@ -155,7 +155,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private static int attBgIndex;
   private static int bgIndex;
 
-  private static boolean initialized = false;
+  private static boolean initialized;
 
   private static void initialize(BeeRowSet rowSet) {
     ucIndex = rowSet.getColumnIndex(COL_USER_CALENDAR);
@@ -191,7 +191,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private final DataSelector attSelector;
 
-  private Long activeRowId = null;
+  private Long activeRowId;
 
   CalendarController(long calendarId, long ucId, String caption, BeeRowSet ucAttendees) {
     super();
@@ -421,7 +421,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     }, getCaption(row));
   }
 
-  private DataSelector createSelector() {
+  private static DataSelector createSelector() {
     Relation relation = Relation.create(VIEW_ATTENDEES,
         Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
     relation.disableEdit();
@@ -538,11 +538,11 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     return null;
   }
 
-  private String getCaption(BeeRow row) {
+  private static String getCaption(BeeRow row) {
     return BeeUtils.notEmpty(row.getString(captionIndex), row.getString(nameIndex));
   }
 
-  private String getColor(BeeRow row) {
+  private static String getColor(BeeRow row) {
     if (row == null) {
       return null;
     } else {
@@ -554,7 +554,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     return ucAttendees.getRowById(rowId);
   }
 
-  private boolean isEnabled(BeeRow row) {
+  private static boolean isEnabled(BeeRow row) {
     return BeeUtils.isTrue(row.getBoolean(enabledIndex));
   }
 
@@ -640,7 +640,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     attSelector.getOracle().setExclusions(attIds);
   }
 
-  private void updateCell(long rowId, String columnId, Value value) {
+  private static void updateCell(long rowId, String columnId, Value value) {
     Queries.update(VIEW_USER_CAL_ATTENDEES, ComparisonFilter.compareId(rowId), columnId, value,
         null);
   }

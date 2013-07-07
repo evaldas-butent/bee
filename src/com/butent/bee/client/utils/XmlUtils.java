@@ -47,7 +47,7 @@ import java.util.Map;
  * Contains utility functions for working with xml on the client side.
  */
 
-public class XmlUtils {
+public final class XmlUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(XmlUtils.class);
   
@@ -622,7 +622,8 @@ public class XmlUtils {
     Document doc = XMLParser.createDocument();
     Element root = doc.createElement(rootName);
 
-    String tag, txt;
+    String tag;
+    String txt;
 
     for (int i = 0; i < nodes.length - 1; i += 2) {
       tag = nodes[i];

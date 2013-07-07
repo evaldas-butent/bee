@@ -43,7 +43,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
   }
 
   @Override
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
+  public void setDateTimeFormat(DateTimeFormat dtFormat) {
+    this.format = dtFormat;
   }
 }

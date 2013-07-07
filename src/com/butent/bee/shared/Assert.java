@@ -12,7 +12,7 @@ import java.util.Map;
  * Implements various assertions for given objects, for example {@code isNull, isEven, isTrue} etc.
  */
 
-public class Assert {
+public final class Assert {
 
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
   public static final String IS_EMPTY = ASSERTION_FAILED + "argument must not be null or empty";

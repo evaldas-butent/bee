@@ -24,7 +24,7 @@ import java.util.Set;
 
 public class RowPresenter extends AbstractPresenter implements Printable {
   
-  private static class Container extends Complex implements HasCaption, HasWidgetSupplier {
+  private static final class Container extends Complex implements HasCaption, HasWidgetSupplier {
 
     private final DataInfo dataInfo;
     private final long rowId;
@@ -82,7 +82,7 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   
   private final Container container;
   
-  private HandlesActions actionDelegate = null;
+  private HandlesActions actionDelegate;
   
   public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -151,7 +151,7 @@ public class RowPresenter extends AbstractPresenter implements Printable {
     this.actionDelegate = actionDelegate;
   }
 
-  private HeaderView createHeader(String caption, Set<Action> enabledActions,
+  private static HeaderView createHeader(String caption, Set<Action> enabledActions,
       Set<Action> disabledActions) {
 
     HeaderView formHeader = new HeaderSilverImpl();

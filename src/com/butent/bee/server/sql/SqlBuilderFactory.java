@@ -11,7 +11,7 @@ import java.util.Collection;
  * default SQL builder for a particular instance of application.
  */
 
-public class SqlBuilderFactory {
+public final class SqlBuilderFactory {
 
   private static Collection<SqlBuilder> builders = Lists.newArrayList(
       new GenericSqlBuilder(),
@@ -75,12 +75,15 @@ public class SqlBuilderFactory {
    */
   public static synchronized boolean setDefaultBuilder(SqlEngine engine, String dsn) {
     SqlBuilder builder = getBuilder(engine);
-    boolean ok = (builder != null);
+    boolean ok = builder != null;
 
     if (ok) {
       defaultDsn = dsn;
       defaultBuilder = builder;
     }
     return ok;
+  }
+
+  private SqlBuilderFactory() {
   }
 }

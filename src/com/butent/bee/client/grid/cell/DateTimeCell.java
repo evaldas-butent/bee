@@ -37,7 +37,7 @@ public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeF
   }
 
   @Override
-  public void setDateTimeFormat(DateTimeFormat format) {
-    this.format = format;
+  public void setDateTimeFormat(DateTimeFormat dtFormat) {
+    this.format = dtFormat;
   }
 }

@@ -7,7 +7,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Size;
 
-public class ElementSize {
+public final class ElementSize {
 
   private enum Origin {
     CLIENT {

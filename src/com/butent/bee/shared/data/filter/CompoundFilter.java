@@ -144,12 +144,11 @@ public class CompoundFilter extends Filter {
 
         if (type == CompoundType.NOT) {
           return !result;
-        } else if ((type == CompoundType.AND && !result) ||
-            (type == CompoundType.OR && result)) {
+        } else if ((type == CompoundType.AND && !result) || (type == CompoundType.OR && result)) {
           return result;
         }
       }
-      return (type == CompoundType.AND);
+      return type == CompoundType.AND;
     }
     return true;
   }

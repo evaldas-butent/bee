@@ -15,7 +15,7 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
   private final List<String> itemList;
   private final HasItems itemProxy;
 
-  private int valueStartIndex = 0;
+  private int valueStartIndex;
 
   public ListRenderer(CellSource cellSource) {
     this(cellSource, null);

@@ -44,7 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class RowEditor {
+public final class RowEditor {
 
   public static final String DIALOG_STYLE = "bee-EditRow";
   public static final String EDITABLE_RELATION_STYLE = "bee-EditableRelation";

@@ -20,6 +20,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.server.sql.SqlInsert}.
  */
+@SuppressWarnings("static-method")
 public class TestSqlInsert {
 
   @Before

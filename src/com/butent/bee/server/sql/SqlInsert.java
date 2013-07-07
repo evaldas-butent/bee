@@ -20,8 +20,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
 
   private final String target;
   private final LinkedHashMap<String, Integer> fieldList = Maps.newLinkedHashMap();
-  private List<IsExpression[]> data = null;
-  private SqlSelect dataSource = null;
+  private List<IsExpression[]> data;
+  private SqlSelect dataSource;
 
   /**
    * Creates an SqlInserte statement with a specified target {@code target}. Target type is

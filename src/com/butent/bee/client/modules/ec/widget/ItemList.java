@@ -89,7 +89,7 @@ public class ItemList extends Flow {
     EcStyles.add(table, STYLE_PRIMARY, "table");
     add(table);
     
-    this.moreWidget = new Button(Localized.constants.ecMoreItems());
+    this.moreWidget = new Button(Localized.getConstants().ecMoreItems());
     EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
     moreWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -115,7 +115,7 @@ public class ItemList extends Flow {
       int row = 0;
 
       if (items.size() > 1) {
-        Label caption = new Label(BeeUtils.joinWords(Localized.constants.ecFoundItems(),
+        Label caption = new Label(BeeUtils.joinWords(Localized.getConstants().ecFoundItems(),
             BeeUtils.bracket(items.size())));
         EcStyles.add(caption, STYLE_PRIMARY, "caption");
         table.setWidget(row, COL_PICTURE, caption);
@@ -131,11 +131,11 @@ public class ItemList extends Flow {
       EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
       table.setWidget(row, COL_STOCK_2, wrh2);
 
-      Label listPriceLabel = new Label(Localized.constants.ecListPrice());
+      Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
       EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
       table.setWidget(row, COL_LIST_PRICE, listPriceLabel);
 
-      Label priceLabel = new Label(Localized.constants.ecClientPrice());
+      Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
       EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
       table.setWidget(row, COL_PRICE, priceLabel);
 
@@ -157,7 +157,7 @@ public class ItemList extends Flow {
     }
   }
 
-  private Widget renderInfo(final EcItem item) {
+  private static Widget renderInfo(final EcItem item) {
     Flow panel = new Flow();
 
     String name = item.getName();
@@ -178,7 +178,7 @@ public class ItemList extends Flow {
       Flow codeContainer = new Flow(STYLE_ITEM_CODE + STYLE_INFO_CONTAINER);
 
       CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + STYLE_LABEL);
-      codeLabel.setText(Localized.constants.ecItemCode());
+      codeLabel.setText(Localized.getConstants().ecItemCode());
       codeContainer.add(codeLabel);
 
       CustomSpan itemCode = new CustomSpan(STYLE_ITEM_CODE);
@@ -193,7 +193,7 @@ public class ItemList extends Flow {
       Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + STYLE_INFO_CONTAINER);
 
       CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + STYLE_LABEL);
-      supplierLabel.setText(Localized.constants.ecItemSupplier());
+      supplierLabel.setText(Localized.getConstants().ecItemSupplier());
       supplierContainer.add(supplierLabel);
 
       CustomSpan itemSupplier = new CustomSpan(STYLE_ITEM_SUPPLIER);
@@ -204,7 +204,7 @@ public class ItemList extends Flow {
     }
 
     if (item.hasAnalogs()) {
-      InternalLink analogs = new InternalLink(Localized.constants.ecItemAnalogs());
+      InternalLink analogs = new InternalLink(Localized.getConstants().ecItemAnalogs());
       analogs.addStyleName(STYLE_ITEM_ANALOGS);
       panel.add(analogs);
 
@@ -243,7 +243,7 @@ public class ItemList extends Flow {
       Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + STYLE_INFO_CONTAINER);
 
       CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + STYLE_LABEL);
-      manufacturerLabel.setText(Localized.constants.ecItemManufacturer());
+      manufacturerLabel.setText(Localized.getConstants().ecItemManufacturer());
       manufacturerContainer.add(manufacturerLabel);
 
       CustomSpan itemManufacturer = new CustomSpan(STYLE_ITEM_MANUFACTURER);
@@ -295,11 +295,11 @@ public class ItemList extends Flow {
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
 
-  private Widget renderPicture() {
+  private static Widget renderPicture() {
     return EcUtils.randomPicture(30, 100);
   }
 
-  private Widget renderPrice(int price, String style) {
+  private static Widget renderPrice(int price, String style) {
     String stylePrefix = style + "-";
 
     Flow panel = new Flow();
@@ -315,7 +315,7 @@ public class ItemList extends Flow {
     return panel;
   }
 
-  private Widget renderQuantity(final EcItem item, int quantity) {
+  private static Widget renderQuantity(final EcItem item, int quantity) {
     String stylePrefix = STYLE_QUANTITY + "-";
 
     Horizontal panel = new Horizontal();
@@ -371,8 +371,8 @@ public class ItemList extends Flow {
     return panel;
   }
 
-  private Widget renderStock(int stock) {
-    String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.constants.ecStockAsk();
+  private static Widget renderStock(int stock) {
+    String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.getConstants().ecStockAsk();
     return new Label(text);
   }
 

@@ -20,7 +20,7 @@ public class TestArrayUtils {
 
   private static int[] intMas1 = {5, 5, 7, -10, 3};
   private static int[] intMas2 = {};
-  private static String strMas1[];
+  private static String[] strMas1;
   private static double[] doubleMas1 = {1.2, 1.5, 3.14, 2.78};
   private static String[] strMas2 = {};
   private static String[] strMas3 = {"this", "is", "a", null};
@@ -49,7 +49,7 @@ public class TestArrayUtils {
 
   @Test
   public void testContainsIntIntArray() {
-    assertEquals(true, ArrayUtils.contains(strMas3 ,"this"));
+    assertEquals(true, ArrayUtils.contains(strMas3, "this"));
     assertEquals(false, ArrayUtils.contains(strMas3, -666));
     assertEquals(false, ArrayUtils.contains(null, "a"));
     assertEquals(true, ArrayUtils.contains(strMas3, "a"));
@@ -223,11 +223,11 @@ public class TestArrayUtils {
       fail("Java runtime error. NeedBeeRuntime Exception " + e.getMessage());
     }
 
-    String earr3[] = {"test"};
+    String[] earr3 = {"test"};
     assertArrayEquals(earr3, ArrayUtils.slice(arr1, -1));
 
     try {
-      String nullarr[] = {};
+      String[] nullarr = {};
       ArrayUtils.slice(arr1, 5);
       assertArrayEquals(nullarr, ArrayUtils.slice(arr1, 5));
     } catch (BeeRuntimeException e) {

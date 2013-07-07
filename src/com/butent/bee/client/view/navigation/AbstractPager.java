@@ -24,7 +24,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   private HandlerRegistration changeHandler;
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
   private boolean enabled = true;
 

@@ -23,94 +23,94 @@ import elemental.html.InputElement;
  * canvas and so on.
  */
 
-public class Features {
+public final class Features {
 
   private static String nsSvg = "http://www.w3.org/2000/svg";
 
-  private static Boolean applicationCache = null;
+  private static Boolean applicationCache;
 
-  private static Boolean attributeAutocomplete = null;
-  private static Boolean attributeAutofocus = null;
-  private static Boolean attributeList = null;
-  private static Boolean attributeMax = null;
-  private static Boolean attributeMin = null;
-  private static Boolean attributeMultiple = null;
-  private static Boolean attributePattern = null;
-  private static Boolean attributePlaceholder = null;
-  private static Boolean attributeRequired = null;
-  private static Boolean attributeStep = null;
+  private static Boolean attributeAutocomplete;
+  private static Boolean attributeAutofocus;
+  private static Boolean attributeList;
+  private static Boolean attributeMax;
+  private static Boolean attributeMin;
+  private static Boolean attributeMultiple;
+  private static Boolean attributePattern;
+  private static Boolean attributePlaceholder;
+  private static Boolean attributeRequired;
+  private static Boolean attributeStep;
 
-  private static Boolean audio = null;
-  private static String audioAac = null;
-  private static String audioMp3 = null;
-  private static String audioVorbis = null;
-  private static String audioWav = null;
+  private static Boolean audio;
+  private static String audioAac;
+  private static String audioMp3;
+  private static String audioVorbis;
+  private static String audioWav;
 
-  private static Boolean canvas = null;
-  private static Boolean canvasText = null;
+  private static Boolean canvas;
+  private static Boolean canvasText;
 
-  private static Boolean contentEditable = null;
+  private static Boolean contentEditable;
 
-  private static Boolean dnd = null;
-  private static Boolean dndEvents = null;
+  private static Boolean dnd;
+  private static Boolean dndEvents;
 
-  private static Boolean elementCommand = null;
-  private static Boolean elementDataList = null;
-  private static Boolean elementDetails = null;
-  private static Boolean elementDevice = null;
-  private static Boolean elementMeter = null;
-  private static Boolean elementOutput = null;
-  private static Boolean elementProgress = null;
-  private static Boolean elementTime = null;
+  private static Boolean elementCommand;
+  private static Boolean elementDataList;
+  private static Boolean elementDetails;
+  private static Boolean elementDevice;
+  private static Boolean elementMeter;
+  private static Boolean elementOutput;
+  private static Boolean elementProgress;
+  private static Boolean elementTime;
 
-  private static Boolean fileApi = null;
-  private static Boolean geolocation = null;
-  private static Boolean indexedDB = null;
+  private static Boolean fileApi;
+  private static Boolean geolocation;
+  private static Boolean indexedDB;
 
-  private static Boolean inputColor = null;
-  private static Boolean inputDate = null;
-  private static Boolean inputDatetime = null;
-  private static Boolean inputDatetimeLocal = null;
-  private static Boolean inputEmail = null;
-  private static Boolean inputMonth = null;
-  private static Boolean inputNumber = null;
-  private static Boolean inputRange = null;
-  private static Boolean inputSearch = null;
-  private static Boolean inputTel = null;
-  private static Boolean inputTime = null;
-  private static Boolean inputUrl = null;
-  private static Boolean inputWeek = null;
+  private static Boolean inputColor;
+  private static Boolean inputDate;
+  private static Boolean inputDatetime;
+  private static Boolean inputDatetimeLocal;
+  private static Boolean inputEmail;
+  private static Boolean inputMonth;
+  private static Boolean inputNumber;
+  private static Boolean inputRange;
+  private static Boolean inputSearch;
+  private static Boolean inputTel;
+  private static Boolean inputTime;
+  private static Boolean inputUrl;
+  private static Boolean inputWeek;
 
-  private static Boolean localStorage = null;
-  private static Boolean microdata = null;
-  private static Boolean postMessage = null;
-  private static Boolean requestAnimationFrame = null;
-  private static Boolean selectors = null;
-  private static Boolean sendAsFormData = null;
-  private static Boolean serverSentEvents = null;
-  private static Boolean sessionStorage = null;
+  private static Boolean localStorage;
+  private static Boolean microdata;
+  private static Boolean postMessage;
+  private static Boolean requestAnimationFrame;
+  private static Boolean selectors;
+  private static Boolean sendAsFormData;
+  private static Boolean serverSentEvents;
+  private static Boolean sessionStorage;
 
-  private static Boolean smil = null;
-  private static Boolean svg = null;
-  private static Boolean svgClipPaths = null;
-  private static Boolean svgInline = null;
-  private static Boolean svgInTextHtml = null;
+  private static Boolean smil;
+  private static Boolean svg;
+  private static Boolean svgClipPaths;
+  private static Boolean svgInline;
+  private static Boolean svgInTextHtml;
 
-  private static Boolean undo = null;
+  private static Boolean undo;
 
-  private static Boolean video = null;
-  private static String videoH264 = null;
-  private static String videoTheora = null;
-  private static String videoWebm = null;
-  private static Boolean videoCaptions = null;
-  private static Boolean videoPoster = null;
+  private static Boolean video;
+  private static String videoH264;
+  private static String videoTheora;
+  private static String videoWebm;
+  private static Boolean videoCaptions;
+  private static Boolean videoPoster;
 
-  private static Boolean webGl = null;
-  private static Boolean webSockets = null;
-  private static Boolean webWorkers = null;
+  private static Boolean webGl;
+  private static Boolean webSockets;
+  private static Boolean webWorkers;
 
-  private static Boolean xhrCrossDomain = null;
-  private static Boolean xhrUploadProgress = null;
+  private static Boolean xhrCrossDomain;
+  private static Boolean xhrUploadProgress;
   
   public static String getAudioAac() {
     if (!supportsAudio()) {

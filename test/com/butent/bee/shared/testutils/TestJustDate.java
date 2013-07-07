@@ -15,6 +15,7 @@ import java.util.Date;
 /**
  * Tests {@link com.butent.bee.shared.time.JustDate}.
  */
+@SuppressWarnings("static-method")
 public class TestJustDate {
 
   @Before

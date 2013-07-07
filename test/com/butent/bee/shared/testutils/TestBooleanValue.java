@@ -15,6 +15,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.data.value.BooleanValue}.
  */
+@SuppressWarnings("static-method")
 public class TestBooleanValue {
 
   @Before

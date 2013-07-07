@@ -92,7 +92,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private static class ReportsFilter implements ClickHandler {
+  private static final class ReportsFilter implements ClickHandler {
 
     private ReportType reportType;
 
@@ -205,7 +205,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           Grid g = new Grid(gridRows, gridCols);
 
           if (gridRows < MIN_ROW_SET) {
-            g.setText(0, 0, Localized.constants.noData());
+            g.setText(0, 0, Localized.getConstants().noData());
             reportPanel.add(g);
             return;
           }
@@ -276,16 +276,16 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     switch (reportType) {
       case TYPE_HOURS:
-        reportCaption = Localized.constants.hoursByTypes();
+        reportCaption = Localized.getConstants().hoursByTypes();
         break;
       case COMPANY_TIMES:
-        reportCaption = Localized.constants.hoursByCompanies();
+        reportCaption = Localized.getConstants().hoursByCompanies();
         break;
       case USERS_HOURS:
-        reportCaption = Localized.constants.hoursByUsers();
+        reportCaption = Localized.getConstants().hoursByUsers();
         break;
       default:
-        reportCaption = Localized.constants.hoursByTypes();
+        reportCaption = Localized.getConstants().hoursByTypes();
         break;
     }
 

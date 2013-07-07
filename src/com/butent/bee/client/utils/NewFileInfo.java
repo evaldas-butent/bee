@@ -23,11 +23,11 @@ public class NewFileInfo implements HasInfo, HasCaption {
   private final long size;
   private final DateTime lastModified;
 
-  private DateTime fileDate = null;
-  private String fileVersion = null;
+  private DateTime fileDate;
+  private String fileVersion;
 
-  private String caption = null;
-  private String description = null;
+  private String caption;
+  private String description;
 
   public NewFileInfo(File file) {
     this.file = Assert.notNull(file);

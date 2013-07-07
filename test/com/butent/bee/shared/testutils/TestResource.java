@@ -22,6 +22,7 @@ public class TestResource {
   public void tearDown() throws Exception {
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testDeserialize() {
     Resource resource = new Resource("13URI13ZIP15false17Content");
@@ -31,6 +32,7 @@ public class TestResource {
     assertEquals("Content", resource.getContent());
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testSerialize() {
 

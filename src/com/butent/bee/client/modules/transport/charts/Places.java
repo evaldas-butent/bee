@@ -13,14 +13,14 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class Places {
+final class Places {
 
-  private static BeeRowSet countries = null;
+  private static BeeRowSet countries;
   
   private static int countryCodeIndex = BeeConst.UNDEF;
   private static int countryNameIndex = BeeConst.UNDEF;
   
-  private static ValueType placeDateType = null;
+  private static ValueType placeDateType;
 
   static String getCountryFlag(Long countryId) {
     if (!DataUtils.isId(countryId) || DataUtils.isEmpty(countries)) {

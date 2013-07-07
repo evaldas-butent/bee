@@ -50,9 +50,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private final Filter immutableFilter;
   private final Map<String, Filter> parentFilters = Maps.newHashMap();
-  private Filter userFilter = null;
+  private Filter userFilter;
 
-  private Order order = null;
+  private Order order;
 
   protected Provider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
@@ -225,7 +225,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       if (Global.isDebug()) {
         notificationListener.notifyWarning("no rows found", filter.toString());
       } else {
-        notificationListener.notifyWarning(Localized.constants.nothingFound());
+        notificationListener.notifyWarning(Localized.getConstants().nothingFound());
       }
     }
   }

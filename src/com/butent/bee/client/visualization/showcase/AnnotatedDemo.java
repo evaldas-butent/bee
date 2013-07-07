@@ -45,7 +45,8 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     start -= TimeUtils.MILLIS_PER_DAY * (rows + 1);
 
     for (int i = 0; i < rows; i++) {
-      data.setDateTime(i, 0, new DateTime(start += TimeUtils.MILLIS_PER_DAY));
+      start += TimeUtils.MILLIS_PER_DAY;
+      data.setDateTime(i, 0, new DateTime(start));
       int x = BeeUtils.randomInt(0, 300);
       int y = BeeUtils.randomInt(100, 200);
       data.setValue(i, 1, x);

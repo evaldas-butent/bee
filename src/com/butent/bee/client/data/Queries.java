@@ -42,7 +42,7 @@ import java.util.List;
  * Contains methods for getting {@code RowSets} and making POST requests.
  */
 
-public class Queries {
+public final class Queries {
 
   public abstract static class DataCallback extends Callback<Collection<BeeRowSet>> {
   }
@@ -304,7 +304,8 @@ public class Queries {
         RpcParameter.Section.QUERY, params), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        if (checkResponse(Service.GET_RELATED_VALUES, tableName, response, String.class, callback)) {
+        if (checkResponse(Service.GET_RELATED_VALUES, tableName, response, String.class,
+            callback)) {
           callback.onSuccess((String) response.getResponse());
         }
       }

@@ -9,7 +9,7 @@ import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.utils.Command;
 
-public class ModuleManager {
+public final class ModuleManager {
 
   public static void maybeInitialize(final Command command) {
     CalendarKeeper.ensureData(command);

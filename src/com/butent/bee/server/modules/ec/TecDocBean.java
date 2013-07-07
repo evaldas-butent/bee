@@ -85,7 +85,8 @@ public class TecDocBean {
           .setDataSource(new SqlSelect()
               .addAllFields(tcdButentStocks)
               .addFrom(tcdButentStocks)
-              .setWhere(SqlUtils.in(tcdButentStocks, "ButentID", articleBrands, "ButentID", null))));
+              .setWhere(SqlUtils.in(tcdButentStocks, "ButentID", articleBrands, "ButentID",
+                  null))));
 
       qs.updateData(SqlUtils.createIndex(stocks, "IK_" + stocks + "ButentID",
           Lists.newArrayList("ButentID"), false));
@@ -363,8 +364,8 @@ public class TecDocBean {
     }
     logger.info(butent, "Waiting for webService data...");
 
-    response = port.process("GetSQLData", "<query>SELECT preke AS pr, pard_kaina AS kn," +
-        " artikulas AS art, tiek_art AS ta, gam_art AS ga, gamintojas AS gam FROM prekes</query>");
+    response = port.process("GetSQLData", "<query>SELECT preke AS pr, pard_kaina AS kn, "
+        + "artikulas AS art, tiek_art AS ta, gam_art AS ga, gamintojas AS gam FROM prekes</query>");
 
     Node data = XmlUtils.fromString(response).getFirstChild();
 
@@ -409,8 +410,8 @@ public class TecDocBean {
 
     logger.info(tcdButentStocks, "Waiting for webService data...");
 
-    response = port.process("GetSQLData", "<query>SELECT sandelis AS sn, preke AS pr," +
-        " sum(kiekis) AS lk FROM likuciai GROUP by sandelis, preke HAVING lk > 0</query>");
+    response = port.process("GetSQLData", "<query>SELECT sandelis AS sn, preke AS pr,"
+        + " sum(kiekis) AS lk FROM likuciai GROUP by sandelis, preke HAVING lk > 0</query>");
 
     data = XmlUtils.fromString(response).getFirstChild();
 

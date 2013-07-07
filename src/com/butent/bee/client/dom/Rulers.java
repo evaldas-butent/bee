@@ -20,7 +20,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 /**
  * Controls scale parameters between lenght measure units and screen pixels.
  */
-public class Rulers {
+public final class Rulers {
 
   private static final double unitRulerScale = 10.0;
 

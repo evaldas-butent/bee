@@ -6,8 +6,8 @@ import org.jboss.netty.channel.MessageEvent;
 
 public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
 
-  private StringBuilder mailBody = null;
-  private int state = 0;
+  private StringBuilder mailBody;
+  private int state;
 
   public SMTPProtocolClientHandler(Channel inboundChannel, Object tl, MailProxy proxy) {
     super(inboundChannel, tl, proxy);
@@ -41,7 +41,7 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
       state = 1;
       mailBody = new StringBuilder();
     } else if (state == 1) {
-      if (msg.equals(".\r\n")) {
+      if (".\r\n".equals(msg)) {
         state = 3;
       } else {
         mailBody.append(msg.startsWith("..") ? msg.substring(1) : msg);

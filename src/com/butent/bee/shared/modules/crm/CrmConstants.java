@@ -4,7 +4,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
-public class CrmConstants {
+public final class CrmConstants {
 
   public enum TaskEvent implements HasCaption {
     CREATE("Sukurta", null),
@@ -54,13 +54,13 @@ public class CrmConstants {
   }
 
   public enum TaskStatus implements HasCaption {
-    NOT_VISITED(Localized.constants.taskStatusNotVisited()),
-    ACTIVE(Localized.constants.taskStatusActive()),
-    SCHEDULED(Localized.constants.taskStatusScheduled()),
-    SUSPENDED(Localized.constants.taskStatusSuspended()),
-    COMPLETED(Localized.constants.taskStatusCompleted()),
-    APPROVED(Localized.constants.taskStatusApproved()),
-    CANCELED(Localized.constants.taskStatusCanceled());
+    NOT_VISITED(Localized.getConstants().taskStatusNotVisited()),
+    ACTIVE(Localized.getConstants().taskStatusActive()),
+    SCHEDULED(Localized.getConstants().taskStatusScheduled()),
+    SUSPENDED(Localized.getConstants().taskStatusSuspended()),
+    COMPLETED(Localized.getConstants().taskStatusCompleted()),
+    APPROVED(Localized.getConstants().taskStatusApproved()),
+    CANCELED(Localized.getConstants().taskStatusCanceled());
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {

@@ -19,7 +19,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class SimplePager extends AbstractPager {
 
-  private class GoCommand extends Command {
+  private final class GoCommand extends Command {
     private Navigation goTo;
 
     private GoCommand(Navigation goTo) {
@@ -219,7 +219,7 @@ public class SimplePager extends AbstractPager {
     return sb.toString();
   }
 
-  private String format(int x) {
+  private static String format(int x) {
     if (NUMBER_FORMAT == null) {
       return BeeUtils.toString(x);
     } else {
@@ -242,7 +242,7 @@ public class SimplePager extends AbstractPager {
     setPageStart(getForwardPosition(start, length, rowCount));
   }
 
-  private int getFastStep(int pageSize, int rowCount) {
+  private static int getFastStep(int pageSize, int rowCount) {
     if (pageSize <= 0 || MIN_FAST_PAGES <= 0 || MAX_FAST_PAGES <= 0
         || rowCount <= pageSize * MIN_FAST_PAGES) {
       return pageSize;
@@ -251,7 +251,7 @@ public class SimplePager extends AbstractPager {
         * pageSize;
   }
 
-  private int getForwardPosition(int pageStart, int pageSize, int rowCount) {
+  private static int getForwardPosition(int pageStart, int pageSize, int rowCount) {
     int step = getFastStep(pageSize, rowCount);
     if (pageStart + step + pageSize >= rowCount) {
       return rowCount - pageSize;
@@ -269,7 +269,7 @@ public class SimplePager extends AbstractPager {
     return maxRowCount;
   }
 
-  private int getRewindPosition(int pageStart, int pageSize, int rowCount) {
+  private static int getRewindPosition(int pageStart, int pageSize, int rowCount) {
     int step = getFastStep(pageSize, rowCount);
     if (step >= pageStart + pageSize) {
       return 0;

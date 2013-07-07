@@ -131,7 +131,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   public class ColumnFormatter {
 
-    private Element columnGroup = null;
+    private Element columnGroup;
 
     protected ColumnFormatter() {
       super();
@@ -255,8 +255,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private final ColumnFormatter columnFormatter;
   private final RowFormatter rowFormatter;
 
-  private String defaultCellClasses = null;
-  private String defaultCellStyles = null;
+  private String defaultCellClasses;
+  private String defaultCellStyles;
 
   public HtmlTable() {
     this.tableElem = DOM.createTable();
@@ -518,7 +518,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     return td;
   }
 
-  private Element createRow() {
+  private static Element createRow() {
     return DOM.createTR();
   }
 

@@ -67,6 +67,7 @@ public class File implements Comparable<File> {
 
   private static FileSystem fs = new FileSystem();
 
+  //CHECKSTYLE:OFF
   public static final char separatorChar = fs.getSeparator();
 
   public static final String separator = "" + separatorChar;
@@ -74,6 +75,7 @@ public class File implements Comparable<File> {
   public static final char pathSeparatorChar = fs.getPathSeparator();
 
   public static final String pathSeparator = "" + pathSeparatorChar;
+  //CHECKSTYLE:ON
 
   private String path;
 
@@ -108,7 +110,7 @@ public class File implements Comparable<File> {
       throw new NullPointerException();
     }
     if (parent != null) {
-      if (parent.equals("")) {
+      if ("".equals(parent)) {
         this.path = fs.resolve(fs.getDefaultParent(), fs.normalize(child));
       } else {
         this.path = fs.resolve(fs.normalize(parent), fs.normalize(child));
@@ -196,11 +198,11 @@ public class File implements Comparable<File> {
   }
 
   public boolean isDirectory() {
-    return ((fs.getBooleanAttributes(this) & FileSystem.BA_DIRECTORY) != 0);
+    return (fs.getBooleanAttributes(this) & FileSystem.BA_DIRECTORY) != 0;
   }
 
   public boolean isFile() {
-    return ((fs.getBooleanAttributes(this) & FileSystem.BA_REGULAR) != 0);
+    return (fs.getBooleanAttributes(this) & FileSystem.BA_REGULAR) != 0;
   }
 
   @Override

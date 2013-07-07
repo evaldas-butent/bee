@@ -198,8 +198,8 @@ public class LayoutPanel extends ComplexPanel implements AnimatedLayout, Require
       Double right, CssUnit rightUnit, Double width, CssUnit widthUnit) {
     Assert.notNull(widget);
 
-    boolean hasLeft = (left != null);
-    boolean hasRight = (right != null);
+    boolean hasLeft = left != null;
+    boolean hasRight = right != null;
     boolean hasWidth = BeeUtils.isPositive(width);
 
     if (hasLeft && hasRight) {
@@ -229,8 +229,8 @@ public class LayoutPanel extends ComplexPanel implements AnimatedLayout, Require
       Double bottom, CssUnit bottomUnit, Double height, CssUnit heightUnit) {
     Assert.notNull(widget);
 
-    boolean hasTop = (top != null);
-    boolean hasBottom = (bottom != null);
+    boolean hasTop = top != null;
+    boolean hasBottom = bottom != null;
     boolean hasHeight = BeeUtils.isPositive(height);
 
     if (hasTop && hasBottom) {
@@ -313,11 +313,11 @@ public class LayoutPanel extends ComplexPanel implements AnimatedLayout, Require
     return layout;
   }
 
-  private Layout.Layer getLayer(Widget child) {
+  private static Layout.Layer getLayer(Widget child) {
     return (Layout.Layer) child.getLayoutData();
   }
 
-  private CssUnit normalizeUnit(CssUnit unit) {
+  private static CssUnit normalizeUnit(CssUnit unit) {
     return (unit == null) ? DEFAULT_UNIT : unit;
   }
 }

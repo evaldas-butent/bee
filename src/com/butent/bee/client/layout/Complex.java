@@ -281,31 +281,31 @@ public class Complex extends ComplexPanel implements IdentifiableWidget, Provide
     }
   }
 
-  private void setChildBottom(Widget child, double value, CssUnit unit) {
+  private static void setChildBottom(Widget child, double value, CssUnit unit) {
     StyleUtils.setBottom(child, value, unit);
   }
 
-  private void setChildHeight(Widget child, double value, CssUnit unit) {
+  private static void setChildHeight(Widget child, double value, CssUnit unit) {
     StyleUtils.setHeight(child, value, unit);
   }
 
-  private void setChildLeft(Widget child, double value, CssUnit unit) {
+  private static void setChildLeft(Widget child, double value, CssUnit unit) {
     StyleUtils.setLeft(child, value, unit);
   }
 
-  private void setChildPosition(Widget child) {
+  private static void setChildPosition(Widget child) {
     child.getElement().getStyle().setPosition(Position.ABSOLUTE);
   }
 
-  private void setChildRight(Widget child, double value, CssUnit unit) {
+  private static void setChildRight(Widget child, double value, CssUnit unit) {
     StyleUtils.setRight(child, value, unit);
   }
 
-  private void setChildTop(Widget child, double value, CssUnit unit) {
+  private static void setChildTop(Widget child, double value, CssUnit unit) {
     StyleUtils.setTop(child, value, unit);
   }
 
-  private void setChildWidth(Widget child, double value, CssUnit unit) {
+  private static void setChildWidth(Widget child, double value, CssUnit unit) {
     StyleUtils.setWidth(child, value, unit);
   }
 }

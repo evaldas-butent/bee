@@ -42,8 +42,8 @@ public class Calculation implements BeeSerializable, HasInfo {
     return calculation;
   }
   
-  private String expression = null;
-  private String function = null;
+  private String expression;
+  private String function;
 
   public Calculation(String expression, String function) {
     this.expression = expression;

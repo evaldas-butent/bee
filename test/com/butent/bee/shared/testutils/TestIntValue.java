@@ -21,6 +21,7 @@ public class TestIntValue {
   public void tearDown() throws Exception {
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testIntValue() {
     IntegerValue iv = new IntegerValue(10);

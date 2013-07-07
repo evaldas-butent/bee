@@ -31,8 +31,8 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   private final ValueType valueType;
   private AbstractCellRenderer renderer;
 
-  private DateTimeFormat dateTimeformat = null;
-  private NumberFormat numberFormat = null;
+  private DateTimeFormat dateTimeformat;
+  private NumberFormat numberFormat;
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;

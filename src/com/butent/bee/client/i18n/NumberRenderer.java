@@ -43,7 +43,7 @@ public class NumberRenderer extends AbstractRenderer<Number> implements HasNumbe
   }
 
   @Override
-  public void setNumberFormat(NumberFormat format) {
-    this.format = format;
+  public void setNumberFormat(NumberFormat numberFormat) {
+    this.format = numberFormat;
   }
 }

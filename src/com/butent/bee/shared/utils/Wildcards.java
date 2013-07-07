@@ -12,7 +12,7 @@ import java.util.Stack;
 /**
  * Used for forming search patterns.
  */
-public class Wildcards {
+public final class Wildcards {
   /**
    * Handles instances of wildcard patterns.
    */
@@ -27,7 +27,7 @@ public class Wildcards {
     private final String[] tokens;
     private final boolean exact;
 
-    private Pattern(String expr, char wildcardAny, char wildcardOne, boolean sensitive,
+    protected Pattern(String expr, char wildcardAny, char wildcardOne, boolean sensitive,
         Character charExact) {
       Assert.notEmpty(expr);
       this.wildcardAny = wildcardAny;
@@ -178,7 +178,7 @@ public class Wildcards {
    * Manages default wildcard pattern.
    */
 
-  private static class DefaultPattern extends Pattern {
+  private static final class DefaultPattern extends Pattern {
     private DefaultPattern(String expr) {
       this(expr, defaultCaseSensitivity);
     }
@@ -196,7 +196,7 @@ public class Wildcards {
    * Enables using file system type wildcard pattern.
    */
 
-  private static class FsPattern extends Pattern {
+  private static final class FsPattern extends Pattern {
     private FsPattern(String expr) {
       this(expr, fsCaseSensitivity);
     }
@@ -214,7 +214,7 @@ public class Wildcards {
    * Enables using sql type wildcard pattern.
    */
 
-  private static class SqlPattern extends Pattern {
+  private static final class SqlPattern extends Pattern {
     private SqlPattern(String expr) {
       this(expr, sqlCaseSensitivity);
     }
@@ -230,18 +230,18 @@ public class Wildcards {
 
   private static final char SQL_ANY = '%';
   private static final char SQL_ONE = '_';
-  private static boolean sqlCaseSensitivity = false;
-  private static Character sqlCharExact = null;
+  private static boolean sqlCaseSensitivity;
+  private static Character sqlCharExact;
 
   private static final char FS_ANY = '*';
   private static final char FS_ONE = '?';
-  private static boolean fsCaseSensitivity = false;
-  private static Character fsCharExact = null;
+  private static boolean fsCaseSensitivity;
+  private static Character fsCharExact;
 
   private static char defaultAny = FS_ANY;
   private static char defaultOne = FS_ONE;
-  private static boolean defaultCaseSensitivity = false;
-  private static Character defaultCharExact = null;
+  private static boolean defaultCaseSensitivity;
+  private static Character defaultCharExact;
   
   public static boolean contains(Collection<? extends Pattern> patterns, String input) {
     if (patterns == null || BeeUtils.isEmpty(input)) {

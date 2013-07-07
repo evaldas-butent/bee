@@ -16,7 +16,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import java.util.List;
 import java.util.Set;
 
-public class CrmUtils {
+public final class CrmUtils {
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
 
@@ -47,7 +47,7 @@ public class CrmUtils {
   }
 
   public static boolean isScheduled(DateTime start) {
-    return (start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0);
+    return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
   }
 
   public static boolean sameObservers(IsRow oldRow, IsRow newRow) {

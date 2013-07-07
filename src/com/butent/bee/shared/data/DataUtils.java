@@ -37,7 +37,7 @@ import java.util.Set;
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
  */
 
-public class DataUtils {
+public final class DataUtils {
 
   public static final String STATE_NAMESPACE = "http://www.butent.com/state";
   public static final String TABLE_NAMESPACE = "http://www.butent.com/table";
@@ -738,7 +738,7 @@ public class DataUtils {
           value = value.replaceFirst(pattern, "$1").trim();
         }
         Operator operator = Operator.detectOperator(value);
-        boolean isOperator = (operator != null);
+        boolean isOperator = operator != null;
 
         if (isOperator) {
           value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");
@@ -1013,8 +1013,8 @@ public class DataUtils {
       column = new BeeColumn(ValueType.LONG, idColumnName);
       len = idColumnName.length();
     }
-    if (BeeUtils.hasLength(versionColumnName, len + 1) &&
-        BeeUtils.startsWith(expr, versionColumnName)) {
+    if (BeeUtils.hasLength(versionColumnName, len + 1) 
+        && BeeUtils.startsWith(expr, versionColumnName)) {
       column = new BeeColumn(ValueType.DATE_TIME, versionColumnName);
     }
     return column;

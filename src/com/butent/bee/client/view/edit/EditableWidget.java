@@ -68,12 +68,12 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final boolean readOnly;
 
   private final CellValidationBus cellValidationBus = new CellValidationBus();
-  private HasCellValidationHandlers validationDelegate = null;
+  private HasCellValidationHandlers validationDelegate;
 
-  private boolean initialized = false;
+  private boolean initialized;
 
-  private Editor editor = null;
-  private FormView form = null;
+  private Editor editor;
+  private FormView form;
 
   public EditableWidget(List<BeeColumn> dataColumns, int dataIndex,
       WidgetDescription widgetDescription, DisplayWidget displayWidget) {

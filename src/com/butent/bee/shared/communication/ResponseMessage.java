@@ -15,9 +15,9 @@ import com.butent.bee.shared.utils.NameUtils;
  */
 
 public class ResponseMessage implements BeeSerializable {
-  private DateTime date = null;
-  private LogLevel level = null;
-  private String message = null;
+  private DateTime date;
+  private LogLevel level;
+  private String message;
 
   public ResponseMessage(DateTime date, LogLevel level, String message) {
     this.date = date;
@@ -56,7 +56,8 @@ public class ResponseMessage implements BeeSerializable {
     String src = Codec.decodeBase64(s);
 
     Pair<Integer, Integer> scan;
-    int len, start = 0;
+    int len = 0;
+    int start = 0;
 
     for (int i = 0; i < 3; i++) {
       scan = Codec.deserializeLength(src, start);

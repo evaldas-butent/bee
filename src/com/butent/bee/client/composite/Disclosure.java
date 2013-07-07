@@ -81,7 +81,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     }
   }
 
-  private class Header extends Horizontal implements ClickHandler, OpenHandler<Disclosure>,
+  private final class Header extends Horizontal implements ClickHandler, OpenHandler<Disclosure>,
       CloseHandler<Disclosure> {
 
     private final Image iconImage;
@@ -186,7 +186,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
   private int animationDuration = DEFAULT_ANIMATION_DURATION;
 
-  private boolean isOpen = false;
+  private boolean isOpen;
 
   public Disclosure() {
     this(null);
@@ -280,9 +280,9 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     header.setWidget(headerWidget);
   }
 
-  public void setOpen(boolean isOpen) {
-    if (this.isOpen != isOpen) {
-      this.isOpen = isOpen;
+  public void setOpen(boolean open) {
+    if (this.isOpen != open) {
+      this.isOpen = open;
       setContentDisplay(true);
       fireEvent();
     }

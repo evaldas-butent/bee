@@ -2,9 +2,9 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.gwt.user.client.ui.Widget;
 
-public class EcStyles {
+public final class EcStyles {
   
-  public static final String SEPARATOR = "-";
+  private static final String SEPARATOR = "-";
   private static final String PREFIX = "bee-ec-";
   
   public static void add(Widget widget, String style) {
@@ -29,5 +29,8 @@ public class EcStyles {
 
   public static void remove(Widget widget, String primary, String secondary) {
     remove(widget, primary + SEPARATOR + secondary);
+  }
+
+  private EcStyles() {
   }
 }

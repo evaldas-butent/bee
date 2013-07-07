@@ -2,7 +2,7 @@ package com.butent.bee.shared.ui;
 
 import com.google.common.base.Splitter;
 
-public class DecoratorConstants {
+public final class DecoratorConstants {
 
   public static final String DIRECTORY = "decorators";
   public static final String SCHEMA = "decorator.xsd";

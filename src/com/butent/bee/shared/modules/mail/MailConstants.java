@@ -2,7 +2,7 @@ package com.butent.bee.shared.modules.mail;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class MailConstants {
+public final class MailConstants {
 
   public enum SystemFolder {
     Inbox("INBOX"), Sent("Sent Messages"), Drafts("Drafts"), Trash("Deleted Messages");

@@ -15,7 +15,7 @@ import java.util.Vector;
  * Initializes and sets up functionalities from external APIs.
  */
 
-public class AjaxLoader {
+public final class AjaxLoader {
 
   /**
    * Sets values for loading options of external APIs.
@@ -53,16 +53,19 @@ public class AjaxLoader {
       setPackages(ArrayHelper.toJsArrayString(packages));
     }
 
+    
+    //CHECKSTYLE:OFF
     private native void setCallback(Runnable onLoad) /*-{
       this.callback = function() {
         @com.butent.bee.client.ajaxloader.ExceptionHelper::runProtected(Ljava/lang/Runnable;)(onLoad);
       }
     }-*/;
+    //CHECKSTYLE:ON
   }
 
-  private static boolean alreadyInjected = false;
-  private static boolean initialized = false;
-  private static boolean loaded = false;
+  private static boolean alreadyInjected;
+  private static boolean initialized;
+  private static boolean loaded;
 
   private static Vector<Runnable> queuedApiLoads = new Vector<Runnable>();
 
@@ -82,7 +85,7 @@ public class AjaxLoader {
   }
 
   public static void init(String apiKey, String hostname) {
-    if (initialized == true) {
+    if (initialized) {
       return;
     }
     
@@ -140,7 +143,7 @@ public class AjaxLoader {
   }
 
   private static String getProtocol() {
-    if (Window.Location.getProtocol().equals("https:")) {
+    if ("https:".equals(Window.Location.getProtocol())) {
       return "https:";
     }
     return "http:";

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpSessionListener;
  */
 
 public class SessionListener implements HttpSessionListener {
-  private String attrCnt = null;
+  private String attrCnt;
 
   public SessionListener() {
     super();
@@ -31,5 +31,4 @@ public class SessionListener implements HttpSessionListener {
                 se.getSession().getAttribute(attrCnt)));
     se.getSession().removeAttribute(attrCnt);
   }
-
 }

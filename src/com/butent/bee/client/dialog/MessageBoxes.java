@@ -200,7 +200,8 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Localized.constants.yes(), Localized.constants.no());
+    List<String> options = Lists.newArrayList(Localized.getConstants().yes(),
+        Localized.getConstants().no());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -232,8 +233,8 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Localized.constants.yes(), Localized.constants.no(),
-        Localized.constants.cancel());
+    List<String> options = Lists.newArrayList(Localized.getConstants().yes(),
+        Localized.getConstants().no(), Localized.getConstants().cancel());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -465,7 +466,7 @@ public class MessageBoxes {
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.constants.ok()));
+        Localized.getConstants().ok()));
 
     display(caption, Icon.ERROR, messages, options, 0, null, BeeConst.UNDEF, dialogStyle, null,
         null, null);
@@ -475,7 +476,7 @@ public class MessageBoxes {
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.constants.ok()));
+        Localized.getConstants().ok()));
 
     display(caption, Icon.INFORMATION, messages, options, 0, null, BeeConst.UNDEF, dialogStyle,
         null, null, null);
@@ -527,7 +528,7 @@ public class MessageBoxes {
       index++;
     }
 
-    CloseButton close = new CloseButton(Localized.constants.ok());
+    CloseButton close = new CloseButton(Localized.getConstants().ok());
     grid.setWidget(index, 0, close);
     grid.alignCenter(index, 0);
     if (c > 1) {
@@ -559,7 +560,7 @@ public class MessageBoxes {
     popup.center();
   }
 
-  private void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {
+  private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {
     if (!(event.getSource() instanceof Widget)) {
       return;
     }

@@ -42,8 +42,8 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
   private static final int DEFAULT_STEP = 30;
 
-  private String minValue = null;
-  private String maxValue = null;
+  private String minValue;
+  private String maxValue;
 
   private int stepValue = BeeConst.UNDEF;
 
@@ -193,7 +193,8 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     setValue(oldValue);
     if (!handleChar(charCode)) {
       if (BeeUtils.isDigit(charCode)) {
@@ -501,7 +502,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     }
   }
 
-  private String renderMinutes(int minutes) {
+  private static String renderMinutes(int minutes) {
     return TimeUtils.renderMinutes(minutes, true);
   }
   
@@ -509,7 +510,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     this.pickerState = pickerState;
   }
 
-  private Integer toMinutes(Long millis) {
+  private static Integer toMinutes(Long millis) {
     return (millis == null) ? null : (int) (millis / TimeUtils.MILLIS_PER_MINUTE);
   }
   

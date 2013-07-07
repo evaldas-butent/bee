@@ -15,8 +15,8 @@ public class AppointmentStackingManager {
 
   private final int maxLayer;
 
-  private int highestLayer = 0;
-  
+  private int highestLayer;
+
   public AppointmentStackingManager(int maxLayer) {
     this.maxLayer = maxLayer;
   }
@@ -31,7 +31,7 @@ public class AppointmentStackingManager {
       layer++;
     } while (!layerAssigned);
   }
-  
+
   public void assignLayer(int fromWeekDay, int toWeekDay, Appointment appointment) {
     assignLayer(new AppointmentLayoutDescription(fromWeekDay, toWeekDay, appointment));
   }
@@ -74,7 +74,7 @@ public class AppointmentStackingManager {
   public int lowestLayerIndex(int day) {
     return nextLowestLayerIndex(day, 0);
   }
-  
+
   public int nextLowestLayerIndex(int day, int fromLayer) {
     boolean layerFound = false;
     int currentlyInspectedLayer = fromLayer;
@@ -124,7 +124,8 @@ public class AppointmentStackingManager {
     return layers.get(layerIndex) != null;
   }
 
-  private boolean overlaps(List<AppointmentLayoutDescription> descriptions, int start, int end) {
+  private static boolean overlaps(List<AppointmentLayoutDescription> descriptions, int start,
+      int end) {
     if (descriptions != null) {
       for (AppointmentLayoutDescription description : descriptions) {
         if (description.overlaps(start, end)) {

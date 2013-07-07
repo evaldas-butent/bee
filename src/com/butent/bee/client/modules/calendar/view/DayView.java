@@ -35,8 +35,8 @@ public class DayView extends CalendarView {
   private final MultiDayPanel multiDayPanel = new MultiDayPanel();
   private final AppointmentPanel appointmentPanel = new AppointmentPanel();
 
-  private DayMoveController moveController = null;
-  private ResizeController resizeController = null;
+  private DayMoveController moveController;
+  private ResizeController resizeController;
 
   public DayView() {
     super();

@@ -36,7 +36,7 @@ public class EventManager implements Module {
   private final EventBus priorBus;
   private final EventBus eventBus;
 
-  private HandlerRegistration exitRegistry = null;
+  private HandlerRegistration exitRegistry;
 
   public EventManager() {
     this.priorBus = new SimpleEventBus();

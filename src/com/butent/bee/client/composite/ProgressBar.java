@@ -22,7 +22,7 @@ public class ProgressBar extends FocusWidget implements IdentifiableWidget, Requ
   /**
    * Requires classes implementing this interface to have TextFormatter method.
    */
-  public static interface TextFormatter {
+  public interface TextFormatter {
     String getText(double curProgress);
   }
 
@@ -158,8 +158,8 @@ public class ProgressBar extends FocusWidget implements IdentifiableWidget, Requ
     resetProgress();
   }
 
-  public void setProgress(double curProgress) {
-    this.curProgress = Math.max(minProgress, Math.min(maxProgress, curProgress));
+  public void setProgress(double cp) {
+    this.curProgress = Math.max(minProgress, Math.min(maxProgress, cp));
 
     int percent = (int) (100 * getPercent());
     StyleUtils.setWidth(barElement, percent, CssUnit.PCT);

@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Contains methods for processing (removing, creating, adding) Property objects.
  */
-public class PropertyUtils {
+public final class PropertyUtils {
 
   /**
    * Adds children to the specified {@code lst}. {@code root} is the name and {@code x} the sub and
@@ -342,8 +342,8 @@ public class PropertyUtils {
     }
 
     int n = values.length;
-    String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
-        prefix.trim() + BeeConst.STRING_SPACE;
+    String name = BeeUtils.isEmpty(prefix) 
+        ? BeeConst.STRING_EMPTY : prefix.trim() + BeeConst.STRING_SPACE;
 
     for (int i = 0; i < n; i++) {
       addProperty(lst, name + BeeUtils.progress(i + 1, n), values[i]);
@@ -361,8 +361,8 @@ public class PropertyUtils {
     if (!BeeUtils.isEmpty(prefix)) {
       addProperty(lst, prefix, BeeUtils.bracket(n));
     }
-    String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
-        prefix.trim() + BeeConst.STRING_SPACE;
+    String name = BeeUtils.isEmpty(prefix) 
+        ? BeeConst.STRING_EMPTY : prefix.trim() + BeeConst.STRING_SPACE;
     
     int i = 0;
     for (String item : values) {
@@ -527,7 +527,7 @@ public class PropertyUtils {
    * @return true if {@code nm} is not {@code null} or empty, otherwise false
    */
   private static boolean validName(String nm) {
-    return (nm != null && !nm.isEmpty());
+    return nm != null && !nm.isEmpty();
   }
 
   /**

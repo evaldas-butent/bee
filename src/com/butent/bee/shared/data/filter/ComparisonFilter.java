@@ -83,9 +83,8 @@ public abstract class ComparisonFilter extends Filter {
     ValueType rightType = right.getType();
 
     if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
-      logger.warning("Incompatible column types: " +
-          leftColumn + BeeUtils.parenthesize(leftType) + " AND " +
-          rightColumn + BeeUtils.parenthesize(rightType));
+      logger.warning("Incompatible column types: " + leftColumn + BeeUtils.parenthesize(leftType)
+          + " AND " + rightColumn + BeeUtils.parenthesize(rightType));
       return null;
     }
     return compareWithColumn(leftColumn, op, rightColumn);
@@ -256,17 +255,17 @@ public abstract class ComparisonFilter extends Filter {
     }
     switch (operator) {
       case EQ:
-        return (v1.compareTo(v2) == 0);
+        return v1.compareTo(v2) == 0;
       case NE:
-        return (v1.compareTo(v2) != 0);
+        return v1.compareTo(v2) != 0;
       case LT:
-        return (v1.compareTo(v2) < 0);
+        return v1.compareTo(v2) < 0;
       case GT:
-        return (v1.compareTo(v2) > 0);
+        return v1.compareTo(v2) > 0;
       case LE:
-        return (v1.compareTo(v2) <= 0);
+        return v1.compareTo(v2) <= 0;
       case GE:
-        return (v1.compareTo(v2) >= 0);
+        return v1.compareTo(v2) >= 0;
       case STARTS:
         return v1.toString().toLowerCase().startsWith(v2.toString().toLowerCase());
       case ENDS:
@@ -284,7 +283,7 @@ public abstract class ComparisonFilter extends Filter {
 
   protected abstract Object restoreValue(String s);
 
-  private boolean isLike(String s1, String s2) {
+  private static boolean isLike(String s1, String s2) {
     StringTokenizer tokenizer =
         new StringTokenizer(s2, Operator.CHAR_ANY + Operator.CHAR_ONE, true);
     StringBuilder regexp = new StringBuilder();

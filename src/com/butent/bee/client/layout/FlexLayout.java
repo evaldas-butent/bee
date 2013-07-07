@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class FlexLayout {
+public final class FlexLayout {
 
   private static class Adapter {
     private final int index;
@@ -26,8 +26,8 @@ public class FlexLayout {
 
     private int factor = BeeConst.UNDEF;
 
-    private int unclampedSize = 0;
-    private int clampedSize = 0;
+    private int unclampedSize;
+    private int clampedSize;
 
     public Adapter(int index, int baseSize, int hypotheticalSize) {
       super();
@@ -163,7 +163,7 @@ public class FlexLayout {
       return changed;
     }
 
-    boolean isGrowing = (totHypothetical < containerSize);
+    boolean isGrowing = totHypothetical < containerSize;
     int countFactors = 0;
     int totFactors = 0;
 
@@ -189,7 +189,7 @@ public class FlexLayout {
         countFactors++;
         totFactors += factor;
         totBase += adapter.getBaseSize();
-        totScaled += (factor * adapter.getBaseSize());
+        totScaled += factor * adapter.getBaseSize();
 
       } else {
         int size = adapter.getHypotheticalSize();
@@ -210,7 +210,7 @@ public class FlexLayout {
 
     int freeSpace = containerSize - totUsed - totBase;
 
-    boolean ok = (isGrowing && freeSpace > 0 || !isGrowing && freeSpace < 0);
+    boolean ok = isGrowing && freeSpace > 0 || !isGrowing && freeSpace < 0;
     if (!ok) {
       for (Adapter adapter : adapters) {
         if (adapter.getFactor() > 0 && adapter.getHypotheticalSize() > 0) {

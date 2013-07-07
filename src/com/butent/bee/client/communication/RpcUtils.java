@@ -30,7 +30,7 @@ import java.util.Map;
  * 
  */
 
-public class RpcUtils {
+public final class RpcUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RpcUtils.class);
   

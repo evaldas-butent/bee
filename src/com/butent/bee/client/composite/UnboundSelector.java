@@ -50,10 +50,10 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
     return create(Relation.create(viewName, columns));
   }
 
-  private AbstractCellRenderer renderer = null;
-  private String renderedValue = null;
+  private AbstractCellRenderer renderer;
+  private String renderedValue;
 
-  private boolean handledByForm = false;
+  private boolean handledByForm;
 
   public UnboundSelector(Relation relation) {
     super(relation, true);
@@ -124,7 +124,7 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
       if (!BeeUtils.isEmpty(getRelationLabel())) {
         messages.add(getRelationLabel());
       }
-      messages.add(Localized.constants.valueRequired());
+      messages.add(Localized.getConstants().valueRequired());
     }
     return messages;
   }

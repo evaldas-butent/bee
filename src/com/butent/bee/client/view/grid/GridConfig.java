@@ -30,7 +30,7 @@ class GridConfig {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridConfig.class);
   
-  static final List<BeeColumn> dataColumns = Lists.newArrayList();
+  private static final List<BeeColumn> dataColumns = Lists.newArrayList();
 
   static int userIndex;
   static int keyIndex;
@@ -110,6 +110,10 @@ class GridConfig {
       flexBasisIndex = GridUtils.getIndex(names, "FlexBasis");
       flexUnitIndex = GridUtils.getIndex(names, "FlexBasisUnit");
     }
+  }
+
+  static List<BeeColumn> getDataColumns() {
+    return dataColumns;
   }
 
   final BeeRow row;
@@ -269,10 +273,10 @@ class GridConfig {
   
   void saveColumnSetting(String name, int index, String value) {
     Assert.notEmpty(name);
-    Assert.isIndex(ColumnConfig.dataColumns, index);
+    Assert.isIndex(ColumnConfig.getDataColumns(), index);
     
     final String columnName = name.trim();
-    final BeeColumn dataColumn = ColumnConfig.dataColumns.get(index);
+    final BeeColumn dataColumn = ColumnConfig.getDataColumns().get(index);
     final String newValue = GridUtils.normalizeValue(value);
     
     ColumnConfig columnConfig = columnSettings.get(columnName);
@@ -280,8 +284,8 @@ class GridConfig {
     if (columnConfig == null) {
       if (newValue != null) {
         List<BeeColumn> columns = Lists.newArrayList();
-        columns.add(ColumnConfig.dataColumns.get(ColumnConfig.gridIndex));
-        columns.add(ColumnConfig.dataColumns.get(ColumnConfig.nameIndex));
+        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.gridIndex));
+        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.nameIndex));
         columns.add(dataColumn);
 
         List<String> values = Queries.asList(row.getId(), columnName, newValue);
@@ -315,7 +319,7 @@ class GridConfig {
     }
   }
 
-  private GridComponentDescription fuseCompnent(GridComponentDescription component,
+  private static GridComponentDescription fuseCompnent(GridComponentDescription component,
       Integer height, String style, String font, String padding, String border, String margin) {
 
     if (!BeeUtils.isPositive(height) && BeeUtils.allEmpty(style, font, padding, border, margin)) {

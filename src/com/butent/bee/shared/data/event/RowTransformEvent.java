@@ -25,7 +25,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
   private final String viewName;
   private final BeeRow row;
 
-  private String result = null;
+  private String result;
 
   public RowTransformEvent(String viewName, BeeRow row) {
     this.viewName = viewName;

@@ -1,6 +1,6 @@
 package com.butent.bee.shared.ui;
 
-public class UiConstants {
+public final class UiConstants {
 
   public static final String ATTR_NAME = "name";
   public static final String ATTR_SOURCE = "source";

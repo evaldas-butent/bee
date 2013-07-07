@@ -20,7 +20,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   
   private final Editor editor;
 
-  private Long oldValue = null;
+  private Long oldValue;
 
   public IdFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);

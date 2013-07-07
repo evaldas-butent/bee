@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
-  public class SimpleRow {
+  public final class SimpleRow {
     private final int rowIndex;
 
     private SimpleRow(int rowIndex) {
@@ -155,7 +155,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
   private BiMap<String, Integer> columns = HashBiMap.create(0);
   private List<String[]> rows = Lists.newArrayList();
-  private Map<Integer, Map<String, Integer>> indexes = null;
+  private Map<Integer, Map<String, Integer>> indexes;
 
   public SimpleRowSet(String[] cols) {
     Assert.isPositive(ArrayUtils.length(cols));

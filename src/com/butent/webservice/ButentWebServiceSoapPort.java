@@ -20,7 +20,8 @@ public interface ButentWebServiceSoapPort {
    * @param usr
    * @return returns java.lang.String
    */
-  @WebMethod(operationName = "Login", action = "http://localhost/ButentWS/action/ButentWebService.Login")
+  @WebMethod(operationName = "Login",
+      action = "http://localhost/ButentWS/action/ButentWebService.Login")
   @WebResult(name = "Result", partName = "Result")
   String login(
       @WebParam(name = "usr", partName = "usr") String usr,
@@ -30,7 +31,8 @@ public interface ButentWebServiceSoapPort {
    * 
    * @return returns java.lang.String
    */
-  @WebMethod(operationName = "Logout", action = "http://localhost/ButentWS/action/ButentWebService.Logout")
+  @WebMethod(operationName = "Logout",
+      action = "http://localhost/ButentWS/action/ButentWebService.Logout")
   @WebResult(name = "Result", partName = "Result")
   String logout();
 
@@ -40,7 +42,8 @@ public interface ButentWebServiceSoapPort {
    * @param prm
    * @return returns java.lang.String
    */
-  @WebMethod(operationName = "Process", action = "http://localhost/ButentWS/action/ButentWebService.Process")
+  @WebMethod(operationName = "Process",
+      action = "http://localhost/ButentWS/action/ButentWebService.Process")
   @WebResult(name = "Result", partName = "Result")
   String process(
       @WebParam(name = "mthd", partName = "mthd") String mthd,

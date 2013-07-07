@@ -21,7 +21,7 @@ public abstract class StringCallback implements Validator<String> {
     if (validate(value)) {
       return null;
     } else if (isRequired() && BeeUtils.isEmpty(value)) {
-      return Localized.constants.valueRequired();
+      return Localized.getConstants().valueRequired();
     } else {
       return "No way!";
     }

@@ -11,12 +11,12 @@ import java.util.List;
  * Loads translation application programming interface.
  */
 
-public class LanguageUtils {
+public final class LanguageUtils {
 
   public static final String TRANSLATION_API_NAME = "language";
   public static final String TRANSLATION_API_VERSION = "1";
 
-  private static boolean translationLoaded = false;
+  private static boolean translationLoaded;
   private static List<Runnable> queue = Lists.newArrayList();
 
   public static boolean isTranslationLoaded() {

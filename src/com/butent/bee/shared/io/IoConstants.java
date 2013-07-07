@@ -1,6 +1,6 @@
 package com.butent.bee.shared.io;
 
-public class IoConstants {
+public final class IoConstants {
 
   public static final String PATH_IMAGES = "images";
   

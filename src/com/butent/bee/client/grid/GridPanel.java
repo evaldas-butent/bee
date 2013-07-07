@@ -17,8 +17,8 @@ public class GridPanel extends Simple implements HasEnabled {
   private final String gridName;
   private GridFactory.GridOptions gridOptions;
 
-  private Presenter presenter = null;
-  private GridInterceptor gridInterceptor = null;
+  private Presenter presenter;
+  private GridInterceptor gridInterceptor;
 
   public GridPanel(String gridName, GridFactory.GridOptions gridOptions) {
     super();

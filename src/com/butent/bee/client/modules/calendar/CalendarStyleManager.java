@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CalendarStyleManager {
+public final class CalendarStyleManager {
 
   public static final String DAY_VIEW = "bee-cal";
   public static final String RESOURCE_VIEW = DAY_VIEW;

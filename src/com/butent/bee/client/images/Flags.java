@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 import java.util.Map;
 
-public class Flags {
+public final class Flags {
 
   private static final BeeLogger logger = LogUtils.getLogger(Flags.class);
   

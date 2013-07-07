@@ -37,19 +37,19 @@ import java.util.List;
 public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers,
     HasTextBox, HasCapsLock, HasMaxLength {
 
-  private CharMatcher charMatcher = null;
+  private CharMatcher charMatcher;
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private String oldValue = null;
+  private String oldValue;
   
-  private boolean upperCase = false;
+  private boolean upperCase;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public InputText() {
     super(Document.get().createTextInputElement());

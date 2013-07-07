@@ -59,7 +59,7 @@ import java.util.Set;
 
 public class MultiSelector extends DataSelector implements HandlesRendering, HandlesValueChange {
 
-  private class ChoiceWidget extends Flow {
+  private final class ChoiceWidget extends Flow {
 
     private final long rowId;
     private final String labelId;
@@ -157,7 +157,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private final Map<Long, String> cache = Maps.newHashMap();
 
-  private String oldValue = null;
+  private String oldValue;
 
   private final Consumer<InputText> inputResizer;
 
@@ -336,7 +336,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       if (!BeeUtils.isEmpty(getLabel())) {
         messages.add(getLabel());
       }
-      messages.add(Localized.constants.valueRequired());
+      messages.add(Localized.getConstants().valueRequired());
     }
     return messages;
   }

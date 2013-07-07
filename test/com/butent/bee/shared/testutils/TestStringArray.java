@@ -25,7 +25,7 @@ public class TestStringArray {
 
   @Test
   public final void testStringArrayStringArray() {
-    String a[] = {"one", "two", "three"};
+    String[] a = {"one", "two", "three"};
 
     sa = new StringArray(a);
 

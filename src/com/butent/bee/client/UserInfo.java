@@ -18,8 +18,8 @@ import java.util.List;
 
 public class UserInfo implements Module, HasInfo {
 
-  private String sessionId = null;
-  private UserData userData = null;
+  private String sessionId;
+  private UserData userData;
 
   public String getConstant(String name) {
     return (userData == null) ? null : userData.getConstant(name);

@@ -332,7 +332,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
     }
 
     if (!Color.validate(normalizedValue)) {
-      messages.add(BeeUtils.joinWords(Localized.constants.colorIsInvalid(), normalizedValue));
+      messages.add(BeeUtils.joinWords(Localized.getConstants().colorIsInvalid(), normalizedValue));
     }
     return messages;
   }

@@ -45,8 +45,8 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
 
   private static final long MAX_UPLOAD_FILE_SIZE = 1258292L; /* ~1.2 MB */
 
-  private Image photoImageWidget = null;
-  private NewFileInfo photoImageAttachment = null;
+  private Image photoImageWidget;
+  private NewFileInfo photoImageAttachment;
 
   PersonFormInterceptor() {
     super();
@@ -70,11 +70,11 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
 
             if (!BeeUtils.containsSame(type, "image")) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.messages.invalidImageFileType(fileInfo.getName(), type));
+                  Localized.getMessages().invalidImageFileType(fileInfo.getName(), type));
 
             } else if (size > MAX_UPLOAD_FILE_SIZE) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.messages.fileSizeExceeded(size, MAX_UPLOAD_FILE_SIZE));
+                  Localized.getMessages().fileSizeExceeded(size, MAX_UPLOAD_FILE_SIZE));
 
             } else {
               photoImageAttachment = fileInfo;
@@ -124,7 +124,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
       FileUtils.uploadPhoto(photoImageAttachment, photoFileName, null, new Callback<String>() {
         @Override
         public void onFailure(String... reason) {
-          BeeKeeper.getScreen().notifySevere(Localized.constants.imageUploadFailed());
+          BeeKeeper.getScreen().notifySevere(Localized.getConstants().imageUploadFailed());
         }
 
         @Override
@@ -162,7 +162,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
           setPhotoFileName(form, row, oldPhoto);
           updateUserData(form, row);
 
-          BeeKeeper.getScreen().notifySevere(Localized.constants.imageUploadFailed());
+          BeeKeeper.getScreen().notifySevere(Localized.getConstants().imageUploadFailed());
         }
 
         @Override
@@ -190,7 +190,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private String getPhotoFileName(FormView form, IsRow row) {
+  private static String getPhotoFileName(FormView form, IsRow row) {
     if (form == null || row == null) {
       return null;
     } else {
@@ -198,7 +198,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     }
   }
   
-  private void setPhotoFileName(FormView form, IsRow row, String value) {
+  private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
       row.setValue(form.getDataIndex(CommonsConstants.COL_PHOTO), value);
     }
@@ -208,7 +208,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     FormView form = getFormView();
     IsRow row = form.getActiveRow();
 
-    if (fileInfo == null || form == null || row == null) {
+    if (fileInfo == null || row == null) {
       return false;
     } else {
       setPhotoFileName(form, row, FileUtils.generatePhotoFileName(fileInfo.getName()));
@@ -216,7 +216,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private void showImageInFormBeforeUpload(final Image image, File file) {
+  private static void showImageInFormBeforeUpload(final Image image, File file) {
     if (Features.supportsFileApi()) {
       final FileReader reader = Browser.getWindow().newFileReader();
 
@@ -244,7 +244,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private void updateUserData(FormView form, IsRow row) {
+  private static void updateUserData(FormView form, IsRow row) {
     UserData userData = BeeKeeper.getUser().getUserData();
 
     if (form != null && row != null && userData != null

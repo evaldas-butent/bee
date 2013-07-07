@@ -20,8 +20,8 @@ public abstract class Animation {
     }
   };
 
-  private boolean running = false;
-  private boolean started = false;
+  private boolean running;
+  private boolean started;
 
   private double startTime = -1;
   private int duration = -1;

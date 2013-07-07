@@ -72,11 +72,11 @@ class ReportManager {
     }
   }
 
-  private void addStyle(Widget widget, String styleName) {
+  private static void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);
   }
 
-  private Editor createDateEditor(ValueType type) {
+  private static Editor createDateEditor(ValueType type) {
     if (ValueType.DATE.equals(type)) {
       return new InputDate();
     } else {
@@ -84,7 +84,7 @@ class ReportManager {
     }
   }
 
-  private void doReport(final Report report, final BeeRow row) {
+  private static void doReport(final Report report, final BeeRow row) {
     ParameterList params = CalendarKeeper.createRequestParameters(SVC_DO_REPORT);
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
@@ -108,7 +108,7 @@ class ReportManager {
     });
   }
 
-  private String getReportCaption(Report report, BeeRow row) {
+  private static String getReportCaption(Report report, BeeRow row) {
     String caption = Data.getString(VIEW_REPORT_OPTIONS, row, COL_CAPTION);
     if (!BeeUtils.isEmpty(caption)) {
       return caption.trim();
@@ -302,7 +302,7 @@ class ReportManager {
     caption.setFocus(true);
   }
 
-  private void showReport(Report report, String caption, BeeRowSet rowSet) {
+  private static void showReport(Report report, String caption, BeeRowSet rowSet) {
     String gridName = "CalendarReport" + report.name();
     GridDescription gridDescription = new GridDescription(gridName);
 

@@ -59,11 +59,11 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
-  private class UserInfo {
+  private final class UserInfo {
     private final UserData userData;
     private Collection<Long> userRoles;
-    private boolean online = false;
-    private Locale locale = Localizations.defaultLocale;
+    private boolean online;
+    private Locale locale = Localizations.getDefaultLocale();
 
     private UserInfo(UserData userData) {
       this.userData = userData;
@@ -85,19 +85,19 @@ public class UserServiceBean {
       return online;
     }
 
-    private UserInfo setLocale(String locale) {
+    private UserInfo setLocale(String localeName) {
       Locale loc = null;
       UserData data = getUserData();
 
-      if (!BeeUtils.isEmpty(locale)) {
-        loc = I18nUtils.toLocale(locale);
+      if (!BeeUtils.isEmpty(localeName)) {
+        loc = I18nUtils.toLocale(localeName);
 
         if (loc == null) {
-          logger.warning(data.getUserSign(), "Unknown user locale:", locale);
+          logger.warning(data.getUserSign(), "Unknown user locale:", localeName);
         }
       }
       if (loc == null) {
-        loc = Localizations.defaultLocale;
+        loc = Localizations.getDefaultLocale();
       }
       data.setLocale(loc.toString());
 
@@ -107,8 +107,8 @@ public class UserServiceBean {
       return this;
     }
 
-    private UserInfo setOnline(boolean online) {
-      this.online = online;
+    private UserInfo setOnline(boolean isOnline) {
+      this.online = isOnline;
       return this;
     }
 
@@ -132,8 +132,8 @@ public class UserServiceBean {
       return this;
     }
 
-    private UserInfo setRoles(Collection<Long> userRoles) {
-      this.userRoles = userRoles;
+    private UserInfo setRoles(Collection<Long> roles) {
+      this.userRoles = roles;
       return this;
     }
   }
@@ -502,7 +502,7 @@ public class UserServiceBean {
           ok = !checked;
         } else {
           for (long role : getUserRoles(userId)) {
-            ok = (checked != roles.contains(role));
+            ok = checked != roles.contains(role);
 
             if (ok) {
               break;
@@ -515,7 +515,7 @@ public class UserServiceBean {
     return checked;
   }
 
-  private String key(String value) {
+  private static String key(String value) {
     return value.toLowerCase();
   }
 }

@@ -25,7 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Tablet extends Mobile {
 
-  private class SvgCommand extends Command {
+  private final class SvgCommand extends Command {
     private int type;
 
     private SvgCommand(int type) {

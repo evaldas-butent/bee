@@ -348,8 +348,8 @@ public class MailPanel extends AbstractFormInterceptor {
 
           if (ids.contains(placeId)) {
             int cnt = ids.size();
-            String ending = ((cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
-                ? "ų" : (cnt % 10 == 1 ? "as" : "ai"));
+            String ending = (cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
+                ? "ų" : (cnt % 10 == 1 ? "as" : "ai");
             dragLabel = new Label(BeeUtils.joinWords(cnt, "pažymėt" + ending, "laišk" + ending));
           } else {
             dragLabel = new Label("1 laiškas");
@@ -418,9 +418,9 @@ public class MailPanel extends AbstractFormInterceptor {
   private static final String MESSAGES_FILTER = "MessagesFilter";
 
   private int currentAccount = -1;
-  private Long currentFolder = null;
+  private Long currentFolder;
 
-  private IsRow currentMessage = null;
+  private IsRow currentMessage;
 
   private final MessagesGrid messages = new MessagesGrid();
   private final MailMessage message = new MailMessage();
@@ -812,9 +812,9 @@ public class MailPanel extends AbstractFormInterceptor {
     }
     final AccountInfo account = getCurrentAccount();
     final Long folderId = getCurrentFolderId();
-    final boolean purge = (account.getSystemFolder(folderId) == SystemFolder.Trash);
+    final boolean purge = account.getSystemFolder(folderId) == SystemFolder.Trash;
 
-    options.add(Localized.constants.cancel());
+    options.add(Localized.getConstants().cancel());
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
     Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,

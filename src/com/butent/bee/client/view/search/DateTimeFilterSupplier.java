@@ -53,8 +53,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   private static final int NOT_NULL_COL = 1;
   private static final int NULL_COL = 2;
 
-  private Range<DateTime> range = null;
-  private Boolean emptiness = null;
+  private Range<DateTime> range;
+  private Boolean emptiness;
 
   public DateTimeFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);
@@ -215,7 +215,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
-  private Range<DateTime> buildRange(DateTime start, DateTime end) {
+  private static Range<DateTime> buildRange(DateTime start, DateTime end) {
     if (start == null && end == null) {
       return null;
     } else if (start == null) {
@@ -314,7 +314,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return (getRange() != null && getRange().hasUpperBound()) ? getRange().upperEndpoint() : null;
   }
 
-  private InputDate getInputDate(HtmlTable display, int row) {
+  private static InputDate getInputDate(HtmlTable display, int row) {
     Widget widget = display.getWidget(row, DATE_COL);
     if (widget instanceof InputDate) {
       return (InputDate) widget;
@@ -384,7 +384,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return TimeUtils.combine(datePart, timeMillis);
   }
 
-  private InputTimeOfDay getInputTimeOfDay(HtmlTable display, int row) {
+  private static InputTimeOfDay getInputTimeOfDay(HtmlTable display, int row) {
     Widget widget = display.getWidget(row, TIME_COL);
     if (widget instanceof InputTimeOfDay) {
       return (InputTimeOfDay) widget;
@@ -407,7 +407,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     update(changed);
   }
 
-  private Range<DateTime> parseRange(String value) {
+  private static Range<DateTime> parseRange(String value) {
     if (BeeUtils.isEmpty(value)) {
       return null;
     }
@@ -429,8 +429,8 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     return buildRange(start, end);
   }
 
-  private void setValue(Range<DateTime> range, Boolean emptiness) {
-    this.range = range;
-    this.emptiness = emptiness;
+  private void setValue(Range<DateTime> rng, Boolean empt) {
+    this.range = rng;
+    this.emptiness = empt;
   }
 }

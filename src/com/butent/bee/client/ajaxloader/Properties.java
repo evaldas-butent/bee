@@ -1,6 +1,5 @@
 package com.butent.bee.client.ajaxloader;
 
-import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.shared.logging.BeeLogger;
@@ -15,7 +14,7 @@ import java.util.Date;
 public class Properties extends JavaScriptObject {
 
   private static final BeeLogger logger = LogUtils.getLogger(Properties.class);
-  
+
   public static Properties create() {
     return JavaScriptObject.createObject().cast();
   }
@@ -26,7 +25,7 @@ public class Properties extends JavaScriptObject {
   public final Boolean getBoolean(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
-      if (type.equals("boolean")) {
+      if ("boolean".equals(type)) {
         return nativeGetBoolean(key);
       } else {
         wrongType(key, "Boolean", type);
@@ -35,7 +34,7 @@ public class Properties extends JavaScriptObject {
     return null;
   }
 
-  public final Date getDate(String key) throws JavaScriptException {
+  public final Date getDate(String key) {
     return JsDate.toJava((JsDate) getObject(key));
   }
 
@@ -47,7 +46,7 @@ public class Properties extends JavaScriptObject {
   public final Double getNumber(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
-      if (type.equals("number")) {
+      if ("number".equals(type)) {
         return nativeGetNumber(key);
       } else {
         wrongType(key, "Number", type);
@@ -59,7 +58,7 @@ public class Properties extends JavaScriptObject {
   public final JavaScriptObject getObject(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
-      if (type.equals("object")) {
+      if ("object".equals(type)) {
         return nativeGetObject(key);
       } else {
         wrongType(key, "Object", type);
@@ -71,7 +70,7 @@ public class Properties extends JavaScriptObject {
   public final String getString(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
-      if (type.equals("string")) {
+      if ("string".equals(type)) {
         return nativeGetString(key);
       } else {
         wrongType(key, "String", type);
@@ -144,8 +143,8 @@ public class Properties extends JavaScriptObject {
     this[key] = value;
   }-*/;
 
-  private void wrongType(String key, String expected, String actual) {
-    logger.severe("Properties.get" + expected + "(" + key +
-        ") failed.  Unexpected type : " + actual + ".");
+  private static void wrongType(String key, String expected, String actual) {
+    logger.severe("Properties.get" + expected + "(" + key + ") failed.  Unexpected type : "
+        + actual + ".");
   }
 }

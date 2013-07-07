@@ -6,7 +6,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.time.DateTime;
 
-public class UpdateEvent extends GwtEvent<UpdateEvent.Handler> {
+public final class UpdateEvent extends GwtEvent<UpdateEvent.Handler> {
 
   public interface Handler extends EventHandler {
     void onUpdate(UpdateEvent event);
@@ -34,7 +34,7 @@ public class UpdateEvent extends GwtEvent<UpdateEvent.Handler> {
   private final int oldColumnIndex;
   private final int newColumnIndex;
   
-  private boolean canceled = false;
+  private boolean canceled;
   
   private UpdateEvent(Appointment appointment, DateTime newStart, DateTime newEnd,
       int oldColumnIndex, int newColumnIndex) {

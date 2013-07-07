@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * Contains necessary functions for reading and changing DOM information.
  */
-public class DomUtils {
+public final class DomUtils {
 
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
@@ -107,7 +107,7 @@ public class DomUtils {
 
   private static final String ID_SEPARATOR = "-";
 
-  private static int idCounter = 0;
+  private static int idCounter;
 
   private static int scrollBarWidth = -1;
   private static int scrollBarHeight = -1;

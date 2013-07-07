@@ -349,8 +349,8 @@ public class UserData implements BeeSerializable, HasInfo {
     this.lastName = lastName;
   }
 
-  public UserData setLocale(String locale) {
-    this.locale = locale;
+  public UserData setLocale(String loc) {
+    this.locale = loc;
     return this;
   }
 
@@ -395,7 +395,7 @@ public class UserData implements BeeSerializable, HasInfo {
       Multimap<RightsObjectType, String> stateObjects = rights.get(state);
 
       if (stateObjects.containsKey(type)) {
-        checked = (stateObjects.get(type).contains(BeeUtils.normalize(object)) != checked);
+        checked = stateObjects.get(type).contains(BeeUtils.normalize(object)) != checked;
       }
     }
     return checked;

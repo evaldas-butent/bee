@@ -31,17 +31,17 @@ public class Rectangle implements HasDimensions {
         element.getOffsetWidth(), element.getOffsetHeight());
   }
 
-  private CssUnit leftUnit = null;
-  private Double leftValue = null;
+  private CssUnit leftUnit;
+  private Double leftValue;
 
-  private CssUnit topUnit = null;
-  private Double topValue = null;
+  private CssUnit topUnit;
+  private Double topValue;
 
-  private CssUnit widthUnit = null;
-  private Double widthValue = null;
+  private CssUnit widthUnit;
+  private Double widthValue;
 
-  private CssUnit heightUnit = null;
-  private Double heightValue = null;
+  private CssUnit heightUnit;
+  private Double heightValue;
 
   public Rectangle() {
     super();
@@ -89,7 +89,7 @@ public class Rectangle implements HasDimensions {
 
   public void applyTo(Style st) {
     Assert.notNull(st);
-    
+
     applyLeft(st);
     applyTop(st);
     applyWidth(st);
@@ -100,13 +100,13 @@ public class Rectangle implements HasDimensions {
     Assert.notNull(obj);
     applyTo(obj.getElement());
   }
-  
+
   public void applyTop(Style st) {
     if (st != null && getTopValue() != null) {
       setStyleProperty(st, StyleUtils.STYLE_TOP, getTopValue(), getTopUnit());
     }
   }
-  
+
   public void applyWidth(Style st) {
     if (st != null && getWidthValue() != null) {
       setStyleProperty(st, StyleUtils.STYLE_WIDTH, getWidthValue(), getWidthUnit());
@@ -207,7 +207,7 @@ public class Rectangle implements HasDimensions {
   public void setHeight(int value) {
     setHeight((double) value, DEFAULT_UNIT);
   }
-  
+
   public void setHeight(Double value, CssUnit unit) {
     setHeightValue(value);
     setHeightUnit(unit);
@@ -226,7 +226,7 @@ public class Rectangle implements HasDimensions {
   public void setLeft(int value) {
     setLeft((double) value, DEFAULT_UNIT);
   }
-  
+
   public void setLeft(Double value, CssUnit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
@@ -243,7 +243,7 @@ public class Rectangle implements HasDimensions {
   public void setTop(int value) {
     setTop((double) value, DEFAULT_UNIT);
   }
-  
+
   public void setTop(Double value, CssUnit unit) {
     setTopValue(value);
     setTopUnit(unit);
@@ -260,7 +260,7 @@ public class Rectangle implements HasDimensions {
   public void setWidth(int value) {
     setWidth((double) value, DEFAULT_UNIT);
   }
-  
+
   public void setWidth(Double value, CssUnit unit) {
     setWidthValue(value);
     setWidthUnit(unit);
@@ -282,14 +282,11 @@ public class Rectangle implements HasDimensions {
       return "Rectangle: instance is empty";
     }
     return StyleUtils.buildStyle(
-        (getLeftValue() != null) ? 
-            StyleUtils.buildLeft(getLeftValue(), getLeftUnit()) : null,
-        (getTopValue() != null) ? 
-            StyleUtils.buildTop(getTopValue(), getTopUnit()) : null,
-        (getWidthValue() != null) ? 
-            StyleUtils.buildWidth(getWidthValue(), getWidthUnit()) : null,
-        (getHeightValue() != null) ? 
-            StyleUtils.buildHeight(getHeightValue(), getHeightUnit()) : null).asString();
+        (getLeftValue() != null) ? StyleUtils.buildLeft(getLeftValue(), getLeftUnit()) : null,
+        (getTopValue() != null) ? StyleUtils.buildTop(getTopValue(), getTopUnit()) : null,
+        (getWidthValue() != null) ? StyleUtils.buildWidth(getWidthValue(), getWidthUnit()) : null,
+        (getHeightValue() != null) ? StyleUtils.buildHeight(getHeightValue(), getHeightUnit())
+            : null).asString();
   }
 
   private void setFromStyle(Style style) {
@@ -344,7 +341,7 @@ public class Rectangle implements HasDimensions {
     }
   }
 
-  private void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
+  private static void setStyleProperty(Style style, String name, Double value, CssUnit unit) {
     if (value == null) {
       return;
     }

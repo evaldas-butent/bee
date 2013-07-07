@@ -306,9 +306,10 @@ public class InputBoxes {
     UiHelper.focus(widget.asWidget());
   }
 
-  private boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
+  private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
       String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
       final Holder<Widget> errorDisplay, final Supplier<String> errorSupplier) {
+
     if (BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
       return false;
     }
@@ -357,7 +358,7 @@ public class InputBoxes {
     return true;
   }
 
-  private void showError(Widget widget, String message) {
+  private static void showError(Widget widget, String message) {
     if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
       if (widget instanceof HasText) {
         ((HasText) widget).setText(message);

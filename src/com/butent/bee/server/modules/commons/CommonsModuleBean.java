@@ -350,7 +350,7 @@ public class CommonsModuleBean implements BeeModule {
     return ResponseObject.response(res);
   }
 
-  private Collection<? extends BeeParameter> getSqlEngineParameters() {
+  private static Collection<? extends BeeParameter> getSqlEngineParameters() {
     List<BeeParameter> params = Lists.newArrayList();
 
     for (SqlEngine engine : SqlEngine.values()) {

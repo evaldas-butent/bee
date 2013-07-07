@@ -101,7 +101,7 @@ public class InputInteger extends InputNumber {
 
   @Override
   protected CharMatcher getDefaultCharMatcher() {
-    return InputNumber.intCharMatcher;
+    return InputNumber.INT_CHAR_MATCHER;
   }
   
   protected void initAttributes(String type, int min, int max, int step) {

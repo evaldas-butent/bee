@@ -93,10 +93,13 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     ImageResource treeOpen();
   }
 
-  private class DndHandler {
+  private final class DndHandler {
 
-    private TreeItem source = null;
-    private boolean captionReady = false;
+    private TreeItem source;
+    private boolean captionReady;
+
+    private DndHandler() {
+    }
 
     public boolean handleEvent(Event event) {
       DataTransfer dto = event.getDataTransfer();
@@ -236,8 +239,8 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
-  public static AbstractImagePrototype treeClosed = null;
-  public static AbstractImagePrototype treeOpen = null;
+  private static AbstractImagePrototype treeClosed;
+  private static AbstractImagePrototype treeOpen;
 
   static {
     Resources resources = GWT.create(Resources.class);
@@ -255,16 +258,16 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();
 
-  private TreeItem selectedItem = null;
+  private TreeItem selectedItem;
 
   private final Element focusable;
 
-  private boolean isAnimationEnabled = false;
+  private boolean isAnimationEnabled;
 
   private final Widget caption;
   private final TreeItem root;
 
-  private DndHandler dndHandler = null;
+  private DndHandler dndHandler;
 
   private boolean enabled = true;
 
@@ -490,33 +493,30 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     int eventType = event.getTypeInt();
 
     switch (eventType) {
-      case Event.ONCLICK: {
+      case Event.ONCLICK: 
         Element el = DOM.eventGetTarget(event);
         if (!shouldTreeDelegateFocusToElement(el) && (getSelectedItem() != null)
             && getSelectedItem().getContentElem().isOrHasChild(el)) {
           setFocus(true);
         }
         break;
-      }
 
-      case Event.ONMOUSEDOWN: {
+      case Event.ONMOUSEDOWN: 
         if ((DOM.eventGetCurrentTarget(event) == getElement())
             && (event.getButton() == NativeEvent.BUTTON_LEFT)) {
           elementClicked(DOM.eventGetTarget(event));
         }
         break;
-      }
 
-      case Event.ONKEYDOWN: {
-        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) &&
-            !event.getAltKey() && !event.getMetaKey()) {
+      case Event.ONKEYDOWN: 
+        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) 
+            && !event.getAltKey() && !event.getMetaKey()) {
           navigate(event);
           event.preventDefault();
         }
         break;
-      }
 
-      case Event.ONKEYUP: {
+      case Event.ONKEYUP:
         if (event.getKeyCode() == KeyCodes.KEY_TAB) {
           List<Element> chain = new ArrayList<Element>();
           collectElementChain(chain, getElement(), DOM.eventGetTarget(event));
@@ -526,7 +526,6 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
           }
         }
         break;
-      }
     }
 
     super.onBrowserEvent(event);
@@ -906,22 +905,21 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   private void navigate(Event event) {
     switch (event.getKeyCode()) {
-      case KeyCodes.KEY_UP: {
+      case KeyCodes.KEY_UP:
         moveSelectionUp(getSelectedItem());
         break;
-      }
-      case KeyCodes.KEY_DOWN: {
+
+      case KeyCodes.KEY_DOWN:
         moveSelectionDown(getSelectedItem(), true);
         break;
-      }
-      case KeyCodes.KEY_LEFT: {
+
+      case KeyCodes.KEY_LEFT:
         maybeCollapseTreeItem();
         break;
-      }
-      case KeyCodes.KEY_RIGHT: {
+
+      case KeyCodes.KEY_RIGHT:
         maybeExpandTreeItem();
         break;
-      }
     }
   }
 
@@ -957,7 +955,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
-  private void showImage(TreeItem treeItem, AbstractImagePrototype proto) {
+  private static void showImage(TreeItem treeItem, AbstractImagePrototype proto) {
     Element holder = treeItem.getImageHolderElement();
     Element child = DOM.getFirstChild(holder);
     if (child == null) {

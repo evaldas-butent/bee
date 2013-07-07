@@ -71,10 +71,11 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 
-class TaskList {
+final class TaskList {
 
   private static final int DEFAULT_STAR_COUNT = 3;
 
+  //CHECKSTYLE:OFF
   public interface SlackTemplate extends SafeHtmlTemplates {
     @Template("<div class=\"bee-crm-SlackLate-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackLate-label\">{1}</div>")
     SafeHtml late(SafeStyles barStyles, String label);
@@ -82,8 +83,9 @@ class TaskList {
     @Template("<div class=\"bee-crm-SlackScheduled-bar\" style=\"{0}\"></div><div class=\"bee-crm-SlackScheduled-label\">{1}</div>")
     SafeHtml scheduled(SafeStyles barStyles, String label);
   }
+  //CHECKSTYLE:ON
 
-  private static class GridHandler extends AbstractGridInterceptor {
+  private static final class GridHandler extends AbstractGridInterceptor {
 
     private static final String NAME_MODE = "Mode";
     private static final String NAME_SLACK = "Slack";
@@ -237,13 +239,13 @@ class TaskList {
     }
   }
 
-  private static class ModeFilterSupplier extends AbstractFilterSupplier {
+  private static final class ModeFilterSupplier extends AbstractFilterSupplier {
 
     private enum Mode {
       NEW {
         @Override
         String getLabel() {
-          return Localized.constants.taskFilterNew();
+          return Localized.getConstants().taskFilterNew();
         }
 
         @Override
@@ -255,7 +257,7 @@ class TaskList {
       UPDATED {
         @Override
         String getLabel() {
-          return Localized.constants.taskFilterUpdated();
+          return Localized.getConstants().taskFilterUpdated();
         }
 
         @Override
@@ -267,7 +269,7 @@ class TaskList {
       NEW_OR_UPDATED {
         @Override
         String getLabel() {
-          return Localized.constants.taskFilterNewOrUpdated();
+          return Localized.getConstants().taskFilterNewOrUpdated();
         }
 
         @Override
@@ -290,7 +292,7 @@ class TaskList {
       abstract String getValue();
     }
 
-    private Mode mode = null;
+    private Mode mode;
 
     private ModeFilterSupplier(String options) {
       super(VIEW_TASKS, null, null, options);
@@ -342,7 +344,7 @@ class TaskList {
       return "bee-crm-FilterSupplier-Mode-";
     }
 
-    private Widget createMode(String styleName) {
+    private static Widget createMode(String styleName) {
       return new CustomDiv(styleName);
     }
 
@@ -352,7 +354,7 @@ class TaskList {
 
       int row = 0;
 
-      Button bNew = new Button(Localized.constants.taskFilterNew());
+      Button bNew = new Button(Localized.getConstants().taskFilterNew());
       bNew.addStyleName(getStylePrefix() + "new");
 
       bNew.addClickHandler(new ClickHandler() {
@@ -371,7 +373,7 @@ class TaskList {
 
       row++;
 
-      Button bUpd = new Button(Localized.constants.taskFilterUpdated());
+      Button bUpd = new Button(Localized.getConstants().taskFilterUpdated());
       bUpd.addStyleName(getStylePrefix() + "upd");
 
       bUpd.addClickHandler(new ClickHandler() {
@@ -390,7 +392,7 @@ class TaskList {
 
       row++;
 
-      Button both = new Button(Localized.constants.taskFilterNewOrUpdated());
+      Button both = new Button(Localized.getConstants().taskFilterNewOrUpdated());
       both.addStyleName(getStylePrefix() + "both");
 
       both.addClickHandler(new ClickHandler() {
@@ -412,7 +414,7 @@ class TaskList {
 
       row++;
 
-      Button all = new Button(Localized.constants.taskFilterAll());
+      Button all = new Button(Localized.getConstants().taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -426,7 +428,7 @@ class TaskList {
 
       container.setWidget(row, 0, all);
 
-      Button cancel = new Button(Localized.constants.cancel());
+      Button cancel = new Button(Localized.getConstants().cancel());
       cancel.addStyleName(getStylePrefix() + "cancel");
 
       cancel.addClickHandler(new ClickHandler() {
@@ -445,12 +447,12 @@ class TaskList {
       return mode;
     }
 
-    private Filter getNewFilter() {
+    private static Filter getNewFilter() {
       return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
           Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isEmpty(COL_LAST_ACCESS)));
     }
 
-    private Filter getUpdFilter() {
+    private static Filter getUpdFilter() {
       return null;
     }
 
@@ -459,7 +461,7 @@ class TaskList {
     }
   }
 
-  private static class ModeRenderer extends AbstractCellRenderer {
+  private static final class ModeRenderer extends AbstractCellRenderer {
 
     private ModeRenderer() {
       super(null);
@@ -487,12 +489,12 @@ class TaskList {
       return BeeConst.STRING_EMPTY;
     }
 
-    private String renderMode(String styleName) {
+    private static String renderMode(String styleName) {
       return "<div class=\"" + styleName + "\"></div>";
     }
   }
 
-  private static class SlackFilterSupplier extends AbstractFilterSupplier {
+  private static final class SlackFilterSupplier extends AbstractFilterSupplier {
 
     private enum Slack {
       LATE {
@@ -504,7 +506,7 @@ class TaskList {
 
         @Override
         String getLabel() {
-          return Localized.constants.taskLabelLate();
+          return Localized.getConstants().taskLabelLate();
         }
 
         @Override
@@ -523,7 +525,7 @@ class TaskList {
 
         @Override
         String getLabel() {
-          return Localized.constants.taskLabelScheduled();
+          return Localized.getConstants().taskLabelScheduled();
         }
 
         @Override
@@ -548,7 +550,7 @@ class TaskList {
       abstract String getValue();
     }
 
-    private Slack slack = null;
+    private Slack slack;
 
     private SlackFilterSupplier(String options) {
       super(VIEW_TASKS, null, null, options);
@@ -594,7 +596,7 @@ class TaskList {
       Flow container = new Flow();
       container.addStyleName(getStylePrefix() + "container");
 
-      Button late = new Button(Localized.constants.taskFilterLate());
+      Button late = new Button(Localized.getConstants().taskFilterLate());
       late.addStyleName(getStylePrefix() + "late");
 
       late.addClickHandler(new ClickHandler() {
@@ -608,7 +610,7 @@ class TaskList {
 
       container.add(late);
 
-      Button scheduled = new Button(Localized.constants.taskFilterScheduled());
+      Button scheduled = new Button(Localized.getConstants().taskFilterScheduled());
       scheduled.addStyleName(getStylePrefix() + "scheduled");
 
       scheduled.addClickHandler(new ClickHandler() {
@@ -622,7 +624,7 @@ class TaskList {
 
       container.add(scheduled);
 
-      Button all = new Button(Localized.constants.taskFilterAll());
+      Button all = new Button(Localized.getConstants().taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -636,7 +638,7 @@ class TaskList {
 
       container.add(all);
 
-      Button cancel = new Button(Localized.constants.cancel());
+      Button cancel = new Button(Localized.getConstants().cancel());
       cancel.addStyleName(getStylePrefix() + "cancel");
 
       cancel.addClickHandler(new ClickHandler() {
@@ -660,7 +662,7 @@ class TaskList {
     }
   }
 
-  private static class SlackRenderer extends AbstractCellRenderer {
+  private static final class SlackRenderer extends AbstractCellRenderer {
 
     private static final SlackTemplate TEMPLATE = GWT.create(SlackTemplate.class);
 
@@ -723,7 +725,7 @@ class TaskList {
       return StyleUtils.buildWidth(width, CssUnit.PCT);
     }
 
-    private String getLabel(long minutes) {
+    private static String getLabel(long minutes) {
       if (Math.abs(minutes) < TimeUtils.MINUTES_PER_DAY) {
         return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR)
             + DateTime.TIME_FIELD_SEPARATOR
@@ -745,7 +747,7 @@ class TaskList {
       return minBarWidth;
     }
 
-    private long getMinutes(TaskStatus status, DateTime start, DateTime finish) {
+    private static long getMinutes(TaskStatus status, DateTime start, DateTime finish) {
       if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED) {
         return 0;
       }
@@ -794,9 +796,9 @@ class TaskList {
     }
   }
 
-  private static class StarFilterSupplier extends AbstractFilterSupplier {
+  private static final class StarFilterSupplier extends AbstractFilterSupplier {
 
-    private boolean starred = false;
+    private boolean starred;
 
     private StarFilterSupplier(String options) {
       super(VIEW_TASKS, null, null, options);
@@ -814,7 +816,7 @@ class TaskList {
 
     @Override
     public String getLabel() {
-      return isStarred() ? Localized.constants.taskFilterStarred() : null;
+      return isStarred() ? Localized.getConstants().taskFilterStarred() : null;
     }
 
     @Override
@@ -846,7 +848,7 @@ class TaskList {
       Flow container = new Flow();
       container.addStyleName(getStylePrefix() + "container");
 
-      Button star = new Button(Localized.constants.taskFilterStarred());
+      Button star = new Button(Localized.getConstants().taskFilterStarred());
       star.addStyleName(getStylePrefix() + "starred");
 
       star.addClickHandler(new ClickHandler() {
@@ -860,7 +862,7 @@ class TaskList {
 
       container.add(star);
 
-      Button all = new Button(Localized.constants.taskFilterAll());
+      Button all = new Button(Localized.getConstants().taskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -874,7 +876,7 @@ class TaskList {
 
       container.add(all);
 
-      Button cancel = new Button(Localized.constants.cancel());
+      Button cancel = new Button(Localized.getConstants().cancel());
       cancel.addStyleName(getStylePrefix() + "cancel");
 
       cancel.addClickHandler(new ClickHandler() {

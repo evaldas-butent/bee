@@ -20,15 +20,14 @@ import java.util.List;
 /**
  * Tests {@link com.butent.bee.shared.utils.PropertyUtils}.
  */
+@SuppressWarnings("static-method")
 public class TestPropertyUtils {
 
-  public List<Property> propList = new ArrayList<Property>();
-  public List<ExtendedProperty> propExtList = new ArrayList<ExtendedProperty>();
-  public Collection<ExtendedProperty> propExtColl = new ArrayList<ExtendedProperty>();
-  public Collection<ExtendedProperty> propExtColl1 = null;
-  public Collection<ExtendedProperty> propExtColl2 = new ArrayList<ExtendedProperty>();
-  public Collection<Property> propList1 = new ArrayList<Property>();
-  public Collection<Property> propList2 = null;
+  private List<Property> propList = new ArrayList<Property>();
+  private List<ExtendedProperty> propExtList = new ArrayList<ExtendedProperty>();
+  private Collection<ExtendedProperty> propExtColl = new ArrayList<ExtendedProperty>();
+  private Collection<ExtendedProperty> propExtColl2 = new ArrayList<ExtendedProperty>();
+  private Collection<Property> propList1 = new ArrayList<Property>();
 
   @Before
   public void setUp() throws Exception {
@@ -84,7 +83,8 @@ public class TestPropertyUtils {
     assertEquals(2, PropertyUtils.addChildren(propExtColl, "name2", "sub1", 1, "sub2", "value2"));
     assertEquals(2, PropertyUtils.addChildren(propExtColl, "name2", null, "value1", "sub2",
         "value2"));
-    assertEquals(1, PropertyUtils.addChildren(propExtColl, "name2", "sub1", null, "sub2", "value2"));
+    assertEquals(1, PropertyUtils.addChildren(propExtColl, "name2", "sub1", null, "sub2",
+        "value2"));
   }
 
   @Test
@@ -95,8 +95,10 @@ public class TestPropertyUtils {
     assertEquals(false, PropertyUtils.addExtended(propExtList, null, null));
     assertEquals(true, PropertyUtils.addExtended(propExtList, "name1", 5));
     assertEquals(false, PropertyUtils.addExtended(propExtList, "", "               "));
-    assertEquals(true, PropertyUtils.addExtended(propExtList, "               ", "               "));
-    assertEquals(false, PropertyUtils.addExtended(propExtList, "                            ", ""));
+    assertEquals(true, PropertyUtils.addExtended(propExtList, "               ",
+        "               "));
+    assertEquals(false, PropertyUtils.addExtended(propExtList, "                            ",
+        ""));
     assertEquals(false, PropertyUtils.addExtended(propExtList, "", ""));
   }
 
@@ -349,12 +351,13 @@ public class TestPropertyUtils {
     Object[] expected2 = propList12.toArray();
 
     for (int i = 0; i < expected1.length; i++) {
-      assertEquals(expected1[i].toString(), PropertyUtils.createProperties("NAME1", "VALUE1",
-          "NAME2").toArray()[i].toString());
+      assertEquals(expected1[i].toString(),
+          PropertyUtils.createProperties("NAME1", "VALUE1", "NAME2").toArray()[i].toString());
     }
     for (int i = 0; i < expected2.length; i++) {
-      assertEquals(expected2[i].toString(), PropertyUtils.createProperties("NAME1", "VALUE1",
-          "NAME2", "VALUE2").toArray()[i].toString());
+      assertEquals(expected2[i].toString(),
+          PropertyUtils.createProperties("NAME1", "VALUE1",
+              "NAME2", "VALUE2").toArray()[i].toString());
     }
   }
 
@@ -389,17 +392,19 @@ public class TestPropertyUtils {
 
   @Test
   public final void testExtendedToArray() {
-    String[][] mas =
-        {
-            {"NAME1", "SUB1", "VALUE1", "10:13:08.227"},
-            {"NAME2", "SUB2", "VALUE2", "10:13:08.227"},
-            {"NAME3", "SUB3", "VALUE3", "10:13:08.446"}};
+    String[][] mas = {
+        {"NAME1", "SUB1", "VALUE1", "10:13:08.227"},
+        {"NAME2", "SUB2", "VALUE2", "10:13:08.227"},
+        {"NAME3", "SUB3", "VALUE3", "10:13:08.446"}
+    };
     assertArrayEquals(mas, PropertyUtils.extendedToArray(propExtList));
   }
 
   @Test
   public final void testPropertiesToArray() {
-    String[][] mas = { {"NAME1", "VALUE1"}, {"NAME2", "VALUE2"}, {"NAME3", "VALUE3"}};
+    String[][] mas = {
+        {"NAME1", "VALUE1"}, {"NAME2", "VALUE2"}, {"NAME3", "VALUE3"}
+    };
     assertArrayEquals(mas, PropertyUtils.propertiesToArray(propList));
   }
 
@@ -415,37 +420,37 @@ public class TestPropertyUtils {
     assertEquals("root NAME6.SUB5=VALUE5", propExt2.toString());
   }
 
-  @SuppressWarnings({"rawtypes", "unused"})
+  @SuppressWarnings({"rawtypes", "unused" })
   @Test
   public final void testTransformStringString() {
     int index = -1;
-    Method m[] = null;
+    Method[] m = null;
+    String s = "private static java.lang.String "
+        + "com.butent.bee.shared.utils.PropertyUtils.transformString(java.lang.String)";
+
     try {
       Class c = PropertyUtils.class;
       m = c.getDeclaredMethods();
       for (int i = 0; i < m.length; i++) {
-        if (m[i]
-            .toString()
-            .equals(
-                "private static java.lang.String com.butent.bee.shared.utils.PropertyUtils.transformString(java.lang.String)")) {
+        if (m[i].toString().equals(s)) {
           index = i;
         }
       }
-    } catch (Throwable e) {
+    } catch (SecurityException e) {
       System.err.println(e);
     }
 
     try {
       Class cls = Class.forName("com.butent.bee.shared.utils.PropertyUtils");
-      Class partypes[] = new Class[1];
+      Class[] partypes = new Class[1];
       partypes[0] = String.class;
 
-      Method meth = m[index];// cls.getMethod("private static java.lang.String transformString",
-                             // partypes);
+      Method meth = m[index]; // cls.getMethod("private static java.lang.String transformString",
+                              // partypes);
       System.out.println(meth.toString());
       meth.setAccessible(true);
 
-      String arglist[] = new String[1];
+      String[] arglist = new String[1];
       arglist[0] = new String("abc");
 
       assertEquals("abc", meth.invoke(null, (Object[]) arglist));

@@ -33,18 +33,18 @@ import java.util.Map;
 
 class Decorator implements HasEnabled, HasExtendedInfo {
 
-  private class Fields implements HasExtendedInfo {
+  private final class Fields implements HasExtendedInfo {
 
     private final List<Parameter> params = Lists.newArrayList();
     private final Map<String, String> constants = Maps.newHashMap();
     private final Map<String, String> css = Maps.newHashMap();
-    private Lifecycle lifecycle = null;
+    private Lifecycle lifecycle;
     private final List<Handler> handlers = Lists.newArrayList();
-    private Template template = null;
+    private Template template;
 
-    private String eventTarget = null;
-    private String appearanceTarget = null;
-    private boolean appearanceDeep = false;
+    private String eventTarget;
+    private String appearanceTarget;
+    private boolean appearanceDeep;
 
     private Fields(List<Parameter> params, Map<String, String> constants, Map<String, String> css,
         Lifecycle lifecycle, List<Handler> handlers, Template template, String eventTarget,
@@ -232,10 +232,10 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   private final String parent;
 
   private final Fields definedFields;
-  private Fields fields = null;
+  private Fields fields;
 
-  private boolean initialized = false;
-  private int counter = 0;
+  private boolean initialized;
+  private int counter;
 
   private boolean enabled = true;
 
@@ -604,7 +604,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     return element;
   }
 
-  private JsFunction createFunction(String source, Map<String, String> substitutes) {
+  private static JsFunction createFunction(String source, Map<String, String> substitutes) {
     String body = substitute(source, substitutes);
 
     if (BeeUtils.isEmpty(body)) {
@@ -649,7 +649,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     this.fields = fields;
   }
 
-  private String substitute(String source, Map<String, String> substitutes) {
+  private static String substitute(String source, Map<String, String> substitutes) {
     if (BeeUtils.isEmpty(source) || substitutes.isEmpty()) {
       return source;
     }
@@ -663,7 +663,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     return result;
   }
 
-  private String wrapSubstitute(String s) {
+  private static String wrapSubstitute(String s) {
     return DecoratorConstants.SUBSTITUTE_PREFIX + s.trim() + DecoratorConstants.SUBSTITUTE_SUFFIX;
   }
 }

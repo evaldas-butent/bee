@@ -15,7 +15,7 @@ public abstract class ViewEvent {
 
   private final String viewName;
   private List<String> errors;
-  private boolean afterStage = false;
+  private boolean afterStage;
 
   public abstract static class ViewModifyEvent extends ViewEvent {
     ViewModifyEvent(String viewName) {
@@ -84,7 +84,7 @@ public abstract class ViewEvent {
 
   public static class ViewQueryEvent extends ViewEvent {
     private final SqlSelect query;
-    private BeeRowSet rowset = null;
+    private BeeRowSet rowset;
 
     ViewQueryEvent(String viewName, SqlSelect query) {
       super(viewName);

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   
-  private class Item {
+  private final class Item {
     private final int index;
     private final ValueType type;
 

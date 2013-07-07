@@ -92,7 +92,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     private final String parentName;
     private final String ownerAlias;
     private final XmlExpression xmlExpression;
-    private IsExpression expression = null;
+    private IsExpression expression;
     private final String label;
     private final Boolean editable;
 
@@ -366,8 +366,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private boolean hasAggregate;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
-  private Filter filter = null;
-  private Order order = null;
+  private Filter filter;
+  private Order order;
 
   BeeView(String moduleName, XmlView xmlView, Map<String, BeeTable> tables) {
     Assert.notNull(xmlView);
@@ -917,7 +917,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
         String colName = BeeUtils.notEmpty(col.alias, col.name);
         String aggregate = null;
-        boolean hidden = (col instanceof XmlHiddenColumn);
+        boolean hidden = col instanceof XmlHiddenColumn;
 
         if (col instanceof XmlAggregateColumn) {
           aggregate = ((XmlAggregateColumn) col).aggregate;

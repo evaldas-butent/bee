@@ -65,13 +65,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class DocumentHandler {
+public final class DocumentHandler {
 
-  private static class DocumentBuilder extends AbstractFormInterceptor {
+  private static final class DocumentBuilder extends AbstractFormInterceptor {
 
     private static final BeeLogger logger = LogUtils.getLogger(DocumentBuilder.class);
 
-    private FileCollector collector = null;
+    private FileCollector collector;
 
     private DocumentBuilder() {
     }
@@ -101,7 +101,7 @@ public class DocumentHandler {
       }
 
       if (getCollector().getFiles().isEmpty()) {
-        event.getCallback().onFailure(Localized.constants.chooseFiles());
+        event.getCallback().onFailure(Localized.getConstants().chooseFiles());
         return;
       }
 
@@ -147,7 +147,8 @@ public class DocumentHandler {
       }
     }
 
-    private void copyValues(FormView form, IsRow oldRow, IsRow newRow, List<String> colNames) {
+    private static void copyValues(FormView form, IsRow oldRow, IsRow newRow,
+        List<String> colNames) {
       for (String colName : colNames) {
         int index = form.getDataIndex(colName);
         if (index >= 0) {
@@ -163,12 +164,12 @@ public class DocumentHandler {
     }
   }
 
-  private static class DocumentGridHandler extends AbstractGridInterceptor implements
+  private static final class DocumentGridHandler extends AbstractGridInterceptor implements
       SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
-    private IsRow selectedCategory = null;
-    private TreePresenter categoryTree = null;
+    private IsRow selectedCategory;
+    private TreePresenter categoryTree;
 
     private DocumentGridHandler() {
     }
@@ -205,7 +206,7 @@ public class DocumentHandler {
       return null;
     }
 
-    private Filter getFilter(Long category) {
+    private static Filter getFilter(Long category) {
       if (category == null) {
         return null;
       } else {
@@ -222,9 +223,9 @@ public class DocumentHandler {
     }
   }
 
-  private static class FileGridHandler extends AbstractGridInterceptor {
+  private static final class FileGridHandler extends AbstractGridInterceptor {
 
-    private FileCollector collector = null;
+    private FileCollector collector;
 
     private FileGridHandler() {
     }
@@ -293,7 +294,7 @@ public class DocumentHandler {
       }
     }
 
-    private List<NewFileInfo> sanitize(GridView gridView, Collection<NewFileInfo> input) {
+    private static List<NewFileInfo> sanitize(GridView gridView, Collection<NewFileInfo> input) {
       List<NewFileInfo> result = Lists.newArrayList();
       if (BeeUtils.isEmpty(input)) {
         return result;
@@ -330,7 +331,7 @@ public class DocumentHandler {
       if (!messages.isEmpty()) {
         result.clear();
 
-        messages.add(0, Localized.constants.documentFileExists());
+        messages.add(0, Localized.getConstants().documentFileExists());
         gridView.notifyWarning(ArrayUtils.toArray(messages));
       }
 
@@ -338,7 +339,7 @@ public class DocumentHandler {
     }
   }
 
-  private static class RelatedDocumentsHandler extends AbstractGridInterceptor {
+  private static final class RelatedDocumentsHandler extends AbstractGridInterceptor {
 
     private int documentIndex = BeeConst.UNDEF;
 

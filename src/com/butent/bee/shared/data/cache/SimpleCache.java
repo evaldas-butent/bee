@@ -22,17 +22,17 @@ public class SimpleCache<K, V> implements HasInfo {
 
   private final Multimap<K, Long> history;
 
-  private int hitCount = 0;
-  private int missCount = 0;
+  private int hitCount;
+  private int missCount;
 
-  private int addCount = 0;
-  private int evictionCount = 0;
+  private int addCount;
+  private int evictionCount;
 
-  private long lastHit = 0;
-  private long lastMiss = 0;
+  private long lastHit;
+  private long lastMiss;
 
-  private long lastAdd = 0;
-  private long lastEviction = 0;
+  private long lastAdd;
+  private long lastEviction;
 
   private boolean recordStats;
 
@@ -213,7 +213,7 @@ public class SimpleCache<K, V> implements HasInfo {
     lastEviction = 0;
   }
 
-  private long currentMillis() {
+  private static long currentMillis() {
     return System.currentTimeMillis();
   }
 
@@ -243,7 +243,7 @@ public class SimpleCache<K, V> implements HasInfo {
     }
   }
 
-  private String transformMillis(long millis) {
+  private static String transformMillis(long millis) {
     if (millis <= 0) {
       return BeeConst.STRING_MINUS;
     } else {

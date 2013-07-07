@@ -296,10 +296,8 @@ public class BeeConnection {
       return true;
     } else if (!checkReadOnly(conn)) {
       return true;
-    } else if (!checkTransactionIsolation(conn)) {
-      return true;
     } else {
-      return false;
+      return !checkTransactionIsolation(conn);
     }
   }
 
@@ -468,7 +466,7 @@ public class BeeConnection {
     boolean ok;
 
     try {
-      ok = (conn.getAutoCommit() == isAutoCommit());
+      ok = conn.getAutoCommit() == isAutoCommit();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -484,7 +482,7 @@ public class BeeConnection {
     boolean ok;
 
     try {
-      ok = (conn.getHoldability() == getHoldability());
+      ok = conn.getHoldability() == getHoldability();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -500,7 +498,7 @@ public class BeeConnection {
     boolean ok;
 
     try {
-      ok = (conn.isReadOnly() == isReadOnly());
+      ok = conn.isReadOnly() == isReadOnly();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;
@@ -516,7 +514,7 @@ public class BeeConnection {
     boolean ok;
 
     try {
-      ok = (conn.getTransactionIsolation() == getTransactionIsolation());
+      ok = conn.getTransactionIsolation() == getTransactionIsolation();
     } catch (SQLException ex) {
       handleError(ex);
       ok = true;

@@ -10,60 +10,55 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * starts and stops core system modules.
- * <code>Screen, RpcFactory, EventManager, UserInfo, Global, Storage, MenuManager
- */
-
 public class BeeKeeper {
 
-  private static Screen SCREEN;
-  private static RpcFactory RPC;
-  private static EventManager BUS;
+  private static Screen screen;
+  private static RpcFactory rpc;
+  private static EventManager bus;
 
-  private static UserInfo USER;
-  private static Global GLOB;
-  private static Storage STOR;
-  private static MenuManager MENU;
+  private static UserInfo user;
+  private static Global glob;
+  private static Storage stor;
+  private static MenuManager menu;
 
   public static EventManager getBus() {
-    return BUS;
+    return bus;
   }
 
   public static MenuManager getMenu() {
-    return MENU;
+    return menu;
   }
 
   public static RpcFactory getRpc() {
-    return RPC;
+    return rpc;
   }
 
   public static Screen getScreen() {
-    return SCREEN;
+    return screen;
   }
 
   public static Storage getStorage() {
-    return STOR;
+    return stor;
   }
 
   public static UserInfo getUser() {
-    return USER;
+    return user;
   }
 
   private Module[] modules;
 
   BeeKeeper(LayoutPanel root, String url) {
-    SCREEN = GWT.create(Screen.class);
-    SCREEN.setRootPanel(root);
+    screen = GWT.create(Screen.class);
+    screen.setRootPanel(root);
 
-    BUS = new EventManager();
-    RPC = new RpcFactory(url);
-    USER = new UserInfo();
-    GLOB = new Global();
-    STOR = new Storage();
-    MENU = new MenuManager();
+    bus = new EventManager();
+    rpc = new RpcFactory(url);
+    user = new UserInfo();
+    glob = new Global();
+    stor = new Storage();
+    menu = new MenuManager();
 
-    modules = new Module[] {SCREEN, BUS, RPC, USER, GLOB, STOR, MENU};
+    modules = new Module[] {screen, bus, rpc, user, glob, stor, menu};
   }
 
   void exit() {

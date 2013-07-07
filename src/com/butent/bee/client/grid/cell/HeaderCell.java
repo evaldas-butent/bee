@@ -48,7 +48,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   private static final String STYLE_ASCENDING = "bee-HeaderCellAscending";
   private static final String STYLE_DESCENDING = "bee-HeaderCellDescending";
 
-  private static Template template = null;
+  private static Template template;
 
   private final String sortInfoId;
   private final String captionId;

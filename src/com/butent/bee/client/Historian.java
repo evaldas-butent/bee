@@ -23,7 +23,7 @@ import elemental.events.EventListener;
 
 import elemental.js.JsBrowser;
 
-public class Historian implements HasInfo {
+public final class Historian implements HasInfo {
   
   private enum BrowserHistoryState implements HasCaption {
     FIRST("-") {
@@ -177,7 +177,7 @@ public class Historian implements HasInfo {
     return BeeConst.UNDEF;
   }
 
-  private BrowserHistoryState getState() {
+  private static BrowserHistoryState getState() {
     Object obj = getHistory().getState();
     if (obj == null) {
       return null;
@@ -194,7 +194,7 @@ public class Historian implements HasInfo {
   
   private void init() {
     Timer timer = new Timer() {
-      private int counter = 0;
+      private int counter;
 
       @Override
       public void run() {
@@ -243,7 +243,7 @@ public class Historian implements HasInfo {
     return index >= 0 && index == places.size() - 1;
   }
   
-  private boolean maybeClosePopup() {
+  private static boolean maybeClosePopup() {
     Popup popup = Popup.getActivePopup();
     if (popup == null) {
       return false;

@@ -7,8 +7,8 @@ import com.butent.bee.shared.data.value.Value;
  */
 
 public class Range {
-  private Value min = null;
-  private Value max = null;
+  private Value min;
+  private Value max;
 
   public Range(Value min, Value max) {
     this.min = min;

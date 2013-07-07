@@ -34,7 +34,7 @@ import java.util.Properties;
  * <code>getAvailableLocales</code> and <code>getIso3Language</code>.
  */
 
-public class I18nUtils {
+public final class I18nUtils {
   public static final char LOCALE_SEPARATOR = '_';
 
   /**

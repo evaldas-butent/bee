@@ -6,7 +6,7 @@ import java.sql.ResultSet;
  * Contains constant expressions and values for JDBC connectivity parameters.
  */
 
-public class JdbcConst {
+public final class JdbcConst {
   public static final String ROW_ID = "row_id";
   public static final String RESULT_SET_EMPTY = "result set empty";
   public static final String FEATURE_NOT_SUPPORTED = "feature not supported";

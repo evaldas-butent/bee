@@ -144,7 +144,7 @@ public class BooleanValue extends Value {
 
   @Override
   public int hashCode() {
-    return (isNull() ? -1 : (value ? 1 : 0));
+    return isNull() ? -1 : (value ? 1 : 0);
   }
 
   @Override

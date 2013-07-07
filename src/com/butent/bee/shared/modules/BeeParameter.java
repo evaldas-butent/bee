@@ -32,7 +32,7 @@ public class BeeParameter implements BeeSerializable {
   private ParameterType type;
   private String description;
   private String value;
-  private Map<Long, String> userValues = null;
+  private Map<Long, String> userValues;
 
   private enum Serial {
     MODULE, NAME, TYPE, DESCRIPTION, VALUE, USER_VALUES;
@@ -257,15 +257,15 @@ public class BeeParameter implements BeeSerializable {
     }
   }
 
-  public void setUserValue(Long userId, Object value) {
+  public void setUserValue(Long userId, Object obj) {
     Assert.state(supportsUsers(), "Parameter does not support user values: "
         + BeeUtils.join(".", getModule(), getName()));
     Assert.isTrue(DataUtils.isId(userId));
 
-    if (value == null) {
+    if (obj == null) {
       userValues.remove(userId);
     } else {
-      userValues.put(userId, transform(value));
+      userValues.put(userId, transform(obj));
     }
   }
 
@@ -274,7 +274,7 @@ public class BeeParameter implements BeeSerializable {
   }
 
   public boolean supportsUsers() {
-    return (userValues != null);
+    return userValues != null;
   }
 
   private Object getTypedValue(ParameterType tp, String expr) {
@@ -349,7 +349,7 @@ public class BeeParameter implements BeeSerializable {
     return val;
   }
 
-  private String transform(Object val) {
+  private static String transform(Object val) {
     String expr = null;
 
     if (val != null) {

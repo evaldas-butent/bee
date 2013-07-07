@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
+public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
 
   public interface Handler extends EventHandler {
     void onDataSelector(SelectorEvent event);
@@ -62,9 +62,9 @@ public class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Co
   private final State state;
   private final IsRow newRow;
   
-  private Collection<Long> exclusions = null;
+  private Collection<Long> exclusions;
 
-  private boolean consumed = false;
+  private boolean consumed;
 
   private SelectorEvent(State state) {
     this(state, null);

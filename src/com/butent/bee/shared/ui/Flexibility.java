@@ -127,9 +127,9 @@ public class Flexibility implements BeeSerializable, HasInfo {
   private int shrink = BeeConst.UNDEF;
 
   private int basisWidth = BeeConst.UNDEF;
-  private CssUnit basisUnit = null;
+  private CssUnit basisUnit;
 
-  private boolean basisAuto = false;
+  private boolean basisAuto;
 
   public Flexibility(int grow, int shrink, boolean basisAuto) {
     this();

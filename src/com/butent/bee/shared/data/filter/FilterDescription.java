@@ -138,16 +138,16 @@ public class FilterDescription implements BeeSerializable, HasInfo {
     return filterDescription;
   }
 
-  private String name = null;
+  private String name;
 
-  private String label = null;
+  private String label;
   private final List<FilterComponent> components = Lists.newArrayList();
 
-  private Boolean initial = null;
+  private Boolean initial;
 
-  private Boolean editable = null;
+  private Boolean editable;
 
-  private Boolean removable = null;
+  private Boolean removable;
 
   public FilterDescription(String name, String label, Collection<FilterComponent> components,
       Boolean initial, Boolean editable, Boolean removable) {

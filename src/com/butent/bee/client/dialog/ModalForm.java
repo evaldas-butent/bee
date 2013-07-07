@@ -21,8 +21,8 @@ public class ModalForm extends Popup {
   
   private final boolean requiresUnload; 
   
-  private boolean wasAttached = false;
-  private boolean pendingUnload = false;
+  private boolean wasAttached;
+  private boolean pendingUnload;
 
   public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload) {
     super(OutsideClick.IGNORE, STYLE_NAME);

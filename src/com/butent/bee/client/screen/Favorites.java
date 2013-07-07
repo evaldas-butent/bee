@@ -189,7 +189,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
   }
 
-  private static class Item {
+  private static final class Item {
     private final long id;
 
     private String html;
@@ -338,7 +338,7 @@ public class Favorites implements HandlesDeleteEvents {
     removeItem(Group.ROW, event.getViewName(), event.getRowId());
   }
 
-  private void addDisplayRow(HtmlTable display, final Group group, final String key,
+  private static void addDisplayRow(HtmlTable display, final Group group, final String key,
       final Item item) {
     int row = display.getRowCount();
 
@@ -377,7 +377,7 @@ public class Favorites implements HandlesDeleteEvents {
     display.setWidget(row, DELETE_COLUMN, delete);
   }
 
-  private HtmlTable createDisplay() {
+  private static HtmlTable createDisplay() {
     HtmlTable display = new HtmlTable();
     display.addStyleName(DISPLAY_STYLE);
 
@@ -447,7 +447,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
   }
 
-  private boolean removeItem(Group group, String key, long id) {
+  private static boolean removeItem(Group group, String key, long id) {
     Item item = group.find(key, id);
     if (item == null) {
       return false;
@@ -465,7 +465,7 @@ public class Favorites implements HandlesDeleteEvents {
     return group.remove(key, item);
   }
 
-  private boolean updateItem(Group group, String key, long id, String html) {
+  private static boolean updateItem(Group group, String key, long id, String html) {
     Item item = group.find(key, id);
     if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
       return false;

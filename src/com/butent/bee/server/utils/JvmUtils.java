@@ -23,10 +23,10 @@ import java.util.regex.PatternSyntaxException;
  * Finds out whether a particular class is loaded in Java Virtual Machine.
  */
 
-public class JvmUtils {
+public final class JvmUtils {
   private static BeeLogger logger = LogUtils.getLogger(JvmUtils.class);
 
-  public static Throwable CVF_FAILURE = null;
+  private static Throwable cvfFailure;
   private static final Field CLASSES_VECTOR_FIELD;
 
   private static final Map<String, Class<?>> PRIMITIVES;
@@ -65,7 +65,7 @@ public class JvmUtils {
       fld = null;
     }
 
-    CVF_FAILURE = err;
+    cvfFailure = err;
     CLASSES_VECTOR_FIELD = fld;
   }
 
@@ -146,6 +146,10 @@ public class JvmUtils {
 
   public static Set<Class<?>> findClassWithDefaultPackages(String name) {
     return findClass(name, FIND_CLASS_DEFAULT_PACKAGES);
+  }
+
+  public static Throwable getCvfFailure() {
+    return cvfFailure;
   }
 
   public static List<Property> getLoadedClasses() {
@@ -270,7 +274,7 @@ public class JvmUtils {
 
       return arr;
     } catch (IllegalAccessException ex) {
-      CVF_FAILURE = ex;
+      cvfFailure = ex;
       return null;
     }
   }

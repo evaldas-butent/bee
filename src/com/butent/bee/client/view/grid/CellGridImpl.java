@@ -165,57 +165,57 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private final String gridKey;
   private final DataInfo dataInfo;
 
-  private GridPresenter viewPresenter = null;
+  private GridPresenter viewPresenter;
 
   private final CellGrid grid = new CellGrid();
 
-  private Evaluator rowValidation = null;
+  private Evaluator rowValidation;
 
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
 
-  private List<BeeColumn> dataColumns = null;
+  private List<BeeColumn> dataColumns;
 
   private final String relColumn;
-  private Long relId = null;
+  private Long relId;
 
   private final List<String> newRowDefaults = Lists.newArrayList();
-  private String newRowCaption = null;
+  private String newRowCaption;
 
-  private FormView newRowForm = null;
-  private String newRowFormName = null;
+  private FormView newRowForm;
+  private String newRowFormName;
 
-  private String newRowFormContainerId = null;
-  private boolean newRowFormGenerated = false;
+  private String newRowFormContainerId;
+  private boolean newRowFormGenerated;
   private final Set<State> newRowFormState = EnumSet.noneOf(State.class);
 
-  private FormView editForm = null;
-  private String editFormName = null;
-  private boolean editMode = false;
-  private boolean editSave = false;
-  private Evaluator editMessage = null;
-  private boolean editShowId = false;
+  private FormView editForm;
+  private String editFormName;
+  private boolean editMode;
+  private boolean editSave;
+  private Evaluator editMessage;
+  private boolean editShowId;
   private final Set<String> editInPlace = Sets.newHashSet();
 
-  private String editFormContainerId = null;
+  private String editFormContainerId;
   private final Set<State> editFormState = EnumSet.noneOf(State.class);
-  private EditStartEvent pendingEditStartEvent = null;
+  private EditStartEvent pendingEditStartEvent;
 
-  private boolean singleForm = false;
+  private boolean singleForm;
 
-  private boolean adding = false;
+  private boolean adding;
 
-  private String activeFormContainerId = null;
+  private String activeFormContainerId;
 
-  private boolean showNewRowPopup = false;
+  private boolean showNewRowPopup;
 
-  private boolean showEditPopup = false;
-  private ModalForm newRowPopup = null;
-  private ModalForm editPopup = null;
+  private boolean showEditPopup;
+  private ModalForm newRowPopup;
+  private ModalForm editPopup;
 
-  private GridInterceptor gridInterceptor = null;
-  private SaveChangesCallback saveChangesCallback = null;
+  private GridInterceptor gridInterceptor;
+  private SaveChangesCallback saveChangesCallback;
 
   private final Set<String> pendingResize = Sets.newHashSet();
 
@@ -1242,7 +1242,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       ok = BeeUtils.isTrue(ValidationHelper.validateCell(cv, ec, ValidationOrigin.GRID));
       if (!ok) {
-        if (form != null && focusOnError) {
+        if (focusOnError) {
           form.focus(ec.getColumnId());
         }
         break;
@@ -1267,7 +1267,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     super.onUnload();
   }
 
-  private void amendGeneratedSize(final ModalForm popup, final FormView form) {
+  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
     popup.attachAmendDetach(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -1784,7 +1784,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       } else if (BeeUtils.inList(editKey, EditStartEvent.ENTER, KeyCodes.KEY_ENTER)) {
         ok = BeeUtils.inList(charCode, EditStartEvent.ENTER, KeyCodes.KEY_ENTER);
       } else {
-        ok = (editKey == charCode);
+        ok = editKey == charCode;
       }
     }
     if (!ok) {
@@ -1863,7 +1863,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
   }
 
-  private String normalizeFormName(String formName) {
+  private static String normalizeFormName(String formName) {
     if (BeeUtils.isEmpty(formName) || formName.trim().equals(BeeConst.STRING_MINUS)) {
       return null;
     } else {

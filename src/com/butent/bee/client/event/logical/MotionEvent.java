@@ -37,8 +37,8 @@ public class MotionEvent extends Event<MotionEvent.Handler> {
   private int currentX;
   private int currentY;
   
-  private Direction directionX = null;
-  private Direction directionY = null;
+  private Direction directionX;
+  private Direction directionY;
   
   private int changePositionX;
   private int changePositionY;

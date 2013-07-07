@@ -20,8 +20,8 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
   private static final String REGISTRED_WIDGET_NAME = "Registred";
   private static final String FINISHED_WIDGET_NAME = "Finished";
 
-  private InputBoolean registred = null;
-  private InputBoolean finished = null;
+  private InputBoolean registred;
+  private InputBoolean finished;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,

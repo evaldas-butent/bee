@@ -68,9 +68,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     }
 
     List<String> messages = Lists.newArrayList(cargoTitle, truck.getMessage(truckLabel),
-        Localized.constants.createTripForCargoQuestion());
+        Localized.getConstants().createTripForCargoQuestion());
 
-    Global.confirm(Localized.constants.createTripForCargoCaption(), Icon.QUESTION, messages,
+    Global.confirm(Localized.getConstants().createTripForCargoCaption(), Icon.QUESTION, messages,
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -183,9 +183,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       return;
     }
 
-    Global.confirm(Localized.constants.assignCargoToTripCaption(), Icon.QUESTION,
+    Global.confirm(Localized.getConstants().assignCargoToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(cargoMessage, tripMessage,
-            Localized.constants.assignCargoToTripQuestion()), callback);
+            Localized.getConstants().assignCargoToTripQuestion()), callback);
   }
 
   private final Long tripId;
@@ -215,7 +215,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     this(row, null, null, drivers, cargoCount);
   }
 
-  Trip(SimpleRow row, JustDate minDate, JustDate maxDate, Collection<Driver> drivers, int cargoCount) {
+  Trip(SimpleRow row, JustDate minDate, JustDate maxDate, Collection<Driver> drivers,
+      int cargoCount) {
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
@@ -242,7 +243,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String rangeLabel = ChartHelper.getRangeLabel(this.range);
 
     this.title = ChartHelper.buildTitle(
-        Localized.constants.tripDuration(), rangeLabel,
+        Localized.getConstants().tripDuration(), rangeLabel,
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
@@ -383,9 +384,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String driverTitle = ChartHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
         driver.getItemName());
 
-    Global.confirm(Localized.constants.assignDriverToTripCaption(), Icon.QUESTION,
+    Global.confirm(Localized.getConstants().assignDriverToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(driverTitle, getTitle(),
-            Localized.constants.assignDriverToTripQuestion()),
+            Localized.getConstants().assignDriverToTripQuestion()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -418,15 +419,15 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     switch (vehicleType) {
       case TRUCK:
-        caption = Localized.constants.assignTruckToTripCaption();
-        messages.add(Localized.constants.assignTruckToTripQuestion());
+        caption = Localized.getConstants().assignTruckToTripCaption();
+        messages.add(Localized.getConstants().assignTruckToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_VEHICLE));
         break;
 
       case TRAILER:
-        caption = Localized.constants.assignTrailerToTripCaption();
-        messages.add(Localized.constants.assignTrailerToTripQuestion());
+        caption = Localized.getConstants().assignTrailerToTripCaption();
+        messages.add(Localized.getConstants().assignTrailerToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_TRAILER));
         break;

@@ -89,14 +89,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private final CellValidationBus cellValidationBus = new CellValidationBus();
 
-  private Editor editor = null;
-  private IsRow rowValue = null;
+  private Editor editor;
+  private IsRow rowValue;
 
   private State state = State.PENDING;
 
-  private NotificationListener notificationListener = null;
+  private NotificationListener notificationListener;
 
-  private EditEndEvent.Handler closeHandler = null;
+  private EditEndEvent.Handler closeHandler;
 
   public EditableColumn(String viewName, List<BeeColumn> dataColumns, int colIndex,
       AbstractColumn<?> uiColumn, String caption, ColumnDescription columnDescr) {
@@ -497,7 +497,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         if (defaultDimensions.hasHeight() && defaultDimensions.getIntHeight() > height) {
           height = defaultDimensions.getIntHeight();
           StyleUtils.setHeight(editorElement, height);
-        } else if (defaultDimensions.hasMinHeight() && defaultDimensions.getIntMinHeight() > height) {
+        } else if (defaultDimensions.hasMinHeight() 
+            && defaultDimensions.getIntMinHeight() > height) {
           height = defaultDimensions.getIntMinHeight();
           StyleUtils.setHeight(editorElement, height);
         }
@@ -608,7 +609,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return false;
       }
 
-      closeEditor(getDataColumn(), oldValue, newValue, getRowModeForUpdate(), keyCode, hasModifiers);
+      closeEditor(getDataColumn(), oldValue, newValue, getRowModeForUpdate(), keyCode,
+          hasModifiers);
       return true;
     }
     return false;

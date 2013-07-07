@@ -22,7 +22,7 @@ import java.util.Map;
  * methods and so on).
  */
 
-public class ClassUtils {
+public final class ClassUtils {
   @SuppressWarnings("unchecked")
   public static <T extends Annotation> T findAnnotation(Annotation[] arr, Class<T> search) {
     for (Annotation ann : arr) {

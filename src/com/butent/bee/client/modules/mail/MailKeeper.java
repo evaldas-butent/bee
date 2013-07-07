@@ -34,11 +34,11 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Map;
 import java.util.Set;
 
-public class MailKeeper {
+public final class MailKeeper {
 
   public static final Long CHECK_ALL_FOLDERS = -42L;
 
-  private static MailController controller = null;
+  private static MailController controller;
   private static MailPanel activePanel;
   private static final Set<MailPanel> mailPanels = Sets.newHashSet();
 

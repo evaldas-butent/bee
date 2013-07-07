@@ -28,7 +28,7 @@ import javax.servlet.http.Part;
  * read of requests.
  */
 
-public class HttpUtils {
+public final class HttpUtils {
 
   private static BeeLogger logger = LogUtils.getLogger(HttpUtils.class);
 
@@ -51,7 +51,9 @@ public class HttpUtils {
       return headers;
     }
 
-    String nm, v;
+    String nm;
+    String v;
+
     while (lst.hasMoreElements()) {
       nm = lst.nextElement();
       if (BeeUtils.isEmpty(nm)) {

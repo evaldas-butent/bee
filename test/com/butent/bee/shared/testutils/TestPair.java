@@ -11,6 +11,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.Pair}.
  */
+@SuppressWarnings("static-method")
 public class TestPair {
 
   @Before
@@ -21,7 +22,7 @@ public class TestPair {
   public void tearDown() throws Exception {
   }
 
-  @SuppressWarnings({"rawtypes"})
+  @SuppressWarnings("rawtypes")
   @Test
   public final void testGetA() {
     Pair p = Pair.of("a", 1.2);
@@ -43,7 +44,7 @@ public class TestPair {
     assertEquals("\0", g.getA());
   }
 
-  @SuppressWarnings({"rawtypes"})
+  @SuppressWarnings("rawtypes")
   @Test
   public final void testGetB() {
     Pair p = Pair.of(1.2, "a");
@@ -56,7 +57,7 @@ public class TestPair {
     assertEquals('\0', p.getB());
   }
 
-  @SuppressWarnings({"rawtypes"})
+  @SuppressWarnings("rawtypes")
   @Test
   public final void testToString() {
     Pair p = Pair.of(1.2, "a");

@@ -13,8 +13,7 @@ public class TextLabel extends ValueLabel<String> {
   }
 
   @Override
-  public void setValue(String value) {
-    this.value = value;
-    setText(BeeUtils.trimRight(value));
+  protected String render(String v) {
+    return BeeUtils.trimRight(v);
   }
 }

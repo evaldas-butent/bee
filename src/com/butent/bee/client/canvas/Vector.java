@@ -13,7 +13,8 @@ public class Vector {
     return new Vector(a.x - b.x, a.y - b.y);
   }
 
-  public double x, y;
+  private double x;
+  private double y;
 
   public Vector() {
     this(0, 0);
@@ -35,6 +36,14 @@ public class Vector {
 
   public void add(Vector v) {
     add(v.x, v.y);
+  }
+
+  public double getX() {
+    return x;
+  }
+
+  public double getY() {
+    return y;
   }
 
   public double mag() {
@@ -65,6 +74,14 @@ public class Vector {
   public void set(Vector v) {
     x = v.x;
     y = v.y;
+  }
+
+  public void setX(double x) {
+    this.x = x;
+  }
+
+  public void setY(double y) {
+    this.y = y;
   }
 
   public void sub(double px, double py) {

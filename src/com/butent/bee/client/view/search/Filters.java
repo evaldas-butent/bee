@@ -47,10 +47,10 @@ import java.util.Set;
 
 public class Filters {
 
-  private static class Initial extends CustomDiv {
+  private static final class Initial extends CustomDiv {
 
-    private static String STYLE_CHECKED = "checked";
-    private static String STYLE_UNCHECKED = "unchecked";
+    private static final String STYLE_CHECKED = "checked";
+    private static final String STYLE_UNCHECKED = "unchecked";
 
     private final long id;
     private boolean value;
@@ -72,7 +72,7 @@ public class Filters {
     }
   }
 
-  private static class Item {
+  private static final class Item {
 
     private long id;
 
@@ -97,7 +97,7 @@ public class Filters {
     public int hashCode() {
       return Longs.hashCode(getId());
     }
-    
+
     private boolean containsAnyComponent(Collection<String> names) {
       return filterDescription.containsAnyComponent(names);
     }
@@ -272,7 +272,7 @@ public class Filters {
       final long id = item.getId();
 
       final Initial initial = new Initial(STYLE_INITIAL, id, item.isInitial());
-      initial.setTitle(Localized.constants.initialFilter());
+      initial.setTitle(Localized.getConstants().initialFilter());
 
       initial.addClickHandler(new ClickHandler() {
         @Override
@@ -484,7 +484,7 @@ public class Filters {
         BeeUtils.unbox(ordinal), predefined);
   }
 
-  private Item getItem(Collection<Item> items, long id) {
+  private static Item getItem(Collection<Item> items, long id) {
     for (Item item : items) {
       if (item.getId() == id) {
         return item;
@@ -510,7 +510,7 @@ public class Filters {
     return maxLabelLength;
   }
 
-  private void insert(String key, FilterDescription filterDescription, int ordinal,
+  private static void insert(String key, FilterDescription filterDescription, int ordinal,
       boolean predefined, RowCallback callback) {
 
     List<BeeColumn> columns =
@@ -548,7 +548,8 @@ public class Filters {
     return BeeUtils.left(BeeUtils.trim(label), getMaxLabelLength());
   }
 
-  private void synchronizeInitialFilters(List<Item> items, Item checkedItem, HtmlTable table) {
+  private static void synchronizeInitialFilters(List<Item> items, Item checkedItem,
+      HtmlTable table) {
     Set<String> checkedKeys = Sets.newHashSet();
     for (FilterComponent component : checkedItem.getComponents()) {
       checkedKeys.add(component.getName());

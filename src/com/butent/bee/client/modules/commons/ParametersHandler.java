@@ -73,7 +73,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
       new BeeColumn(ValueType.TEXT, USER_VALUE, true));
 
   private final String module;
-  private LocalProvider provider = null;
+  private LocalProvider provider;
   private final Map<String, BeeParameter> params = Maps.newLinkedHashMap();
 
   private Long cnt = 0L;
@@ -305,7 +305,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
     return getGridPresenter().getGridView().getGrid();
   }
 
-  private int id(String colName) {
+  private static int id(String colName) {
     return DataUtils.getColumnIndex(colName, columns);
   }
 
@@ -382,7 +382,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
           }
 
         } else if (response.hasResponse(Boolean.class)) {
-          boolean newMode = (id == DataUtils.NEW_ROW_ID);
+          boolean newMode = id == DataUtils.NEW_ROW_ID;
 
           String[] values = new String[columns.size()];
           values[id(MODULE)] = parameter.getModule();

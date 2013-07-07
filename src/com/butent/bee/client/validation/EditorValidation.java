@@ -4,10 +4,10 @@ public enum EditorValidation {
   NONE, INPUT, NEW_VALUE, ALL;
   
   public boolean validateInput() {
-    return INPUT.equals(this) || ALL.equals(this);
+    return this == INPUT || this == ALL;
   }
 
   public boolean validateNewValue() {
-    return NEW_VALUE.equals(this) || ALL.equals(this);
+    return this == NEW_VALUE || this == ALL;
   }
 }

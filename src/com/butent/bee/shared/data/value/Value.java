@@ -54,13 +54,13 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
         val = BooleanValue.getInstance((Boolean) value);
 
       } else if (value instanceof Integer) {
-        val = new IntegerValue(((Integer) value));
+        val = new IntegerValue((Integer) value);
 
       } else if (value instanceof Long) {
-        val = new LongValue(((Long) value));
+        val = new LongValue((Long) value);
 
       } else if (value instanceof BigDecimal) {
-        val = new DecimalValue(((BigDecimal) value));
+        val = new DecimalValue((BigDecimal) value);
 
       } else if (value instanceof Number) {
         val = new NumberValue(((Number) value).doubleValue());
@@ -140,7 +140,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
     if (o == null || this.getClass() != o.getClass()) {
       return false;
     }
-    return (this.compareTo((Value) o) == 0);
+    return this.compareTo((Value) o) == 0;
   }
 
   public abstract Boolean getBoolean();

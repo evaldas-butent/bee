@@ -20,7 +20,8 @@ public class ServerDefaults extends Defaults {
     return getValue(null, null, defExpr, defValue);
   }
 
-  public Object getValue(String tblName, String fldName, DefaultExpression defExpr, Object defValue) {
+  public Object getValue(String tblName, String fldName, DefaultExpression defExpr,
+      Object defValue) {
     Object value = null;
 
     if (defExpr == null) {

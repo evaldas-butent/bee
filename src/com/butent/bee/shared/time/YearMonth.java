@@ -160,9 +160,9 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     this.year = year;
   }
 
-  public void setYearMonth(int year, int month) {
-    setYear(year);
-    setMonth(month);
+  public void setYearMonth(int y, int m) {
+    setYear(y);
+    setMonth(m);
   }
 
   public void setYearMonth(YearMonth source) {
@@ -189,7 +189,7 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     return TimeUtils.yearToString(getYear()) + SEPARATOR + TimeUtils.monthToString(getMonth());
   }
 
-  private void checkMonth(int value) {
+  private static void checkMonth(int value) {
     Assert.betweenInclusive(value, 1, 12, "invalid month");
   }
 

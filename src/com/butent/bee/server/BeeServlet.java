@@ -93,7 +93,7 @@ public class BeeServlet extends HttpServlet {
       doLogout = true;
 
     } else if (BeeUtils.isEmpty(reqSid)) {
-      doLogout = (session.getAttribute(Service.VAR_USER) != null);
+      doLogout = session.getAttribute(Service.VAR_USER) != null;
 
     } else if (!BeeUtils.same(reqSid, session.getId())) {
       doLogout = true;
@@ -143,7 +143,7 @@ public class BeeServlet extends HttpServlet {
     if (response != null) {
       resp.setHeader(Service.RPC_VAR_RESP, "1");
 
-      ContentType ctp = CommUtils.defaultResponseContentType;
+      ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
 
       resp.setContentType(CommUtils.getMediaType(ctp));
       resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
@@ -163,7 +163,7 @@ public class BeeServlet extends HttpServlet {
 
       ContentType ctp = buff.getContentType();
       if (ctp == null) {
-        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
+        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
       }
 
       if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
@@ -218,7 +218,7 @@ public class BeeServlet extends HttpServlet {
     }
   }
 
-  private ResponseObject logout(HttpServletRequest req, HttpSession session) {
+  private static ResponseObject logout(HttpServletRequest req, HttpSession session) {
     ResponseObject response = new ResponseObject();
 
     try {

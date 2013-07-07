@@ -56,7 +56,8 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       container.add(new Label("Pasirinkite krovinį"));
 
       Relation relation = Relation.create(VIEW_WAITING_CARGO,
-          Lists.newArrayList("OrderNo", "CustomerName", "LoadingPostIndex", "LoadingCountryName", "UnloadingPostIndex","UnloadingCountryName"));
+          Lists.newArrayList("OrderNo", "CustomerName", "LoadingPostIndex", "LoadingCountryName",
+              "UnloadingPostIndex", "UnloadingCountryName"));
       relation.disableNewRow();
 
       CompoundFilter filter = Filter.and();

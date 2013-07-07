@@ -95,7 +95,7 @@ class AppointmentRenderer {
   void render(long calendarId, AppointmentWidget appointmentWidget, String headerTemplate,
       String bodyTemplate, String titleTemplate, boolean multi) {
 
-    Map<String, String> substitutes = getSubstitutes(calendarId, 
+    Map<String, String> substitutes = getSubstitutes(calendarId,
         appointmentWidget.getAppointment());
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
@@ -137,7 +137,7 @@ class AppointmentRenderer {
       titleWidget.setTitle(BeeUtils.trim(title));
     }
   }
-  
+
   void renderMulti(long calendarId, AppointmentWidget appointmentWidget) {
     render(calendarId, appointmentWidget, DEFAULT_MULTI_HEADER_TEMPLATE,
         DEFAULT_MULTI_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, true);
@@ -147,13 +147,13 @@ class AppointmentRenderer {
     render(calendarId, appointmentWidget, DEFAULT_SIMPLE_HEADER_TEMPLATE,
         DEFAULT_SIMPLE_BODY_TEMPLATE, DEFAULT_TITLE_TEMPLATE, false);
   }
-  
+
   String renderString(long calendarId, Appointment appointment) {
     return parseTemplate(STRING_TEMPLATE, getSubstitutes(calendarId, appointment),
         STRING_SEPARATOR);
   }
 
-  private Map<String, String> getSubstitutes(long calendarId, Appointment appointment) {
+  private static Map<String, String> getSubstitutes(long calendarId, Appointment appointment) {
     Map<String, String> result = Maps.newHashMap();
 
     BeeRow row = appointment.getRow();
@@ -198,12 +198,13 @@ class AppointmentRenderer {
     result.put(wrap(KEY_PROPERTIES), propNames);
     result.put(wrap(KEY_REMINDERS), remindNames);
 
-    result.put(wrap(KEY_PERIOD), CalendarUtils.renderPeriod(appointment.getStart(), appointment.getEnd()));
+    result.put(wrap(KEY_PERIOD), CalendarUtils.renderPeriod(appointment.getStart(), appointment
+        .getEnd()));
 
     return result;
   }
 
-  private String parseLine(String line, Map<String, String> substitutes) {
+  private static String parseLine(String line, Map<String, String> substitutes) {
     if (BeeUtils.isEmpty(line) || substitutes.isEmpty() || !line.contains(SUBSTITUTE_PREFIX)) {
       return line;
     }
@@ -217,7 +218,8 @@ class AppointmentRenderer {
     return result;
   }
 
-  private String parseTemplate(String template, Map<String, String> substitutes, String separator) {
+  private static String parseTemplate(String template, Map<String, String> substitutes,
+      String separator) {
     if (BeeUtils.isEmpty(template)) {
       return null;
     }
@@ -235,7 +237,7 @@ class AppointmentRenderer {
     return sb.toString();
   }
 
-  private String renderEmpty(Appointment appointment) {
+  private static String renderEmpty(Appointment appointment) {
     return CalendarUtils.renderPeriod(appointment.getStart(), appointment.getEnd());
   }
 }

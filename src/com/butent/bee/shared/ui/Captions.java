@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Captions {
+public final class Captions {
 
   private static final BeeLogger logger = LogUtils.getLogger(Captions.class);
 

@@ -60,7 +60,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private void handleCompanies(SelectorEvent event, IsRow taskRow) {
+  private static void handleCompanies(SelectorEvent event, IsRow taskRow) {
     Long company = Data.getLong(VIEW_TASKS, taskRow, COL_COMPANY);
     if (company == null) {
       return;
@@ -77,7 +77,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 //    LogUtils.getLogger("").debug(PROP_COMPANIES, exclusions);
   }
   
-  private void handleExecutors(SelectorEvent event, IsRow taskRow) {
+  private static void handleExecutors(SelectorEvent event, IsRow taskRow) {
     Set<Long> exclusions = DataUtils.parseIdSet(taskRow.getProperty(PROP_OBSERVERS));
     if (!BeeUtils.isEmpty(event.getExclusions())) {
       exclusions.addAll(event.getExclusions());
@@ -89,7 +89,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     // LogUtils.getLogger("").debug(PROP_EXECUTORS, exclusions);
   }
 
-  private void handleObservers(SelectorEvent event, IsRow taskRow) {
+  private static void handleObservers(SelectorEvent event, IsRow taskRow) {
     Long owner = Data.getLong(VIEW_TASKS, taskRow, COL_OWNER);
     if (owner == null) {
       owner = BeeKeeper.getUser().getUserId();
@@ -115,7 +115,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     // LogUtils.getLogger("").debug(PROP_OBSERVERS, exclusions);
   }
 
-  private void handleTasks(SelectorEvent event, IsRow taskRow) {
+  private static void handleTasks(SelectorEvent event, IsRow taskRow) {
     if (DataUtils.isNewRow(taskRow)) {
       return;
     }
@@ -131,7 +131,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     // LogUtils.getLogger("").debug(PROP_TASKS, exclusions);
   }
 
-  private void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow) {
+  private static void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow) {
     DataSelector selector = event.getSelector();
 
     if (event.isClosed()) {

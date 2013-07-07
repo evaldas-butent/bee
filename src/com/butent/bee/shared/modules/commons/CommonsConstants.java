@@ -6,7 +6,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class CommonsConstants {
+public final class CommonsConstants {
 
   public enum RightsObjectType implements HasCaption {
     EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),

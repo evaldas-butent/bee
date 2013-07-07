@@ -10,13 +10,13 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
 
   private final Orientation orientation;
 
-  private boolean mouseDown = false;
+  private boolean mouseDown;
 
-  private int startX = 0;
-  private int startY = 0;
+  private int startX;
+  private int startY;
 
-  private int currentX = 0;
-  private int currentY = 0;
+  private int currentX;
+  private int currentY;
 
   public Mover() {
     this(null, null);

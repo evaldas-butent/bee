@@ -14,7 +14,7 @@ import java.util.List;
 
 public abstract class HasFrom<T> extends SqlQuery<T> {
 
-  protected List<IsFrom> fromList;
+  private List<IsFrom> fromList;
 
   public T addFrom(String source) {
     addFrom(source, null);
@@ -120,6 +120,10 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
     return BeeUtils.isEmpty(fromList);
   }
 
+  protected void setFrom(List<IsFrom> from) {
+    this.fromList = from;
+  }
+
   private void addFrom(IsFrom from) {
     if (BeeUtils.isEmpty(fromList)) {
       fromList = new ArrayList<IsFrom>();
@@ -129,11 +133,11 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
   private void addFromJoin(FromJoin from) {
     Assert.notEmpty(fromList, "First FROM source cannot be of type JOIN");
-    boolean listMode = (JoinMode.LIST == from.getJoinMode());
+    boolean listMode = JoinMode.LIST == from.getJoinMode();
 
     for (IsFrom fr : fromList) {
       if (fr instanceof FromJoin) {
-        boolean isList = (JoinMode.LIST == ((FromJoin) fr).getJoinMode());
+        boolean isList = JoinMode.LIST == ((FromJoin) fr).getJoinMode();
 
         Assert.state((listMode && isList) || !(listMode || isList),
             "Mix of incompatible join types");

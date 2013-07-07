@@ -46,7 +46,7 @@ import java.util.List;
 public class Split extends ComplexPanel implements RequiresResize, ProvidesResize,
     IdentifiableWidget, HasExtendedInfo, HasAllDragAndDropHandlers {
 
-  protected static class LayoutData {
+  protected static final class LayoutData {
 
     private Direction direction;
     private int size;
@@ -82,8 +82,8 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     private int minSize;
     private int maxSize;
 
-    private boolean mouseDown = false;
-    private int position = 0;
+    private boolean mouseDown;
+    private int position;
     private Widget target;
 
     private Splitter(int size, boolean reverse) {
@@ -228,7 +228,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     }
   }
 
-  private class HorizontalSplitter extends Splitter {
+  private final class HorizontalSplitter extends Splitter {
 
     private HorizontalSplitter(int size, boolean reverse) {
       super(size, reverse);
@@ -253,7 +253,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     }
   }
 
-  private class VerticalSplitter extends Splitter {
+  private final class VerticalSplitter extends Splitter {
 
     private VerticalSplitter(int size, boolean reverse) {
       super(size, reverse);
@@ -297,7 +297,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   private final int splitterSize;
 
-  private IdentifiableWidget center = null;
+  private IdentifiableWidget center;
 
   public Split() {
     this(DEFAULT_SPLITTER_SIZE);

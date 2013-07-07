@@ -62,8 +62,8 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   private long time;
-  private int[] fields = null;
-  private int[] utcFields = null;
+  private int[] fields;
+  private int[] utcFields;
 
   /**
    * Creates new {@code DateTime} object to current time.
@@ -642,7 +642,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     fields = Grego.timeToFields(time - getTimezoneOffsetInMillis());
   }
 
-  private long computeLocalTime(int year, int month, int dom,
+  private static long computeLocalTime(int year, int month, int dom,
       int hour, int minute, int second, long millis) {
     long z = Grego.fieldsToDay(year, month, dom);
     z *= TimeUtils.MILLIS_PER_DAY;

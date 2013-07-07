@@ -40,7 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class RowFactory {
+public final class RowFactory {
 
   public static final String DIALOG_STYLE = "bee-NewRow";
 

@@ -37,9 +37,9 @@ public class InputBoolean extends Composite implements Editor {
 
   private boolean nullable = true;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public InputBoolean(String label) {
     this(label, false);

@@ -54,7 +54,7 @@ public abstract class TextBasedProtocolServer {
     }
   }
 
-  public void teardown() {
+  public void tearDown() {
     chan.close().awaitUninterruptibly();
     bs.releaseExternalResources();
   }

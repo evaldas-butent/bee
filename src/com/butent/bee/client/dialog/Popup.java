@@ -56,7 +56,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     void setPosition(int offsetWidth, int offsetHeight);
   }
 
-  private class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
+  private final class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
     private int clientLeft;
     private int clientTop;
 
@@ -103,17 +103,17 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  private class ResizeAnimation extends Animation {
+  private final class ResizeAnimation extends Animation {
 
     private final Popup curPanel;
 
-    private boolean show = false;
-    private boolean isUnloading = false;
+    private boolean show;
+    private boolean isUnloading;
 
     private int offsetHeight = BeeConst.UNDEF;
     private int offsetWidth = BeeConst.UNDEF;
 
-    private Timer showTimer = null;
+    private Timer showTimer;
 
     private ResizeAnimation(Popup panel) {
       this.curPanel = panel;
@@ -186,8 +186,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
     }
 
-    private void setState(boolean show, boolean isUnloading) {
-      this.isUnloading = isUnloading;
+    private void setState(boolean sh, boolean unl) {
+      this.isUnloading = unl;
 
       cancel();
 
@@ -197,16 +197,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         onComplete();
       }
 
-      curPanel.setShowing(show);
+      curPanel.setShowing(sh);
 
-      boolean animate = !isUnloading && curPanel.isAnimationEnabled();
-      if (curPanel.getAnimationType() != AnimationType.CENTER && !show) {
+      boolean animate = !unl && curPanel.isAnimationEnabled();
+      if (curPanel.getAnimationType() != AnimationType.CENTER && !sh) {
         animate = false;
       }
 
-      this.show = show;
+      this.show = sh;
       if (animate) {
-        if (show) {
+        if (sh) {
           curPanel.getElement().getStyle().setPosition(Position.ABSOLUTE);
           if (!BeeConst.isUndef(curPanel.getTopPosition())) {
             curPanel.setPopupPosition(curPanel.getLeftPosition(), curPanel.getTopPosition());
@@ -250,27 +250,27 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private final OutsideClick onOutsideClick;
 
-  private boolean showing = false;
+  private boolean showing;
 
-  private String desiredHeight = null;
-  private String desiredWidth = null;
+  private String desiredHeight;
+  private String desiredWidth;
 
   private int leftPosition = BeeConst.UNDEF;
   private int topPosition = BeeConst.UNDEF;
 
-  private boolean hideOnEscape = false;
-  private boolean hideOnSave = false;
+  private boolean hideOnEscape;
+  private boolean hideOnSave;
 
-  private PreviewConsumer onSave = null;
-  private PreviewConsumer onEscape = null;
+  private PreviewConsumer onSave;
+  private PreviewConsumer onEscape;
 
-  private boolean isAnimationEnabled = false;
+  private boolean isAnimationEnabled;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
 
-  private boolean dragging = false;
-  private MouseHandler mouseHandler = null;
+  private boolean dragging;
+  private MouseHandler mouseHandler;
 
-  private Element keyboardPartner = null;
+  private Element keyboardPartner;
 
   public Popup(OutsideClick onOutsideClick) {
     this(onOutsideClick, STYLE_POPUP);
@@ -645,14 +645,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  private int fitLeft(int left, int width, int margin) {
+  private static int fitLeft(int left, int width, int margin) {
     int windowLeft = Window.getScrollLeft() + margin;
     int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
 
     return Math.max(Math.min(left, windowRight - width), windowLeft);
   }
 
-  private int fitTop(int top, int height, int margin) {
+  private static int fitTop(int top, int height, int margin) {
     int windowTop = Window.getScrollTop() + margin;
     int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
 

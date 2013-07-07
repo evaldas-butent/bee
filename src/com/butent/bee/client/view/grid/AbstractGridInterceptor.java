@@ -47,7 +47,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
     return Pair.of(m1, m2);
   }
 
-  private GridPresenter gridPresenter = null;
+  private GridPresenter gridPresenter;
 
   @Override
   public void afterAction(Action action, GridPresenter presenter) {

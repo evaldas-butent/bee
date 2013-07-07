@@ -102,7 +102,7 @@ import java.util.Set;
 
 public class FormImpl extends Absolute implements FormView, PreviewHandler, TabulationHandler {
 
-  private class CreationCallback extends WidgetCreationCallback {
+  private final class CreationCallback extends WidgetCreationCallback {
 
     private CreationCallback() {
       super();
@@ -191,7 +191,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
   }
 
-  private static class TabEntry implements Comparable<TabEntry> {
+  private static final class TabEntry implements Comparable<TabEntry> {
     private final int tabIndex;
     private final int order;
     private final String widgetId;
@@ -237,42 +237,42 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private final String formName;
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
-  private IdentifiableWidget rootWidget = null;
+  private IdentifiableWidget rootWidget;
 
-  private Evaluator rowEditable = null;
-  private Evaluator rowValidation = null;
+  private Evaluator rowEditable;
+  private Evaluator rowValidation;
 
   private final Notification notification = new Notification();
 
   private boolean enabled = true;
 
-  private boolean hasData = false;
-  private String viewName = null;
-  private List<BeeColumn> dataColumns = null;
+  private boolean hasData;
+  private String viewName;
+  private List<BeeColumn> dataColumns;
 
-  private boolean editing = false;
-  private boolean adding = false;
+  private boolean editing;
+  private boolean adding;
 
-  private int pageStart = 0;
+  private int pageStart;
   private int rowCount = BeeConst.UNDEF;
 
-  private IsRow activeRow = null;
-  private IsRow oldRow = null;
+  private IsRow activeRow;
+  private IsRow oldRow;
 
-  private IsRow rowBuffer = null;
-  private JavaScriptObject rowJso = null;
+  private IsRow rowBuffer;
+  private JavaScriptObject rowJso;
 
-  private boolean readOnly = false;
+  private boolean readOnly;
 
-  private String caption = null;
-  private boolean showRowId = false;
+  private String caption;
+  private boolean showRowId;
 
-  private boolean printFooter = false;
-  private boolean printHeader = false;
+  private boolean printFooter;
+  private boolean printHeader;
 
-  private FormInterceptor formInterceptor = null;
+  private FormInterceptor formInterceptor;
 
   private final CreationCallback creationCallback = new CreationCallback();
   private final List<String> disablableWidgets = Lists.newArrayList();
@@ -282,13 +282,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private final List<TabEntry> tabOrder = Lists.newArrayList();
 
-  private String previewId = null;
+  private String previewId;
 
   private int activeEditableIndex = BeeConst.UNDEF;
 
-  private Dimensions dimensions = null;
+  private Dimensions dimensions;
 
-  private State state = null;
+  private State state;
 
   public FormImpl(String formName) {
     this(formName, Position.RELATIVE);
@@ -852,7 +852,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (!updatedLabels.isEmpty()) {
-      String msg = isNew ? Localized.constants.newValues() : Localized.constants.changedValues();
+      String msg = isNew ? Localized.getConstants().newValues() 
+          : Localized.getConstants().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, updatedLabels));
     }
@@ -866,7 +867,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
-    messages.add(isNew ? Localized.constants.createNewRow() : Localized.constants.saveChanges());
+    messages.add(isNew ? Localized.getConstants().createNewRow() 
+        : Localized.getConstants().saveChanges());
 
     DecisionCallback callback = new DecisionCallback() {
       @Override

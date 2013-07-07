@@ -27,11 +27,11 @@ import java.util.Map;
 public abstract class AbstractRow implements IsRow {
 
   private long id;
-  private long version = 0;
+  private long version;
   private boolean editable = true;
 
-  private Map<Integer, String> shadow = null;
-  private CustomProperties properties = null;
+  private Map<Integer, String> shadow;
+  private CustomProperties properties;
 
   protected AbstractRow(long id) {
     this.id = id;

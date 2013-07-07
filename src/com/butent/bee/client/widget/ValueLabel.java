@@ -9,7 +9,7 @@ import com.google.gwt.user.client.TakesValue;
 
 public class ValueLabel<T> extends Label implements TakesValue<T> {
 
-  protected T value;
+  private T value;
   private final Renderer<? super T> renderer;
 
   public ValueLabel(Renderer<? super T> renderer, boolean inline) {
@@ -25,10 +25,14 @@ public class ValueLabel<T> extends Label implements TakesValue<T> {
   @Override
   public void setValue(T value) {
     this.value = value;
-    setText(renderer.render(value));
+    setText(render(value));
   }
 
   protected Renderer<? super T> getRenderer() {
     return renderer;
+  }
+  
+  protected String render(T v) {
+    return renderer.render(v);
   }
 }

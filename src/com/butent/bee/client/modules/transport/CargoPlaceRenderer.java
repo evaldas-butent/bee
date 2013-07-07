@@ -37,21 +37,21 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
       super(null);
 
       data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
-          Localized.constants.date()));
+          Localized.getConstants().date()));
       data.put(COL_PLACE_CONTACT,
           Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_CONTACT, columns),
-              Localized.constants.contact()));
+              Localized.getConstants().contact()));
       data.put(COL_PLACE_ADDRESS,
           Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_ADDRESS, columns),
-              Localized.constants.address()));
+              Localized.getConstants().address()));
       data.put(COL_PLACE_CITY, Pair.of(DataUtils.getColumnIndex(prefix + "CityName", columns),
-          Localized.constants.city()));
+          Localized.getConstants().city()));
       data.put(COL_PLACE_COUNTRY,
           Pair.of(DataUtils.getColumnIndex(prefix + "CountryName", columns),
-              Localized.constants.country()));
+              Localized.getConstants().country()));
       data.put(COL_PLACE_TERMINAL,
           Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_TERMINAL, columns),
-              Localized.constants.terminal()));
+              Localized.getConstants().terminal()));
 
       int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
 

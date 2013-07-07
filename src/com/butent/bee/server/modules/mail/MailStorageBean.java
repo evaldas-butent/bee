@@ -475,7 +475,7 @@ public class MailStorageBean {
 
     if (part.isMimeType("multipart/*")) {
       Multipart multiPart = (Multipart) part.getContent();
-      boolean hasAlternative = (alternative == null && part.isMimeType("multipart/alternative"));
+      boolean hasAlternative = alternative == null && part.isMimeType("multipart/alternative");
 
       if (hasAlternative) {
         alternative = Pair.of(null, null);

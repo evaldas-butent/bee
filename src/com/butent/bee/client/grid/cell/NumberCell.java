@@ -14,7 +14,7 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 
 public class NumberCell<C extends Number> extends AbstractCell<C> implements HasNumberFormat {
 
-  public static SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
+  private static SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
   private NumberFormat format;
 
@@ -35,7 +35,7 @@ public class NumberCell<C extends Number> extends AbstractCell<C> implements Has
   }
 
   @Override
-  public void setNumberFormat(NumberFormat format) {
-    this.format = format;
+  public void setNumberFormat(NumberFormat numberFormat) {
+    this.format = numberFormat;
   }
 }

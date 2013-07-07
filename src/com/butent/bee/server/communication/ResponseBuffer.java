@@ -25,16 +25,16 @@ import java.util.List;
 public class ResponseBuffer {
   private char[] separator;
   private StringBuilder buffer = new StringBuilder();
-  private int count = 0;
+  private int count;
 
-  private int columnCount = 0;
+  private int columnCount;
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
 
   private ContentType contentType;
 
-  private String mediaType = null;
-  private String characterEncoding = null;
+  private String mediaType;
+  private String characterEncoding;
 
   public ResponseBuffer() {
     setDefaultSeparator();
@@ -317,7 +317,8 @@ public class ResponseBuffer {
   }
 
   public boolean isDefaultSeparator() {
-    return (separator != null && separator.length == 1 && separator[0] == CommUtils.DEFAULT_INFORMATION_SEPARATOR);
+    return separator != null && separator.length == 1 
+        && separator[0] == CommUtils.DEFAULT_INFORMATION_SEPARATOR;
   }
 
   public String now() {
@@ -371,7 +372,7 @@ public class ResponseBuffer {
     updateSeparator(newSep);
   }
 
-  private boolean containsSeparator(CharSequence src, char[] sep) {
+  private static boolean containsSeparator(CharSequence src, char[] sep) {
     boolean ok = false;
     if (src == null || src.length() == 0 || sep == null || sep.length == 0) {
       return ok;

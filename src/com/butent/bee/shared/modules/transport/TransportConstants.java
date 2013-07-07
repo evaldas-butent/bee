@@ -3,7 +3,7 @@ package com.butent.bee.shared.modules.transport;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.ui.HasCaption;
 
-public class TransportConstants {
+public final class TransportConstants {
 
   public enum OrderStatus implements HasCaption {
     NEW("Naujas"),

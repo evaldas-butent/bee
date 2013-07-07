@@ -26,7 +26,7 @@ import com.butent.bee.shared.ui.Action;
 
 import java.util.Map;
 
-class ShippingSchedule extends VehicleTimeBoard  {
+final class ShippingSchedule extends VehicleTimeBoard  {
 
   static final String SUPPLIER_KEY = "shipping_schedule";
   private static final String DATA_SERVICE = SVC_GET_SS_DATA;
@@ -52,7 +52,7 @@ class ShippingSchedule extends VehicleTimeBoard  {
         });
   }
 
-  private boolean separateTrips = false;
+  private boolean separateTrips;
 
   private final Map<Integer, Long> tripsByRow = Maps.newHashMap();
 
@@ -63,7 +63,7 @@ class ShippingSchedule extends VehicleTimeBoard  {
 
   @Override
   public String getCaption() {
-    return Localized.constants.shippingSchedule();
+    return Localized.getConstants().shippingSchedule();
   }
 
   @Override

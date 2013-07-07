@@ -56,7 +56,8 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                   BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
             }
           }, null, BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
-              Localized.constants.ok(), Localized.constants.cancel(), new WidgetInitializer() {
+              Localized.getConstants().ok(), Localized.getConstants().cancel(),
+              new WidgetInitializer() {
                 @Override
                 public Widget initialize(Widget inputWidget, String widgetName) {
                   if (BeeUtils.same(widgetName, DialogConstants.WIDGET_INPUT)) {

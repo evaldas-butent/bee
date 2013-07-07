@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
-public class ExtWidget {
+public final class ExtWidget {
 
   public enum Component {
     HEADER, FOOTER, SCROLLER, CONTENT

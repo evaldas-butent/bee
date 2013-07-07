@@ -18,7 +18,7 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   private final Map<String, String> namedWidgets = Maps.newHashMap();
   private final Map<String, String> potentialChildren = Maps.newHashMap();
 
-  private WidgetDescription lastWidgetDescription = null;
+  private WidgetDescription lastWidgetDescription;
   
   public WidgetCreationCallback() {
     super();

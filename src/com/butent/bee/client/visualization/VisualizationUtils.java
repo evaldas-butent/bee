@@ -16,7 +16,8 @@ import java.util.Set;
  * Loads and initializes {@code Visualization} package.
  */
 
-public class VisualizationUtils {
+public final class VisualizationUtils {
+
   private static Set<String> loadedPackages = new HashSet<String>();
 
   public static void clearLoadedPackages() {

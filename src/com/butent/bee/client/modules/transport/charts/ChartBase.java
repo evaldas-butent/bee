@@ -154,37 +154,37 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
 
-  private BeeRowSet settings = null;
+  private BeeRowSet settings;
 
-  private Range<JustDate> maxRange = null;
-  private Range<JustDate> visibleRange = null;
+  private Range<JustDate> maxRange;
+  private Range<JustDate> visibleRange;
 
-  private boolean renderPending = false;
+  private boolean renderPending;
 
-  private int headerHeight = 0;
-  private int footerHeight = 0;
+  private int headerHeight;
+  private int footerHeight;
 
-  private int chartLeft = 0;
-  private int chartRight = 0;
+  private int chartLeft;
+  private int chartRight;
   private int chartWidth = BeeConst.UNDEF;
 
   private int dayColumnWidth = BeeConst.UNDEF;
   private int rowHeight = BeeConst.UNDEF;
 
-  private boolean showCountryFlags = false;
-  private boolean showPlaceInfo = false;
+  private boolean showCountryFlags;
+  private boolean showPlaceInfo;
 
-  private int sliderWidth = 0;
+  private int sliderWidth;
 
-  private Widget startSliderLabel = null;
-  private Widget endSliderLabel = null;
+  private Widget startSliderLabel;
+  private Widget endSliderLabel;
 
   private final EnumMap<RangeMover, Element> rangeMovers = Maps.newEnumMap(RangeMover.class);
 
-  private String scrollAreaId = null;
-  private String contentId = null;
+  private String scrollAreaId;
+  private String contentId;
 
-  private int rowCount = 0;
+  private int rowCount;
 
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
       VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, CommonsConstants.VIEW_COUNTRIES,
@@ -194,7 +194,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private final Image removeFilter;
 
   private final List<ChartData> filterData = Lists.newArrayList();
-  private boolean filtered = false;
+  private boolean filtered;
 
   protected ChartBase() {
     super();
@@ -1011,7 +1011,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (setData(response)) {
       callback.onSuccess(this);
     } else {
-      callback.onFailure(getCaption(), Localized.constants.nothingFound());
+      callback.onFailure(getCaption(), Localized.getConstants().nothingFound());
     }
   }
 
@@ -1879,8 +1879,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     return widget;
   }
 
-  private List<List<HasDateRange>> doStripLayout(Collection<? extends HasDateRange> chartItems,
-      int maxRows) {
+  private static List<List<HasDateRange>> doStripLayout(
+      Collection<? extends HasDateRange> chartItems, int maxRows) {
+
     List<List<HasDateRange>> rows = Lists.newArrayList();
 
     for (HasDateRange item : chartItems) {

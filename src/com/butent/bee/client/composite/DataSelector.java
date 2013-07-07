@@ -101,7 +101,7 @@ import java.util.Map;
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
     HasRelatedRow, HasCapsLock {
 
-  protected class InputWidget extends InputText {
+  protected final class InputWidget extends InputText {
 
     private InputWidget() {
       super();
@@ -194,7 +194,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private class InputEvents implements MouseWheelHandler, Consumable {
 
-    private boolean consumed = false;
+    private boolean consumed;
 
     @Override
     public void consume() {
@@ -321,15 +321,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
    * Handles suggestion display.
    */
 
-  private class Selector {
+  private final class Selector {
 
     private final MenuBar menu;
     private final Popup popup;
 
-    private MenuItem itemPrev = null;
-    private MenuItem itemNext = null;
+    private MenuItem itemPrev;
+    private MenuItem itemNext;
 
-    private Boolean pendingSelection = null;
+    private Boolean pendingSelection;
 
     private Selector(ITEM_TYPE itemType, Element partner) {
       this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
@@ -624,26 +624,26 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private final String relationLabel;
 
-  private Long editRowId = null;
+  private Long editRowId;
 
-  private boolean active = false;
+  private boolean active;
 
-  private BeeRow relatedRow = null;
-  private String editorValue = null;
+  private BeeRow relatedRow;
+  private String editorValue;
 
-  private Request lastRequest = null;
-  private int offset = 0;
-  private boolean hasMore = false;
+  private Request lastRequest;
+  private int offset;
+  private boolean hasMore;
 
   private boolean alive = true;
-  private boolean waiting = false;
-  private boolean adding = false;
+  private boolean waiting;
+  private boolean adding;
 
-  private Widget drill = null;
+  private Widget drill;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
 
   public DataSelector(Relation relation, boolean embedded) {
     super();
@@ -1282,7 +1282,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private void addClassToCell(MenuItem item, String className) {
+  private static void addClassToCell(MenuItem item, String className) {
     TableCellElement cell = DomUtils.getParentCell(item, true);
     if (cell != null) {
       cell.addClassName(className);
@@ -1461,8 +1461,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       SelectorColumn sc = entry.getValue();
       int index = dataInfo.getColumnIndex(sc.getSource());
 
-      CellSource cellSource = BeeConst.isUndef(index) ?
-          null : CellSource.forColumn(dataInfo.getColumns().get(index), index);
+      CellSource cellSource = BeeConst.isUndef(index) 
+          ? null : CellSource.forColumn(dataInfo.getColumns().get(index), index);
 
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),
           sc.getRender(), sc.getRenderTokens(), sc.getItemKey(), sc.getRenderColumns(),

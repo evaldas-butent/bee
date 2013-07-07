@@ -20,9 +20,9 @@ public class ResizeController implements MoveEvent.Handler {
   private final CalendarView calendarView;
   private final Widget scrollArea;
 
-  private CalendarSettings settings = null;
+  private CalendarSettings settings;
 
-  private AppointmentWidget appointmentWidget = null;
+  private AppointmentWidget appointmentWidget;
 
   private int initialHeight;
   private int currentHeight;
@@ -30,7 +30,7 @@ public class ResizeController implements MoveEvent.Handler {
 
   private int marginBottom;
   
-  private boolean scrollEnabled = false;
+  private boolean scrollEnabled;
   private int initialScrollTop;
 
   public ResizeController(CalendarView calendarView, Widget scrollArea) {

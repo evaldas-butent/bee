@@ -35,8 +35,8 @@ import java.util.List;
 
 class SelectorHandler implements SelectorEvent.Handler {
 
-  private boolean companyHandlerEnabled = false;
-  private boolean vehicleHandlerEnabled = false;
+  private boolean companyHandlerEnabled;
+  private boolean vehicleHandlerEnabled;
 
   SelectorHandler() {
     super();
@@ -75,8 +75,8 @@ class SelectorHandler implements SelectorEvent.Handler {
     this.vehicleHandlerEnabled = vehicleHandlerEnabled;
   }
 
-  private void chooseVehicle(final DataView dataView, final BeeRowSet rowSet, String companyName,
-      final IsRow owner) {
+  private static void chooseVehicle(final DataView dataView, final BeeRowSet rowSet,
+      String companyName, final IsRow owner) {
 
     List<String> options = Lists.newArrayList();
 
@@ -105,7 +105,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     });
   }
 
-  private void createVehicle(IsRow owner, final DataView dataView) {
+  private static void createVehicle(IsRow owner, final DataView dataView) {
     final DataInfo vehiclesInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
     BeeRow row = RowFactory.createEmptyRow(vehiclesInfo, true);
 
@@ -125,15 +125,15 @@ class SelectorHandler implements SelectorEvent.Handler {
         });
   }
 
-  private int getCompanyIndex() {
+  private static int getCompanyIndex() {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY);
   }
 
-  private int getCompanyNameIndex() {
+  private static int getCompanyNameIndex() {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
   }
 
-  private void getCompanyRow(Long company, final RowCallback callback) {
+  private static void getCompanyRow(Long company, final RowCallback callback) {
     Queries.getRow(CommonsConstants.VIEW_COMPANIES, company, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
@@ -142,11 +142,11 @@ class SelectorHandler implements SelectorEvent.Handler {
     });
   }
 
-  private int getVehicleOwnerIndex() {
+  private static int getVehicleOwnerIndex() {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_VEHICLE_OWNER);
   }
 
-  private void handleCompany(final SelectorEvent event) {
+  private static void handleCompany(final SelectorEvent event) {
     if (!event.isChanged()) {
       return;
     }
@@ -196,7 +196,7 @@ class SelectorHandler implements SelectorEvent.Handler {
         });
   }
 
-  private void handleExtendedProperties(SelectorEvent event) {
+  private static void handleExtendedProperties(SelectorEvent event) {
     if (!event.isOpened()) {
       return;
     }
@@ -247,7 +247,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     event.getSelector().setAdditionalFilter(filter);
   }
 
-  private void handleVehicle(final SelectorEvent event) {
+  private static void handleVehicle(final SelectorEvent event) {
     final DataView dataView = UiHelper.getDataView(event.getSelector());
     if (dataView == null) {
       return;

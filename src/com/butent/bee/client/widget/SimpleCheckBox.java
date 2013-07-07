@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class SimpleCheckBox extends FocusWidget implements BooleanWidget {
 
-  private boolean valueChangeHandlerInitialized = false;
+  private boolean valueChangeHandlerInitialized;
 
   public SimpleCheckBox() {
     setElement(Document.get().createCheckInputElement());

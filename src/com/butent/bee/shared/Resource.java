@@ -7,11 +7,11 @@ import com.butent.bee.shared.utils.Codec;
 
 public class Resource implements BeeSerializable {
 
-  private String uri = null;
-  private boolean readOnly = false;
+  private String uri;
+  private boolean readOnly;
 
-  private String content = null;
-  private ContentType type = null;
+  private String content;
+  private ContentType type;
 
   public Resource() {
   }
@@ -54,7 +54,8 @@ public class Resource implements BeeSerializable {
     Assert.notNull(src);
 
     Pair<Integer, Integer> scan;
-    int len, start = 0;
+    int len = 0;
+    int start = 0;
 
     for (int i = 0; i < 4; i++) {
       scan = Codec.deserializeLength(src, start);

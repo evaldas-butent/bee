@@ -23,10 +23,10 @@ import java.util.Set;
 /**
  * Contains base methods for developement.
  */
-public class BeeUtils {
+public final class BeeUtils {
 
-  public static final Joiner numberJoiner = Joiner.on(BeeConst.CHAR_COMMA).skipNulls();
-  public static final Splitter numberSplitter =
+  public static final Joiner NUMBER_JOINER = Joiner.on(BeeConst.CHAR_COMMA).skipNulls();
+  public static final Splitter NUMBER_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
 
   public static boolean addNotEmpty(Collection<String> col, String item) {
@@ -1080,7 +1080,7 @@ public class BeeUtils {
    * @return true if the value contains only Hex digits, false otherwise.
    */
   public static boolean isHexDigit(char c) {
-    return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F');
+    return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F';
   }
 
   /**
@@ -1362,7 +1362,7 @@ public class BeeUtils {
   }
 
   public static String joinInts(Collection<Integer> ints) {
-    return isEmpty(ints) ? null : numberJoiner.join(ints);
+    return isEmpty(ints) ? null : NUMBER_JOINER.join(ints);
   }
 
   public static String joinItems(Object first, Object second, Object... rest) {
@@ -1370,7 +1370,7 @@ public class BeeUtils {
   }
 
   public static String joinLongs(Collection<Long> longs) {
-    return isEmpty(longs) ? null : numberJoiner.join(longs);
+    return isEmpty(longs) ? null : NUMBER_JOINER.join(longs);
   }
 
   public static String joinNoDuplicates(String sep, Object first, Object second, Object... rest) {
@@ -2439,7 +2439,7 @@ public class BeeUtils {
     List<Integer> result = Lists.newArrayList();
 
     if (!isEmpty(input)) {
-      for (String s : numberSplitter.split(input)) {
+      for (String s : NUMBER_SPLITTER.split(input)) {
         Integer x = toIntOrNull(s);
         if (x != null) {
           result.add(x);
@@ -2523,7 +2523,7 @@ public class BeeUtils {
     List<Long> result = Lists.newArrayList();
 
     if (!isEmpty(input)) {
-      for (String s : numberSplitter.split(input)) {
+      for (String s : NUMBER_SPLITTER.split(input)) {
         Long x = toLongOrNull(s);
         if (x != null) {
           result.add(x);

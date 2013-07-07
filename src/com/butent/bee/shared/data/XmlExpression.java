@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.data.XmlExpression.XmlBoolean;
@@ -29,7 +30,7 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlSeeAlso({
     XmlNumber.class, XmlString.class, XmlBoolean.class, XmlDate.class, XmlDatetime.class,
     XmlPlus.class, XmlMinus.class, XmlMultiply.class, XmlDivide.class, XmlBulk.class,
-    XmlCast.class, XmlSwitch.class, XmlCase.class, XmlNvl.class, XmlConcat.class, XmlName.class})
+    XmlCast.class, XmlSwitch.class, XmlCase.class, XmlNvl.class, XmlConcat.class, XmlName.class })
 public abstract class XmlExpression {
 
   public static class XmlHasMember extends XmlExpression {

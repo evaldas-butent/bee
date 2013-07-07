@@ -6,7 +6,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CalendarFormat {
+public final class CalendarFormat {
 
   private static final DateTimeFormat DAY_OF_WEEK_FORMAT = DateTimeFormat.getFormat("EEEE");
   

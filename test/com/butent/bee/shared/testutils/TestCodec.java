@@ -13,6 +13,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.utils.Codec}.
  */
+@SuppressWarnings("static-method")
 public class TestCodec {
 
   @Before
@@ -25,9 +26,9 @@ public class TestCodec {
 
   @Test
   public final void testAdler32ByteArray() {
-    byte btExpected1[] = {0, 97, 0, 98, 0, 99};
-    byte btExpected2[] = {0, 113, 0, 119, 0, 101};
-    byte btExpected4[] = {97, 98, 99};
+    byte[] btExpected1 = {0, 97, 0, 98, 0, 99};
+    byte[] btExpected2 = {0, 113, 0, 119, 0, 101};
+    byte[] btExpected4 = {97, 98, 99};
 
     assertEquals(Integer.toHexString(38600999), Codec.adler32(btExpected4));
     assertEquals("3740127", Codec.adler32(btExpected1));
@@ -43,8 +44,8 @@ public class TestCodec {
 
   @Test
   public final void testCrc16ByteArray() {
-    byte btExpected1[] = {0, 97, 0, 98, 0, 99};
-    byte btExpected2[] = {0, 113, 0, 119, 0, 101};
+    byte[] btExpected1 = {0, 97, 0, 98, 0, 99};
+    byte[] btExpected2 = {0, 113, 0, 119, 0, 101};
 
     assertEquals("3f5c", Codec.crc16(btExpected1));
     assertEquals("3a0c", Codec.crc16(btExpected2));
@@ -58,8 +59,8 @@ public class TestCodec {
 
   @Test
   public final void testCrc32ByteArray() {
-    byte btExpected1[] = {0, 97, 0, 98, 0, 99};
-    byte btExpected2[] = {0, 113, 0, 119, 0, 101};
+    byte[] btExpected1 = {0, 97, 0, 98, 0, 99};
+    byte[] btExpected2 = {0, 113, 0, 119, 0, 101};
 
     assertEquals("8a78d0f2", Codec.crc32(btExpected1));
     assertEquals("191683de", Codec.crc32(btExpected2));
@@ -67,8 +68,8 @@ public class TestCodec {
 
   @Test
   public final void testCrc32DirectByteArray() {
-    byte btExpected1[] = {0, 97, 0, 98, 0, 99};
-    byte btExpected2[] = {0, 113, 0, 119, 0, 101};
+    byte[] btExpected1 = {0, 97, 0, 98, 0, 99};
+    byte[] btExpected2 = {0, 113, 0, 119, 0, 101};
 
     assertEquals("8a78d0f2", Codec.crc32Direct(btExpected1));
     assertEquals("191683de", Codec.crc32Direct(btExpected2));
@@ -151,9 +152,9 @@ public class TestCodec {
 
   @Test
   public final void testFromBase64() {
-    byte btExpected1[] = {105, -73, 28};
-    byte btExpected2[] = {97};
-    byte btExpected3[] = {83, 116, 114, 105, 110, 103};
+    byte[] btExpected1 = {105, -73, 28};
+    byte[] btExpected2 = {97};
+    byte[] btExpected3 = {83, 116, 114, 105, 110, 103};
 
     assertArrayEquals(btExpected1, Codec.fromBase64("abcc"));
     assertArrayEquals(btExpected2, Codec.fromBase64("YQ=="));
@@ -162,8 +163,8 @@ public class TestCodec {
 
   @Test
   public final void testFromBytes() {
-    byte btExpected2[] = {0, 97};
-    byte btExpected3[] = {0, 83, 0, 116, 0, 114, 0, 105, 0, 110, 0, 103};
+    byte[] btExpected2 = {0, 97};
+    byte[] btExpected3 = {0, 83, 0, 116, 0, 114, 0, 105, 0, 110, 0, 103};
 
     assertEquals("a", Codec.fromBytes(btExpected2));
     assertEquals("String", Codec.fromBytes(btExpected3));
@@ -217,10 +218,9 @@ public class TestCodec {
 
   @Test
   public final void testToBytesString() {
-    byte btExpected1[] = {0, 32, 0, 33, 0, 35};
-    byte btExpected2[] = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35};
-    byte btExpected3[] = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35, 0,
-        101};
+    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
+    byte[] btExpected2 = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35};
+    byte[] btExpected3 = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35, 0, 101};
 
     assertArrayEquals(btExpected1, Codec.toBytes(" !#"));
     assertArrayEquals(btExpected2, Codec.toBytes("qwe !#"));
@@ -229,8 +229,8 @@ public class TestCodec {
 
   @Test
   public final void testToBytesStringInt() {
-    byte btExpected1[] = {0, 32, 0, 33, 0, 35};
-    byte btExpected2[] = {0, 101, 0, 32, 0, 33, 0, 35, 0, 101};
+    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
+    byte[] btExpected2 = {0, 101, 0, 32, 0, 33, 0, 35, 0, 101};
 
     assertArrayEquals(btExpected1, Codec.toBytes(" !#", 0));
     assertArrayEquals(btExpected1, Codec.toBytes("qwe !#", 3));
@@ -239,8 +239,8 @@ public class TestCodec {
 
   @Test
   public final void testToBytesStringIntInt() {
-    byte btExpected1[] = {0, 32, 0, 33, 0, 35};
-    byte btExpected2[] = {0, 33, 0, 35};
+    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
+    byte[] btExpected2 = {0, 33, 0, 35};
 
     assertArrayEquals(btExpected1, Codec.toBytes(" !#", 0, 3));
     assertArrayEquals(btExpected2, Codec.toBytes(" !#", 1, 3));
@@ -251,9 +251,9 @@ public class TestCodec {
   @Test
   public final void testToHexByteArray() {
 
-    byte bt[] = {0, 32, 0, 33, 0, 35};
-    byte bt2[] = null;
-    byte bt3[] = {};
+    byte[] bt = {0, 32, 0, 33, 0, 35};
+    byte[] bt2 = null;
+    byte[] bt3 = {};
 
     assertEquals("002000210023", Codec.toHex(bt));
     assertEquals(null, Codec.toHex(bt3));

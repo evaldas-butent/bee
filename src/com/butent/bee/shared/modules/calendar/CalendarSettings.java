@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.EnumMap;
 import java.util.List;
 
-public class CalendarSettings {
+public final class CalendarSettings {
 
   public static CalendarSettings create(IsRow row, List<? extends IsColumn> columns) {
     CalendarSettings settings = new CalendarSettings();
@@ -154,12 +154,12 @@ public class CalendarSettings {
     this.defaultDisplayedDays = BeeUtils.clamp(defaultDisplayedDays, 2, 100);
   }
 
-  private boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
+  private static boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
     Boolean value = row.getBoolean(DataUtils.getColumnIndex(columnId, columns));
     return (value == null) ? false : value;
   }
 
-  private int getInt(IsRow row, List<? extends IsColumn> columns, String columnId) {
+  private static int getInt(IsRow row, List<? extends IsColumn> columns, String columnId) {
     Integer value = row.getInteger(DataUtils.getColumnIndex(columnId, columns));
     return (value == null) ? BeeConst.UNDEF : value;
   }

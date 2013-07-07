@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
-public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision, HasScale,
+public final class CellSource extends AbstractRenderer<IsRow> implements HasPrecision, HasScale,
     HasValueType {
 
   private enum SourceType {
@@ -33,7 +33,7 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
     source.setScale(column.getScale());
     
     if (column.isText()) {
-      source.setText(true);
+      source.setIsText(true);
     }
 
     return source;
@@ -51,7 +51,8 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
   }
 
   public static CellSource forRowVersion(String name) {
-    return new CellSource(SourceType.VERSION, name, DataUtils.VERSION_INDEX, DataUtils.VERSION_TYPE);
+    return new CellSource(SourceType.VERSION, name, DataUtils.VERSION_INDEX,
+        DataUtils.VERSION_TYPE);
   }
 
   private final SourceType sourceType;
@@ -64,7 +65,7 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
   
-  private boolean isText = false;
+  private boolean isText;
 
   private CellSource(SourceType sourceType, String name, Integer index, ValueType valueType) {
     super();
@@ -399,7 +400,7 @@ public class CellSource extends AbstractRenderer<IsRow> implements HasPrecision,
     this.scale = scale;
   }
 
-  public void setText(boolean isText) {
+  public void setIsText(boolean isText) {
     this.isText = isText;
   }
 }

@@ -52,13 +52,13 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
 
   private RendererType type;
 
-  private Integer valueStartIndex = null;
+  private Integer valueStartIndex;
 
-  private String separator = null;
+  private String separator;
 
-  private String options = null;
+  private String options;
 
-  private List<String> items = null;
+  private List<String> items;
 
   public RendererDescription(RendererType type) {
     this.type = type;

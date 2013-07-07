@@ -39,9 +39,9 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   private final List<String> searchBy = Lists.newArrayList();
   
   private final Editor editor;
-  private Boolean emptiness = null;
+  private Boolean emptiness;
   
-  private String oldValue = null;
+  private String oldValue;
   
   public ValueFilterSupplier(String viewName, BeeColumn column, String label,
       List<String> searchColumns, String options) {
@@ -262,8 +262,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     this.oldValue = oldValue;
   }
 
-  private void setValue(String value, Boolean emptiness) {
+  private void setValue(String value, Boolean empt) {
     editor.setValue(value);
-    this.emptiness = emptiness;
+    this.emptiness = empt;
   }
 }

@@ -16,13 +16,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class MenuItem extends UIObject implements HasIdentity {
 
-  public static ITEM_TYPE defaultType = ITEM_TYPE.LABEL;
+  public static final ITEM_TYPE DEFAULT_TYPE = ITEM_TYPE.LABEL;
 
   private static final String STYLENAME_DEFAULT = "bee-MenuItem";
   private static final String STYLENAME_SELECTED = "selected";
 
   private MenuCommand command;
-  private MenuBar parentMenu, subMenu;
+
+  private MenuBar parentMenu;
+  private MenuBar subMenu;
 
   private ITEM_TYPE itemType;
 
@@ -118,14 +120,14 @@ public class MenuItem extends UIObject implements HasIdentity {
     }
   }
 
-  private ITEM_TYPE getDefaultType(MenuBar parent) {
+  private static ITEM_TYPE getDefaultType(MenuBar parent) {
     ITEM_TYPE w = null;
 
     if (parent != null) {
       w = parent.getItemType();
     }
     if (w == null) {
-      w = defaultType;
+      w = DEFAULT_TYPE;
     }
 
     return w;

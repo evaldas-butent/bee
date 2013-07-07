@@ -15,7 +15,7 @@ public class Duration {
   private int timeout = BeeConst.UNDEF;
   private int completed = BeeConst.UNDEF;
 
-  private String message = null;
+  private String message;
 
   public Duration() {
     start = JsUtils.currentTimeMillis();
@@ -97,7 +97,7 @@ public class Duration {
   }
 
   public boolean isPending() {
-    return (BeeConst.isUndef(completed));
+    return BeeConst.isUndef(completed);
   }
 
   public void restart(String msg) {

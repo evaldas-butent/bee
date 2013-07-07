@@ -8,7 +8,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class SettingsChangeEvent extends GwtEvent<SettingsChangeEvent.Handler> {
+public final class SettingsChangeEvent extends GwtEvent<SettingsChangeEvent.Handler> {
 
   public interface Handler extends EventHandler {
     void onSettingsChange(SettingsChangeEvent event);
@@ -18,7 +18,7 @@ public class SettingsChangeEvent extends GwtEvent<SettingsChangeEvent.Handler> {
     HandlerRegistration addSettingsChangeHandler(Handler handler);
   }
 
-  private static Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<Handler>();
   
   public static void fireHeight(HasSettingsChangeHandlers source, ComponentType componentType,
       int height) {

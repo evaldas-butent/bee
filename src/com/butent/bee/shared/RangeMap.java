@@ -5,7 +5,7 @@ import com.google.common.collect.Range;
 import java.util.HashMap;
 
 @SuppressWarnings("serial")
-public class RangeMap<K extends Comparable<?>, V> extends HashMap<Range<K>, V> {
+public final class RangeMap<K extends Comparable<?>, V> extends HashMap<Range<K>, V> {
 
   public static <K extends Comparable<?>, V> RangeMap<K, V> create() {
     return new RangeMap<K, V>();
@@ -42,7 +42,8 @@ public class RangeMap<K extends Comparable<?>, V> extends HashMap<Range<K>, V> {
     Range<K> bestRange = null;
 
     for (Range<K> range : keySet()) {
-      if (range != null && range.contains(key) && (bestRange == null || bestRange.encloses(range))) {
+      if (range != null && range.contains(key) 
+          && (bestRange == null || bestRange.encloses(range))) {
         bestRange = range;
       }
     }

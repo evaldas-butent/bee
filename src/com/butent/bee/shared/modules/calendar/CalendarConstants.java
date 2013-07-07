@@ -5,7 +5,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CalendarConstants {
+public final class CalendarConstants {
 
   public enum AppointmentStatus implements HasCaption {
     TENTATIVE("Planuojamas"),
@@ -119,7 +119,7 @@ public class CalendarConstants {
     }
 
     public String getCaption(int days) {
-      if (DAYS.equals(this)) {
+      if (this == DAYS) {
         return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
       } else {
         return caption;

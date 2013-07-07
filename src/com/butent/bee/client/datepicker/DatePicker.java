@@ -112,7 +112,7 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
     }
   }
 
-  private static class DateStyler {
+  private static final class DateStyler {
     private final Map<JustDate, String> styles = Maps.newHashMap();
 
     private DateStyler() {
@@ -154,7 +154,7 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
   private final MonthView view;
   private final Model model;
 
-  private JustDate value = null;
+  private JustDate value;
 
   private final JustDate minDate;
   private final JustDate maxDate;
@@ -188,9 +188,9 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
     monthSelector.setDatePicker(this);
     view.setDatePicker(this);
 
-    view.setup();
-    monthSelector.setup();
-    this.setup();
+    view.setUp();
+    monthSelector.setUp();
+    init();
 
     addStyleToDate(cssClasses.dayIsToday(), new JustDate());
     setDate(date);
@@ -331,7 +331,7 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
     }
   }
 
-  private void setup() {
+  private void init() {
     Vertical panel = new Vertical();
     initWidget(panel);
 

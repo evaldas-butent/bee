@@ -186,7 +186,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
             }
           };
 
-          Global.decide(getCaption(), Lists.newArrayList(Localized.constants.saveChanges()),
+          Global.decide(getCaption(), Lists.newArrayList(Localized.getConstants().saveChanges()),
               callback, DialogConstants.DECISION_YES);
 
         } else {

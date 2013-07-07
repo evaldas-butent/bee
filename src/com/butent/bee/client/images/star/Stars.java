@@ -9,7 +9,7 @@ import com.butent.bee.client.images.Images;
 
 import java.util.List;
 
-public class Stars {
+public final class Stars {
   
   public interface Resources extends ClientBundle {
 

@@ -46,14 +46,14 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
   private final int dataIndex;
   private final ValueType valueType;
   
-  private String prefix = null;
-  private String suffix = null;
+  private String prefix;
+  private String suffix;
   
-  private boolean addPrefixWhenEmpty = false;
-  private boolean addSuffixWhenEmpty = false;
+  private boolean addPrefixWhenEmpty;
+  private boolean addSuffixWhenEmpty;
 
-  private DateTimeFormat dateTimeformat = null;
-  private NumberFormat numberFormat = null;
+  private DateTimeFormat dateTimeformat;
+  private NumberFormat numberFormat;
 
   private int scale = BeeConst.UNDEF;
   

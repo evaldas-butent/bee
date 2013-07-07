@@ -39,7 +39,7 @@ import java.util.List;
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
     HasSelectionHandlers<Integer>, IdentifiableWidget, HasItems, AcceptsCaptions, IsHtmlTable {
 
-  private class Tab extends Simple implements HasEnabled {
+  private final class Tab extends Simple implements HasEnabled {
     private boolean enabled = true;
 
     private Tab(Widget widget) {
@@ -128,7 +128,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   private final String stylePrefix;
 
-  private Tab selectedTab = null;
+  private Tab selectedTab;
   
   private boolean keyboardNavigationEnabled = true;
 

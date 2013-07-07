@@ -22,7 +22,7 @@ import java.util.List;
 public class AppointmentManager {
 
   private final List<Appointment> appointments = Lists.newArrayList();
-  private Range<DateTime> appointmentRange = null;
+  private Range<DateTime> appointmentRange;
 
   public AppointmentManager() {
     super();

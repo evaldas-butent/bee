@@ -70,7 +70,7 @@ public class Global implements Module {
 
   private static final Reports reports = new Reports();
 
-  private static boolean debug = false;
+  private static boolean debug;
 
   public static void addReport(String caption, Command command) {
     reports.addReport(caption, command);
@@ -197,7 +197,7 @@ public class Global implements Module {
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, CssUnit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        BeeConst.UNDEF, Localized.constants.ok(), Localized.constants.cancel(), null);
+        BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
@@ -370,23 +370,25 @@ public class Global implements Module {
   public void start() {
   }
 
+//CHECKSTYLE:OFF
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_getCaption = $entry(@com.butent.bee.shared.ui.Captions::getCaption(Ljava/lang/String;I));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
   }-*/;
+//CHECKSTYLE:ON
 
-  private void initCache() {
+  private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
 
-  private void initFavorites() {
+  private static void initFavorites() {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);
     BeeKeeper.getBus().registerMultiDeleteHandler(getFavorites(), false);
   }
 
-  private void initImages() {
+  private static void initImages() {
     Images.init(getImages());
   }
 }

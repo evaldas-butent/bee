@@ -33,7 +33,7 @@ import com.butent.bee.shared.State;
 
 public class Absolute extends AbsolutePanel implements DndWidget, ProvidesResize, RequiresResize {
 
-  private State targetState = null;
+  private State targetState;
   
   public Absolute() {
     this(Position.ABSOLUTE);

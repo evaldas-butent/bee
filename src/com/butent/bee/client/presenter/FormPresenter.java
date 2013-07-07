@@ -62,7 +62,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback extends ConfirmationCallback {
     private final long rowId;
     private final long version;
 
@@ -93,7 +93,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final Provider dataProvider;
 
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
-  private Filter lastFilter = null;
+  private Filter lastFilter;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
@@ -339,8 +339,9 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
-  private Provider createProvider(FormContainerView view, String viewName, List<BeeColumn> columns,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
+  private static Provider createProvider(FormContainerView view, String viewName,
+      List<BeeColumn> columns, BeeRowSet rowSet, Provider.Type providerType,
+      CachingPolicy cachingPolicy) {
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;
     }
@@ -367,7 +368,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     return provider;
   }
 
-  private FormContainerView createView(FormDescription formDescription,
+  private static FormContainerView createView(FormDescription formDescription,
       List<BeeColumn> columns, int rowCount, FormInterceptor interceptor) {
     FormContainerView view = new FormContainerImpl();
 

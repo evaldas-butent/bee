@@ -21,8 +21,8 @@ import java.util.List;
 
 public class SearchBox extends InputText implements SearchView {
 
-  private Presenter presenter = null;
-  private FilterHandler filterHandler = null;
+  private Presenter presenter;
+  private FilterHandler filterHandler;
 
   public SearchBox() {
     this("paieška...");
@@ -81,8 +81,8 @@ public class SearchBox extends InputText implements SearchView {
   }
 
   @Override
-  public void setViewPresenter(Presenter presenter) {
-    this.presenter = presenter;
+  public void setViewPresenter(Presenter viewPresenter) {
+    this.presenter = viewPresenter;
   }
 
   @Override

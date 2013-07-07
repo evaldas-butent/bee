@@ -32,10 +32,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   private IsCondition havingClause;
   private List<SqlSelect> unionList;
 
-  private boolean distinctMode = false;
+  private boolean distinctMode;
   private boolean unionAllMode = true;
-  private int limit = 0;
-  private int offset = 0;
+  private int limit;
+  private int offset;
 
   /**
    * Adds all friend from {@code source} table.
@@ -587,7 +587,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       query.fieldList = Lists.newArrayList(fieldList);
     }
     if (getFrom() != null) {
-      query.fromList = Lists.newArrayList(getFrom());
+      query.setFrom(Lists.newArrayList(getFrom()));
     }
     query.setWhere(whereClause);
 
@@ -810,24 +810,24 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Sets the limit parameter to {@code limit}.
    * 
-   * @param limit the value to set to
+   * @param lim the value to set to
    * @return object's SqlSelect instance.
    */
-  public SqlSelect setLimit(int limit) {
-    Assert.nonNegative(limit);
-    this.limit = limit;
+  public SqlSelect setLimit(int lim) {
+    Assert.nonNegative(lim);
+    this.limit = lim;
     return getReference();
   }
 
   /**
    * Sets the offset parameter to {@code offset}.
    * 
-   * @param offset the value to set to.
+   * @param off the value to set to.
    * @return object's SqlSelect instance.
    */
-  public SqlSelect setOffset(int offset) {
-    Assert.nonNegative(offset);
-    this.offset = offset;
+  public SqlSelect setOffset(int off) {
+    Assert.nonNegative(off);
+    this.offset = off;
     return getReference();
   }
 

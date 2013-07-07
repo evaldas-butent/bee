@@ -60,31 +60,31 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private static final String STYLE_NAME = "bee-GridContainer";
 
-  private Presenter viewPresenter = null;
+  private Presenter viewPresenter;
 
-  private String footerId = null;
-  private String headerId = null;
-  private String scrollerId = null;
+  private String footerId;
+  private String headerId;
+  private String scrollerId;
 
   private int scrollerWidth = DomUtils.getScrollBarWidth() + 1;
 
-  private boolean hasPaging = false;
-  private boolean hasSearch = false;
+  private boolean hasPaging;
+  private boolean hasSearch;
 
-  private Evaluator rowMessage = null;
+  private Evaluator rowMessage;
 
-  private boolean editing = false;
+  private boolean editing;
   private boolean enabled = true;
 
   private final List<ExtWidget> extWidgets = Lists.newArrayList();
-  private WidgetCreationCallback extCreation = null;
+  private WidgetCreationCallback extCreation;
 
-  private IsRow lastRow = null;
-  private boolean lastEnabled = false;
+  private IsRow lastRow;
+  private boolean lastEnabled;
 
   private List<String> favorite = Lists.newArrayList();
 
-  private boolean resizeSuspended = false;
+  private boolean resizeSuspended;
 
   public GridContainerImpl() {
     super(-1);

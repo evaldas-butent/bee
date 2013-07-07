@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
-  public class SqlField {
+  public final class SqlField {
     private final String name;
     private final SqlDataType type;
     private final int precision;
@@ -351,12 +351,12 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Sets the name of a table, to be created.
    * 
-   * @param target table to create
+   * @param targetName table to create
    * @return object's SqlCreate instance
    */
-  public SqlCreate setTarget(String target) {
-    Assert.notEmpty(target);
-    this.target = target;
+  public SqlCreate setTarget(String targetName) {
+    Assert.notEmpty(targetName);
+    this.target = targetName;
     return this;
   }
 }

@@ -16,10 +16,11 @@ import com.butent.bee.shared.Assert;
  * successful management of a particular visualization.
  */
 
-public abstract class Visualization<OptionsType extends AbstractDrawOptions> extends Widget
+public abstract class Visualization<T extends AbstractDrawOptions> extends Widget
     implements IdentifiableWidget {
+
   private AbstractDataTable dataTable;
-  private OptionsType options;
+  private T options;
   private JavaScriptObject jso;
 
   public Visualization() {
@@ -30,7 +31,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     DomUtils.createId(this, getIdPrefix());
   }
 
-  public Visualization(AbstractDataTable data, OptionsType options) {
+  public Visualization(AbstractDataTable data, T options) {
     this();
     this.options = options;
     this.dataTable = data;
@@ -40,7 +41,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     this.@com.butent.bee.client.visualization.visualizations.Visualization::jso.draw(data, {});
   }-*/;
 
-  public final native void draw(AbstractDataTable data, OptionsType opt) /*-{
+  public final native void draw(AbstractDataTable data, T opt) /*-{
     this.@com.butent.bee.client.visualization.visualizations.Visualization::jso.draw(data, opt);
   }-*/;
 
@@ -62,7 +63,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     return jso;
   }
 
-  public OptionsType getOptions() {
+  public T getOptions() {
     return options;
   }
 
@@ -79,7 +80,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     DomUtils.setId(this, id);
   }
 
-  public void setOptions(OptionsType options) {
+  public void setOptions(T options) {
     this.options = options;
   }
 
@@ -89,7 +90,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     draw();
   }
 
-  public void updateOptions(OptionsType opt) {
+  public void updateOptions(T opt) {
     setOptions(opt);
     draw();
   }

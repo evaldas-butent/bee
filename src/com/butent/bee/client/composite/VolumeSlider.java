@@ -35,7 +35,7 @@ import java.util.List;
 
 public class VolumeSlider extends Absolute implements Editor {
 
-  private class VolumeSpinner extends SpinnerBase {
+  private final class VolumeSpinner extends SpinnerBase {
     private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,
         int minStep, int maxStep, boolean constrained) {
       super(spinnerListener, value, min, max, minStep, maxStep, constrained);
@@ -90,11 +90,11 @@ public class VolumeSlider extends Absolute implements Editor {
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
 
   private SpinnerListener listener = new SpinnerListener() {
     @Override
@@ -322,7 +322,8 @@ public class VolumeSlider extends Absolute implements Editor {
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
   }
 
   @Override

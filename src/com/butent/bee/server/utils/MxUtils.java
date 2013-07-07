@@ -29,7 +29,7 @@ import java.util.Map;
  * Enables to monitor server memory usage and other performance related parameters.
  */
 
-public class MxUtils {
+public final class MxUtils {
   public static List<Property> getClassLoadingInfo() {
     List<Property> lst = new ArrayList<Property>();
 

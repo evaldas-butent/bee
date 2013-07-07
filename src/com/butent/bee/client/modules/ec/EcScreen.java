@@ -182,7 +182,7 @@ public class EcScreen extends ScreenImpl {
   protected void showProgressPanel() {
   }
 
-  private void createCommands(HasWidgets container) {
+  private static void createCommands(HasWidgets container) {
     String panelStyle = "commandPanel";
 
     Horizontal fin = new Horizontal();
@@ -190,7 +190,7 @@ public class EcScreen extends ScreenImpl {
     EcStyles.add(fin, panelStyle, "fin");
 
     fin.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
-        Localized.constants.ecFinancialInformation()));
+        Localized.getConstants().ecFinancialInformation()));
 
     container.add(fin);
 
@@ -204,11 +204,11 @@ public class EcScreen extends ScreenImpl {
 
       if (hasTerms) {
         info.add(createCommandWidget(EcConstants.SVC_SHOW_TERMS_OF_DELIVERY,
-            Localized.constants.ecTermsOfDelivery()));
+            Localized.getConstants().ecTermsOfDelivery()));
       }
       if (hasContacts) {
         info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
-            Localized.constants.ecContacts()));
+            Localized.getConstants().ecContacts()));
       }
 
       container.add(info);
@@ -218,15 +218,15 @@ public class EcScreen extends ScreenImpl {
     EcStyles.add(searchBy, panelStyle);
     EcStyles.add(searchBy, panelStyle, "searchBy");
 
-    searchBy.add(new Label(Localized.constants.ecSearchBy()));
+    searchBy.add(new Label(Localized.getConstants().ecSearchBy()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_ITEM_CODE,
-        Localized.constants.ecSearchByItemCode()));
+        Localized.getConstants().ecSearchByItemCode()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_OE_NUMBER,
-        Localized.constants.ecSearchByOeNumber()));
+        Localized.getConstants().ecSearchByOeNumber()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_CAR,
-        Localized.constants.ecSearchByCar()));
+        Localized.getConstants().ecSearchByCar()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_MANUFACTURER,
-        Localized.constants.ecSearchByManufacturer()));
+        Localized.getConstants().ecSearchByManufacturer()));
 
     container.add(searchBy);
 
@@ -235,16 +235,16 @@ public class EcScreen extends ScreenImpl {
     EcStyles.add(searchOther, panelStyle, "searchOther");
 
     searchOther.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
-        Localized.constants.ecGeneralItems()));
+        Localized.getConstants().ecGeneralItems()));
     searchOther.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
-        Localized.constants.ecBikeItems()));
+        Localized.getConstants().ecBikeItems()));
 
     container.add(searchOther);
 
     container.add(EcKeeper.getCartlist());
   }
 
-  private Widget createCommandWidget(String service, String html) {
+  private static Widget createCommandWidget(String service, String html) {
     EcCommandWidget commandWidget = new EcCommandWidget(service, html);
     return commandWidget.getWidget();
   }
@@ -253,7 +253,7 @@ public class EcScreen extends ScreenImpl {
     final InputText input = EcKeeper.getSearchBox();
 
     DomUtils.setSearch(input);
-    DomUtils.setPlaceholder(input, Localized.constants.ecGlobalSearchPlaceholder());
+    DomUtils.setPlaceholder(input, Localized.getConstants().ecGlobalSearchPlaceholder());
     EcStyles.add(input, "GlobalSearchBox");
 
     input.addKeyDownHandler(new KeyDownHandler() {

@@ -13,7 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class EcUtils {
+public final class EcUtils {
   
   private static final List<String> colors = Lists.newArrayList(Color.getNames().values());
   
@@ -61,7 +61,8 @@ public class EcUtils {
     
     int radius = BeeUtils.randomInt(0, 6);
     if (radius > 0) {
-      widget.getElement().getStyle().setProperty("borderRadius", BeeUtils.toString(radius * 10) + "%");
+      widget.getElement().getStyle().setProperty("borderRadius", 
+          BeeUtils.toString(radius * 10) + "%");
     }
     
     return widget;

@@ -18,6 +18,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.server.sql.SqlSelect}.
  */
+@SuppressWarnings("static-method")
 public class TestSqlSelect {
 
   @Before
@@ -75,14 +76,10 @@ public class TestSqlSelect {
     select.addUnion(select1);
     select.addOrder("Table22", "field21");
 
-    assertEquals(true,
-        select.getSqlString(builder).contains("SELECT TOP 9 ["));
-    assertEquals(
-        true,
-        select
-            .getSqlString(builder)
-            .contains(
-                "].* FROM (SELECT [Source_table].* FROM [from_table] UNION ALL (SELECT [Table12].* FROM [Table1]) ORDER BY [field21]) ["));
+    assertEquals(true, select.getSqlString(builder).contains("SELECT TOP 9 ["));
+
+    assertEquals(true, select.getSqlString(builder).contains("].* FROM (SELECT [Source_table].* "
+        + "FROM [from_table] UNION ALL (SELECT [Table12].* FROM [Table1]) ORDER BY [field21]) ["));
   }
 
   @Test
@@ -324,8 +321,8 @@ public class TestSqlSelect {
 
     select.addUnion(select2);
 
-    assertEquals(
-        "SELECT Table.name AS vardai FROM employees_Butent_Kaunas UNION ALL (SELECT Table2.name2 AS vardai2 FROM employees_Butent_Vilnius)",
+    assertEquals("SELECT Table.name AS vardai FROM employees_Butent_Kaunas UNION ALL "
+        + "(SELECT Table2.name2 AS vardai2 FROM employees_Butent_Vilnius)",
         select.getSqlString(builder));
   }
 
@@ -538,8 +535,8 @@ public class TestSqlSelect {
     select.addSum("employees", "salary", "all_salaries");
     select.setWhere(SqlUtils.notNull("employees", "salary"));
 
-    assertEquals(
-        "SELECT SUM(employees.salary) AS all_salaries FROM employees WHERE employees.salary IS NOT NULL",
+    assertEquals("SELECT SUM(employees.salary) AS all_salaries FROM employees "
+        + "WHERE employees.salary IS NOT NULL",
         select.getSqlString(builder));
   }
 }

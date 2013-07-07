@@ -52,7 +52,7 @@ public class CargoRequestForm extends AbstractFormInterceptor {
     }
   }
 
-  private IsRow currentRow = null;
+  private IsRow currentRow;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -92,7 +92,7 @@ public class CargoRequestForm extends AbstractFormInterceptor {
         }));
       }
       boolean finished =
-          (currentRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) != null);
+          currentRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) != null;
 
       if (finished) {
         header.addCommandItem(new Button("Grąžinti", new ClickHandler() {

@@ -21,8 +21,9 @@ import javax.servlet.http.HttpSession;
  */
 
 public class RequestFilter implements Filter {
-  public static Counter COUNTER = new Counter();
-  private FilterConfig config = null;
+
+  private static final Counter COUNTER = new Counter();
+  private FilterConfig config;
 
   @Override
   public void destroy() {
@@ -67,5 +68,4 @@ public class RequestFilter implements Filter {
   public void init(FilterConfig filterConfig) throws ServletException {
     config = filterConfig;
   }
-
 }

@@ -579,11 +579,11 @@ public class CrmModuleBean implements BeeModule {
     long cntNew = (newTasks == null) ? 0 : newTasks.length;
     result.add(cntNew);
     if (cntNew > 0) {
-      result.addAll(Lists.newArrayList((newTasks)));
+      result.addAll(Lists.newArrayList(newTasks));
     }
 
     if (updTasks != null && updTasks.length > 0) {
-      result.addAll(Lists.newArrayList((updTasks)));
+      result.addAll(Lists.newArrayList(updTasks));
     }
 
     return ResponseObject.response(Joiner.on(BeeConst.CHAR_COMMA).join(result));
@@ -1128,7 +1128,8 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(where));
   }
 
-  private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations, BeeRow row) {
+  private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
+      BeeRow row) {
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = Lists.newArrayList();
 

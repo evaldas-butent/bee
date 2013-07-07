@@ -10,7 +10,7 @@ class FinancialInformation extends EcView {
 
   @Override
   protected void createUi() {
-    add(renderNoData(Localized.constants.ecFinancialInformation()));
+    add(renderNoData(Localized.getConstants().ecFinancialInformation()));
   }
 
   @Override

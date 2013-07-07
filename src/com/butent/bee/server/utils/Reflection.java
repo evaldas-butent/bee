@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
  * Enables to invoke methods from a given name reference.
  */
 
-public class Reflection {
+public final class Reflection {
   private static BeeLogger logger = LogUtils.getLogger(Reflection.class);
 
   public static void invoke(Object obj, String methodName, RequestInfo req, ResponseBuffer resp) {

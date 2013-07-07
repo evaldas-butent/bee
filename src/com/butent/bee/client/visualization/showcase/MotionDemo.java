@@ -13,15 +13,16 @@ import com.butent.bee.shared.time.DateTime;
  */
 
 public class MotionDemo implements LeftTabPanel.WidgetProvider {
-  private static final String STATE_STRING =
-      "{"
-          + "\"duration\":{\"timeUnit\":\"D\",\"multiplier\":1},\"nonSelectedAlpha\":0.4,"
-          + "\"yZoomedDataMin\":300,\"yZoomedDataMax\":1200,\"iconKeySettings\":[],\"yZoomedIn\":false,"
-          + "\"xZoomedDataMin\":300,\"xLambda\":1,\"time\":\"2010-01-06\",\"orderedByX\":false,\"xZoomedIn\":false,"
-          + "\"uniColorForNonSelected\":false,\"sizeOption\":\"_UNISIZE\",\"iconType\":\"BUBBLE\","
-          + "\"playDuration\":15000,\"dimensions\":{\"iconDimensions\":[\"dim0\"]},\"xZoomedDataMax\":1200,"
-          + "\"yLambda\":1,\"yAxisOption\":\"2\",\"colorOption\":\"4\",\"showTrails\":true,\"xAxisOption\":\"2\","
-          + "\"orderedByY\":false}";
+  private static final String STATE_STRING = "{" 
+      + "\"duration\":{\"timeUnit\":\"D\",\"multiplier\":1},\"nonSelectedAlpha\":0.4,"
+      + "\"yZoomedDataMin\":300,\"yZoomedDataMax\":1200,\"iconKeySettings\":[],\"yZoomedIn\":false,"
+      + "\"xZoomedDataMin\":300,\"xLambda\":1,\"time\":\"2010-01-06\",\"orderedByX\":false,"
+      + "\"xZoomedIn\":false,\"uniColorForNonSelected\":false,\"sizeOption\":\"_UNISIZE\","
+      + "\"iconType\":\"BUBBLE\",\"playDuration\":15000,"
+      + "\"dimensions\":{\"iconDimensions\":[\"dim0\"]},\"xZoomedDataMax\":1200,"
+      + "\"yLambda\":1,\"yAxisOption\":\"2\",\"colorOption\":\"4\",\"showTrails\":true,"
+      + "\"xAxisOption\":\"2\",\"orderedByY\":false}";
+
   private Widget widget;
 
   public MotionDemo() {

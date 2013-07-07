@@ -14,11 +14,11 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class Stacking {
+public final class Stacking {
   
   private static final BeeLogger logger = LogUtils.getLogger(Stacking.class);
 
-  private static int maxLevel = 0;
+  private static int maxLevel;
   
   private static final Map<String, Integer> widgetLevels = Maps.newHashMap();
   

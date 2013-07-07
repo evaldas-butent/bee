@@ -21,11 +21,11 @@ public class TestLongValue {
   public void tearDown() throws Exception {
   }
 
+  @SuppressWarnings("static-method")
   @Test
   public final void testLongValue() {
     LongValue lv = new LongValue(5L);
 
     assertEquals((Long) 5L, lv.getLong());
   }
-
 }

@@ -47,8 +47,8 @@ public class FilterComponent implements BeeSerializable, HasInfo {
     return filterComponent;
   }
 
-  private String name = null;
-  private FilterValue filterValue = null;
+  private String name;
+  private FilterValue filterValue;
 
   private FilterComponent() {
   }

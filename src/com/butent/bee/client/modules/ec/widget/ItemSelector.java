@@ -38,7 +38,7 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
     this.editor = createEditor();
     add(editor);
 
-    Button button = new Button(Localized.constants.ecDoSearch());
+    Button button = new Button(Localized.getConstants().ecDoSearch());
     EcStyles.add(button, STYLE_PRIMARY, "submit");
 
     button.addClickHandler(new ClickHandler() {

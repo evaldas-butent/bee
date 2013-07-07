@@ -57,7 +57,7 @@ public class FileServlet extends HttpServlet {
     doService(req, resp);
   }
 
-  private void close(Closeable resource) {
+  private static void close(Closeable resource) {
     if (resource != null) {
       try {
         resource.close();
@@ -67,7 +67,7 @@ public class FileServlet extends HttpServlet {
     }
   }
 
-  private void doError(HttpServletResponse resp, String err) {
+  private static void doError(HttpServletResponse resp, String err) {
     try {
       logger.severe(err);
       resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
@@ -120,6 +120,7 @@ public class FileServlet extends HttpServlet {
     try {
       fileName = MimeUtility.encodeText(fileName);
     } catch (UnsupportedEncodingException ex) {
+      logger.warning(ex);
     }
     mimeType = BeeUtils.join("; ", mimeType, "name=\"" + fileName + "\"");
 

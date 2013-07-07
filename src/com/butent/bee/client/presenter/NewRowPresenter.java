@@ -44,7 +44,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   private final FormView formView;
 
   private final Complex container;
-  private HandlesActions actionDelegate = null;
+  private HandlesActions actionDelegate;
 
   public NewRowPresenter(FormView formView, DataInfo dataInfo, String caption) {
 
@@ -179,7 +179,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     return formContainer;
   }
 
-  private HeaderView createHeader(String caption) {
+  private static HeaderView createHeader(String caption) {
     HeaderView formHeader = new HeaderSilverImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 

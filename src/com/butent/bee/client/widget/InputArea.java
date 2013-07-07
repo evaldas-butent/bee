@@ -37,19 +37,19 @@ import java.util.List;
 public class InputArea extends TextArea implements Editor, HandlesAfterSave, HasTextDimensions,
     HasInputHandlers, HasTextBox {
 
-  private Resource resource = null;
+  private Resource resource;
 
-  private String digest = null;
+  private String digest;
 
   private boolean nullable = true;
 
-  private boolean editing = false;
+  private boolean editing;
 
-  private boolean editorInitialized = false;
+  private boolean editorInitialized;
 
-  private String options = null;
+  private String options;
 
-  private boolean handlesTabulation = false;
+  private boolean handlesTabulation;
   
   public InputArea() {
     super();

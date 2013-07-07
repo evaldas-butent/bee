@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="11">
-<profile kind="CodeFormatterProfile" name="GWT js Format" version="11">
+<profile kind="CodeFormatterProfile" name="bee js format" version="11">
 <setting id="org.eclipse.wst.jsdt.core.formatter.insert_space_after_comma_in_enum_constant_arguments" value="insert"/>
 <setting id="org.eclipse.wst.jsdt.core.formatter.indent_body_declarations_compare_to_annotation_declaration_header" value="true"/>
 <setting id="org.eclipse.wst.jsdt.core.formatter.insert_space_before_colon_in_case" value="do not insert"/>

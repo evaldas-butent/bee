@@ -61,7 +61,7 @@ public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWid
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
       boolean hasElement = widget != null;
-      Widget returned = null;
+      Widget returned;
 
       @Override
       public boolean hasNext() {
@@ -74,7 +74,8 @@ public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWid
           throw new NoSuchElementException();
         }
         hasElement = false;
-        return (returned = widget);
+        returned = widget;
+        return returned;
       }
 
       @Override

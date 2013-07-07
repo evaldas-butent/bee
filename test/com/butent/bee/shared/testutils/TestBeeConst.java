@@ -13,6 +13,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.BeeConst}.
  */
+@SuppressWarnings("static-method")
 public class TestBeeConst {
 
   @Before

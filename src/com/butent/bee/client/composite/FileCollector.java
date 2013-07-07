@@ -91,7 +91,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
           DateTime dt = ((InputDateTime) widget).getDateTime();
 
           if (dt == null || TimeUtils.equals(dt, fileInfo.getLastModified())) {
-            changed = (fileInfo.getFileDate() != null);
+            changed = fileInfo.getFileDate() != null;
             fileInfo.setFileDate(null);
           } else if (!TimeUtils.equals(dt, fileInfo.getFileDate())) {
             changed = true;
@@ -373,7 +373,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
   public static IdentifiableWidget getDefaultFace() {
-    return new Button(Localized.constants.chooseFiles());
+    return new Button(Localized.getConstants().chooseFiles());
   }
 
   public static FileCollector headless(Consumer<Collection<NewFileInfo>> fileConsumer) {
@@ -411,10 +411,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   private final Consumer<Collection<NewFileInfo>> fileConsumer;
 
-  private Element dropArea = null;
-  private int dndCounter = 0;
+  private Element dropArea;
+  private int dndCounter;
 
-  private String options = null;
+  private String options;
 
   private final List<Column> columns = Lists.newArrayList();
   private final List<Column> editable = Lists.newArrayList();

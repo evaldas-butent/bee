@@ -57,21 +57,21 @@ public class ScreenImpl implements Screen {
   private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
 
   private LayoutPanel rootPanel;
-  private Split screenPanel = null;
+  private Split screenPanel;
 
-  private CentralScrutinizer centralScrutinizer = null;
+  private CentralScrutinizer centralScrutinizer;
 
-  private Workspace workspace = null;
-  private HasWidgets commandPanel = null;
+  private Workspace workspace;
+  private HasWidgets commandPanel;
 
-  private HasWidgets menuPanel = null;
+  private HasWidgets menuPanel;
 
-  private HasWidgets userPhotoContainer = null;
-  private HasText userSignature = null;
+  private HasWidgets userPhotoContainer;
+  private HasText userSignature;
 
-  private Notification notification = null;
+  private Notification notification;
 
-  private Panel progressPanel = null;
+  private Panel progressPanel;
 
   public ScreenImpl() {
   }
@@ -462,8 +462,8 @@ public class ScreenImpl implements Screen {
     Image exit = new Image(Global.getImages().exit(), new Command() {
       @Override
       public void execute() {
-        Global.getMsgBoxen().confirm(Localized.messages.endSession(Settings.getAppName()),
-            Icon.QUESTION, Lists.newArrayList(Localized.constants.questionLogout()),
+        Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
+            Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
             new ConfirmationCallback() {
               @Override
               public void onConfirm() {

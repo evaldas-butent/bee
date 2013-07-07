@@ -7,7 +7,7 @@ import com.google.gwt.i18n.client.TimeZoneInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 
-public class TimeZone {
+public final class TimeZone {
 
   private static final int STD_SHORT_NAME = 0;
   private static final int STD_LONG_NAME = 1;
@@ -65,7 +65,7 @@ public class TimeZone {
   }
 
   private static String composeGMTString(int offset) {
-    char data[] = {'G', 'M', 'T', '-', '0', '0', ':', '0', '0'};
+    char[] data = {'G', 'M', 'T', '-', '0', '0', ':', '0', '0'};
     int x = offset;
 
     if (x <= 0) {
@@ -155,7 +155,7 @@ public class TimeZone {
 
   public String getISOTimeZoneString(HasDateValue date) {
     int offset = -getOffset(date);
-    char data[] = {'+', '0', '0', ':', '0', '0'};
+    char[] data = {'+', '0', '0', ':', '0', '0'};
     if (offset < 0) {
       data[0] = '-';
       offset = -offset;
@@ -177,7 +177,7 @@ public class TimeZone {
 
   public String getRFCTimeZoneString(HasDateValue date) {
     int offset = -getOffset(date);
-    char data[] = {'+', '0', '0', '0', '0'};
+    char[] data = {'+', '0', '0', '0', '0'};
     if (offset < 0) {
       data[0] = '-';
       offset = -offset;

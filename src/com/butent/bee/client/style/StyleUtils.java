@@ -48,7 +48,7 @@ import elemental.js.stylesheets.JsStyleSheetList;
  * Contains utility functions used for working with Cascade Style Sheets (CSS).
  */
 
-public class StyleUtils {
+public final class StyleUtils {
 
   /**
    * Contains possible font sizes.
@@ -427,7 +427,7 @@ public class StyleUtils {
 
   private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
-  private static String styleTransform = null;
+  private static String styleTransform;
 
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
@@ -1309,7 +1309,7 @@ public class StyleUtils {
     }
 
     Position position = parseCssName(Position.class, value);
-    return (position != null && !Position.STATIC.equals(position));
+    return position != null && !Position.STATIC.equals(position);
   }
 
   public static boolean isUnitFragment(char ch) {

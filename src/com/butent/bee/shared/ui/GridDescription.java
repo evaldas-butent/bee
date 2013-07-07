@@ -64,74 +64,74 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return grid;
   }
 
-  private String name = null;
-  private String parent = null;
-  private String caption = null;
+  private String name;
+  private String parent;
+  private String caption;
 
-  private String viewName = null;
-  private String idName = null;
-  private String versionName = null;
+  private String viewName;
+  private String idName;
+  private String versionName;
 
-  private Filter filter = null;
-  private Order order = null;
+  private Filter filter;
+  private Order order;
 
-  private String headerMode = null;
-  private Boolean hasFooters = null;
+  private String headerMode;
+  private Boolean hasFooters;
 
-  private Boolean cacheData = null;
-  private Boolean cacheDescription = null;
+  private Boolean cacheData;
+  private Boolean cacheDescription;
 
-  private Integer asyncThreshold = null;
-  private Integer initialRowSetSize = null;
+  private Integer asyncThreshold;
+  private Integer initialRowSetSize;
 
-  private Boolean readOnly = null;
+  private Boolean readOnly;
 
-  private String newRowForm = null;
-  private String newRowColumns = null;
-  private String newRowDefaults = null;
-  private String newRowCaption = null;
-  private Boolean newRowPopup = null;
-  private Boolean newRowFormImmediate = null;
+  private String newRowForm;
+  private String newRowColumns;
+  private String newRowDefaults;
+  private String newRowCaption;
+  private Boolean newRowPopup;
+  private Boolean newRowFormImmediate;
 
-  private String editForm = null;
-  private Boolean editMode = null;
-  private Boolean editSave = null;
-  private Calculation editMessage = null;
-  private Boolean editShowId = null;
-  private String editInPlace = null;
-  private Boolean editPopup = null;
-  private Boolean editFormImmediate = null;
+  private String editForm;
+  private Boolean editMode;
+  private Boolean editSave;
+  private Calculation editMessage;
+  private Boolean editShowId;
+  private String editInPlace;
+  private Boolean editPopup;
+  private Boolean editFormImmediate;
 
-  private Map<String, String> styleSheets = null;
+  private Map<String, String> styleSheets;
 
-  private GridComponentDescription header = null;
-  private GridComponentDescription body = null;
-  private GridComponentDescription footer = null;
+  private GridComponentDescription header;
+  private GridComponentDescription body;
+  private GridComponentDescription footer;
 
-  private Collection<ConditionalStyleDeclaration> rowStyles = null;
+  private Collection<ConditionalStyleDeclaration> rowStyles;
 
-  private Calculation rowMessage = null;
-  private Calculation rowEditable = null;
-  private Calculation rowValidation = null;
+  private Calculation rowMessage;
+  private Calculation rowEditable;
+  private Calculation rowValidation;
 
-  private Integer minColumnWidth = null;
-  private Integer maxColumnWidth = null;
-  private String autoFit = null;
-  private Flexibility flexibility = null;
+  private Integer minColumnWidth;
+  private Integer maxColumnWidth;
+  private String autoFit;
+  private Flexibility flexibility;
 
   private final List<ColumnDescription> columns = Lists.newArrayList();
 
   private Set<Action> enabledActions = Sets.newHashSet();
   private Set<Action> disabledActions = Sets.newHashSet();
 
-  private String favorite = null;
+  private String favorite;
 
-  private Integer minNumberOfRows = null;
-  private Integer maxNumberOfRows = null;
+  private Integer minNumberOfRows;
+  private Integer maxNumberOfRows;
 
-  private String renderMode = null;
+  private String renderMode;
 
-  private Integer rowChangeSensitivityMillis = null;
+  private Integer rowChangeSensitivityMillis;
 
   private final List<String> widgets = Lists.newArrayList();
 

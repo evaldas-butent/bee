@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class RelationUtils {
+public final class RelationUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
 
@@ -124,7 +124,7 @@ public class RelationUtils {
       return result;
     }
 
-    boolean clear = (sourceRow == null);
+    boolean clear = sourceRow == null;
 
     if (updateRelationColumn) {
       int index = targetInfo.getColumnIndex(targetColumn);
@@ -162,8 +162,8 @@ public class RelationUtils {
       } else {
         int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
             tc.getLevel() - 1);
-        if (!BeeConst.isUndef(sourceIndex) &&
-            !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
+        if (!BeeConst.isUndef(sourceIndex) 
+            && !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
                 sourceRow.getString(sourceIndex))) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));
           result.add(tc.getName());

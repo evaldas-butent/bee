@@ -45,15 +45,15 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     return component;
   }
 
-  private StyleDeclaration style = null;
+  private StyleDeclaration style;
 
-  private Integer height = null;
-  private Integer minHeight = null;
-  private Integer maxHeight = null;
+  private Integer height;
+  private Integer minHeight;
+  private Integer maxHeight;
 
-  private String padding = null;
-  private String borderWidth = null;
-  private String margin = null;
+  private String padding;
+  private String borderWidth;
+  private String margin;
 
   public GridComponentDescription(Integer height) {
     setHeight(height);

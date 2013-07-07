@@ -15,7 +15,7 @@ import java.util.List;
 
 class ColumnConfig {
 
-  static final List<BeeColumn> dataColumns = Lists.newArrayList();
+  private static final List<BeeColumn> dataColumns = Lists.newArrayList();
 
   static int gridIndex;
   static int nameIndex;
@@ -76,6 +76,11 @@ class ColumnConfig {
       footerFontIndex = GridUtils.getIndex(names, "FooterFont");
     }
   }
+
+  static List<BeeColumn> getDataColumns() {
+    return dataColumns;
+  }
+
 
   final BeeRow row;
 

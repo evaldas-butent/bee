@@ -65,8 +65,8 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   private final InputText searchBox;
 
-  private String searchQuery = null;
-  private int numberOfHiddenItems = 0;
+  private String searchQuery;
+  private int numberOfHiddenItems;
 
   FilterDataWidget(ChartData data) {
     super();
@@ -104,7 +104,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.selectAllWidget = new Image(Global.getImages().arrowDownDouble());
     selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    selectAllWidget.setTitle(Localized.constants.selectAll());
+    selectAllWidget.setTitle(Localized.getConstants().selectAll());
 
     selectAllWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -148,7 +148,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.deselectAllWidget = new Image(Global.getImages().arrowUpDouble());
     deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    deselectAllWidget.setTitle(Localized.constants.deselectAll());
+    deselectAllWidget.setTitle(Localized.getConstants().deselectAll());
 
     deselectAllWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -348,7 +348,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     return searchQuery;
   }
 
-  private boolean matches(Element itemElement, String query) {
+  private static boolean matches(Element itemElement, String query) {
     return BeeUtils.isEmpty(query)
         ? true : BeeUtils.containsSame(itemElement.getInnerText(), query);
   }

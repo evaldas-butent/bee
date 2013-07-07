@@ -19,7 +19,7 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class EditorAssistant {
+public final class EditorAssistant {
 
   public static void doEditorAction(Editor widget, String value, char charCode,
       EditorAction action) {
@@ -113,7 +113,7 @@ public class EditorAssistant {
     } else if (event.getCharCode() == BeeConst.CHAR_PLUS
         || event.getCharCode() == BeeConst.CHAR_MINUS) {
 
-      boolean forward = (event.getCharCode() == BeeConst.CHAR_PLUS);
+      boolean forward = event.getCharCode() == BeeConst.CHAR_PLUS;
       int count = Stars.count();
 
       int newValue;
@@ -135,7 +135,7 @@ public class EditorAssistant {
       }
 
     } else {
-      Global.getMsgBoxen().pickStar(starCount,oldValue, element, new ChoiceCallback() {
+      Global.getMsgBoxen().pickStar(starCount, oldValue, element, new ChoiceCallback() {
         @Override
         public void onCancel() {
           refocus();

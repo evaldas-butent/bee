@@ -315,8 +315,8 @@ public class Color implements BeeSerializable {
   
   private long id;
   
-  private String background = null;
-  private String foreground = null;
+  private String background;
+  private String foreground;
 
   public Color(long id, String background, String foreground) {
     super();

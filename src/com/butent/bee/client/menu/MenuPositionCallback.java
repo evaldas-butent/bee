@@ -31,7 +31,8 @@ public class MenuPositionCallback implements PositionCallback {
     Assert.notNull(parent);
     Assert.notNull(popup);
 
-    int x, y;
+    int x;
+    int y;
 
     if (vertical) {
       x = parent.getAbsoluteLeft() + parent.getOffsetWidth() + 5;

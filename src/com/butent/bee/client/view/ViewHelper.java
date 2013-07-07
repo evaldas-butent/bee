@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class ViewHelper {
+public final class ViewHelper {
   
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
 

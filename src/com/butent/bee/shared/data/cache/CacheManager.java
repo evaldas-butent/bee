@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class CacheManager implements HandlesAllDataEvents {
 
-  private class Entry implements HasExtendedInfo, HasViewName, CellUpdateEvent.Handler {
+  private final class Entry implements HasExtendedInfo, HasViewName, CellUpdateEvent.Handler {
 
     private final DataInfo dataInfo;
     
@@ -487,7 +487,7 @@ public class CacheManager implements HandlesAllDataEvents {
     }
   }
 
-  private String normalizeKey(String key) {
+  private static String normalizeKey(String key) {
     return BeeUtils.normalize(key);
   }
 }

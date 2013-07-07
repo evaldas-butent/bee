@@ -44,12 +44,12 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
   private final Element itemContainer;
   private final CustomDiv counter;
 
-  private int itemCount = 0;
+  private int itemCount;
 
-  private String searchQuery = null;
-  private int numberOfHiddenItems = 0;
+  private String searchQuery;
+  private int numberOfHiddenItems;
 
-  private boolean hasSelectionHandler = false;
+  private boolean hasSelectionHandler;
 
   public IndexSelector(String styleName) {
     super(styleName);
@@ -164,8 +164,9 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
 
     int hideCnt = 0;
 
-    for (Element itemElement = itemContainer.getFirstChildElement(); itemElement != null; itemElement =
-        itemElement.getNextSiblingElement()) {
+    for (Element itemElement = itemContainer.getFirstChildElement(); itemElement != null;
+        itemElement = itemElement.getNextSiblingElement()) {
+
       if (StyleUtils.hasClassName(itemElement, STYLE_ITEM)) {
         boolean match = matches(itemElement, newQuery);
         StyleUtils.setVisible(itemElement, match);
@@ -202,7 +203,7 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
     return searchQuery;
   }
 
-  private boolean matches(Element itemElement, String query) {
+  private static boolean matches(Element itemElement, String query) {
     return BeeUtils.isEmpty(query)
         ? true : BeeUtils.containsSame(itemElement.getInnerText(), query);
   }

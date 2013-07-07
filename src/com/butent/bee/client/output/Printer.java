@@ -25,7 +25,7 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.html.Window;
 
-public class Printer {
+public final class Printer {
 
   private static final BeeLogger logger = LogUtils.getLogger(Printer.class);
 
@@ -34,18 +34,18 @@ public class Printer {
   private static final int DELAY_MS = 100;
   private static final int NUMBER_OF_ATTEMPTS = 10;
 
-  private static final String HTML_START = "<!doctype html><html><head>" +
-      "<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">" +
-      "<style type=\"text/css\">";
+  private static final String HTML_START = "<!doctype html><html><head>"
+      + "<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">"
+      + "<style type=\"text/css\">";
   private static final String HTML_MIDDLE = "</style></head><body>";
   private static final String HTML_END = "</body></html>";
 
   private static final String WINDOW_FEATURES = "resizable,scrollbars,menubar,toolbar";
 
   private static final boolean useFrame = BrowsingContext.isChrome();
-  private static Frame frame = null;
+  private static Frame frame;
 
-  private static String cssRules = null;
+  private static String cssRules;
 
   public static void onInjectStyleSheet(String css) {
     if (!BeeUtils.isEmpty(css)) {
@@ -160,7 +160,7 @@ public class Printer {
     frame.print();
     frame.clear();
   }
-  
+
   private static void printUsingFrame(String html, final Printable widget) {
     if (frame == null) {
       createFrame(html);
@@ -169,7 +169,7 @@ public class Printer {
     }
 
     Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
-      int counter = 0;
+      int counter;
 
       @Override
       public boolean execute() {
@@ -179,7 +179,7 @@ public class Printer {
           logger.warning("print attempt", counter, "failed");
           return counter < NUMBER_OF_ATTEMPTS;
         }
-        
+
         frame.getContentDocument().setTitle(BeeUtils.trim(widget.getCaption()));
         prepareElements(elements, widget);
 
@@ -188,7 +188,7 @@ public class Printer {
       }
     }, DELAY_MS);
   }
-  
+
   private static void printUsingNewWindow(String html, final Printable widget) {
     if (cssRules == null) {
       cssRules = StyleUtils.getRules();
@@ -199,7 +199,7 @@ public class Printer {
       logger.warning("print: cannot open new window");
       return;
     }
-    
+
     Document document = window.getDocument();
     document.open();
 
@@ -208,20 +208,20 @@ public class Printer {
     document.writeln(HTML_MIDDLE);
     document.writeln(html);
     document.write(HTML_END);
-    
+
     document.close();
-    
+
     String caption = widget.getCaption();
     if (!BeeUtils.isEmpty(caption)) {
       document.setTitle(caption);
     }
-    
+
     NodeList<Element> elements = getElements(document);
     prepareElements(elements, widget);
 
     window.print();
   }
-  
+
   private Printer() {
     super();
   }

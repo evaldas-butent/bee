@@ -85,7 +85,7 @@ import java.util.Set;
 
 class TaskEditor extends AbstractFormInterceptor {
 
-  private static class TaskDialog extends DialogBox {
+  private static final class TaskDialog extends DialogBox {
 
     private static final String STYLE_DIALOG = CRM_STYLE_PREFIX + "taskDialog";
     private static final String STYLE_CELL = "Cell";
@@ -497,7 +497,8 @@ class TaskEditor extends AbstractFormInterceptor {
     return false;
   }
 
-  private void addDurationCell(HtmlTable display, int row, int col, String value, String style) {
+  private static void addDurationCell(HtmlTable display, int row, int col, String value,
+      String style) {
     Widget widget = new CustomDiv(STYLE_DURATION + style);
     if (!BeeUtils.isEmpty(value)) {
       widget.getElement().setInnerText(value);
@@ -506,7 +507,7 @@ class TaskEditor extends AbstractFormInterceptor {
     display.setWidget(row, col, widget, STYLE_DURATION + style + STYLE_DURATION_CELL);
   }
 
-  private Widget createEventCell(String colName, String value) {
+  private static Widget createEventCell(String colName, String value) {
     Widget widget = new CustomDiv(STYLE_EVENT + colName);
     if (!BeeUtils.isEmpty(value)) {
       widget.getElement().setInnerText(value);
@@ -999,7 +1000,7 @@ class TaskEditor extends AbstractFormInterceptor {
     dialog.display();
   }
 
-  private List<StoredFile> filterEventFiles(List<StoredFile> input, long teId) {
+  private static List<StoredFile> filterEventFiles(List<StoredFile> input, long teId) {
     if (input.isEmpty()) {
       return input;
     }
@@ -1018,7 +1019,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
 
-  private String getDeleteNote(String label, String value) {
+  private static String getDeleteNote(String label, String value) {
     return BeeUtils.join(": ", label, BeeUtils.joinWords("pašalinta", value));
   }
 
@@ -1026,7 +1027,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return getLong(COL_EXECUTOR);
   }
 
-  private String getInsertNote(String label, String value) {
+  private static String getInsertNote(String label, String value) {
     return BeeUtils.join(": ", label, BeeUtils.joinWords("įtraukta", value));
   }
 
@@ -1034,7 +1035,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getLong(getFormView().getDataIndex(colName));
   }
 
-  private MultiSelector getMultiSelector(FormView form, String source) {
+  private static MultiSelector getMultiSelector(FormView form, String source) {
     Widget widget = form.getWidgetBySource(source);
     return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
@@ -1053,7 +1054,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return getLong(COL_OWNER);
   }
 
-  private BeeRow getResponseRow(String caption, ResponseObject ro, Callback<?> callback) {
+  private static BeeRow getResponseRow(String caption, ResponseObject ro, Callback<?> callback) {
     if (!Queries.checkResponse(caption, VIEW_TASKS, ro, BeeRow.class, callback)) {
       return null;
     }
@@ -1073,7 +1074,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getId();
   }
 
-  private String getTaskUsers(FormView form, IsRow row) {
+  private static String getTaskUsers(FormView form, IsRow row) {
     return DataUtils.buildIdList(CrmUtils.getTaskUsers(row, form.getDataColumns()));
   }
 
@@ -1091,11 +1092,11 @@ class TaskEditor extends AbstractFormInterceptor {
     return updatedRelations;
   }
 
-  private String getUpdateNote(String label, String oldValue, String newValue) {
+  private static String getUpdateNote(String label, String oldValue, String newValue) {
     return BeeUtils.join(": ", label, BeeUtils.join(" -> ", oldValue, newValue));
   }
 
-  private List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
+  private static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
     List<String> notes = Lists.newArrayList();
     if (dataInfo == null || oldRow == null || newRow == null) {
       return notes;
@@ -1137,7 +1138,7 @@ class TaskEditor extends AbstractFormInterceptor {
       if (event == TaskEvent.COMMENT) {
         return true;
       } else if (userId == executor && TaskStatus.in(status, TaskStatus.ACTIVE)) {
-        return (event == TaskEvent.FORWARD || event == TaskEvent.COMPLETE);
+        return event == TaskEvent.FORWARD || event == TaskEvent.COMPLETE;
       } else {
         return false;
       }
@@ -1200,7 +1201,7 @@ class TaskEditor extends AbstractFormInterceptor {
     form.updateRow(data, true);
   }
 
-  private String renderDuration(long millis) {
+  private static String renderDuration(long millis) {
     return TimeUtils.renderTime(millis, false);
   }
 
@@ -1258,7 +1259,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
 
-  private void sendRequest(ParameterList params, final Callback<ResponseObject> callback) {
+  private static void sendRequest(ParameterList params, final Callback<ResponseObject> callback) {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -1294,7 +1295,7 @@ class TaskEditor extends AbstractFormInterceptor {
     sendRequest(params, callback);
   }
 
-  private boolean setDurationParams(TaskDialog dialog, Map<String, String> ids,
+  private static boolean setDurationParams(TaskDialog dialog, Map<String, String> ids,
       ParameterList params) {
     String time = dialog.getTime(ids.get(COL_DURATION));
 
@@ -1318,7 +1319,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return true;
   }
 
-  private void showDurations(FormView form, Table<String, String, Long> durations) {
+  private static void showDurations(FormView form, Table<String, String, Long> durations) {
     Widget widget = form.getWidgetByName(VIEW_TASK_DURATIONS);
     if (!(widget instanceof Flow)) {
       return;
@@ -1391,12 +1392,13 @@ class TaskEditor extends AbstractFormInterceptor {
     panel.add(display);
   }
 
-  private void showError(String message) {
+  private static void showError(String message) {
     Global.showError("Klaida", Lists.newArrayList(message));
   }
 
-  private void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns, List<StoredFile> files,
-      Table<String, String, Long> durations, boolean renderPhoto) {
+  private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,
+      List<StoredFile> files, Table<String, String, Long> durations, boolean renderPhoto) {
+
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
@@ -1497,7 +1499,9 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
 
-  private void showEventsAndDuration(FormView form, BeeRowSet rowSet, List<StoredFile> files) {
+  private static void showEventsAndDuration(FormView form, BeeRowSet rowSet,
+      List<StoredFile> files) {
+    
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;
@@ -1538,7 +1542,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
 
-  private void showExtensions(FormView form, BeeRowSet rowSet) {
+  private static void showExtensions(FormView form, BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return;
     }

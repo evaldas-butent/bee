@@ -50,10 +50,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     NotificationListener {
 
   protected enum SupplierAction implements HasCaption {
-    ALL(Localized.constants.filterAll()),
-    CLEAR(Localized.constants.clear()),
-    COMMIT(Localized.constants.doFilter()),
-    CANCEL(Localized.constants.cancel());
+    ALL(Localized.getConstants().filterAll()),
+    CLEAR(Localized.getConstants().clear()),
+    COMMIT(Localized.getConstants().doFilter()),
+    CANCEL(Localized.getConstants().cancel());
 
     private final String caption;
 
@@ -71,8 +71,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
   }
 
-  protected static final String NULL_VALUE_LABEL = Localized.constants.filterNullLabel();
-  protected static final String NOT_NULL_VALUE_LABEL = Localized.constants.filterNotNullLabel();
+  protected static final String NULL_VALUE_LABEL = Localized.getConstants().filterNullLabel();
+  protected static final String NOT_NULL_VALUE_LABEL =
+      Localized.getConstants().filterNotNullLabel();
 
   protected static final String DEFAULT_STYLE_PREFIX = "bee-FilterSupplier-";
 
@@ -85,18 +86,18 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
   private String options;
 
-  private boolean filterChanged = false;
+  private boolean filterChanged;
 
-  private Popup dialog = null;
+  private Popup dialog;
 
-  private Filter effectiveFilter = null;
-  private String counterId = null;
+  private Filter effectiveFilter;
+  private String counterId;
 
-  private int counterValue = 0;
+  private int counterValue;
 
   private final List<Integer> selectedItems = Lists.newArrayList();
 
-  private String displayId = null;
+  private String displayId;
 
   public AbstractFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     this.viewName = viewName;
@@ -462,11 +463,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String messageAllEmpty(String count) {
-    return Localized.messages.allValuesEmpty(getColumnLabel(), count);
+    return Localized.getMessages().allValuesEmpty(getColumnLabel(), count);
   }
 
   protected String messageOneValue(String value, String count) {
-    return Localized.messages.allValuesIdentical(getColumnLabel(), value, count);
+    return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
   }
 
   protected void openDialog(Element target, Widget widget,

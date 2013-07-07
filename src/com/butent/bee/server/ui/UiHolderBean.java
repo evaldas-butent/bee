@@ -265,7 +265,7 @@ public class UiHolderBean {
     Menu xmlMenu = loadXmlMenu(Config.getPath(moduleBean.getResourcePath(moduleName,
         UiObject.MENU.getPath(), UiObject.MENU.getFileName(menuName))));
 
-    boolean ok = (xmlMenu != null);
+    boolean ok = xmlMenu != null;
     if (ok) {
       xmlMenu.setModuleName(moduleName);
       register("menu", xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName),
@@ -345,11 +345,11 @@ public class UiHolderBean {
     }
   }
 
-  private String key(String name) {
+  private static String key(String name) {
     return BeeUtils.normalize(name);
   }
 
-  private <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
+  private static <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
       String moduleName) {
 
     if (object != null) {
@@ -362,7 +362,7 @@ public class UiHolderBean {
     }
   }
 
-  private void unregister(String objectName, Map<String, ?> cache) {
+  private static void unregister(String objectName, Map<String, ?> cache) {
     if (!BeeUtils.isEmpty(objectName)) {
       cache.remove(key(objectName));
     }

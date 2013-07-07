@@ -10,7 +10,7 @@ import javax.servlet.ServletRequestListener;
  */
 
 public class RequestListener implements ServletRequestListener {
-  private String attrCnt = null;
+  private String attrCnt;
 
   public RequestListener() {
     super();
@@ -31,5 +31,4 @@ public class RequestListener implements ServletRequestListener {
     sre.getServletRequest().setAttribute(attrCnt, new Counter());
     sre.getServletContext().log("request initialized");
   }
-
 }

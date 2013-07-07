@@ -11,7 +11,7 @@ import java.util.Collection;
  * Enables operations with file names, paths, extensions, read and change them.
  */
 
-public class FileNameUtils {
+public final class FileNameUtils {
   /**
    * Contains a list of possible name components like prefix, path, extension and so on.
    */
@@ -192,7 +192,7 @@ public class FileNameUtils {
       if (ch0 == '~') {
         return 2;
       }
-      return (isSeparator(ch0) ? 1 : 0);
+      return isSeparator(ch0) ? 1 : 0;
     } else {
       if (ch0 == '~') {
         int posUnix = filename.indexOf(UNIX_SEPARATOR, 1);
@@ -200,15 +200,15 @@ public class FileNameUtils {
         if (posUnix == -1 && posWin == -1) {
           return len + 1;
         }
-        posUnix = (posUnix == -1 ? posWin : posUnix);
-        posWin = (posWin == -1 ? posUnix : posWin);
+        posUnix = (posUnix == -1) ? posWin : posUnix;
+        posWin = (posWin == -1) ? posUnix : posWin;
         return Math.min(posUnix, posWin) + 1;
       }
       char ch1 = filename.charAt(1);
       if (ch1 == ':') {
         ch0 = Character.toUpperCase(ch0);
         if (ch0 >= 'A' && ch0 <= 'Z') {
-          if (len == 2 || isSeparator(filename.charAt(2)) == false) {
+          if (len == 2 || !isSeparator(filename.charAt(2))) {
             return 2;
           }
           return 3;
@@ -221,11 +221,11 @@ public class FileNameUtils {
         if ((posUnix == -1 && posWin == -1) || posUnix == 2 || posWin == 2) {
           return -1;
         }
-        posUnix = (posUnix == -1 ? posWin : posUnix);
-        posWin = (posWin == -1 ? posUnix : posWin);
+        posUnix = (posUnix == -1) ? posWin : posUnix;
+        posWin = (posWin == -1) ? posUnix : posWin;
         return Math.min(posUnix, posWin) + 1;
       } else {
-        return (isSeparator(ch0) ? 1 : 0);
+        return isSeparator(ch0) ? 1 : 0;
       }
     }
   }
@@ -248,7 +248,7 @@ public class FileNameUtils {
     }
     int extensionPos = filename.lastIndexOf(EXTENSION_SEPARATOR);
     int lastSeparator = indexOfLastSeparator(filename);
-    return (lastSeparator > extensionPos ? -1 : extensionPos);
+    return (lastSeparator > extensionPos) ? -1 : extensionPos;
   }
 
   public static int indexOfLastSeparator(String filename) {
@@ -265,7 +265,7 @@ public class FileNameUtils {
       return false;
     }
     if (extensions == null || extensions.isEmpty()) {
-      return (indexOfExtension(filename) == -1);
+      return indexOfExtension(filename) == -1;
     }
     String fileExt = getExtension(filename);
     for (String extension : extensions) {
@@ -281,7 +281,7 @@ public class FileNameUtils {
       return false;
     }
     if (extension == null || extension.length() == 0) {
-      return (indexOfExtension(filename) == -1);
+      return indexOfExtension(filename) == -1;
     }
     String fileExt = getExtension(filename);
     return fileExt.equals(extension);
@@ -292,7 +292,7 @@ public class FileNameUtils {
       return false;
     }
     if (extensions == null || extensions.length == 0) {
-      return (indexOfExtension(filename) == -1);
+      return indexOfExtension(filename) == -1;
     }
     String fileExt = getExtension(filename);
     for (String extension : extensions) {
@@ -327,7 +327,7 @@ public class FileNameUtils {
   }
 
   public static String normalize(String filename, boolean unixSeparator) {
-    char separator = (unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR);
+    char separator = unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR;
     return doNormalize(filename, separator, true);
   }
 
@@ -336,7 +336,7 @@ public class FileNameUtils {
   }
 
   public static String normalizeNoEndSeparator(String filename, boolean unixSeparator) {
-    char separator = (unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR);
+    char separator = unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR;
     return doNormalize(filename, separator, false);
   }
 
@@ -435,7 +435,7 @@ public class FileNameUtils {
     char[] array = new char[size + 2];
     filename.getChars(0, filename.length(), array, 0);
 
-    char otherSeparator = (separator == SYSTEM_SEPARATOR ? OTHER_SEPARATOR : SYSTEM_SEPARATOR);
+    char otherSeparator = (separator == SYSTEM_SEPARATOR) ? OTHER_SEPARATOR : SYSTEM_SEPARATOR;
     for (int i = 0; i < array.length; i++) {
       if (array[i] == otherSeparator) {
         array[i] = separator;
@@ -457,8 +457,8 @@ public class FileNameUtils {
     }
 
     for (int i = prefix + 1; i < size; i++) {
-      if (array[i] == separator && array[i - 1] == '.' &&
-                    (i == prefix + 1 || array[i - 2] == separator)) {
+      if (array[i] == separator && array[i - 1] == '.' 
+          && (i == prefix + 1 || array[i - 2] == separator)) {
         if (i == size - 1) {
           lastIsDirectory = true;
         }
@@ -469,8 +469,8 @@ public class FileNameUtils {
     }
 
     outer : for (int i = prefix + 2; i < size; i++) {
-      if (array[i] == separator && array[i - 1] == '.' && array[i - 2] == '.' &&
-                    (i == prefix + 2 || array[i - 3] == separator)) {
+      if (array[i] == separator && array[i - 1] == '.' && array[i - 2] == '.' 
+          && (i == prefix + 2 || array[i - 3] == separator)) {
         if (i == prefix + 2) {
           return null;
         }
@@ -481,13 +481,13 @@ public class FileNameUtils {
         for (j = i - 4; j >= prefix; j--) {
           if (array[j] == separator) {
             System.arraycopy(array, i + 1, array, j + 1, size - i);
-            size -= (i - j);
+            size -= i - j;
             i = j + 1;
             continue outer;
           }
         }
         System.arraycopy(array, i + 1, array, prefix, size - i);
-        size -= (i + 1 - prefix);
+        size -= i + 1 - prefix;
         i = prefix + 1;
       }
     }

@@ -37,7 +37,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class Stack extends ComplexPanel implements ProvidesResize, RequiresResize,
     HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, IdentifiableWidget {
 
-  private static class Header extends Composite implements HasClickHandlers, ProvidesResize,
+  private static final class Header extends Composite implements HasClickHandlers, ProvidesResize,
       RequiresResize {
 
     private final int size;
@@ -78,7 +78,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
   }
   
-  private static class Revelation extends RafCallback {
+  private static final class Revelation extends RafCallback {
     private static final double FROM = 0.2;
     private static final double TO = 1.0;
 

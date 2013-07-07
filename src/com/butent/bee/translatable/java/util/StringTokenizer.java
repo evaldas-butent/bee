@@ -24,7 +24,7 @@ public class StringTokenizer implements Enumeration<Object> {
    * tokenizer uses the different code path. This is because String.indexOf(int) doesn't handle
    * unpaired surrogates as a single character.
    */
-  private boolean hasSurrogates = false;
+  private boolean hasSurrogates;
 
   /**
    * When hasSurrogates is true, delimiters are converted to code points and isDelimiter(int) is
@@ -138,7 +138,7 @@ public class StringTokenizer implements Enumeration<Object> {
      * delimiters haven't been changed in that nextToken() invocation.
      */
     newPosition = skipDelimiters(currentPosition);
-    return (newPosition < maxPosition);
+    return newPosition < maxPosition;
   }
 
   /**
@@ -167,8 +167,8 @@ public class StringTokenizer implements Enumeration<Object> {
      * the computation and this invocation, then use the computed value.
      */
 
-    currentPosition = (newPosition >= 0 && !delimsChanged) ?
-          newPosition : skipDelimiters(currentPosition);
+    currentPosition = (newPosition >= 0 && !delimsChanged) 
+        ? newPosition : skipDelimiters(currentPosition);
 
     /* Reset these anyway */
     delimsChanged = false;

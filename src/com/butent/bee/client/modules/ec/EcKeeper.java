@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EcKeeper {
+public final class EcKeeper {
 
   private static final BeeLogger logger = LogUtils.getLogger(EcKeeper.class);
 
@@ -58,9 +58,9 @@ public class EcKeeper {
 
   private static final CartList cartList = new CartList();
 
-  private static EcCommandWidget activeCommand = null;
+  private static EcCommandWidget activeCommand;
 
-  private static boolean debug = false;
+  private static boolean debug;
 
   private static Set<EcRequest> pendingRequests = Sets.newHashSet();
 
@@ -270,7 +270,7 @@ public class EcKeeper {
     BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
-        editConfigurationHtml(Localized.constants.ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
+        editConfigurationHtml(Localized.getConstants().ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
             COL_CONFIG_TOD_HTML);
       }
     });
@@ -278,7 +278,7 @@ public class EcKeeper {
     BeeKeeper.getMenu().registerMenuCallback("edit_ec_contacts", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
-        editConfigurationHtml(Localized.constants.ecContacts(), COL_CONFIG_CONTACTS_URL,
+        editConfigurationHtml(Localized.getConstants().ecContacts(), COL_CONFIG_CONTACTS_URL,
             COL_CONFIG_CONTACTS_HTML);
       }
     });
@@ -371,7 +371,8 @@ public class EcKeeper {
   }
 
   public static boolean toggleDebug() {
-    return debug = !isDebug();
+    debug = !isDebug();
+    return debug;
   }
 
   static void doCommand(EcCommandWidget commandWidget) {
@@ -409,7 +410,7 @@ public class EcKeeper {
       return true;
     } else {
       BeeKeeper.getScreen().notifyWarning(
-          Localized.messages.minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
+          Localized.getMessages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
       return false;
     }
   }

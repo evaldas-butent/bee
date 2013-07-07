@@ -8,7 +8,7 @@ import java.util.Collection;
  * Implements support for left, right, inner and full joins and lists for SQL statements.
  */
 
-class FromJoin extends FromSource {
+final class FromJoin extends FromSource {
 
   /**
    * Contains a list of all JOIN modes.

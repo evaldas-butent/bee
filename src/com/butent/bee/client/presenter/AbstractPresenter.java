@@ -4,7 +4,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 
 public abstract class AbstractPresenter implements Presenter {
 
-  private String eventSource = null;
+  private String eventSource;
   
   @Override
   public String getEventSource() {

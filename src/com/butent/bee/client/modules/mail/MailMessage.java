@@ -76,9 +76,9 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final int ADDR_EMAIL = 1;
   private static final int ADDR_LABEL = 2;
 
-  private Long account = null;
-  private List<AccountInfo> accounts = null;
-  private Long sender = null;
+  private Long account;
+  private List<AccountInfo> accounts;
+  private Long sender;
   private final Multimap<String, String[]> recipients = HashMultimap.create();
   private final List<String[]> attachments = Lists.newArrayList();
   private final Map<String, Widget> widgets = Maps.newHashMap();

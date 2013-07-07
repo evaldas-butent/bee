@@ -51,26 +51,26 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private EditorType type;
 
-  private Integer valueStartIndex = null;
-  private Integer stepValue = null;
+  private Integer valueStartIndex;
+  private Integer stepValue;
 
-  private Integer characterWidth = null;
-  private Integer visibleLines = null;
+  private Integer characterWidth;
+  private Integer visibleLines;
 
-  private String format = null;
-  private Boolean upperCase = null;
+  private String format;
+  private Boolean upperCase;
 
-  private Integer width = null;
-  private Integer height = null;
+  private Integer width;
+  private Integer height;
 
-  private Integer minWidth = null;
-  private Integer minHeight = null;
+  private Integer minWidth;
+  private Integer minHeight;
 
-  private EditorAction onEntry = null;
+  private EditorAction onEntry;
 
-  private String options = null;
+  private String options;
 
-  private List<String> items = null;
+  private List<String> items;
 
   public EditorDescription(EditorType type) {
     this.type = type;

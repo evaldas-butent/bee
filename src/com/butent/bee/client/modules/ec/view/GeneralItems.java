@@ -10,7 +10,7 @@ class GeneralItems extends EcView {
 
   @Override
   protected void createUi() {
-    add(renderNoData(Localized.constants.ecGeneralItems()));
+    add(renderNoData(Localized.getConstants().ecGeneralItems()));
   }
 
   @Override

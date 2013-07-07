@@ -36,8 +36,8 @@ import java.util.Collection;
 
 public class CargoRequestsGrid extends AbstractGridInterceptor {
 
-  private InputBoolean owned = null;
-  private InputBoolean finished = null;
+  private InputBoolean owned;
+  private InputBoolean finished;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -101,7 +101,7 @@ public class CargoRequestsGrid extends AbstractGridInterceptor {
     GridView gridView = presenter.getGridView();
 
     boolean enabled =
-        (activeRow.getDateTime(gridView.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) == null);
+        activeRow.getDateTime(gridView.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) == null;
 
     if (enabled) {
       Long author = activeRow.getLong(gridView.getDataIndex("Creator"));

@@ -54,8 +54,8 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
   private final Set<Integer> selectedCategories = Sets.newHashSet();
   private final Set<String> selectedManufacturers = Sets.newHashSet();
 
-  private Flow manufacturerWrapper = null;
-  private ItemList itemWrapper = null;
+  private Flow manufacturerWrapper;
+  private ItemList itemWrapper;
 
   public ItemPanel() {
     super(EcStyles.name(STYLE_PRIMARY));
@@ -182,7 +182,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     }
   }
 
-  private List<String> getManufacturers(List<EcItem> input) {
+  private static List<String> getManufacturers(List<EcItem> input) {
     List<String> result = Lists.newArrayList();
 
     int size = input.size();
@@ -229,7 +229,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     }
 
     if (!selectable) {
-      Label caption = new Label(Localized.constants.ecItemCategory());
+      Label caption = new Label(Localized.getConstants().ecItemCategory());
       EcStyles.add(caption, STYLE_CATEGORIES, STYLE_CAPTION);
       panel.add(caption);
     }
@@ -305,8 +305,8 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     }
 
     if (!input.isEmpty()) {
-      String caption = selectable
-          ? Localized.constants.ecSelectManufacturer() : Localized.constants.ecItemManufacturer();
+      String caption = selectable ? Localized.getConstants().ecSelectManufacturer() 
+          : Localized.getConstants().ecItemManufacturer();
       Label label = new Label(caption);
       EcStyles.add(label, STYLE_MANUFACTURERS, STYLE_CAPTION);
       manufacturerWrapper.add(label);

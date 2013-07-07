@@ -25,7 +25,7 @@ abstract class Component extends Composite {
     getDatePicker().refreshAll();
   }
 
-  protected abstract void setup();
+  protected abstract void setUp();
 
   void setDatePicker(DatePicker datePicker) {
     this.datePicker = datePicker;

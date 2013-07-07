@@ -41,7 +41,7 @@ public class MailProxy {
 
   @Lock(LockType.WRITE)
   public ResponseObject initServer() {
-    teardownServer();
+    tearDownServer();
     ResponseObject response = new ResponseObject();
 
     if (initParameters(Protocol.POP3)) {
@@ -116,7 +116,7 @@ public class MailProxy {
 
   @PreDestroy
   private void destroy() {
-    teardownServer();
+    tearDownServer();
   }
 
   private boolean initParameters(Protocol protocol) {
@@ -174,14 +174,14 @@ public class MailProxy {
     }
   }
 
-  private void teardownServer() {
+  private void tearDownServer() {
     if (pop3Proxy != null) {
-      pop3Proxy.teardown();
+      pop3Proxy.tearDown();
       resetParameters(Protocol.POP3);
       logger.info("POP3 proxy closed");
     }
     if (smtpProxy != null) {
-      smtpProxy.teardown();
+      smtpProxy.tearDown();
       resetParameters(Protocol.SMTP);
       logger.info("SMTP proxy closed");
     }

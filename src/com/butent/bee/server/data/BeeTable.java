@@ -56,7 +56,7 @@ import java.util.Set;
 public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslations,
     HasExtendedInfo {
 
-  public class BeeCheck {
+  public final class BeeCheck {
     private final String tblName;
     private final String name;
     private final String expression;
@@ -98,7 +98,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final String label;
     private final boolean auditable;
 
-    private BeeField(XmlField xmlField, boolean extended) {
+    protected BeeField(XmlField xmlField, boolean extended) {
       this.name = xmlField.name;
       this.type = NameUtils.getEnumByName(SqlDataType.class, xmlField.type);
 
@@ -203,7 +203,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  public class BeeForeignKey {
+  public final class BeeForeignKey {
     private final String tblName;
     private final String name;
     private final List<String> keyFields;
@@ -252,7 +252,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  public class BeeIndex {
+  public final class BeeIndex {
     private final String tblName;
     private final String name;
     private final List<String> indexFields;
@@ -287,7 +287,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  public class BeeRelation extends BeeField {
+  public final class BeeRelation extends BeeField {
     private final String relation;
     private final SqlKeyword cascade;
     private final boolean editable;
@@ -323,7 +323,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  public class BeeTrigger {
+  public final class BeeTrigger {
     private final String tblName;
     private final SqlTriggerType type;
     private final Map<String, ?> parameters;
@@ -379,7 +379,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  public class BeeUniqueKey {
+  public final class BeeUniqueKey {
     private final String tblName;
     private final String name;
     private final List<String> keyFields;
@@ -911,7 +911,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final HasStates stateSource;
   private final HasTranslations translationSource;
 
-  private boolean active = false;
+  private boolean active;
 
   BeeTable(String moduleName, XmlTable xmlTable, boolean noAudit) {
     Assert.notEmpty(xmlTable.name);
@@ -1278,14 +1278,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     fields.put(BeeUtils.normalize(fieldName), field);
   }
 
-  void addForeignKey(String tblName, List<String> fields, String refTable, List<String> refFields,
+  void addForeignKey(String tblName, List<String> flds, String refTable, List<String> refFields,
       SqlKeyword cascade) {
-    BeeForeignKey fKey = new BeeForeignKey(tblName, fields, refTable, refFields, cascade);
+    BeeForeignKey fKey = new BeeForeignKey(tblName, flds, refTable, refFields, cascade);
     foreignKeys.put(BeeUtils.normalize(fKey.getName()), fKey);
   }
 
-  void addIndex(String tblName, List<String> fields, boolean unique) {
-    BeeIndex index = new BeeIndex(tblName, fields, unique);
+  void addIndex(String tblName, List<String> flds, boolean unique) {
+    BeeIndex index = new BeeIndex(tblName, flds, unique);
     indexes.put(BeeUtils.normalize(index.getName()), index);
   }
 
@@ -1296,8 +1296,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     triggers.put(BeeUtils.normalize(trigger.getName()), trigger);
   }
 
-  void addUniqueKey(String tblName, List<String> fields) {
-    BeeUniqueKey uniqueKey = new BeeUniqueKey(tblName, fields);
+  void addUniqueKey(String tblName, List<String> flds) {
+    BeeUniqueKey uniqueKey = new BeeUniqueKey(tblName, flds);
     uniqueKeys.put(BeeUtils.normalize(uniqueKey.getName()), uniqueKey);
   }
 

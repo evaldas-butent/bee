@@ -48,7 +48,7 @@ class CalendarCache implements HandlesAllDataEvents {
 
   private final Map<String, List<Callback>> callbacks = Maps.newHashMap();
 
-  private DataInfo appointmentViewInfo = null;
+  private DataInfo appointmentViewInfo;
 
   CalendarCache() {
     super();
@@ -170,7 +170,7 @@ class CalendarCache implements HandlesAllDataEvents {
 
     } else {
       Callback callback = new Callback() {
-        private boolean consumed = false;
+        private boolean consumed;
 
         @Override
         public void onSuccess(BeeRowSet result) {

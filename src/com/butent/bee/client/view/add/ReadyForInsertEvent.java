@@ -37,7 +37,7 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
   private final Collection<RowChildren> children;
   private final RowCallback callback;
 
-  private boolean consumed = false;
+  private boolean consumed;
 
   public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values,
       Collection<RowChildren> children, RowCallback callback) {

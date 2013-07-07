@@ -39,14 +39,14 @@ import java.util.Map;
 
 public class AsyncProvider extends Provider {
 
-  private class QueryCallback extends Queries.RowSetCallback {
+  private final class QueryCallback extends Queries.RowSetCallback {
 
     private final Range<Integer> queryRange;
 
     private Range<Integer> displayRange;
     private boolean updateActiveRow;
 
-    private Integer rpcId = null;
+    private Integer rpcId;
     private long startTime;
 
     private QueryCallback(Range<Integer> queryRange, Range<Integer> displayRange,
@@ -137,8 +137,8 @@ public class AsyncProvider extends Provider {
 
     private QueryCallback callback;
 
-    private boolean active = false;
-    private long lastTime = 0;
+    private boolean active;
+    private long lastTime;
 
     @Override
     public void cancel() {
@@ -212,11 +212,11 @@ public class AsyncProvider extends Provider {
   private static final int DEFAULT_MIN_PREFETCH_STEPS = 1;
   private static final int DEFAULT_MAX_PREFETCH_STEPS = 100;
 
-  private static int sensitivityMillis = 0;
-  private static int maxRepeatMillis = 0;
+  private static int sensitivityMillis;
+  private static int maxRepeatMillis;
 
-  private static int minPrefetchSteps = 0;
-  private static int maxPrefetchSteps = 0;
+  private static int minPrefetchSteps;
+  private static int maxPrefetchSteps;
 
   private final CachingPolicy cachingPolicy;
   private final boolean enablePrefetch;
@@ -224,15 +224,15 @@ public class AsyncProvider extends Provider {
   private final Map<Integer, QueryCallback> pendingRequests = Maps.newLinkedHashMap();
   private final RequestScheduler requestScheduler = new RequestScheduler();
 
-  private int lastOffset = 0;
+  private int lastOffset;
 
-  private int rpcCount = 0;
-  private long rpcMillis = 0;
+  private int rpcCount;
+  private long rpcMillis;
 
-  private int repeatStep = 0;
-  private long lastRepeatTime = 0;
+  private int repeatStep;
+  private long lastRepeatTime;
 
-  private boolean prefetchPending = false;
+  private boolean prefetchPending;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, CachingPolicy cachingPolicy) {
@@ -507,7 +507,7 @@ public class AsyncProvider extends Provider {
     }
   }
 
-  private Range<Integer> createRange(int offset, int limit) {
+  private static Range<Integer> createRange(int offset, int limit) {
     if (limit > 0) {
       return Range.closedOpen(offset, offset + limit);
     } else {

@@ -558,7 +558,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   public boolean hasRelation(String colName) {
     ViewColumn viewColumn = getViewColumn(colName);
-    return (viewColumn != null && !BeeUtils.isEmpty(viewColumn.getRelation()));
+    return viewColumn != null && !BeeUtils.isEmpty(viewColumn.getRelation());
   }
 
   public boolean isColumnIndex(int index) {
@@ -599,7 +599,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return cacheEviction;
   }
   
-  private boolean hasEditableRelation(ViewColumn viewColumn) {
+  private static boolean hasEditableRelation(ViewColumn viewColumn) {
     if (viewColumn == null) {
       return false;
     } else {

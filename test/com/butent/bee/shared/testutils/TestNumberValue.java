@@ -15,6 +15,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.data.value.NumberValue}.
  */
+@SuppressWarnings("static-method")
 public class TestNumberValue {
 
   @Before

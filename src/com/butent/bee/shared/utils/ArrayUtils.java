@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Contains methods for processing arrays.
  */
-public class ArrayUtils {
+public final class ArrayUtils {
   /**
    * Searches the specified collection for a value.
    * 
@@ -143,7 +143,7 @@ public class ArrayUtils {
       return false;
     } else {
       int n = length(obj);
-      return (n > 0 && idx < n);
+      return n > 0 && idx < n;
     }
   }
 

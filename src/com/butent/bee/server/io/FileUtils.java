@@ -41,7 +41,7 @@ import java.util.SortedMap;
  * contents or save.
  */
 
-public class FileUtils {
+public final class FileUtils {
 
   public static final String EXT_CLASS = "class";
   public static final String EXT_JAVA = "java";

@@ -40,7 +40,7 @@ import elemental.js.JsBrowser;
  * Enables system to get information about user's browser.
  */
 
-public class BrowsingContext {
+public final class BrowsingContext {
 
   public static List<Property> getBrowserInfo() {
     Info info = JsBrowser.getInfo();

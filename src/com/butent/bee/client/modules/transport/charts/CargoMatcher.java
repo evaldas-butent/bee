@@ -4,7 +4,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-class CargoMatcher {
+final class CargoMatcher {
   
   static CargoMatcher maybeCreate(Collection<ChartData> data) {
     if (BeeUtils.isEmpty(data)) {

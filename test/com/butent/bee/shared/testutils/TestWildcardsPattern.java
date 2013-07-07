@@ -13,6 +13,7 @@ import org.junit.Test;
 /**
  * Tests {@link com.butent.bee.shared.utils.Wildcards.Pattern}.
  */
+@SuppressWarnings("static-method")
 public class TestWildcardsPattern {
 
   @Before
@@ -37,11 +38,11 @@ public class TestWildcardsPattern {
   public final void testGetTokens() {
     Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false, null);
 
-    String b[] = {"File", "*", ".txt=5"};
+    String[] b = {"File", "*", ".txt=5"};
     assertArrayEquals(b, a.getTokens());
 
     a = Wildcards.getPattern("File*.txt=5", '*', '.', false, null);
-    String c[] = {"File", ".", "*", "txt=5"};
+    String[] c = {"File", ".", "*", "txt=5"};
     assertArrayEquals(c, a.getTokens());
 
     assertEquals("File*.txt=5", a.toString());
