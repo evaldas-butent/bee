@@ -23,7 +23,7 @@ public abstract class TextBasedProtocolClient {
 
   final BeeLogger logger = LogUtils.getLogger(getClass());
 
-  protected MailProxy proxy;
+  private MailProxy proxy;
 
   private ChannelFuture future;
   private Channel serverInChannel;
@@ -70,6 +70,10 @@ public abstract class TextBasedProtocolClient {
 
   public ChannelFuture getFuture() {
     return future;
+  }
+
+  public MailProxy getProxy() {
+    return proxy;
   }
 
   protected abstract String getHost();

@@ -10,6 +10,6 @@ public class SMTPProtocolServerHandler extends TextBasedProtocolServerHandler {
 
   @Override
   public TextBasedProtocolClient getClientInstance(Channel inboundChannel, Object tl) {
-    return new SMTPProtocolClient(inboundChannel, tl, proxy);
+    return new SMTPProtocolClient(inboundChannel, tl, getProxy());
   }
 }

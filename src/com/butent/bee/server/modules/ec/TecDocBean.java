@@ -3,6 +3,9 @@ package com.butent.bee.server.modules.ec;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
+
+import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.sql.SqlCreate;
@@ -14,6 +17,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
@@ -36,14 +40,64 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import javax.xml.ws.BindingProvider;
+
+import pl.motonet.ArrayOfString;
+import pl.motonet.WSMotoOferta;
+import pl.motonet.WSMotoOfertaSoap;
 
 @Stateless
 @LocalBean
 public class TecDocBean {
 
+  static {
+    HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+      private final HostnameVerifier verifier = HttpsURLConnection.getDefaultHostnameVerifier();
+      private final String host = WSMotoOferta.WSMOTOOFERTA_WSDL_LOCATION.getHost();
+
+      @Override
+      public boolean verify(String hostname, SSLSession session) {
+        if (BeeUtils.same(hostname, host)) {
+          return true;
+        }
+        return verifier.verify(hostname, session);
+      }
+    });
+  }
+
+  private class RemoteItems {
+    private final String supplierId;
+    private final Double price;
+    private final String brand;
+    private final String articleNr;
+
+    public RemoteItems(String supplierId, String brand, String articleNr, Double price) {
+      this.supplierId = supplierId;
+      this.brand = brand;
+      this.articleNr = articleNr;
+      this.price = price;
+    }
+  }
+
+  private class RemoteRemainders {
+    private final String supplierId;
+    private final String warehouse;
+    private final Double remainder;
+
+    public RemoteRemainders(String supplierId, String warehouse, Double remainder) {
+      this.supplierId = supplierId;
+      this.warehouse = warehouse;
+      this.remainder = remainder;
+    }
+  }
+
   private static BeeLogger logger = LogUtils.getLogger(TecDocBean.class);
   private static BeeLogger messyLogger = LogUtils.getLogger(QueryServiceBean.class);
+
+  private static final String TCD_SCHEMA = "TecDoc";
 
   @EJB
   QueryServiceBean qs;
@@ -51,6 +105,8 @@ public class TecDocBean {
   SystemBean sys;
   @EJB
   TecDocRemote tcd;
+  @EJB
+  IdGeneratorBean ig;
 
   @Asynchronous
   public void justDoIt() {
@@ -58,39 +114,6 @@ public class TecDocBean {
         .getColumn(SqlConstants.TBL_NAME));
 
     String articleBrands = "TcdArticleBrands";
-    String tcdButent = SqlUtils.table("TecDoc", "TcdButent");
-    String analogs = "TcdAnalogs";
-    String tcdAnalogs = SqlUtils.table("TecDoc", analogs);
-
-    if (!names.contains(articleBrands)) {
-      qs.updateData(new SqlCreate(articleBrands, false)
-          .setDataSource(new SqlSelect()
-              .addFields(tcdAnalogs, "ArticleID", "Brand", "AnalogNr")
-              .addFields(tcdButent, "Price", "ButentID")
-              .addFrom(tcdButent)
-              .addFromInner(tcdAnalogs,
-                  SqlUtils.joinUsing(tcdButent, tcdAnalogs, "SearchNr", "Brand"))));
-
-      qs.updateData(SqlUtils.createIndex(articleBrands, "IK_" + articleBrands + "ButentID",
-          Lists.newArrayList("ButentID"), false));
-
-      qs.updateData(SqlUtils.createIndex(articleBrands, "IK_" + articleBrands + "ArticleID",
-          Lists.newArrayList("ArticleID"), false));
-    }
-    String stocks = "TcdStocks";
-    String tcdButentStocks = SqlUtils.table("TecDoc", "TcdButentStocks");
-
-    if (!names.contains(stocks)) {
-      qs.updateData(new SqlCreate(stocks, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdButentStocks)
-              .addFrom(tcdButentStocks)
-              .setWhere(SqlUtils.in(tcdButentStocks, "ButentID", articleBrands, "ButentID",
-                  null))));
-
-      qs.updateData(SqlUtils.createIndex(stocks, "IK_" + stocks + "ButentID",
-          Lists.newArrayList("ButentID"), false));
-    }
     String articles = "TcdArticles";
     String tcdArticles = SqlUtils.table("TecDoc", articles);
 
@@ -103,10 +126,6 @@ public class TecDocBean {
 
       qs.updateData(SqlUtils.createPrimaryKey(articles, "PK_" + articles,
           Lists.newArrayList("ArticleID")));
-
-      qs.updateData(SqlUtils.createForeignKey(articleBrands, "FK_" + articleBrands + articles,
-          Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
-          SqlKeyword.DELETE));
     }
     String articleCriteria = "TcdArticleCriteria";
     String tcdArticleCriteria = SqlUtils.table("TecDoc", articleCriteria);
@@ -122,10 +141,16 @@ public class TecDocBean {
               .addFromInner(tcdCriteria,
                   SqlUtils.joinUsing(tcdArticleCriteria, tcdCriteria, "CriteriaID"))));
 
+      qs.updateData(SqlUtils.createIndex(articleCriteria, "IK_" + articleCriteria + "ArticleID",
+          Lists.newArrayList("ArticleID"), false));
+
       qs.updateData(SqlUtils.createForeignKey(articleCriteria, "FK_" + articleCriteria + articles,
           Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
           SqlKeyword.DELETE));
     }
+    String analogs = "TcdAnalogs";
+    String tcdAnalogs = SqlUtils.table("TecDoc", analogs);
+
     if (!names.contains(analogs)) {
       qs.updateData(new SqlCreate(analogs, false)
           .setDataSource(new SqlSelect()
@@ -133,12 +158,15 @@ public class TecDocBean {
               .addFrom(tcdAnalogs)
               .addFromInner(articles, SqlUtils.joinUsing(tcdAnalogs, articles, "ArticleID"))));
 
+      qs.updateData(SqlUtils.createIndex(analogs, "IK_" + analogs + "SearchNr",
+          Lists.newArrayList("SearchNr"), false));
+
+      qs.updateData(SqlUtils.createIndex(analogs, "IK_" + analogs + "ArticleID",
+          Lists.newArrayList("ArticleID"), false));
+
       qs.updateData(SqlUtils.createForeignKey(analogs, "FK_" + analogs + articles,
           Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
           SqlKeyword.DELETE));
-
-      qs.updateData(SqlUtils.createIndex(analogs, "IK_" + analogs + "SearchNr",
-          Lists.newArrayList("SearchNr"), false));
     }
     String articleCategories = "TcdArticleCategories";
     String tcdArticlesToGeneric = SqlUtils.table("TecDoc", "TcdArticlesToGeneric");
@@ -224,8 +252,10 @@ public class TecDocBean {
 
       qs.sqlDropTemp(tmpId);
 
-      qs.updateData(SqlUtils.createForeignKey(categories,
-          "FK_" + categories + categories,
+      qs.updateData(SqlUtils.createIndex(categories, "IK_" + categories + "CategoryID",
+          Lists.newArrayList("CategoryID"), false));
+
+      qs.updateData(SqlUtils.createForeignKey(categories, "FK_" + categories + categories,
           Lists.newArrayList("ParentID"), categories, Lists.newArrayList("CategoryID"),
           SqlKeyword.DELETE));
 
@@ -238,6 +268,12 @@ public class TecDocBean {
               .addFields(tmp, "ArticleID", "CategoryID")
               .addFrom(tmp)
               .addFromInner(categories, SqlUtils.joinUsing(tmp, categories, "CategoryID"))));
+
+      qs.updateData(SqlUtils.createIndex(articleCategories,
+          "IK_" + articleCategories + "CategoryID", Lists.newArrayList("CategoryID"), false));
+
+      qs.updateData(SqlUtils.createIndex(articleCategories,
+          "IK_" + articleCategories + "ArticleID", Lists.newArrayList("ArticleID"), false));
 
       qs.updateData(SqlUtils.createForeignKey(articleCategories,
           "FK_" + articleCategories + articles,
@@ -272,6 +308,12 @@ public class TecDocBean {
               .addFromInner(tcdTypes,
                   SqlUtils.joinUsing(tcdArticlesWithGenericToTypes, tcdTypes, "TypeID"))));
 
+      qs.updateData(SqlUtils.createIndex(typeArticles,
+          "IK_" + typeArticles + "ArticleID", Lists.newArrayList("ArticleID"), false));
+
+      qs.updateData(SqlUtils.createIndex(typeArticles,
+          "IK_" + typeArticles + "TypeID", Lists.newArrayList("TypeID"), false));
+
       qs.updateData(SqlUtils.createForeignKey(typeArticles, "FK_" + typeArticles + articles,
           Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
           SqlKeyword.DELETE));
@@ -285,6 +327,9 @@ public class TecDocBean {
 
       qs.updateData(SqlUtils.createPrimaryKey(types, "PK_" + types,
           Lists.newArrayList("TypeID")));
+
+      qs.updateData(SqlUtils.createIndex(types,
+          "IK_" + types + "ModelID", Lists.newArrayList("ModelID"), false));
 
       qs.updateData(SqlUtils.createForeignKey(typeArticles, "FK_" + typeArticles + types,
           Lists.newArrayList("TypeID"), types, Lists.newArrayList("TypeID"), SqlKeyword.DELETE));
@@ -309,30 +354,7 @@ public class TecDocBean {
 
   @Asynchronous
   public void suckButent() {
-    String butent = "TcdButent";
-    String tcdSchema = "TecDoc";
-    String tcdButent = SqlUtils.table(tcdSchema, butent);
-    String tcdButentStocks = SqlUtils.table(tcdSchema, butent + "Stocks");
-
-    if (!qs.dbSchemaExists(sys.getDbName(), tcdSchema)) {
-      qs.updateData(SqlUtils.createSchema(tcdSchema));
-    }
-    if (qs.dbTableExists(sys.getDbName(), tcdSchema, butent)) {
-      qs.updateData(SqlUtils.dropTable(tcdButent));
-    }
-    qs.updateData(new SqlCreate(tcdButent, false)
-        .addLong("ButentID", true)
-        .addString("Brand", 50, false)
-        .addString("SearchNr", 50, true)
-        .addDecimal("Price", 10, 2, false));
-
-    if (qs.dbTableExists(sys.getDbName(), tcdSchema, butent + "Stocks")) {
-      qs.updateData(SqlUtils.dropTable(tcdButentStocks));
-    }
-    qs.updateData(new SqlCreate(tcdButentStocks, false)
-        .addLong("ButentID", true)
-        .addString("Warehouse", 10, true)
-        .addDecimal("Stock", 1, 0, false));
+    String supplier = "EOLTAS";
 
     String address = "http://82.135.245.222:8081/ButentWS/ButentWS.WSDL";
     ButentWS butentWS = ButentWS.create(address);
@@ -359,159 +381,121 @@ public class TecDocBean {
       }
     }
     if (!BeeUtils.isEmpty(error)) {
-      logger.severe(error);
+      logger.severe(supplier, error);
       return;
     }
-    logger.info(butent, "Waiting for webService data...");
+    logger.info(supplier, "Waiting for items...");
 
-    response = port.process("GetSQLData", "<query>SELECT preke AS pr, pard_kaina AS kn, "
-        + "artikulas AS art, tiek_art AS ta, gam_art AS ga, gamintojas AS gam FROM prekes</query>");
+    response = port.process("GetSQLData", "<query>SELECT preke AS pr, savikaina AS kn,"
+        + " gam_art AS ga, gamintojas AS gam FROM prekes"
+        + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL</query>");
 
-    Node data = XmlUtils.fromString(response).getFirstChild();
+    Node node = XmlUtils.fromString(response).getFirstChild();
 
-    if (BeeUtils.same(data.getNodeName(), "Error")) {
-      logger.severe(data.getTextContent());
+    if (BeeUtils.same(node.getNodeName(), "Error")) {
+      logger.severe(supplier, node.getTextContent());
       return;
     }
-    if (data.hasChildNodes()) {
-      logger.info(butent, "webService returned", data.getChildNodes().getLength(),
-          "rows. Inserting data...");
+    if (node.hasChildNodes()) {
+      int size = node.getChildNodes().getLength();
+      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(size);
 
-      boolean isDebugEnabled = messyLogger.isDebugEnabled();
+      logger.info(supplier, "Received", size, "records. Updating data...");
 
-      if (isDebugEnabled) {
-        messyLogger.setLevel(LogLevel.INFO);
-      }
-      for (int i = 0; i < data.getChildNodes().getLength(); i++) {
-        Node row = data.getChildNodes().item(i);
+      for (int i = 0; i < size; i++) {
+        Node row = node.getChildNodes().item(i);
 
         if (row.hasChildNodes()) {
           Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-          String code = BeeUtils.notEmpty(info.get("ga"), info.get("ta"), info.get("art"));
 
-          if (!BeeUtils.isEmpty(code)) {
-            qs.insertData(new SqlInsert(tcdButent)
-                .addConstant("ButentID", BeeUtils.toLong(info.get("pr")))
-                .addConstant("Brand", info.get("gam"))
-                .addConstant("SearchNr", code.replaceAll("[^A-Za-z0-9]", "").toUpperCase())
-                .addConstant("Price", BeeUtils.toDoubleOrNull(info.get("kn"))));
-          }
+          data.add(new RemoteItems(info.get("pr"), info.get("gam"), info.get("ga"),
+              BeeUtils.toDoubleOrNull(info.get("kn"))));
         }
       }
-      if (isDebugEnabled) {
-        messyLogger.setLevel(LogLevel.DEBUG);
-      }
-      logger.info(butent, "insert finished. Indexing data...");
+      importItems(supplier, data);
     }
-    qs.updateData(SqlUtils.createIndex(tcdButent, "IK_" + butent + "SearchNr",
-        Lists.newArrayList("SearchNr"), false));
+    logger.info(supplier, "Waiting for remainders...");
 
-    logger.info(butent, "indexing finished");
+    response = port.process("GetSQLData", "<query>SELECT likuciai.sandelis AS sn,"
+        + " likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
+        + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
+        + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
+        + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0</query>");
 
-    logger.info(tcdButentStocks, "Waiting for webService data...");
+    node = XmlUtils.fromString(response).getFirstChild();
 
-    response = port.process("GetSQLData", "<query>SELECT sandelis AS sn, preke AS pr,"
-        + " sum(kiekis) AS lk FROM likuciai GROUP by sandelis, preke HAVING lk > 0</query>");
-
-    data = XmlUtils.fromString(response).getFirstChild();
-
-    if (BeeUtils.same(data.getNodeName(), "Error")) {
-      logger.severe(data.getTextContent());
+    if (BeeUtils.same(node.getNodeName(), "Error")) {
+      logger.severe(supplier, node.getTextContent());
       return;
     }
-    if (data.hasChildNodes()) {
-      logger.info(tcdButentStocks, "webService returned", data.getChildNodes().getLength(),
-          "rows. Inserting data...");
+    if (node.hasChildNodes()) {
+      int size = node.getChildNodes().getLength();
+      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(size);
 
-      boolean isDebugEnabled = messyLogger.isDebugEnabled();
+      logger.info(supplier, "Received", size, "records. Updating data...");
 
-      if (isDebugEnabled) {
-        messyLogger.setLevel(LogLevel.INFO);
-      }
-      for (int i = 0; i < data.getChildNodes().getLength(); i++) {
-        Node row = data.getChildNodes().item(i);
+      for (int i = 0; i < size; i++) {
+        Node row = node.getChildNodes().item(i);
 
         if (row.hasChildNodes()) {
           Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-          Double stock = BeeUtils.toDoubleOrNull(info.get("lk"));
 
-          qs.insertData(new SqlInsert(tcdButentStocks)
-              .addConstant("ButentID", BeeUtils.toLong(info.get("pr")))
-              .addConstant("Warehouse", info.get("sn"))
-              .addConstant("Stock", stock > 5 ? 6 : BeeUtils.round(stock)));
+          data.add(new RemoteRemainders(info.get("pr"), info.get("sn"),
+              BeeUtils.toDoubleOrNull(info.get("lk"))));
         }
       }
-      if (isDebugEnabled) {
-        messyLogger.setLevel(LogLevel.DEBUG);
-      }
-      logger.info(tcdButentStocks, "insert finished. Indexing data...");
+      importRemainders(supplier, data);
 
-      qs.updateData(SqlUtils.createIndex(tcdButentStocks, "IK_" + butent + "StocksButentID",
-          Lists.newArrayList("ButentID"), false));
-
-      logger.info(tcdButentStocks, "indexing finished");
     } else {
-      logger.info(butent, "webService returned no data");
+      logger.info(supplier, "webService returned no remainders");
     }
   }
 
   @Asynchronous
   public void suckMotonet() {
-    // String motonet = "TcdMotonet";
-    // String tcdSchema = "TecDoc";
-    // String tcdMotonet = SqlUtils.table(tcdSchema, motonet);
-    // logger.info(motonet, "Waiting for webService data...");
-    //
-    // WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
-    // ArrayOfString data = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
-    //
-    // if (data == null || data.getString().size() == 1) {
-    // logger.info(motonet, "webService returned no data");
-    // } else {
-    // logger.info(motonet, "webService returned", data.getString().size(),
-    // "rows. Inserting data...");
-    //
-    // if (!qs.dbSchemaExists(sys.getDbName(), tcdSchema)) {
-    // qs.updateData(SqlUtils.createSchema(tcdSchema));
-    // }
-    // if (qs.dbTableExists(sys.getDbName(), tcdSchema, motonet)) {
-    // qs.updateData(SqlUtils.dropTable(tcdMotonet));
-    // }
-    // qs.updateData(new SqlCreate(tcdMotonet, false)
-    // .addString("Prefix", 10, true)
-    // .addString("Index", 50, true)
-    // .addString("SearchNr", 50, true)
-    // .addDecimal("Stock", 1, 0, false)
-    // .addDecimal("Price", 10, 2, false));
-    //
-    // boolean isDebugEnabled = messyLogger.isDebugEnabled();
-    //
-    // if (isDebugEnabled) {
-    // messyLogger.setLevel(LogLevel.INFO);
-    // }
-    // for (String item : data.getString()) {
-    // String[] values = item.split("[|]", 8);
-    //
-    // if (values.length == 8) {
-    // qs.insertData(new SqlInsert(tcdMotonet)
-    // .addConstant("Prefix", values[0])
-    // .addConstant("Index", values[1])
-    // .addConstant("SearchNr", values[1].replaceAll("[^A-Za-z0-9]", "").toUpperCase())
-    // .addConstant("Stock", BeeUtils.toNonNegativeInt(BeeUtils.toInt(values[3])))
-    // .addConstant("Price", BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
-    // }
-    // }
-    //
-    // if (isDebugEnabled) {
-    // messyLogger.setLevel(LogLevel.DEBUG);
-    // }
-    // logger.info(motonet, "insert finished. Indexing data...");
-    //
-    // qs.updateData(SqlUtils.createIndex(tcdMotonet, "IK_" + motonet + "SearchNr",
-    // Lists.newArrayList("SearchNr"), false));
-    //
-    // logger.info(motonet, "indexing finished");
-    // }
+    // keytool -importcert -keystore
+    // /Applications/JavaEE/JavaEE7AS/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+    // -storepass changeit -alias motonet -file motonet.cer
+
+    String supplier = "MOTOPROFIL";
+    logger.info(supplier, "Waiting for data...");
+
+    WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
+    ArrayOfString info = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
+
+    if (info != null && info.getString().size() > 1) {
+      int size = info.getString().size();
+      List<RemoteItems> items = Lists.newArrayListWithExpectedSize(size);
+      List<RemoteRemainders> remainders = Lists.newArrayListWithExpectedSize(size);
+
+      logger.info(supplier, "Received", size, "records. Updating data...");
+
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER_BRAND, COL_TCD_TECDOC_BRAND)
+          .addFrom(TBL_TCD_BRANDS_MAPPING));
+
+      for (String item : info.getString()) {
+        String[] values = item.split("[|]", 8);
+
+        if (values.length == 8) {
+          String brand = rs.getValueByKey(COL_TCD_SUPPLIER_BRAND, values[0], COL_TCD_TECDOC_BRAND);
+          String supplierId = values[0] + values[1];
+
+          if (!BeeUtils.isEmpty(brand)) {
+            items.add(new RemoteItems(supplierId, brand, values[1],
+                BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+
+            remainders.add(new RemoteRemainders(supplierId, "MotoNet",
+                BeeUtils.toDoubleOrNull(values[3])));
+          }
+        }
+      }
+      importItems(supplier, items);
+      importRemainders(supplier, remainders);
+
+    } else {
+      logger.info(supplier, "webService returned no data");
+    }
   }
 
   @Asynchronous
@@ -776,6 +760,170 @@ public class TecDocBean {
           offset += chunk;
         }
       } while (chunk > 0 && chunkTotal == chunk);
+    }
+  }
+
+  private void importItems(String supplier, List<RemoteItems> data) {
+    String log = supplier + " " + TBL_TCD_ARTICLE_BRANDS + ":";
+
+    boolean isDebugEnabled = messyLogger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    String idName = sys.getIdName(TBL_TCD_ARTICLE_BRANDS);
+    int tot = 0;
+    int upd = 0;
+    String tmp = null;
+
+    for (RemoteItems info : data) {
+      int c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
+          .addConstant(COL_TCD_PRICE, info.price)
+          .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS,
+              COL_TCD_SUPPLIER, supplier, COL_TCD_SUPPLIER_ID, info.supplierId)));
+      upd += c;
+
+      if (c == 0) {
+        if (tmp == null) {
+          tmp = SqlUtils.temporaryName();
+
+          qs.updateData(new SqlCreate(tmp)
+              .addLong(idName, true)
+              .addString(COL_TCD_SUPPLIER_ID, 30, true)
+              .addString(COL_TCD_ANALOG_NR, 50, true)
+              .addString(COL_TCD_BRAND, 50, true)
+              .addString(COL_TCD_SEARCH_NR, 50, true)
+              .addDecimal(COL_TCD_PRICE, 10, 2, false));
+        }
+        qs.insertData(new SqlInsert(tmp)
+            .addConstant(idName, ig.getId(TBL_TCD_ARTICLE_BRANDS))
+            .addConstant(COL_TCD_SEARCH_NR, EcModuleBean.normalizeCode(info.articleNr))
+            .addConstant(COL_TCD_BRAND, info.brand)
+            .addConstant(COL_TCD_ANALOG_NR, info.articleNr)
+            .addConstant(COL_TCD_PRICE, info.price)
+            .addConstant(COL_TCD_SUPPLIER_ID, info.supplierId));
+      }
+      if (++tot % 1000 == 0) {
+        logger.info(log, "Processed", tot, "records");
+      }
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    if (tot % 1000 > 0) {
+      logger.info(log, "Processed", tot, "records");
+    }
+    logger.info(log, "Updated", upd, "rows");
+
+    if (tmp != null) {
+      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_SEARCH_NR,
+          Lists.newArrayList(COL_TCD_SEARCH_NR), false));
+      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_BRAND,
+          Lists.newArrayList(COL_TCD_BRAND), false));
+
+      String tcdAnalogs = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ANALOGS);
+
+      upd = qs.sqlCount(TBL_TCD_ARTICLE_BRANDS, null);
+
+      qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_BRANDS)
+          .addFields(COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, idName,
+              COL_TCD_SUPPLIER_ID, COL_TCD_SUPPLIER, sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))
+          .setDataSource(new SqlSelect()
+              .addMax(tcdAnalogs, COL_TCD_ARTICLE_ID)
+              .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, idName,
+                  COL_TCD_SUPPLIER_ID)
+              .addConstant(supplier, COL_TCD_SUPPLIER)
+              .addConstant(System.currentTimeMillis(),
+                  sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))
+              .addFrom(tmp)
+              .addFromInner(tcdAnalogs,
+                  SqlUtils.joinUsing(tmp, tcdAnalogs, COL_TCD_SEARCH_NR, COL_TCD_BRAND))
+              .addGroup(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
+                  COL_TCD_SUPPLIER_ID, idName)));
+
+      qs.sqlDropTemp(tmp);
+      logger.info(log, "Inserted", qs.sqlCount(TBL_TCD_ARTICLE_BRANDS, null) - upd, "rows");
+    }
+  }
+
+  private void importRemainders(String supplier, List<RemoteRemainders> data) {
+    String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
+
+    qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
+        .addConstant(COL_TCD_REMAINDER, null)
+        .setFrom(TBL_TCD_ARTICLE_BRANDS,
+            sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
+        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier)));
+
+    boolean isDebugEnabled = messyLogger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    String idName = sys.getIdName(TBL_TCD_REMAINDERS);
+    int tot = 0;
+    int upd = 0;
+    String tmp = null;
+
+    for (RemoteRemainders info : data) {
+      int c = qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
+          .addConstant(COL_TCD_REMAINDER, info.remainder)
+          .setFrom(TBL_TCD_ARTICLE_BRANDS, sys.joinTables(TBL_TCD_ARTICLE_BRANDS,
+              TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_REMAINDERS,
+              COL_TCD_WAREHOUSE, info.warehouse),
+              SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS,
+                  COL_TCD_SUPPLIER, supplier, COL_TCD_SUPPLIER_ID, info.supplierId))));
+      upd += c;
+
+      if (c == 0) {
+        if (tmp == null) {
+          tmp = SqlUtils.temporaryName();
+
+          qs.updateData(new SqlCreate(tmp, false)
+              .addLong(idName, true)
+              .addString(COL_TCD_SUPPLIER_ID, 30, true)
+              .addString(COL_TCD_WAREHOUSE, 10, true)
+              .addDecimal(COL_TCD_REMAINDER, 12, 3, true));
+        }
+        qs.insertData(new SqlInsert(tmp)
+            .addConstant(idName, ig.getId(TBL_TCD_REMAINDERS))
+            .addConstant(COL_TCD_WAREHOUSE, info.warehouse)
+            .addConstant(COL_TCD_REMAINDER, info.remainder)
+            .addConstant(COL_TCD_SUPPLIER_ID, info.supplierId));
+      }
+      if (++tot % 1000 == 0) {
+        logger.info(log, "Processed", tot, "records");
+      }
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    if (tot % 1000 > 0) {
+      logger.info(log, "Processed", tot, "records");
+    }
+    logger.info(log, "Updated", upd, "rows");
+
+    if (tmp != null) {
+      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_SUPPLIER_ID,
+          Lists.newArrayList(COL_TCD_SUPPLIER_ID), false));
+
+      upd = qs.sqlCount(TBL_TCD_REMAINDERS, null);
+
+      qs.insertData(new SqlInsert(TBL_TCD_REMAINDERS)
+          .addFields(COL_TCD_ARTICLE_BRAND, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER, idName,
+              sys.getVersionName(TBL_TCD_REMAINDERS))
+          .setDataSource(new SqlSelect()
+              .addFields(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS))
+              .addFields(tmp, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER, idName)
+              .addConstant(System.currentTimeMillis(), sys.getVersionName(TBL_TCD_REMAINDERS))
+              .addFrom(tmp)
+              .addFromInner(TBL_TCD_ARTICLE_BRANDS,
+                  SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID))
+              .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier))));
+
+      qs.sqlDropTemp(tmp);
+      logger.info(log, "Inserted", qs.sqlCount(TBL_TCD_REMAINDERS, null) - upd, "rows");
     }
   }
 }

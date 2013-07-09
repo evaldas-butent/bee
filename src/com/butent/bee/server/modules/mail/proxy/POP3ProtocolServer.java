@@ -10,11 +10,11 @@ public class POP3ProtocolServer extends TextBasedProtocolServer {
 
   @Override
   protected int getBindPort() {
-    return proxy.getBindPort(Protocol.POP3);
+    return getProxy().getBindPort(Protocol.POP3);
   }
 
   @Override
   protected TextBasedProtocolServerHandler getHandlerInstance() {
-    return new POP3ProtocolServerHandler(proxy);
+    return new POP3ProtocolServerHandler(getProxy());
   }
 }

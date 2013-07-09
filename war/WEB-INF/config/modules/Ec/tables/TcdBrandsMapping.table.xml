@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdBrandsMapping"
+  idName="MappingID"
+  audit="false"
+  >
+  <Fields>
+    <String name="SupplierBrand" precision="50" notNull="true" unique="true" />
+    <String name="TecDocBrand" precision="50" notNull="true" />
+  </Fields>
+</Table>

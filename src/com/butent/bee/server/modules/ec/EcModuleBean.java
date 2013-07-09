@@ -11,10 +11,11 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -55,6 +57,10 @@ import javax.ejb.Stateless;
 public class EcModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
+
+  public static String normalizeCode(String code) {
+    return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
+  }
 
   @EJB
   SystemBean sys;
@@ -79,7 +85,7 @@ public class EcModuleBean implements BeeModule {
 
     ResponseObject response = null;
     String svc = reqInfo.getParameter(EC_METHOD);
-    
+
     String query = null;
     boolean log = false;
 
@@ -97,7 +103,7 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_ITEM_CODE)) {
       query = reqInfo.getParameter(VAR_QUERY);
-      response = searchByItemCode(reqInfo, query);
+      response = searchByItemCode(query, null);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_OE_NUMBER)) {
@@ -154,11 +160,11 @@ public class EcModuleBean implements BeeModule {
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
-    
+
     if (log && response != null && !response.hasErrors()) {
       logHistory(svc, query, response.getSize(), System.currentTimeMillis() - startMillis);
     }
-    
+
     return response;
   }
 
@@ -187,13 +193,13 @@ public class EcModuleBean implements BeeModule {
           if (DataUtils.isEmpty(orderItems)) {
             return;
           }
-          
+
           int itemIndex = orderItems.getColumnIndex(COL_ORDER_ITEM_ID);
           if (itemIndex <= 0) {
             return;
           }
-          
-          Multimap<Integer, Integer> itemIdToRowIndex = HashMultimap.create();          
+
+          Multimap<Integer, Integer> itemIdToRowIndex = HashMultimap.create();
 
           for (int i = 0; i < orderItems.getNumberOfRows(); i++) {
             Integer itemId = orderItems.getInteger(i, itemIndex);
@@ -204,34 +210,34 @@ public class EcModuleBean implements BeeModule {
           if (itemIdToRowIndex.isEmpty()) {
             return;
           }
-          
+
           SqlSelect ss = new SqlSelect();
           ss.addFrom(TBL_TCD_ARTICLES);
           ss.addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME,
               COL_TCD_ARTICLE_NR);
-          
+
           ss.setWhere(SqlUtils.inList(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID,
               itemIdToRowIndex.keySet()));
-          
+
           SimpleRowSet articleData = qs.getData(ss);
           if (DataUtils.isEmpty(articleData)) {
             return;
           }
-          
+
           int idIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_ID);
           int nameIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_NAME);
           int nrIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_NR);
-          
+
           for (SimpleRow articleRow : articleData) {
             Integer itemId = articleRow.getInt(idIndex);
             String name = articleRow.getValue(nameIndex);
             String nr = articleRow.getValue(nrIndex);
-            
+
             for (Integer rowIndex : itemIdToRowIndex.get(itemId)) {
               BeeRow row = orderItems.getRow(rowIndex);
-              
-              row.setProperty(COL_TCD_ARTICLE_NAME, name);             
-              row.setProperty(COL_TCD_ARTICLE_NR, nr);             
+
+              row.setProperty(COL_TCD_ARTICLE_NAME, name);
+              row.setProperty(COL_TCD_ARTICLE_NR, nr);
             }
           }
         }
@@ -385,7 +391,7 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(carTypes).setSize(carTypes.size());
   }
-  
+
   private ResponseObject getCategories() {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_ID, COL_TCD_PARENT_ID,
@@ -415,13 +421,13 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(arr).setSize(rc);
   }
-  
+
   private ResponseObject getConfiguration() {
     BeeRowSet rowSet = qs.getViewData(VIEW_CONFIGURATION);
     if (rowSet == null) {
       return ResponseObject.error("cannot read", VIEW_CONFIGURATION);
     }
-    
+
     Map<String, String> result = Maps.newHashMap();
     if (rowSet.isEmpty()) {
       for (BeeColumn column : rowSet.getColumns()) {
@@ -436,7 +442,7 @@ public class EcModuleBean implements BeeModule {
 
     return ResponseObject.response(result);
   }
-  
+
   private SimpleRowSet getCurrentClientInfo(String... fields) {
     return qs.getData(new SqlSelect().addFrom(TBL_CLIENTS).addFields(TBL_CLIENTS, fields)
         .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
@@ -477,18 +483,17 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = getItems(articleIdQuery);
     return ResponseObject.response(items);
   }
-  
+
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
-    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter("ID"));
+    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE_ID));
+    String code = normalizeCode(reqInfo.getParameter(COL_TCD_ARTICLE_NR));
+    String brand = reqInfo.getParameter(COL_TCD_BRAND);
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID)
         .addFrom(TBL_TCD_ANALOGS)
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, new SqlSelect()
-            .addFields(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR)
-            .addFrom(TBL_TCD_ANALOGS)
-            .setWhere(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id, "Kind", 1))),
-            SqlUtils.notEqual(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id)));
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, code,
+            COL_TCD_BRAND, brand), SqlUtils.notEqual(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id)));
 
     return ResponseObject.response(getItems(articleIdQuery));
   }
@@ -509,19 +514,20 @@ public class EcModuleBean implements BeeModule {
     String tempArticleIds = createTempArticleIds(query);
 
     SqlSelect articleQuery = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
-            COL_TCD_ARTICLE_NAME, COL_TCD_SUPPLIER)
-        .addMax(TBL_TCD_ARTICLE_BRANDS, COL_TCD_PRICE)
-        .addSum(TBL_TCD_STOCKS, COL_TCD_REMAINDER)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
+            COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID)
+        .addSum(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLES,
             COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_ARTICLE_BRANDS,
+        .addFromInner(TBL_TCD_ARTICLE_BRANDS,
             SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_STOCKS,
-            SqlUtils.joinUsing(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_STOCKS, "ButentID"))
-        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME,
-            COL_TCD_SUPPLIER)
+        .addFromLeft(TBL_TCD_REMAINDERS,
+            sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
+        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
+        .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
+            COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_ID);
 
     SimpleRowSet articleData = qs.getData(articleQuery);
@@ -529,9 +535,12 @@ public class EcModuleBean implements BeeModule {
       for (SimpleRow row : articleData) {
         EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID));
 
-        item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
+        item.setManufacturer(row.getValue(COL_TCD_BRAND));
+        item.setCode(row.getValue(COL_TCD_ANALOG_NR));
         item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
+
         item.setSupplier(row.getValue(COL_TCD_SUPPLIER));
+        item.setSupplierCode(row.getValue(COL_TCD_SUPPLIER_ID));
 
         item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
         item.setStock2(BeeUtils.randomInt(0, 20) * BeeUtils.randomInt(0, 2));
@@ -541,7 +550,6 @@ public class EcModuleBean implements BeeModule {
           item.setListPrice(price * (1 + Math.random() * 0.5));
           item.setPrice(price);
         }
-
         items.add(item);
       }
     }
@@ -593,7 +601,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.response(items).setSize(items.size());
     }
   }
-  
+
   private void logHistory(String service, String query, int count, long duration) {
     SqlInsert ins = new SqlInsert(TBL_HISTORY);
     ins.addConstant(COL_HISTORY_DATE, System.currentTimeMillis());
@@ -606,7 +614,7 @@ public class EcModuleBean implements BeeModule {
 
     ins.addConstant(COL_HISTORY_COUNT, count);
     ins.addConstant(COL_HISTORY_DURATION, duration);
-    
+
     qs.insertData(ins);
   }
 
@@ -620,7 +628,7 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(value)) {
       return ResponseObject.parameterNotFound(SVC_SAVE_CONFIGURATION, Service.VAR_VALUE);
     }
-    
+
     if (updateConfiguration(column, value)) {
       return ResponseObject.response(column);
     } else {
@@ -631,87 +639,35 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject searchByItemCode(RequestInfo reqInfo, String code) {
+  private ResponseObject searchByItemCode(String code, IsCondition clause) {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
-
-    int offset = BeeUtils.toInt(reqInfo.getParameter(VAR_OFFSET));
-    int limit = BeeUtils.toInt(reqInfo.getParameter(VAR_LIMIT));
-
-    String searchCode = code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
-    if (BeeUtils.length(searchCode) < 3) {
-      return ResponseObject.error("Search code must be at least 3 characters length:", searchCode);
+    String search = normalizeCode(code);
+    if (BeeUtils.length(search) < 3) {
+      return ResponseObject.error("Search code must be at least 3 characters length:", search);
     }
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
-            COL_TCD_ARTICLE_NAME,
-            COL_TCD_SUPPLIER)
-        .addFields(TBL_TCD_ANALOGS, COL_TCD_BRAND)
-        .addMax(TBL_TCD_ARTICLE_BRANDS, COL_TCD_PRICE)
-        .addSum(TBL_TCD_STOCKS, COL_TCD_REMAINDER)
+    SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID)
         .addFrom(TBL_TCD_ANALOGS)
-        .addFromInner(TBL_TCD_ARTICLES, SqlUtils.joinUsing(TBL_TCD_ANALOGS, TBL_TCD_ARTICLES,
-            COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_ARTICLE_BRANDS,
-            SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS,
-                COL_TCD_ARTICLE_ID))
-        .addFromLeft(TBL_TCD_STOCKS,
-            SqlUtils.joinUsing(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_STOCKS, "ButentID"))
-        .setWhere(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, searchCode))
-        .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NR,
-            COL_TCD_ARTICLE_NAME,
-            COL_TCD_SUPPLIER)
-        .addGroup(TBL_TCD_ANALOGS, COL_TCD_BRAND)
-        .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID);
-
-    if (limit > 0) {
-      query.setLimit(limit);
-    }
-    if (offset > 0) {
-      query.setOffset(offset);
-    }
-
-    List<EcItem> items = Lists.newArrayList();
-
-    for (SimpleRow row : qs.getData(query)) {
-      EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID));
-      item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
-      item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
-      item.setSupplier(BeeUtils.notEmpty(row.getValue(COL_TCD_BRAND),
-          row.getValue(COL_TCD_SUPPLIER)));
-      item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
-
-      Double price = row.getDouble(COL_TCD_PRICE);
-      if (BeeUtils.isPositive(price)) {
-        item.setListPrice(price * (1 + Math.random() * 0.5));
-        item.setPrice(price);
-      }
-
-      items.add(item);
-    }
-    return ResponseObject.response(items).setSize(items.size());
-  }
-
-  private ResponseObject searchByOeNumber(String query) {
-    if (BeeUtils.isEmpty(query)) {
-      return ResponseObject.parameterNotFound(SVC_SEARCH_BY_OE_NUMBER, VAR_QUERY);
-    }
-
-    SqlSelect articleIdQuery = new SqlSelect()
-        .addFrom(TBL_TCD_ARTICLES)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID)
-        .setWhere(SqlUtils.startsWith(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query));
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_SEARCH_NR, search),
+            clause));
 
     List<EcItem> items = getItems(articleIdQuery);
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(code));
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
   }
-  
+
+  private ResponseObject searchByOeNumber(String code) {
+    if (BeeUtils.isEmpty(code)) {
+      return ResponseObject.parameterNotFound(SVC_SEARCH_BY_OE_NUMBER, VAR_QUERY);
+    }
+    return searchByItemCode(code, SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_KIND, "3"));
+  }
+
   private ResponseObject submitOrder(RequestInfo reqInfo) {
     String serializedCart = reqInfo.getParameter(VAR_CART);
     if (BeeUtils.isEmpty(serializedCart)) {
@@ -724,7 +680,7 @@ public class EcModuleBean implements BeeModule {
       logger.severe(message);
       return ResponseObject.error(message);
     }
-    
+
     SimpleRowSet clientInfo = getCurrentClientInfo(COL_CLIENT_ID, COL_CLIENT_MANAGER);
     if (DataUtils.isEmpty(clientInfo)) {
       String message = BeeUtils.joinWords(SVC_SUBMIT_ORDER, "client not found for user",
@@ -756,17 +712,17 @@ public class EcModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(cart.getComment())) {
       insOrder.addConstant(COL_ORDER_CLIENT_COMMENT, cart.getComment());
     }
-    
+
     ResponseObject response = qs.insertDataWithResponse(insOrder);
     if (response.hasErrors() || !response.hasResponse(Long.class)) {
       return response;
     }
-    
+
     Long orderId = (Long) response.getResponse();
-    
+
     for (CartItem cartItem : cart.getItems()) {
       SqlInsert insItem = new SqlInsert(VIEW_ORDER_ITEMS);
-      
+
       insItem.addConstant(COL_ORDER_ITEM_ORDER_ID, orderId);
       insItem.addConstant(COL_ORDER_ITEM_ID, cartItem.getEcItem().getId());
 
@@ -774,19 +730,19 @@ public class EcModuleBean implements BeeModule {
       insItem.addConstant(COL_ORDER_ITEM_QUANTITY_SUBMIT, cartItem.getQuantity());
 
       insItem.addConstant(COL_ORDER_ITEM_PRICE, cartItem.getEcItem().getRealPrice());
-      
+
       ResponseObject itemResponse = qs.insertDataWithResponse(insItem);
       if (itemResponse.hasErrors()) {
         return itemResponse;
       }
     }
-    
+
     return response;
   }
 
   private boolean updateConfiguration(String column, String value) {
     BeeRowSet rowSet = qs.getViewData(VIEW_CONFIGURATION);
-    
+
     if (DataUtils.isEmpty(rowSet)) {
       if (BeeUtils.isEmpty(value)) {
         return true;

@@ -13,12 +13,13 @@ import java.util.List;
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ID, CODE, NAME, SUPPLIER, CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
+    ID, MANUFACTURER, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
+    CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
   }
 
   public static final Splitter CATEGORY_SPLITTER =
       Splitter.on(EcConstants.CATEGORY_SEPARATOR).trimResults().omitEmptyStrings();
-  
+
   public static EcItem restore(String s) {
     EcItem item = new EcItem();
     item.deserialize(s);
@@ -27,10 +28,12 @@ public class EcItem implements BeeSerializable {
 
   private int id;
 
+  private String manufacturer;
   private String code;
   private String name;
 
   private String supplier;
+  private String supplierCode;
 
   private String categories;
 
@@ -62,6 +65,10 @@ public class EcItem implements BeeSerializable {
           this.id = BeeUtils.toInt(value);
           break;
 
+        case MANUFACTURER:
+          setManufacturer(value);
+          break;
+
         case CODE:
           setCode(value);
           break;
@@ -72,6 +79,10 @@ public class EcItem implements BeeSerializable {
 
         case SUPPLIER:
           setSupplier(value);
+          break;
+
+        case SUPPLIER_CODE:
+          setSupplierCode(value);
           break;
 
         case CATEGORIES:
@@ -101,7 +112,7 @@ public class EcItem implements BeeSerializable {
   public boolean equals(Object obj) {
     return (obj instanceof EcItem) && id == ((EcItem) obj).id;
   }
-  
+
   public String getCategories() {
     return categories;
   }
@@ -130,7 +141,7 @@ public class EcItem implements BeeSerializable {
   }
 
   public String getManufacturer() {
-    return supplier;
+    return manufacturer;
   }
 
   public String getName() {
@@ -140,7 +151,7 @@ public class EcItem implements BeeSerializable {
   public int getPrice() {
     return price;
   }
-  
+
   public double getRealPrice() {
     return price / 100d;
   }
@@ -155,6 +166,10 @@ public class EcItem implements BeeSerializable {
 
   public String getSupplier() {
     return supplier;
+  }
+
+  public String getSupplierCode() {
+    return supplierCode;
   }
 
   public boolean hasAnalogs() {
@@ -192,6 +207,10 @@ public class EcItem implements BeeSerializable {
           arr[i++] = id;
           break;
 
+        case MANUFACTURER:
+          arr[i++] = manufacturer;
+          break;
+
         case CODE:
           arr[i++] = code;
           break;
@@ -202,6 +221,10 @@ public class EcItem implements BeeSerializable {
 
         case SUPPLIER:
           arr[i++] = supplier;
+          break;
+
+        case SUPPLIER_CODE:
+          arr[i++] = supplierCode;
           break;
 
         case CATEGORIES:
@@ -244,6 +267,10 @@ public class EcItem implements BeeSerializable {
     this.listPrice = listPrice;
   }
 
+  public void setManufacturer(String manufacturer) {
+    this.manufacturer = manufacturer;
+  }
+
   public void setName(String name) {
     this.name = name;
   }
@@ -266,5 +293,9 @@ public class EcItem implements BeeSerializable {
 
   public void setSupplier(String supplier) {
     this.supplier = supplier;
+  }
+
+  public void setSupplierCode(String supplierCode) {
+    this.supplierCode = supplierCode;
   }
 }

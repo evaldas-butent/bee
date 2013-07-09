@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdArticleBrands"
+  idName="ArticleBrandID"
+  audit="false"
+  idChunk="100"
+  >
+  <Fields>
+    <Long name="ArticleID" notNull="true" />
+    <String name="Brand" precision="50" notNull="true" />
+    <String name="AnalogNr" precision="50" notNull="true" />
+    <Numeric name="Price" precision="10" scale="2" />
+    <String name="Supplier" precision="10" notNull="true" />
+    <String name="SupplierID" precision="30" notNull="true" />
+  </Fields>
+  <Indexes>
+    <Index fields="ArticleID" />
+    <Index fields="Supplier" />
+    <Index fields="SupplierID" />
+    <Index fields="Supplier SupplierID" unique="true" />
+  </Indexes>
+</Table>

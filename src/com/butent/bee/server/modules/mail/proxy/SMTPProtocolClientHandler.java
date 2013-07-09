@@ -21,7 +21,7 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     if (state == 3) {
       if (msg.startsWith("250")) {
-        proxy.processMessage(mailBody.toString(), null);
+        getProxy().processMessage(mailBody.toString(), null);
       } else {
         logger.severe("SMTP mail send error:", msg);
       }

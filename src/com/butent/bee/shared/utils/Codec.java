@@ -178,10 +178,12 @@ public final class Codec {
         int n = BeeUtils.toInt(data.substring(pos, ++pos));
 
         if (n > 0) {
-          int l = BeeUtils.toInt(data.substring(pos, pos += n));
+          int l = BeeUtils.toInt(data.substring(pos, pos + n));
+          pos += n;
 
           if (l > 0) {
-            res = data.substring(pos, pos += l);
+            res = data.substring(pos, pos + l);
+            pos += l;
           } else {
             res = BeeConst.STRING_EMPTY;
           }
@@ -210,7 +212,8 @@ public final class Codec {
       int n = BeeUtils.toInt(s.substring(pos, ++pos));
 
       if (n > 0) {
-        int l = BeeUtils.toInt(s.substring(pos, pos += n));
+        int l = BeeUtils.toInt(s.substring(pos, pos + n));
+        pos += n;
         res = new String[l];
 
         for (int i = 0; i < l; i++) {
@@ -221,8 +224,8 @@ public final class Codec {
           n = BeeUtils.toInt(s.substring(pos, ++pos));
 
           if (n > 0) {
-            int c = BeeUtils.toInt(s.substring(pos, pos += n));
-            pos += c;
+            int c = BeeUtils.toInt(s.substring(pos, pos + n));
+            pos += n + c;
           }
           res[i] = beeDeserialize(s.substring(start, pos));
         }

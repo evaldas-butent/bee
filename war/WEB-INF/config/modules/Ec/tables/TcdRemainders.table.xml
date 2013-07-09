@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdRemainders"
+  idName="RemainderID"
+  audit="false"
+  idChunk="100"
+  >
+  <Fields>
+    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" />
+    <String name="Warehouse" precision="10" notNull="true" />
+    <Numeric name="Remainder" precision="12" scale="3" />
+  </Fields>
+  <Indexes>
+    <Index fields="ArticleBrand" />
+    <Index fields="Warehouse" />
+  </Indexes>
+</Table>

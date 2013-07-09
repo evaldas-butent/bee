@@ -10,6 +10,6 @@ public class POP3ProtocolServerHandler extends TextBasedProtocolServerHandler {
 
   @Override
   public TextBasedProtocolClient getClientInstance(Channel inboundChannel, Object tl) {
-    return new POP3ProtocolClient(inboundChannel, tl, proxy);
+    return new POP3ProtocolClient(inboundChannel, tl, getProxy());
   }
 }

@@ -13,16 +13,16 @@ public class SMTPProtocolClient extends TextBasedProtocolClient {
   @Override
   public TextBasedProtocolClientHandler getClientHandlerInstance(Channel inboundChannel,
       Object tl) {
-    return new SMTPProtocolClientHandler(inboundChannel, tl, proxy);
+    return new SMTPProtocolClientHandler(inboundChannel, tl, getProxy());
   }
 
   @Override
   protected String getHost() {
-    return proxy.getServerName(Protocol.SMTP);
+    return getProxy().getServerName(Protocol.SMTP);
   }
 
   @Override
   protected int getPort() {
-    return proxy.getServerPort(Protocol.SMTP);
+    return getProxy().getServerPort(Protocol.SMTP);
   }
 }

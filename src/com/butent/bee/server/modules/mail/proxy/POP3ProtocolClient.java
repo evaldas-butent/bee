@@ -13,16 +13,16 @@ public class POP3ProtocolClient extends TextBasedProtocolClient {
   @Override
   public TextBasedProtocolClientHandler getClientHandlerInstance(Channel inboundChannel,
       Object tl) {
-    return new POP3ProtocolClientHandler(inboundChannel, tl, proxy);
+    return new POP3ProtocolClientHandler(inboundChannel, tl, getProxy());
   }
 
   @Override
   protected String getHost() {
-    return proxy.getServerName(Protocol.POP3);
+    return getProxy().getServerName(Protocol.POP3);
   }
 
   @Override
   protected int getPort() {
-    return proxy.getServerPort(Protocol.POP3);
+    return getProxy().getServerPort(Protocol.POP3);
   }
 }

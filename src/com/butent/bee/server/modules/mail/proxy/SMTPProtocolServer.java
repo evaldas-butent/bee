@@ -10,11 +10,11 @@ public class SMTPProtocolServer extends TextBasedProtocolServer {
 
   @Override
   protected int getBindPort() {
-    return proxy.getBindPort(Protocol.SMTP);
+    return getProxy().getBindPort(Protocol.SMTP);
   }
 
   @Override
   protected TextBasedProtocolServerHandler getHandlerInstance() {
-    return new SMTPProtocolServerHandler(proxy);
+    return new SMTPProtocolServerHandler(getProxy());
   }
 }

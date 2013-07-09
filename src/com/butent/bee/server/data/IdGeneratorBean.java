@@ -104,7 +104,8 @@ public class IdGeneratorBean {
       } else {
         si.addConstant(sys.getIdName(ID_TABLE), getId(ID_TABLE));
       }
-      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId += chunk);
+      lastId += chunk;
+      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId);
       qs.insertData(si);
     } else {
       lastId = BeeUtils.unbox(qs.getLong(new SqlSelect()

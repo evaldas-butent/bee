@@ -22,7 +22,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     if (state == 1) {
       if (".".equals(msg)) {
-        proxy.processMessage(mailBody.toString(), user);
+        getProxy().processMessage(mailBody.toString(), user);
         state = 0;
         mailBody = null;
       } else {

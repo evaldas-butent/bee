@@ -23,7 +23,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
     }
   }
 
-  protected MailProxy proxy;
+  private final MailProxy proxy;
 
   final BeeLogger logger = LogUtils.getLogger(getClass());
 
@@ -91,6 +91,10 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
   }
 
   public abstract TextBasedProtocolClient getClientInstance(Channel inboundChannel, Object tl);
+
+  public MailProxy getProxy() {
+    return proxy;
+  }
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {

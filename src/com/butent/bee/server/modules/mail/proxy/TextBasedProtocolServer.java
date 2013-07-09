@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 public abstract class TextBasedProtocolServer {
   final BeeLogger logger = LogUtils.getLogger(getClass());
 
-  protected MailProxy proxy;
+  private MailProxy proxy;
 
   private Channel chan;
   private ServerBootstrap bs;
@@ -52,6 +52,10 @@ public abstract class TextBasedProtocolServer {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public MailProxy getProxy() {
+    return proxy;
   }
 
   public void tearDown() {

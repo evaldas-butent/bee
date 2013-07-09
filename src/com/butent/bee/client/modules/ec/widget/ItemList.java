@@ -74,13 +74,13 @@ public class ItemList extends Flow {
   private final HtmlTable table;
   private final Button moreWidget;
 
-  private final List<EcItem> data = Lists.newArrayList();  
+  private final List<EcItem> data = Lists.newArrayList();
 
   public ItemList(List<EcItem> items) {
     this();
     render(items);
   }
-  
+
   private ItemList() {
     super();
     addStyleName(EcStyles.name(STYLE_PRIMARY));
@@ -88,7 +88,7 @@ public class ItemList extends Flow {
     this.table = new HtmlTable();
     EcStyles.add(table, STYLE_PRIMARY, "table");
     add(table);
-    
+
     this.moreWidget = new Button(Localized.getConstants().ecMoreItems());
     EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
     moreWidget.addClickHandler(new ClickHandler() {
@@ -109,7 +109,7 @@ public class ItemList extends Flow {
     if (!data.isEmpty()) {
       data.clear();
     }
-    
+
     if (!BeeUtils.isEmpty(items)) {
       data.addAll(items);
       int row = 0;
@@ -140,9 +140,9 @@ public class ItemList extends Flow {
       table.setWidget(row, COL_PRICE, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
-      
+
       int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
-      
+
       row++;
       for (EcItem item : items) {
         if (row > pageSize) {
@@ -150,7 +150,7 @@ public class ItemList extends Flow {
         }
         renderItem(row++, item);
       }
-      
+
       if (pageSize < items.size()) {
         StyleUtils.unhideDisplay(moreWidget);
       }
@@ -188,7 +188,9 @@ public class ItemList extends Flow {
       panel.add(codeContainer);
     }
 
-    String supplier = item.getSupplier();
+    String supplier = BeeUtils.joinWords(item.getSupplier(),
+        BeeUtils.bracket(item.getSupplierCode()));
+
     if (!BeeUtils.isEmpty(supplier)) {
       Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + STYLE_INFO_CONTAINER);
 
@@ -212,7 +214,9 @@ public class ItemList extends Flow {
         @Override
         public void onClick(ClickEvent event) {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
-          params.addDataItem("ID", item.getId());
+          params.addDataItem(EcConstants.COL_TCD_ARTICLE_ID, item.getId());
+          params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
+          params.addDataItem(EcConstants.COL_TCD_BRAND, item.getManufacturer());
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
             @Override
@@ -379,14 +383,14 @@ public class ItemList extends Flow {
   private void showMoreItems() {
     int pageStart = table.getRowCount() - 1;
     int more = data.size() - pageStart;
-    
+
     if (more > 0) {
       int pageSize = (more > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : more;
-      
+
       for (int i = pageStart; i < pageStart + pageSize; i++) {
         renderItem(i + 1, data.get(i));
       }
-      
+
       if (pageSize >= more) {
         StyleUtils.hideDisplay(moreWidget);
       }
