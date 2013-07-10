@@ -126,8 +126,7 @@ public class EcModuleBean implements BeeModule {
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_CAR_TYPE)) {
-      query = reqInfo.getParameter(VAR_TYPE);
-      response = getItemsByCarType(query);
+      response = getItemsByCarType(reqInfo);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_MANUFACTURERS)) {
@@ -135,8 +134,7 @@ public class EcModuleBean implements BeeModule {
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_MANUFACTURER)) {
-      query = reqInfo.getParameter(VAR_MANUFACTURER);
-      response = getItemsByManufacturer(query);
+      response = getItemsByManufacturer(reqInfo);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_DELIVERY_METHODS)) {
@@ -499,12 +497,11 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getItemManufacturers() {
-    SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFrom(TBL_TCD_ARTICLES)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_SUPPLIER)
-        .addOrder(TBL_TCD_ARTICLES, COL_TCD_SUPPLIER);
+    String[] manufacturers = qs.getColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND)
+        .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .addOrder(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND));
 
-    String[] manufacturers = qs.getColumn(query);
     return ResponseObject.response(manufacturers).setSize(ArrayUtils.length(manufacturers));
   }
 
@@ -566,17 +563,19 @@ public class EcModuleBean implements BeeModule {
     return items;
   }
 
-  private ResponseObject getItemsByCarType(String typeId) {
+  private ResponseObject getItemsByCarType(RequestInfo reqInfo) {
+    String typeId = reqInfo.getParameter(VAR_TYPE);
+
     if (!BeeUtils.isPositiveInt(typeId)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_CAR_TYPE, VAR_TYPE);
     }
-
     SqlSelect articleIdQuery = new SqlSelect()
-        .addFrom(TBL_TCD_TYPE_ARTICLES)
         .addFields(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE_ID)
+        .addFrom(TBL_TCD_TYPE_ARTICLES)
         .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_TYPE_ID, typeId));
 
     List<EcItem> items = getItems(articleIdQuery);
+
     if (items.isEmpty()) {
       return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(typeId));
     } else {
@@ -584,19 +583,21 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject getItemsByManufacturer(String query) {
-    if (BeeUtils.isEmpty(query)) {
+  private ResponseObject getItemsByManufacturer(RequestInfo reqInfo) {
+    String brand = reqInfo.getParameter(VAR_MANUFACTURER);
+
+    if (BeeUtils.isEmpty(brand)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_MANUFACTURER, VAR_MANUFACTURER);
     }
-
-    SqlSelect articleIdQuery = new SqlSelect()
-        .addFrom(TBL_TCD_ARTICLES)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID)
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLES, COL_TCD_SUPPLIER, query));
+    SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID)
+        .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, brand));
 
     List<EcItem> items = getItems(articleIdQuery);
+
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
+      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(brand));
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
