@@ -5,10 +5,12 @@
   <!ENTITY inline "display:inline-block;">
   <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
   <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY input "&inline; width:110px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="NewCargoRequest" viewName="CargoRequests" caption="Naujas pervežimo užklausimas"
   >
@@ -23,11 +25,62 @@
       <Label html="Kontaktai" style="&labelLeft;" />
       <InputText source="Contacts" style="&inline; width:110px;" />
       <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;" 
+      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
         choiceColumns="FirstName LastName CompanyName" options="Customer" />
     </FlowPanel>
     
     &separator;
+    <FlowPanel style="&section;">
+      <Label html="Pakrovimas" style="font-weight: bold; &inline; width:150px; margin-left:100px;" />
+      <Label html="Iškrovimas" style="font-weight: bold; &labelLeft; margin-left:70px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Data" style="&labelLeft;" />
+      <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:40px;" />
+      <Label html="Data" style="&labelRight;" />
+      <InputDateTime source="UnloadingDate" style="&inline; width:110px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label html="Šalis" class="bee-required" style="&labelLeft;" />
+      <FlowPanel style="&inline; width:150px;">
+        <DataSelector source="LoadingCountry" style="&inline; width:130px;" required="true" >
+          <renderToken source="LoadingCountryName" />
+          <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
+          <selectorColumn source="Name" />
+          <selectorColumn source="Code">
+            <ui:renderer type="flag" />
+          </selectorColumn>
+        </DataSelector>
+        <Flag source="LoadingCountryCode" style="&inline; padding-left:2px;" />
+      </FlowPanel>
+      <Label html="Šalis" class="bee-required" style="&labelRight;" />
+      <FlowPanel style="&inline; width:150px;">
+        <DataSelector source="UnloadingCountry" style="&inline; width:130px;" required="true" >
+          <renderToken source="UnloadingCountryName" />
+          <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
+          <selectorColumn source="Name" />
+          <selectorColumn source="Code">
+            <ui:renderer type="flag" />
+          </selectorColumn>
+        </DataSelector>
+        <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label text="=address" style="&labelLeft;" />
+      <InputText source="LoadingAddress" style="&inline; width:130px; margin-right:20px;" />
+      <Label text="=address" style="&labelRight;" />
+      <InputText source="UnloadingAddress" style="&inline; width:130px;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;">
+      <Label html="Papildoma informacija" style="&labelLeft; vertical-align:top;" />
+      <InputArea source="CargoNotes" style="width:400px;" />
+    </FlowPanel>
+    
     <xi:include href="widgets/CargoInfo.widget.xml" />
 
     &separator;

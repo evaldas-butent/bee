@@ -35,7 +35,8 @@
       caption="Į" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
-
+    
+<!-- Deprecated 
     <DataColumn name="Route" caption="Maršrutas" minWidth="100">
       <style>
         <bodyStyle>
@@ -43,7 +44,7 @@
         </bodyStyle>
       </style>
     </DataColumn>
-
+-->
     <DataColumn name="Description" caption="Krovinys" minWidth="100">
       <style>
         <bodyStyle>

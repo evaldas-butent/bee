@@ -519,6 +519,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
+    FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new NewCargoRequestInterceptor());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor("CargoInvoice", new CargoInvoiceForm());
 

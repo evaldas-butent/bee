@@ -178,6 +178,7 @@ public final class TransportConstants {
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
+  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
@@ -231,6 +232,12 @@ public final class TransportConstants {
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_NOTES = "Notes";
+
+  public static final String COL_CARGO_REQUEST_ROUTE = "Route";
+  public static final String COL_CARGO_REQUEST_LOADING_ADDRESS = "LoadingAddress";
+  public static final String COL_CARGO_REQUEST_UNLOADING_ADDRESS = "UnloadingAddress";
+  public static final String COL_CARGO_REQUEST_LOADING_COUNTRY_NAME = "LoadingCountryName";
+  public static final String COL_CARGO_REQUEST_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
@@ -407,6 +414,7 @@ public final class TransportConstants {
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
+  public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_ASSESSMENT = "Assessment";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";

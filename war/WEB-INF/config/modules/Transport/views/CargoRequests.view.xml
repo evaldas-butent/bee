@@ -64,6 +64,7 @@
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
+        <SimpleColumn name="Address" alias="LoadingAddress" label="=cargoLoadingAddress" editable="true" />
         <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
@@ -72,6 +73,7 @@
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" label="=cargoUnloadingAddress" editable="true" />
         <SimpleColumn name="Country" alias="UnloadingCountry" label="Iškrovimo šalis" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
