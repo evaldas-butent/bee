@@ -10,6 +10,54 @@
 <FlowPanel xmlns="http://www.butent.com/widget"
            xmlns:ui="http://www.butent.com/ui"
 >
+  <FlowPanel style="&section;">
+    <Label html="Maršrutas" class="bee-required" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="Route" required="true" visibleLines="8" style="width:400px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Pakrovimas" style="font-weight: bold; &inline; width:150px; margin-left:100px;" />
+    <Label html="Iškrovimas" style="font-weight: bold; &labelLeft; margin-left:70px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Data" style="&labelLeft;" />
+    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:40px;" />
+    <Label html="Data" style="&labelRight;" />
+    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Šalis" class="bee-required" style="&labelLeft;" />
+    <FlowPanel style="&inline; width:150px;">
+      <DataSelector source="LoadingCountry" style="&inline; width:130px;" required="true" >
+        <renderToken source="LoadingCountryName" />
+        <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="LoadingCountryCode" style="&inline; padding-left:2px;" />
+    </FlowPanel>
+    <Label html="Šalis" class="bee-required" style="&labelRight;" />
+    <FlowPanel style="&inline; width:150px;">
+      <DataSelector source="UnloadingCountry" style="&inline; width:130px;" required="true" >
+        <renderToken source="UnloadingCountryName" />
+        <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
+    </FlowPanel>
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label html="Papildoma informacija" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="CargoNotes" style="width:400px;" />
+  </FlowPanel>
 
   &separator;
   <FlowPanel style="&section;">
