@@ -12,6 +12,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
     LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants,
     LocalizableEcConstants {
 
+  String actionCanNotExecuted();
+
   String additionalInfo();
   
   String address();

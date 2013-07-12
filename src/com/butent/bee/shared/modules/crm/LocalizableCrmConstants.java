@@ -24,7 +24,7 @@ public interface LocalizableCrmConstants {
   
   String financialInfo();
   
-  String financialState();  
+  String financialState();
 
   String hideZeroTimes();
 
@@ -52,7 +52,17 @@ public interface LocalizableCrmConstants {
   
   String request();
   
+  String requestFinish();
+
+  String requestFinishing();
+
+  String requestFinishToTask();
+
+  String requestFinishToTaskQuestion();
+
   String result();
+
+  String specifyResult();
 
   String spentTime();
   
