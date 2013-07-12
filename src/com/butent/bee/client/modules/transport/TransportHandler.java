@@ -15,13 +15,16 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -35,6 +38,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -47,17 +51,20 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -99,11 +106,92 @@ public final class TransportHandler {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(COL_ORDER));
       }
+      if (BeeUtils.same(name, "trips") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget)
+            .addClickHandler(new Trips(COL_ORDER));
+      }
     }
 
     @Override
     public FormInterceptor getInstance() {
       return this;
+    }
+  }
+
+  private static final class Trips implements ClickHandler {
+    private final String idName;
+    private DialogBox dialog;
+
+    private Trips(String idName) {
+      this.idName = idName;
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+
+      final FormView form = UiHelper.getForm((Widget) event.getSource());
+
+      this.dialog = DialogBox.create(Localized.getConstants().assignCargosToTripCaption());
+      dialog.setHideOnEscape(true);
+
+      HtmlTable container = new HtmlTable();
+      container.setBorderSpacing(5);
+
+      container.setText(0, 0, Localized.getConstants().cargoSelectTrip());
+
+      Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
+          Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
+              "ExpeditionType", "ForwarderName"));
+      relation.disableNewRow();
+
+      final UnboundSelector selector = UnboundSelector.create(relation,
+          Lists.newArrayList("TripNo"));
+
+      selector.addEditStopHandler(new EditStopEvent.Handler() {
+
+        @Override
+        public void onEditStop(EditStopEvent esEvent) {
+          if (esEvent.isChanged()) {
+            ParameterList args = TransportHandler.createArgs(SVC_GET_UNASSIGNED_CARGOS);
+            args.addDataItem(idName, form.getActiveRow().getId());
+
+            dialog.close();
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+
+              @Override
+              public void onResponse(ResponseObject response) {
+
+                if (!response.hasResponse()) {
+                  Global.showError(Localized.getMessages().dataNotAvailable("Unassignment cargos"));
+                  return;
+                }
+
+                if (response.hasResponse(SimpleRowSet.class)) {
+                  SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+                  BeeColumn cargo = new BeeColumn(ValueType.NUMBER, "Cargo");
+                  BeeColumn trip = new BeeColumn(ValueType.NUMBER, "Trip");
+                  List<BeeColumn> column = Lists.newArrayList(cargo, trip);
+                  List<String> values = Lists.newArrayList();
+
+                  for (int row = 0; row < rs.getNumberOfRows(); row++) {
+                    values.add(rs.getValue(row, 0));
+                    values.add(selector.getValue());
+                    Queries.insert(VIEW_CARGO_TRIPS, column, values);
+                    values.clear();
+                  }
+
+                  Global.showInfo(Localized.getMessages().orderCargoAddingToTrips(
+                      rs.getNumberOfRows()));
+                }
+              }
+            });
+          }
+        }
+      });
+      container.setWidget(0, 1, selector);
+      dialog.setWidget(container);
+      dialog.showOnTop(form.getElement(), 1);
     }
   }
 

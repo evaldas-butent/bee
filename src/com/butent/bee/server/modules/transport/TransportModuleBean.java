@@ -93,6 +93,8 @@ public class TransportModuleBean implements BeeModule {
       long date = BeeUtils.toLong(reqInfo.getParameter("Date"));
 
       response = getTripBeforeData(vehicle, date);
+    } else if (BeeUtils.same(svc, SVC_GET_UNASSIGNED_CARGOS)) {
+      response = getUnassignedCargos(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_PROFIT)) {
       if (reqInfo.hasParameter(VAR_TRIP_ID)) {
@@ -588,7 +590,25 @@ public class TransportModuleBean implements BeeModule {
         "TripCost:", res.getValue("TripCost"), "ServicesIncome:", res.getValue("ServicesIncome"),
         "ServicesCost:", res.getValue("ServicesCost")});
   }
+  
+  private ResponseObject getUnassignedCargos(RequestInfo reqInfo) {
+    long orderId = BeeUtils.toLong(reqInfo.getParameter(COL_ORDER));
 
+    SqlSelect query =
+        new SqlSelect().addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO),
+            "ALS_UNASSIGNED_CARGO")
+            .addFrom(TBL_ORDERS)
+            .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+            .addFromLeft(TBL_CARGO_TRIPS,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)
+                , SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
+
+    SimpleRowSet orderList = qs.getData(query);
+   
+    return ResponseObject.response(orderList);
+  }
+  
   private ResponseObject getCargoUsage(String viewName, String[] ids) {
     String source = sys.getViewSource(viewName);
     IsExpression ref;

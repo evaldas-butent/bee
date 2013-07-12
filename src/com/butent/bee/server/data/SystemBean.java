@@ -429,6 +429,15 @@ public class SystemBean {
     return table.joinExtField(query, tblAlias, field);
   }
 
+  /**
+   * Creates SQL joins between tables.
+   * 
+   * @param tblName Source table with represented own column Id name, where called
+   *          {@link SystemBean#getIdName(String)}
+   * @param dstTable Distance table with reference of source table
+   * @param dstField Reference field name of source table
+   * @return
+   */
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
     return joinTables(tblName, null, dstTable, dstField);
   }

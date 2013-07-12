@@ -8,6 +8,8 @@ public interface LocalizableTransportConstants {
   
   String assessments();
 
+  String assignCargosToTripCaption();
+
   String assignCargoToTripCaption();
 
   String assignCargoToTripQuestion();
@@ -43,7 +45,9 @@ public interface LocalizableTransportConstants {
   String cargoProfit();
 
   String cargos();
-  
+
+  String cargoSelectTrip();
+
   String cargoTermsOfService();
 
   String cargoUnloading();

@@ -127,6 +127,7 @@ public final class TransportConstants {
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
   public static final String SVC_GET_BEFORE = "GetBeforeData";
+  public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
@@ -435,6 +436,7 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
 
+  public static final String ALS_UNASSIGNED_CARGO = "UnassignedCargo";
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
 

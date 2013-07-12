@@ -19,9 +19,8 @@
         <row>
           <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
-          <cell colSpan="2">
             <Button name="profit" html="Pelnas" />
-          </cell>
+            <Button name="trips" html="Prisikirti reisą" />
           <cell rowSpan="3">
             <InputArea source="Notes" visibleLines="5" style="width:150px;" />
           </cell>
