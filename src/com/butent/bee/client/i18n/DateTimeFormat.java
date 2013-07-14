@@ -297,20 +297,26 @@ public class DateTimeFormat {
     StringBuffer toAppendTo = new StringBuffer(64);
     int j;
     int n = pattern.length();
-
-    for (int i = 0; i < n;) {
+    
+    int i = 0;
+    while (i < n) {
       char ch = pattern.charAt(i);
+      
       if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
-        for (j = i + 1; j < n && pattern.charAt(j) == ch; ++j) {
+        j = i + 1;
+        while (j < n && pattern.charAt(j) == ch) {
+          j++;
         }
+
         subFormat(toAppendTo, ch, j - i, date, keepDate, keepTime, timeZone);
         i = j;
+
       } else if (ch == '\'') {
-        ++i;
+        i++;
 
         if (i < n && pattern.charAt(i) == '\'') {
           toAppendTo.append('\'');
-          ++i;
+          i++;
           continue;
         }
 
@@ -318,7 +324,7 @@ public class DateTimeFormat {
         while (!trailQuote) {
           j = i;
           while (j < n && pattern.charAt(j) != '\'') {
-            ++j;
+            j++;
           }
 
           if (j >= n) {
@@ -326,16 +332,17 @@ public class DateTimeFormat {
           }
 
           if (j + 1 < n && pattern.charAt(j + 1) == '\'') {
-            ++j;
+            j++;
           } else {
             trailQuote = true;
           }
           toAppendTo.append(pattern.substring(i, j));
           i = j + 1;
         }
+
       } else {
         toAppendTo.append(ch);
-        ++i;
+        i++;
       }
     }
 
@@ -653,7 +660,8 @@ public class DateTimeFormat {
     int abutStart = 0;
     int abutPass = 0;
 
-    for (int i = 0; i < patternParts.size(); ++i) {
+    int i = 0;
+    while (i < patternParts.size()) {
       PatternPart part = patternParts.get(i);
 
       if (part.count > 0) {
@@ -673,16 +681,18 @@ public class DateTimeFormat {
           }
 
           if (!subParse(text, parsePos, part, count, cal)) {
-            i = abutPat - 1;
             parsePos[0] = abutStart;
+            i = abutPat;
             continue;
           }
+
         } else {
           abutPat = -1;
           if (!subParse(text, parsePos, part, 0, cal)) {
             return 0;
           }
         }
+
       } else {
         abutPat = -1;
         if (part.text.charAt(0) == ' ') {
@@ -690,15 +700,19 @@ public class DateTimeFormat {
           skipSpace(text, parsePos);
 
           if (parsePos[0] > s) {
+            i++;
             continue;
           }
         } else if (text.startsWith(part.text, parsePos[0])) {
           parsePos[0] += part.text.length();
+          i++;
           continue;
         }
 
         return 0;
       }
+      
+      i++;
     }
 
     if (!cal.calcDate(date, strict)) {
@@ -735,52 +749,52 @@ public class DateTimeFormat {
     StringBuffer buf = new StringBuffer(32);
     boolean inQuote = false;
 
-    for (int i = 0; i < patt.length(); i++) {
+    int i = 0;
+    while (i < patt.length()) {
       char ch = patt.charAt(i);
 
       if (ch == ' ') {
         addPart(buf, 0);
         buf.append(' ');
         addPart(buf, 0);
+
         while (i + 1 < patt.length() && patt.charAt(i + 1) == ' ') {
           i++;
         }
-        continue;
-      }
 
-      if (inQuote) {
+      } else if (inQuote) {
         if (ch == '\'') {
           if (i + 1 < patt.length() && patt.charAt(i + 1) == '\'') {
             buf.append(ch);
-            ++i;
+            i++;
           } else {
             inQuote = false;
           }
         } else {
           buf.append(ch);
         }
-        continue;
-      }
 
-      if (PATTERN_CHARS.indexOf(ch) > 0) {
+      } else if (PATTERN_CHARS.indexOf(ch) > 0) {
         addPart(buf, 0);
         buf.append(ch);
         int count = getNextCharCountInPattern(patt, i);
         addPart(buf, count);
-        i += count - 1;
-        continue;
-      }
 
-      if (ch == '\'') {
+        i += count - 1;
+
+      } else if (ch == '\'') {
         if (i + 1 < patt.length() && patt.charAt(i + 1) == '\'') {
           buf.append('\'');
           i++;
         } else {
           inQuote = true;
         }
+
       } else {
         buf.append(ch);
       }
+      
+      i++;
     }
 
     addPart(buf, 0);

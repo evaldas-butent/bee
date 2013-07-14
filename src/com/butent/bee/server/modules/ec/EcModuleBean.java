@@ -33,11 +33,15 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.ArticleBrand;
+import com.butent.bee.shared.modules.ec.ArticleCriteria;
+import com.butent.bee.shared.modules.ec.ArticleRemainder;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.time.TimeUtils;
@@ -152,6 +156,11 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_ANALOGS)) {
       response = getItemAnalogs(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEM_INFO)) {
+      query = reqInfo.getParameter(COL_TCD_ARTICLE_ID);
+      response = getItemInfo(query, reqInfo.getParameter(COL_TCD_BRAND));
+      log = true;
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -375,7 +384,8 @@ public class EcModuleBean implements BeeModule {
             COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
             COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
         .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MODEL_ID, modelId))
-        .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
+        .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO);
 
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
@@ -494,6 +504,104 @@ public class EcModuleBean implements BeeModule {
             COL_TCD_BRAND, brand), SqlUtils.notEqual(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, id)));
 
     return ResponseObject.response(getItems(articleIdQuery));
+  }
+
+  private ResponseObject getItemInfo(String id, String brand) {
+    if (!BeeUtils.isPositiveInt(id)) {
+      return ResponseObject.parameterNotFound(SVC_GET_ITEM_INFO, COL_TCD_ARTICLE_ID);
+    }
+
+    EcItemInfo ecItemInfo = new EcItemInfo();
+
+    SqlSelect criteriaQuery = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_NAME, COL_TCD_CRITERIA_VALUE)
+        .addFrom(TBL_TCD_ARTICLE_CRITERIA)
+        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE_ID, id))
+        .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_NAME);
+
+    SimpleRowSet criteriaData = qs.getData(criteriaQuery);
+    if (!DataUtils.isEmpty(criteriaData)) {
+      List<ArticleCriteria> criteria = Lists.newArrayList();
+      for (SimpleRow row : criteriaData) {
+        criteria.add(new ArticleCriteria(row.getValue(COL_TCD_CRITERIA_NAME),
+            row.getValue(COL_TCD_CRITERIA_VALUE)));
+      }
+      
+      ecItemInfo.setCriteria(criteria);
+    }
+
+    IsCondition brandWhere = SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID, id);
+
+    SqlSelect brandQuery = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
+            COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID)
+        .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .setWhere(brandWhere)
+        .addOrder(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_SUPPLIER);
+
+    SimpleRowSet brandData = qs.getData(brandQuery);
+    if (!DataUtils.isEmpty(brandData)) {
+      List<ArticleBrand> brands = Lists.newArrayList();
+      for (SimpleRow row : brandData) {
+        brands.add(new ArticleBrand(row.getValue(COL_TCD_BRAND), row.getValue(COL_TCD_ANALOG_NR),
+            row.getDouble(COL_TCD_PRICE), row.getValue(COL_TCD_SUPPLIER),
+            row.getValue(COL_TCD_SUPPLIER_ID)));
+      }
+      
+      ecItemInfo.setBrands(brands);
+      
+      IsCondition remainderWhere = BeeUtils.isEmpty(brand) ? brandWhere
+          : SqlUtils.and(brandWhere, SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, brand));
+
+      SqlSelect remainderQuery = new SqlSelect()
+          .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE)
+          .addSum(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
+          .addFrom(TBL_TCD_ARTICLE_BRANDS)
+          .addFromInner(TBL_TCD_REMAINDERS,
+              sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
+          .setWhere(remainderWhere)
+          .addGroup(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE)
+          .addOrder(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE);
+
+      SimpleRowSet remainderData = qs.getData(remainderQuery);
+      if (!DataUtils.isEmpty(remainderData)) {
+        List<ArticleRemainder> remainders = Lists.newArrayList();
+        for (SimpleRow row : remainderData) {
+          remainders.add(new ArticleRemainder(row.getValue(COL_TCD_WAREHOUSE),
+              row.getDouble(COL_TCD_REMAINDER)));
+        }
+        
+        ecItemInfo.setRemainders(remainders);
+      }
+    }
+
+    SqlSelect carTypeQuery = new SqlSelect()
+        .addFrom(TBL_TCD_TYPE_ARTICLES)
+        .addFromInner(TBL_TCD_TYPES,
+            SqlUtils.joinUsing(TBL_TCD_TYPES, TBL_TCD_TYPE_ARTICLES, COL_TCD_TYPE_ID))
+        .addFromInner(TBL_TCD_MODELS,
+            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
+            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
+            COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE_ID, id))
+        .addOrder(TBL_TCD_MODELS, COL_TCD_MANUFACTURER, COL_TCD_MODEL_NAME)
+        .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO);
+
+    SimpleRowSet carTypeData = qs.getData(carTypeQuery);
+    if (!DataUtils.isEmpty(carTypeData)) {
+      List<EcCarType> carTypes = Lists.newArrayList();
+      for (SimpleRow row : carTypeData) {
+        carTypes.add(new EcCarType(row));
+      }
+
+      ecItemInfo.setCarTypes(carTypes);
+    }
+
+    return ResponseObject.response(ecItemInfo);
   }
 
   private ResponseObject getItemManufacturers() {

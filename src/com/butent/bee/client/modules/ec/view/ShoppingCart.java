@@ -372,8 +372,17 @@ public class ShoppingCart extends Split {
     }
   }
 
-  private static Widget renderName(CartItem item) {
-    return new Label(item.getEcItem().getName());
+  private static Widget renderName(final CartItem item) {
+    Label nameWidget = new Label(item.getEcItem().getName());
+
+    nameWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        EcKeeper.openItem(item.getEcItem(), false);
+      }
+    });
+    
+    return nameWidget;
   }
 
   private static Widget renderPicture() {

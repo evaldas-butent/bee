@@ -27,16 +27,6 @@ public final class FileNameUtils {
   private static final char WINDOWS_SEPARATOR = '\\';
   private static final char SYSTEM_SEPARATOR = File.separatorChar;
 
-  private static final char OTHER_SEPARATOR;
-  
-  static {
-    if (isSystemWindows()) {
-      OTHER_SEPARATOR = UNIX_SEPARATOR;
-    } else {
-      OTHER_SEPARATOR = WINDOWS_SEPARATOR;
-    }
-  }
-
   public static String addExtension(String name, String ext) {
     Assert.notEmpty(name);
     Assert.isTrue(isValidExtension(ext));
@@ -45,29 +35,6 @@ public final class FileNameUtils {
       return name + ext;
     } else {
       return name + EXTENSION_SEPARATOR + ext;
-    }
-  }
-
-  public static String concat(String basePath, String fullFilenameToAdd) {
-    int prefix = getPrefixLength(fullFilenameToAdd);
-    if (prefix < 0) {
-      return null;
-    }
-    if (prefix > 0) {
-      return normalize(fullFilenameToAdd);
-    }
-    if (basePath == null) {
-      return null;
-    }
-    int len = basePath.length();
-    if (len == 0) {
-      return normalize(fullFilenameToAdd);
-    }
-    char ch = basePath.charAt(len - 1);
-    if (isSeparator(ch)) {
-      return normalize(basePath + fullFilenameToAdd);
-    } else {
-      return normalize(basePath + '/' + fullFilenameToAdd);
     }
   }
 
@@ -322,24 +289,6 @@ public final class FileNameUtils {
     return ok;
   }
 
-  public static String normalize(String filename) {
-    return doNormalize(filename, SYSTEM_SEPARATOR, true);
-  }
-
-  public static String normalize(String filename, boolean unixSeparator) {
-    char separator = unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR;
-    return doNormalize(filename, separator, true);
-  }
-
-  public static String normalizeNoEndSeparator(String filename) {
-    return doNormalize(filename, SYSTEM_SEPARATOR, false);
-  }
-
-  public static String normalizeNoEndSeparator(String filename, boolean unixSeparator) {
-    char separator = unixSeparator ? UNIX_SEPARATOR : WINDOWS_SEPARATOR;
-    return doNormalize(filename, separator, false);
-  }
-
   public static String removeExtension(String filename) {
     if (filename == null) {
       return null;
@@ -419,91 +368,6 @@ public final class FileNameUtils {
     return filename.substring(prefix, endIndex);
   }
 
-  private static String doNormalize(String filename, char separator, boolean keepSeparator) {
-    if (filename == null) {
-      return null;
-    }
-    int size = filename.length();
-    if (size == 0) {
-      return filename;
-    }
-    int prefix = getPrefixLength(filename);
-    if (prefix < 0) {
-      return null;
-    }
-
-    char[] array = new char[size + 2];
-    filename.getChars(0, filename.length(), array, 0);
-
-    char otherSeparator = (separator == SYSTEM_SEPARATOR) ? OTHER_SEPARATOR : SYSTEM_SEPARATOR;
-    for (int i = 0; i < array.length; i++) {
-      if (array[i] == otherSeparator) {
-        array[i] = separator;
-      }
-    }
-
-    boolean lastIsDirectory = true;
-    if (array[size - 1] != separator) {
-      array[size++] = separator;
-      lastIsDirectory = false;
-    }
-
-    for (int i = prefix + 1; i < size; i++) {
-      if (array[i] == separator && array[i - 1] == separator) {
-        System.arraycopy(array, i, array, i - 1, size - i);
-        size--;
-        i--;
-      }
-    }
-
-    for (int i = prefix + 1; i < size; i++) {
-      if (array[i] == separator && array[i - 1] == '.' 
-          && (i == prefix + 1 || array[i - 2] == separator)) {
-        if (i == size - 1) {
-          lastIsDirectory = true;
-        }
-        System.arraycopy(array, i + 1, array, i - 1, size - i);
-        size -= 2;
-        i--;
-      }
-    }
-
-    outer : for (int i = prefix + 2; i < size; i++) {
-      if (array[i] == separator && array[i - 1] == '.' && array[i - 2] == '.' 
-          && (i == prefix + 2 || array[i - 3] == separator)) {
-        if (i == prefix + 2) {
-          return null;
-        }
-        if (i == size - 1) {
-          lastIsDirectory = true;
-        }
-        int j;
-        for (j = i - 4; j >= prefix; j--) {
-          if (array[j] == separator) {
-            System.arraycopy(array, i + 1, array, j + 1, size - i);
-            size -= i - j;
-            i = j + 1;
-            continue outer;
-          }
-        }
-        System.arraycopy(array, i + 1, array, prefix, size - i);
-        size -= i + 1 - prefix;
-        i = prefix + 1;
-      }
-    }
-
-    if (size <= 0) {
-      return BeeConst.STRING_EMPTY;
-    }
-    if (size <= prefix) {
-      return new String(array, 0, size);
-    }
-    if (lastIsDirectory && keepSeparator) {
-      return new String(array, 0, size);
-    }
-    return new String(array, 0, size - 1);
-  }
-  
   private static boolean isSeparator(char ch) {
     return (ch == UNIX_SEPARATOR) || (ch == WINDOWS_SEPARATOR);
   }

@@ -84,6 +84,12 @@ public interface LocalizableEcConstants {
 
   String ecItemDescription();
 
+  String ecItemDetailsBrands();
+
+  String ecItemDetailsCarTypes();
+  
+  String ecItemDetailsRemainders();
+  
   String ecItemDiameter();
 
   String ecItemHeight();
@@ -103,6 +109,8 @@ public interface LocalizableEcConstants {
   String ecItemSpeedIndex();
 
   String ecItemSupplier();
+
+  String ecItemSupplierCode();
 
   String ecItemType();
 

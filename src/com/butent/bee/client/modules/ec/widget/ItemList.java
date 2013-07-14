@@ -11,17 +11,13 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.CustomSpan;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -48,7 +44,6 @@ public class ItemList extends Flow {
   private static final String STYLE_QUANTITY = EcStyles.name(STYLE_PRIMARY, "quantity");
   private static final String STYLE_LIST_PRICE = EcStyles.name(STYLE_PRIMARY, "listPrice");
   private static final String STYLE_PRICE = EcStyles.name(STYLE_PRIMARY, "price");
-  private static final String STYLE_CART = EcStyles.name(STYLE_PRIMARY, "cart");
 
   private static final String STYLE_ITEM_NAME = EcStyles.name(STYLE_PRIMARY, "name");
   private static final String STYLE_ITEM_CODE = EcStyles.name(STYLE_PRIMARY, "code");
@@ -58,7 +53,6 @@ public class ItemList extends Flow {
   private static final String STYLE_ITEM_MANUFACTURER =
       EcStyles.name(STYLE_PRIMARY, "manufacturer");
 
-  private static final String STYLE_INFO_CONTAINER = "-container";
   private static final String STYLE_LABEL = "-label";
 
   private static final int COL_PICTURE = 0;
@@ -169,40 +163,31 @@ public class ItemList extends Flow {
       if (!BeeUtils.isEmpty(categoryNames)) {
         itemName.setTitle(categoryNames);
       }
+      
+      itemName.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          EcKeeper.openItem(item, true);
+        }
+      });
 
       panel.add(itemName);
     }
 
     String code = item.getCode();
     if (!BeeUtils.isEmpty(code)) {
-      Flow codeContainer = new Flow(STYLE_ITEM_CODE + STYLE_INFO_CONTAINER);
-
-      CustomSpan codeLabel = new CustomSpan(STYLE_ITEM_CODE + STYLE_LABEL);
-      codeLabel.setText(Localized.getConstants().ecItemCode());
-      codeContainer.add(codeLabel);
-
-      CustomSpan itemCode = new CustomSpan(STYLE_ITEM_CODE);
-      itemCode.setText(code);
-      codeContainer.add(itemCode);
-
-      panel.add(codeContainer);
+      Widget codeWidget = EcUtils.renderField(Localized.getConstants().ecItemCode(), code,
+          STYLE_ITEM_CODE);
+      panel.add(codeWidget);
     }
 
     String supplier = BeeUtils.joinWords(item.getSupplier(),
         BeeUtils.bracket(item.getSupplierCode()));
 
     if (!BeeUtils.isEmpty(supplier)) {
-      Flow supplierContainer = new Flow(STYLE_ITEM_SUPPLIER + STYLE_INFO_CONTAINER);
-
-      CustomSpan supplierLabel = new CustomSpan(STYLE_ITEM_SUPPLIER + STYLE_LABEL);
-      supplierLabel.setText(Localized.getConstants().ecItemSupplier());
-      supplierContainer.add(supplierLabel);
-
-      CustomSpan itemSupplier = new CustomSpan(STYLE_ITEM_SUPPLIER);
-      itemSupplier.setText(supplier);
-      supplierContainer.add(itemSupplier);
-
-      panel.add(supplierContainer);
+      Widget supplierWidget = EcUtils.renderField(Localized.getConstants().ecItemSupplier(),
+          supplier, STYLE_ITEM_SUPPLIER);
+      panel.add(supplierWidget);
     }
 
     if (item.hasAnalogs()) {
@@ -244,17 +229,9 @@ public class ItemList extends Flow {
 
     String manufacturer = item.getManufacturer();
     if (!BeeUtils.isEmpty(manufacturer)) {
-      Flow manufacturerContainer = new Flow(STYLE_ITEM_MANUFACTURER + STYLE_INFO_CONTAINER);
-
-      CustomSpan manufacturerLabel = new CustomSpan(STYLE_ITEM_MANUFACTURER + STYLE_LABEL);
-      manufacturerLabel.setText(Localized.getConstants().ecItemManufacturer());
-      manufacturerContainer.add(manufacturerLabel);
-
-      CustomSpan itemManufacturer = new CustomSpan(STYLE_ITEM_MANUFACTURER);
-      itemManufacturer.setText(manufacturer);
-      manufacturerContainer.add(itemManufacturer);
-
-      panel.add(manufacturerContainer);
+      Widget manufacturerWidget = EcUtils.renderField(Localized.getConstants().ecItemManufacturer(),
+          manufacturer, STYLE_ITEM_MANUFACTURER);
+      panel.add(manufacturerWidget);
     }
 
     return panel;
@@ -291,10 +268,8 @@ public class ItemList extends Flow {
       table.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
     }
 
-    Widget qty = renderQuantity(item, 1);
-    if (qty != null) {
-      table.setWidgetAndStyle(row, COL_QUANTITY, qty, STYLE_QUANTITY);
-    }
+    Widget accumulator = new CartAccumulator(item, 1);
+    table.setWidgetAndStyle(row, COL_QUANTITY, accumulator, STYLE_QUANTITY);
 
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
@@ -315,62 +290,6 @@ public class ItemList extends Flow {
     InlineLabel currency = new InlineLabel(EcConstants.CURRENCY);
     currency.addStyleName(stylePrefix + "currency");
     panel.add(currency);
-
-    return panel;
-  }
-
-  private static Widget renderQuantity(final EcItem item, int quantity) {
-    String stylePrefix = STYLE_QUANTITY + "-";
-
-    Horizontal panel = new Horizontal();
-    final InputInteger input = new InputInteger(quantity);
-    input.addStyleName(stylePrefix + "input");
-    panel.add(input);
-
-    Flow spin = new Flow(stylePrefix + "spin");
-
-    Image plus = new Image(Global.getImages().silverPlus());
-    plus.addStyleName(stylePrefix + "plus");
-
-    plus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = Math.max(input.getIntValue() + 1, 1);
-        input.setValue(value);
-      }
-    });
-    spin.add(plus);
-
-    Image minus = new Image(Global.getImages().silverMinus());
-    minus.addStyleName(stylePrefix + "minus");
-
-    minus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = Math.max(input.getIntValue() - 1, 0);
-        input.setValue(value);
-      }
-    });
-    spin.add(minus);
-
-    panel.add(spin);
-
-    Image cart = new Image("images/shoppingcart_add.png");
-    cart.setAlt("cart");
-    cart.addStyleName(STYLE_CART);
-
-    cart.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = input.getIntValue();
-        if (value > 0) {
-          EcKeeper.addToCart(item, value);
-          input.setValue(0);
-        }
-      }
-    });
-
-    panel.add(cart);
 
     return panel;
   }

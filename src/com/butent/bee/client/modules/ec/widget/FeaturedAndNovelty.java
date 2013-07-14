@@ -1,9 +1,12 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.Button;
@@ -81,7 +84,7 @@ public class FeaturedAndNovelty extends Flow {
     }
   }
   
-  private static Widget renderItem(EcItem item, String primaryStyle, String bannerText) {
+  private static Widget renderItem(final EcItem item, String primaryStyle, String bannerText) {
     Flow panel = new Flow(EcStyles.name(primaryStyle, STYLE_ITEM));
     
     if (!BeeUtils.isEmpty(bannerText)) {
@@ -121,6 +124,13 @@ public class FeaturedAndNovelty extends Flow {
     
     Button details = new Button(Localized.getConstants().ecShowDetails());
     EcStyles.add(details, primaryStyle, STYLE_DRILL);
+    details.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        EcKeeper.openItem(item, true);
+      }
+    });
+
     panel.add(details);
     
     return panel;

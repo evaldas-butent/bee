@@ -4,8 +4,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.CustomSpan;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -14,11 +17,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public final class EcUtils {
-  
+
   private static final List<String> colors = Lists.newArrayList(Color.getNames().values());
-  
-  private static final int currentYear = TimeUtils.today().getYear(); 
-  
+
+  private static final int currentYear = TimeUtils.today().getYear();
+
+  private static final String STYLE_FIELD_CONTAINER = "-container";
+  private static final String STYLE_FIELD_LABEL = "-label";
+
   public static boolean isProduced(Integer producedFrom, Integer producedTo, int year) {
     Integer yearFrom = normalizeYear(producedFrom);
     if (yearFrom == null || yearFrom > year) {
@@ -29,7 +35,7 @@ public final class EcUtils {
     if (yearTo == null) {
       yearTo = currentYear;
     }
-    
+
     if (yearTo > yearFrom) {
       return year <= yearTo;
     } else {
@@ -48,26 +54,26 @@ public final class EcUtils {
       return null;
     }
   }
-  
+
   public static Widget randomPicture(int min, int max) {
     CustomDiv widget = new CustomDiv();
-    
+
     int width = BeeUtils.randomInt(min, max);
     int height = BeeUtils.randomInt(min, max);
     StyleUtils.setSize(widget, width, height);
-    
+
     int index = BeeUtils.randomInt(0, colors.size());
     StyleUtils.setBackgroundColor(widget, colors.get(index));
-    
+
     int radius = BeeUtils.randomInt(0, 6);
     if (radius > 0) {
-      widget.getElement().getStyle().setProperty("borderRadius", 
+      widget.getElement().getStyle().setProperty("borderRadius",
           BeeUtils.toString(radius * 10) + "%");
     }
-    
+
     return widget;
   }
-  
+
   public static String renderCents(int cents) {
     if (cents >= 0) {
       String s = BeeUtils.toLeadingZeroes(cents, 3);
@@ -77,7 +83,28 @@ public final class EcUtils {
       return BeeConst.STRING_MINUS + renderCents(-cents);
     }
   }
-  
+
+  public static Widget renderField(String label, String value, String styleName) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    }
+    Assert.notEmpty(styleName);
+
+    Flow container = new Flow(styleName + STYLE_FIELD_CONTAINER);
+
+    if (!BeeUtils.isEmpty(label)) {
+      CustomSpan labelWidget = new CustomSpan(styleName + STYLE_FIELD_LABEL);
+      labelWidget.setText(label);
+      container.add(labelWidget);
+    }
+
+    CustomSpan valueWidget = new CustomSpan(styleName);
+    valueWidget.setText(value);
+    container.add(valueWidget);
+    
+    return container;
+  }
+
   public static String renderProduced(Integer producedFrom, Integer producedTo) {
     Integer yearFrom = normalizeYear(producedFrom);
     if (yearFrom == null) {
@@ -88,18 +115,18 @@ public final class EcUtils {
     if (yearTo == null) {
       yearTo = currentYear;
     }
-    
+
     if (yearTo > yearFrom) {
       return yearFrom.toString() + BeeConst.STRING_MINUS + yearTo.toString();
     } else {
       return yearFrom.toString();
     }
   }
-  
+
   public static String string(Double value) {
     return (value == null) ? null : BeeUtils.toString(value);
   }
-  
+
   public static String string(Integer value) {
     return (value == null) ? null : value.toString();
   }
@@ -114,10 +141,10 @@ public final class EcUtils {
     if (yearTo == null) {
       yearTo = currentYear;
     }
-    
+
     return Range.closed(yearFrom, Math.max(yearFrom, yearTo));
   }
-  
+
   private EcUtils() {
   }
 }

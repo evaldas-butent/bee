@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -13,10 +14,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
+import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -38,6 +41,7 @@ import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -250,6 +254,43 @@ public final class EcKeeper {
         searchBox.clearValue();
 
         BeeKeeper.getScreen().updateActivePanel(widget);
+      }
+    });
+  }
+  
+  private static String getActiveViewId() {
+    IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
+    return (activeWidget == null) ? null : activeWidget.getId(); 
+  }
+  
+  public static void openItem(final EcItem item, final boolean allowAddToCart) {
+    Assert.notNull(item);
+    
+    final String activeViewId = getActiveViewId();
+
+    ParameterList params = createArgs(SVC_GET_ITEM_INFO);
+
+    params.addDataItem(COL_TCD_ARTICLE_ID, item.getId());
+    params.addDataItem(COL_TCD_BRAND, item.getManufacturer());
+    
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        dispatchMessages(response);
+        
+        if (Objects.equal(activeViewId, getActiveViewId()) 
+            && response.hasResponse(EcItemInfo.class)) {
+          EcItemInfo ecItemInfo = EcItemInfo.restore(response.getResponseAsString());
+          ItemDetails widget = new ItemDetails(item, ecItemInfo, allowAddToCart);
+          
+          DialogBox dialog = DialogBox.create(item.getName(),
+              EcStyles.name(ItemDetails.STYLE_PRIMARY, "dialog"));
+          dialog.setWidget(widget);
+          
+          dialog.setHideOnEscape(true);
+          dialog.setAnimationEnabled(true);
+          dialog.center();
+        }
       }
     });
   }

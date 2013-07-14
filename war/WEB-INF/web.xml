@@ -12,6 +12,7 @@
       <transport-guarantee>NONE</transport-guarantee>
     </user-data-constraint>
   </security-constraint>
+
   <security-constraint>
     <web-resource-collection>
       <web-resource-name>Unchecked</web-resource-name>
@@ -21,6 +22,7 @@
       <transport-guarantee>NONE</transport-guarantee>
     </user-data-constraint>
   </security-constraint>
+  
   <login-config>
     <auth-method>FORM</auth-method>
     <realm-name>DBRealm</realm-name>
