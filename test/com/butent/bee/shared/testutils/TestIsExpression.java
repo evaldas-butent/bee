@@ -42,7 +42,7 @@ public class TestIsExpression {
     sql.addFields("Table1", "field11", "field12");
     sql.addFrom("Table1");
 
-    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
+    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
         "pair2", "pair3"), "Name1");
 
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
@@ -53,7 +53,7 @@ public class TestIsExpression {
     sql.addFrom("Table1");
 
     sql.addExpr(
-        SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
+        SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
             SqlUtils.name("field22"), "pair3"), "Name1");
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
         + "THEN field22 ELSE pair3 END AS Name1 FROM Table1", sql.getQuery());
@@ -63,7 +63,7 @@ public class TestIsExpression {
     sql.addFrom("Table1");
 
     sql.addExpr(
-        SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
+        SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
             SqlUtils.constant("field22"), "pair3"), "Name1");
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
         + "THEN 'field22' ELSE pair3 END AS Name1 FROM Table1", sql.getQuery());
@@ -72,8 +72,8 @@ public class TestIsExpression {
     sql.addFields("Table1", "field11", "field12");
     sql.addFrom("Table1");
 
-    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
-        "pair2", "pair3", "pair4", "pair5"), "Name1");
+    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
+        "pair2", SqlUtils.constant("pair3"), "pair4", "pair5"), "Name1");
 
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
         + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE pair5 END AS Name1 FROM Table1", sql.getQuery());
@@ -82,19 +82,19 @@ public class TestIsExpression {
     sql.addFields("Table1", "field11", "field12");
     sql.addFrom("Table1");
 
-    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
-        "pair2", "pair3", "pair4", null), "Name1");
+    sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
+        "pair2", SqlUtils.constant("pair3"), "pair4", null), "Name1");
 
     assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
-        + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE null END AS Name1 FROM Table1", sql.getQuery());
+        + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE NULL END AS Name1 FROM Table1", sql.getQuery());
 
     try {
       sql = new SqlSelect();
       sql.addFields("Table1", "field11", "field12");
       sql.addFrom("Table1");
 
-      sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
-          "pair2", "pair3", "pair4", ""), "Name1");
+      sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), SqlUtils.constant("pair1"),
+          "pair2", SqlUtils.constant("pair3"), "pair4", ""), "Name1");
 
       assertEquals("SELECT Table1.field11, Table1.field12, CASE field21 WHEN 'pair1' "
           + "THEN pair2 WHEN 'pair3' THEN pair4 ELSE  END AS Name1 FROM Table1", sql.getQuery());
@@ -124,23 +124,17 @@ public class TestIsExpression {
           + e.getMessage());
     }
 
-    try {
-      sql = new SqlSelect();
-      sql.addFields("Table1", "field11", "field12");
-      sql.addFrom("Table1");
-
-      sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1",
-          "pair2", SqlUtils.constant("field22"), "pair4", "pair5"),
-          "Name1");
-
-      fail("Exception not works: " + sql.getQuery());
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("java.lang.Exception need BeeRumtimeException: "
-          + e.getMessage());
-    }
+    /*
+     * try { sql = new SqlSelect(); sql.addFields("Table1", "field11", "field12");
+     * sql.addFrom("Table1");
+     * 
+     * sql.addExpr(SqlUtils.sqlCase(SqlUtils.name("field21"), "pair1", "pair2",
+     * SqlUtils.constant("field22"), "pair4", "pair5"), "Name1");
+     * 
+     * fail("Exception not works: " + sql.getQuery()); } catch (BeeRuntimeException e) {
+     * assertTrue(true); } catch (Exception e) { e.printStackTrace();
+     * fail("java.lang.Exception need BeeRumtimeException: " + e.getMessage()); }
+     */
 
     try {
       sql = new SqlSelect();
@@ -435,7 +429,7 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.CHAR, 5, 10), "TB1");
 
-    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS CHAR(5)) AS \"TB1\" "
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NCHAR(5)) AS \"TB1\" "
         + "FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
@@ -471,7 +465,7 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATE, 5, 10), "TB1");
 
-    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(10)) "
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(19)) "
         + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();
@@ -555,7 +549,7 @@ public class TestIsExpression {
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
         SqlDataType.DATE, 5, 10), "TB1");
 
-    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS INTEGER) "
+    assertEquals("SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS BIGINT) "
         + "AS \"TB1\" FROM \"Table1\"", s.getQuery());
 
     s = new SqlSelect();

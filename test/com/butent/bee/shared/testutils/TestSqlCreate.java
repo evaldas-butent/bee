@@ -144,7 +144,7 @@ public class TestSqlCreate {
     assertEquals("CREATE TABLE \"Target\" (\"arIvykdyta\" "
         + "NUMERIC(1) NOT NULL, \"kaina\" BINARY_DOUBLE, \"data\" "
         + "NUMERIC(19), \"kiek\" NUMERIC(10), \"millis\" NUMERIC(19), \"dateTime\" "
-        + "NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" CHAR(2))",
+        + "NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" NCHAR(2))",
         create.getSqlString(builder));
   }
 

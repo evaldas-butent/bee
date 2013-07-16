@@ -37,9 +37,9 @@ public class TestCodec {
 
   @Test
   public final void testAdler32String() {
-    assertEquals("20350398", Codec.adler32("Wikipedia"));
-    assertEquals("3740127", Codec.adler32("abc"));
-    assertEquals("405014e", Codec.adler32("qwe"));
+    assertEquals("11e60398", Codec.adler32("Wikipedia"));
+    assertEquals("24d0127", Codec.adler32("abc"));
+    assertEquals("2a9014e", Codec.adler32("qwe"));
   }
 
   @Test
@@ -53,8 +53,8 @@ public class TestCodec {
 
   @Test
   public final void testCrc16String() {
-    assertEquals("3f5c", Codec.crc16("abc"));
-    assertEquals("3a0c", Codec.crc16("qwe"));
+    assertEquals("9738", Codec.crc16("abc"));
+    assertEquals("c0b7", Codec.crc16("qwe"));
   }
 
   @Test
@@ -77,14 +77,14 @@ public class TestCodec {
 
   @Test
   public final void testCrc32DirectString() {
-    assertEquals("8a78d0f2", Codec.crc32Direct("abc"));
-    assertEquals("191683de", Codec.crc32Direct("qwe"));
+    assertEquals("352441c2", Codec.crc32Direct("abc"));
+    assertEquals("f7d4a193", Codec.crc32Direct("qwe"));
   }
 
   @Test
   public final void testCrc32String() {
-    assertEquals("8a78d0f2", Codec.crc32("abc"));
-    assertEquals("191683de", Codec.crc32("qwe"));
+    assertEquals("352441c2", Codec.crc32("abc"));
+    assertEquals("f7d4a193", Codec.crc32("qwe"));
   }
 
   @Test
@@ -96,7 +96,7 @@ public class TestCodec {
     String fc = Codec.encodeBase64(g);
     assertEquals(g, Codec.decodeBase64(fc));
 
-    assertEquals("A string", Codec.decodeBase64("AEEAIABzAHQAcgBpAG4AZw=="));
+    assertEquals("A string", Codec.decodeBase64("QSBzdHJpbmc="));
   }
 
   @Test
@@ -121,12 +121,12 @@ public class TestCodec {
     String longString = "";
 
     for (int i = 0; i < 2000; i++) {
-      longBase64 += "AGEAYgBj";
+      longBase64 += "YWJj";
       longString += "abc";
     }
 
     assertEquals(longBase64, Codec.encodeBase64(longString));
-    assertEquals("AGE=", Codec.encodeBase64("a"));
+    assertEquals("YQ==", Codec.encodeBase64("a"));
   }
 
   @Test
@@ -163,8 +163,8 @@ public class TestCodec {
 
   @Test
   public final void testFromBytes() {
-    byte[] btExpected2 = {0, 97};
-    byte[] btExpected3 = {0, 83, 0, 116, 0, 114, 0, 105, 0, 110, 0, 103};
+    byte[] btExpected2 = {97};
+    byte[] btExpected3 = {83, 116, 114, 105, 110, 103};
 
     assertEquals("a", Codec.fromBytes(btExpected2));
     assertEquals("String", Codec.fromBytes(btExpected3));
@@ -183,8 +183,8 @@ public class TestCodec {
 
   @Test
   public final void testMd5() {
-    assertEquals("eebae6b863620dc2e7f2bc7754bda625", Codec.md5("A string"));
-    assertEquals("8c327a8598a4596fb9ae0046a12e7db2", Codec.md5("Check"));
+    assertEquals("46a93454253d1cac8b7e9c069c00c283", Codec.md5("A string"));
+    assertEquals("060bf2d587991d8f090a1309b285291c", Codec.md5("Check"));
   }
 
   @Test
@@ -218,19 +218,19 @@ public class TestCodec {
 
   @Test
   public final void testToBytesString() {
-    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
-    byte[] btExpected2 = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35};
-    byte[] btExpected3 = {0, 113, 0, 119, 0, 101, 0, 32, 0, 33, 0, 35, 0, 101};
-
+    byte[] btExpected1 = {32, 33, 35};
+    byte[] btExpected2 = {113, 119, 101, 32, 33, 35};
+    byte[] btExpected3 = {113, 119, 101, 32, 33, 35, 101};
     assertArrayEquals(btExpected1, Codec.toBytes(" !#"));
     assertArrayEquals(btExpected2, Codec.toBytes("qwe !#"));
     assertArrayEquals(btExpected3, Codec.toBytes("qwe !#e"));
+
   }
 
   @Test
   public final void testToBytesStringInt() {
-    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
-    byte[] btExpected2 = {0, 101, 0, 32, 0, 33, 0, 35, 0, 101};
+    byte[] btExpected1 = {32, 33, 35};
+    byte[] btExpected2 = {101, 32, 33, 35, 101};
 
     assertArrayEquals(btExpected1, Codec.toBytes(" !#", 0));
     assertArrayEquals(btExpected1, Codec.toBytes("qwe !#", 3));
@@ -239,8 +239,8 @@ public class TestCodec {
 
   @Test
   public final void testToBytesStringIntInt() {
-    byte[] btExpected1 = {0, 32, 0, 33, 0, 35};
-    byte[] btExpected2 = {0, 33, 0, 35};
+    byte[] btExpected1 = {32, 33, 35};
+    byte[] btExpected2 = {33, 35};
 
     assertArrayEquals(btExpected1, Codec.toBytes(" !#", 0, 3));
     assertArrayEquals(btExpected2, Codec.toBytes(" !#", 1, 3));
