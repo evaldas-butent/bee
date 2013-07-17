@@ -54,8 +54,9 @@ public class ShoppingCart extends Split {
   private static final String STYLE_COMMENT = STYLE_PRIMARY + "-comment";
 
   private static final String STYLE_PICTURE = STYLE_ITEM + "-picture";
-  private static final String STYLE_INFO = STYLE_ITEM + "-info";
   private static final String STYLE_NAME = STYLE_ITEM + "-name";
+  private static final String STYLE_CODE = STYLE_ITEM + "-code";
+  private static final String STYLE_BRAND = STYLE_ITEM + "-brand";
   private static final String STYLE_QUANTITY = STYLE_ITEM + "-quantity";
   private static final String STYLE_PRICE = STYLE_ITEM + "-price";
   private static final String STYLE_REMOVE = STYLE_ITEM + "-remove";
@@ -65,11 +66,12 @@ public class ShoppingCart extends Split {
   private static final String STYLE_INPUT = "-input";
 
   private static final int COL_PICTURE = 0;
-  private static final int COL_INFO = 1;
-  private static final int COL_NAME = 2;
-  private static final int COL_QUANTITY = 3;
-  private static final int COL_PRICE = 4;
-  private static final int COL_REMOVE = 5;
+  private static final int COL_NAME = 1;
+  private static final int COL_CODE = 2;
+  private static final int COL_BRAND = 3;
+  private static final int COL_QUANTITY = 4;
+  private static final int COL_PRICE = 5;
+  private static final int COL_REMOVE = 6;
 
   private static final int SIZE_NORTH = 32;
   private static final int SIZE_SOUTH = 100;
@@ -203,6 +205,11 @@ public class ShoppingCart extends Split {
     addSouth(panel, SIZE_SOUTH);
   }
 
+  private static Widget renderBrand(CartItem item) {
+    String brand = item.getEcItem().getManufacturer();
+    return BeeUtils.isEmpty(brand) ? null : new Label(brand);
+  }
+
   private static Widget renderComment(final Cart cart) {
     Flow panel = new Flow(STYLE_COMMENT + STYLE_PANEL);
 
@@ -297,7 +304,7 @@ public class ShoppingCart extends Split {
     return panel;
   }
 
-  private static Widget renderInfo(CartItem item) {
+  private static Widget renderCode(CartItem item) {
     return new Label(item.getEcItem().getCode());
   }
 
@@ -307,14 +314,19 @@ public class ShoppingCart extends Split {
       itemTable.setWidgetAndStyle(row, COL_PICTURE, pictureWidget, STYLE_PICTURE);
     }
 
-    Widget infoWidget = renderInfo(item);
-    if (infoWidget != null) {
-      itemTable.setWidgetAndStyle(row, COL_INFO, infoWidget, STYLE_INFO);
-    }
-
     Widget nameWidget = renderName(item);
     if (nameWidget != null) {
       itemTable.setWidgetAndStyle(row, COL_NAME, nameWidget, STYLE_NAME);
+    }
+
+    Widget codeWidget = renderCode(item);
+    if (codeWidget != null) {
+      itemTable.setWidgetAndStyle(row, COL_CODE, codeWidget, STYLE_CODE);
+    }
+
+    Widget brandWidget = renderBrand(item);
+    if (brandWidget != null) {
+      itemTable.setWidgetAndStyle(row, COL_BRAND, brandWidget, STYLE_BRAND);
     }
 
     Widget qtyWidget = renderQuantity(item);
@@ -343,13 +355,17 @@ public class ShoppingCart extends Split {
     if (!BeeUtils.isEmpty(items)) {
       int row = 0;
 
-      Label infoLabel = new Label(Localized.getConstants().ecItemCode());
-      infoLabel.addStyleName(STYLE_INFO + STYLE_LABEL);
-      itemTable.setWidget(row, COL_INFO, infoLabel);
-
       Label nameLabel = new Label(Localized.getConstants().ecItemName());
       nameLabel.addStyleName(STYLE_NAME + STYLE_LABEL);
       itemTable.setWidget(row, COL_NAME, nameLabel);
+
+      Label codeLabel = new Label(Localized.getConstants().ecItemCode());
+      codeLabel.addStyleName(STYLE_CODE + STYLE_LABEL);
+      itemTable.setWidget(row, COL_CODE, codeLabel);
+
+      Label brandLabel = new Label(Localized.getConstants().ecItemManufacturer());
+      brandLabel.addStyleName(STYLE_BRAND + STYLE_LABEL);
+      itemTable.setWidget(row, COL_BRAND, brandLabel);
 
       Label qtyLabel = new Label(Localized.getConstants().quantity());
       qtyLabel.addStyleName(STYLE_QUANTITY + STYLE_LABEL);
@@ -381,7 +397,7 @@ public class ShoppingCart extends Split {
         EcKeeper.openItem(item.getEcItem(), false);
       }
     });
-    
+
     return nameWidget;
   }
 

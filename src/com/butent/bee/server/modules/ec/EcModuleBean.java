@@ -62,8 +62,7 @@ public class EcModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
 
-  private static IsCondition oeNumberCondition =
-      SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_KIND, "3");
+  private static IsCondition oeNumberCondition = SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_KIND, 3);
 
   public static String normalizeCode(String code) {
     return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
@@ -586,7 +585,7 @@ public class EcModuleBean implements BeeModule {
       }
     }
 
-    SqlSelect oeNumberQuery = new SqlSelect()
+    SqlSelect oeNumberQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ANALOGS, COL_TCD_ANALOG_NR)
         .addFrom(TBL_TCD_ANALOGS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, articleId),
@@ -752,10 +751,13 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
+    
     String search = normalizeCode(code);
-    if (BeeUtils.length(search) < 3) {
-      return ResponseObject.error("Search code must be at least 3 characters length:", search);
+    if (BeeUtils.length(search) < MIN_SEARCH_QUERY_LENGTH) {
+      return ResponseObject.error(search,
+          usr.getLocalizableMesssages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
     }
+
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID)
         .addFrom(TBL_TCD_ANALOGS)

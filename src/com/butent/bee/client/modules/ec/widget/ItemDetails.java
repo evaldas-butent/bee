@@ -75,6 +75,9 @@ public class ItemDetails extends Flow {
       table.setText(row, col++, ab.getBrand());
       table.setText(row, col++, ab.getAnalogNr());
 
+      table.setText(row, col++, ab.getSupplier());
+      table.setText(row, col++, ab.getSupplierId());
+
       row++;
     }
 
@@ -176,6 +179,34 @@ public class ItemDetails extends Flow {
     return container;
   }
 
+  private static Widget renderOeNumbers(EcItemInfo info) {
+    if (info == null || BeeUtils.isEmpty(info.getOeNumbers())) {
+      return null;
+    }
+
+    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "oeNumbers-");
+    Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+
+    Label caption = new Label(Localized.getConstants().ecItemDetailsOeNumbers());
+    caption.addStyleName(stylePrefix + STYLE_LABEL);
+    container.add(caption);
+
+    Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
+
+    String styleNumber = stylePrefix + "number";
+
+    for (String oen : info.getOeNumbers()) {
+      Label numberLabel = new Label(oen);
+      numberLabel.addStyleName(styleNumber);
+
+      wrapper.add(numberLabel);
+    }
+
+    container.add(wrapper);
+
+    return container;
+  }
+  
   private static Widget renderPicture(int width, int height) {
     int max = Math.min(width, height);
     int min = max / 2;
@@ -223,18 +254,20 @@ public class ItemDetails extends Flow {
   public ItemDetails(EcItem item, EcItemInfo info, boolean allowAddToCart) {
     super(EcStyles.name(STYLE_PRIMARY, "panel"));
 
-    int width = BeeKeeper.getScreen().getWidth() * 3 / 4;
-    int height = BeeKeeper.getScreen().getHeight() * 3 / 4;
-    if (width < 50 || height < 50) {
+    int screenWidth = BeeKeeper.getScreen().getWidth();
+    int screenHeight = BeeKeeper.getScreen().getHeight();
+    if (screenWidth < 100 || screenHeight < 100) {
       return;
     }
+    
+    int width = BeeUtils.resize(screenWidth, 100, 1600, 100, 1200);
+    int height = BeeUtils.resize(screenHeight, 100, 1600, 100, 1200);
     StyleUtils.setSize(this, width, height);
 
-    int widthMargin = 10;
-    int heightMargin = 10;
-
+    int widthMargin = BeeUtils.resize(width, 0, 1000, 0, 20);
+    int heightMargin = BeeUtils.resize(height, 0, 1000, 0, 20);
+    
     int rowHeight = (height - heightMargin) / 2;
-
     int pictureWidth = Math.min(200, width / 3);
 
     Widget picture = renderPicture(pictureWidth, rowHeight);
@@ -264,54 +297,56 @@ public class ItemDetails extends Flow {
     }
 
     Widget remainders = renderRemainders(info);
+    Widget oeNumbers = renderOeNumbers(info);
     Widget brands = renderBrands(info);
     Widget carTypes = renderCarTypes(info);
 
-    int remaindersWidth = 0;
-    int brandsWidth = 0;
+    int remaindersWidth = Math.min(width / 5, 160);
+    int oeNumbersWidth = Math.min(width / 6, 140);
+    int brandsWidth = Math.max(remaindersWidth + oeNumbersWidth, width / 3);
+    int carTypesWidth = width - brandsWidth - widthMargin;
+    
+    int top2 = rowHeight + heightMargin;
 
+    int h3 = (brands == null) ? 0 : rowHeight / 2;
+    int h2 = rowHeight - h3;
+    
     if (remainders != null) {
       StyleUtils.makeAbsolute(remainders);
       StyleUtils.setLeft(remainders, 0);
-      StyleUtils.setTop(remainders, rowHeight + heightMargin);
-      StyleUtils.setHeight(remainders, rowHeight);
-
-      if (brands != null || carTypes != null) {
-        if (brands == null || carTypes == null) {
-          remaindersWidth = width / 4;
-        } else {
-          remaindersWidth = width / 5;
-        }
-
-        StyleUtils.setWidth(remainders, remaindersWidth);
-      }
+      StyleUtils.setWidth(remainders, remaindersWidth);
+      StyleUtils.setTop(remainders, top2);
+      StyleUtils.setHeight(remainders, h2);
 
       add(remainders);
     }
 
+    if (oeNumbers != null) {
+      StyleUtils.makeAbsolute(oeNumbers);
+      StyleUtils.setLeft(oeNumbers, remaindersWidth);
+      StyleUtils.setWidth(oeNumbers, oeNumbersWidth);
+      StyleUtils.setTop(oeNumbers, top2);
+      StyleUtils.setHeight(oeNumbers, h2);
+
+      add(oeNumbers);
+    }
+    
     if (brands != null) {
       StyleUtils.makeAbsolute(brands);
-      StyleUtils.setLeft(brands, remaindersWidth);
-      StyleUtils.setTop(brands, rowHeight + heightMargin);
-      StyleUtils.setHeight(brands, rowHeight);
-
-      if (carTypes != null) {
-        brandsWidth = width / 4;
-        StyleUtils.setWidth(brands, brandsWidth);
-      }
+      StyleUtils.setLeft(brands, 0);
+      StyleUtils.setWidth(brands, brandsWidth);
+      StyleUtils.setTop(brands, top2 + h2 + heightMargin);
+      StyleUtils.setHeight(brands, h3 - heightMargin);
 
       add(brands);
     }
 
     if (carTypes != null) {
       StyleUtils.makeAbsolute(carTypes);
-      StyleUtils.setLeft(carTypes, remaindersWidth + brandsWidth);
-      StyleUtils.setTop(carTypes, rowHeight + heightMargin);
+      StyleUtils.setLeft(carTypes, brandsWidth + widthMargin);
+      StyleUtils.setWidth(carTypes, carTypesWidth);
+      StyleUtils.setTop(carTypes, top2);
       StyleUtils.setHeight(carTypes, rowHeight);
-
-      if (remaindersWidth + brandsWidth > 0) {
-        StyleUtils.setWidth(carTypes, width - remaindersWidth - brandsWidth);
-      }
 
       add(carTypes);
     }

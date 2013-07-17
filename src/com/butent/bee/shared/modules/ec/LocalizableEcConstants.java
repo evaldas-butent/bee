@@ -87,6 +87,8 @@ public interface LocalizableEcConstants {
   String ecItemDetailsBrands();
 
   String ecItemDetailsCarTypes();
+
+  String ecItemDetailsOeNumbers();
   
   String ecItemDetailsRemainders();
   

@@ -407,6 +407,7 @@
   margin-left: 2em;
   margin-top: 5px;
   font-weight: bold;
+  font-size: medium;
 }
 
 .bee-ec-shoppingCart-items-table {
@@ -564,6 +565,7 @@
 
 .bee-ec-ItemDetails-info-container,
 .bee-ec-ItemDetails-remainders-container,
+.bee-ec-ItemDetails-oeNumbers-container,
 .bee-ec-ItemDetails-brands-container,
 .bee-ec-ItemDetails-carTypes-container {
   overflow: auto;
@@ -608,15 +610,17 @@
 }
 
 .bee-ec-ItemDetails-remainders-label,
+.bee-ec-ItemDetails-oeNumbers-label,
 .bee-ec-ItemDetails-brands-label,
 .bee-ec-ItemDetails-carTypes-label {
   font-weight: bolder;
   margin-bottom: 1ex;
 }
 
-.bee-ec-ItemDetails-remainders-warehouse-cell,
-.bee-ec-ItemDetails-brands-table td {
-  padding-right: 1em;
+.bee-ec-ItemDetails-remainders-stock-cell {
+  padding-left: 1em;
+  text-align: right;
 }
-
-
+.bee-ec-ItemDetails-brands-table td {
+  padding-right: 3px;
+}
