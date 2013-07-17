@@ -5,9 +5,13 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <PropColumn name="ArticleName" type="string" minWidth="200" caption="=ecItemName" visible="true" />
-    <PropColumn name="ArticleNr" type="string" minWidth="100" caption="=ecItemCode" visible="true" />
-  
+    <PropColumn name="ArticleName" type="string" caption="=ecItemName" visible="true" />
+    <DataColumn name="AnalogNr" visible="true" />
+
+    <DataColumn name="Brand" />
+    <DataColumn name="Supplier" />
+    <DataColumn name="SupplierID" />
+
     <DataColumn name="QuantityOrdered" visible="true" />
     <DataColumn name="QuantitySubmit" visible="true" />
 

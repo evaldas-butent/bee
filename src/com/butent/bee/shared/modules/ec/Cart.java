@@ -37,7 +37,7 @@ public class Cart implements BeeSerializable {
   
   public void add(EcItem ecItem, int quantity) {
     if (ecItem != null && quantity > 0) {
-      CartItem item = getItem(ecItem.getId());
+      CartItem item = getItem(ecItem.getArticleBrandId());
 
       if (item == null) {
         items.add(new CartItem(ecItem, quantity));
@@ -192,9 +192,9 @@ public class Cart implements BeeSerializable {
     return total;
   }
   
-  private CartItem getItem(int id) {
+  private CartItem getItem(long articleBrandId) {
     for (CartItem item : items) {
-      if (item.getEcItem().getId() == id) {
+      if (item.getEcItem().getArticleBrandId() == articleBrandId) {
         return item;
       }
     }

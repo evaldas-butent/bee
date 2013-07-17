@@ -8,7 +8,7 @@
     <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" />
     <Relation name="Client" relation="EcClients" notNull="true" cascade="DELETE" />
     <Integer name="CartType" notNull="true" />
-    <Integer name="Item" notNull="true" />
+    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" cascade="DELETE" />
     <Integer name="Quantity" notNull="true" />
     <Integer name="Price" notNull="true" />
   </Fields>

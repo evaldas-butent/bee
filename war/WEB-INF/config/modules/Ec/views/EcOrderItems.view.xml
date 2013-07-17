@@ -5,7 +5,14 @@
   >
   <Columns>
     <SimpleColumn name="Order" />
-    <SimpleColumn name="Item" />
+
+    <SimpleColumn name="ArticleBrand" />
+    <SimpleJoin name="ArticleBrand" joinType="LEFT">
+      <SimpleColumn name="Brand" />
+      <SimpleColumn name="AnalogNr" />
+      <SimpleColumn name="Supplier" />
+      <SimpleColumn name="SupplierID" />
+    </SimpleJoin>
 
     <SimpleColumn name="QuantityOrdered" />
     <SimpleColumn name="QuantitySubmit" />

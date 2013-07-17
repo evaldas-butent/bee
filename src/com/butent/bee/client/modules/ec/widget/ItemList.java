@@ -199,7 +199,7 @@ public class ItemList extends Flow {
         @Override
         public void onClick(ClickEvent event) {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
-          params.addDataItem(EcConstants.COL_TCD_ARTICLE_ID, item.getId());
+          params.addDataItem(EcConstants.COL_TCD_ARTICLE_ID, item.getArticleId());
           params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
           params.addDataItem(EcConstants.COL_TCD_BRAND, item.getManufacturer());
 

@@ -270,10 +270,10 @@ public final class EcKeeper {
 
     ParameterList params = createArgs(SVC_GET_ITEM_INFO);
 
-    params.addDataItem(COL_TCD_ARTICLE_ID, item.getId());
-    params.addDataItem(COL_TCD_BRAND, item.getManufacturer());
+    params.addQueryItem(COL_TCD_ARTICLE_ID, item.getArticleId());
+    params.addQueryItem(COL_TCD_ARTICLE_BRAND_ID, item.getArticleBrandId());
     
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);

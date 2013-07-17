@@ -198,7 +198,7 @@ public final class EcConstants {
   public static final String COL_MANAGER_NOTES = "Notes";
 
   public static final String COL_ORDER_ITEM_ORDER_ID = "Order";
-  public static final String COL_ORDER_ITEM_ID = "Item";
+  public static final String COL_ORDER_ITEM_ARTICLE_BRAND = "ArticleBrand";
   public static final String COL_ORDER_ITEM_QUANTITY_ORDERED = "QuantityOrdered";
   public static final String COL_ORDER_ITEM_QUANTITY_SUBMIT = "QuantitySubmit";
   public static final String COL_ORDER_ITEM_PRICE = "Price";
@@ -283,6 +283,7 @@ public final class EcConstants {
 
   public static final String COL_TCD_BRAND = "Brand";
   public static final String COL_TCD_ARTICLE_BRAND = "ArticleBrand";
+  public static final String COL_TCD_ARTICLE_BRAND_ID = "ArticleBrandID";
 
   public static final String COL_TCD_SUPPLIER_BRAND = "SupplierBrand";
   public static final String COL_TCD_TECDOC_BRAND = "TecDocBrand";
