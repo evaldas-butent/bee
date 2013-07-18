@@ -212,9 +212,17 @@ public class QueryServiceBean {
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
+    BeeDataSource bds = dsb.locateDs(SqlBuilderFactory.getDsn());
+    Assert.notNull(bds);
+
+    return doSql(bds.getDs(), sql);
+  }
+
+  public Object doSql(DataSource ds, String sql) {
+    Assert.notNull(ds);
     Assert.notEmpty(sql);
 
-    return processSql(null, sql, new SqlHandler<Object>() {
+    return processSql(ds, sql, new SqlHandler<Object>() {
       @Override
       public Object processError(SQLException ex) {
         logger.error(ex);

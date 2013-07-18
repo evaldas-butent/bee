@@ -41,9 +41,9 @@ import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
-import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -329,10 +329,10 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getCarManufacturers() {
-    SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFrom(TBL_TCD_MODELS)
-        .addFields(TBL_TCD_MODELS, COL_TCD_MANUFACTURER)
-        .addOrder(TBL_TCD_MODELS, COL_TCD_MANUFACTURER);
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
+        .addFrom(TBL_TCD_MANUFACTURERS)
+        .addOrder(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME);
 
     String[] manufacturers = qs.getColumn(query);
     return ResponseObject.response(manufacturers).setSize(ArrayUtils.length(manufacturers));
@@ -344,14 +344,18 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFrom(TBL_TCD_MODELS)
-        .addFromInner(TBL_TCD_TYPES,
-            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
-        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME)
+        .addFields(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
         .addMin(TBL_TCD_TYPES, COL_TCD_PRODUCED_FROM)
         .addMax(TBL_TCD_TYPES, COL_TCD_PRODUCED_TO)
-        .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MANUFACTURER, manufacturer))
-        .addGroup(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addFrom(TBL_TCD_MODELS)
+        .addFromInner(TBL_TCD_MANUFACTURERS,
+            sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
+        .addFromInner(TBL_TCD_TYPES,
+            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
+        .setWhere(SqlUtils.equals(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, manufacturer))
+        .addGroup(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME)
+        .addGroup(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
         .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME);
 
     SimpleRowSet rowSet = qs.getData(query);
@@ -374,14 +378,17 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFrom(TBL_TCD_MODELS)
-        .addFromInner(TBL_TCD_TYPES,
-            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
-        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME)
+        .addFields(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
         .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
             COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
             COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
             COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .addFrom(TBL_TCD_MODELS)
+        .addFromInner(TBL_TCD_MANUFACTURERS,
+            sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
+        .addFromInner(TBL_TCD_TYPES,
+            SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
         .setWhere(SqlUtils.equals(TBL_TCD_MODELS, COL_TCD_MODEL_ID, modelId))
         .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,
             COL_TCD_KW_FROM, COL_TCD_KW_TO);
@@ -563,18 +570,22 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect carTypeQuery = new SqlSelect()
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME)
+        .addFields(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
+        .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
+            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
+            COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
         .addFrom(TBL_TCD_TYPE_ARTICLES)
         .addFromInner(TBL_TCD_TYPES,
             SqlUtils.joinUsing(TBL_TCD_TYPES, TBL_TCD_TYPE_ARTICLES, COL_TCD_TYPE_ID))
         .addFromInner(TBL_TCD_MODELS,
             SqlUtils.joinUsing(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL_ID))
-        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER)
-        .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_ID, COL_TCD_TYPE_NAME,
-            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
-            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
-            COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .addFromInner(TBL_TCD_MANUFACTURERS,
+            sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
         .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE_ID, articleId))
-        .addOrder(TBL_TCD_MODELS, COL_TCD_MANUFACTURER, COL_TCD_MODEL_NAME)
+        .addOrder(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
+        .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME)
         .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,
             COL_TCD_KW_FROM, COL_TCD_KW_TO);
 
@@ -591,7 +602,7 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID, articleId),
             oeNumberCondition))
         .addOrder(TBL_TCD_ANALOGS, COL_TCD_ANALOG_NR);
-    
+
     SimpleRowSet oeNumberData = qs.getData(oeNumberQuery);
     if (!DataUtils.isEmpty(oeNumberData)) {
       for (SimpleRow row : oeNumberData) {
@@ -751,7 +762,7 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
-    
+
     String search = normalizeCode(code);
     if (BeeUtils.length(search) < MIN_SEARCH_QUERY_LENGTH) {
       return ResponseObject.error(search,

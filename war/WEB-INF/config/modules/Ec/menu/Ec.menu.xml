@@ -20,4 +20,7 @@ name="Ec" label="=ecMenu" order="100"
 
   <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery" separator="true" />
   <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
+
+  <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true"  />
+  <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
 </Entry>

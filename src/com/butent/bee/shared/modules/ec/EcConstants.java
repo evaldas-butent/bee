@@ -113,7 +113,7 @@ public final class EcConstants {
   public static final String SVC_SAVE_CONFIGURATION = "saveConfiguration";
 
   public static final String SVC_GET_ITEM_INFO = "getItemInfo";
-  
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -143,6 +143,7 @@ public final class EcConstants {
   public static final String TBL_TCD_CATEGORIES = "TcdCategories";
   public static final String TBL_TCD_ARTICLE_CATEGORIES = "TcdArticleCategories";
 
+  public static final String TBL_TCD_MANUFACTURERS = "TcdManufacturers";
   public static final String TBL_TCD_MODELS = "TcdModels";
   public static final String TBL_TCD_TYPES = "TcdTypes";
   public static final String TBL_TCD_TYPE_ARTICLES = "TcdTypeArticles";
@@ -261,7 +262,9 @@ public final class EcConstants {
 
   public static final String COL_TCD_MODEL_ID = "ModelID";
   public static final String COL_TCD_MODEL_NAME = "ModelName";
+  public static final String COL_TCD_MANUFACTURER_NAME = "ManufacturerName";
   public static final String COL_TCD_MANUFACTURER = "Manufacturer";
+  public static final String COL_TCD_MF_VISIBLE = "Visible";
 
   public static final String COL_TCD_TYPE_ID = "TypeID";
   public static final String COL_TCD_TYPE_NAME = "TypeName";
@@ -290,7 +293,7 @@ public final class EcConstants {
 
   public static final String COL_TCD_CRITERIA_NAME = "Name";
   public static final String COL_TCD_CRITERIA_VALUE = "Value";
-  
+
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 
   public static final String CATEGORY_SEPARATOR = ",";

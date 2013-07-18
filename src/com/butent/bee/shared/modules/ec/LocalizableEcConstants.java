@@ -89,9 +89,9 @@ public interface LocalizableEcConstants {
   String ecItemDetailsCarTypes();
 
   String ecItemDetailsOeNumbers();
-  
+
   String ecItemDetailsRemainders();
-  
+
   String ecItemDiameter();
 
   String ecItemHeight();
@@ -149,7 +149,7 @@ public interface LocalizableEcConstants {
   String ecOrderStatusActive();
 
   String ecOrderStatusNew();
-  
+
   String ecOrderStatusRejected();
 
   String ecOrderSubmissionDate();
@@ -185,7 +185,7 @@ public interface LocalizableEcConstants {
   String ecShoppingCartRemove();
 
   String ecShoppingCartSubmit();
-  
+
   String ecShoppingCartTotal();
 
   String ecShowDetails();
@@ -201,4 +201,14 @@ public interface LocalizableEcConstants {
   String ecTotalReceived();
 
   String ecUpdateTime();
+
+  String tcdBrand();
+
+  String tcdBrandsMapping();
+
+  String tcdManufacturer();
+
+  String tcdManufacturers();
+
+  String tcdSupplierBrand();
 }

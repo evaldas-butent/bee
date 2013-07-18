@@ -30,7 +30,7 @@ public class EcCarModel implements BeeSerializable {
   public EcCarModel(SimpleRow row) {
     this.modelId = row.getInt(COL_TCD_MODEL_ID);
     this.modelName = row.getValue(COL_TCD_MODEL_NAME);
-    this.manufacturer = row.getValue(COL_TCD_MANUFACTURER);
+    this.manufacturer = row.getValue(COL_TCD_MANUFACTURER_NAME);
     
     this.producedFrom = row.getInt(COL_TCD_PRODUCED_FROM);
     this.producedTo = row.getInt(COL_TCD_PRODUCED_TO);

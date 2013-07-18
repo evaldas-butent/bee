@@ -14,5 +14,6 @@
   <Indexes>
     <Index fields="ArticleBrand" />
     <Index fields="Warehouse" />
+    <Index fields="ArticleBrand Warehouse" unique="true" />
   </Indexes>
 </Table>

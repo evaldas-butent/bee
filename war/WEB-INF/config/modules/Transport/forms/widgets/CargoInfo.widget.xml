@@ -55,6 +55,13 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
+    <Label text="=address" style="&labelLeft;" />
+    <InputText source="LoadingAddress" style="&inline; width:130px; margin-right:20px;" />
+    <Label text="=address" style="&labelRight;" />
+    <InputText source="UnloadingAddress" style="&inline; width:130px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
     <Label html="Papildoma informacija" style="&labelLeft; vertical-align:top;" />
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
