@@ -105,11 +105,11 @@ public class EcItem implements BeeSerializable {
           break;
 
         case LIST_PRICE:
-          this.listPrice = BeeUtils.toInt(value);
+          setListPrice(BeeUtils.toInt(value));
           break;
 
         case PRICE:
-          this.price = BeeUtils.toInt(value);
+          setPrice(BeeUtils.toInt(value));
           break;
       }
     }
@@ -163,6 +163,10 @@ public class EcItem implements BeeSerializable {
     return price;
   }
 
+  public double getRealListPrice() {
+    return listPrice / 100d;
+  }
+  
   public double getRealPrice() {
     return price / 100d;
   }

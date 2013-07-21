@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="EcDiscounts" viewName="EcDiscounts"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <DataColumn name="DateFrom" />
+    <DataColumn name="DateTo" />
+
+    <DataColumn name="Category" />
+    <DataColumn name="Manufacturer" />
+
+<!--     <DataColumn name="Brand" /> -->
+    <DataColumn name="AnalogNr" />
+    <DataColumn name="Supplier" />
+    <DataColumn name="SupplierID" />
+
+    <DataColumn name="Percent" visible="true" />
+    <DataColumn name="Price" visible="true" />
+
+    <DataColumn name="Cost" visible="false" />
+    <DataColumn name="Note" visible="false" />
+  </columns>
+</Grid>

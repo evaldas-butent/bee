@@ -5,6 +5,8 @@
   idName="ConfigurationID"
   >
   <Fields>
+    <Numeric name="MarginDefaultPercent" precision="7" scale="3" />
+
     <String name="TodUrl" precision="200" />
     <Text name="TodHtml" />
 

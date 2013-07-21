@@ -15,6 +15,7 @@
 
     <DataColumn name="Service" visible="true" />
     <DataColumn name="Query" visible="true" />
+    <DataColumn name="ArticleBrand" />
 
     <DataColumn name="Count" />
     <DataColumn name="Duration" />

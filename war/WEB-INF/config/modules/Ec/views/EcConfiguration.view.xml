@@ -4,6 +4,8 @@
   name="EcConfiguration" source="EcConfiguration"
   >
   <Columns>
+    <SimpleColumn name="MarginDefaultPercent" />
+
     <SimpleColumn name="TodUrl" />
     <SimpleColumn name="TodHtml" />
 

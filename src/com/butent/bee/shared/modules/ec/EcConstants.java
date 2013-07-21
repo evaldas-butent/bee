@@ -178,9 +178,12 @@ public final class EcConstants {
   public static final String COL_CLIENT_PERSON_CODE = "PersonCode";
   public static final String COL_CLIENT_ACTIVITY = "Activity";
   public static final String COL_CLIENT_CREDIT_LIMIT_WARNING = "CreditLimitWarning";
+  public static final String COL_CLIENT_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_CLIENT_DISCOUNT_PARENT = "DiscountParent";
   public static final String COL_CLIENT_NOTES = "Notes";
 
   public static final String COL_CONFIG_ID = "ConfigurationID";
+  public static final String COL_CONFIG_MARGIN_DEFAULT_PERCENT = "MarginDefaultPercent";
   public static final String COL_CONFIG_TOD_URL = "TodUrl";
   public static final String COL_CONFIG_TOD_HTML = "TodHtml";
   public static final String COL_CONFIG_CONTACTS_URL = "ContactsUrl";
@@ -190,6 +193,7 @@ public final class EcConstants {
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";
   public static final String COL_HISTORY_QUERY = "Query";
+  public static final String COL_HISTORY_ARTICLE_BRAND = "ArticleBrand";
   public static final String COL_HISTORY_COUNT = "Count";
   public static final String COL_HISTORY_DURATION = "Duration";
 
@@ -282,7 +286,9 @@ public final class EcConstants {
 
   public static final String COL_TCD_WAREHOUSE = "Warehouse";
   public static final String COL_TCD_REMAINDER = "Remainder";
-  public static final String COL_TCD_PRICE = "Price";
+
+  public static final String COL_TCD_COST = "Price";
+  public static final String COL_TCD_LIST_PRICE = "UpdatedPrice";
 
   public static final String COL_TCD_BRAND = "Brand";
   public static final String COL_TCD_ARTICLE_BRAND = "ArticleBrand";

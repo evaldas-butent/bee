@@ -948,7 +948,7 @@ public class TecDocBean {
 
     for (RemoteItems info : data) {
       int c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
-          .addConstant(COL_TCD_PRICE, info.price)
+          .addConstant(COL_TCD_COST, info.price)
           .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS,
               COL_TCD_SUPPLIER, supplier, COL_TCD_SUPPLIER_ID, info.supplierId)));
       upd += c;
@@ -960,7 +960,7 @@ public class TecDocBean {
           qs.updateData(new SqlCreate(tmp)
               .setDataSource(new SqlSelect()
                   .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID, COL_TCD_ANALOG_NR,
-                      COL_TCD_BRAND, COL_TCD_PRICE, idName)
+                      COL_TCD_BRAND, COL_TCD_COST, idName)
                   .addField(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ANALOG_NR, COL_TCD_SEARCH_NR)
                   .addField(TBL_TCD_ARTICLE_BRANDS, idName, COL_TCD_ARTICLE_ID)
                   .addFrom(TBL_TCD_ARTICLE_BRANDS)
@@ -971,7 +971,7 @@ public class TecDocBean {
             .addConstant(COL_TCD_SEARCH_NR, EcModuleBean.normalizeCode(info.articleNr))
             .addConstant(COL_TCD_BRAND, info.brand)
             .addConstant(COL_TCD_ANALOG_NR, info.articleNr)
-            .addConstant(COL_TCD_PRICE, info.price)
+            .addConstant(COL_TCD_COST, info.price)
             .addConstant(COL_TCD_SUPPLIER_ID, info.supplierId));
       }
       if (++tot % 1000 == 0) {
@@ -999,10 +999,10 @@ public class TecDocBean {
           Lists.newArrayList(COL_TCD_ARTICLE_ID), false));
 
       qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_BRANDS)
-          .addFields(COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, idName,
+          .addFields(COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_COST, idName,
               COL_TCD_SUPPLIER_ID, COL_TCD_SUPPLIER, sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))
           .setDataSource(new SqlSelect()
-              .addFields(tmp, COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
+              .addFields(tmp, COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_COST,
                   idName, COL_TCD_SUPPLIER_ID)
               .addConstant(supplier, COL_TCD_SUPPLIER)
               .addConstant(System.currentTimeMillis(), sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))

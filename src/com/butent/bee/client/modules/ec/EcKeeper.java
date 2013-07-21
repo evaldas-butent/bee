@@ -15,6 +15,7 @@ import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
@@ -258,6 +259,11 @@ public final class EcKeeper {
     });
   }
   
+  public static void saveConfiguration(String key, String value) {
+    Assert.notEmpty(key);
+    data.saveConfiguration(key, value);
+  }
+  
   private static String getActiveViewId() {
     IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
     return (activeWidget == null) ? null : activeWidget.getId(); 
@@ -323,6 +329,8 @@ public final class EcKeeper {
             COL_CONFIG_CONTACTS_HTML);
       }
     });
+    
+    GridFactory.registerGridInterceptor("EcMargins", new EcPricingHandler());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {

@@ -1174,6 +1174,14 @@ public final class BeeUtils {
     return compare(x1, x2) > 0;
   }
 
+  public static boolean isNegative(Double d) {
+    if (isDouble(d)) {
+      return Double.compare(d, BeeConst.DOUBLE_ZERO) < 0;
+    } else {
+      return false;
+    }
+  }
+
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;
@@ -1201,7 +1209,7 @@ public final class BeeUtils {
     }
     return idx < clazz.getEnumConstants().length;
   }
-
+  
   public static boolean isPositive(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) > 0;

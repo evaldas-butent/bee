@@ -124,6 +124,8 @@ public interface LocalizableEcConstants {
 
   String ecListPrice();
 
+  String ecMarginDefaultPercent();
+
   String ecMaxedOut();
 
   String ecMoreItems();

@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcOrderItems" source="EcOrderItems"
+  name="EcDiscounts" source="EcDiscounts" newRowCaption="=ecDiscountNew"
   >
   <Columns>
-    <SimpleColumn name="Order" />
+    <SimpleColumn name="Client" />
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+
+    <SimpleColumn name="Category" />
+    <SimpleColumn name="Manufacturer" />
 
     <SimpleColumn name="ArticleBrand" />
     <SimpleJoin name="ArticleBrand" joinType="LEFT">
@@ -15,9 +21,7 @@
       <SimpleColumn name="Price" alias="Cost" />
     </SimpleJoin>
 
-    <SimpleColumn name="QuantityOrdered" />
-    <SimpleColumn name="QuantitySubmit" />
-
+    <SimpleColumn name="Percent" />
     <SimpleColumn name="Price" />
 
     <SimpleColumn name="Note" />

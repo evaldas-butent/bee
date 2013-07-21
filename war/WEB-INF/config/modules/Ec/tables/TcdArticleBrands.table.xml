@@ -10,8 +10,8 @@
     <Long name="ArticleID" notNull="true" />
     <String name="Brand" precision="50" notNull="true" label="=ecItemBrand" />
     <String name="AnalogNr" precision="50" notNull="true" label="=ecItemCode" />
-    <Numeric name="Price" precision="10" scale="2" label="=price" />
-    <Numeric name="UpdatedPrice" precision="10" scale="2" label="=ecUpdatedPrice" />
+    <Numeric name="Price" precision="10" scale="2" label="=ecItemCost" />
+    <Numeric name="UpdatedPrice" precision="10" scale="2" label="=ecListPrice" />
     <String name="Supplier" precision="10" notNull="true" label="=ecItemSupplier"/>
     <String name="SupplierID" precision="20" notNull="true" label="=ecItemSupplierCode" />
   </Fields>

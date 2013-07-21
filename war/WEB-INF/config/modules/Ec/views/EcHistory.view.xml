@@ -8,6 +8,7 @@
 
     <SimpleColumn name="Service" />
     <SimpleColumn name="Query" />
+    <SimpleColumn name="ArticleBrand" />
 
     <SimpleColumn name="Count" />
     <SimpleColumn name="Duration" />

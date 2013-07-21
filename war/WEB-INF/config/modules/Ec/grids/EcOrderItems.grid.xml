@@ -16,6 +16,7 @@
     <DataColumn name="QuantitySubmit" visible="true" />
 
     <DataColumn name="Price" visible="true" />
+    <DataColumn name="Cost" />
 
     <DataColumn name="Note" />
   </columns>

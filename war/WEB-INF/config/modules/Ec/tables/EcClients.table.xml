@@ -5,9 +5,10 @@
   idName="ClientID"
   >
   <Fields>
-    <Relation name="User" notNull="true" unique="true" relation="Users" label="=user" />
+    <Relation name="User" notNull="true" unique="true" relation="Users" label="=ecClientUser" />
 
-    <DateTime name="Registered" notNull="true" label="=ecClientRegistrationDate" defExpr="CURRENT_TIME" />
+    <DateTime name="Registered" notNull="true" label="=ecClientRegistrationDate"
+        defExpr="CURRENT_TIME" />
     <Integer name="Type" notNull="true" label="=ecClientType" />
 
     <Relation name="PrimaryBranch" relation="Branches" notNull="true" label="=ecBranchPrimary" />
@@ -20,6 +21,9 @@
     <Text name="Activity" label="=ecClientActivity" />
     
     <Boolean name="CreditLimitWarning" label="=ecClientCreditLimitWarning" />
+    
+    <Numeric name="DiscountPercent" precision="7" scale="3" label="=ecDiscountPercent" />
+    <Relation name="DiscountParent" relation="EcClients" label="=ecDiscountParent" />
     
     <Text name="Notes" label="=notes" />
   </Fields>

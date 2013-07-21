@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 1ex;"></div>'>
+  <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+    name="EcClient" viewName="EcClients" caption="=ecClient">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecClientUser" style="&lbl;" />
+        <DataSelector source="User" editSource="Person" style="width: 550px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+          <renderToken source="CompanyName" prefix=", " />
+        </DataSelector>
+      </FlowPanel>
+      &separator;
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecClientRegistrationDate" style="&lbl;" />
+        <InputDateTime source="Registered" style="&inp;" />
+
+        <Label text="=ecClientType" class="bee-required" style="&lbl;" />
+        <ListBox source="Type" itemKey="EcClientType" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecManager" style="&lbl;" />
+        <DataSelector source="Manager" style="&inp;" renderColumns="ManagerFirstName ManagerLastName" />
+
+        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 150px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecBranchPrimary" class="bee-required" style="&lbl;" />
+        <DataSelector source="PrimaryBranch" style="&inp;" />
+
+        <Label text="=ecBranchSecondary" style="&lbl;" />
+        <DataSelector source="SecondaryBranch" style="&inp;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecClientPersonCode" style="&lbl;" />
+        <InputText source="PersonCode" style="&inp;" />
+
+        <Label text="=ecClientActivity" style="&lbl;" />
+        <InputArea source="Activity" style="&inp; height: 40px;" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=ecDiscounts</text>
+        <FlowPanel class="flexBox-vertical">
+          &separator;
+          <FlowPanel class="flexBox-horizontal">
+            <Label text="=ecDiscountPercent" style="&lbl;" />
+            <InputDecimal source="DiscountPercent" style="width: 80px;" />
+
+            <Label text="=ecDiscountParent" style="&lbl;" />
+            <DataSelector source="DiscountParent" style="width: 400px;">
+              <renderToken source="ParentFirstName" />
+              <renderToken source="ParentLastName" />
+              <renderToken source="ParentCompanyName" prefix=", " />
+            </DataSelector>
+          </FlowPanel>
+          &separator;
+
+          <ChildGrid name="EcDiscounts" relColumn="Client" class="flexible" />
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <InputArea source="Notes" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

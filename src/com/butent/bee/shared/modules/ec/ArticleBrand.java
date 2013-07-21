@@ -2,13 +2,12 @@ package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 public class ArticleBrand implements BeeSerializable {
 
   private enum Serial {
-    BRAND, ANALOG_NR, PRICE, SUPPLIER, SUPPLIER_ID
+    BRAND, ANALOG_NR, SUPPLIER, SUPPLIER_ID
   }
   
   public static ArticleBrand restore(String s) {
@@ -20,16 +19,12 @@ public class ArticleBrand implements BeeSerializable {
   private String brand;
   private String analogNr;
 
-  private Double price;
-
   private String supplier;
   private String supplierId;
 
-  public ArticleBrand(String brand, String analogNr, Double price, String supplier,
-      String supplierId) {
+  public ArticleBrand(String brand, String analogNr, String supplier, String supplierId) {
     this.brand = brand;
     this.analogNr = analogNr;
-    this.price = price;
     this.supplier = supplier;
     this.supplierId = supplierId;
   }
@@ -56,10 +51,6 @@ public class ArticleBrand implements BeeSerializable {
           setAnalogNr(value);
           break;
 
-        case PRICE:
-          setPrice(BeeUtils.toDoubleOrNull(value));
-          break;
-
         case SUPPLIER:
           setSupplier(value);
           break;
@@ -77,10 +68,6 @@ public class ArticleBrand implements BeeSerializable {
 
   public String getAnalogNr() {
     return analogNr;
-  }
-
-  public Double getPrice() {
-    return price;
   }
 
   public String getSupplier() {
@@ -107,10 +94,6 @@ public class ArticleBrand implements BeeSerializable {
           arr[i++] = getAnalogNr();
           break;
 
-        case PRICE:
-          arr[i++] = getPrice();
-          break;
-
         case SUPPLIER:
           arr[i++] = getSupplier();
           break;
@@ -129,10 +112,6 @@ public class ArticleBrand implements BeeSerializable {
 
   private void setAnalogNr(String analogNr) {
     this.analogNr = analogNr;
-  }
-
-  private void setPrice(Double price) {
-    this.price = price;
   }
 
   private void setSupplier(String supplier) {

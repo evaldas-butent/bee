@@ -1629,9 +1629,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     if (result.isEmpty()) {
-      for (Map.Entry<String, EditableColumn> entry : getEditableColumns().entrySet()) {
-        String name = entry.getKey();
-        if (!getGrid().isColumnReadOnly(name) && !result.contains(name)) {
+      for (ColumnInfo columnInfo : getGrid().getColumns()) {
+        String name = BeeUtils.normalize(columnInfo.getColumnId());
+        if (!columnInfo.isColReadOnly() && getEditableColumns().containsKey(name)
+            && !result.contains(name)) {
           result.add(name);
         }
       }
