@@ -547,7 +547,7 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
     Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE_ID));
     String code = normalizeCode(reqInfo.getParameter(COL_TCD_ANALOG_NR));
-    String brand = reqInfo.getParameter(COL_TCD_BRAND);
+    String brand = reqInfo.getParameter(COL_TCD_BRAND_NAME);
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ANALOGS, COL_TCD_ARTICLE_ID)
@@ -583,17 +583,21 @@ public class EcModuleBean implements BeeModule {
     }
 
     SqlSelect brandQuery = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_SUPPLIER,
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ANALOG_NR, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID)
         .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .addFromInner(TBL_TCD_BRANDS,
+            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND))
         .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID, articleId))
-        .addOrder(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_SUPPLIER,
+        .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addOrder(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ANALOG_NR, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID);
 
     SimpleRowSet brandData = qs.getData(brandQuery);
     if (!DataUtils.isEmpty(brandData)) {
       for (SimpleRow row : brandData) {
-        ecItemInfo.addBrand(new ArticleBrand(row.getValue(COL_TCD_BRAND),
+        ecItemInfo.addBrand(new ArticleBrand(row.getValue(COL_TCD_BRAND_NAME),
             row.getValue(COL_TCD_ANALOG_NR), row.getValue(COL_TCD_SUPPLIER),
             row.getValue(COL_TCD_SUPPLIER_ID)));
       }
@@ -661,9 +665,9 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getItemManufacturers() {
     String[] manufacturers = qs.getColumn(new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND)
-        .addFrom(TBL_TCD_ARTICLE_BRANDS)
-        .addOrder(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND));
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFrom(TBL_TCD_BRANDS)
+        .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME));
 
     return ResponseObject.response(manufacturers).setSize(ArrayUtils.length(manufacturers));
   }
@@ -675,7 +679,8 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect articleQuery = new SqlSelect()
         .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID, COL_TCD_BRAND,
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID,
             COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_UPDATED_PRICE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID)
         .addSum(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
@@ -684,10 +689,13 @@ public class EcModuleBean implements BeeModule {
             COL_TCD_ARTICLE_ID))
         .addFromInner(TBL_TCD_ARTICLE_BRANDS,
             SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID))
+        .addFromInner(TBL_TCD_BRANDS,
+            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND))
         .addFromLeft(TBL_TCD_REMAINDERS,
             sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
         .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
-        .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID, COL_TCD_BRAND,
+        .addGroup(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID,
             COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_UPDATED_PRICE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_ID);
@@ -698,7 +706,7 @@ public class EcModuleBean implements BeeModule {
         EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID),
             row.getLong(COL_TCD_ARTICLE_BRAND_ID));
 
-        item.setManufacturer(row.getValue(COL_TCD_BRAND));
+        item.setManufacturer(row.getValue(COL_TCD_BRAND_NAME));
         item.setCode(row.getValue(COL_TCD_ANALOG_NR));
         item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
 
@@ -759,7 +767,9 @@ public class EcModuleBean implements BeeModule {
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID)
         .addFrom(TBL_TCD_ARTICLE_BRANDS)
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, brand));
+        .addFromInner(TBL_TCD_BRANDS,
+            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND))
+        .setWhere(SqlUtils.equals(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME, brand));
 
     List<EcItem> items = getItems(articleIdQuery);
 

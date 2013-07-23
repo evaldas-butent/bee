@@ -262,7 +262,7 @@ public final class EcConstants {
   public static final String COL_TCD_ANALOG_NR = "AnalogNr";
 
   public static final String COL_TCD_CATEGORY_ID = "CategoryID";
-  public static final String COL_TCD_PARENT_ID = "ParentID";
+  public static final String COL_TCD_PARENT_ID = "Parent";
   public static final String COL_TCD_CATEGORY_NAME = "CategoryName";
 
   public static final String COL_TCD_MODEL_ID = "ModelID";

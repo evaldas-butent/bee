@@ -201,7 +201,7 @@ public class ItemList extends Flow {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
           params.addDataItem(EcConstants.COL_TCD_ARTICLE_ID, item.getArticleId());
           params.addDataItem(EcConstants.COL_TCD_ANALOG_NR, item.getCode());
-          params.addDataItem(EcConstants.COL_TCD_BRAND, item.getManufacturer());
+          params.addDataItem(EcConstants.COL_TCD_BRAND_NAME, item.getManufacturer());
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
             @Override

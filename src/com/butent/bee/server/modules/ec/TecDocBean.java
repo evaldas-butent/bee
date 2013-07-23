@@ -225,7 +225,7 @@ public class TecDocBean {
 
     // ---------------- TcdCategories...
     String tcdArticlesToCategories = SqlUtils.table(TCD_SCHEMA, "TcdArticlesToCategories");
-    String articleCategories = "ArticleCategories";
+    String articleCategories = "TcdArticleCategories";
     String categories = "TcdCategories";
     String tcdCategories = SqlUtils.table(TCD_SCHEMA, categories);
 
@@ -1044,8 +1044,6 @@ public class TecDocBean {
     if (isDebugEnabled) {
       messyLogger.setLevel(LogLevel.INFO);
     }
-    String tcdAnalogs = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ANALOGS);
-    String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
     String idName = sys.getIdName(TBL_TCD_ARTICLE_BRANDS);
     int upd = 0;
     int tot = 0;
@@ -1108,6 +1106,8 @@ public class TecDocBean {
     logger.info(log, "Updated", upd, "rows");
 
     if (tmp != null) {
+      String tcdAnalogs = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ANALOGS);
+      String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
       qs.sqlIndex(tmp, COL_TCD_SEARCH_NR);
 
       upd = qs.updateData(new SqlUpdate(tmp)
