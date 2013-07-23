@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
   
   name="TcdArticleBrands"
@@ -7,16 +7,15 @@
   idChunk="100"
   >
   <Fields>
-    <Long name="ArticleID" notNull="true" />
-    <String name="Brand" precision="50" notNull="true" label="=ecItemBrand" />
+    <Relation name="ArticleID" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItemName" />
+    <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
     <String name="AnalogNr" precision="50" notNull="true" label="=ecItemCode" />
-    <Numeric name="Price" precision="10" scale="2" label="=ecItemCost" />
-    <Numeric name="UpdatedPrice" precision="10" scale="2" label="=ecListPrice" />
+    <Numeric name="Price" precision="10" scale="2" label="=price" />
+    <Numeric name="UpdatedPrice" precision="10" scale="2" label="=ecUpdatedPrice" />
     <String name="Supplier" precision="10" notNull="true" label="=ecItemSupplier"/>
-    <String name="SupplierID" precision="20" notNull="true" label="=ecItemSupplierCode" />
+    <String name="SupplierID" precision="30" notNull="true" label="=ecItemSupplierCode" />
   </Fields>
   <Indexes>
-    <Index fields="ArticleID" />
     <Index fields="Supplier" />
     <Index fields="SupplierID" />
     <Index fields="Supplier SupplierID" unique="true" />

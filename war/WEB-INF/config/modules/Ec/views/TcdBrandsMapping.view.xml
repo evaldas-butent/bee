@@ -5,7 +5,10 @@
   >
   <Columns>
     <SimpleColumn name="SupplierBrand" />
-    <SimpleColumn name="TecDocBrand" />
+    <SimpleColumn name="Brand" />
+    <SimpleJoin name="Brand" joinType="LEFT">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
   </Columns>
 
   <Order>

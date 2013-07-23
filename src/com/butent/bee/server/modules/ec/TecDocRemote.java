@@ -16,6 +16,7 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -90,7 +91,14 @@ public class TecDocRemote {
             if (i > 0) {
               sb.append(",");
             }
-            sb.append(SqlUtils.constant(rs.getObject(field)).getSqlString(builder));
+            Object value;
+
+            if (rs.getMetaData().getColumnType(i + 1) == -4 /* LONGBLOB */) {
+              value = Codec.toBase64(rs.getBytes(field));
+            } else {
+              value = rs.getObject(field);
+            }
+            sb.append(SqlUtils.constant(value).getSqlString(builder));
             i++;
           }
           sb.append(")");

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TcdArticleBrands" viewName="TcdArticleBrands" caption="=ecPriceChanges"
+  disabledActions="add" readOnly="true"
+  filter="Price != UpdatedPrice"
+  >
+  <columns>
+    <DataColumn name="Supplier" />
+    <DataColumn name="ArticleName" />
+    <DataColumn name="BrandName" />
+    <DataColumn name="AnalogNr" />
+    <DataColumn name="Price" />
+    <DataColumn name="UpdatedPrice" />
+  </columns>
+</Grid>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdArticles"
+  idName="ArticleID"
+  audit="false"
+  >
+  <Fields>
+    <String name="ArticleName" precision="50" notNull="true" label="=ecItemName" />
+  </Fields>
+</Table>

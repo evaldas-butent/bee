@@ -144,6 +144,7 @@ public final class EcConstants {
   public static final String TBL_TCD_ARTICLE_CATEGORIES = "TcdArticleCategories";
 
   public static final String TBL_TCD_MANUFACTURERS = "TcdManufacturers";
+  public static final String TBL_TCD_BRANDS = "TcdBrands";
   public static final String TBL_TCD_MODELS = "TcdModels";
   public static final String TBL_TCD_TYPES = "TcdTypes";
   public static final String TBL_TCD_TYPE_ARTICLES = "TcdTypeArticles";
@@ -251,7 +252,7 @@ public final class EcConstants {
   public static final String COL_SHOPPING_CART_PRICE = "Price";
 
   public static final String COL_TCD_ARTICLE_ID = "ArticleID";
-  public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
+  public static final String COL_TCD_ARTICLE = "ArticleID";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";
   public static final String COL_TCD_SUPPLIER = "Supplier";
   public static final String COL_TCD_SUPPLIER_ID = "SupplierID";
@@ -287,15 +288,15 @@ public final class EcConstants {
   public static final String COL_TCD_WAREHOUSE = "Warehouse";
   public static final String COL_TCD_REMAINDER = "Remainder";
 
-  public static final String COL_TCD_COST = "Price";
-  public static final String COL_TCD_LIST_PRICE = "UpdatedPrice";
+  public static final String COL_TCD_PRICE = "Price";
+  public static final String COL_TCD_UPDATED_PRICE = "UpdatedPrice";
 
   public static final String COL_TCD_BRAND = "Brand";
+  public static final String COL_TCD_BRAND_NAME = "BrandName";
   public static final String COL_TCD_ARTICLE_BRAND = "ArticleBrand";
   public static final String COL_TCD_ARTICLE_BRAND_ID = "ArticleBrandID";
 
   public static final String COL_TCD_SUPPLIER_BRAND = "SupplierBrand";
-  public static final String COL_TCD_TECDOC_BRAND = "TecDocBrand";
 
   public static final String COL_TCD_CRITERIA_NAME = "Name";
   public static final String COL_TCD_CRITERIA_VALUE = "Value";

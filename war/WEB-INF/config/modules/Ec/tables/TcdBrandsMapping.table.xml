@@ -7,6 +7,6 @@
   >
   <Fields>
     <String name="SupplierBrand" precision="50" notNull="true" unique="true" label="=tcdSupplierBrand" />
-    <String name="TecDocBrand" precision="50" notNull="true" label="=tcdBrand" />
+    <Relation name="Brand" relation="TcdBrands" notNull="true" label="=tcdBrand" />
   </Fields>
 </Table>

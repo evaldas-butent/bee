@@ -158,6 +158,8 @@ public interface LocalizableEcConstants {
 
   String ecOrderSubmitted();
 
+  String ecPriceChanges();
+
   String ecRegister();
 
   String ecSearchBy();
@@ -202,15 +204,7 @@ public interface LocalizableEcConstants {
 
   String ecTotalReceived();
 
+  String ecUpdatedPrice();
+
   String ecUpdateTime();
-
-  String tcdBrand();
-
-  String tcdBrandsMapping();
-
-  String tcdManufacturer();
-
-  String tcdManufacturers();
-
-  String tcdSupplierBrand();
 }

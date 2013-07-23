@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdBrands" source="TcdBrands"
+  >
+  <Columns>
+    <SimpleColumn name="BrandName" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="BrandName" />
+  </Order>
+</View>

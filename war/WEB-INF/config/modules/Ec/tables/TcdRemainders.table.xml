@@ -7,7 +7,7 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" />
+    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" cascade="DELETE" />
     <String name="Warehouse" precision="10" notNull="true" />
     <Numeric name="Remainder" precision="12" scale="3" />
   </Fields>

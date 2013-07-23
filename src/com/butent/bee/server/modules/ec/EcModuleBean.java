@@ -454,34 +454,34 @@ public class EcModuleBean implements BeeModule {
     if (percent != null) {
       return percent;
     }
-    
+
     Long parent = rowSet.getLong(0, COL_CLIENT_DISCOUNT_PARENT);
     if (parent == null) {
       return null;
     }
-    
+
     Set<Long> parents = Sets.newHashSet();
     parents.add(rowSet.getLong(0, COL_CLIENT_ID));
-    
+
     while (DataUtils.isId(parent) && !parents.contains(parent)) {
       SqlSelect ss = new SqlSelect();
       ss.addFrom(TBL_CLIENTS);
       ss.addFields(TBL_CLIENTS, COL_CLIENT_DISCOUNT_PERCENT, COL_CLIENT_DISCOUNT_PARENT);
       ss.setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_ID, parent));
-      
+
       SimpleRow row = qs.getRow(ss);
       percent = row.getDouble(COL_CLIENT_DISCOUNT_PERCENT);
       if (percent != null) {
         return percent;
       }
-      
+
       parents.add(parent);
       parent = row.getLong(COL_CLIENT_DISCOUNT_PARENT);
     }
-    
+
     return null;
   }
-  
+
   private ResponseObject getConfiguration() {
     BeeRowSet rowSet = qs.getViewData(VIEW_CONFIGURATION);
     if (rowSet == null) {
@@ -546,7 +546,7 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
     Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE_ID));
-    String code = normalizeCode(reqInfo.getParameter(COL_TCD_ARTICLE_NR));
+    String code = normalizeCode(reqInfo.getParameter(COL_TCD_ANALOG_NR));
     String brand = reqInfo.getParameter(COL_TCD_BRAND);
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
@@ -676,7 +676,7 @@ public class EcModuleBean implements BeeModule {
     SqlSelect articleQuery = new SqlSelect()
         .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
         .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID, COL_TCD_BRAND,
-            COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_LIST_PRICE, COL_TCD_SUPPLIER,
+            COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_UPDATED_PRICE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID)
         .addSum(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(tempArticleIds)
@@ -688,7 +688,7 @@ public class EcModuleBean implements BeeModule {
             sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
         .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_ID, COL_TCD_ARTICLE_NAME)
         .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID, COL_TCD_BRAND,
-            COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_LIST_PRICE, COL_TCD_SUPPLIER,
+            COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_UPDATED_PRICE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_ID);
 
@@ -708,9 +708,9 @@ public class EcModuleBean implements BeeModule {
         item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
         item.setStock2(BeeUtils.randomInt(0, 20) * BeeUtils.randomInt(0, 2));
 
-        item.setPrice(row.getDouble(COL_TCD_COST));
-//        item.setListPrice(row.getDouble(COL_TCD_LIST_PRICE));
-        
+        item.setPrice(row.getDouble(COL_TCD_PRICE));
+        // item.setListPrice(row.getDouble(COL_TCD_LIST_PRICE));
+
         items.add(item);
       }
     }
@@ -720,7 +720,7 @@ public class EcModuleBean implements BeeModule {
       for (EcItem item : items) {
         item.setCategories(articleCategories.get(item.getArticleId()));
       }
-      
+
       setListPrice(items);
       setPrice(items);
     }
@@ -729,7 +729,7 @@ public class EcModuleBean implements BeeModule {
 
     return items;
   }
-  
+
   private ResponseObject getItemsByCarType(RequestInfo reqInfo) {
     String typeId = reqInfo.getParameter(VAR_TYPE);
 
@@ -847,12 +847,12 @@ public class EcModuleBean implements BeeModule {
     SqlSelect ss = new SqlSelect();
     ss.addFrom(TBL_CONFIGURATION);
     ss.addFields(TBL_CONFIGURATION, COL_CONFIG_MARGIN_DEFAULT_PERCENT);
-    
+
     Double defMargin = qs.getDouble(ss);
     if (BeeUtils.isZero(defMargin)) {
       defMargin = null;
     }
-    
+
     for (EcItem item : items) {
       if (defMargin == null) {
         item.setListPrice(item.getPrice());
@@ -864,7 +864,7 @@ public class EcModuleBean implements BeeModule {
 
   private void setPrice(List<EcItem> items) {
     Double clientDiscountPercent = getClientDiscountPercent();
-    
+
     for (EcItem item : items) {
       if (clientDiscountPercent == null) {
         item.setPrice(item.getListPrice());
@@ -876,7 +876,7 @@ public class EcModuleBean implements BeeModule {
       }
     }
   }
-  
+
   private ResponseObject submitOrder(RequestInfo reqInfo) {
     String serializedCart = reqInfo.getParameter(VAR_CART);
     if (BeeUtils.isEmpty(serializedCart)) {

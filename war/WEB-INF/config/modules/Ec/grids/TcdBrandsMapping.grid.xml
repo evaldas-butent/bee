@@ -5,6 +5,6 @@
   >
   <columns>
     <DataColumn name="SupplierBrand" />
-    <DataColumn name="TecDocBrand" />
+    <RelColumn name="Brand" />
   </columns>
 </Grid>

@@ -163,7 +163,7 @@ public class ItemList extends Flow {
       if (!BeeUtils.isEmpty(categoryNames)) {
         itemName.setTitle(categoryNames);
       }
-      
+
       itemName.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -200,7 +200,7 @@ public class ItemList extends Flow {
         public void onClick(ClickEvent event) {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
           params.addDataItem(EcConstants.COL_TCD_ARTICLE_ID, item.getArticleId());
-          params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
+          params.addDataItem(EcConstants.COL_TCD_ANALOG_NR, item.getCode());
           params.addDataItem(EcConstants.COL_TCD_BRAND, item.getManufacturer());
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -229,8 +229,9 @@ public class ItemList extends Flow {
 
     String manufacturer = item.getManufacturer();
     if (!BeeUtils.isEmpty(manufacturer)) {
-      Widget manufacturerWidget = EcUtils.renderField(Localized.getConstants().ecItemManufacturer(),
-          manufacturer, STYLE_ITEM_MANUFACTURER);
+      Widget manufacturerWidget =
+          EcUtils.renderField(Localized.getConstants().ecItemManufacturer(),
+              manufacturer, STYLE_ITEM_MANUFACTURER);
       panel.add(manufacturerWidget);
     }
 
