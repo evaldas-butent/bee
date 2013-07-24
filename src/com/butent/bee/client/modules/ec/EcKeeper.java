@@ -330,7 +330,7 @@ public final class EcKeeper {
       }
     });
     
-    GridFactory.registerGridInterceptor("EcMargins", new EcPricingHandler());
+    GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {

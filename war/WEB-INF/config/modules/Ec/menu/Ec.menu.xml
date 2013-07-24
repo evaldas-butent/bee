@@ -26,5 +26,5 @@ name="Ec" label="=ecMenu" order="100"
   <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
   <Item name="TcdArticleBrands" label="=ecPriceChanges" service="grid" parameters="TcdArticleBrands" />
 
-  <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcMargins" separator="true"  />
+  <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
 </Entry>

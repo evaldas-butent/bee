@@ -14,6 +14,7 @@
     <SimpleColumn name="AnalogNr" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="UpdatedPrice" />
+    <SimpleColumn name="ListPrice" />
   </Columns>
 
   <Order>

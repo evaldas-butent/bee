@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="EcPricing" viewName="TcdCategories" caption="=ecPricing"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <DataColumn name="CategoryName" visible="true" readOnly="true" />
+    <DataColumn name="MarginPercent" visible="true" maxWidth="80" />
+
+    <DataColumn name="Note" />
+  </columns>
+</Grid>

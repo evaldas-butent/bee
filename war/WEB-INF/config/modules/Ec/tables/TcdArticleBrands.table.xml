@@ -14,6 +14,7 @@
     <Numeric name="UpdatedPrice" precision="10" scale="2" label="=ecUpdatedPrice" />
     <String name="Supplier" precision="10" notNull="true" label="=ecItemSupplier"/>
     <String name="SupplierID" precision="30" notNull="true" label="=ecItemSupplierCode" />
+    <Numeric name="ListPrice" precision="10" scale="2" label="=ecListPrice" />
   </Fields>
   <Indexes>
     <Index fields="Supplier" />
