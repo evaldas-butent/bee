@@ -48,10 +48,10 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 
   private final List<EcItem> items = Lists.newArrayList();
 
-  private final Set<Integer> categories = Sets.newHashSet();
+  private final Set<Long> categories = Sets.newHashSet();
   private final List<String> manufacturers = Lists.newArrayList();
 
-  private final Set<Integer> selectedCategories = Sets.newHashSet();
+  private final Set<Long> selectedCategories = Sets.newHashSet();
   private final Set<String> selectedManufacturers = Sets.newHashSet();
 
   private Flow manufacturerWrapper;
@@ -78,7 +78,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
   @Override
   public void onSelection(SelectionEvent<TreeItem> event) {
     Object userObject = event.getSelectedItem().getUserObject();
-    Integer category = (userObject instanceof Integer) ? (Integer) userObject : null;
+    Long category = (userObject instanceof Long) ? (Long) userObject : null;
 
     selectedCategories.clear();
     if (category != null) {
@@ -246,7 +246,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
       container.add(tree);
 
     } else {
-      for (Integer category : categories) {
+      for (Long category : categories) {
         Label label = new Label(EcKeeper.getCategoryName(category));
         EcStyles.add(label, STYLE_CATEGORY, STYLE_LABEL);
 

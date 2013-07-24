@@ -10,11 +10,23 @@
     <SimpleColumn name="DateTo" />
 
     <SimpleColumn name="Category" />
-    <SimpleColumn name="Manufacturer" />
+    <SimpleJoin name="Category" joinType="LEFT">
+      <SimpleColumn name="CategoryName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Brand" />
+    <SimpleJoin name="Brand" joinType="LEFT">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
 
     <SimpleColumn name="ArticleBrand" />
     <SimpleJoin name="ArticleBrand" joinType="LEFT">
-      <SimpleColumn name="Brand" />
+      <SimpleJoin name="ArticleID" joinType="LEFT">
+        <SimpleColumn name="ArticleName" />
+      </SimpleJoin>
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" alias="ArticleBrandName" />
+      </SimpleJoin>
       <SimpleColumn name="AnalogNr" />
       <SimpleColumn name="Supplier" />
       <SimpleColumn name="SupplierID" />

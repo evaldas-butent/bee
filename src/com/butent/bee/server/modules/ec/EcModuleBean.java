@@ -1,19 +1,14 @@
 package com.butent.bee.server.modules.ec;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
@@ -133,7 +128,7 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPES)) {
       query = reqInfo.getParameter(VAR_MODEL);
-      response = getCarTypes(query);
+      response = getCarTypes(BeeUtils.toLongOrNull(query));
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_CAR_TYPE)) {
@@ -145,7 +140,8 @@ public class EcModuleBean implements BeeModule {
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_MANUFACTURER)) {
-      response = getItemsByManufacturer(reqInfo);
+      query = reqInfo.getParameter(VAR_MANUFACTURER);
+      response = getItemsByManufacturer(query);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_DELIVERY_METHODS)) {
@@ -167,7 +163,7 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_INFO)) {
       query = reqInfo.getParameter(COL_TCD_ARTICLE_ID);
       articleBrand = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE_BRAND_ID));
-      response = getItemInfo(query, articleBrand);
+      response = getItemInfo(BeeUtils.toLongOrNull(query), articleBrand);
       log = true;
 
     } else {
@@ -201,61 +197,6 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
-      @Subscribe
-      public void setItemProperties(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getViewName(), VIEW_ORDER_ITEMS)) {
-          BeeRowSet orderItems = event.getRowset();
-          if (DataUtils.isEmpty(orderItems)) {
-            return;
-          }
-
-          int articleBrandIndex = orderItems.getColumnIndex(COL_ORDER_ITEM_ARTICLE_BRAND);
-          if (articleBrandIndex < 0) {
-            return;
-          }
-
-          Multimap<Long, Integer> articleBrandIdToRowIndex = HashMultimap.create();
-
-          for (int i = 0; i < orderItems.getNumberOfRows(); i++) {
-            Long articleBrand = orderItems.getLong(i, articleBrandIndex);
-            if (DataUtils.isId(articleBrand)) {
-              articleBrandIdToRowIndex.put(articleBrand, i);
-            }
-          }
-          if (articleBrandIdToRowIndex.isEmpty()) {
-            return;
-          }
-
-          SqlSelect ss = new SqlSelect();
-          ss.addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID);
-          ss.addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME);
-          ss.addFrom(TBL_TCD_ARTICLE_BRANDS);
-          ss.addFromInner(TBL_TCD_ARTICLES,
-              SqlUtils.joinUsing(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_ID));
-
-          ss.setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE_BRAND_ID,
-              articleBrandIdToRowIndex.keySet()));
-
-          SimpleRowSet articleData = qs.getData(ss);
-          if (DataUtils.isEmpty(articleData)) {
-            return;
-          }
-
-          int idIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_BRAND_ID);
-          int nameIndex = articleData.getColumnIndex(COL_TCD_ARTICLE_NAME);
-
-          for (SimpleRow articleRow : articleData) {
-            Long articleBrand = articleRow.getLong(idIndex);
-            String name = articleRow.getValue(nameIndex);
-
-            for (Integer rowIndex : articleBrandIdToRowIndex.get(articleBrand)) {
-              orderItems.getRow(rowIndex).setProperty(COL_TCD_ARTICLE_NAME, name);
-            }
-          }
-        }
-      }
-    });
   }
 
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
@@ -279,6 +220,10 @@ public class EcModuleBean implements BeeModule {
     qs.sqlIndex(tmp, COL_TCD_ARTICLE_ID);
     return tmp;
   }
+  
+  private ResponseObject didNotMatch(String query) {
+    return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
+  }
 
   private ResponseObject doGlobalSearch(String query) {
     if (BeeUtils.isEmpty(query)) {
@@ -292,14 +237,14 @@ public class EcModuleBean implements BeeModule {
 
     List<EcItem> items = getItems(articleIdQuery);
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
+      return didNotMatch(query);
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
   }
 
-  private Map<Integer, String> getArticleCategories(String tempArticleIds) {
-    Map<Integer, String> result = Maps.newHashMap();
+  private Map<Long, String> getArticleCategories(String tempArticleIds) {
+    Map<Long, String> result = Maps.newHashMap();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE_ID, COL_TCD_CATEGORY_ID)
@@ -310,12 +255,12 @@ public class EcModuleBean implements BeeModule {
 
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {
-      int lastArt = 0;
+      long lastArt = 0;
       StringBuilder sb = new StringBuilder();
 
       for (SimpleRow row : data) {
-        int art = row.getInt(COL_TCD_ARTICLE_ID);
-        int cat = row.getInt(COL_TCD_CATEGORY_ID);
+        long art = row.getLong(COL_TCD_ARTICLE_ID);
+        long cat = row.getLong(COL_TCD_CATEGORY_ID);
 
         if (art != lastArt) {
           if (sb.length() > 0) {
@@ -367,8 +312,7 @@ public class EcModuleBean implements BeeModule {
 
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
-      return ResponseObject
-          .warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(manufacturer));
+      return didNotMatch(manufacturer);
     }
 
     List<EcCarModel> carModels = Lists.newArrayList();
@@ -379,8 +323,8 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(carModels).setSize(carModels.size());
   }
 
-  private ResponseObject getCarTypes(String modelId) {
-    if (!BeeUtils.isPositiveInt(modelId)) {
+  private ResponseObject getCarTypes(Long modelId) {
+    if (!DataUtils.isId(modelId)) {
       return ResponseObject.parameterNotFound(SVC_GET_CAR_TYPES, VAR_MODEL);
     }
 
@@ -402,7 +346,7 @@ public class EcModuleBean implements BeeModule {
 
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(modelId));
+      return didNotMatch(BeeUtils.toString(modelId));
     }
 
     List<EcCarType> carTypes = Lists.newArrayList();
@@ -558,8 +502,8 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(getItems(articleIdQuery));
   }
 
-  private ResponseObject getItemInfo(String articleId, Long articleBrandId) {
-    if (!BeeUtils.isPositiveInt(articleId)) {
+  private ResponseObject getItemInfo(Long articleId, Long articleBrandId) {
+    if (!DataUtils.isId(articleId)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEM_INFO, COL_TCD_ARTICLE_ID);
     }
     if (!DataUtils.isId(articleBrandId)) {
@@ -703,7 +647,7 @@ public class EcModuleBean implements BeeModule {
     SimpleRowSet articleData = qs.getData(articleQuery);
     if (!DataUtils.isEmpty(articleData)) {
       for (SimpleRow row : articleData) {
-        EcItem item = new EcItem(row.getInt(COL_TCD_ARTICLE_ID),
+        EcItem item = new EcItem(row.getLong(COL_TCD_ARTICLE_ID),
             row.getLong(COL_TCD_ARTICLE_BRAND_ID));
 
         item.setManufacturer(row.getValue(COL_TCD_BRAND_NAME));
@@ -724,7 +668,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     if (!items.isEmpty()) {
-      Map<Integer, String> articleCategories = getArticleCategories(tempArticleIds);
+      Map<Long, String> articleCategories = getArticleCategories(tempArticleIds);
       for (EcItem item : items) {
         item.setCategories(articleCategories.get(item.getArticleId()));
       }
@@ -739,11 +683,11 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getItemsByCarType(RequestInfo reqInfo) {
-    String typeId = reqInfo.getParameter(VAR_TYPE);
-
-    if (!BeeUtils.isPositiveInt(typeId)) {
+    Long typeId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TYPE));
+    if (!DataUtils.isId(typeId)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_CAR_TYPE, VAR_TYPE);
     }
+
     SqlSelect articleIdQuery = new SqlSelect()
         .addFields(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE_ID)
         .addFrom(TBL_TCD_TYPE_ARTICLES)
@@ -752,15 +696,13 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = getItems(articleIdQuery);
 
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(typeId));
+      return didNotMatch(BeeUtils.toString(typeId));
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
   }
 
-  private ResponseObject getItemsByManufacturer(RequestInfo reqInfo) {
-    String brand = reqInfo.getParameter(VAR_MANUFACTURER);
-
+  private ResponseObject getItemsByManufacturer(String brand) {
     if (BeeUtils.isEmpty(brand)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_MANUFACTURER, VAR_MANUFACTURER);
     }
@@ -774,7 +716,7 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = getItems(articleIdQuery);
 
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(brand));
+      return didNotMatch(brand);
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
@@ -840,7 +782,7 @@ public class EcModuleBean implements BeeModule {
 
     List<EcItem> items = getItems(articleIdQuery);
     if (items.isEmpty()) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(code));
+      return didNotMatch(code);
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }

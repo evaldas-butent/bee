@@ -10,8 +10,8 @@
     <DateTime name="DateFrom" label="=ecDiscountDateFrom" />
     <DateTime name="DateTo" label="=ecDiscountDateTo" />
     
-    <Integer name="Category" />
-    <String name="Manufacturer" precision="50" label="=ecItemManufacturer" />
+    <Relation name="Category" relation="TcdCategories" label="=ecItemCategory" />
+    <Relation name="Brand" relation="TcdBrands" label="=ecItemBrand" />
     <Relation name="ArticleBrand" relation="TcdArticleBrands" />
 
     <Numeric name="Percent" precision="7" scale="3" label="=ecDiscountPercent" />

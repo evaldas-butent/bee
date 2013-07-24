@@ -15,8 +15,13 @@
 
     <DataColumn name="Service" visible="true" />
     <DataColumn name="Query" visible="true" />
-    <DataColumn name="ArticleBrand" />
 
+    <DataColumn name="ArticleName" />
+    <DataColumn name="BrandName" />
+    <DataColumn name="AnalogNr" />
+    <DataColumn name="Supplier" visible="false" />
+    <DataColumn name="SupplierID" visible="false" />
+    
     <DataColumn name="Count" />
     <DataColumn name="Duration" />
   </columns>

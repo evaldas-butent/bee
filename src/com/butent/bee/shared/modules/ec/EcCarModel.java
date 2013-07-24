@@ -20,7 +20,7 @@ public class EcCarModel implements BeeSerializable {
     return carModel;
   }
   
-  private int modelId;
+  private long modelId;
   private String modelName;
   private String manufacturer;
 
@@ -28,7 +28,7 @@ public class EcCarModel implements BeeSerializable {
   private Integer producedTo;
   
   public EcCarModel(SimpleRow row) {
-    this.modelId = row.getInt(COL_TCD_MODEL_ID);
+    this.modelId = row.getLong(COL_TCD_MODEL_ID);
     this.modelName = row.getValue(COL_TCD_MODEL_NAME);
     this.manufacturer = row.getValue(COL_TCD_MANUFACTURER_NAME);
     
@@ -55,7 +55,7 @@ public class EcCarModel implements BeeSerializable {
           break;
 
         case MODEL_ID:
-          setModelId(BeeUtils.toInt(value));
+          setModelId(BeeUtils.toLong(value));
           break;
 
         case MODEL_NAME:
@@ -77,7 +77,7 @@ public class EcCarModel implements BeeSerializable {
     return manufacturer;
   }
 
-  public int getModelId() {
+  public long getModelId() {
     return modelId;
   }
 
@@ -130,7 +130,7 @@ public class EcCarModel implements BeeSerializable {
     this.manufacturer = manufacturer;
   }
 
-  public void setModelId(int modelId) {
+  public void setModelId(long modelId) {
     this.modelId = modelId;
   }
 

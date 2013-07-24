@@ -33,13 +33,13 @@ class EcData {
 
   private final List<String> carManufacturers = Lists.newArrayList();
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
-  private final Map<Integer, List<EcCarType>> carTypesByModel = Maps.newHashMap();
+  private final Map<Long, List<EcCarType>> carTypesByModel = Maps.newHashMap();
 
-  private final Map<Integer, String> categoryNames = Maps.newHashMap();
+  private final Map<Long, String> categoryNames = Maps.newHashMap();
 
-  private final Set<Integer> categoryRoots = Sets.newHashSet();
-  private final Multimap<Integer, Integer> categoryByParent = HashMultimap.create();
-  private final Map<Integer, Integer> categoryByChild = Maps.newHashMap();
+  private final Set<Long> categoryRoots = Sets.newHashSet();
+  private final Multimap<Long, Long> categoryByParent = HashMultimap.create();
+  private final Map<Long, Long> categoryByChild = Maps.newHashMap();
 
   private final List<String> itemManufacturers = Lists.newArrayList();
 
@@ -51,12 +51,12 @@ class EcData {
     super();
   }
 
-  Tree buildCategoryTree(Collection<Integer> ids) {
-    Set<Integer> roots = Sets.newHashSet();
-    Multimap<Integer, Integer> data = HashMultimap.create();
+  Tree buildCategoryTree(Collection<Long> ids) {
+    Set<Long> roots = Sets.newHashSet();
+    Multimap<Long, Long> data = HashMultimap.create();
     
-    for (int id : ids) {
-      Integer parent = getParent(id, ids);
+    for (long id : ids) {
+      Long parent = getParent(id, ids);
       if (parent == null) {
         roots.add(id);
       } else {
@@ -69,7 +69,7 @@ class EcData {
     TreeItem rootItem = new TreeItem(Localized.getConstants().ecSelectCategory());
     tree.addItem(rootItem);
 
-    for (int id : roots) {
+    for (long id : roots) {
       TreeItem treeItem = createCategoryTreeItem(id);
       rootItem.addItem(treeItem);
       
@@ -95,8 +95,8 @@ class EcData {
             categoryByChild.clear();
 
             for (int i = 0; i < arr.length; i += 3) {
-              int id = BeeUtils.toInt(arr[i]);
-              int parent = BeeUtils.toInt(arr[i + 1]);
+              long id = BeeUtils.toLong(arr[i]);
+              long parent = BeeUtils.toLong(arr[i + 1]);
               String name = arr[i + 2];
 
               categoryNames.put(id, name);
@@ -174,7 +174,7 @@ class EcData {
     }
   }
 
-  void getCarTypes(final int modelId, final Consumer<List<EcCarType>> callback) {
+  void getCarTypes(final long modelId, final Consumer<List<EcCarType>> callback) {
     if (carTypesByModel.containsKey(modelId)) {
       callback.accept(carTypesByModel.get(modelId));
 
@@ -202,15 +202,15 @@ class EcData {
     }
   }
 
-  String getCategoryName(int categoryId) {
+  String getCategoryName(long categoryId) {
     return categoryNames.get(categoryId);
   }
 
   List<String> getCategoryNames(EcItem item) {
     List<String> names = Lists.newArrayList();
 
-    List<Integer> categoryIds = item.getCategoryList();
-    for (Integer categoryId : categoryIds) {
+    List<Long> categoryIds = item.getCategoryList();
+    for (Long categoryId : categoryIds) {
       String name = categoryNames.get(categoryId);
       if (name != null) {
         names.add(name);
@@ -319,16 +319,16 @@ class EcData {
     }
   }
 
-  private TreeItem createCategoryTreeItem(int id) {
+  private TreeItem createCategoryTreeItem(long id) {
     TreeItem treeItem = new TreeItem(categoryNames.get(id));
     treeItem.setUserObject(id);
     
     return treeItem;
   }
 
-  private void fillTree(Multimap<Integer, Integer> data, int parent, TreeItem parentItem) {
+  private void fillTree(Multimap<Long, Long> data, long parent, TreeItem parentItem) {
     if (data.containsKey(parent)) {
-      for (int id : data.get(parent)) {
+      for (long id : data.get(parent)) {
         TreeItem childItem = createCategoryTreeItem(id);
         parentItem.addItem(childItem);
         
@@ -337,8 +337,8 @@ class EcData {
     }
   }
 
-  private Integer getParent(int categoryId, Collection<Integer> filter) {
-    for (Integer parent = categoryByChild.get(categoryId); parent != null; parent =
+  private Long getParent(long categoryId, Collection<Long> filter) {
+    for (Long parent = categoryByChild.get(categoryId); parent != null; parent =
         categoryByChild.get(parent)) {
       if (filter.contains(parent)) {
         return parent;

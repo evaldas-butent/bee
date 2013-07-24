@@ -73,7 +73,7 @@ public final class EcKeeper {
     cartList.addToCart(ecItem, quantity);
   }
 
-  public static Tree buildCategoryTree(Collection<Integer> categoryIds) {
+  public static Tree buildCategoryTree(Collection<Long> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
   }
@@ -159,13 +159,13 @@ public final class EcKeeper {
     return cartList.getCart(cartType);
   }
 
-  public static void getCarTypes(Integer modelId, Consumer<List<EcCarType>> callback) {
+  public static void getCarTypes(Long modelId, Consumer<List<EcCarType>> callback) {
     Assert.notNull(modelId);
     Assert.notNull(callback);
     data.getCarTypes(modelId, callback);
   }
 
-  public static String getCategoryName(Integer categoryId) {
+  public static String getCategoryName(Long categoryId) {
     Assert.notNull(categoryId);
     return data.getCategoryName(categoryId);
   }

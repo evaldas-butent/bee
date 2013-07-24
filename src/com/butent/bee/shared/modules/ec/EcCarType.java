@@ -24,11 +24,11 @@ public class EcCarType implements BeeSerializable {
     return carType;
   }
   
-  private int modelId;
+  private long modelId;
   private String modelName;
   private String manufacturer;
 
-  private int typeId;
+  private long typeId;
   private String typeName;
 
   private Integer producedFrom;
@@ -48,11 +48,11 @@ public class EcCarType implements BeeSerializable {
   private String axle;
   
   public EcCarType(SimpleRow row) {
-    this.modelId = row.getInt(COL_TCD_MODEL_ID);
+    this.modelId = row.getLong(COL_TCD_MODEL_ID);
     this.modelName = row.getValue(COL_TCD_MODEL_NAME);
     this.manufacturer = row.getValue(COL_TCD_MANUFACTURER_NAME);
     
-    this.typeId = row.getInt(COL_TCD_TYPE_ID);
+    this.typeId = row.getLong(COL_TCD_TYPE_ID);
     this.typeName = row.getValue(COL_TCD_TYPE_NAME);
 
     this.producedFrom = row.getInt(COL_TCD_PRODUCED_FROM);
@@ -128,7 +128,7 @@ public class EcCarType implements BeeSerializable {
           break;
 
         case MODEL_ID:
-          setModelId(BeeUtils.toInt(value));
+          setModelId(BeeUtils.toLong(value));
           break;
 
         case MODEL_NAME:
@@ -144,7 +144,7 @@ public class EcCarType implements BeeSerializable {
           break;
 
         case TYPE_ID:
-          setTypeId(BeeUtils.toInt(value));
+          setTypeId(BeeUtils.toLong(value));
           break;
 
         case TYPE_NAME:
@@ -194,7 +194,7 @@ public class EcCarType implements BeeSerializable {
     return maxWeight;
   }
 
-  public int getModelId() {
+  public long getModelId() {
     return modelId;
   }
 
@@ -218,7 +218,7 @@ public class EcCarType implements BeeSerializable {
     return producedTo;
   }
 
-  public int getTypeId() {
+  public long getTypeId() {
     return typeId;
   }
 
@@ -347,7 +347,7 @@ public class EcCarType implements BeeSerializable {
     this.maxWeight = maxWeight;
   }
 
-  public void setModelId(int modelId) {
+  public void setModelId(long modelId) {
     this.modelId = modelId;
   }
 
@@ -363,7 +363,7 @@ public class EcCarType implements BeeSerializable {
     this.producedTo = producedTo;
   }
 
-  public void setTypeId(int typeId) {
+  public void setTypeId(long typeId) {
     this.typeId = typeId;
   }
 

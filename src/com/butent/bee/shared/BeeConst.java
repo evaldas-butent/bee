@@ -238,6 +238,10 @@ public final class BeeConst {
     return x == UNDEF;
   }
 
+  public static boolean isUndef(long x) {
+    return x == UNDEF;
+  }
+  
   /**
    * Sets the state to client.
    * 

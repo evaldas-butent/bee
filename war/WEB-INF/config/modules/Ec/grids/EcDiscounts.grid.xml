@@ -8,10 +8,13 @@
     <DataColumn name="DateFrom" />
     <DataColumn name="DateTo" />
 
-    <DataColumn name="Category" />
-    <DataColumn name="Manufacturer" />
+    <RelColumn name="Category" renderColumns="CategoryName" />
+    <RelColumn name="Brand" renderColumns="BrandName" />
 
-<!--     <DataColumn name="Brand" /> -->
+    <RelColumn name="ArticleName" label="=ecItemName" caching="none"
+        renderColumns="ArticleName" searchableColumns="ArticleName"
+        choiceColumns="ArticleName ArticleBrandName AnalogNr Supplier SupplierID" />
+    <DataColumn name="ArticleBrandName" />
     <DataColumn name="AnalogNr" />
     <DataColumn name="Supplier" />
     <DataColumn name="SupplierID" />

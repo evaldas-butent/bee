@@ -419,7 +419,7 @@ public final class DomUtils {
 
     for (Element child = parent.getFirstChildElement(); child != null; child =
         child.getNextSiblingElement()) {
-      if (getDataIndex(child) == dataIndex) {
+      if (getDataIndexInt(child) == dataIndex) {
         return child;
       }
     }
@@ -551,11 +551,16 @@ public final class DomUtils {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
 
-  public static int getDataIndex(Element elem) {
+  public static int getDataIndexInt(Element elem) {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
   }
 
+  public static long getDataIndexLong(Element elem) {
+    String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
+    return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toLong(value);
+  }
+  
   public static String getDataRow(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
@@ -1603,6 +1608,11 @@ public final class DomUtils {
   public static void setDataIndex(Element elem, int idx) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Integer.toString(idx));
+  }
+
+  public static void setDataIndex(Element elem, long idx) {
+    Assert.notNull(elem);
+    elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
   }
 
   public static void setDraggable(Element elem) {

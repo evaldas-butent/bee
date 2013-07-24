@@ -355,7 +355,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   private boolean moveItem(Element itemElement, boolean wasSelected) {
     boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
-        && data.setSelected(DomUtils.getDataIndex(itemElement), !wasSelected);
+        && data.setSelected(DomUtils.getDataIndexInt(itemElement), !wasSelected);
 
     if (updated) {
       if (wasSelected) {

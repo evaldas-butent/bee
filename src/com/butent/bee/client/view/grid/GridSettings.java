@@ -267,7 +267,7 @@ public final class GridSettings {
   }
 
   private static int getDataIndex(HtmlTable table, int row) {
-    return DomUtils.getDataIndex(table.getWidget(row, LABEL_COL).getElement());    
+    return DomUtils.getDataIndexInt(table.getWidget(row, LABEL_COL).getElement());    
   }
 
   private static List<Integer> getSelectedColumns(HtmlTable table, 

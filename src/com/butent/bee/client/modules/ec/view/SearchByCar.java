@@ -122,7 +122,7 @@ class SearchByCar extends EcView {
   private Integer modelIndex;
 
   private final List<EcCarType> types = Lists.newArrayList();
-  private Integer typeId;
+  private Long typeId;
 
   private final List<String> years = Lists.newArrayList();
   private Integer year;
@@ -237,7 +237,7 @@ class SearchByCar extends EcView {
     return (getModelIndex() == null) ? null : models.get(getModelIndex());
   }
 
-  private Integer getModelId() {
+  private Long getModelId() {
     return (getModelIndex() == null) ? null : models.get(getModelIndex()).getModelId();
   }
 
@@ -245,7 +245,7 @@ class SearchByCar extends EcView {
     return modelIndex;
   }
 
-  private Integer getTypeId() {
+  private Long getTypeId() {
     return typeId;
   }
 
@@ -318,7 +318,7 @@ class SearchByCar extends EcView {
 
   private void onTypePanelClick(ClickEvent event) {
     TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
-    int id = DomUtils.getDataIndex(element);
+    long id = DomUtils.getDataIndexLong(element);
 
     if (id > 0 && !Objects.equal(getTypeId(), id)) {
       setTypeId(id);
@@ -648,7 +648,7 @@ class SearchByCar extends EcView {
     this.modelIndex = modelIndex;
   }
 
-  private void setTypeId(Integer typeId) {
+  private void setTypeId(Long typeId) {
     this.typeId = typeId;
   }
 

@@ -8,8 +8,20 @@
 
     <SimpleColumn name="Service" />
     <SimpleColumn name="Query" />
-    <SimpleColumn name="ArticleBrand" />
 
+    <SimpleColumn name="ArticleBrand" />
+    <SimpleJoin name="ArticleBrand" joinType="LEFT">
+      <SimpleJoin name="ArticleID" joinType="LEFT">
+        <SimpleColumn name="ArticleName" />
+      </SimpleJoin>
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" />
+      </SimpleJoin>
+      <SimpleColumn name="AnalogNr" />
+      <SimpleColumn name="Supplier" />
+      <SimpleColumn name="SupplierID" />
+    </SimpleJoin>
+    
     <SimpleColumn name="Count" />
     <SimpleColumn name="Duration" />
 

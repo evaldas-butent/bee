@@ -27,7 +27,7 @@ public class EcItem implements BeeSerializable {
     return item;
   }
 
-  private int articleId;
+  private long articleId;
   private long articleBrandId;
 
   private String manufacturer;
@@ -45,7 +45,7 @@ public class EcItem implements BeeSerializable {
   private int listPrice;
   private int price;
 
-  public EcItem(int articleId, long articleBrandId) {
+  public EcItem(long articleId, long articleBrandId) {
     this.articleId = articleId;
     this.articleBrandId = articleBrandId;
   }
@@ -65,7 +65,7 @@ public class EcItem implements BeeSerializable {
 
       switch (member) {
         case ARTICLE_ID:
-          this.articleId = BeeUtils.toInt(value);
+          this.articleId = BeeUtils.toLong(value);
           break;
 
         case ARTICLE_BRAND_ID:
@@ -124,7 +124,7 @@ public class EcItem implements BeeSerializable {
     return articleBrandId;
   }
 
-  public int getArticleId() {
+  public long getArticleId() {
     return articleId;
   }
 
@@ -132,12 +132,12 @@ public class EcItem implements BeeSerializable {
     return categories;
   }
 
-  public List<Integer> getCategoryList() {
-    List<Integer> result = Lists.newArrayList();
+  public List<Long> getCategoryList() {
+    List<Long> result = Lists.newArrayList();
 
     if (getCategories() != null) {
       for (String s : CATEGORY_SPLITTER.split(getCategories())) {
-        result.add(BeeUtils.toInt(s));
+        result.add(BeeUtils.toLong(s));
       }
     }
     return result;
@@ -191,7 +191,7 @@ public class EcItem implements BeeSerializable {
     return true;
   }
 
-  public boolean hasCategory(int category) {
+  public boolean hasCategory(long category) {
     return categories != null
         && categories.contains(EcConstants.CATEGORY_SEPARATOR + category
             + EcConstants.CATEGORY_SEPARATOR);
