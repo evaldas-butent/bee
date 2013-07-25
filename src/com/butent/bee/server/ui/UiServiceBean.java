@@ -737,19 +737,15 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "tecdoc")) {
       tcd.suckTecdoc();
-      response = ResponseObject.info("TecDoc SUCKED OFF");
+      response = ResponseObject.info("TecDoc SUCKS NOW...");
 
     } else if (BeeUtils.same(cmd, "motonet")) {
       tcd.suckMotonet();
-      response = ResponseObject.info("Motonet SUCKED OFF");
+      response = ResponseObject.info("Motonet...");
 
     } else if (BeeUtils.same(cmd, "butent")) {
       tcd.suckButent();
-      response = ResponseObject.info("Butent SUCKED OFF");
-
-    } else if (BeeUtils.same(cmd, "tcd")) {
-      tcd.justDoIt();
-      response = ResponseObject.info("Tcd transforming...");
+      response = ResponseObject.info("Butent...");
 
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);

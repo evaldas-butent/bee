@@ -115,7 +115,7 @@ public final class EcKeeper {
 
     ParameterList params = createArgs(SVC_GLOBAL_SEARCH);
     params.addDataItem(VAR_QUERY, query);
-    
+
     requestItems(SVC_GLOBAL_SEARCH, query, params, new Consumer<List<EcItem>>() {
       @Override
       public void accept(List<EcItem> items) {
@@ -132,7 +132,7 @@ public final class EcKeeper {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
   }
-  
+
   public static void finalizeRequest(EcRequest request, boolean remove) {
     if (request.hasProgress()) {
       BeeKeeper.getScreen().closeProgress(request.getProgressId());
@@ -258,41 +258,41 @@ public final class EcKeeper {
       }
     });
   }
-  
+
   public static void saveConfiguration(String key, String value) {
     Assert.notEmpty(key);
     data.saveConfiguration(key, value);
   }
-  
+
   private static String getActiveViewId() {
     IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
-    return (activeWidget == null) ? null : activeWidget.getId(); 
+    return (activeWidget == null) ? null : activeWidget.getId();
   }
-  
+
   public static void openItem(final EcItem item, final boolean allowAddToCart) {
     Assert.notNull(item);
-    
+
     final String activeViewId = getActiveViewId();
 
     ParameterList params = createArgs(SVC_GET_ITEM_INFO);
 
-    params.addQueryItem(COL_TCD_ARTICLE_ID, item.getArticleId());
-    params.addQueryItem(COL_TCD_ARTICLE_BRAND_ID, item.getArticleBrandId());
-    
+    params.addQueryItem(COL_TCD_ARTICLE, item.getArticleId());
+    params.addQueryItem(COL_TCD_ARTICLE_BRAND, item.getArticleBrandId());
+
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         dispatchMessages(response);
-        
-        if (Objects.equal(activeViewId, getActiveViewId()) 
+
+        if (Objects.equal(activeViewId, getActiveViewId())
             && response.hasResponse(EcItemInfo.class)) {
           EcItemInfo ecItemInfo = EcItemInfo.restore(response.getResponseAsString());
           ItemDetails widget = new ItemDetails(item, ecItemInfo, allowAddToCart);
-          
+
           DialogBox dialog = DialogBox.create(item.getName(),
               EcStyles.name(ItemDetails.STYLE_PRIMARY, "dialog"));
           dialog.setWidget(widget);
-          
+
           dialog.setHideOnEscape(true);
           dialog.setAnimationEnabled(true);
           dialog.center();
@@ -329,7 +329,7 @@ public final class EcKeeper {
             COL_CONFIG_CONTACTS_HTML);
       }
     });
-    
+
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
   }
 
@@ -412,7 +412,7 @@ public final class EcKeeper {
           return;
         }
         resetActiveCommand();
-        
+
         FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
         BeeKeeper.getScreen().updateActivePanel(widget);
       }

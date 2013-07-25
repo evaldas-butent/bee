@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdArticleCategories"
+  idName="ArticleCategoryID"
+  audit="false"
+  idChunk="100"
+  >
+  <Fields>
+    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
+    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Article Category" />
+  </Constraints>
+</Table>

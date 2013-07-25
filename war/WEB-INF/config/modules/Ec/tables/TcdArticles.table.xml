@@ -4,8 +4,10 @@
   name="TcdArticles"
   idName="ArticleID"
   audit="false"
+  idChunk="100"
   >
   <Fields>
     <String name="ArticleName" precision="50" notNull="true" label="=ecItemName" />
+    <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

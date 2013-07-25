@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdGraphics"
+  idName="GraphicsID"
+  audit="false"
+  idChunk="100"
+  >
+  <Fields>
+    <String name="Type" precision="3" notNull="true" />
+    <Long name="ResourceID" notNull="true" />
+    <String name="ResourceNo" precision="2" notNull="true" />
+    <Long name="TecDocID" unique="true" />
+  </Fields>
+</Table>

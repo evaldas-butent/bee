@@ -5,7 +5,7 @@
   >
   <Columns>
     <SimpleColumn name="Supplier" />
-    <SimpleJoin name="ArticleID" joinType="INNER">
+    <SimpleJoin name="Article" joinType="INNER">
       <SimpleColumn name="ArticleName" />
     </SimpleJoin>
     <SimpleJoin name="Brand" joinType="INNER">

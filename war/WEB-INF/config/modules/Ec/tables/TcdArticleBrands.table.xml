@@ -7,7 +7,7 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="ArticleID" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItemName" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItemName" />
     <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
     <String name="AnalogNr" precision="50" notNull="true" label="=ecItemCode" />
     <Numeric name="Price" precision="10" scale="2" label="=price" />

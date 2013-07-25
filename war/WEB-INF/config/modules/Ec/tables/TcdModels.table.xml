@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdModels"
+  idName="ModelID"
+  audit="false"
+  >
+  <Fields>
+    <Relation name="Manufacturer" relation="TcdManufacturers" notNull="true" cascade="DELETE" label="=tcdManufacturer" />
+    <String name="ModelName" precision="50" notNull="true" label="=tcdModel" />
+    <Long name="TecDocID" unique="true" />
+  </Fields>
+</Table>

@@ -17,13 +17,13 @@ public class EcCarType implements BeeSerializable {
     PRODUCED_FROM, PRODUCED_TO, CCM, KW_FROM, KW_TO, CYLINDERS, MAX_WEIGHT,
     ENGINE, FUEL, BODY, AXLE
   }
-  
+
   public static EcCarType restore(String s) {
     EcCarType carType = new EcCarType();
     carType.deserialize(s);
     return carType;
   }
-  
+
   private long modelId;
   private String modelName;
   private String manufacturer;
@@ -46,13 +46,13 @@ public class EcCarType implements BeeSerializable {
   private String fuel;
   private String body;
   private String axle;
-  
+
   public EcCarType(SimpleRow row) {
-    this.modelId = row.getLong(COL_TCD_MODEL_ID);
+    this.modelId = row.getLong(COL_TCD_MODEL);
     this.modelName = row.getValue(COL_TCD_MODEL_NAME);
     this.manufacturer = row.getValue(COL_TCD_MANUFACTURER_NAME);
-    
-    this.typeId = row.getLong(COL_TCD_TYPE_ID);
+
+    this.typeId = row.getLong(COL_TCD_TYPE);
     this.typeName = row.getValue(COL_TCD_TYPE_NAME);
 
     this.producedFrom = row.getInt(COL_TCD_PRODUCED_FROM);
@@ -62,15 +62,15 @@ public class EcCarType implements BeeSerializable {
 
     this.kwFrom = row.getInt(COL_TCD_KW_FROM);
     this.kwTo = row.getInt(COL_TCD_KW_TO);
-    
+
     this.cylinders = row.getInt(COL_TCD_CYLINDERS);
 
     this.maxWeight = row.getDouble(COL_TCD_MAX_WEIGHT);
-    
-    this.engine = row.getValue(COL_TCD_ENGINE); 
-    this.fuel = row.getValue(COL_TCD_FUEL); 
-    this.body = row.getValue(COL_TCD_BODY); 
-    this.axle = row.getValue(COL_TCD_AXLE); 
+
+    this.engine = row.getValue(COL_TCD_ENGINE);
+    this.fuel = row.getValue(COL_TCD_FUEL);
+    this.body = row.getValue(COL_TCD_BODY);
+    this.axle = row.getValue(COL_TCD_AXLE);
   }
 
   private EcCarType() {
@@ -94,7 +94,7 @@ public class EcCarType implements BeeSerializable {
         case BODY:
           setBody(value);
           break;
-        
+
         case CCM:
           setCcm(BeeUtils.toIntOrNull(value));
           break;
@@ -201,7 +201,7 @@ public class EcCarType implements BeeSerializable {
   public String getModelName() {
     return modelName;
   }
-  
+
   public String getPower() {
     if (BeeUtils.isPositive(getKwFrom())) {
       return BeeUtils.join(BeeConst.STRING_MINUS, getKwFrom(), getKwTo()) + " kW";
@@ -229,7 +229,7 @@ public class EcCarType implements BeeSerializable {
   public boolean isProduced(int year) {
     return EcUtils.isProduced(getProducedFrom(), getProducedTo(), year);
   }
-  
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -297,7 +297,7 @@ public class EcCarType implements BeeSerializable {
         case TYPE_ID:
           arr[i++] = getTypeId();
           break;
-        
+
         case TYPE_NAME:
           arr[i++] = getTypeName();
           break;
@@ -358,7 +358,7 @@ public class EcCarType implements BeeSerializable {
   public void setProducedFrom(Integer producedFrom) {
     this.producedFrom = producedFrom;
   }
-  
+
   public void setProducedTo(Integer producedTo) {
     this.producedTo = producedTo;
   }

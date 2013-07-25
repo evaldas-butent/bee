@@ -11,7 +11,7 @@
 
     <SimpleColumn name="ArticleBrand" />
     <SimpleJoin name="ArticleBrand" joinType="LEFT">
-      <SimpleJoin name="ArticleID" joinType="LEFT">
+      <SimpleJoin name="Article" joinType="LEFT">
         <SimpleColumn name="ArticleName" />
       </SimpleJoin>
       <SimpleJoin name="Brand" joinType="LEFT">
