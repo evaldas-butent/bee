@@ -46,7 +46,7 @@ public final class BeeUtils {
       return true;
     }
   }
-
+  
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -1474,6 +1474,14 @@ public final class BeeUtils {
     }
   }
 
+  public static Double minusPercent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d - d * p / 100d;
+    } else {
+      return d;
+    }
+  }
+
   public static String nextString(String value) {
     String expression = trim(value);
     String pattern = "^(.*?)(\\d*?)$";
@@ -1610,6 +1618,14 @@ public final class BeeUtils {
     return null;
   }
 
+  public static Double plusPercent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d + d * p / 100d;
+    } else {
+      return d;
+    }
+  }
+  
   public static int positive(int x, int def) {
     return (x > 0) ? x : def;
   }

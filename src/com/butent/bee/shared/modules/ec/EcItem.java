@@ -19,7 +19,7 @@ public class EcItem implements BeeSerializable {
   }
 
   public static final Splitter CATEGORY_SPLITTER =
-      Splitter.on(EcConstants.CATEGORY_SEPARATOR).trimResults().omitEmptyStrings();
+      Splitter.on(EcConstants.CATEGORY_ID_SEPARATOR).trimResults().omitEmptyStrings();
 
   public static EcItem restore(String s) {
     EcItem item = new EcItem();
@@ -193,8 +193,8 @@ public class EcItem implements BeeSerializable {
 
   public boolean hasCategory(long category) {
     return categories != null
-        && categories.contains(EcConstants.CATEGORY_SEPARATOR + category
-            + EcConstants.CATEGORY_SEPARATOR);
+        && categories.contains(EcConstants.CATEGORY_ID_SEPARATOR + category
+            + EcConstants.CATEGORY_ID_SEPARATOR);
   }
 
   @Override

@@ -169,6 +169,8 @@ public final class EcConstants {
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
   public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
 
+  public static final String VIEW_CATEGORIES = "TcdCategories";
+
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
   public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
@@ -265,8 +267,10 @@ public final class EcConstants {
   public static final String COL_TCD_ANALOG_NR = "AnalogNr";
 
   public static final String COL_TCD_CATEGORY = "Category";
-  public static final String COL_TCD_PARENT = "Parent";
+  public static final String COL_TCD_CATEGORY_PARENT = "Parent";
   public static final String COL_TCD_CATEGORY_NAME = "CategoryName";
+  public static final String COL_TCD_CATEGORY_FULL_NAME = "FullName";
+  public static final String COL_TCD_CATEGORY_MARGIN_PERCENT = "MarginPercent";
 
   public static final String COL_TCD_MODEL = "Model";
   public static final String COL_TCD_MODEL_NAME = "ModelName";
@@ -312,7 +316,8 @@ public final class EcConstants {
 
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 
-  public static final String CATEGORY_SEPARATOR = ",";
+  public static final String CATEGORY_ID_SEPARATOR = ",";
+  public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
   public static final String CURRENCY = "Lt";
 

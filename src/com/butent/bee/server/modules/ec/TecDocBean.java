@@ -738,7 +738,7 @@ public class TecDocBean {
 
     String categ = qs.sqlCreateTemp(new SqlSelect()
         .addFields(tcdCategories, TCD_CATEGORY_ID, COL_TCD_CATEGORY_NAME, TCD_PARENT_ID)
-        .addEmptyLong(COL_TCD_PARENT)
+        .addEmptyLong(COL_TCD_CATEGORY_PARENT)
         .addFrom(tcdCategories)
         .addFromInner(new SqlSelect().setDistinctMode(true)
             .addFields(artCateg, TCD_CATEGORY_ID)
@@ -756,13 +756,13 @@ public class TecDocBean {
         .addFrom(categ));
 
     qs.updateData(new SqlUpdate(categ)
-        .addExpression(COL_TCD_PARENT,
+        .addExpression(COL_TCD_CATEGORY_PARENT,
             SqlUtils.field(TBL_TCD_CATEGORIES, sys.getIdName(TBL_TCD_CATEGORIES)))
         .setFrom(TBL_TCD_CATEGORIES,
             SqlUtils.join(categ, TCD_PARENT_ID, TBL_TCD_CATEGORIES, TCD_TECDOC_ID)));
 
     qs.updateData(new SqlUpdate(TBL_TCD_CATEGORIES)
-        .addExpression(COL_TCD_PARENT, SqlUtils.field(categ, COL_TCD_PARENT))
+        .addExpression(COL_TCD_CATEGORY_PARENT, SqlUtils.field(categ, COL_TCD_CATEGORY_PARENT))
         .setFrom(categ,
             SqlUtils.join(TBL_TCD_CATEGORIES, TCD_TECDOC_ID, categ, TCD_CATEGORY_ID)));
 

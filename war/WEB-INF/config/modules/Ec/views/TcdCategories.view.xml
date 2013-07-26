@@ -6,6 +6,9 @@
   <Columns>
     <SimpleColumn name="CategoryName" />
     <SimpleColumn name="Parent" />
+    <SimpleJoin name="Parent" joinType="LEFT">
+      <SimpleColumn name="CategoryName" alias="FullName" />
+    </SimpleJoin>
 
     <SimpleColumn name="MarginPercent" />
     <SimpleColumn name="Note" />

@@ -2,12 +2,17 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="EcPricing" viewName="TcdCategories" caption="=ecPricing"
+  asyncThreshold="10000" disabledActions="add delete"
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="CategoryName" visible="true" readOnly="true" />
-    <DataColumn name="MarginPercent" visible="true" maxWidth="80" />
+    <CalcColumn name="Name" type="string" caption="=ecItemCategory" cellType="html" visible="true"
+        sortable="false" searchBy="CategoryName" />
+    <DataColumn name="MarginPercent" visible="true" maxWidth="80" sortable="false"
+        filterOptions="empty" />
 
-    <DataColumn name="Note" />
+    <DataColumn name="Note" sortable="false" />
+    <DataColumn name="FullName" visible="false" caption="=ecItemCategoryFullName"
+        sortable="false" />
   </columns>
 </Grid>

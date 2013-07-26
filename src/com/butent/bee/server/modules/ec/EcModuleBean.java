@@ -1,14 +1,19 @@
 package com.butent.bee.server.modules.ec;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.ViewEventHandler;
+import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
@@ -38,6 +43,7 @@ import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
@@ -45,7 +51,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.text.Collator;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -197,6 +206,89 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void orderCategories(ViewQueryEvent event) {
+        if (event.isAfter() && BeeUtils.same(event.getViewName(), VIEW_CATEGORIES)) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (rowSet.getNumberOfRows() > 1) {
+            final int nameIndex = rowSet.getColumnIndex(COL_TCD_CATEGORY_NAME);
+            final int parentIndex = rowSet.getColumnIndex(COL_TCD_CATEGORY_PARENT);
+            final int fullNameIndex = rowSet.getColumnIndex(COL_TCD_CATEGORY_FULL_NAME);
+            
+            if (BeeConst.isUndef(nameIndex) || BeeConst.isUndef(parentIndex)
+                || BeeConst.isUndef(fullNameIndex)) {
+              return;
+            }
+
+            Map<Long, Long> parents = Maps.newHashMap();
+            Map<Long, String> names = Maps.newHashMap();
+
+            for (BeeRow row : rowSet.getRows()) {
+              Long parent = row.getLong(parentIndex);
+              if (parent != null) {
+                parents.put(row.getId(), parent);
+              }
+
+              names.put(row.getId(), row.getString(nameIndex));
+            }
+
+            for (BeeRow row : rowSet.getRows()) {
+              Long parent = row.getLong(parentIndex);
+
+              if (parent == null) {
+                row.setValue(fullNameIndex, row.getString(nameIndex));
+
+              } else {
+                List<String> fullName = Lists.newArrayList(row.getString(nameIndex),
+                    row.getString(fullNameIndex));
+
+                while (parent != null && parents.containsKey(parent)) {
+                  parent = parents.get(parent);
+                  fullName.add(names.get(parent));
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = fullName.size() - 1; i >= 0; i--) {
+                  sb.append(fullName.get(i));
+                  if (i > 0) {
+                    sb.append(EcConstants.CATEGORY_NAME_SEPARATOR);
+                  }
+                }
+                row.setValue(fullNameIndex, sb.toString());
+              }
+            }
+
+            final Collator collator = Collator.getInstance(usr.getLocale());
+            collator.setStrength(Collator.IDENTICAL);
+
+            Collections.sort(rowSet.getRows().getList(), new Comparator<BeeRow>() {
+              @Override
+              public int compare(BeeRow row1, BeeRow row2) {
+                String name1 = row1.getString(fullNameIndex);
+                String name2 = row2.getString(fullNameIndex);
+
+                int result;
+                if (name1 == null) {
+                  result = (name2 == null) ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
+                } else if (name2 == null) {
+                  result = BeeConst.COMPARE_MORE;
+                } else {
+                  result = collator.compare(name1.toLowerCase(), name2.toLowerCase());
+                }
+
+                if (result == BeeConst.COMPARE_EQUAL) {
+                  result = Longs.compare(row1.getId(), row2.getId());
+                }
+
+                return result;
+              }
+            });
+          }
+        }
+      }
+    });
   }
 
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
@@ -269,7 +361,7 @@ public class EcModuleBean implements BeeModule {
             sb = new StringBuilder();
           }
         }
-        sb.append(CATEGORY_SEPARATOR).append(cat);
+        sb.append(CATEGORY_ID_SEPARATOR).append(cat);
       }
 
       if (sb.length() > 0) {
@@ -364,7 +456,7 @@ public class EcModuleBean implements BeeModule {
     String idName = sys.getIdName(TBL_TCD_CATEGORIES);
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TCD_CATEGORIES, idName, COL_TCD_PARENT,
+        .addFields(TBL_TCD_CATEGORIES, idName, COL_TCD_CATEGORY_PARENT,
             COL_TCD_CATEGORY_NAME)
         .addFrom(TBL_TCD_CATEGORIES)
         .addOrder(TBL_TCD_CATEGORIES, idName);
@@ -733,6 +825,44 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
+  private static Double getMarginPercent(Collection<Long> categories, Map<Long, Long> parents,
+      Map<Long, Long> roots, Map<Long, Double> margins) {
+
+    if (categories.isEmpty() || margins.isEmpty()) {
+      return null;
+    }
+
+    Map<Long, Double> marginByRoot = Maps.newHashMap();
+    Set<Long> traversed = Sets.newHashSet();
+
+    for (Long category : categories) {
+      Double margin = null;
+
+      for (Long id = category; id != null && !traversed.contains(id); id = parents.get(id)) {
+        traversed.add(id);
+        if (margin == null) {
+          margin = margins.get(id);
+        }
+      }
+
+      if (margin != null) {
+        marginByRoot.put(roots.get(category), margin);
+      }
+    }
+
+    if (marginByRoot.isEmpty()) {
+      return null;
+    } else {
+      Double result = null;
+      for (double margin : marginByRoot.values()) {
+        if (result == null || margin < result) {
+          result = margin;
+        }
+      }
+      return result;
+    }
+  }
+
   private void logHistory(String service, String query, Long articeBrand, int count,
       long duration) {
     SqlInsert ins = new SqlInsert(TBL_HISTORY);
@@ -807,22 +937,75 @@ public class EcModuleBean implements BeeModule {
   }
 
   private void setListPrice(List<EcItem> items) {
-    SqlSelect ss = new SqlSelect();
-    ss.addFrom(TBL_CONFIGURATION);
-    ss.addFields(TBL_CONFIGURATION, COL_CONFIG_MARGIN_DEFAULT_PERCENT);
+    long start = System.currentTimeMillis();
 
-    Double defMargin = qs.getDouble(ss);
-    if (BeeUtils.isZero(defMargin)) {
-      defMargin = null;
+    SqlSelect defQuery = new SqlSelect();
+    defQuery.addFrom(TBL_CONFIGURATION);
+    defQuery.addFields(TBL_CONFIGURATION, COL_CONFIG_MARGIN_DEFAULT_PERCENT);
+
+    Double defMargin = qs.getDouble(defQuery);
+
+    Map<Long, Long> catParents = Maps.newHashMap();
+    Map<Long, Long> catRoots = Maps.newHashMap();
+    Map<Long, Double> catMargins = Maps.newHashMap();
+
+    String colCategoryId = sys.getIdName(TBL_TCD_CATEGORIES);
+    
+    SqlSelect catQuery = new SqlSelect();
+    catQuery.addFrom(TBL_TCD_CATEGORIES);
+    catQuery.addFields(TBL_TCD_CATEGORIES, colCategoryId, COL_TCD_CATEGORY_PARENT,
+        COL_TCD_CATEGORY_MARGIN_PERCENT);
+
+    SimpleRowSet catData = qs.getData(catQuery);
+    if (!DataUtils.isEmpty(catData)) {
+      for (SimpleRow row : catData) {
+        Long id = row.getLong(colCategoryId);
+
+        Long parent = row.getLong(COL_TCD_CATEGORY_PARENT);
+        if (parent == null) {
+          catRoots.put(id, id);
+        } else {
+          catParents.put(id, parent);
+        }
+
+        Double percent = row.getDouble(COL_TCD_CATEGORY_MARGIN_PERCENT);
+        if (percent != null) {
+          catMargins.put(id, percent);
+        }
+      }
+
+      ImmutableSet<Long> roots = ImmutableSet.copyOf(catRoots.values());
+      ImmutableSet<Long> categories = ImmutableSet.copyOf(catParents.keySet());
+
+      for (Long category : categories) {
+        Long parent = catParents.get(category);
+
+        while (!roots.contains(parent)) {
+          parent = catParents.get(parent);
+        }
+
+        catRoots.put(category, parent);
+      }
     }
 
     for (EcItem item : items) {
-      if (defMargin == null) {
-        item.setListPrice(item.getPrice());
+      Double margin = getMarginPercent(item.getCategoryList(), catParents, catRoots, catMargins);
+
+      double cost = item.getRealPrice();
+      Double listPrice;
+
+      if (margin != null) {
+        listPrice = BeeUtils.plusPercent(cost, margin);
+      } else if (defMargin == null) {
+        listPrice = cost;
       } else {
-        item.setListPrice(item.getRealPrice() * (100d + defMargin) / 100d);
+        listPrice = BeeUtils.plusPercent(cost, defMargin);
       }
+
+      item.setListPrice(listPrice);
     }
+
+    logger.debug("list price", items.size(), catMargins.size(), TimeUtils.elapsedMillis(start));
   }
 
   private void setPrice(List<EcItem> items) {

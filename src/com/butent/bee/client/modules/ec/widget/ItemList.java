@@ -219,7 +219,7 @@ public class ItemList extends Flow {
                   EcKeeper.renderItems(itemPanel, items);
                   Global.getMsgBoxen().showWidget(itemPanel);
                 } else {
-                  BeeKeeper.getScreen().notifyWarning("Nėra duoemnų");
+                  BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
                 }
               }
             }
