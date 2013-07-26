@@ -145,6 +145,7 @@ public final class EcConstants {
 
   public static final String TBL_TCD_GRAPHICS = "TcdGraphics";
   public static final String TBL_TCD_ARTICLE_GRAPHICS = "TcdArticleGraphics";
+  public static final String TBL_TCD_GRAPHICS_RESOURCES = "TcdResources";
 
   public static final String TBL_TCD_MANUFACTURERS = "TcdManufacturers";
   public static final String TBL_TCD_BRANDS = "TcdBrands";
@@ -305,8 +306,9 @@ public final class EcConstants {
   public static final String COL_TCD_GRAPHICS = "Graphics";
   public static final String COL_TCD_SORT = "Sort";
   public static final String COL_TCD_GRAPHICS_TYPE = "Type";
-  public static final String COL_TCD_GRAPHICS_RESOURCE = "ResourceID";
+  public static final String COL_TCD_GRAPHICS_RESOURCE_ID = "ResourceID";
   public static final String COL_TCD_GRAPHICS_RESOURCE_NO = "ResourceNo";
+  public static final String COL_TCD_GRAPHICS_RESOURCE = "Resource";
 
   public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 

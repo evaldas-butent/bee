@@ -16,9 +16,11 @@
     <String name="SupplierID" precision="30" notNull="true" label="=ecItemSupplierCode" />
     <Numeric name="ListPrice" precision="10" scale="2" label="=ecListPrice" />
   </Fields>
+  <Constraints>
+    <Unique fields="Supplier SupplierID" />
+  </Constraints>
   <Indexes>
     <Index fields="Supplier" />
     <Index fields="SupplierID" />
-    <Index fields="Supplier SupplierID" unique="true" />
   </Indexes>
 </Table>

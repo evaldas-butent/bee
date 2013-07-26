@@ -130,6 +130,7 @@ public class ItemDetails extends Flow {
           item.getCode(), stylePrefix + "itemCode");
       if (itemCodeWidget != null) {
         container.add(itemCodeWidget);
+        itemCodeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
       }
 
       Widget supplierWidget = EcUtils.renderField(Localized.getConstants().ecItemSupplier(),
@@ -206,7 +207,7 @@ public class ItemDetails extends Flow {
 
     return container;
   }
-  
+
   private static Widget renderPicture(int width, int height) {
     int max = Math.min(width, height);
     int min = max / 2;
@@ -259,14 +260,14 @@ public class ItemDetails extends Flow {
     if (screenWidth < 100 || screenHeight < 100) {
       return;
     }
-    
+
     int width = BeeUtils.resize(screenWidth, 100, 1600, 100, 1200);
     int height = BeeUtils.resize(screenHeight, 100, 1600, 100, 1200);
     StyleUtils.setSize(this, width, height);
 
     int widthMargin = BeeUtils.resize(width, 0, 1000, 0, 20);
     int heightMargin = BeeUtils.resize(height, 0, 1000, 0, 20);
-    
+
     int rowHeight = (height - heightMargin) / 2;
     int pictureWidth = Math.min(200, width / 3);
 
@@ -305,12 +306,12 @@ public class ItemDetails extends Flow {
     int oeNumbersWidth = Math.min(width / 6, 140);
     int brandsWidth = Math.max(remaindersWidth + oeNumbersWidth, width / 3);
     int carTypesWidth = width - brandsWidth - widthMargin;
-    
+
     int top2 = rowHeight + heightMargin;
 
     int h3 = (brands == null) ? 0 : rowHeight / 2;
     int h2 = rowHeight - h3;
-    
+
     if (remainders != null) {
       StyleUtils.makeAbsolute(remainders);
       StyleUtils.setLeft(remainders, 0);
@@ -330,7 +331,7 @@ public class ItemDetails extends Flow {
 
       add(oeNumbers);
     }
-    
+
     if (brands != null) {
       StyleUtils.makeAbsolute(brands);
       StyleUtils.setLeft(brands, 0);

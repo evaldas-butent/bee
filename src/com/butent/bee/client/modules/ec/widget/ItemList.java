@@ -179,6 +179,7 @@ public class ItemList extends Flow {
       Widget codeWidget = EcUtils.renderField(Localized.getConstants().ecItemCode(), code,
           STYLE_ITEM_CODE);
       panel.add(codeWidget);
+      codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
     }
 
     String supplier = BeeUtils.joinWords(item.getSupplier(),

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.QueryServiceBean.ResultSetProcessor;
+import com.butent.bee.server.sql.IsSql;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
@@ -11,11 +12,9 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.sql.ResultSet;
@@ -44,28 +43,23 @@ public class TecDocRemote {
 
   private DataSource dataSource;
 
-  public void cleanup(List<Pair<SqlCreate, String>> init) {
-    for (Pair<SqlCreate, String> entry : init) {
-      processSql("DROP TABLE IF EXISTS " + entry.getA().getTarget());
+  public void cleanup(List<IsSql> init) {
+    for (IsSql query : init) {
+      if (query instanceof SqlCreate) {
+        processSql("DROP TABLE IF EXISTS " + ((SqlCreate) query).getTarget());
+      }
     }
   }
 
-  public void init(List<Pair<SqlCreate, String>> init) {
+  public void init(List<IsSql> init) {
     DataSource ds = getDataSource();
     SqlBuilder builder = SqlBuilderFactory.getBuilder(qs.dbEngine(ds));
 
-    for (Pair<SqlCreate, String> entry : init) {
-      SqlCreate query = entry.getA();
-      String index = entry.getB();
-      String table = query.getTarget();
-
-      processSql("DROP TABLE IF EXISTS " + table);
-      processSql(query.getSqlString(builder));
-
-      if (!BeeUtils.isEmpty(index)) {
-        processSql(SqlUtils.createIndex(query.getTarget(), SqlUtils.uniqueName(),
-            Lists.newArrayList(index), false).getSqlString(builder));
+    for (IsSql query : init) {
+      if (query instanceof SqlCreate) {
+        processSql("DROP TABLE IF EXISTS " + ((SqlCreate) query).getTarget());
       }
+      processSql(query.getSqlString(builder));
     }
   }
 
