@@ -14,10 +14,12 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
+import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
@@ -41,7 +43,8 @@ class EcData {
   private final Multimap<Long, Long> categoryByParent = HashMultimap.create();
   private final Map<Long, Long> categoryByChild = Maps.newHashMap();
 
-  private final List<String> itemManufacturers = Lists.newArrayList();
+  private final List<EcBrand> itemBrands = Lists.newArrayList();
+  private final Map<Long, String> brandNames = Maps.newHashMap();
 
   private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
 
@@ -54,7 +57,7 @@ class EcData {
   Tree buildCategoryTree(Collection<Long> ids) {
     Set<Long> roots = Sets.newHashSet();
     Multimap<Long, Long> data = HashMultimap.create();
-    
+
     for (long id : ids) {
       Long parent = getParent(id, ids);
       if (parent == null) {
@@ -72,13 +75,26 @@ class EcData {
     for (long id : roots) {
       TreeItem treeItem = createCategoryTreeItem(id);
       rootItem.addItem(treeItem);
-      
+
       fillTree(data, id, treeItem);
     }
 
     return tree;
   }
-  
+
+  void ensureBrands(final Consumer<Boolean> callback) {
+    if (itemBrands.isEmpty()) {
+      getItemBrands(new Consumer<List<EcBrand>>() {
+        @Override
+        public void accept(List<EcBrand> input) {
+          callback.accept(true);
+        }
+      });
+    } else {
+      callback.accept(true);
+    }
+  }
+
   void ensureCategoeries(final Consumer<Boolean> callback) {
     if (categoryNames.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CATEGORIES);
@@ -119,6 +135,32 @@ class EcData {
     }
   }
 
+  void ensureCategoeriesAndBrands(final Consumer<Boolean> callback) {
+    if (!categoryNames.isEmpty() && !itemBrands.isEmpty()) {
+      callback.accept(true);
+    }
+
+    final Holder<Integer> latch = Holder.of(0);
+
+    Consumer<Boolean> consumer = new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (latch.get() >= 1) {
+          callback.accept(input);
+        } else {
+          latch.set(latch.get() + 1);
+        }
+      }
+    };
+    
+    ensureCategoeries(consumer);
+    ensureBrands(consumer);
+  }
+
+  String getBrandName(long brand) {
+    return brandNames.get(brand);
+  }
+
   void getCarManufacturers(final Consumer<List<String>> callback) {
     if (carManufacturers.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CAR_MANUFACTURERS);
@@ -145,7 +187,7 @@ class EcData {
       callback.accept(carManufacturers);
     }
   }
-  
+
   void getCarModels(final String manufacturer, final Consumer<List<EcCarModel>> callback) {
     if (carModelsByManufacturer.containsKey(manufacturer)) {
       callback.accept(carModelsByManufacturer.get(manufacturer));
@@ -211,7 +253,7 @@ class EcData {
         names.add(name);
       }
     }
-    
+
     if (names.isEmpty()) {
       return null;
     } else if (names.size() == 1) {
@@ -220,7 +262,7 @@ class EcData {
       return BeeUtils.join(separator, Lists.reverse(names));
     }
   }
-  
+
   String getCategoryName(long categoryId) {
     return categoryNames.get(categoryId);
   }
@@ -237,29 +279,6 @@ class EcData {
     }
 
     return names;
-  }
-  
-  void saveConfiguration(final String key, final String value) {
-    ParameterList params;
-
-    if (BeeUtils.isEmpty(value)) {
-      params = EcKeeper.createArgs(SVC_CLEAR_CONFIGURATION);
-      params.addDataItem(Service.VAR_COLUMN, key);
-    } else {
-      params = EcKeeper.createArgs(SVC_SAVE_CONFIGURATION);
-      params.addQueryItem(Service.VAR_COLUMN, key);
-      params.addDataItem(Service.VAR_VALUE, value);
-    }
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        EcKeeper.dispatchMessages(response);
-        if (BeeUtils.same(key, response.getResponseAsString())) {
-          configuration.put(key, value);
-        }
-      }
-    });
   }
 
   void getConfiguration(final Consumer<Map<String, String>> callback) {
@@ -284,7 +303,7 @@ class EcData {
       callback.accept(configuration);
     }
   }
-  
+
   void getDeliveryMethods(final Consumer<List<DeliveryMethod>> callback) {
     if (!deliveryMethods.isEmpty()) {
       callback.accept(deliveryMethods);
@@ -310,10 +329,10 @@ class EcData {
       });
     }
   }
-  
-  void getItemManufacturers(final Consumer<List<String>> callback) {
-    if (itemManufacturers.isEmpty()) {
-      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_MANUFACTURERS);
+
+  void getItemBrands(final Consumer<List<EcBrand>> callback) {
+    if (itemBrands.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_BRANDS);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -321,27 +340,53 @@ class EcData {
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (arr != null) {
-            itemManufacturers.clear();
-            for (String manufacturer : arr) {
-              if (!BeeUtils.isEmpty(manufacturer)) {
-                itemManufacturers.add(manufacturer);
-              }
+            itemBrands.clear();
+            brandNames.clear();
+
+            for (String s : arr) {
+              EcBrand brand = EcBrand.restore(s);
+
+              itemBrands.add(brand);
+              brandNames.put(brand.getId(), brand.getName());
             }
 
-            callback.accept(itemManufacturers);
+            callback.accept(itemBrands);
           }
         }
       });
 
     } else {
-      callback.accept(itemManufacturers);
+      callback.accept(itemBrands);
     }
+  }
+
+  void saveConfiguration(final String key, final String value) {
+    ParameterList params;
+
+    if (BeeUtils.isEmpty(value)) {
+      params = EcKeeper.createArgs(SVC_CLEAR_CONFIGURATION);
+      params.addDataItem(Service.VAR_COLUMN, key);
+    } else {
+      params = EcKeeper.createArgs(SVC_SAVE_CONFIGURATION);
+      params.addQueryItem(Service.VAR_COLUMN, key);
+      params.addDataItem(Service.VAR_VALUE, value);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        EcKeeper.dispatchMessages(response);
+        if (BeeUtils.same(key, response.getResponseAsString())) {
+          configuration.put(key, value);
+        }
+      }
+    });
   }
 
   private TreeItem createCategoryTreeItem(long id) {
     TreeItem treeItem = new TreeItem(categoryNames.get(id));
     treeItem.setUserObject(id);
-    
+
     return treeItem;
   }
 
@@ -350,7 +395,7 @@ class EcData {
       for (long id : data.get(parent)) {
         TreeItem childItem = createCategoryTreeItem(id);
         parentItem.addItem(childItem);
-        
+
         fillTree(data, id, childItem);
       }
     }

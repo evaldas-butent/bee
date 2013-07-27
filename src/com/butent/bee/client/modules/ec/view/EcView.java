@@ -36,8 +36,8 @@ public abstract class EcView extends Flow {
 
     } else if (EcConstants.SVC_SEARCH_BY_CAR.equals(service)) {
       ecView = new SearchByCar();
-    } else if (EcConstants.SVC_SEARCH_BY_MANUFACTURER.equals(service)) {
-      ecView = new SearchByManufacturer();
+    } else if (EcConstants.SVC_SEARCH_BY_BRAND.equals(service)) {
+      ecView = new SearchByBrand();
 
     } else if (EcConstants.SVC_GENERAL_ITEMS.equals(service)) {
       ecView = new GeneralItems();

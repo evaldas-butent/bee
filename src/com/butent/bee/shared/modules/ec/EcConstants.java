@@ -89,7 +89,7 @@ public final class EcConstants {
   public static final String SVC_SEARCH_BY_ITEM_CODE = "searchByItemCode";
   public static final String SVC_SEARCH_BY_OE_NUMBER = "searchByOeNumber";
   public static final String SVC_SEARCH_BY_CAR = "searchByCar";
-  public static final String SVC_SEARCH_BY_MANUFACTURER = "searchByManufacturer";
+  public static final String SVC_SEARCH_BY_BRAND = "searchByBrand";
 
   public static final String SVC_GENERAL_ITEMS = "generalItems";
   public static final String SVC_BIKE_ITEMS = "bikeItems";
@@ -100,8 +100,8 @@ public final class EcConstants {
 
   public static final String SVC_GET_ITEMS_BY_CAR_TYPE = "getItemsByCarType";
 
-  public static final String SVC_GET_ITEM_MANUFACTURERS = "getItemManufacturers";
-  public static final String SVC_GET_ITEMS_BY_MANUFACTURER = "getItemsByManufacturer";
+  public static final String SVC_GET_ITEM_BRANDS = "getItemBrands";
+  public static final String SVC_GET_ITEMS_BY_BRAND = "getItemsByBrand";
   public static final String SVC_GET_ITEM_ANALOGS = "getItemAnalogs";
 
   public static final String SVC_GET_DELIVERY_METHODS = "getDeliveryMethods";
@@ -129,6 +129,7 @@ public final class EcConstants {
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
   public static final String TBL_CLIENTS = "EcClients";
   public static final String TBL_CONFIGURATION = "EcConfiguration";
+  public static final String TBL_DISCOUNTS = "EcDiscounts";
   public static final String TBL_HISTORY = "EcHistory";
   public static final String TBL_MANAGERS = "EcManagers";
   public static final String TBL_ORDER_ITEMS = "EcOrderItems";
@@ -175,7 +176,6 @@ public final class EcConstants {
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
   public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
 
-  public static final String COL_CLIENT_ID = "ClientID";
   public static final String COL_CLIENT_USER = "User";
   public static final String COL_CLIENT_REGISTERED = "Registered";
   public static final String COL_CLIENT_TYPE = "Type";
@@ -196,6 +196,15 @@ public final class EcConstants {
   public static final String COL_CONFIG_CONTACTS_URL = "ContactsUrl";
   public static final String COL_CONFIG_CONTACTS_HTML = "ContactsHtml";
 
+  public static final String COL_DISCOUNT_CLIENT = "Client";
+  public static final String COL_DISCOUNT_DATE_FROM = "DateFrom";
+  public static final String COL_DISCOUNT_DATE_TO = "DateTo";
+  public static final String COL_DISCOUNT_CATEGORY = "Category";
+  public static final String COL_DISCOUNT_BRAND = "Brand";
+  public static final String COL_DISCOUNT_ARTICLE_BRAND = "ArticleBrand";
+  public static final String COL_DISCOUNT_PERCENT = "Percent";
+  public static final String COL_DISCOUNT_PRICE = "Price";
+  
   public static final String COL_HISTORY_DATE = "Date";
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";

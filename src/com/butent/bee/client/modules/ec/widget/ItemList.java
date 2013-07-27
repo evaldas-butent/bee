@@ -50,8 +50,7 @@ public class ItemList extends Flow {
   private static final String STYLE_ITEM_SUPPLIER = EcStyles.name(STYLE_PRIMARY, "supplier");
   private static final String STYLE_ITEM_ANALOGS = EcStyles.name(STYLE_PRIMARY, "analogs");
 
-  private static final String STYLE_ITEM_MANUFACTURER =
-      EcStyles.name(STYLE_PRIMARY, "manufacturer");
+  private static final String STYLE_ITEM_BRAND = EcStyles.name(STYLE_PRIMARY, "brand");
 
   private static final String STYLE_LABEL = "-label";
 
@@ -202,7 +201,8 @@ public class ItemList extends Flow {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
           params.addDataItem(EcConstants.COL_TCD_ARTICLE, item.getArticleId());
           params.addDataItem(EcConstants.COL_TCD_ANALOG_NR, item.getCode());
-          params.addDataItem(EcConstants.COL_TCD_BRAND_NAME, item.getManufacturer());
+          params.addDataItem(EcConstants.COL_TCD_BRAND_NAME,
+              EcKeeper.getBrandName(item.getBrand()));
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
             @Override
@@ -228,12 +228,11 @@ public class ItemList extends Flow {
       });
     }
 
-    String manufacturer = item.getManufacturer();
-    if (!BeeUtils.isEmpty(manufacturer)) {
-      Widget manufacturerWidget =
-          EcUtils.renderField(Localized.getConstants().ecItemManufacturer(),
-              manufacturer, STYLE_ITEM_MANUFACTURER);
-      panel.add(manufacturerWidget);
+    Long brand = item.getBrand();
+    if (brand != null) {
+      Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
+          EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
+      panel.add(brandWidget);
     }
 
     return panel;

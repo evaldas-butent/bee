@@ -229,20 +229,17 @@
   font-weight: bold;
 }
 .bee-ec-ItemList-supplier,
-.bee-ec-ItemList-manufacturer {
+.bee-ec-ItemList-brand {
   padding-left: 1em;
 }
 .bee-ec-ItemList-analogs {
   margin-top: 3px;
   font-size: medium;
 }
-.bee-ec-ItemList-manufacturer-container {
+.bee-ec-ItemList-brand-container {
   font-size: 12px;
 }
 
-.bee-ec-ItemList-listPrice {
-  text-decoration: line-through;
-}
 .bee-ec-ItemList-price-value {
   font-size: medium;
   font-weight: bold;
@@ -264,20 +261,20 @@
   margin-top: 2ex;
 }
 .bee-ec-ItemPanel-categories-wrapper,
-.bee-ec-ItemPanel-manufacturers-wrapper {
+.bee-ec-ItemPanel-brands-wrapper {
   background-color: white;
   border: 1px solid #ccc;
   margin-bottom: 2ex;
   margin-right: 1em;
 }
 .bee-ec-ItemPanel-categories-caption,
-.bee-ec-ItemPanel-manufacturers-caption {
+.bee-ec-ItemPanel-brands-caption {
   font-weight: bold;
   padding-left: 2px;
   padding-top: 2px; 
 }
 .bee-ec-ItemPanel-categories-container,
-.bee-ec-ItemPanel-manufacturers-container {
+.bee-ec-ItemPanel-brands-container {
   margin: 1ex 1em;
 }
 .bee-ec-ItemPanel-categories-selectable .bee-ec-ItemPanel-categories-container {
@@ -285,12 +282,12 @@
   margin-top: 2px;
 }
 
-.bee-ec-ItemPanel-manufacturer-selectable {
+.bee-ec-ItemPanel-brand-selectable {
   display: inline-block;
   width: 16%;
   margin-top: 4px;
 }
-.bee-ec-ItemPanel-manufacturer-selected {
+.bee-ec-ItemPanel-brand-selected {
   color: red;
 }
 
@@ -336,7 +333,7 @@
 .bee-ec-searchByCar-dialog-model,
 .bee-ec-searchByCar-dialog-year,
 .bee-ec-searchByCar-dialog-engine,
-.bee-ec-searchByManufacturer-manufacturer-dialog {
+.bee-ec-searchByBrand-brand-dialog {
   border: 2px solid #b4b4b4;
   padding: 5px;
   background-color: white;
@@ -381,7 +378,7 @@
   color: #00d;
 }
 
-.bee-ec-searchByManufacturer-manufacturer-widget {
+.bee-ec-searchByBrand-brand-widget {
   margin-top: 2ex;
   margin-left: 2em;
 }
@@ -577,12 +574,12 @@
   font-weight: bold;
 }
 .bee-ec-ItemDetails-info-supplier,
-.bee-ec-ItemDetails-info-manufacturer {
+.bee-ec-ItemDetails-info-brand {
   padding-left: 1em;
 }
 
 .bee-ec-ItemDetails-info-supplier-container,
-.bee-ec-ItemDetails-info-manufacturer-container {
+.bee-ec-ItemDetails-info-brand-container {
   margin-top: 5px;
 }
 

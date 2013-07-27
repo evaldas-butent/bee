@@ -14,7 +14,7 @@ import java.util.List;
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ARTICLE_ID, ARTICLE_BRAND_ID, MANUFACTURER, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
+    ARTICLE_ID, ARTICLE_BRAND_ID, BRAND, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
     CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
   }
 
@@ -30,7 +30,7 @@ public class EcItem implements BeeSerializable {
   private long articleId;
   private long articleBrandId;
 
-  private String manufacturer;
+  private Long brand;
   private String code;
   private String name;
 
@@ -53,6 +53,10 @@ public class EcItem implements BeeSerializable {
   private EcItem() {
   }
 
+  public void clearListPrice() {
+    this.listPrice = 0;
+  }
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -72,8 +76,8 @@ public class EcItem implements BeeSerializable {
           this.articleBrandId = BeeUtils.toLong(value);
           break;
 
-        case MANUFACTURER:
-          setManufacturer(value);
+        case BRAND:
+          setBrand(BeeUtils.toLongOrNull(value));
           break;
 
         case CODE:
@@ -128,6 +132,10 @@ public class EcItem implements BeeSerializable {
     return articleId;
   }
 
+  public Long getBrand() {
+    return brand;
+  }
+
   public String getCategories() {
     return categories;
   }
@@ -149,10 +157,6 @@ public class EcItem implements BeeSerializable {
 
   public int getListPrice() {
     return listPrice;
-  }
-
-  public String getManufacturer() {
-    return manufacturer;
   }
 
   public String getName() {
@@ -226,8 +230,8 @@ public class EcItem implements BeeSerializable {
           arr[i++] = articleBrandId;
           break;
 
-        case MANUFACTURER:
-          arr[i++] = manufacturer;
+        case BRAND:
+          arr[i++] = brand;
           break;
 
         case CODE:
@@ -270,6 +274,10 @@ public class EcItem implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
+  public void setBrand(Long brand) {
+    this.brand = brand;
+  }
+
   public void setCategories(String categories) {
     this.categories = categories;
   }
@@ -284,10 +292,6 @@ public class EcItem implements BeeSerializable {
 
   public void setListPrice(int listPrice) {
     this.listPrice = listPrice;
-  }
-
-  public void setManufacturer(String manufacturer) {
-    this.manufacturer = manufacturer;
   }
 
   public void setName(String name) {

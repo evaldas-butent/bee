@@ -1,10 +1,12 @@
 package com.butent.bee.server.data;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MutableClassToInstanceMap;
 import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
@@ -65,8 +67,14 @@ public class UserServiceBean {
     private boolean online;
     private Locale locale = Localizations.getDefaultLocale();
 
+    private ClassToInstanceMap<Object> sessionObjects = MutableClassToInstanceMap.create();
+
     private UserInfo(UserData userData) {
       this.userData = userData;
+    }
+
+    private void endSession() {
+      sessionObjects.clear();
     }
 
     private Locale getLocale() {
@@ -76,6 +84,10 @@ public class UserServiceBean {
     private Collection<Long> getRoles() {
       return userRoles;
     }
+    
+    private <T> T getSessionObject(Class<T> type) {
+      return sessionObjects.getInstance(type);
+    }
 
     private UserData getUserData() {
       return userData;
@@ -83,6 +95,18 @@ public class UserServiceBean {
 
     private boolean isOnline() {
       return online;
+    }
+
+    private <T> void putSessionObject(Class<T> type, T value) {
+      if (value == null) {
+        sessionObjects.remove(type);
+      } else {
+        sessionObjects.putInstance(type, value);
+      }
+    }
+
+    private void removeSessionObject(Class<?> type) {
+      sessionObjects.remove(type);
     }
 
     private UserInfo setLocale(String localeName) {
@@ -140,16 +164,20 @@ public class UserServiceBean {
 
   private static BeeLogger logger = LogUtils.getLogger(UserServiceBean.class);
 
+  private static String key(String value) {
+    return value.toLowerCase();
+  }
   @Resource
   EJBContext ctx;
   @EJB
   SystemBean sys;
+
   @EJB
   QueryServiceBean qs;
-
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
+
   private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache = Maps
       .newHashMap();
 
@@ -186,6 +214,11 @@ public class UserServiceBean {
 
   public Set<Long> getRoles() {
     return roleCache.keySet();
+  }
+
+  public <T> T getSessionData(Class<T> type) {
+    Assert.notNull(type);
+    return getCurrentUserInfo().getSessionObject(type);
   }
 
   public Long getUserId(String user) {
@@ -427,6 +460,8 @@ public class UserServiceBean {
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(COL_HOST, null)
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
+      
+      info.endSession();
 
       if (info.isOnline()) {
         info.setOnline(false);
@@ -440,6 +475,16 @@ public class UserServiceBean {
     } else {
       logger.severe("Logout attempt by an unauthorized user:", user);
     }
+  }
+
+  public <T> void putSessionData(Class<T> type, T value) {
+    Assert.notNull(type);
+    getCurrentUserInfo().putSessionObject(type, value);
+  }
+
+  public void removeSessionData(Class<?> type) {
+    Assert.notNull(type);
+    getCurrentUserInfo().removeSessionObject(type);
   }
 
   @PreDestroy
@@ -513,9 +558,5 @@ public class UserServiceBean {
       }
     }
     return checked;
-  }
-
-  private static String key(String value) {
-    return value.toLowerCase();
   }
 }

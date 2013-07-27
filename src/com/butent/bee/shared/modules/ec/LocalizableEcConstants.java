@@ -74,6 +74,8 @@ public interface LocalizableEcConstants {
 
   String ecItemAnalogs();
 
+  String ecItemBrand();
+
   String ecItemCapacity();
 
   String ecItemCategory();
@@ -97,8 +99,6 @@ public interface LocalizableEcConstants {
   String ecItemHeight();
 
   String ecItemLength();
-
-  String ecItemManufacturer();
 
   String ecItemName();
 
@@ -164,17 +164,17 @@ public interface LocalizableEcConstants {
 
   String ecSearchBy();
 
+  String ecSearchByBrand();
+
   String ecSearchByCar();
 
   String ecSearchByItemCode();
 
-  String ecSearchByManufacturer();
-
   String ecSearchByOeNumber();
 
-  String ecSelectCategory();
+  String ecSelectBrand();
 
-  String ecSelectManufacturer();
+  String ecSelectCategory();
 
   String ecShoppingCart();
 

@@ -36,6 +36,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
+import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
@@ -128,9 +129,19 @@ public final class EcKeeper {
     });
   }
 
+  public static void ensureBrands(Consumer<Boolean> callback) {
+    Assert.notNull(callback);
+    data.ensureBrands(callback);
+  }
+
   public static void ensureCategoeries(Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
+  }
+
+  public static void ensureCategoeriesAndBrands(Consumer<Boolean> callback) {
+    Assert.notNull(callback);
+    data.ensureCategoeriesAndBrands(callback);
   }
 
   public static void finalizeRequest(EcRequest request, boolean remove) {
@@ -142,6 +153,11 @@ public final class EcKeeper {
     if (remove) {
       pendingRequests.remove(request);
     }
+  }
+
+  public static String getBrandName(Long brand) {
+    Assert.notNull(brand);
+    return data.getBrandName(brand);
   }
 
   public static void getCarManufacturers(Consumer<List<String>> callback) {
@@ -185,9 +201,9 @@ public final class EcKeeper {
     data.getConfiguration(callback);
   }
 
-  public static void getItemManufacturers(Consumer<List<String>> callback) {
+  public static void getItemBrands(Consumer<List<EcBrand>> callback) {
     Assert.notNull(callback);
-    data.getItemManufacturers(callback);
+    data.getItemBrands(callback);
   }
 
   public static List<EcItem> getResponseItems(ResponseObject response) {
@@ -279,29 +295,38 @@ public final class EcKeeper {
 
     final String activeViewId = getActiveViewId();
 
-    ParameterList params = createArgs(SVC_GET_ITEM_INFO);
-
-    params.addQueryItem(COL_TCD_ARTICLE, item.getArticleId());
-    params.addQueryItem(COL_TCD_ARTICLE_BRAND, item.getArticleBrandId());
-
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+    ensureBrands(new Consumer<Boolean>() {
       @Override
-      public void onResponse(ResponseObject response) {
-        dispatchMessages(response);
-
-        if (Objects.equal(activeViewId, getActiveViewId())
-            && response.hasResponse(EcItemInfo.class)) {
-          EcItemInfo ecItemInfo = EcItemInfo.restore(response.getResponseAsString());
-          ItemDetails widget = new ItemDetails(item, ecItemInfo, allowAddToCart);
-
-          DialogBox dialog = DialogBox.create(item.getName(),
-              EcStyles.name(ItemDetails.STYLE_PRIMARY, "dialog"));
-          dialog.setWidget(widget);
-
-          dialog.setHideOnEscape(true);
-          dialog.setAnimationEnabled(true);
-          dialog.center();
+      public void accept(Boolean input) {
+        if (!Objects.equal(activeViewId, getActiveViewId())) {
+          return;
         }
+            
+        ParameterList params = createArgs(SVC_GET_ITEM_INFO);
+
+        params.addQueryItem(COL_TCD_ARTICLE, item.getArticleId());
+        params.addQueryItem(COL_TCD_ARTICLE_BRAND, item.getArticleBrandId());
+
+        BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            dispatchMessages(response);
+
+            if (Objects.equal(activeViewId, getActiveViewId())
+                && response.hasResponse(EcItemInfo.class)) {
+              EcItemInfo ecItemInfo = EcItemInfo.restore(response.getResponseAsString());
+              ItemDetails widget = new ItemDetails(item, ecItemInfo, allowAddToCart);
+
+              DialogBox dialog = DialogBox.create(item.getName(),
+                  EcStyles.name(ItemDetails.STYLE_PRIMARY, "dialog"));
+              dialog.setWidget(widget);
+
+              dialog.setHideOnEscape(true);
+              dialog.setAnimationEnabled(true);
+              dialog.center();
+            }
+          }
+        });
       }
     });
   }
@@ -326,13 +351,13 @@ public final class EcKeeper {
           @Override
           public void accept(Boolean input) {
             if (BeeUtils.isTrue(input)) {
-              GridFactory.openGrid("EcClients");              
+              GridFactory.openGrid("EcClients");
             }
           }
         });
       }
     });
-    
+
     BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
@@ -362,7 +387,7 @@ public final class EcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    ensureCategoeries(new Consumer<Boolean>() {
+    ensureCategoeriesAndBrands(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {

@@ -225,8 +225,8 @@ public class EcScreen extends ScreenImpl {
         Localized.getConstants().ecSearchByOeNumber()));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_CAR,
         Localized.getConstants().ecSearchByCar()));
-    searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_MANUFACTURER,
-        Localized.getConstants().ecSearchByManufacturer()));
+    searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_BRAND,
+        Localized.getConstants().ecSearchByBrand()));
 
     container.add(searchBy);
 

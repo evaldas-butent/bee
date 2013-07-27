@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
@@ -146,11 +147,12 @@ public class ItemDetails extends Flow {
         container.add(supplierCodeWidget);
       }
 
-      Widget manufacturerWidget =
-          EcUtils.renderField(Localized.getConstants().ecItemManufacturer(),
-              item.getManufacturer(), stylePrefix + "manufacturer");
-      if (manufacturerWidget != null) {
-        container.add(manufacturerWidget);
+      if (item.getBrand() != null) {
+        Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
+            EcKeeper.getBrandName(item.getBrand()), stylePrefix + "brand");
+        if (brandWidget != null) {
+          container.add(brandWidget);
+        }
       }
     }
 

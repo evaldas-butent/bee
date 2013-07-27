@@ -26,8 +26,8 @@ class EcDiscountHandler extends AbstractGridInterceptor {
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
 
-    if (BeeUtils.same(columnName, EcConstants.COL_TCD_CATEGORY)) {
-      int index = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY, dataColumns);
+    if (BeeUtils.same(columnName, EcConstants.COL_DISCOUNT_CATEGORY)) {
+      int index = DataUtils.getColumnIndex(EcConstants.COL_DISCOUNT_CATEGORY, dataColumns);
       return new CategoryFullNameRenderer(index, columnDescription.getOptions());
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription);

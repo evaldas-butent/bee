@@ -206,8 +206,8 @@ public class ShoppingCart extends Split {
   }
 
   private static Widget renderBrand(CartItem item) {
-    String brand = item.getEcItem().getManufacturer();
-    return BeeUtils.isEmpty(brand) ? null : new Label(brand);
+    Long brand = item.getEcItem().getBrand();
+    return (brand == null) ? null : new Label(EcKeeper.getBrandName(brand));
   }
 
   private static Widget renderComment(final Cart cart) {
@@ -363,7 +363,7 @@ public class ShoppingCart extends Split {
       codeLabel.addStyleName(STYLE_CODE + STYLE_LABEL);
       itemTable.setWidget(row, COL_CODE, codeLabel);
 
-      Label brandLabel = new Label(Localized.getConstants().ecItemManufacturer());
+      Label brandLabel = new Label(Localized.getConstants().ecItemBrand());
       brandLabel.addStyleName(STYLE_BRAND + STYLE_LABEL);
       itemTable.setWidget(row, COL_BRAND, brandLabel);
 
