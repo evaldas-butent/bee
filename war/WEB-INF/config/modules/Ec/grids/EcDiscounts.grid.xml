@@ -4,23 +4,29 @@
   name="EcDiscounts" viewName="EcDiscounts"
   flexGrow="1" flexShrink="1"
   >
+  <body height="45" />
   <columns>
-    <DataColumn name="DateFrom" />
-    <DataColumn name="DateTo" />
+    <DataColumn name="DateFrom" width="70" />
+    <DataColumn name="DateTo" width="70" />
 
-    <RelColumn name="Category" renderColumns="CategoryName" />
-    <RelColumn name="Brand" renderColumns="BrandName" />
+    <RelColumn name="Category" minWidth="150" 
+        searchableColumns="CategoryName" choiceColumns="FullName"
+        selectorClass="bee-ec-CategorySelector" visibleLines="7" options="&#160;-&#160;" />
 
-    <RelColumn name="ArticleName" label="=ecItemName" caching="none"
-        renderColumns="ArticleName" searchableColumns="ArticleName"
-        choiceColumns="ArticleName ArticleBrandName AnalogNr Supplier SupplierID" />
-    <DataColumn name="ArticleBrandName" />
-    <DataColumn name="AnalogNr" />
-    <DataColumn name="Supplier" />
-    <DataColumn name="SupplierID" />
+    <RelColumn name="Brand" renderColumns="BrandName" width="100" />
 
-    <DataColumn name="Percent" visible="true" />
-    <DataColumn name="Price" visible="true" />
+    <RelColumn name="ArticleBrand" caption="=ecItem" minWidth="150" caching="none"
+        searchableColumns="ArticleName AnalogNr"
+        choiceColumns="ArticleName BrandName AnalogNr Supplier"
+        order="ArticleName, BrandName, AnalogNr, Supplier">
+      <renderToken source="ArticleName" />
+      <renderToken source="ArticleBrandName" prefix=", " />
+      <renderToken source="AnalogNr" prefix=", " />
+      <renderToken source="Supplier" prefix=", " />
+    </RelColumn>        
+
+    <DataColumn name="Percent" visible="true" width="80" sortable="false" />
+    <DataColumn name="Price" visible="true" width="80" sortable="false" />
 
     <DataColumn name="Cost" visible="false" />
     <DataColumn name="Note" visible="false" />

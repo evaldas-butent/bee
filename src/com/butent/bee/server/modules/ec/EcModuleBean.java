@@ -109,7 +109,6 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CATEGORIES)) {
       response = getCategories();
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_GLOBAL_SEARCH)) {
       query = reqInfo.getParameter(VAR_QUERY);

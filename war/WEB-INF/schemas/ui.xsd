@@ -411,6 +411,7 @@
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="caching" type="relationCaching" />
     <xs:attribute name="operator" type="type:operatorType" />
+    <xs:attribute name="selectorClass" type="xs:normalizedString" />
     <xs:attribute name="itemType" type="menuItemType" />
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
     <xs:attribute name="newRowForm" type="type:nameType" />

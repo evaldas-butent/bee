@@ -128,7 +128,7 @@ public final class EcKeeper {
     });
   }
 
-  public static void ensureCategoeries(final Consumer<Boolean> callback) {
+  public static void ensureCategoeries(Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureCategoeries(callback);
   }
@@ -163,6 +163,11 @@ public final class EcKeeper {
     Assert.notNull(modelId);
     Assert.notNull(callback);
     data.getCarTypes(modelId, callback);
+  }
+
+  public static String getCategoryFullName(Long categoryId, String separator) {
+    Assert.notNull(categoryId);
+    return data.getCategoryFullName(categoryId, separator);
   }
 
   public static String getCategoryName(Long categoryId) {
@@ -314,6 +319,20 @@ public final class EcKeeper {
     key = Captions.register(EcOrderStatus.class);
     Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
 
+    BeeKeeper.getMenu().registerMenuCallback("open_ec_clients", new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        ensureCategoeries(new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (BeeUtils.isTrue(input)) {
+              GridFactory.openGrid("EcClients");              
+            }
+          }
+        });
+      }
+    });
+    
     BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
@@ -330,6 +349,7 @@ public final class EcKeeper {
       }
     });
 
+    GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
   }
 

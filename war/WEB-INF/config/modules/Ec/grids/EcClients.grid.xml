@@ -22,7 +22,7 @@
     <DataColumn name="CreditLimitWarning" visible="false" />
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />
-    <DataColumn name="Actvity" visible="false" />
+    <DataColumn name="Activity" visible="false" />
     <DataColumn name="Notes" visible="false" />
   </columns>
 </Grid>

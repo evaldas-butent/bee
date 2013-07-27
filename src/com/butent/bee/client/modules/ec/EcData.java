@@ -202,6 +202,25 @@ class EcData {
     }
   }
 
+  String getCategoryFullName(long categoryId, String separator) {
+    List<String> names = Lists.newArrayList();
+
+    for (Long parent = categoryId; parent != null; parent = categoryByChild.get(parent)) {
+      String name = getCategoryName(parent);
+      if (name != null) {
+        names.add(name);
+      }
+    }
+    
+    if (names.isEmpty()) {
+      return null;
+    } else if (names.size() == 1) {
+      return names.get(0);
+    } else {
+      return BeeUtils.join(separator, Lists.reverse(names));
+    }
+  }
+  
   String getCategoryName(long categoryId) {
     return categoryNames.get(categoryId);
   }

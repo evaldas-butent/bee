@@ -331,12 +331,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     private Boolean pendingSelection;
 
-    private Selector(ITEM_TYPE itemType, Element partner) {
+    private Selector(ITEM_TYPE itemType, Element partner, String selectorClass) {
       this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
 
       menu.addStyleName(STYLE_MENU);
 
       this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
+      if (!BeeUtils.isEmpty(selectorClass)) {
+        popup.addStyleName(selectorClass);
+      }
+      
       popup.setWidget(menu);
 
       popup.setKeyboardPartner(partner);
@@ -658,7 +662,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     ITEM_TYPE itemType = relation.getItemType();
 
     this.input = new InputWidget();
-    this.selector = new Selector(itemType, this.input.getElement());
+    this.selector = new Selector(itemType, this.input.getElement(), relation.getSelectorClass());
 
     this.choiceColumns.addAll(relation.getChoiceColumns());
     for (SelectorColumn selectorColumn : relation.getSelectorColumns()) {

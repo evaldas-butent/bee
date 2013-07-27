@@ -57,6 +57,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   public static final String ATTR_CHOICE_COLUMNS = "choiceColumns";
   public static final String ATTR_SEARCHABLE_COLUMNS = "searchableColumns";
 
+  public static final String ATTR_SELECTOR_CLASS = "selectorClass";
   public static final String ATTR_ITEM_TYPE = "itemType";
 
   public static Relation create() {
@@ -130,6 +131,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   private final List<String> choiceColumns = Lists.newArrayList();
   private final List<String> searchableColumns = Lists.newArrayList();
 
+  private String selectorClass;
   private MenuConstants.ITEM_TYPE itemType;
   private Integer visibleLines;
 
@@ -245,6 +247,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
         "Order", getOrder(),
         "Caching", getCaching(),
         "Operator", getOperator(),
+        "Selector Class", getSelectorClass(),
         "Item Type", getItemType(),
         "Visible Lines", getVisibleLines(),
         "Item Key", getItemKey(),
@@ -336,6 +339,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     return searchableColumns;
   }
 
+  public String getSelectorClass() {
+    return selectorClass;
+  }
+
   public List<SelectorColumn> getSelectorColumns() {
     return selectorColumns;
   }
@@ -383,7 +390,11 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (!BeeUtils.isEmpty(op)) {
       setOperator(NameUtils.getEnumByName(Operator.class, op));
     }
-
+    
+    String sc = getAttribute(ATTR_SELECTOR_CLASS);
+    if (!BeeUtils.isEmpty(sc)) {
+      setSelectorClass(sc);
+    }
     String it = getAttribute(ATTR_ITEM_TYPE);
     if (!BeeUtils.isEmpty(it)) {
       setItemType(NameUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
@@ -621,6 +632,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (!BeeUtils.isEmpty(searchableColumns)) {
       getSearchableColumns().addAll(searchableColumns);
     }
+  }
+
+  public void setSelectorClass(String selectorClass) {
+    this.selectorClass = selectorClass;
   }
 
   public void setSelectorColumns(List<SelectorColumn> selectorColumns) {

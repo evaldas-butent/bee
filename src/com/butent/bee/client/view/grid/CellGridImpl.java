@@ -1276,7 +1276,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
             + form.getViewPresenter().getHeader().getHeight() + 1;
 
         if (width > BeeUtils.toInt(form.getWidthValue())) {
-          StyleUtils.setWidth(popup, width);
+          StyleUtils.setWidth(popup, width + 10);
         }
         StyleUtils.setHeight(popup, height);
       }
@@ -1448,6 +1448,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       Editor editor = editableColumn.createEditor(true);
       editor.asWidget().addStyleName(RowFactory.STYLE_NEW_ROW_INPUT);
+      editor.asWidget().addStyleName(BeeUtils.join(BeeConst.STRING_MINUS,
+          RowFactory.STYLE_NEW_ROW_INPUT, getGridName(), columnName));
 
       if (editableColumn.getEditorDescription() != null) {
         Dimensions defaultDimensions =
@@ -1623,7 +1625,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         }
 
         if (!result.contains(name)) {
-          result.add(name);
+          result.add(colName);
         }
       }
     }
@@ -1633,7 +1635,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         String name = BeeUtils.normalize(columnInfo.getColumnId());
         if (!columnInfo.isColReadOnly() && getEditableColumns().containsKey(name)
             && !result.contains(name)) {
-          result.add(name);
+          result.add(columnInfo.getColumnId());
         }
       }
     }

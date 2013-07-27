@@ -3,3 +3,16 @@
   margin-left: 1em;
   margin-right: 3em;
 }
+
+.bee-ec-CategorySelector .bee-DataSelector-cell {
+  border-bottom: 1px solid #ccc;
+}
+.bee-ec-CategorySelector .bee-DataSelector-item {
+  display: block;
+  white-space: pre;
+}
+
+.bee-NewRow-input-EcDiscounts-Category,
+.bee-NewRow-input-EcDiscounts-ArticleBrand {
+  width: 600px;
+}
