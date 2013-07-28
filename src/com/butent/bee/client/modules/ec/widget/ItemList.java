@@ -260,7 +260,7 @@ public class ItemList extends Flow {
     int listPrice = item.getListPrice();
     int price = item.getPrice();
 
-    if (listPrice > price) {
+    if (listPrice > 0 && listPrice >= price) {
       Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
       table.setWidgetAndStyle(row, COL_LIST_PRICE, listPriceWidget, STYLE_LIST_PRICE);
     }

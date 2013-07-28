@@ -536,6 +536,26 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(arr).setSize(rc);
   }
 
+  private Map<Long, Long> getCategoryParents() {
+    Map<Long, Long> result = Maps.newHashMap();
+
+    String colCategoryId = sys.getIdName(TBL_TCD_CATEGORIES);
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_TCD_CATEGORIES, colCategoryId, COL_TCD_CATEGORY_PARENT);
+    query.addFrom(TBL_TCD_CATEGORIES);
+    query.setWhere(SqlUtils.notNull(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_PARENT));
+
+    SimpleRowSet data = qs.getData(query);
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(colCategoryId), row.getLong(COL_TCD_CATEGORY_PARENT));
+      }
+    }
+
+    return result;
+  }
+
   private EcClientDiscounts getClientDiscounts() {
     List<SimpleRowSet> discounts = Lists.newArrayList();
 
@@ -778,7 +798,7 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getItemBrands() {
     String colBrandId = sys.getIdName(TBL_TCD_BRANDS);
-    
+
     SimpleRowSet data = qs.getData(new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_BRANDS, colBrandId, COL_TCD_BRAND_NAME)
         .addFrom(TBL_TCD_ARTICLE_BRANDS)
@@ -888,7 +908,7 @@ public class EcModuleBean implements BeeModule {
     if (!DataUtils.isId(brand)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_BRAND, COL_TCD_BRAND);
     }
-    
+
     IsCondition condition = SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_BRAND, brand);
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
@@ -1055,8 +1075,23 @@ public class EcModuleBean implements BeeModule {
     EcClientDiscounts clientDiscounts = getClientDiscounts();
 
     long watch = System.currentTimeMillis();
-    for (EcItem item : items) {
-      clientDiscounts.applyTo(item);
+
+    if (clientDiscounts == null || clientDiscounts.isEmpry()) {
+      for (EcItem item : items) {
+        item.setPrice(item.getListPrice());
+      }
+
+    } else {
+      Map<Long, Long> categoryParents;
+      if (clientDiscounts.hasCategories()) {
+        categoryParents = getCategoryParents();
+      } else {
+        categoryParents = Maps.newHashMap();
+      }
+
+      for (EcItem item : items) {
+        clientDiscounts.applyTo(item, categoryParents);
+      }
     }
 
     long end = System.currentTimeMillis();
