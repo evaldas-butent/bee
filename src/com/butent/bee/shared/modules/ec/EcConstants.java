@@ -114,6 +114,8 @@ public final class EcConstants {
 
   public static final String SVC_GET_ITEM_INFO = "getItemInfo";
 
+  public static final String SVC_GET_PICTURES = "getPictures";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -331,6 +333,8 @@ public final class EcConstants {
   public static final String CURRENCY = "Lt";
 
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
+
+  public static final String PICTURE_PREFIX = "data:image/";
 
   private EcConstants() {
   }

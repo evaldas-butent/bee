@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.ec.view;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -23,6 +25,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
+import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -308,8 +311,7 @@ public class ShoppingCart extends Split {
     return new Label(item.getEcItem().getCode());
   }
 
-  private void renderItem(int row, CartItem item) {
-    Widget pictureWidget = renderPicture();
+  private void renderItem(int row, CartItem item, Widget pictureWidget) {
     if (pictureWidget != null) {
       itemTable.setWidgetAndStyle(row, COL_PICTURE, pictureWidget, STYLE_PICTURE);
     }
@@ -381,9 +383,18 @@ public class ShoppingCart extends Split {
 
       itemTable.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
 
+      Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
+
       row++;
       for (CartItem item : items) {
-        renderItem(row++, item);
+        ItemPicture pictureWidget = new ItemPicture();
+        renderItem(row++, item, pictureWidget);
+
+        pictureWidgets.put(item.getEcItem().getArticleId(), pictureWidget);
+      }
+      
+      if (!pictureWidgets.isEmpty()) {
+        EcKeeper.setBackgroundPictures(pictureWidgets);
       }
     }
   }
@@ -399,10 +410,6 @@ public class ShoppingCart extends Split {
     });
 
     return nameWidget;
-  }
-
-  private static Widget renderPicture() {
-    return EcUtils.randomPicture(20, 50);
   }
 
   private static Widget renderPrice(CartItem item) {

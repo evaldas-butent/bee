@@ -138,6 +138,8 @@
   position: absolute;
   top: 60px;
   left: 0;
+  width: 100px;
+  height: 100px;
 }
 
 .bee-ec-Featured-name,
@@ -206,6 +208,11 @@
 }
 .bee-ec-ItemList-itemRow:hover {
   background-color: #dfd;
+}
+
+.bee-ec-ItemList-picture {
+  width: 100px;
+  height: 100px;
 }
 
 .bee-ec-ItemList-stock1-cell,
@@ -423,6 +430,11 @@
   background-color: #dfd;
 }
 
+.bee-ec-shoppingCart-item-picture {
+  width: 80px;
+  height: 60px;
+}
+
 .bee-ec-shoppingCart-item-name:hover {
   text-decoration: underline;
   cursor: pointer;
@@ -620,4 +632,10 @@
 }
 .bee-ec-ItemDetails-brands-table td {
   padding-right: 3px;
+}
+
+.bee-ec-ItemPicture-enabled {
+  background-repeat: no-repeat;
+  background-size: contain;
+  cursor: pointer;
 }

@@ -210,13 +210,14 @@ public class ItemDetails extends Flow {
     return container;
   }
 
-  private static Widget renderPicture(int width, int height) {
-    int max = Math.min(width, height);
-    int min = max / 2;
+  private static Widget renderPicture(EcItem item, int width, int height) {
+    ItemPicture widget = new ItemPicture();
+    EcStyles.add(widget, STYLE_PRIMARY, "picture");
+    StyleUtils.setSize(widget, width, height);
+    
+    EcKeeper.setBackgroundPicture(item.getArticleId(), widget);
 
-    Widget picture = EcUtils.randomPicture(min, max);
-    EcStyles.add(picture, STYLE_PRIMARY, "picture");
-    return picture;
+    return widget;
   }
 
   private static Widget renderRemainders(EcItemInfo info) {
@@ -271,9 +272,9 @@ public class ItemDetails extends Flow {
     int heightMargin = BeeUtils.resize(height, 0, 1000, 0, 20);
 
     int rowHeight = (height - heightMargin) / 2;
-    int pictureWidth = Math.min(200, width / 3);
+    int pictureWidth = Math.min(300, width / 3);
 
-    Widget picture = renderPicture(pictureWidth, rowHeight);
+    Widget picture = renderPicture(item, pictureWidth, rowHeight);
     if (picture != null) {
       add(picture);
     }

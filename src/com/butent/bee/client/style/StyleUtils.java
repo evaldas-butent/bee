@@ -427,6 +427,9 @@ public final class StyleUtils {
 
   private static final CssUnit DEFAULT_UNIT = CssUnit.PX;
 
+  private static final String IMAGE_URL_PREFIX = "url(";
+  private static final String IMAGE_URL_SUFFIX = ")";
+
   private static String styleTransform;
 
   public static int addClassName(NodeList<Element> nodes, String className) {
@@ -975,11 +978,34 @@ public final class StyleUtils {
     fullWidth(obj.getElement());
   }
 
+  public static String getBackgroundImage(Element el) {
+    Assert.notNull(el);
+    return getBackgroundImage(el.getStyle());
+  }
+
+  public static String getBackgroundImage(Style st) {
+    Assert.notNull(st);
+    String url = st.getBackgroundImage();
+
+    if (BeeUtils.isEmpty(url)) {
+      return null;
+    } else if (url.startsWith(IMAGE_URL_PREFIX) && url.endsWith(IMAGE_URL_SUFFIX)) {
+      return url.substring(IMAGE_URL_PREFIX.length(), url.length() - IMAGE_URL_SUFFIX.length());
+    } else {
+      return url;
+    }
+  }
+
+  public static String getBackgroundImage(UIObject obj) {
+    Assert.notNull(obj);
+    return getBackgroundImage(obj.getElement());
+  }
+  
   public static int getBottom(Element el) {
     Assert.notNull(el);
     return getBottom(el.getStyle());
   }
-
+  
   public static int getBottom(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getBottom(), false);
@@ -1520,7 +1546,7 @@ public final class StyleUtils {
     if (BeeUtils.isEmpty(url)) {
       st.clearBackgroundImage();
     } else {
-      st.setBackgroundImage("url(" + url.trim() + ")");
+      st.setBackgroundImage(IMAGE_URL_PREFIX + url.trim() + IMAGE_URL_SUFFIX);
     }
   }
 

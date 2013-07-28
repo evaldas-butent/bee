@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.ec;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -22,6 +24,7 @@ import com.butent.bee.client.modules.ec.widget.CartList;
 import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
+import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
@@ -59,6 +62,7 @@ public final class EcKeeper {
   private static final BeeLogger logger = LogUtils.getLogger(EcKeeper.class);
 
   private static final EcData data = new EcData();
+  private static final EcPictures pictures = new EcPictures();
 
   private static final InputText searchBox = new InputText();
 
@@ -280,16 +284,6 @@ public final class EcKeeper {
     });
   }
 
-  public static void saveConfiguration(String key, String value) {
-    Assert.notEmpty(key);
-    data.saveConfiguration(key, value);
-  }
-
-  private static String getActiveViewId() {
-    IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
-    return (activeWidget == null) ? null : activeWidget.getId();
-  }
-
   public static void openItem(final EcItem item, final boolean allowAddToCart) {
     Assert.notNull(item);
 
@@ -434,6 +428,11 @@ public final class EcKeeper {
     }
   }
 
+  public static void saveConfiguration(String key, String value) {
+    Assert.notEmpty(key);
+    data.saveConfiguration(key, value);
+  }
+
   public static void searchItems(String service, String query,
       final Consumer<List<EcItem>> callback) {
 
@@ -447,6 +446,21 @@ public final class EcKeeper {
     requestItems(service, query, params, callback);
   }
 
+  public static void setBackgroundPicture(Long article, ItemPicture widget) {
+    Assert.notNull(article);
+    Assert.notNull(widget);
+
+    Multimap<Long, ItemPicture> articleWidgets = ArrayListMultimap.create();
+    articleWidgets.put(article, widget);
+    
+    setBackgroundPictures(articleWidgets);
+  }
+
+  public static void setBackgroundPictures(Multimap<Long, ItemPicture> articleWidgets) {
+    Assert.notNull(articleWidgets);
+    pictures.setBackground(articleWidgets);
+  }
+  
   public static void showFeaturedAndNoveltyItems(final boolean checkView) {
     ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
 
@@ -533,6 +547,11 @@ public final class EcKeeper {
         BeeKeeper.getScreen().updateActivePanel(editor);
       }
     });
+  }
+
+  private static String getActiveViewId() {
+    IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
+    return (activeWidget == null) ? null : activeWidget.getId();
   }
 
   private static void resetActiveCommand() {

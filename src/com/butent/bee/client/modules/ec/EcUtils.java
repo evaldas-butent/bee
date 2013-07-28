@@ -1,24 +1,16 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
-
 public final class EcUtils {
-
-  private static final List<String> colors = Lists.newArrayList(Color.getNames().values());
 
   private static final int currentYear = TimeUtils.today().getYear();
 
@@ -53,25 +45,6 @@ public final class EcUtils {
     } else {
       return null;
     }
-  }
-
-  public static Widget randomPicture(int min, int max) {
-    CustomDiv widget = new CustomDiv();
-
-    int width = BeeUtils.randomInt(min, max);
-    int height = BeeUtils.randomInt(min, max);
-    StyleUtils.setSize(widget, width, height);
-
-    int index = BeeUtils.randomInt(0, colors.size());
-    StyleUtils.setBackgroundColor(widget, colors.get(index));
-
-    int radius = BeeUtils.randomInt(0, 6);
-    if (radius > 0) {
-      widget.getElement().getStyle().setProperty("borderRadius",
-          BeeUtils.toString(radius * 10) + "%");
-    }
-
-    return widget;
   }
 
   public static String renderCents(int cents) {

@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -43,6 +45,8 @@ public class FeaturedAndNovelty extends Flow {
     int featuredCount = BeeUtils.randomInt(0, total + 1);
     int noveltyCount = total - featuredCount;
 
+    Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
+    
     if (featuredCount > 0) {
       Label featuredLabel = new Label(Localized.getConstants().ecFeaturedItems());
       EcStyles.add(featuredLabel, STYLE_FEATURED, STYLE_LABEL);
@@ -55,8 +59,14 @@ public class FeaturedAndNovelty extends Flow {
       EcStyles.add(featuredTable, STYLE_FEATURED, STYLE_TABLE);
       
       String banner = Localized.getConstants().ecFeaturedBanner();
+
       for (int i = 0; i < featuredCount; i++) {
-        featuredTable.add(renderItem(items.get(i), STYLE_FEATURED, banner));
+        EcItem item = items.get(i);
+        ItemPicture pictureWidget = new ItemPicture();
+        
+        featuredTable.add(renderItem(item, STYLE_FEATURED, banner, pictureWidget));
+        
+        pictureWidgets.put(item.getArticleId(), pictureWidget);
       }
 
       featuredContainer.add(featuredTable);
@@ -75,16 +85,28 @@ public class FeaturedAndNovelty extends Flow {
       EcStyles.add(noveltyTable, STYLE_NOVELTY, STYLE_TABLE);
       
       String banner = Localized.getConstants().ecNoveltyBanner();
+
       for (int i = featuredCount; i < total; i++) {
-        noveltyTable.add(renderItem(items.get(i), STYLE_NOVELTY, banner));
+        EcItem item = items.get(i);
+        ItemPicture pictureWidget = new ItemPicture();
+        
+        noveltyTable.add(renderItem(item, STYLE_NOVELTY, banner, pictureWidget));
+
+        pictureWidgets.put(item.getArticleId(), pictureWidget);
       }
 
       noveltyContainer.add(noveltyTable);
       add(noveltyContainer);
     }
+    
+    if (!pictureWidgets.isEmpty()) {
+      EcKeeper.setBackgroundPictures(pictureWidgets);
+    }
   }
   
-  private static Widget renderItem(final EcItem item, String primaryStyle, String bannerText) {
+  private static Widget renderItem(final EcItem item, String primaryStyle, String bannerText,
+      Widget pictureWidget) {
+
     Flow panel = new Flow(EcStyles.name(primaryStyle, STYLE_ITEM));
     
     if (!BeeUtils.isEmpty(bannerText)) {
@@ -93,10 +115,9 @@ public class FeaturedAndNovelty extends Flow {
       panel.add(banner);
     }
     
-    Widget picture = EcUtils.randomPicture(30, 100);
-    if (picture != null) {
-      EcStyles.add(picture, primaryStyle, STYLE_PICTURE);
-      panel.add(picture);
+    if (pictureWidget != null) {
+      EcStyles.add(pictureWidget, primaryStyle, STYLE_PICTURE);
+      panel.add(pictureWidget);
     }
     
     String name = item.getName();

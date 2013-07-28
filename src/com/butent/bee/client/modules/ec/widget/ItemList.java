@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -134,6 +136,8 @@ public class ItemList extends Flow {
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
 
+      Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
+
       int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
 
       row++;
@@ -141,11 +145,19 @@ public class ItemList extends Flow {
         if (row > pageSize) {
           break;
         }
-        renderItem(row++, item);
+
+        ItemPicture pictureWidget = new ItemPicture();
+        renderItem(row++, item, pictureWidget);
+
+        pictureWidgets.put(item.getArticleId(), pictureWidget);
       }
 
       if (pageSize < items.size()) {
         StyleUtils.unhideDisplay(moreWidget);
+      }
+
+      if (!pictureWidgets.isEmpty()) {
+        EcKeeper.setBackgroundPictures(pictureWidgets);
       }
     }
   }
@@ -238,11 +250,11 @@ public class ItemList extends Flow {
     return panel;
   }
 
-  private void renderItem(int row, EcItem item) {
-    Widget picture = renderPicture();
-    if (picture != null) {
-      table.setWidgetAndStyle(row, COL_PICTURE, picture, STYLE_PICTURE);
+  private void renderItem(int row, EcItem item, Widget pictureWidget) {
+    if (pictureWidget != null) {
+      table.setWidgetAndStyle(row, COL_PICTURE, pictureWidget, STYLE_PICTURE);
     }
+
     Widget info = renderInfo(item);
     if (info != null) {
       table.setWidgetAndStyle(row, COL_INFO, info, STYLE_INFO);
@@ -275,10 +287,6 @@ public class ItemList extends Flow {
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
 
-  private static Widget renderPicture() {
-    return EcUtils.randomPicture(30, 100);
-  }
-
   private static Widget renderPrice(int price, String style) {
     String stylePrefix = style + "-";
 
@@ -305,14 +313,25 @@ public class ItemList extends Flow {
     int more = data.size() - pageStart;
 
     if (more > 0) {
+      Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
+
       int pageSize = (more > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : more;
 
       for (int i = pageStart; i < pageStart + pageSize; i++) {
-        renderItem(i + 1, data.get(i));
+        EcItem item = data.get(i);
+        ItemPicture pictureWidget = new ItemPicture();
+
+        renderItem(i + 1, item, pictureWidget);
+
+        pictureWidgets.put(item.getArticleId(), pictureWidget);
       }
 
       if (pageSize >= more) {
         StyleUtils.hideDisplay(moreWidget);
+      }
+
+      if (!pictureWidgets.isEmpty()) {
+        EcKeeper.setBackgroundPictures(pictureWidgets);
       }
     }
   }
