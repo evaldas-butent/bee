@@ -25,7 +25,7 @@ public class InitializationBean {
   public void init() {
     LogUtils.setLoggerFactory(new LogbackFactory());
     Config.init();
-    
+
     Localized.setConstants(Localizations.getConstants());
     Localized.setMessages(Localizations.getMessages());
 

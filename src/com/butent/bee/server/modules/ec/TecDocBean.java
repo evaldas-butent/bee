@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.IsSql;
 import com.butent.bee.server.sql.SqlBuilder;
@@ -28,12 +29,18 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.ButentWebServiceSoapPort;
 
 import org.w3c.dom.Node;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +48,7 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -117,6 +125,10 @@ public class TecDocBean {
 
   private static BeeLogger logger = LogUtils.getLogger(TecDocBean.class);
   private static BeeLogger messyLogger = LogUtils.getLogger(QueryServiceBean.class);
+
+  private static Boolean supportsJPEG2000;
+  private static final String JPEG = "JPG";
+  private static final String JPEG2000 = "JP2";
 
   private static final String TCD_SCHEMA = "TecDoc";
   private static final String TCD_CRITERIA = "TcdCriteria";
@@ -503,15 +515,24 @@ public class TecDocBean {
             .addFrom("_analogs"));
 
     data.addBaseIndexes(TCD_ARTICLE_ID);
-    data.addBaseIndexes(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME);
+    data.addBaseIndexes(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_KIND);
 
     data.addPreparation(new SqlCreate("_analogs", false)
         .setDataSource(new SqlSelect()
             .addExpr(SqlUtils.expression("CAST(arl_art_id AS UNSIGNED)"), "arl_art_id")
-            .addFields("tof_art_lookup", "arl_search_number", "arl_display_nr")
+            .addFields("tof_art_lookup", "arl_search_number")
             .addExpr(SqlUtils.expression("CAST(arl_kind AS DECIMAL(1))"), "arl_kind")
-            .addFields("tof_brands", "bra_brand")
+            .addExpr(SqlUtils.sqlCase(SqlUtils.name("arl_kind"), "1",
+                SqlUtils.field("tof_articles", "art_article_nr"),
+                SqlUtils.field("tof_art_lookup", "arl_display_nr")), "arl_display_nr")
+            .addExpr(SqlUtils.sqlCase(SqlUtils.name("arl_kind"), "1",
+                SqlUtils.field("tof_suppliers", "sup_brand"),
+                SqlUtils.field("tof_brands", "bra_brand")), "bra_brand")
             .addFrom("tof_art_lookup")
+            .addFromInner("tof_articles",
+                SqlUtils.join("tof_art_lookup", "arl_art_id", "tof_articles", "art_id"))
+            .addFromLeft("tof_suppliers",
+                SqlUtils.join("tof_articles", "art_sup_id", "tof_suppliers", "sup_id"))
             .addFromLeft("tof_brands",
                 SqlUtils.join("tof_art_lookup", "arl_bra_id", "tof_brands", "bra_id"))));
 
@@ -903,8 +924,10 @@ public class TecDocBean {
         .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_GRAPHICS))));
 
     insertData(TBL_TCD_GRAPHICS, new SqlSelect().setLimit(500000)
-        .addFields(graph, COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE_ID,
-            COL_TCD_GRAPHICS_RESOURCE_NO)
+        .addExpr(SqlUtils.sqlCase(SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE),
+            SqlUtils.constant(JPEG2000), SqlUtils.constant(JPEG),
+            SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE)), COL_TCD_GRAPHICS_TYPE)
+        .addFields(graph, COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE_NO)
         .addField(graph, TCD_GRAPHICS_ID, TCD_TECDOC_ID)
         .addFrom(graph)
         .addOrder(graph, TCD_GRAPHICS_ID));
@@ -914,6 +937,7 @@ public class TecDocBean {
         .addFrom(graph))) {
 
       String resource = TBL_TCD_GRAPHICS_RESOURCES + part;
+
       SqlSelect sql = new SqlSelect()
           .addFields(SqlUtils.table(TCD_SCHEMA, resource),
               COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE)
@@ -923,14 +947,76 @@ public class TecDocBean {
               SqlUtils.joinUsing(SqlUtils.table(TCD_SCHEMA, resource), graph,
                   COL_TCD_GRAPHICS_RESOURCE_ID)));
 
-      if (qs.dbTableExists(sys.getDbName(), sys.getDbSchema(), resource)) {
-        qs.updateData(new SqlInsert(resource)
-            .addFields(COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE)
-            .setDataSource(sql));
-      } else {
-        qs.updateData(new SqlCreate(resource, false).setDataSource(sql));
+      if (!qs.dbTableExists(sys.getDbName(), sys.getDbSchema(), resource)) {
+        IsCondition wh = sql.getWhere();
+
+        qs.updateData(new SqlCreate(resource, false)
+            .setDataSource(sql.setWhere(SqlUtils.sqlFalse())));
+
+        sql.setWhere(wh);
         qs.sqlIndex(resource, COL_TCD_GRAPHICS_RESOURCE_ID);
       }
+      boolean isDebugEnabled = messyLogger.isDebugEnabled();
+      int chunk = 100;
+      int offset = 0;
+      int tot = 0;
+      sql.addFields(graph, COL_TCD_GRAPHICS_TYPE).setLimit(chunk);
+      SqlInsert insert = new SqlInsert(resource)
+          .addFields(COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE);
+      SimpleRowSet data = null;
+
+      do {
+        data = qs.getData(sql.setOffset(offset));
+
+        if (isDebugEnabled) {
+          messyLogger.setLevel(LogLevel.INFO);
+        }
+        for (String[] row : data.getRows()) {
+          String resourceId = row[0];
+          String image = row[1];
+          String type = row[2];
+
+          if (JPEG2000.equals(type)) {
+            if (supportsJPEG2000 == null) {
+              ImageIO.scanForPlugins();
+              supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
+            }
+            if (supportsJPEG2000) {
+              try {
+                ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
+                BufferedImage img = ImageIO.read(in);
+
+                if (img != null) {
+                  ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+                  if (ImageIO.write(img, JPEG, out)) {
+                    image = Codec.toBase64(out.toByteArray());
+                  }
+                  out.close();
+                }
+                in.close();
+              } catch (IOException e) {
+                logger.error(e);
+              }
+            }
+          }
+          insert.addValues(new Object[] {resourceId, image});
+
+          if (++tot % chunk == 0) {
+            qs.insertData(insert);
+            insert.resetValues();
+            logger.info("Inserted", tot, "records into table", resource);
+          }
+        }
+        if (tot % chunk > 0) {
+          qs.insertData(insert);
+          logger.info("Inserted", tot, "records into table", resource);
+        }
+        if (isDebugEnabled) {
+          messyLogger.setLevel(LogLevel.DEBUG);
+        }
+        offset += chunk;
+      } while (data.getNumberOfRows() == chunk);
     }
     qs.sqlDropTemp(graph);
 
@@ -954,7 +1040,7 @@ public class TecDocBean {
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID,
-            COL_TCD_ANALOG_NR, COL_TCD_BRAND, COL_TCD_PRICE, idName)
+            COL_TCD_ANALOG_NR, COL_TCD_BRAND, COL_TCD_COST, idName)
         .addField(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ANALOG_NR, COL_TCD_SEARCH_NR)
         .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
         .addFrom(TBL_TCD_ARTICLE_BRANDS)
@@ -978,7 +1064,7 @@ public class TecDocBean {
     }
     SqlInsert insert = new SqlInsert(tmp)
         .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND,
-            COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID);
+            COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_SUPPLIER_ID);
     int tot = 0;
 
     for (RemoteItems info : data) {
@@ -1011,10 +1097,14 @@ public class TecDocBean {
                 SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID))));
 
     qs.sqlIndex(tmp, idName);
+    long time = System.currentTimeMillis();
 
     tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
-        .addExpression(COL_TCD_UPDATED_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
-        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_BRANDS, tmp, idName)));
+        .addExpression(COL_TCD_UPDATED_COST, SqlUtils.field(tmp, COL_TCD_COST))
+        .addConstant(COL_TCD_UPDATE_TIME, time)
+        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_BRANDS, tmp, idName))
+        .setWhere(SqlUtils.notEqual(TBL_TCD_ARTICLE_BRANDS, COL_TCD_UPDATED_COST,
+            SqlUtils.field(tmp, COL_TCD_COST))));
 
     logger.info(log, "Updated", tot, "records");
 
@@ -1031,8 +1121,8 @@ public class TecDocBean {
 
     SqlUpdate query = new SqlUpdate(tmp)
         .addExpression(TCD_ARTICLE_ID, SqlUtils.field(tcdAnalogs, TCD_ARTICLE_ID))
-        .setFrom(tcdAnalogs,
-            SqlUtils.joinUsing(tmp, tcdAnalogs, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME));
+        .setFrom(tcdAnalogs, SqlUtils.and(SqlUtils.equals(tcdAnalogs, COL_TCD_KIND, 1),
+            SqlUtils.joinUsing(tmp, tcdAnalogs, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME)));
 
     analyzeQuery(query);
     qs.updateData(query);
@@ -1057,9 +1147,10 @@ public class TecDocBean {
 
     insertData(TBL_TCD_ARTICLE_BRANDS, new SqlSelect().setLimit(100000)
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
-        .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID)
+        .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
         .addConstant(supplier, COL_TCD_SUPPLIER)
-        .addField(tmp, COL_TCD_PRICE, COL_TCD_UPDATED_PRICE)
+        .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
+        .addConstant(time, COL_TCD_UPDATE_TIME)
         .addFrom(tmp)
         .addFromInner(TBL_TCD_ARTICLES,
             SqlUtils.join(tmp, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID))

@@ -12,9 +12,9 @@
       <SimpleColumn name="BrandName" />
     </SimpleJoin>
     <SimpleColumn name="AnalogNr" />
-    <SimpleColumn name="Price" />
-    <SimpleColumn name="UpdatedPrice" />
-    <SimpleColumn name="ListPrice" />
+    <SimpleColumn name="Cost" />
+    <SimpleColumn name="UpdatedCost" />
+    <SimpleColumn name="UpdateTime" />
   </Columns>
 
   <Order>

@@ -15,8 +15,8 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
@@ -679,8 +679,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLE_GRAPHICS)
         .addFromInner(TBL_TCD_GRAPHICS,
             sys.joinTables(TBL_TCD_GRAPHICS, TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_GRAPHICS))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1),
-            SqlUtils.equals(TBL_TCD_GRAPHICS, COL_TCD_GRAPHICS_TYPE, "PNG")))
+        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1))
         .addOrder(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE)
         .setOffset(offset)
         .setLimit(limit);
@@ -841,7 +840,7 @@ public class EcModuleBean implements BeeModule {
         .addFields(tempArticleIds, COL_TCD_ARTICLE)
         .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME)
         .addFields(TBL_TCD_ARTICLE_BRANDS, idName, COL_TCD_BRAND, COL_TCD_ANALOG_NR,
-            COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID, COL_TCD_PRICE)
+            COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID, COL_TCD_COST)
         .addSum(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES,
@@ -853,7 +852,7 @@ public class EcModuleBean implements BeeModule {
         .addGroup(tempArticleIds, COL_TCD_ARTICLE)
         .addGroup(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME)
         .addGroup(TBL_TCD_ARTICLE_BRANDS, idName, COL_TCD_BRAND, COL_TCD_ANALOG_NR,
-            COL_TCD_UPDATED_PRICE, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID)
+            COL_TCD_UPDATED_COST, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME)
         .addOrder(tempArticleIds, COL_TCD_ARTICLE);
 
@@ -876,7 +875,7 @@ public class EcModuleBean implements BeeModule {
         item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
         item.setStock2(BeeUtils.randomInt(0, 20) * BeeUtils.randomInt(0, 2));
 
-        item.setPrice(row.getDouble(COL_TCD_PRICE));
+        item.setPrice(row.getDouble(COL_TCD_COST));
 
         items.add(item);
       }
@@ -996,6 +995,7 @@ public class EcModuleBean implements BeeModule {
           String text = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
 
           String type = resourceTypes.get(resource);
+
           if (text != null && !BeeUtils.isEmpty(type) && resourceArticles.containsKey(resource)) {
             String picture = PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
 

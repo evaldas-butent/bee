@@ -206,7 +206,7 @@ public final class EcConstants {
   public static final String COL_DISCOUNT_ARTICLE_BRAND = "ArticleBrand";
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
-  
+
   public static final String COL_HISTORY_DATE = "Date";
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";
@@ -306,8 +306,9 @@ public final class EcConstants {
   public static final String COL_TCD_WAREHOUSE = "Warehouse";
   public static final String COL_TCD_REMAINDER = "Remainder";
 
-  public static final String COL_TCD_PRICE = "Price";
-  public static final String COL_TCD_UPDATED_PRICE = "UpdatedPrice";
+  public static final String COL_TCD_COST = "Cost";
+  public static final String COL_TCD_UPDATED_COST = "UpdatedCost";
+  public static final String COL_TCD_UPDATE_TIME = "UpdateTime";
 
   public static final String COL_TCD_BRAND = "Brand";
   public static final String COL_TCD_BRAND_NAME = "BrandName";

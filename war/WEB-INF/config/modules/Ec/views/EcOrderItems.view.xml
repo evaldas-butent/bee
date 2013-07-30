@@ -17,7 +17,7 @@
       <SimpleColumn name="AnalogNr" />
       <SimpleColumn name="Supplier" />
       <SimpleColumn name="SupplierID" />
-      <SimpleColumn name="Price" alias="Cost" />
+      <SimpleColumn name="Cost" />
     </SimpleJoin>
 
     <SimpleColumn name="QuantityOrdered" />
