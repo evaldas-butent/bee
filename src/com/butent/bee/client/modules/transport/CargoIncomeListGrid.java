@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -71,7 +72,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
           idList.add(row.getId());
         }
         if (flt.isEmpty()) {
-          presenter.getGridView().notifyWarning("Pažymėkite bent vieną pajamų eilutę");
+          presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
           return;
         }
         Queries.getRowSet(VIEW_CARGO_INCOME_LIST, null, flt, new RowSetCallback() {

@@ -12,7 +12,7 @@ import com.butent.bee.shared.Assert;
 
 public class ItemPicture extends CustomDiv {
 
-  private final static String STYLE_NAME = EcStyles.name("ItemPicture");
+  private static final String STYLE_NAME = EcStyles.name("ItemPicture");
 
   private boolean hasPicture;
 

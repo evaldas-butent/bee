@@ -24,7 +24,7 @@ name="Ec" label="=ecMenu" order="100"
   <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true" />
   <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" />
   <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
-  <Item name="TcdArticleBrands" label="=ecCostChanges" service="grid" parameters="TcdArticleBrands" />
+  <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
 
   <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
 </Entry>

@@ -15,7 +15,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionCanNotExecuted();
 
   String additionalInfo();
-  
+
   String address();
 
   String allowPhotoSize();
@@ -49,15 +49,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String code();
 
   String color();
-  
+
   String colorDescription();
 
   String colorIsInvalid();
-    
+
   String colorTheme();
-  
+
   String colorTitle();
-  
+
   String comment();
 
   String companies();
@@ -75,7 +75,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String companyVATCode();
 
   String contact();
-  
+
   String contacts();
 
   String country();
@@ -83,11 +83,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String createNewRow();
 
   String creator();
-  
+
   String dangerous();
 
   String date();
-  
+
   String defaultColor();
 
   String description();
@@ -97,17 +97,17 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String doFilter();
 
   String email();
-  
+
   String emailLoginName();
-  
+
   String emailPassword();
-  
+
   String emailServerAddress();
-  
+
   String emailServerPort();
-  
+
   String emailServerSettings();
-  
+
   String emailType();
 
   String ended();
@@ -131,19 +131,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String filterNullLabel();
 
   String group();
-  
+
   String height();
 
   String imageUploadFailed();
-  
+
   String initialFilter();
 
   String item();
-  
+
   String length();
 
   String location();
-  
+
   String mainEmail();
 
   String mobile();
@@ -151,7 +151,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String name();
 
   String newEmailAccount();
-  
+
   String newPassword();
 
   String newPasswordIsRequired();
@@ -165,7 +165,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String no();
 
   String noData();
-  
+
   String notes();
 
   String nothingFound();
@@ -179,19 +179,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String oldPasswordIsRequired();
 
   String ordinal();
-  
+
   String outsized();
 
   String owner();
-  
+
   String pallets();
-  
+
   String partial();
 
   String period();
-  
+
   String personContact();
-  
+
   String personContacts();
 
   String persons();
@@ -199,7 +199,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String phone();
 
   String postIndex();
-  
+
   String print();
 
   String priority();
@@ -207,7 +207,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String questionLogout();
 
   String registered();
-  
+
   String relatedTo();
 
   String removeFilter();
@@ -215,7 +215,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String repeatNewPassword();
 
   String resource();
-  
+
   String responsibilities();
 
   String responsibleEmployee();
@@ -236,8 +236,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String selectAll();
 
+  String selectAtLeastOneRow();
+
   String settings();
-  
+
   String smtpServerSettings();
 
   String sorry();
@@ -261,17 +263,17 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String unit();
 
   String userFullName();
-  
+
   String value();
 
   String valueRequired();
-  
+
   String volume();
-  
+
   String warehouse();
 
   String weight();
-  
+
   String width();
 
   String yes();

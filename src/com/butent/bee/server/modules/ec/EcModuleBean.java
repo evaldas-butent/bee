@@ -34,6 +34,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -222,6 +223,10 @@ public class EcModuleBean implements BeeModule {
       query = BeeUtils.toString(articles.size());
       log = true;
 
+    } else if (BeeUtils.same(svc, SVC_UPDATE_COSTS)) {
+      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(COL_TCD_ARTICLE_BRAND));
+      response = updateCosts(ids);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -234,6 +239,18 @@ public class EcModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject updateCosts(Set<Long> ids) {
+    int c = 0;
+
+    if (!BeeUtils.isEmpty(ids)) {
+      c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
+          .addExpression(COL_TCD_COST, SqlUtils.name(COL_TCD_UPDATED_COST))
+          .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS),
+              ids)));
+    }
+    return ResponseObject.info(Localized.getMessages().rowsUpdated(c));
   }
 
   @Override

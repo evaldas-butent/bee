@@ -7,7 +7,7 @@ import com.butent.bee.shared.modules.transport.LocalizableTransportMessages;
 
 public interface LocalizableMessages extends Messages, LocalizableEcMessages,
     LocalizableTransportMessages {
-  
+
   String allValuesEmpty(String label, String count);
 
   String allValuesIdentical(String label, String value, String count);
@@ -15,7 +15,7 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
   String dataNotAvailable(String key);
 
   String endSession(String appName);
-  
+
   String fileSizeExceeded(long size, long max);
 
   String invalidImageFileType(String fileName, String type);
@@ -27,4 +27,6 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
   String not(String value);
 
   String rowsRetrieved(int cnt);
+
+  String rowsUpdated(int cnt);
 }

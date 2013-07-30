@@ -116,6 +116,8 @@ public final class EcConstants {
 
   public static final String SVC_GET_PICTURES = "getPictures";
 
+  public static final String SVC_UPDATE_COSTS = "updateCosts";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";

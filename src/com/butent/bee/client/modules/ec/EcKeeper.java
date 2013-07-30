@@ -295,7 +295,7 @@ public final class EcKeeper {
         if (!Objects.equal(activeViewId, getActiveViewId())) {
           return;
         }
-            
+
         ParameterList params = createArgs(SVC_GET_ITEM_INFO);
 
         params.addQueryItem(COL_TCD_ARTICLE, item.getArticleId());
@@ -370,6 +370,7 @@ public final class EcKeeper {
 
     GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
+    GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
@@ -452,7 +453,7 @@ public final class EcKeeper {
 
     Multimap<Long, ItemPicture> articleWidgets = ArrayListMultimap.create();
     articleWidgets.put(article, widget);
-    
+
     setBackgroundPictures(articleWidgets);
   }
 
@@ -460,7 +461,7 @@ public final class EcKeeper {
     Assert.notNull(articleWidgets);
     pictures.setBackground(articleWidgets);
   }
-  
+
   public static void showFeaturedAndNoveltyItems(final boolean checkView) {
     ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
 
