@@ -9,6 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.view.edit.Editor;
@@ -58,6 +59,7 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
 
   private Editor createEditor() {
     InputText input = new InputText();
+    DomUtils.setSearch(input);
     EcStyles.add(input, STYLE_PRIMARY, "input");
     
     input.addKeyDownHandler(new KeyDownHandler() {

@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.ec;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -19,10 +21,12 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.ec.EcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
@@ -185,82 +189,68 @@ public class EcScreen extends ScreenImpl {
   private static void createCommands(HasWidgets container) {
     String panelStyle = "commandPanel";
 
-    Horizontal fin = new Horizontal();
-    EcStyles.add(fin, panelStyle);
-    EcStyles.add(fin, panelStyle, "fin");
+    Horizontal info = new Horizontal();
+    EcStyles.add(info, panelStyle);
+    EcStyles.add(info, panelStyle, "info");
 
-    fin.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
-        Localized.getConstants().ecFinancialInformation()));
+    info.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
+        Localized.getConstants().ecFinancialInformation(), Type.LINK));
 
-    container.add(fin);
+    info.add(createCommandWidget(EcConstants.SVC_SHOW_TERMS_OF_DELIVERY,
+        Localized.getConstants().ecTermsOfDelivery(), Type.LINK));
+    info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
+        Localized.getConstants().ecContacts(), Type.LINK));
 
-    boolean hasTerms = true;
-    boolean hasContacts = true;
-
-    if (hasTerms || hasContacts) {
-      Horizontal info = new Horizontal();
-      EcStyles.add(info, panelStyle);
-      EcStyles.add(info, panelStyle, "info");
-
-      if (hasTerms) {
-        info.add(createCommandWidget(EcConstants.SVC_SHOW_TERMS_OF_DELIVERY,
-            Localized.getConstants().ecTermsOfDelivery()));
-      }
-      if (hasContacts) {
-        info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
-            Localized.getConstants().ecContacts()));
-      }
-
-      container.add(info);
-    }
+    container.add(info);
+    
+    String styleName = "searchBy";
 
     Horizontal searchBy = new Horizontal();
     EcStyles.add(searchBy, panelStyle);
-    EcStyles.add(searchBy, panelStyle, "searchBy");
+    EcStyles.add(searchBy, panelStyle, styleName);
 
-    searchBy.add(new Label(Localized.getConstants().ecSearchBy()));
+    Label label = new Label(Localized.getConstants().ecSearchBy());
+    EcStyles.add(label, styleName, "label");
+    searchBy.add(label);
+
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_ITEM_CODE,
-        Localized.getConstants().ecSearchByItemCode()));
+        Localized.getConstants().ecSearchByItemCode(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_OE_NUMBER,
-        Localized.getConstants().ecSearchByOeNumber()));
+        Localized.getConstants().ecSearchByOeNumber(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_CAR,
-        Localized.getConstants().ecSearchByCar()));
+        Localized.getConstants().ecSearchByCar(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_BRAND,
-        Localized.getConstants().ecSearchByBrand()));
+        Localized.getConstants().ecSearchByBrand(), Type.LABEL));
+
+    searchBy.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
+        Localized.getConstants().ecGeneralItems(), Type.LABEL));
+    searchBy.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
+        Localized.getConstants().ecBikeItems(), Type.LABEL));
 
     container.add(searchBy);
-
-    Horizontal searchOther = new Horizontal();
-    EcStyles.add(searchOther, panelStyle);
-    EcStyles.add(searchOther, panelStyle, "searchOther");
-
-    searchOther.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
-        Localized.getConstants().ecGeneralItems()));
-    searchOther.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
-        Localized.getConstants().ecBikeItems()));
-
-    container.add(searchOther);
 
     container.add(EcKeeper.getCartlist());
   }
 
-  private static Widget createCommandWidget(String service, String html) {
-    EcCommandWidget commandWidget = new EcCommandWidget(service, html);
+  private static Widget createCommandWidget(String service, String html, Type type) {
+    EcCommandWidget commandWidget = new EcCommandWidget(service, html, type);
     return commandWidget.getWidget();
   }
 
   private Widget createGlobalSearch() {
+    String styleName = "GlobalSearch";
+    
     final InputText input = EcKeeper.getSearchBox();
 
     DomUtils.setSearch(input);
     DomUtils.setPlaceholder(input, Localized.getConstants().ecGlobalSearchPlaceholder());
-    EcStyles.add(input, "GlobalSearchBox");
+    EcStyles.add(input, styleName, "input");
 
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
         int keyCode = event.getNativeKeyCode();
-        
+
         if (keyCode == KeyCodes.KEY_ENTER) {
           String query = BeeUtils.trim(input.getValue());
           if (!BeeUtils.isEmpty(query)) {
@@ -270,17 +260,33 @@ public class EcScreen extends ScreenImpl {
         } else if (EventUtils.isArrowKey(keyCode) && input.isEmpty()) {
           Direction direction = (keyCode == KeyCodes.KEY_LEFT || keyCode == KeyCodes.KEY_UP)
               ? Direction.WEST : Direction.EAST;
-              
+
           int oldSize = getScreenPanel().getDirectionSize(direction);
           int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
-          
+
           getScreenPanel().setDirectionSize(direction, newSize, true);
         }
       }
     });
 
-    Simple container = new Simple(input);
-    EcStyles.add(container, "GlobalSearchContainer");
+    Image submit = new Image(EcUtils.imageUrl("search_button.png"));
+    EcStyles.add(submit, styleName, "submit");
+
+    submit.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        String query = BeeUtils.trim(input.getValue());
+        if (!BeeUtils.isEmpty(query)) {
+          EcKeeper.doGlobalSearch(query);
+        }
+      }
+    });
+    
+    Horizontal container = new Horizontal();
+    EcStyles.add(container, styleName, "container");
+
+    container.add(input);
+    container.add(submit);
 
     return container;
   }

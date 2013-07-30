@@ -17,6 +17,12 @@ public final class EcUtils {
   private static final String STYLE_FIELD_CONTAINER = "-container";
   private static final String STYLE_FIELD_LABEL = "-label";
 
+  private static final String IMAGE_DIR = "images/ec/";
+  
+  public static String imageUrl(String name) {
+    return IMAGE_DIR + name;
+  }
+
   public static boolean isProduced(Integer producedFrom, Integer producedTo, int year) {
     Integer yearFrom = normalizeYear(producedFrom);
     if (yearFrom == null || yearFrom > year) {

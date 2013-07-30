@@ -5,6 +5,7 @@
 .bee-ec-NorthContainer {
   position: relative;
   border-bottom: 1px solid #ccc;
+  background-color: #ebebeb;
 }
 
 .bee-ec-Logo {
@@ -12,46 +13,82 @@
   margin-top: 1ex;
 }
 
-.bee-ec-GlobalSearchContainer {
+.bee-ec-GlobalSearch-container {
   position: absolute;
   left: 160px;
   top: 2ex;
+  border-collapse: collapse;
 }
-.bee-ec-GlobalSearchBox {
+.bee-ec-GlobalSearch-container td {
+  padding: 2px;
+}
+
+.bee-ec-GlobalSearch-input,
+.bee-ec-ItemSelector-input,
+.bee-ec-IndexSelector-search,
+.bee-ec-cartAccumulator-input {
+  font-size: medium;
+  padding-left: 8px;
+  border: 1px solid #d9d9d9;
+  border-top: 1px solid silver;
+  box-shadow: inset 3px 3px 10px silver;
+  color: #43494F;
+}
+
+.bee-ec-GlobalSearch-input,
+.bee-ec-ItemSelector-input {
   width: 180px;
-  padding: 3px;
+  height: 32px;
 }
 
 .bee-ec-commandPanel {
   position: absolute;
   border-collapse: collapse;
 }
-.bee-ec-Command {
-  color: #00d;
+
+.bee-ec-Command-link {
+  color: black;
 }
-.bee-ec-Command-active {
+.bee-ec-Command-link-active {
   color: red !important;
 }
-.bee-Horizontal .bee-ec-Command {
-  padding-left: 1em;
-}  
 
-.bee-ec-commandPanel-fin {
-  left: 400px;
+.bee-ec-Command-label {
+  cursor: pointer;
+  background-color: #929292;
+  color: white;
+  padding: 8px 8px 3px 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.bee-ec-Command-label:hover {
+  background-color: black;
+}
+.bee-ec-Command-label-active {
+  background-color: black !important;
+}
+
+.bee-ec-commandPanel-info {
+  left: 440px;
   top: 2ex;
 }
-.bee-ec-commandPanel-info {
-  left: 580px;
-  top: 2ex;
+.bee-ec-Command-financialInformation,
+.bee-ec-Command-showTermsOfDelivery {
+  padding-right: 5px;
+  border-right: 1px solid black;
+  margin-right: 5px;
 }
 
 .bee-ec-commandPanel-searchBy {
   left: 160px;
-  bottom: 3ex;
+  bottom: 0;
 }
-.bee-ec-commandPanel-searchOther {
-  left: 580px;
-  bottom: 3ex;
+.bee-ec-commandPanel-searchBy td {
+  padding-bottom: 0;
+}
+.bee-ec-searchBy-label {
+  padding-right: 5px;
+  font-weight: bold;
 }
 
 .bee-ec-cartList {
@@ -186,8 +223,10 @@
   margin-top: 2ex;
   margin-left: 2em;
 }
-.bee-ec-ItemSelector-input {
-  font-size: medium;
+.bee-ec-ItemSelector-submit {
+  background-image: url("images/ec/red_background.png");
+  height: 32px;
+  color: white;
 }
 
 .bee-ec-ItemList-table {
@@ -202,24 +241,36 @@
   font-weight: bold;
 }
 
+.bee-ec-ItemList-itemRow:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.bee-ec-ItemList-itemRow:nth-child(even) {
+  background-color: #ebebeb;
+}
+.bee-ec-ItemList-itemRow:hover {
+  background-color: #dfd;
+}
 .bee-ec-ItemList-itemRow > td {
   padding: 5px 10px;
   border: 1px solid #ddd;
 }
-.bee-ec-ItemList-itemRow:hover {
-  background-color: #dfd;
+
+.bee-ec-ItemList-stock1-cell,
+.bee-ec-ItemList-stock2-cell {
+  text-align: center;
+}
+
+.bee-ec-ItemList-listPrice-cell,
+.bee-ec-ItemList-price-cell {
+  text-align: right;
 }
 
 .bee-ec-ItemList-picture {
   width: 100px;
   height: 100px;
 }
-
-.bee-ec-ItemList-stock1-cell,
-.bee-ec-ItemList-stock2-cell,
-.bee-ec-ItemList-listPrice-cell,
-.bee-ec-ItemList-price-cell {
-  text-align: right;
+.bee-ec-ItemList-info {
+  max-width: 240px;
 }
 
 .bee-ec-ItemList-name {
@@ -247,6 +298,11 @@
   font-size: 12px;
 }
 
+.bee-ec-ItemList-hasStock {
+  font-size: medium;
+  font-weight: bold;
+}
+
 .bee-ec-ItemList-price-value {
   font-size: medium;
   font-weight: bold;
@@ -257,10 +313,10 @@
 }
 
 .bee-ec-ItemList-more {
-  margin-top: 3px;
-  margin-left: 2em;
+  margin-top: 5px;
+  margin-left: 380px;
   font-size: medium;
-  color: #00d;
+  color: black;
 }
 
 .bee-ec-ItemPanel {
@@ -271,11 +327,12 @@
 .bee-ec-ItemPanel-brands-wrapper {
   background-color: white;
   border: 1px solid #ccc;
+}
+.bee-ec-ItemPanel-categories-wrapper {
   margin-bottom: 2ex;
   margin-right: 1em;
 }
-.bee-ec-ItemPanel-categories-caption,
-.bee-ec-ItemPanel-brands-caption {
+.bee-ec-ItemPanel-categories-caption {
   font-weight: bold;
   padding-left: 2px;
   padding-top: 2px; 
@@ -289,20 +346,32 @@
   margin-top: 2px;
 }
 
-.bee-ec-ItemPanel-brand-selectable {
-  display: inline-block;
-  width: 16%;
-  margin-top: 4px;
-}
-.bee-ec-ItemPanel-brand-selected {
-  color: red;
-}
-
 .bee-ec-ItemPanel-categories-tree .bee-TreeItem-root > .bee-TreeItem-branch {
   font-weight: bold;
 }
 .bee-ec-ItemPanel-categories-tree .bee-TreeItem-selected {
   background-color: inherit;
+  color: red;
+}
+
+.bee-ec-ItemPanel-brandsAndItems-wrapper {
+  overflow: hidden;
+}
+.bee-ec-ItemPanel-brands-wrapper {
+  margin-right: 1em;
+  float: left;
+  max-width: 200px;
+}
+.bee-ec-ItemPanel-brands-caption {
+  font-weight: bold;
+  padding: 2px 1em 0 5px;
+}
+
+.bee-ec-ItemPanel-brand-selectable {
+  display: block;
+  margin-top: 4px;
+}
+.bee-ec-ItemPanel-brand-selected {
   color: red;
 }
 
@@ -347,7 +416,7 @@
 }
 
 .bee-ec-searchByCar-dialog-year .bee-ec-IndexSelector-search {
-  width: 60px;
+  width: 80px;
 }
 
 .bee-ec-searchByCar-type-panel {
@@ -556,7 +625,7 @@
 }
 .bee-ec-cartAccumulator-input {
   width: 50px;
-  font-size: medium;
+  height: 32px;
 }
 .bee-ec-cartAccumulator-spin {
   margin-left: 2px;
@@ -565,6 +634,10 @@
 .bee-ec-cartAccumulator-plus,
 .bee-ec-cartAccumulator-minus {
   display: block;
+  height: 28px;
+}
+.bee-ec-cartAccumulator-plus {
+  margin-bottom: 5px;
 }
 
 .bee-ec-ItemDetails-panel {

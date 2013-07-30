@@ -43,6 +43,8 @@ public class ItemList extends Flow {
   private static final String STYLE_INFO = EcStyles.name(STYLE_PRIMARY, "info");
   private static final String STYLE_STOCK_1 = EcStyles.name(STYLE_PRIMARY, "stock1");
   private static final String STYLE_STOCK_2 = EcStyles.name(STYLE_PRIMARY, "stock2");
+  private static final String STYLE_NO_STOCK = EcStyles.name(STYLE_PRIMARY, "noStock");
+  private static final String STYLE_HAS_STOCK = EcStyles.name(STYLE_PRIMARY, "hasStock");
   private static final String STYLE_QUANTITY = EcStyles.name(STYLE_PRIMARY, "quantity");
   private static final String STYLE_LIST_PRICE = EcStyles.name(STYLE_PRIMARY, "listPrice");
   private static final String STYLE_PRICE = EcStyles.name(STYLE_PRIMARY, "price");
@@ -305,7 +307,9 @@ public class ItemList extends Flow {
 
   private static Widget renderStock(int stock) {
     String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.getConstants().ecStockAsk();
-    return new Label(text);
+    Label widget = new Label(text);
+    widget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
+    return widget;
   }
 
   private void showMoreItems() {

@@ -890,7 +890,6 @@ public class EcModuleBean implements BeeModule {
         item.setSupplierCode(row.getValue(COL_TCD_SUPPLIER_ID));
 
         item.setStock1(BeeUtils.unbox(row.getInt(COL_TCD_REMAINDER)));
-        item.setStock2(BeeUtils.randomInt(0, 20) * BeeUtils.randomInt(0, 2));
 
         item.setPrice(row.getDouble(COL_TCD_COST));
 

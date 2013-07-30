@@ -33,6 +33,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 
   private static final String STYLE_PRIMARY = "ItemPanel";
   private static final String STYLE_CATEGORIES = STYLE_PRIMARY + "-categories";
+  private static final String STYLE_BRANDS_AND_ITEMS = STYLE_PRIMARY + "-brandsAndItems";
   private static final String STYLE_BRANDS = STYLE_PRIMARY + "-brands";
   private static final String STYLE_ITEMS = STYLE_PRIMARY + "-items";
 
@@ -138,13 +139,15 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
         millis = System.currentTimeMillis();
       }
     }
+    
+    Flow brandsAndItems = new Flow(EcStyles.name(STYLE_BRANDS_AND_ITEMS, STYLE_WRAPPER));
 
     if (showBrands) {
       this.brandWrapper = new Flow();
       EcStyles.add(brandWrapper, STYLE_BRANDS, STYLE_WRAPPER);
 
       renderBrands(brands);
-      add(brandWrapper);
+      brandsAndItems.add(brandWrapper);
       if (debug) {
         logger.debug("man rendered", TimeUtils.elapsedMillis(millis));
         millis = System.currentTimeMillis();
@@ -155,7 +158,9 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
 
     this.itemWrapper = new ItemList(items);
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
-    add(itemWrapper);
+    brandsAndItems.add(itemWrapper);
+
+    add(brandsAndItems);
 
     if (debug) {
       logger.debug("items rendered", TimeUtils.elapsedMillis(millis));

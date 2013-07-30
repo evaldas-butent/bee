@@ -468,7 +468,7 @@ public class ShoppingCart extends Split {
   }
 
   private Widget renderRemove(final CartItem item) {
-    Image remove = new Image("images/shoppingcart_remove.png");
+    Image remove = new Image(EcUtils.imageUrl("shoppingcart_remove.png"));
     remove.setAlt("remove");
 
     remove.addClickHandler(new ClickHandler() {
