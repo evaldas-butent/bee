@@ -11,7 +11,7 @@
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecClientUser" style="&lbl;" />
-        <DataSelector source="User" editSource="Person" style="width: 550px;">
+        <DataSelector source="User" editSource="CompanyPerson" style="width: 550px;">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
           <renderToken source="CompanyName" prefix=", " />

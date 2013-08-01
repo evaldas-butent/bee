@@ -19,11 +19,13 @@ import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -38,6 +40,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.ArticleBrand;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
@@ -55,6 +58,9 @@ import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.webservice.ButentWS;
+import com.butent.webservice.WSDocument;
+import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.text.Collator;
 import java.util.Collection;
@@ -73,6 +79,10 @@ import javax.ejb.Stateless;
 public class EcModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
+
+  public static final String WS_ADDRESS = "http://82.135.245.222:8081/ButentWS/ButentWS.WSDL";
+  public static final String WS_LOGIN = "admin";
+  public static final String WS_PASSWORD = "gruntas";
 
   private static IsCondition oeNumberCondition = SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_KIND, 3);
 
@@ -122,9 +132,10 @@ public class EcModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
-
   @EJB
   QueryServiceBean qs;
+  @EJB
+  ParamHolderBean prm;
 
   @Override
   public Collection<String> dependsOn() {
@@ -201,6 +212,10 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SUBMIT_ORDER)) {
       response = submitOrder(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
+      Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ORDER_ITEM_ORDER));
+      response = sendToERP(orderId);
+
     } else if (BeeUtils.same(svc, SVC_GET_CONFIGURATION)) {
       response = getConfiguration();
     } else if (BeeUtils.same(svc, SVC_SAVE_CONFIGURATION)) {
@@ -241,21 +256,15 @@ public class EcModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject updateCosts(Set<Long> ids) {
-    int c = 0;
-
-    if (!BeeUtils.isEmpty(ids)) {
-      c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
-          .addExpression(COL_TCD_COST, SqlUtils.name(COL_TCD_UPDATED_COST))
-          .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS),
-              ids)));
-    }
-    return ResponseObject.info(Localized.getMessages().rowsUpdated(c));
-  }
-
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    return Lists.newArrayList(
+        new BeeParameter(EC_MODULE, "ERPOperation", ParameterType.TEXT,
+            "Document operation name in ERP system", false, null),
+        new BeeParameter(EC_MODULE, "ERPWarehouse", ParameterType.TEXT,
+            "Document warehouse name in ERP system", false, null),
+        new BeeParameter(EC_MODULE, "ERPBasicVATPercent", ParameterType.NUMBER,
+            "Basic VAT percent in ERP system", false, null));
   }
 
   @Override
@@ -1103,6 +1112,74 @@ public class EcModuleBean implements BeeModule {
     return searchByItemCode(code, oeNumberCondition);
   }
 
+  private ResponseObject sendToERP(Long orderId) {
+    Assert.notNull(orderId);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromInner(TBL_TCD_ARTICLE_BRANDS,
+            sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_ORDER_ITEMS, COL_TCD_ARTICLE_BRAND))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderId),
+            SqlUtils.positive(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)))
+        .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ARTICLE);
+
+    List<EcItem> items = getItems(query, null);
+
+    if (items.isEmpty()) {
+      return ResponseObject.error(Localized.getConstants().ecNothingToOrder());
+    }
+    SimpleRow order = qs.getRow(new SqlSelect()
+        .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
+        .addField(CommonsConstants.TBL_COMPANIES,
+            CommonsConstants.COL_NAME, CommonsConstants.COL_COMPANY)
+        .addFields(CommonsConstants.TBL_COMPANIES,
+            CommonsConstants.COL_CODE, CommonsConstants.COL_VAT_CODE)
+        .addFrom(TBL_ORDERS)
+        .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
+        .addFromLeft(CommonsConstants.TBL_USERS, sys.joinTables(CommonsConstants.TBL_USERS,
+            TBL_CLIENTS, COL_CLIENT_USER))
+        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromLeft(CommonsConstants.TBL_COMPANIES,
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_COMPANY)));
+
+    SimpleRowSet data = qs.getData(query
+        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
+        .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
+        .addSum(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)
+        .addGroup(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
+        .addGroup(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE));
+
+    WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
+        prm.getText(EC_MODULE, "ERPOperation"), order.getValue(CommonsConstants.COL_COMPANY),
+        prm.getText(EC_MODULE, "ERPWarehouse"));
+
+    doc.setCompanyCode(order.getValue(CommonsConstants.COL_CODE));
+    doc.setCompanyVATCode(order.getValue(CommonsConstants.COL_VAT_CODE));
+
+    for (EcItem item : items) {
+      String article = BeeUtils.toString(item.getArticleId());
+
+      WSDocumentItem docItem = doc.addItem(
+          data.getValueByKey(COL_TCD_ARTICLE, article, COL_TCD_SUPPLIER_ID),
+          data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+
+      docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
+      docItem.setVatPercent(BeeUtils.toString(prm.getInteger(EC_MODULE, "ERPBasicVATPercent")));
+    }
+    ResponseObject response = ButentWS.importDoc(WS_ADDRESS, WS_LOGIN, WS_PASSWORD, doc);
+
+    if (!response.hasErrors()) {
+      qs.updateData(new SqlUpdate(TBL_ORDERS)
+          .addConstant(COL_ORDER_STATUS, EcOrderStatus.ACTIVE.ordinal())
+          .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
+    }
+    return response;
+  }
+
   private void setListPrice(List<EcItem> items) {
     long start = System.currentTimeMillis();
 
@@ -1259,7 +1336,7 @@ public class EcModuleBean implements BeeModule {
     for (CartItem cartItem : cart.getItems()) {
       SqlInsert insItem = new SqlInsert(VIEW_ORDER_ITEMS);
 
-      insItem.addConstant(COL_ORDER_ITEM_ORDER_ID, orderId);
+      insItem.addConstant(COL_ORDER_ITEM_ORDER, orderId);
       insItem.addConstant(COL_ORDER_ITEM_ARTICLE_BRAND, cartItem.getEcItem().getArticleBrandId());
 
       insItem.addConstant(COL_ORDER_ITEM_QUANTITY_ORDERED, cartItem.getQuantity());
@@ -1301,5 +1378,17 @@ public class EcModuleBean implements BeeModule {
         return !response.hasErrors();
       }
     }
+  }
+
+  private ResponseObject updateCosts(Set<Long> ids) {
+    int c = 0;
+
+    if (!BeeUtils.isEmpty(ids)) {
+      c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
+          .addExpression(COL_TCD_COST, SqlUtils.name(COL_TCD_UPDATED_COST))
+          .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS),
+              ids)));
+    }
+    return ResponseObject.info(Localized.getMessages().rowsUpdated(c));
   }
 }

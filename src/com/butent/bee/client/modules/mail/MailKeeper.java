@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory;
@@ -43,13 +42,6 @@ public final class MailKeeper {
   private static final Set<MailPanel> mailPanels = Sets.newHashSet();
 
   public static void register() {
-    BeeKeeper.getMenu().registerMenuCallback("mail_parameters", new MenuManager.MenuCallback() {
-      @Override
-      public void onSelection(String parameters) {
-        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
-      }
-    });
-
     BeeKeeper.getMenu().registerMenuCallback(SVC_RESTART_PROXY,
         new MenuManager.MenuCallback() {
           @Override

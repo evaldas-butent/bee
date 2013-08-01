@@ -29,11 +29,11 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
-import com.butent.webservice.ButentWebServiceSoapPort;
 
 import org.w3c.dom.Node;
 
@@ -52,7 +52,6 @@ import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import javax.xml.ws.BindingProvider;
 
 import pl.motonet.ArrayOfString;
 import pl.motonet.WSMotoOferta;
@@ -142,44 +141,6 @@ public class TecDocBean {
   private static final String TCD_CRITERIA_ID = "CriteriaID";
   private static final String TCD_PARENT_ID = "ParentID";
 
-  private static ResponseObject getSQLData(String address, String login, String password,
-      String query) {
-    ButentWS butentWS = ButentWS.create(address);
-    ButentWebServiceSoapPort port = butentWS.getButentWebServiceSoapPort();
-
-    ((BindingProvider) port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-        butentWS.getWSDLDocumentLocation().toString());
-
-    String response = port.login(login, password);
-    String error = "Unknown login response";
-
-    if (BeeUtils.same(response, "OK")) {
-      error = null;
-    }
-    if (!BeeUtils.isEmpty(error)) {
-      Map<String, String> messages = XmlUtils.getElements(response, null);
-
-      if (BeeUtils.containsKey(messages, "Message")) {
-        error = messages.get("Message");
-
-        if (BeeUtils.same(error, "Already logged in")) {
-          error = null;
-        }
-      }
-    }
-    if (!BeeUtils.isEmpty(error)) {
-      return ResponseObject.error(error);
-    }
-    response = port.process("GetSQLData", "<query>" + query + "</query>");
-
-    Node node = XmlUtils.fromString(response).getFirstChild();
-
-    if (BeeUtils.same(node.getNodeName(), "Error")) {
-      return ResponseObject.error(node.getTextContent());
-    }
-    return ResponseObject.response(node);
-  }
-
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -191,14 +152,12 @@ public class TecDocBean {
 
   @Asynchronous
   public void suckButent() {
-    String supplier = "EOLTAS";
-    String address = "http://82.135.245.222:8081/ButentWS/ButentWS.WSDL";
-    String login = "admin";
-    String password = "gruntas";
+    EcSupplier supplier = EcSupplier.EOLTAS;
 
     logger.info(supplier, "Waiting for items...");
 
-    ResponseObject response = getSQLData(address, login, password,
+    ResponseObject response = ButentWS.getSQLData(EcModuleBean.WS_ADDRESS,
+        EcModuleBean.WS_LOGIN, EcModuleBean.WS_PASSWORD,
         "SELECT preke AS pr, savikaina AS kn, gam_art AS ga, gamintojas AS gam"
             + " FROM prekes"
             + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL");
@@ -229,7 +188,8 @@ public class TecDocBean {
     }
     logger.info(supplier, "Waiting for remainders...");
 
-    response = getSQLData(address, login, password,
+    response = ButentWS.getSQLData(EcModuleBean.WS_ADDRESS,
+        EcModuleBean.WS_LOGIN, EcModuleBean.WS_PASSWORD,
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
             + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
             + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
@@ -266,7 +226,7 @@ public class TecDocBean {
 
   @Asynchronous
   public void suckMotonet() {
-    String supplier = "MOTOPROFIL";
+    EcSupplier supplier = EcSupplier.MOTOPROFIL;
     logger.info(supplier, "Waiting for data...");
 
     WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
@@ -1033,7 +993,7 @@ public class TecDocBean {
     qs.sqlDropTemp(art);
   }
 
-  private void importItems(String supplier, List<RemoteItems> data) {
+  private void importItems(EcSupplier supplier, List<RemoteItems> data) {
     String log = supplier + " " + TBL_TCD_ARTICLE_BRANDS + ":";
 
     String idName = sys.getIdName(TBL_TCD_ARTICLE_BRANDS);
@@ -1093,7 +1053,8 @@ public class TecDocBean {
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(idName, SqlUtils.field(TBL_TCD_ARTICLE_BRANDS, idName))
         .setFrom(TBL_TCD_ARTICLE_BRANDS,
-            SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier),
+            SqlUtils.and(
+                SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier.name()),
                 SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID))));
 
     qs.sqlIndex(tmp, idName);
@@ -1148,7 +1109,7 @@ public class TecDocBean {
     insertData(TBL_TCD_ARTICLE_BRANDS, new SqlSelect().setLimit(100000)
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
-        .addConstant(supplier, COL_TCD_SUPPLIER)
+        .addConstant(supplier.name(), COL_TCD_SUPPLIER)
         .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
         .addConstant(time, COL_TCD_UPDATE_TIME)
         .addFrom(tmp)
@@ -1159,19 +1120,22 @@ public class TecDocBean {
     qs.sqlDropTemp(tmp);
   }
 
-  private void importRemainders(String supplier, List<RemoteRemainders> data) {
+  private void importRemainders(EcSupplier supplier, List<RemoteRemainders> data) {
     String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
 
     String idName = sys.getIdName(TBL_TCD_REMAINDERS);
 
-    String rem = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
-        .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE, idName)
-        .addFrom(TBL_TCD_REMAINDERS)
-        .addFromInner(TBL_TCD_ARTICLE_BRANDS,
-            SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier),
-                sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS,
-                    COL_TCD_ARTICLE_BRAND))));
+    String rem =
+        qs.sqlCreateTemp(new SqlSelect()
+            .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
+            .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE, idName)
+            .addFrom(TBL_TCD_REMAINDERS)
+            .addFromInner(
+                TBL_TCD_ARTICLE_BRANDS,
+                SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier
+                    .name()),
+                    sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS,
+                        COL_TCD_ARTICLE_BRAND))));
 
     qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
         .addConstant(COL_TCD_REMAINDER, null)
@@ -1241,7 +1205,8 @@ public class TecDocBean {
         .addFields(tmp, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER)
         .addFrom(tmp)
         .addFromInner(TBL_TCD_ARTICLE_BRANDS,
-            SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier),
+            SqlUtils.and(
+                SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier.name()),
                 SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)))
         .addOrder(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS))
         .addOrder(tmp, COL_TCD_WAREHOUSE));

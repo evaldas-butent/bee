@@ -7,6 +7,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,10 +17,11 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class MenuCommand extends Command {
-  
+
   private static final String SERVICE_FORM = "form";
   private static final String SERVICE_GRID = "grid";
   private static final String SERVICE_NEW = "new";
+  private static final String SERVICE_PARAMETERS = "parameters";
 
   public MenuCommand() {
     super();
@@ -37,7 +39,7 @@ public class MenuCommand extends Command {
   public void execute() {
     String svc = getService();
     String args = getParameters();
-    
+
     if (!BeeUtils.isEmpty(args)) {
       if (BeeUtils.same(svc, SERVICE_FORM)) {
         FormFactory.openForm(args);
@@ -53,8 +55,13 @@ public class MenuCommand extends Command {
         RowFactory.createRow(args);
         return;
       }
+
+      if (BeeUtils.same(svc, SERVICE_PARAMETERS)) {
+        GridFactory.openGrid("Parameters", new ParametersHandler(args));
+        return;
+      }
     }
-    
+
     if (!BeeUtils.isEmpty(svc)) {
       MenuCallback callback = BeeKeeper.getMenu().getMenuCallback(svc);
       if (callback != null) {
@@ -62,7 +69,7 @@ public class MenuCommand extends Command {
         return;
       }
     }
-      
+
     Global.showError(Lists.newArrayList("Menu service not recognized", svc, args));
   }
 }

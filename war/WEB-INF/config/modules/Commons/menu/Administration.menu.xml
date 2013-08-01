@@ -8,7 +8,7 @@ name="Administration" label="Administravimas" order="1000"
   <Item name="Roles" label="Rolės" service="form" parameters="Roles" separator="true" />
   <Item name="Objects" label="Objektai" service="form" parameters="Objects" />
 
-  <Item name="Parameters" label="Sistemos parametrai" service="system_parameters" parameters="Commons"  separator="true" />
+  <Item name="Parameters" label="Sistemos parametrai" service="parameters" parameters="Commons"  separator="true" />
 
   <Item name="ReminderTypes" label="Priminimų tipai" service="grid" parameters="ReminderTypes" separator="true" />
 </Entry>

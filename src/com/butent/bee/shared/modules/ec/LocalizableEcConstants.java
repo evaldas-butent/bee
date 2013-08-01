@@ -130,6 +130,8 @@ public interface LocalizableEcConstants {
 
   String ecMoreItems();
 
+  String ecNothingToOrder();
+
   String ecNoveltyBanner();
 
   String ecNoveltyItems();
@@ -197,6 +199,10 @@ public interface LocalizableEcConstants {
   String ecTermsOfDelivery();
 
   String ecTermsOfPayment();
+
+  String ecSendToERP();
+
+  String ecSendToERPConfirm();
 
   String ecTotalOrdered();
 

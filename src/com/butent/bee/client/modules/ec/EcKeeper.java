@@ -26,6 +26,7 @@ import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
 import com.butent.bee.client.widget.Image;
@@ -371,6 +372,8 @@ public final class EcKeeper {
     GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
     GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
+
+    FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {

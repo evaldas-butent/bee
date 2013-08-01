@@ -7,5 +7,5 @@ name="Mail" label="Paštas" order="80"
   <Item name="Accounts" label="Paskyros" service="grid" parameters="Accounts" />
 
   <Item name="Proxy" label="Perleisti pašto komponentą" service="restart_proxy" separator="true" />
-  <Item name="Parameters" label="Pašto parametrai" service="mail_parameters" parameters="Mail"  separator="true" />
+  <Item name="Parameters" label="Pašto parametrai" service="parameters" parameters="Mail"  separator="true" />
 </Entry>

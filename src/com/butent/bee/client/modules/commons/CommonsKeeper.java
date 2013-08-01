@@ -77,13 +77,6 @@ public final class CommonsKeeper {
 
     FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
-    BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
-      @Override
-      public void onSelection(String parameters) {
-        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
-      }
-    });
-
     SelectorEvent.register(new CommonsSelectorHandler());
 
     Captions.register(RightsObjectType.class);

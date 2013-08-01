@@ -7,6 +7,10 @@ import com.butent.bee.shared.ui.HasCaption;
 
 public final class EcConstants {
 
+  public enum EcSupplier {
+    EOLTAS, MOTOPROFIL
+  }
+
   public enum CartType implements HasCaption {
     MAIN(Localized.getConstants().ecShoppingCartMain(),
         Localized.getConstants().ecShoppingCartMainShort()),
@@ -118,6 +122,8 @@ public final class EcConstants {
 
   public static final String SVC_UPDATE_COSTS = "updateCosts";
 
+  public static final String SVC_SEND_TO_ERP = "sendToERP";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -222,7 +228,7 @@ public final class EcConstants {
   public static final String COL_MANAGER_REPORT_ORDER = "ReportOrder";
   public static final String COL_MANAGER_NOTES = "Notes";
 
-  public static final String COL_ORDER_ITEM_ORDER_ID = "Order";
+  public static final String COL_ORDER_ITEM_ORDER = "Order";
   public static final String COL_ORDER_ITEM_ARTICLE_BRAND = "ArticleBrand";
   public static final String COL_ORDER_ITEM_QUANTITY_ORDERED = "QuantityOrdered";
   public static final String COL_ORDER_ITEM_QUANTITY_SUBMIT = "QuantitySubmit";

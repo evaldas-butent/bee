@@ -32,7 +32,7 @@
         </DataSelector>
 
         <Label text="=ecManager" style="&lbl;" />
-        <DataSelector source="Manager" style="&inp;">
+        <DataSelector source="Manager" style="&inp;" editSource="ManagerCompanyPerson">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />
           <renderToken source="ManagerCompanyName" prefix=", " />
