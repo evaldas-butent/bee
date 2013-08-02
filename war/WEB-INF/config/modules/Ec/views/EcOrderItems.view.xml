@@ -6,18 +6,14 @@
   <Columns>
     <SimpleColumn name="Order" />
 
-    <SimpleColumn name="ArticleBrand" />
-    <SimpleJoin name="ArticleBrand" joinType="LEFT">
-      <SimpleJoin name="Article" joinType="LEFT">
-        <SimpleColumn name="ArticleName" />
-      </SimpleJoin>
+    <SimpleColumn name="Article" />
+    <SimpleJoin name="Article" joinType="LEFT">
+      <SimpleColumn name="ArticleName" />
+      <SimpleColumn name="ArticleNr" />
+
       <SimpleJoin name="Brand" joinType="LEFT">
         <SimpleColumn name="BrandName" />
       </SimpleJoin>
-      <SimpleColumn name="AnalogNr" />
-      <SimpleColumn name="Supplier" />
-      <SimpleColumn name="SupplierID" />
-      <SimpleColumn name="Cost" />
     </SimpleJoin>
 
     <SimpleColumn name="QuantityOrdered" />

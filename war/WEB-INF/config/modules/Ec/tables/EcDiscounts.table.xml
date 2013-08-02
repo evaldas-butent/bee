@@ -12,7 +12,7 @@
     
     <Relation name="Category" relation="TcdCategories" label="=ecItemCategory" />
     <Relation name="Brand" relation="TcdBrands" label="=ecItemBrand" />
-    <Relation name="ArticleBrand" relation="TcdArticleBrands" />
+    <Relation name="Article" relation="TcdArticles" />
 
     <Numeric name="Percent" precision="7" scale="3" label="=ecDiscountPercent" />
     <Numeric name="Price" precision="10" scale="2" label="=ecDiscountPrice" />

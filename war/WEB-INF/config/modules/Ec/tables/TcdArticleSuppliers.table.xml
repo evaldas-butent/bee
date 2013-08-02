@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
   
-  name="TcdArticleBrands"
-  idName="ArticleBrandID"
+  name="TcdArticleSuppliers"
+  idName="ArticleSupplierID"
   audit="false"
   idChunk="100"
   >
   <Fields>
     <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItemName" />
-    <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
-    <String name="AnalogNr" precision="50" notNull="true" label="=ecItemCode" />
     <Numeric name="Cost" precision="10" scale="2" label="=cost" />
     <Numeric name="UpdatedCost" precision="10" scale="2" label="=ecUpdatedCost" />
     <DateTime name="UpdateTime" label="=ecUpdateTime" />

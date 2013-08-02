@@ -14,7 +14,7 @@ import java.util.List;
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ARTICLE_ID, ARTICLE_BRAND_ID, BRAND, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
+    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
     CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
   }
 
@@ -28,7 +28,6 @@ public class EcItem implements BeeSerializable {
   }
 
   private long articleId;
-  private long articleBrandId;
 
   private Long brand;
   private String code;
@@ -45,9 +44,8 @@ public class EcItem implements BeeSerializable {
   private int listPrice;
   private int price;
 
-  public EcItem(long articleId, long articleBrandId) {
+  public EcItem(long articleId) {
     this.articleId = articleId;
-    this.articleBrandId = articleBrandId;
   }
 
   private EcItem() {
@@ -56,7 +54,7 @@ public class EcItem implements BeeSerializable {
   public void clearListPrice() {
     this.listPrice = 0;
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -70,10 +68,6 @@ public class EcItem implements BeeSerializable {
       switch (member) {
         case ARTICLE_ID:
           this.articleId = BeeUtils.toLong(value);
-          break;
-
-        case ARTICLE_BRAND_ID:
-          this.articleBrandId = BeeUtils.toLong(value);
           break;
 
         case BRAND:
@@ -121,11 +115,7 @@ public class EcItem implements BeeSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    return (obj instanceof EcItem) && articleBrandId == ((EcItem) obj).articleBrandId;
-  }
-
-  public long getArticleBrandId() {
-    return articleBrandId;
+    return (obj instanceof EcItem) && articleId == ((EcItem) obj).articleId;
   }
 
   public long getArticleId() {
@@ -170,7 +160,7 @@ public class EcItem implements BeeSerializable {
   public double getRealListPrice() {
     return listPrice / 100d;
   }
-  
+
   public double getRealPrice() {
     return price / 100d;
   }
@@ -203,7 +193,7 @@ public class EcItem implements BeeSerializable {
 
   @Override
   public int hashCode() {
-    return Longs.hashCode(articleBrandId);
+    return Longs.hashCode(articleId);
   }
 
   public boolean isFeatured() {
@@ -224,10 +214,6 @@ public class EcItem implements BeeSerializable {
       switch (member) {
         case ARTICLE_ID:
           arr[i++] = articleId;
-          break;
-
-        case ARTICLE_BRAND_ID:
-          arr[i++] = articleBrandId;
           break;
 
         case BRAND:

@@ -18,9 +18,7 @@
 
     <DataColumn name="ArticleName" />
     <DataColumn name="BrandName" />
-    <DataColumn name="AnalogNr" />
-    <DataColumn name="Supplier" visible="false" />
-    <DataColumn name="SupplierID" visible="false" />
+    <DataColumn name="ArticleNr" />
     
     <DataColumn name="Count" />
     <DataColumn name="Duration" />

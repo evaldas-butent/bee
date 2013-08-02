@@ -8,6 +8,8 @@
   >
   <Fields>
     <String name="ArticleName" precision="50" notNull="true" label="=ecItemName" />
+    <String name="ArticleNr" precision="50" notNull="true" label="=ecItemCode" />
+    <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
     <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

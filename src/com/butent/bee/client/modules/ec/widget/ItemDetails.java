@@ -13,9 +13,9 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.ec.ArticleBrand;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleRemainder;
+import com.butent.bee.shared.modules.ec.ArticleSupplier;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
@@ -49,43 +49,6 @@ public class ItemDetails extends Flow {
     accumulator.addStyleName(stylePrefix + "cart");
 
     container.add(accumulator);
-
-    return container;
-  }
-
-  private static Widget renderBrands(EcItemInfo info) {
-    if (info == null || info.getBrands().size() <= 1) {
-      return null;
-    }
-
-    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "brands-");
-    Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-
-    Label caption = new Label(Localized.getConstants().ecItemDetailsBrands());
-    caption.addStyleName(stylePrefix + STYLE_LABEL);
-    container.add(caption);
-
-    HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
-
-    int row = 0;
-    int col;
-
-    for (ArticleBrand ab : info.getBrands()) {
-      col = 0;
-
-      table.setText(row, col++, ab.getBrand());
-      table.setText(row, col++, ab.getAnalogNr());
-
-      table.setText(row, col++, ab.getSupplier());
-      table.setText(row, col++, ab.getSupplierId());
-
-      row++;
-    }
-
-    Simple wrapper = new Simple(table);
-    wrapper.addStyleName(stylePrefix + STYLE_WRAPPER);
-
-    container.add(wrapper);
 
     return container;
   }
@@ -214,7 +177,7 @@ public class ItemDetails extends Flow {
     ItemPicture widget = new ItemPicture();
     EcStyles.add(widget, STYLE_PRIMARY, "picture");
     StyleUtils.setSize(widget, width, height);
-    
+
     EcKeeper.setBackgroundPicture(item.getArticleId(), widget);
 
     return widget;
@@ -243,6 +206,42 @@ public class ItemDetails extends Flow {
           ? BeeUtils.toString(ar.getRemainder()) : Localized.getConstants().ecStockAsk();
       Label stockWidget = new Label(remainderText);
       table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
+
+      row++;
+    }
+
+    Simple wrapper = new Simple(table);
+    wrapper.addStyleName(stylePrefix + STYLE_WRAPPER);
+
+    container.add(wrapper);
+
+    return container;
+  }
+
+  private static Widget renderSuppliers(EcItemInfo info) {
+    if (info == null || info.getSuppliers().size() <= 1) {
+      return null;
+    }
+
+    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "suppliers-");
+    Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+
+    Label caption = new Label(Localized.getConstants().ecItemDetailsBrands());
+    caption.addStyleName(stylePrefix + STYLE_LABEL);
+    container.add(caption);
+
+    HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
+
+    int row = 0;
+    int col;
+
+    for (ArticleSupplier as : info.getSuppliers()) {
+      col = 0;
+
+      table.setText(row, col++, BeeUtils.toString(as.getRealPrice()));
+
+      table.setText(row, col++, as.getSupplier().name());
+      table.setText(row, col++, as.getSupplierId());
 
       row++;
     }
@@ -302,7 +301,7 @@ public class ItemDetails extends Flow {
 
     Widget remainders = renderRemainders(info);
     Widget oeNumbers = renderOeNumbers(info);
-    Widget brands = renderBrands(info);
+    Widget suppliers = renderSuppliers(info);
     Widget carTypes = renderCarTypes(info);
 
     int remaindersWidth = Math.min(width / 5, 160);
@@ -312,7 +311,7 @@ public class ItemDetails extends Flow {
 
     int top2 = rowHeight + heightMargin;
 
-    int h3 = (brands == null) ? 0 : rowHeight / 2;
+    int h3 = (suppliers == null) ? 0 : rowHeight / 2;
     int h2 = rowHeight - h3;
 
     if (remainders != null) {
@@ -335,14 +334,14 @@ public class ItemDetails extends Flow {
       add(oeNumbers);
     }
 
-    if (brands != null) {
-      StyleUtils.makeAbsolute(brands);
-      StyleUtils.setLeft(brands, 0);
-      StyleUtils.setWidth(brands, brandsWidth);
-      StyleUtils.setTop(brands, top2 + h2 + heightMargin);
-      StyleUtils.setHeight(brands, h3 - heightMargin);
+    if (suppliers != null) {
+      StyleUtils.makeAbsolute(suppliers);
+      StyleUtils.setLeft(suppliers, 0);
+      StyleUtils.setWidth(suppliers, brandsWidth);
+      StyleUtils.setTop(suppliers, top2 + h2 + heightMargin);
+      StyleUtils.setHeight(suppliers, h3 - heightMargin);
 
-      add(brands);
+      add(suppliers);
     }
 
     if (carTypes != null) {

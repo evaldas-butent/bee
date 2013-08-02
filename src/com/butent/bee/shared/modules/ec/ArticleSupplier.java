@@ -2,34 +2,34 @@ package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
-public class ArticleBrand implements BeeSerializable {
+public class ArticleSupplier implements BeeSerializable {
 
   private enum Serial {
-    BRAND, ANALOG_NR, SUPPLIER, SUPPLIER_ID
+    SUPPLIER, SUPPLIER_ID, PRICE
   }
-  
-  public static ArticleBrand restore(String s) {
-    ArticleBrand ab = new ArticleBrand();
-    ab.deserialize(s);
-    return ab;
-  }
-  
-  private String brand;
-  private String analogNr;
 
-  private String supplier;
+  public static ArticleSupplier restore(String s) {
+    ArticleSupplier as = new ArticleSupplier();
+    as.deserialize(s);
+    return as;
+  }
+
+  private EcSupplier supplier;
   private String supplierId;
+  private int price;
 
-  public ArticleBrand(String brand, String analogNr, String supplier, String supplierId) {
-    this.brand = brand;
-    this.analogNr = analogNr;
+  public ArticleSupplier(EcSupplier supplier, String supplierId, Double price) {
     this.supplier = supplier;
     this.supplierId = supplierId;
+    setPrice(price);
   }
 
-  private ArticleBrand() {
+  private ArticleSupplier() {
   }
 
   @Override
@@ -43,16 +43,12 @@ public class ArticleBrand implements BeeSerializable {
       String value = arr[i];
 
       switch (member) {
-        case BRAND:
-          setBrand(value);
-          break;
-
-        case ANALOG_NR:
-          setAnalogNr(value);
+        case PRICE:
+          setPrice(BeeUtils.toInt(value));
           break;
 
         case SUPPLIER:
-          setSupplier(value);
+          setSupplier(NameUtils.getEnumByName(EcSupplier.class, value));
           break;
 
         case SUPPLIER_ID:
@@ -61,16 +57,16 @@ public class ArticleBrand implements BeeSerializable {
       }
     }
   }
-  
-  public String getBrand() {
-    return brand;
+
+  public int getPrice() {
+    return price;
   }
 
-  public String getAnalogNr() {
-    return analogNr;
+  public double getRealPrice() {
+    return price / 100d;
   }
 
-  public String getSupplier() {
+  public EcSupplier getSupplier() {
     return supplier;
   }
 
@@ -86,12 +82,8 @@ public class ArticleBrand implements BeeSerializable {
 
     for (Serial member : members) {
       switch (member) {
-        case BRAND:
-          arr[i++] = getBrand();
-          break;
-
-        case ANALOG_NR:
-          arr[i++] = getAnalogNr();
+        case PRICE:
+          arr[i++] = getPrice();
           break;
 
         case SUPPLIER:
@@ -105,16 +97,16 @@ public class ArticleBrand implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
-  
-  private void setBrand(String brand) {
-    this.brand = brand;
+
+  public void setPrice(Double price) {
+    this.price = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
   }
 
-  private void setAnalogNr(String analogNr) {
-    this.analogNr = analogNr;
+  public void setPrice(int price) {
+    this.price = price;
   }
 
-  private void setSupplier(String supplier) {
+  private void setSupplier(EcSupplier supplier) {
     this.supplier = supplier;
   }
 

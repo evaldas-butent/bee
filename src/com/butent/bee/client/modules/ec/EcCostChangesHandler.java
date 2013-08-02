@@ -39,7 +39,7 @@ public class EcCostChangesHandler extends AbstractGridInterceptor {
               return;
             }
             ParameterList args = EcKeeper.createArgs(SVC_UPDATE_COSTS);
-            args.addDataItem(COL_TCD_ARTICLE_BRAND, DataUtils.buildIdList(idList));
+            args.addDataItem(COL_TCD_ARTICLE, DataUtils.buildIdList(idList));
 
             BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
               @Override

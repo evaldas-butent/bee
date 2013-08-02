@@ -10,8 +10,7 @@
 
     <String name="Service" precision="60" label="=ecHistoryService" />
     <String name="Query" precision="60" label="=ecHistoryQuery" />
-    <Relation name="ArticleBrand" relation="TcdArticleBrands" cascade="DELETE"
-        label="=ecHistoryArticleBrand" />
+    <Relation name="Article" relation="TcdArticles" cascade="DELETE" label="=ecHistoryArticle" />
     
     <Integer name="Count" label="=ecHistoryCount" />
     <Long name="Duration" label="=ecHistoryDuration" />

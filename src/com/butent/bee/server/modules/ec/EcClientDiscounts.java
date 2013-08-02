@@ -48,7 +48,7 @@ public class EcClientDiscounts {
     private Double getPrice() {
       return price;
     }
-    
+
     private boolean isValid(long time) {
       return timeRange == null || timeRange.contains(time);
     }
@@ -56,17 +56,17 @@ public class EcClientDiscounts {
 
   private static List<Discount> filterDiscounts(List<Discount> input) {
     List<Discount> result = Lists.newArrayList();
-    
+
     long time = System.currentTimeMillis();
     for (Discount discount : input) {
       if (discount.isValid(time)) {
         result.add(discount);
       }
     }
-    
+
     return result;
   }
-  
+
   private static List<Discount> getCategoryDiscounts(ListMultimap<Long, Discount> input,
       Collection<Long> categories, Map<Long, Long> categoryParents) {
 
@@ -74,28 +74,28 @@ public class EcClientDiscounts {
     if (input == null || input.isEmpty() || BeeUtils.isEmpty(categories)) {
       return result;
     }
-    
+
     Map<Long, List<Discount>> discountsByCategory = Maps.newHashMap();
-    
+
     for (Long category : categories) {
       if (discountsByCategory.containsKey(category)) {
         continue;
       }
-      
+
       if (input.containsKey(category)) {
         List<Discount> filtered = filterDiscounts(input.get(category));
         if (!filtered.isEmpty()) {
           discountsByCategory.put(category, filtered);
         }
       }
-      
+
       if (!BeeUtils.isEmpty(categoryParents)) {
-        for (Long parent = categoryParents.get(category); parent != null; 
-            parent = categoryParents.get(parent)) {
+        for (Long parent = categoryParents.get(category); parent != null; parent =
+            categoryParents.get(parent)) {
           if (discountsByCategory.containsKey(parent)) {
             break;
           }
-          
+
           if (input.containsKey(parent)) {
             List<Discount> filtered = filterDiscounts(input.get(parent));
             if (!filtered.isEmpty()) {
@@ -105,23 +105,23 @@ public class EcClientDiscounts {
         }
       }
     }
-    
+
     if (discountsByCategory.isEmpty()) {
       return result;
     }
-    
+
     ImmutableSet<Long> keys = ImmutableSet.copyOf(discountsByCategory.keySet());
     if (keys.size() > 1 && !BeeUtils.isEmpty(categoryParents)) {
       for (Long category : keys) {
-        for (Long parent = categoryParents.get(category); parent != null; 
-            parent = categoryParents.get(parent)) {
+        for (Long parent = categoryParents.get(category); parent != null; parent =
+            categoryParents.get(parent)) {
           if (discountsByCategory.containsKey(parent)) {
             discountsByCategory.remove(parent);
           }
         }
       }
     }
-    
+
     for (List<Discount> discounts : discountsByCategory.values()) {
       result.addAll(discounts);
     }
@@ -131,14 +131,14 @@ public class EcClientDiscounts {
   private static double getPrice(double listPrice, List<Discount> discounts) {
     Double bestPrice = null;
     Integer minDepth = null;
-    
+
     for (Discount discount : discounts) {
       if (minDepth == null || discount.getDepth() <= minDepth) {
         if (minDepth != null && discount.getDepth() < minDepth) {
           bestPrice = null;
         }
         minDepth = discount.getDepth();
-        
+
         Double price;
         if (discount.getPrice() != null) {
           price = discount.getPrice();
@@ -147,7 +147,7 @@ public class EcClientDiscounts {
         } else {
           price = null;
         }
-        
+
         if (price != null) {
           if (bestPrice == null) {
             bestPrice = price;
@@ -157,10 +157,10 @@ public class EcClientDiscounts {
         }
       }
     }
-    
+
     return (bestPrice == null) ? listPrice : bestPrice;
   }
-  
+
   private static Range<Long> getTimeRange(Long lower, Long upper) {
     if (lower == null && upper == null) {
       return null;
@@ -180,6 +180,7 @@ public class EcClientDiscounts {
   private static Double normalizePrice(Double price) {
     return (price == null) ? null : Math.max(price, BeeConst.DOUBLE_ZERO);
   }
+
   private final Double defPercent;
 
   private final ListMultimap<Long, Discount> itemDiscounts = ArrayListMultimap.create();
@@ -207,18 +208,18 @@ public class EcClientDiscounts {
       }
     }
   }
-  
+
   public void applyTo(EcItem ecItem, Map<Long, Long> categoryParents) {
     List<Discount> discounts = Lists.newArrayList();
-    
-    long id = ecItem.getArticleBrandId();
+
+    long id = ecItem.getArticleId();
     if (itemDiscounts.containsKey(id)) {
       List<Discount> filtered = filterDiscounts(itemDiscounts.get(id));
       if (!filtered.isEmpty()) {
         discounts.addAll(filtered);
       }
     }
-    
+
     if (discounts.isEmpty()) {
       Long brand = ecItem.getBrand();
       List<Long> categories = ecItem.getCategoryList();
@@ -230,7 +231,7 @@ public class EcClientDiscounts {
           discounts.addAll(filtered);
         }
       }
-      
+
       if (discounts.isEmpty()) {
         if (brand != null && brandDiscounts.containsKey(brand)) {
           List<Discount> filtered = filterDiscounts(brandDiscounts.get(brand));
@@ -252,10 +253,10 @@ public class EcClientDiscounts {
     if (discounts.isEmpty() && !globalDiscounts.isEmpty()) {
       discounts.addAll(globalDiscounts);
     }
-    
+
     if (!discounts.isEmpty()) {
       ecItem.setPrice(getPrice(ecItem.getRealListPrice(), discounts));
-      
+
     } else if (defPercent != null) {
       ecItem.setPrice(BeeUtils.minusPercent(ecItem.getRealListPrice(), defPercent));
 
@@ -263,7 +264,7 @@ public class EcClientDiscounts {
       ecItem.setPrice(ecItem.getListPrice());
     }
   }
-  
+
   public boolean hasCategories() {
     return !categoryDiscounts.isEmpty() || !brandAndCategoryDiscounts.isEmpty();
   }
@@ -273,7 +274,7 @@ public class EcClientDiscounts {
         && brandDiscounts.isEmpty() && categoryDiscounts.isEmpty()
         && globalDiscounts.isEmpty() && defPercent == null;
   }
-  
+
   private void add(int depth, SimpleRowSet rowSet) {
     for (SimpleRow row : rowSet) {
       Long timeFrom = row.getLong(EcConstants.COL_DISCOUNT_DATE_FROM);
@@ -293,7 +294,7 @@ public class EcClientDiscounts {
       if (ok) {
         Long brand = row.getLong(EcConstants.COL_DISCOUNT_BRAND);
         Long category = row.getLong(EcConstants.COL_DISCOUNT_CATEGORY);
-        Long item = row.getLong(EcConstants.COL_DISCOUNT_ARTICLE_BRAND);
+        Long item = row.getLong(EcConstants.COL_DISCOUNT_ARTICLE);
 
         Double percent = row.getDouble(EcConstants.COL_DISCOUNT_PERCENT);
         Double price = (item == null) ? null : row.getDouble(EcConstants.COL_DISCOUNT_PRICE);

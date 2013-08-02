@@ -12,7 +12,7 @@ import java.util.List;
 public class EcItemInfo implements BeeSerializable {
 
   private enum Serial {
-    CRITERIA, REMAINDERS, BRANDS, CAR_TYPES, OE_NUMBERS
+    CRITERIA, REMAINDERS, SUPPLIERS, CAR_TYPES, OE_NUMBERS
   }
 
   public static EcItemInfo restore(String s) {
@@ -25,7 +25,7 @@ public class EcItemInfo implements BeeSerializable {
 
   private final List<ArticleRemainder> remainders = Lists.newArrayList();
 
-  private final List<ArticleBrand> brands = Lists.newArrayList();
+  private final List<ArticleSupplier> suppliers = Lists.newArrayList();
 
   private final List<EcCarType> carTypes = Lists.newArrayList();
 
@@ -35,9 +35,9 @@ public class EcItemInfo implements BeeSerializable {
     super();
   }
 
-  public void addBrand(ArticleBrand brand) {
-    if (brand != null) {
-      brands.add(brand);
+  public void addSupplier(ArticleSupplier supplier) {
+    if (supplier != null) {
+      suppliers.add(supplier);
     }
   }
 
@@ -92,10 +92,10 @@ public class EcItemInfo implements BeeSerializable {
           }
           break;
 
-        case BRANDS:
-          brands.clear();
+        case SUPPLIERS:
+          suppliers.clear();
           for (String v : values) {
-            brands.add(ArticleBrand.restore(v));
+            suppliers.add(ArticleSupplier.restore(v));
           }
           break;
 
@@ -115,8 +115,8 @@ public class EcItemInfo implements BeeSerializable {
     }
   }
 
-  public List<ArticleBrand> getBrands() {
-    return brands;
+  public List<ArticleSupplier> getSuppliers() {
+    return suppliers;
   }
 
   public List<EcCarType> getCarTypes() {
@@ -134,7 +134,7 @@ public class EcItemInfo implements BeeSerializable {
   public List<ArticleRemainder> getRemainders() {
     return remainders;
   }
-  
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -151,8 +151,8 @@ public class EcItemInfo implements BeeSerializable {
           arr[i++] = getRemainders();
           break;
 
-        case BRANDS:
-          arr[i++] = getBrands();
+        case SUPPLIERS:
+          arr[i++] = getSuppliers();
           break;
 
         case CAR_TYPES:

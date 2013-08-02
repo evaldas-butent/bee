@@ -386,21 +386,36 @@ public class TecDocBean {
 
     data = new TcdData(new SqlCreate(TBL_TCD_ARTICLES, false)
         .addInteger(TCD_ARTICLE_ID, true)
-        .addString("ArticleNr", 50, true)
+        .addString(COL_TCD_ARTICLE_NR, 50, true)
+        .addString(COL_TCD_SEARCH_NR, 50, true)
         .addString(COL_TCD_ARTICLE_NAME, 50, true)
-        .addString(COL_TCD_SUPPLIER, 50, true),
+        .addString(COL_TCD_BRAND_NAME, 50, true),
         new SqlSelect().setLimit(100000)
-            .addField("tof_articles", "art_id", TCD_ARTICLE_ID)
-            .addField("tof_articles", "art_article_nr", "ArticleNr")
-            .addField("_designations", "tex_text", COL_TCD_ARTICLE_NAME)
-            .addField("tof_suppliers", "sup_brand", COL_TCD_SUPPLIER)
+            .addField("_articles", "art_id", TCD_ARTICLE_ID)
+            .addField("_articles", "art_article_nr", COL_TCD_ARTICLE_NR)
+            .addField("_articles", "arl_search_number", COL_TCD_SEARCH_NR)
+            .addField("_articles", "tex_text", COL_TCD_ARTICLE_NAME)
+            .addField("_articles", "sup_brand", COL_TCD_BRAND_NAME)
+            .addFrom("_articles"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+    data.addBaseIndexes(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME);
+
+    data.addPreparation(new SqlCreate("_articles", false)
+        .setDataSource(new SqlSelect()
+            .addFields("tof_articles", "art_id", "art_article_nr")
+            .addFields("tof_art_lookup", "arl_search_number")
+            .addFields("_designations", "tex_text")
+            .addFields("tof_suppliers", "sup_brand")
             .addFrom("tof_articles")
+            .addFromInner("tof_art_lookup",
+                SqlUtils.and(SqlUtils.equals("tof_art_lookup", "arl_kind", "1"),
+                    SqlUtils.join("tof_articles", "art_id", "tof_art_lookup", "arl_art_id")))
             .addFromInner("tof_suppliers",
                 SqlUtils.join("tof_articles", "art_sup_id", "tof_suppliers", "sup_id"))
             .addFromInner("_designations",
-                SqlUtils.join("tof_articles", "art_complete_des_id", "_designations", "des_id")));
+                SqlUtils.join("tof_articles", "art_complete_des_id", "_designations", "des_id"))));
 
-    data.addBaseIndexes(TCD_ARTICLE_ID);
     builds.add(data);
 
     data = new TcdData(new SqlCreate(TCD_CRITERIA, false)
@@ -475,7 +490,6 @@ public class TecDocBean {
             .addFrom("_analogs"));
 
     data.addBaseIndexes(TCD_ARTICLE_ID);
-    data.addBaseIndexes(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_KIND);
 
     data.addPreparation(new SqlCreate("_analogs", false)
         .setDataSource(new SqlSelect()
@@ -675,7 +689,8 @@ public class TecDocBean {
     String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
 
     insertData(TBL_TCD_ARTICLES, new SqlSelect().setLimit(100000)
-        .addFields(tcdArticles, COL_TCD_ARTICLE_NAME)
+        .addFields(tcdArticles, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR)
+        .addFields(art, COL_TCD_BRAND)
         .addField(tcdArticles, TCD_ARTICLE_ID, TCD_TECDOC_ID)
         .addFrom(art)
         .addFromInner(tcdArticles, SqlUtils.joinUsing(art, tcdArticles, TCD_ARTICLE_ID))
@@ -994,17 +1009,18 @@ public class TecDocBean {
   }
 
   private void importItems(EcSupplier supplier, List<RemoteItems> data) {
-    String log = supplier + " " + TBL_TCD_ARTICLE_BRANDS + ":";
+    String log = supplier + " " + TBL_TCD_ARTICLE_SUPPLIERS + ":";
 
-    String idName = sys.getIdName(TBL_TCD_ARTICLE_BRANDS);
+    String idName = sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS);
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID,
-            COL_TCD_ANALOG_NR, COL_TCD_BRAND, COL_TCD_COST, idName)
-        .addField(TBL_TCD_ARTICLE_BRANDS, COL_TCD_ANALOG_NR, COL_TCD_SEARCH_NR)
+        .addField(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, COL_TCD_SEARCH_NR)
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID, COL_TCD_COST, idName)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_BRAND)
         .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
-        .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .addFrom(TBL_TCD_ARTICLES)
         .addFrom(TBL_TCD_BRANDS)
+        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
         .setWhere(SqlUtils.sqlFalse()));
 
     boolean isDebugEnabled = messyLogger.isDebugEnabled();
@@ -1023,8 +1039,8 @@ public class TecDocBean {
           remoteItems.getLong(COL_TCD_BRAND));
     }
     SqlInsert insert = new SqlInsert(tmp)
-        .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND,
-            COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_SUPPLIER_ID);
+        .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND, COL_TCD_COST,
+            COL_TCD_SUPPLIER_ID);
     int tot = 0;
 
     for (RemoteItems info : data) {
@@ -1033,7 +1049,7 @@ public class TecDocBean {
             .addConstant(COL_TCD_BRAND_NAME, info.brand)));
       }
       insert.addValues(EcModuleBean.normalizeCode(info.articleNr), info.brand,
-          brands.get(info.brand), info.articleNr, info.price, info.supplierId);
+          brands.get(info.brand), info.price, info.supplierId);
 
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
@@ -1051,20 +1067,20 @@ public class TecDocBean {
       messyLogger.setLevel(LogLevel.DEBUG);
     }
     qs.updateData(new SqlUpdate(tmp)
-        .addExpression(idName, SqlUtils.field(TBL_TCD_ARTICLE_BRANDS, idName))
-        .setFrom(TBL_TCD_ARTICLE_BRANDS,
+        .addExpression(idName, SqlUtils.field(TBL_TCD_ARTICLE_SUPPLIERS, idName))
+        .setFrom(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(
-                SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier.name()),
-                SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID))));
+                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.name()),
+                SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID))));
 
     qs.sqlIndex(tmp, idName);
     long time = System.currentTimeMillis();
 
-    tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
+    tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
         .addExpression(COL_TCD_UPDATED_COST, SqlUtils.field(tmp, COL_TCD_COST))
         .addConstant(COL_TCD_UPDATE_TIME, time)
-        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_BRANDS, tmp, idName))
-        .setWhere(SqlUtils.notEqual(TBL_TCD_ARTICLE_BRANDS, COL_TCD_UPDATED_COST,
+        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName))
+        .setWhere(SqlUtils.notEqual(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_UPDATED_COST,
             SqlUtils.field(tmp, COL_TCD_COST))));
 
     logger.info(log, "Updated", tot, "records");
@@ -1078,12 +1094,12 @@ public class TecDocBean {
     qs.sqlDropTemp(tmp);
     tmp = zz;
 
-    String tcdAnalogs = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ANALOGS);
+    String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
 
     SqlUpdate query = new SqlUpdate(tmp)
-        .addExpression(TCD_ARTICLE_ID, SqlUtils.field(tcdAnalogs, TCD_ARTICLE_ID))
-        .setFrom(tcdAnalogs, SqlUtils.and(SqlUtils.equals(tcdAnalogs, COL_TCD_KIND, 1),
-            SqlUtils.joinUsing(tmp, tcdAnalogs, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME)));
+        .addExpression(TCD_ARTICLE_ID, SqlUtils.field(tcdArticles, TCD_ARTICLE_ID))
+        .setFrom(tcdArticles,
+            SqlUtils.joinUsing(tmp, tcdArticles, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME));
 
     analyzeQuery(query);
     qs.updateData(query);
@@ -1098,17 +1114,19 @@ public class TecDocBean {
 
     qs.sqlIndex(tmp, TCD_ARTICLE_ID);
 
-    importArticles(qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
+    importArticles(qs.sqlCreateTemp(new SqlSelect()
         .addFields(tmp, TCD_ARTICLE_ID)
+        .addMax(tmp, COL_TCD_BRAND)
         .addEmptyLong(COL_TCD_ARTICLE)
         .addFrom(tmp)
         .addFromLeft(TBL_TCD_ARTICLES,
             SqlUtils.join(tmp, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID))
-        .setWhere(SqlUtils.isNull(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES)))));
+        .setWhere(SqlUtils.isNull(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES)))
+        .addGroup(tmp, TCD_ARTICLE_ID)));
 
-    insertData(TBL_TCD_ARTICLE_BRANDS, new SqlSelect().setLimit(100000)
+    insertData(TBL_TCD_ARTICLE_SUPPLIERS, new SqlSelect().setLimit(100000)
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
-        .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
+        .addFields(tmp, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
         .addConstant(supplier.name(), COL_TCD_SUPPLIER)
         .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
         .addConstant(time, COL_TCD_UPDATE_TIME)
@@ -1125,26 +1143,24 @@ public class TecDocBean {
 
     String idName = sys.getIdName(TBL_TCD_REMAINDERS);
 
-    String rem =
-        qs.sqlCreateTemp(new SqlSelect()
-            .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
-            .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE, idName)
-            .addFrom(TBL_TCD_REMAINDERS)
-            .addFromInner(
-                TBL_TCD_ARTICLE_BRANDS,
-                SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier
-                    .name()),
-                    sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS,
-                        COL_TCD_ARTICLE_BRAND))));
+    String rem = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
+        .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE, idName)
+        .addFrom(TBL_TCD_REMAINDERS)
+        .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
+            SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
+                supplier.name()),
+                sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS,
+                    COL_TCD_ARTICLE_SUPPLIER))));
 
     qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
         .addConstant(COL_TCD_REMAINDER, null)
         .setFrom(rem, sys.joinTables(TBL_TCD_REMAINDERS, rem, idName)));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER, idName)
-        .addFrom(TBL_TCD_ARTICLE_BRANDS)
+        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
         .addFrom(TBL_TCD_REMAINDERS)
         .setWhere(SqlUtils.sqlFalse()));
 
@@ -1200,15 +1216,15 @@ public class TecDocBean {
     tmp = zz;
 
     insertData(TBL_TCD_REMAINDERS, new SqlSelect().setLimit(500000)
-        .addField(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS),
-            COL_TCD_ARTICLE_BRAND)
+        .addField(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS),
+            COL_TCD_ARTICLE_SUPPLIER)
         .addFields(tmp, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER)
         .addFrom(tmp)
-        .addFromInner(TBL_TCD_ARTICLE_BRANDS,
+        .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(
-                SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier.name()),
-                SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID)))
-        .addOrder(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS))
+                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.name()),
+                SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)))
+        .addOrder(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS))
         .addOrder(tmp, COL_TCD_WAREHOUSE));
 
     qs.sqlDropTemp(tmp);

@@ -648,7 +648,7 @@
 .bee-ec-ItemDetails-info-container,
 .bee-ec-ItemDetails-remainders-container,
 .bee-ec-ItemDetails-oeNumbers-container,
-.bee-ec-ItemDetails-brands-container,
+.bee-ec-ItemDetails-suppliers-container,
 .bee-ec-ItemDetails-carTypes-container {
   overflow: auto;
 }
@@ -673,7 +673,7 @@
 }
 .bee-ec-ItemDetails-info-criteria-table,
 .bee-ec-ItemDetails-remainders-table,
-.bee-ec-ItemDetails-brands-table {
+.bee-ec-ItemDetails-suppliers-table {
   border-collapse: collapse;
 }
 .bee-ec-ItemDetails-info-criteria-name-cell,
@@ -693,7 +693,7 @@
 
 .bee-ec-ItemDetails-remainders-label,
 .bee-ec-ItemDetails-oeNumbers-label,
-.bee-ec-ItemDetails-brands-label,
+.bee-ec-ItemDetails-suppliers-label,
 .bee-ec-ItemDetails-carTypes-label {
   font-weight: bolder;
   margin-bottom: 1ex;
@@ -703,7 +703,7 @@
   padding-left: 1em;
   text-align: right;
 }
-.bee-ec-ItemDetails-brands-table td {
+.bee-ec-ItemDetails-suppliers-table td {
   padding-right: 3px;
 }
 

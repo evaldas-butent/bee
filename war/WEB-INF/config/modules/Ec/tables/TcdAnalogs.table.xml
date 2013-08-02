@@ -14,6 +14,6 @@
     <Numeric name="Kind" precision="1" notNull="true" />
   </Fields>
   <Indexes>
-    <Index fields="SearchNr" />
+    <Index fields="SearchNr BrandName" />
   </Indexes>
 </Table>

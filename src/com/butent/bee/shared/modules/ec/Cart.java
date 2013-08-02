@@ -34,10 +34,10 @@ public class Cart implements BeeSerializable {
   public Cart() {
     super();
   }
-  
+
   public void add(EcItem ecItem, int quantity) {
     if (ecItem != null && quantity > 0) {
-      CartItem item = getItem(ecItem.getArticleBrandId());
+      CartItem item = getItem(ecItem.getArticleId());
 
       if (item == null) {
         items.add(new CartItem(ecItem, quantity));
@@ -86,7 +86,7 @@ public class Cart implements BeeSerializable {
       }
     }
   }
-  
+
   public String getComment() {
     return comment;
   }
@@ -114,7 +114,7 @@ public class Cart implements BeeSerializable {
   public boolean remove(EcItem ecItem) {
     for (Iterator<CartItem> it = items.iterator(); it.hasNext();) {
       CartItem item = it.next();
-      
+
       if (item.getEcItem().equals(ecItem)) {
         it.remove();
         return true;
@@ -183,7 +183,7 @@ public class Cart implements BeeSerializable {
     }
     return total;
   }
-  
+
   public int totalQuantity() {
     int total = 0;
     for (CartItem item : items) {
@@ -191,10 +191,10 @@ public class Cart implements BeeSerializable {
     }
     return total;
   }
-  
-  private CartItem getItem(long articleBrandId) {
+
+  private CartItem getItem(long articleId) {
     for (CartItem item : items) {
-      if (item.getEcItem().getArticleBrandId() == articleBrandId) {
+      if (item.getEcItem().getArticleId() == articleId) {
         return item;
       }
     }

@@ -7,17 +7,14 @@
   <columns>
     <RelColumn name="ArticleName" label="=ecItemName" caching="none"
         renderColumns="ArticleName" searchableColumns="ArticleName"
-        choiceColumns="ArticleName BrandName AnalogNr Supplier SupplierID" />
+        choiceColumns="ArticleName BrandName ArticleNr" />
     <DataColumn name="BrandName" />
-    <DataColumn name="AnalogNr" />
-    <DataColumn name="Supplier" />
-    <DataColumn name="SupplierID" />
+    <DataColumn name="ArticleNr" />
       
     <DataColumn name="QuantityOrdered" visible="true" />
     <DataColumn name="QuantitySubmit" visible="true" />
 
     <DataColumn name="Price" visible="true" />
-    <DataColumn name="Cost" />
 
     <DataColumn name="Note" />
   </columns>

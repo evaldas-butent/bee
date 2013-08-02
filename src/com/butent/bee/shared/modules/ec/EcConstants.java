@@ -164,7 +164,7 @@ public final class EcConstants {
   public static final String TBL_TCD_TYPES = "TcdTypes";
   public static final String TBL_TCD_TYPE_ARTICLES = "TcdTypeArticles";
 
-  public static final String TBL_TCD_ARTICLE_BRANDS = "TcdArticleBrands";
+  public static final String TBL_TCD_ARTICLE_SUPPLIERS = "TcdArticleSuppliers";
   public static final String TBL_TCD_REMAINDERS = "TcdRemainders";
   public static final String TBL_TCD_BRANDS_MAPPING = "TcdBrandsMapping";
 
@@ -211,7 +211,7 @@ public final class EcConstants {
   public static final String COL_DISCOUNT_DATE_TO = "DateTo";
   public static final String COL_DISCOUNT_CATEGORY = "Category";
   public static final String COL_DISCOUNT_BRAND = "Brand";
-  public static final String COL_DISCOUNT_ARTICLE_BRAND = "ArticleBrand";
+  public static final String COL_DISCOUNT_ARTICLE = "Article";
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
 
@@ -219,7 +219,7 @@ public final class EcConstants {
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";
   public static final String COL_HISTORY_QUERY = "Query";
-  public static final String COL_HISTORY_ARTICLE_BRAND = "ArticleBrand";
+  public static final String COL_HISTORY_ARTICLE = "Article";
   public static final String COL_HISTORY_COUNT = "Count";
   public static final String COL_HISTORY_DURATION = "Duration";
 
@@ -229,7 +229,7 @@ public final class EcConstants {
   public static final String COL_MANAGER_NOTES = "Notes";
 
   public static final String COL_ORDER_ITEM_ORDER = "Order";
-  public static final String COL_ORDER_ITEM_ARTICLE_BRAND = "ArticleBrand";
+  public static final String COL_ORDER_ITEM_ARTICLE = "Article";
   public static final String COL_ORDER_ITEM_QUANTITY_ORDERED = "QuantityOrdered";
   public static final String COL_ORDER_ITEM_QUANTITY_SUBMIT = "QuantitySubmit";
   public static final String COL_ORDER_ITEM_PRICE = "Price";
@@ -278,6 +278,7 @@ public final class EcConstants {
 
   public static final String COL_TCD_ARTICLE = "Article";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";
+  public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
   public static final String COL_TCD_SUPPLIER = "Supplier";
   public static final String COL_TCD_SUPPLIER_ID = "SupplierID";
 
@@ -320,8 +321,8 @@ public final class EcConstants {
 
   public static final String COL_TCD_BRAND = "Brand";
   public static final String COL_TCD_BRAND_NAME = "BrandName";
-  public static final String COL_TCD_ARTICLE_BRAND = "ArticleBrand";
 
+  public static final String COL_TCD_ARTICLE_SUPPLIER = "ArticleSupplier";
   public static final String COL_TCD_SUPPLIER_BRAND = "SupplierBrand";
 
   public static final String COL_TCD_CRITERIA_NAME = "Name";
@@ -333,8 +334,6 @@ public final class EcConstants {
   public static final String COL_TCD_GRAPHICS_RESOURCE_ID = "ResourceID";
   public static final String COL_TCD_GRAPHICS_RESOURCE_NO = "ResourceNo";
   public static final String COL_TCD_GRAPHICS_RESOURCE = "Resource";
-
-  public static final String ALS_TCD_ANALOG_SUPPLIER = "AnalogSupplier";
 
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';

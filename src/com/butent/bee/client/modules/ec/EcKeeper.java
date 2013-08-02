@@ -300,7 +300,6 @@ public final class EcKeeper {
         ParameterList params = createArgs(SVC_GET_ITEM_INFO);
 
         params.addQueryItem(COL_TCD_ARTICLE, item.getArticleId());
-        params.addQueryItem(COL_TCD_ARTICLE_BRAND, item.getArticleBrandId());
 
         BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
           @Override

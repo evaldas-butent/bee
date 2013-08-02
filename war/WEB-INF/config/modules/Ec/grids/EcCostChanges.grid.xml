@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="EcCostChanges" viewName="TcdArticleBrands" caption="=ecCostChanges"
+  name="EcCostChanges" viewName="TcdArticleSuppliers" caption="=ecCostChanges"
   readOnly="true"
   filter="Cost != UpdatedCost"
   >
@@ -11,7 +11,7 @@
     <DataColumn name="Supplier" />
     <DataColumn name="ArticleName" />
     <DataColumn name="BrandName" />
-    <DataColumn name="AnalogNr" />
+    <DataColumn name="ArticleNr" />
     <DataColumn name="Cost" />
     <DataColumn name="UpdatedCost" />
     <DataColumn name="UpdateTime" />

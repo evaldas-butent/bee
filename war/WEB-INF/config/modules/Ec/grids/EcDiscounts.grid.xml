@@ -15,20 +15,18 @@
 
     <RelColumn name="Brand" renderColumns="BrandName" width="100" />
 
-    <RelColumn name="ArticleBrand" caption="=ecItem" minWidth="150" caching="none"
-        searchableColumns="ArticleName AnalogNr"
-        choiceColumns="ArticleName BrandName AnalogNr Supplier"
-        order="ArticleName, BrandName, AnalogNr, Supplier">
+    <RelColumn name="Article" caption="=ecItem" minWidth="150" caching="none"
+        searchableColumns="ArticleName ArticleNr"
+        choiceColumns="ArticleName BrandName ArticleNr"
+        order="ArticleName, BrandName, ArticleNr">
       <renderToken source="ArticleName" />
       <renderToken source="ArticleBrandName" prefix=", " />
-      <renderToken source="AnalogNr" prefix=", " />
-      <renderToken source="Supplier" prefix=", " />
+      <renderToken source="ArticleNr" prefix=", " />
     </RelColumn>        
 
     <DataColumn name="Percent" visible="true" width="80" sortable="false" />
     <DataColumn name="Price" visible="true" width="80" sortable="false" />
 
-    <DataColumn name="Cost" visible="false" />
     <DataColumn name="Note" visible="false" />
   </columns>
 </Grid>

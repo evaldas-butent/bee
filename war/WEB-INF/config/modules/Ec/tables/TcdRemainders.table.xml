@@ -7,15 +7,15 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" cascade="DELETE" />
+    <Relation name="ArticleSupplier" relation="TcdArticleSuppliers" notNull="true" cascade="DELETE" />
     <String name="Warehouse" precision="10" notNull="true" />
     <Numeric name="Remainder" precision="12" scale="3" />
   </Fields>
   <Constraints>
-    <Unique fields="ArticleBrand Warehouse" />
+    <Unique fields="ArticleSupplier Warehouse" />
   </Constraints>
   <Indexes>
-    <Index fields="ArticleBrand" />
+    <Index fields="ArticleSupplier" />
     <Index fields="Warehouse" />
   </Indexes>
 </Table>
