@@ -12,11 +12,11 @@ import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -280,10 +280,10 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void orderCategories(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getViewName(), VIEW_CATEGORIES)) {
+        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_CATEGORIES)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (rowSet.getNumberOfRows() > 1) {

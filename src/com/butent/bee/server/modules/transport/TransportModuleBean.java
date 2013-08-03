@@ -9,11 +9,11 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -180,10 +180,10 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_CARGO_ASSESSORS) && event.isAfter()) {
+        if (BeeUtils.same(event.getTargetName(), TBL_CARGO_ASSESSORS) && event.isAfter()) {
           for (int i = 0; i < 2; i++) {
             String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
 
@@ -214,7 +214,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_ORDER_CARGO) && event.isAfter()) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_CARGO) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -237,7 +237,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_ROUTES) && event.isAfter()) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_TRIP_ROUTES) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -258,7 +258,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillTripCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_TRIP_CARGO) && event.isAfter()) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_TRIP_CARGO) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
@@ -280,8 +280,8 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void getVisibleDrivers(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_DRIVERS) && event.isBefore()) {
-          BeeView view = sys.getView(event.getViewName());
+        if (BeeUtils.same(event.getTargetName(), TBL_DRIVERS) && event.isBefore()) {
+          BeeView view = sys.getView(event.getTargetName());
 
           SqlSelect query = new SqlSelect().setDistinctMode(true)
               .addFields(TBL_DRIVER_GROUPS, COL_DRIVER)
@@ -298,8 +298,8 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void getVisibleVehicles(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_VEHICLES) && event.isBefore()) {
-          BeeView view = sys.getView(event.getViewName());
+        if (BeeUtils.same(event.getTargetName(), TBL_VEHICLES) && event.isBefore()) {
+          BeeView view = sys.getView(event.getTargetName());
 
           SqlSelect query = new SqlSelect().setDistinctMode(true)
               .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
@@ -590,7 +590,7 @@ public class TransportModuleBean implements BeeModule {
         "TripCost:", res.getValue("TripCost"), "ServicesIncome:", res.getValue("ServicesIncome"),
         "ServicesCost:", res.getValue("ServicesCost")});
   }
-  
+
   private ResponseObject getUnassignedCargos(RequestInfo reqInfo) {
     long orderId = BeeUtils.toLong(reqInfo.getParameter(COL_ORDER));
 
@@ -605,10 +605,10 @@ public class TransportModuleBean implements BeeModule {
                 , SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
 
     SimpleRowSet orderList = qs.getData(query);
-   
+
     return ResponseObject.response(orderList);
   }
-  
+
   private ResponseObject getCargoUsage(String viewName, String[] ids) {
     String source = sys.getViewSource(viewName);
     IsExpression ref;

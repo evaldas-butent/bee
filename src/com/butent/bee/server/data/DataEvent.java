@@ -2,6 +2,7 @@ package com.butent.bee.server.data;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
@@ -11,13 +12,36 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public abstract class ViewEvent {
+public abstract class DataEvent {
 
-  private final String viewName;
+  private final String targetName;
   private List<String> errors;
   private boolean afterStage;
 
-  public abstract static class ViewModifyEvent extends ViewEvent {
+  public static class TableModifyEvent extends DataEvent {
+    private final IsQuery query;
+    private int updateCount;
+
+    TableModifyEvent(String targetName, IsQuery query) {
+      super(targetName);
+      this.query = query;
+    }
+
+    public IsQuery getQuery() {
+      return query;
+    }
+
+    public int getUpdateCount() {
+      return updateCount;
+    }
+
+    void setUpdateCount(int updateCount) {
+      this.updateCount = updateCount;
+      setAfter();
+    }
+  }
+
+  public abstract static class ViewModifyEvent extends DataEvent {
     ViewModifyEvent(String viewName) {
       super(viewName);
     }
@@ -82,7 +106,7 @@ public abstract class ViewEvent {
     }
   }
 
-  public static class ViewQueryEvent extends ViewEvent {
+  public static class ViewQueryEvent extends DataEvent {
     private final SqlSelect query;
     private BeeRowSet rowset;
 
@@ -100,16 +124,16 @@ public abstract class ViewEvent {
       return rowset;
     }
 
-    public void setRowset(BeeRowSet rowset) {
+    void setRowset(BeeRowSet rowset) {
       Assert.notNull(rowset);
       this.rowset = rowset;
       setAfter();
     }
   }
 
-  private ViewEvent(String viewName) {
-    Assert.notEmpty(viewName);
-    this.viewName = viewName;
+  private DataEvent(String targetName) {
+    Assert.notEmpty(targetName);
+    this.targetName = targetName;
   }
 
   public void addErrorMessage(String message) {
@@ -121,8 +145,8 @@ public abstract class ViewEvent {
     errors.add(message);
   }
 
-  public String getViewName() {
-    return viewName;
+  public String getTargetName() {
+    return targetName;
   }
 
   public boolean hasErrors() {

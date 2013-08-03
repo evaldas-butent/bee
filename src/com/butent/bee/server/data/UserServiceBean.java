@@ -67,7 +67,7 @@ public class UserServiceBean {
     private boolean online;
     private Locale locale = Localizations.getDefaultLocale();
 
-    private ClassToInstanceMap<Object> sessionObjects = MutableClassToInstanceMap.create();
+    private final ClassToInstanceMap<Object> sessionObjects = MutableClassToInstanceMap.create();
 
     private UserInfo(UserData userData) {
       this.userData = userData;
@@ -84,7 +84,7 @@ public class UserServiceBean {
     private Collection<Long> getRoles() {
       return userRoles;
     }
-    
+
     private <T> T getSessionObject(Class<T> type) {
       return sessionObjects.getInstance(type);
     }
@@ -167,6 +167,7 @@ public class UserServiceBean {
   private static String key(String value) {
     return value.toLowerCase();
   }
+
   @Resource
   EJBContext ctx;
   @EJB
@@ -409,13 +410,16 @@ public class UserServiceBean {
     return BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
   }
 
+  public boolean isRoleTable(String tblName) {
+    return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
+  }
+
   public boolean isUser(String user) {
     return userCache.inverse().containsKey(key(user));
   }
 
   public boolean isUserTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_USERS, TBL_ROLES, TBL_USER_ROLES, TBL_COMPANY_PERSONS,
-        TBL_PERSONS);
+    return BeeUtils.inList(tblName, TBL_USERS, TBL_COMPANY_PERSONS, TBL_PERSONS);
   }
 
   @Lock(LockType.WRITE)
@@ -460,7 +464,7 @@ public class UserServiceBean {
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(COL_HOST, null)
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
-      
+
       info.endSession();
 
       if (info.isOnline()) {

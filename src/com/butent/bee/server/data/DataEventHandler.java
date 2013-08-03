@@ -1,4 +1,4 @@
 package com.butent.bee.server.data;
 
-public interface ViewEventHandler {
+public interface DataEventHandler {
 }

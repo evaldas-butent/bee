@@ -3,9 +3,11 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEvent.TableModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasTarget;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
@@ -579,6 +581,23 @@ public class QueryServiceBean {
 
     activateTables(query);
 
+    final TableModifyEvent event;
+
+    if (query instanceof HasTarget) {
+      event = new TableModifyEvent(((HasTarget) query).getTarget(), query);
+      sys.postDataEvent(event);
+
+      if (event.hasErrors()) {
+        ResponseObject response = new ResponseObject();
+
+        for (String error : event.getErrorMessages()) {
+          response.addError(error);
+        }
+        return response;
+      }
+    } else {
+      event = null;
+    }
     ResponseObject res = processSql(null, query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
@@ -587,6 +606,10 @@ public class QueryServiceBean {
 
       @Override
       public ResponseObject processUpdateCount(int updateCount) {
+        if (event != null) {
+          event.setUpdateCount(updateCount);
+          sys.postDataEvent(event);
+        }
         return ResponseObject.response(updateCount);
       }
     });
@@ -645,13 +668,13 @@ public class QueryServiceBean {
     activateTables(query);
 
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
-    sys.postViewEvent(event);
+    sys.postDataEvent(event);
 
     return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         event.setRowset(rsToBeeRowSet(rs, view));
-        sys.postViewEvent(event);
+        sys.postDataEvent(event);
         return event.getRowset();
       }
 

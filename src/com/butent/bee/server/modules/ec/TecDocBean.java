@@ -243,22 +243,37 @@ public class TecDocBean {
           .addFields(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER_BRAND)
           .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
           .addFrom(TBL_TCD_BRANDS_MAPPING)
-          .addFromInner(TBL_TCD_BRANDS,
+          .addFromLeft(TBL_TCD_BRANDS,
               sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND)));
 
+      Map<String, String> mappings = Maps.newHashMap();
+
+      for (String[] mapping : rs.getRows()) {
+        mappings.put(mapping[0], mapping[1]);
+      }
       for (String item : info.getString()) {
         String[] values = item.split("[|]", 8);
 
         if (values.length == 8) {
-          String brand = rs.getValueByKey(COL_TCD_SUPPLIER_BRAND, values[0], COL_TCD_BRAND_NAME);
-          String supplierId = values[0] + values[1];
+          String supplierBrand = values[0];
 
-          if (!BeeUtils.isEmpty(brand)) {
-            items.add(new RemoteItems(supplierId, brand, values[1],
-                BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+          if (mappings.containsKey(supplierBrand)) {
+            String brand = mappings.get(supplierBrand);
 
-            remainders.add(new RemoteRemainders(supplierId, "MotoNet",
-                BeeUtils.toDoubleOrNull(values[3])));
+            if (!BeeUtils.isEmpty(brand)) {
+              String supplierId = supplierBrand + values[1];
+
+              items.add(new RemoteItems(supplierId, brand, values[1],
+                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+
+              remainders.add(new RemoteRemainders(supplierId, "MotoNet",
+                  BeeUtils.toDoubleOrNull(values[3])));
+            }
+          } else {
+            qs.insertData(new SqlInsert(TBL_TCD_BRANDS_MAPPING)
+                .addConstant(COL_TCD_SUPPLIER_BRAND, supplierBrand));
+
+            mappings.put(supplierBrand, null);
           }
         }
       }

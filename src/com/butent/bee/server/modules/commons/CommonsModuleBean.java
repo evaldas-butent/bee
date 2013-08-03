@@ -10,14 +10,15 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.TableModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
-import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
-import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
-import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -157,24 +158,31 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
-      public void refreshRightsCache(ViewModifyEvent event) {
-        if (usr.isRightsTable(event.getViewName()) && event.isAfter()) {
+      public void refreshRightsCache(TableModifyEvent event) {
+        if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
           usr.initRights();
         }
       }
 
       @Subscribe
+      public void refreshRoleCache(TableModifyEvent event) {
+        if (usr.isRoleTable(event.getTargetName()) && event.isAfter()) {
+          usr.initUsers();
+        }
+      }
+
+      @Subscribe
       public void refreshUserCache(ViewModifyEvent event) {
-        if (usr.isUserTable(event.getViewName()) && event.isAfter()) {
+        if (usr.isUserTable(event.getTargetName()) && event.isAfter()) {
           usr.initUsers();
         }
       }
 
       @Subscribe
       public void storeEmail(ViewModifyEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_EMAILS) && event.isBefore()
+        if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
             && !(event instanceof ViewDeleteEvent)) {
 
           List<BeeColumn> cols;

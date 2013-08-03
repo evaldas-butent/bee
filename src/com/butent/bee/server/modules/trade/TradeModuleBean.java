@@ -6,13 +6,13 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
-import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
-import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.modules.BeeModule;
@@ -106,10 +106,10 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.same(event.getViewName(), TBL_SALES) && event.isBefore()) {
+        if (BeeUtils.same(event.getTargetName(), TBL_SALES) && event.isBefore()) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;
