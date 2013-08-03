@@ -286,7 +286,6 @@
   padding-left: 1em;
   font-weight: bold;
 }
-.bee-ec-ItemList-supplier,
 .bee-ec-ItemList-brand {
   padding-left: 1em;
 }
@@ -653,12 +652,10 @@
   overflow: auto;
 }
 
-.bee-ec-ItemDetails-info-itemCode,
-.bee-ec-ItemDetails-info-supplierCode {
+.bee-ec-ItemDetails-info-itemCode {
   padding-left: 1em;
   font-weight: bold;
 }
-.bee-ec-ItemDetails-info-supplier,
 .bee-ec-ItemDetails-info-brand {
   padding-left: 1em;
 }

@@ -269,7 +269,7 @@ public class EcClientDiscounts {
     return !categoryDiscounts.isEmpty() || !brandAndCategoryDiscounts.isEmpty();
   }
 
-  public boolean isEmpry() {
+  public boolean isEmpty() {
     return itemDiscounts.isEmpty() && brandAndCategoryDiscounts.isEmpty()
         && brandDiscounts.isEmpty() && categoryDiscounts.isEmpty()
         && globalDiscounts.isEmpty() && defPercent == null;

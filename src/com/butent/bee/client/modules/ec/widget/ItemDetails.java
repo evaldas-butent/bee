@@ -14,7 +14,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
-import com.butent.bee.shared.modules.ec.ArticleRemainder;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -97,19 +96,6 @@ public class ItemDetails extends Flow {
         itemCodeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
       }
 
-      Widget supplierWidget = EcUtils.renderField(Localized.getConstants().ecItemSupplier(),
-          item.getSupplier(), stylePrefix + "supplier");
-      if (supplierWidget != null) {
-        container.add(supplierWidget);
-      }
-
-      Widget supplierCodeWidget =
-          EcUtils.renderField(Localized.getConstants().ecItemSupplierCode(),
-              item.getSupplierCode(), stylePrefix + "supplierCode");
-      if (supplierCodeWidget != null) {
-        container.add(supplierCodeWidget);
-      }
-
       if (item.getBrand() != null) {
         Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
             EcKeeper.getBrandName(item.getBrand()), stylePrefix + "brand");
@@ -183,8 +169,8 @@ public class ItemDetails extends Flow {
     return widget;
   }
 
-  private static Widget renderRemainders(EcItemInfo info) {
-    if (info == null || BeeUtils.isEmpty(info.getRemainders())) {
+  private static Widget renderRemainders(EcItem item) {
+    if (item == null || BeeUtils.isEmpty(item.getSuppliers())) {
       return null;
     }
 
@@ -198,16 +184,19 @@ public class ItemDetails extends Flow {
     HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
 
     int row = 0;
-    for (ArticleRemainder ar : info.getRemainders()) {
-      Label warehouseWidget = new Label(ar.getWarehouse());
-      table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
+    for (ArticleSupplier as : item.getSuppliers()) {
+      for (String warehouse : as.getRemainders().keySet()) {
+        Label warehouseWidget = new Label(warehouse);
+        table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
+        double remainder = BeeUtils.toDouble(as.getRemainders().get(warehouse));
 
-      String remainderText = BeeUtils.isPositive(ar.getRemainder())
-          ? BeeUtils.toString(ar.getRemainder()) : Localized.getConstants().ecStockAsk();
-      Label stockWidget = new Label(remainderText);
-      table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
+        String remainderText = BeeUtils.isPositive(remainder)
+            ? BeeUtils.toString(remainder) : Localized.getConstants().ecStockAsk();
+        Label stockWidget = new Label(remainderText);
+        table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
-      row++;
+        row++;
+      }
     }
 
     Simple wrapper = new Simple(table);
@@ -218,15 +207,15 @@ public class ItemDetails extends Flow {
     return container;
   }
 
-  private static Widget renderSuppliers(EcItemInfo info) {
-    if (info == null || info.getSuppliers().size() <= 1) {
+  private static Widget renderSuppliers(EcItem item) {
+    if (item == null || item.getSuppliers().size() <= 1) {
       return null;
     }
 
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "suppliers-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
-    Label caption = new Label(Localized.getConstants().ecItemDetailsBrands());
+    Label caption = new Label(Localized.getConstants().ecItemDetailsSuppliers());
     caption.addStyleName(stylePrefix + STYLE_LABEL);
     container.add(caption);
 
@@ -235,7 +224,7 @@ public class ItemDetails extends Flow {
     int row = 0;
     int col;
 
-    for (ArticleSupplier as : info.getSuppliers()) {
+    for (ArticleSupplier as : item.getSuppliers()) {
       col = 0;
 
       table.setText(row, col++, BeeUtils.toString(as.getRealPrice()));
@@ -299,9 +288,9 @@ public class ItemDetails extends Flow {
       }
     }
 
-    Widget remainders = renderRemainders(info);
+    Widget remainders = renderRemainders(item);
     Widget oeNumbers = renderOeNumbers(info);
-    Widget suppliers = renderSuppliers(info);
+    Widget suppliers = renderSuppliers(item);
     Widget carTypes = renderCarTypes(info);
 
     int remaindersWidth = Math.min(width / 5, 160);

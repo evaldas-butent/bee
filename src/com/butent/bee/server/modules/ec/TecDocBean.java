@@ -154,8 +154,6 @@ public class TecDocBean {
   public void suckButent() {
     EcSupplier supplier = EcSupplier.EOLTAS;
 
-    logger.info(supplier, "Waiting for items...");
-
     ResponseObject response = ButentWS.getSQLData(EcModuleBean.WS_ADDRESS,
         EcModuleBean.WS_LOGIN, EcModuleBean.WS_PASSWORD,
         "SELECT preke AS pr, savikaina AS kn, gam_art AS ga, gamintojas AS gam"
@@ -172,8 +170,6 @@ public class TecDocBean {
       int size = node.getChildNodes().getLength();
       List<RemoteItems> data = Lists.newArrayListWithExpectedSize(size);
 
-      logger.info(supplier, "Received", size, "records. Updating data...");
-
       for (int i = 0; i < size; i++) {
         Node row = node.getChildNodes().item(i);
 
@@ -186,8 +182,6 @@ public class TecDocBean {
       }
       importItems(supplier, data);
     }
-    logger.info(supplier, "Waiting for remainders...");
-
     response = ButentWS.getSQLData(EcModuleBean.WS_ADDRESS,
         EcModuleBean.WS_LOGIN, EcModuleBean.WS_PASSWORD,
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
@@ -204,8 +198,6 @@ public class TecDocBean {
     if (node.hasChildNodes()) {
       int size = node.getChildNodes().getLength();
       List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(size);
-
-      logger.info(supplier, "Received", size, "records. Updating data...");
 
       for (int i = 0; i < size; i++) {
         Node row = node.getChildNodes().item(i);
@@ -1085,7 +1077,7 @@ public class TecDocBean {
         .addExpression(idName, SqlUtils.field(TBL_TCD_ARTICLE_SUPPLIERS, idName))
         .setFrom(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(
-                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.name()),
+                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.ordinal()),
                 SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID))));
 
     qs.sqlIndex(tmp, idName);
@@ -1142,7 +1134,7 @@ public class TecDocBean {
     insertData(TBL_TCD_ARTICLE_SUPPLIERS, new SqlSelect().setLimit(100000)
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFields(tmp, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
-        .addConstant(supplier.name(), COL_TCD_SUPPLIER)
+        .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
         .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
         .addConstant(time, COL_TCD_UPDATE_TIME)
         .addFrom(tmp)
@@ -1164,7 +1156,7 @@ public class TecDocBean {
         .addFrom(TBL_TCD_REMAINDERS)
         .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
-                supplier.name()),
+                supplier.ordinal()),
                 sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS,
                     COL_TCD_ARTICLE_SUPPLIER))));
 
@@ -1237,7 +1229,7 @@ public class TecDocBean {
         .addFrom(tmp)
         .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(
-                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.name()),
+                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.ordinal()),
                 SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)))
         .addOrder(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS))
         .addOrder(tmp, COL_TCD_WAREHOUSE));

@@ -86,13 +86,13 @@ public interface LocalizableEcConstants {
 
   String ecItemDescription();
 
-  String ecItemDetailsBrands();
-
   String ecItemDetailsCarTypes();
 
   String ecItemDetailsOeNumbers();
 
   String ecItemDetailsRemainders();
+
+  String ecItemDetailsSuppliers();
 
   String ecItemDiameter();
 

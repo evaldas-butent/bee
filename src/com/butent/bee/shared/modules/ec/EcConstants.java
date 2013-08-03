@@ -7,8 +7,13 @@ import com.butent.bee.shared.ui.HasCaption;
 
 public final class EcConstants {
 
-  public enum EcSupplier {
-    EOLTAS, MOTOPROFIL
+  public enum EcSupplier implements HasCaption {
+    EOLTAS, MOTOPROFIL;
+
+    @Override
+    public String getCaption() {
+      return name();
+    }
   }
 
   public enum CartType implements HasCaption {

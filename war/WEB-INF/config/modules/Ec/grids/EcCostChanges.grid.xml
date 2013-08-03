@@ -8,7 +8,7 @@
   >
   <columns>
     <SelectionColumn name="Select" caption="-" width="20" />
-    <DataColumn name="Supplier" />
+    <DataColumn name="Supplier" itemKey="EcSupplier" />
     <DataColumn name="ArticleName" />
     <DataColumn name="BrandName" />
     <DataColumn name="ArticleNr" />

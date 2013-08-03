@@ -77,6 +77,8 @@ public class ButentWS extends Service {
     if (response.hasErrors()) {
       return response;
     }
+    logger.info("GetSQLData:", "waiting for data...");
+
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("GetSQLData", "<query>" + query + "</query>");
 
@@ -85,6 +87,9 @@ public class ButentWS extends Service {
     if (BeeUtils.same(node.getNodeName(), "Error")) {
       return ResponseObject.error(node.getTextContent());
     }
+    logger.info("GetSQLData:", "received",
+        node.hasChildNodes() ? node.getChildNodes().getLength() : 0, "records");
+
     return ResponseObject.response(node);
   }
 
@@ -96,6 +101,8 @@ public class ButentWS extends Service {
     if (response.hasErrors()) {
       return response;
     }
+    logger.info("ImportDoc:", "importing document...");
+
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("ImportDoc", doc.getXml());
 
@@ -109,6 +116,8 @@ public class ButentWS extends Service {
       } catch (Exception e) {
         return ResponseObject.error(answer);
       }
+    } else {
+      logger.info("ImportDoc:", "import succeeded");
     }
     return ResponseObject.response(answer);
   }

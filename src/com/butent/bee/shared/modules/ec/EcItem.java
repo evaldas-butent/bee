@@ -9,13 +9,13 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIER, SUPPLIER_CODE,
-    CATEGORIES, STOCK_1, STOCK_2, LIST_PRICE, PRICE
+    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -33,16 +33,11 @@ public class EcItem implements BeeSerializable {
   private String code;
   private String name;
 
-  private String supplier;
-  private String supplierCode;
-
   private String categories;
+  private Collection<ArticleSupplier> suppliers = Lists.newArrayList();
 
-  private int stock1;
-  private int stock2;
-
-  private int listPrice;
   private int price;
+  private int listPrice;
 
   public EcItem(long articleId) {
     this.articleId = articleId;
@@ -82,32 +77,25 @@ public class EcItem implements BeeSerializable {
           setName(value);
           break;
 
-        case SUPPLIER:
-          setSupplier(value);
-          break;
+        case SUPPLIERS:
+          Collection<ArticleSupplier> sups = Lists.newArrayList();
 
-        case SUPPLIER_CODE:
-          setSupplierCode(value);
+          for (String supplier : Codec.beeDeserializeCollection(value)) {
+            sups.add(ArticleSupplier.restore(supplier));
+          }
+          setSuppliers(sups);
           break;
 
         case CATEGORIES:
           setCategories(value);
           break;
 
-        case STOCK_1:
-          setStock1(BeeUtils.toInt(value));
-          break;
-
-        case STOCK_2:
-          setStock2(BeeUtils.toInt(value));
+        case PRICE:
+          setPrice(BeeUtils.toInt(value));
           break;
 
         case LIST_PRICE:
           setListPrice(BeeUtils.toInt(value));
-          break;
-
-        case PRICE:
-          setPrice(BeeUtils.toInt(value));
           break;
       }
     }
@@ -157,6 +145,15 @@ public class EcItem implements BeeSerializable {
     return price;
   }
 
+  public double getRealCost() {
+    double cost = 0;
+
+    for (ArticleSupplier supplier : getSuppliers()) {
+      cost = Math.max(cost, supplier.getRealPrice());
+    }
+    return cost;
+  }
+
   public double getRealListPrice() {
     return listPrice / 100d;
   }
@@ -166,19 +163,22 @@ public class EcItem implements BeeSerializable {
   }
 
   public int getStock1() {
-    return stock1;
+    int stock = 0;
+
+    for (ArticleSupplier supplier : getSuppliers()) {
+      for (String remainder : supplier.getRemainders().values()) {
+        stock += BeeUtils.toInt(remainder);
+      }
+    }
+    return stock;
   }
 
   public int getStock2() {
-    return stock2;
+    return 0;
   }
 
-  public String getSupplier() {
-    return supplier;
-  }
-
-  public String getSupplierCode() {
-    return supplierCode;
+  public Collection<ArticleSupplier> getSuppliers() {
+    return suppliers;
   }
 
   public boolean hasAnalogs() {
@@ -228,32 +228,20 @@ public class EcItem implements BeeSerializable {
           arr[i++] = name;
           break;
 
-        case SUPPLIER:
-          arr[i++] = supplier;
-          break;
-
-        case SUPPLIER_CODE:
-          arr[i++] = supplierCode;
+        case SUPPLIERS:
+          arr[i++] = suppliers;
           break;
 
         case CATEGORIES:
           arr[i++] = categories;
           break;
 
-        case STOCK_1:
-          arr[i++] = stock1;
-          break;
-
-        case STOCK_2:
-          arr[i++] = stock2;
+        case PRICE:
+          arr[i++] = price;
           break;
 
         case LIST_PRICE:
           arr[i++] = listPrice;
-          break;
-
-        case PRICE:
-          arr[i++] = price;
           break;
       }
     }
@@ -292,19 +280,7 @@ public class EcItem implements BeeSerializable {
     this.price = price;
   }
 
-  public void setStock1(int stock1) {
-    this.stock1 = stock1;
-  }
-
-  public void setStock2(int stock2) {
-    this.stock2 = stock2;
-  }
-
-  public void setSupplier(String supplier) {
-    this.supplier = supplier;
-  }
-
-  public void setSupplierCode(String supplierCode) {
-    this.supplierCode = supplierCode;
+  public void setSuppliers(Collection<ArticleSupplier> suppliers) {
+    this.suppliers = suppliers;
   }
 }

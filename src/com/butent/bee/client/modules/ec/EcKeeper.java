@@ -46,6 +46,7 @@ import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
@@ -337,6 +338,8 @@ public final class EcKeeper {
 
     key = Captions.register(EcOrderStatus.class);
     Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
+
+    key = Captions.register(EcSupplier.class);
 
     BeeKeeper.getMenu().registerMenuCallback("open_ec_clients", new MenuCallback() {
       @Override

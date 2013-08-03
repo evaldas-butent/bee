@@ -51,7 +51,6 @@ public class ItemList extends Flow {
 
   private static final String STYLE_ITEM_NAME = EcStyles.name(STYLE_PRIMARY, "name");
   private static final String STYLE_ITEM_CODE = EcStyles.name(STYLE_PRIMARY, "code");
-  private static final String STYLE_ITEM_SUPPLIER = EcStyles.name(STYLE_PRIMARY, "supplier");
   private static final String STYLE_ITEM_ANALOGS = EcStyles.name(STYLE_PRIMARY, "analogs");
 
   private static final String STYLE_ITEM_BRAND = EcStyles.name(STYLE_PRIMARY, "brand");
@@ -193,15 +192,6 @@ public class ItemList extends Flow {
           STYLE_ITEM_CODE);
       panel.add(codeWidget);
       codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
-    }
-
-    String supplier = BeeUtils.joinWords(item.getSupplier(),
-        BeeUtils.bracket(item.getSupplierCode()));
-
-    if (!BeeUtils.isEmpty(supplier)) {
-      Widget supplierWidget = EcUtils.renderField(Localized.getConstants().ecItemSupplier(),
-          supplier, STYLE_ITEM_SUPPLIER);
-      panel.add(supplierWidget);
     }
 
     if (item.hasAnalogs()) {

@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.ec;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
@@ -7,10 +9,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Map;
+
 public class ArticleSupplier implements BeeSerializable {
 
   private enum Serial {
-    SUPPLIER, SUPPLIER_ID, PRICE
+    SUPPLIER, SUPPLIER_ID, PRICE, REMAINDERS
   }
 
   public static ArticleSupplier restore(String s) {
@@ -22,6 +26,7 @@ public class ArticleSupplier implements BeeSerializable {
   private EcSupplier supplier;
   private String supplierId;
   private int price;
+  private Map<String, String> remainders = Maps.newHashMap();
 
   public ArticleSupplier(EcSupplier supplier, String supplierId, Double price) {
     this.supplier = supplier;
@@ -30,6 +35,12 @@ public class ArticleSupplier implements BeeSerializable {
   }
 
   private ArticleSupplier() {
+  }
+
+  public void addRemainder(String warehouse, Double remainder) {
+    if (BeeUtils.isPositive(remainder)) {
+      remainders.put(warehouse, BeeUtils.toString(remainder));
+    }
   }
 
   @Override
@@ -48,11 +59,15 @@ public class ArticleSupplier implements BeeSerializable {
           break;
 
         case SUPPLIER:
-          setSupplier(NameUtils.getEnumByName(EcSupplier.class, value));
+          setSupplier(NameUtils.getEnumByIndex(EcSupplier.class, BeeUtils.toIntOrNull(value)));
           break;
 
         case SUPPLIER_ID:
           setSupplierId(value);
+          break;
+
+        case REMAINDERS:
+          remainders = Codec.beeDeserializeMap(value);
           break;
       }
     }
@@ -64,6 +79,10 @@ public class ArticleSupplier implements BeeSerializable {
 
   public double getRealPrice() {
     return price / 100d;
+  }
+
+  public Map<String, String> getRemainders() {
+    return remainders;
   }
 
   public EcSupplier getSupplier() {
@@ -87,11 +106,15 @@ public class ArticleSupplier implements BeeSerializable {
           break;
 
         case SUPPLIER:
-          arr[i++] = getSupplier();
+          arr[i++] = getSupplier().ordinal();
           break;
 
         case SUPPLIER_ID:
           arr[i++] = getSupplierId();
+          break;
+
+        case REMAINDERS:
+          arr[i++] = getRemainders();
           break;
       }
     }
@@ -99,7 +122,7 @@ public class ArticleSupplier implements BeeSerializable {
   }
 
   public void setPrice(Double price) {
-    this.price = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
+    setPrice(BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0);
   }
 
   public void setPrice(int price) {

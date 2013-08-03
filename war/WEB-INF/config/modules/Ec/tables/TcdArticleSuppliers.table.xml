@@ -11,7 +11,7 @@
     <Numeric name="Cost" precision="10" scale="2" label="=cost" />
     <Numeric name="UpdatedCost" precision="10" scale="2" label="=ecUpdatedCost" />
     <DateTime name="UpdateTime" label="=ecUpdateTime" />
-    <String name="Supplier" precision="10" notNull="true" label="=ecItemSupplier"/>
+    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
     <String name="SupplierID" precision="30" notNull="true" label="=ecItemSupplierCode" />
   </Fields>
   <Constraints>
