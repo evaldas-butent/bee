@@ -208,7 +208,7 @@ public class ItemDetails extends Flow {
   }
 
   private static Widget renderSuppliers(EcItem item) {
-    if (item == null || item.getSuppliers().size() <= 1) {
+    if (item == null || BeeUtils.isEmpty(item.getSuppliers())) {
       return null;
     }
 

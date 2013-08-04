@@ -236,12 +236,13 @@ public class TecDocBean {
           .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
           .addFrom(TBL_TCD_BRANDS_MAPPING)
           .addFromLeft(TBL_TCD_BRANDS,
-              sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND)));
+              sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND))
+          .setWhere(SqlUtils.equals(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER, supplier.ordinal())));
 
       Map<String, String> mappings = Maps.newHashMap();
 
-      for (String[] mapping : rs.getRows()) {
-        mappings.put(mapping[0], mapping[1]);
+      for (SimpleRow row : rs) {
+        mappings.put(row.getValue(COL_TCD_SUPPLIER_BRAND), row.getValue(COL_TCD_BRAND_NAME));
       }
       for (String item : info.getString()) {
         String[] values = item.split("[|]", 8);
@@ -263,6 +264,7 @@ public class TecDocBean {
             }
           } else {
             qs.insertData(new SqlInsert(TBL_TCD_BRANDS_MAPPING)
+                .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
                 .addConstant(COL_TCD_SUPPLIER_BRAND, supplierBrand));
 
             mappings.put(supplierBrand, null);
@@ -905,14 +907,24 @@ public class TecDocBean {
             SqlUtils.join(tcdGraphics, TCD_GRAPHICS_ID, als, TCD_TECDOC_ID))
         .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_GRAPHICS))));
 
-    insertData(TBL_TCD_GRAPHICS, new SqlSelect().setLimit(500000)
-        .addExpr(SqlUtils.sqlCase(SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE),
-            SqlUtils.constant(JPEG2000), SqlUtils.constant(JPEG),
-            SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE)), COL_TCD_GRAPHICS_TYPE)
+    SqlSelect sql = new SqlSelect().setLimit(500000)
         .addFields(graph, COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE_NO)
         .addField(graph, TCD_GRAPHICS_ID, TCD_TECDOC_ID)
         .addFrom(graph)
-        .addOrder(graph, TCD_GRAPHICS_ID));
+        .addOrder(graph, TCD_GRAPHICS_ID);
+
+    if (supportsJPEG2000 == null) {
+      ImageIO.scanForPlugins();
+      supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
+    }
+    if (supportsJPEG2000) {
+      sql.addExpr(SqlUtils.sqlCase(SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE),
+          SqlUtils.constant(JPEG2000), SqlUtils.constant(JPEG),
+          SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE)), COL_TCD_GRAPHICS_TYPE);
+    } else {
+      sql.addFields(graph, COL_TCD_GRAPHICS_TYPE);
+    }
+    insertData(TBL_TCD_GRAPHICS, sql);
 
     for (String part : qs.getColumn(new SqlSelect().setDistinctMode(true)
         .addFields(graph, COL_TCD_GRAPHICS_RESOURCE_NO)
@@ -920,7 +932,7 @@ public class TecDocBean {
 
       String resource = TBL_TCD_GRAPHICS_RESOURCES + part;
 
-      SqlSelect sql = new SqlSelect()
+      sql = new SqlSelect()
           .addFields(SqlUtils.table(TCD_SCHEMA, resource),
               COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE)
           .addFrom(SqlUtils.table(TCD_SCHEMA, resource))
@@ -958,28 +970,22 @@ public class TecDocBean {
           String image = row[1];
           String type = row[2];
 
-          if (JPEG2000.equals(type)) {
-            if (supportsJPEG2000 == null) {
-              ImageIO.scanForPlugins();
-              supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
-            }
-            if (supportsJPEG2000) {
-              try {
-                ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
-                BufferedImage img = ImageIO.read(in);
+          if (JPEG2000.equals(type) && supportsJPEG2000) {
+            try {
+              ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
+              BufferedImage img = ImageIO.read(in);
 
-                if (img != null) {
-                  ByteArrayOutputStream out = new ByteArrayOutputStream();
+              if (img != null) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-                  if (ImageIO.write(img, JPEG, out)) {
-                    image = Codec.toBase64(out.toByteArray());
-                  }
-                  out.close();
+                if (ImageIO.write(img, JPEG, out)) {
+                  image = Codec.toBase64(out.toByteArray());
                 }
-                in.close();
-              } catch (IOException e) {
-                logger.error(e);
+                out.close();
               }
+              in.close();
+            } catch (IOException e) {
+              logger.error(e);
             }
           }
           insert.addValues(new Object[] {resourceId, image});

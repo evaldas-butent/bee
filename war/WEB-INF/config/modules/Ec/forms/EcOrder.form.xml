@@ -19,7 +19,7 @@
         <InputText source="Number" style="&inp;" />
 
         <Label text="=ecOrderStatus" style="margin-left: 3em; margin-right: 10px;" />
-        <ListBox source="Status" itemKey="EcOrderStatus" readOnly="true" />
+        <ListBox source="Status" itemKey="EcOrderStatus" readOnly="false" />
       </FlowPanel>
       &separator;
 

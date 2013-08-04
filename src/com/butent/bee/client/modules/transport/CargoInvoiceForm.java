@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -17,6 +18,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -52,6 +54,7 @@ public class CargoInvoiceForm extends AbstractFormInterceptor {
             @Override
             public void onSuccess(BeeRow result) {
               form.updateRow(result, false);
+              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
             }
           });
         }

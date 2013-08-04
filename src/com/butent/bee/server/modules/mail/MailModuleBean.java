@@ -714,8 +714,9 @@ public class MailModuleBean implements BeeModule {
 
     SimpleRowSet newRs = new SimpleRowSet(cols);
 
-    for (String[] row : rs.getRows()) {
-      newRs.addRow(new String[] {row[0], HtmlUtils.cleanHtml(row[1])});
+    for (SimpleRow row : rs) {
+      newRs.addRow(new String[] {row.getValue(COL_CONTENT),
+          HtmlUtils.cleanHtml(row.getValue(COL_HTML_CONTENT))});
     }
     packet.put(TBL_PARTS, newRs);
 
@@ -790,11 +791,12 @@ public class MailModuleBean implements BeeModule {
 
     StringBuilder content = new StringBuilder();
 
-    for (String[] row : rs.getRows()) {
+    for (SimpleRow row : rs) {
       if (content.length() > 0) {
         content.append("\n\n");
       }
-      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row[1]), row[0]));
+      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row.getValue(COL_HTML_CONTENT)),
+          row.getValue(COL_CONTENT)));
     }
     packet.put(COL_CONTENT, content.toString());
 

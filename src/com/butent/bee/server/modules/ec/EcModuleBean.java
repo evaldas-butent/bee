@@ -1096,6 +1096,12 @@ public class EcModuleBean implements BeeModule {
             CommonsConstants.COL_NAME, CommonsConstants.COL_COMPANY)
         .addFields(CommonsConstants.TBL_COMPANIES,
             CommonsConstants.COL_CODE, CommonsConstants.COL_VAT_CODE)
+        .addFields(CommonsConstants.TBL_CONTACTS,
+            CommonsConstants.COL_ADDRESS, CommonsConstants.COL_POST_INDEX)
+        .addField(CommonsConstants.TBL_CITIES,
+            CommonsConstants.COL_NAME, CommonsConstants.COL_CITY)
+        .addField(CommonsConstants.TBL_COUNTRIES,
+            CommonsConstants.COL_NAME, CommonsConstants.COL_COUNTRY)
         .addFrom(TBL_ORDERS)
         .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
         .addFromLeft(CommonsConstants.TBL_USERS, sys.joinTables(CommonsConstants.TBL_USERS,
@@ -1106,12 +1112,20 @@ public class EcModuleBean implements BeeModule {
         .addFromLeft(CommonsConstants.TBL_COMPANIES,
             sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
                 CommonsConstants.COL_COMPANY))
+        .addFromLeft(CommonsConstants.TBL_CONTACTS,
+            sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANIES,
+                CommonsConstants.COL_CONTACT))
+        .addFromLeft(CommonsConstants.TBL_CITIES,
+            sys.joinTables(CommonsConstants.TBL_CITIES, CommonsConstants.TBL_CONTACTS,
+                CommonsConstants.COL_CITY))
+        .addFromLeft(CommonsConstants.TBL_COUNTRIES,
+            sys.joinTables(CommonsConstants.TBL_COUNTRIES, CommonsConstants.TBL_CONTACTS,
+                CommonsConstants.COL_COUNTRY))
         .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
     SimpleRowSet data = qs.getData(query
-        .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
-        .addSum(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)
-        .addGroup(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE));
+        .addMax(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
+        .addSum(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
     WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
         prm.getText(EC_MODULE, "ERPOperation"), order.getValue(CommonsConstants.COL_COMPANY),
@@ -1119,6 +1133,12 @@ public class EcModuleBean implements BeeModule {
 
     doc.setCompanyCode(order.getValue(CommonsConstants.COL_CODE));
     doc.setCompanyVATCode(order.getValue(CommonsConstants.COL_VAT_CODE));
+    doc.setCompanyAddress(order.getValue(CommonsConstants.COL_ADDRESS));
+    doc.setCompanyPostIndex(order.getValue(CommonsConstants.COL_POST_INDEX));
+    doc.setCompanyCity(order.getValue(CommonsConstants.COL_CITY));
+    doc.setCompanyCountry(order.getValue(CommonsConstants.COL_COUNTRY));
+
+    ResponseObject response = new ResponseObject();
 
     for (EcItem item : items) {
       String id = null;
@@ -1127,6 +1147,30 @@ public class EcModuleBean implements BeeModule {
         if (EcSupplier.EOLTAS == supplier.getSupplier()) {
           id = supplier.getSupplierId();
           break;
+        }
+      }
+      if (BeeUtils.isEmpty(id)) {
+        String brandName = qs.getValue(new SqlSelect()
+            .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+            .addFrom(TBL_TCD_BRANDS)
+            .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
+
+        ResponseObject resp = ButentWS.importItem(WS_ADDRESS, WS_LOGIN, WS_PASSWORD,
+            item.getName(), brandName, item.getCode());
+
+        if (resp.hasErrors()) {
+          response.addErrorsFrom(resp);
+          break;
+        } else {
+          id = resp.getResponseAsString();
+
+          if (!BeeUtils.isEmpty(id)) {
+            qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+                .addConstant(COL_TCD_ARTICLE, item.getArticleId())
+                .addConstant(COL_TCD_COST, item.getRealCost())
+                .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
+                .addConstant(COL_TCD_SUPPLIER_ID, id));
+          }
         }
       }
       if (!BeeUtils.isEmpty(id)) {
@@ -1139,8 +1183,9 @@ public class EcModuleBean implements BeeModule {
         docItem.setVatPercent(BeeUtils.toString(prm.getInteger(EC_MODULE, "ERPBasicVATPercent")));
       }
     }
-    ResponseObject response = ButentWS.importDoc(WS_ADDRESS, WS_LOGIN, WS_PASSWORD, doc);
-
+    if (!response.hasErrors()) {
+      response = ButentWS.importDoc(WS_ADDRESS, WS_LOGIN, WS_PASSWORD, doc);
+    }
     if (response.hasErrors()) {
       response.log(logger);
     } else {

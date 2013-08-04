@@ -4,6 +4,7 @@
   name="TcdBrandsMapping" source="TcdBrandsMapping"
   >
   <Columns>
+    <SimpleColumn name="Supplier" />
     <SimpleColumn name="SupplierBrand" />
     <SimpleColumn name="Brand" />
     <SimpleJoin name="Brand" joinType="LEFT">
@@ -12,6 +13,7 @@
   </Columns>
 
   <Order>
+    <OrderBy column="Supplier" />
     <OrderBy column="SupplierBrand" />
   </Order>
 </View>

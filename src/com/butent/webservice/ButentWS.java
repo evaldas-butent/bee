@@ -34,6 +34,8 @@ public class ButentWS extends Service {
   private static BeeLogger logger = LogUtils.getLogger(ButentWS.class);
 
   public static ResponseObject getPort(String address, String login, String password) {
+    logger.info("Connecting to webservice:", address);
+
     ButentWS butentWS;
     try {
       butentWS = new ButentWS(new URL(address));
@@ -82,10 +84,15 @@ public class ButentWS extends Service {
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("GetSQLData", "<query>" + query + "</query>");
 
-    Node node = XmlUtils.fromString(answer).getFirstChild();
+    Node node = null;
+    try {
+      node = XmlUtils.fromString(answer).getFirstChild();
 
-    if (BeeUtils.same(node.getNodeName(), "Error")) {
-      return ResponseObject.error(node.getTextContent());
+      if (BeeUtils.same(node.getNodeName(), "Error")) {
+        return ResponseObject.error(node.getTextContent());
+      }
+    } catch (Exception e) {
+      return ResponseObject.error(answer);
     }
     logger.info("GetSQLData:", "received",
         node.hasChildNodes() ? node.getChildNodes().getLength() : 0, "records");
@@ -119,6 +126,41 @@ public class ButentWS extends Service {
     } else {
       logger.info("ImportDoc:", "import succeeded");
     }
+    return ResponseObject.response(answer);
+  }
+
+  public static ResponseObject importItem(String address, String login, String password,
+      String itemName, String brandName, String brandCode) {
+
+    ResponseObject response = getPort(address, login, password);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+    logger.info("ImportItem:", "importing item...");
+
+    StringBuilder sb = new StringBuilder("<item>")
+        .append("<pavad>").append(itemName).append("</pavad>")
+        .append("<gamintojas>").append(brandName).append("</gamintojas>")
+        .append("<gam_art>").append(brandCode).append("</gam_art>")
+        .append("</item>");
+
+    String answer = ((ButentWebServiceSoapPort) response.getResponse())
+        .process("ImportItem", sb.toString());
+
+    try {
+      Node node = XmlUtils.fromString(answer).getFirstChild();
+
+      if (BeeUtils.same(node.getNodeName(), "Error")) {
+        return ResponseObject.error(node.getTextContent());
+      } else {
+        answer = node.getTextContent();
+      }
+    } catch (Exception e) {
+      return ResponseObject.error(answer);
+    }
+    logger.info("ImportItem:", "import succeeded. New ItemID =", answer);
+
     return ResponseObject.response(answer);
   }
 

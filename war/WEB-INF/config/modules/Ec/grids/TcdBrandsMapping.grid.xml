@@ -4,6 +4,7 @@
   name="TcdBrandsMapping" viewName="TcdBrandsMapping" caption="=tcdBrandsMapping"
   >
   <columns>
+    <DataColumn name="Supplier" itemKey="EcSupplier" />
     <DataColumn name="SupplierBrand" />
     <RelColumn name="Brand" />
   </columns>

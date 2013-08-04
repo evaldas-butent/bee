@@ -32,9 +32,15 @@ public class WSDocument {
   private final String documentId;
   private final DateTime date;
   private final String operation;
+
   private final String company;
   private String companyCode;
   private String companyVATCode;
+  private String companyAddress;
+  private String companyPostIndex;
+  private String companyCity;
+  private String companyCountry;
+
   private final String warehouse;
 
   private final List<WSDocumentItem> items = Lists.newArrayList();
@@ -73,6 +79,18 @@ public class WSDocument {
       if (!BeeUtils.isEmpty(companyVATCode)) {
         sb.append("<pvm_kodas>").append(companyVATCode).append("</pvm_kodas>");
       }
+      if (!BeeUtils.isEmpty(companyAddress)) {
+        sb.append("<adresas>").append(companyAddress).append("</adresas>");
+      }
+      if (!BeeUtils.isEmpty(companyPostIndex)) {
+        sb.append("<indeksas>").append(companyPostIndex).append("</indeksas>");
+      }
+      if (!BeeUtils.isEmpty(companyCity)) {
+        sb.append("<miestas>").append(companyCity).append("</miestas>");
+      }
+      if (!BeeUtils.isEmpty(companyCountry)) {
+        sb.append("<salis>").append(companyCountry).append("</salis>");
+      }
       if (!BeeUtils.isEmpty(item.price)) {
         sb.append("<kaina>").append(item.price).append("</kaina>");
 
@@ -85,8 +103,24 @@ public class WSDocument {
     return sb.append("</VFPData>").toString();
   }
 
+  public void setCompanyAddress(String companyAddress) {
+    this.companyAddress = companyAddress;
+  }
+
+  public void setCompanyCity(String companyCity) {
+    this.companyCity = companyCity;
+  }
+
   public void setCompanyCode(String companyCode) {
     this.companyCode = companyCode;
+  }
+
+  public void setCompanyCountry(String companyCountry) {
+    this.companyCountry = companyCountry;
+  }
+
+  public void setCompanyPostIndex(String companyPostIndex) {
+    this.companyPostIndex = companyPostIndex;
   }
 
   public void setCompanyVATCode(String companyVATCode) {
