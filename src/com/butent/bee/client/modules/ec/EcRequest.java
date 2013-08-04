@@ -11,14 +11,14 @@ public class EcRequest {
   private final long startTime = System.currentTimeMillis();
 
   private final String service;
-  private final String query;
+  private final String label;
   
   private String progressId;
   private int requestId = BeeConst.UNDEF;
   
-  public EcRequest(String service, String query) {
+  public EcRequest(String service, String label) {
     this.service = service;
-    this.query = query;
+    this.label = label;
   }
 
   public String elapsedMillis() {
@@ -55,16 +55,16 @@ public class EcRequest {
     return !BeeConst.isUndef(getRequestId());
   }
   
-  public boolean sameQuery(String qry) {
-    return BeeUtils.equalsTrim(query, qry);
+  public boolean sameLabel(String lbl) {
+    return BeeUtils.equalsTrim(label, lbl);
   }
 
   public boolean sameService(String svc) {
     return Objects.equal(service, svc);
   }
 
-  String getQuery() {
-    return query;
+  String getLabel() {
+    return label;
   }
 
   String getService() {

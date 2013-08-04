@@ -103,7 +103,7 @@ public class MetaDataBean {
   private void getTables(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff) {
     try {
       DatabaseMetaData md = ds.getDbMd();
-      ResultSet rs = md.getTables(null, null, null, null);
+      ResultSet rs = md.getTables(null, null, reqInfo.getParameter(0), null);
 
       rsb.rsToResponse(rs, buff, reqInfo.isDebug());
 

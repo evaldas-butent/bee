@@ -90,6 +90,7 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.style.Axis;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
@@ -156,6 +157,7 @@ import com.butent.bee.shared.utils.Wildcards;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -384,11 +386,11 @@ public final class CliWorker {
     } else if ("rebuild".equals(z)) {
       rebuildSomething(args);
 
+    } else if (z.startsWith("rot") || "scale".equals(z) || "skew".equals(z) || "tt".equals(z)) {
+      animate(arr);
+
     } else if ("rpc".equals(z)) {
       showRpc();
-
-    } else if ("scale".equals(z)) {
-      scale(arr);
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args);
@@ -427,7 +429,7 @@ public final class CliWorker {
       showTableInfo(args);
 
     } else if ("tables".equals(z)) {
-      BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
+      getTables(args);
 
     } else if (z.startsWith("tile")) {
       doTiles(args);
@@ -473,6 +475,207 @@ public final class CliWorker {
       return false;
     }
     return true;
+  }
+
+  private static void animate(String[] arr) {
+
+    final class Raf extends RafCallback {
+      private final String function;
+      private Axis axis;
+
+      private final EnumMap<Axis, Double> from = Maps.newEnumMap(Axis.class);
+      private final EnumMap<Axis, Double> to = Maps.newEnumMap(Axis.class);
+
+      private Style style;
+
+      private Raf(String trf, double duration) {
+        super(duration);
+
+        double lower;
+        double upper;
+
+        if (trf.startsWith("r")) {
+          function = StyleUtils.TRANSFORM_ROTATE;
+          lower = 0.0;
+          upper = 360.0;
+
+        } else if (trf.startsWith("sk")) {
+          function = StyleUtils.TRANSFORM_SKEW;
+          axis = Axis.X;
+          lower = 0.0;
+          upper = 180.0;
+
+        } else if (trf.startsWith("t")) {
+          function = StyleUtils.TRANSFORM_TRANSLATE;
+          lower = 0.0;
+          upper = 50.0;
+
+        } else {
+          function = StyleUtils.TRANSFORM_SCALE;
+          lower = 1.0;
+          upper = 0.1;
+        }
+
+        for (Axis a : Axis.values()) {
+          from.put(a, lower);
+          to.put(a, upper);
+        }
+      }
+
+      @Override
+      protected void onComplete() {
+        StyleUtils.clearTransform(style);
+      }
+
+      @Override
+      protected boolean run(double elapsed) {
+        if (axis == null) {
+          if (isRotate()) {
+            StyleUtils.setTransformRotate(style, getInt(elapsed, Axis.X));
+          } else if (isScale()) {
+            StyleUtils.setTransformScale(style, getDouble(elapsed, Axis.X),
+                getDouble(elapsed, Axis.Y));
+          } else if (isSkew()) {
+            StyleUtils.setTransformSkew(style, Axis.X, getInt(elapsed, Axis.X));
+          } else if (isTranslate()) {
+            StyleUtils.setTransformTranslate(style, getDouble(elapsed, Axis.X), CssUnit.PX,
+                getDouble(elapsed, Axis.Y), CssUnit.PX);
+          }
+
+        } else if (isRotate()) {
+          StyleUtils.setTransformRotate(style, axis, getInt(elapsed, axis));
+        } else if (isScale()) {
+          StyleUtils.setTransformScale(style, axis, getDouble(elapsed, axis));
+        } else if (isSkew()) {
+          StyleUtils.setTransformSkew(style, axis, getInt(elapsed, axis));
+        } else if (isTranslate()) {
+          StyleUtils.setTransformTranslate(style, axis, getDouble(elapsed, axis), CssUnit.PX);
+        }
+
+        return true;
+      }
+
+      private double getDouble(double elapsed, Axis a) {
+        if (elapsed < getDuration() / 2) {
+          return BeeUtils.rescale(elapsed, 0, getDuration() / 2, from.get(a), to.get(a));
+        } else {
+          return BeeUtils
+              .rescale(elapsed, getDuration() / 2, getDuration(), to.get(a), from.get(a));
+        }
+      }
+
+      private int getInt(double elapsed, Axis a) {
+        return BeeUtils.round(getDouble(elapsed, a));
+      }
+
+      private boolean isRotate() {
+        return StyleUtils.TRANSFORM_ROTATE.equals(function);
+      }
+
+      private boolean isScale() {
+        return StyleUtils.TRANSFORM_SCALE.equals(function);
+      }
+
+      private boolean isSkew() {
+        return StyleUtils.TRANSFORM_SKEW.equals(function);
+      }
+
+      private boolean isTranslate() {
+        return StyleUtils.TRANSFORM_TRANSLATE.equals(function);
+      }
+    }
+
+    Raf raf = new Raf(arr[0], 5000);
+
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
+      char prop = arr[i].toLowerCase().charAt(0);
+      String value = (arr[i].length() > 1) ? arr[i].substring(1) : BeeConst.STRING_EMPTY;
+
+      value = BeeUtils.removePrefix(value, '=');
+      value = BeeUtils.removePrefix(value, ':');
+
+      switch (prop) {
+        case '#':
+          if (!value.isEmpty()) {
+            Element elem = Document.get().getElementById(value);
+            if (elem == null) {
+              logger.warning("element id:", value, "not found");
+            } else {
+              raf.style = elem.getStyle();
+              logger.debug("id", value, elem.getTagName(), elem.getClassName());
+            }
+          }
+          break;
+
+        case 'd':
+          if (BeeUtils.isPositiveDouble(value)) {
+            raf.setDuration(BeeUtils.toDouble(value));
+            logger.debug("duration", raf.getDuration());
+          }
+          break;
+
+        case 'l':
+          if (BeeUtils.isDouble(value)) {
+            double lower = BeeUtils.toDouble(value);
+            for (Axis a : Axis.values()) {
+              raf.from.put(a, lower);
+            }
+            logger.debug("from", lower);
+          }
+          break;
+
+        case 'u':
+          if (BeeUtils.isDouble(value)) {
+            double upper = BeeUtils.toDouble(value);
+            for (Axis a : Axis.values()) {
+              raf.to.put(a, upper);
+            }
+            logger.debug("to", upper);
+          }
+          break;
+
+        case 'x':
+          if (value.isEmpty() || raf.isRotate() || raf.isSkew()) {
+            raf.axis = Axis.X;
+            logger.debug("axis x");
+          }
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.X, BeeUtils.toDouble(value));
+            logger.debug("to x", raf.to.get(Axis.X));
+          }
+          break;
+
+        case 'y':
+          if (value.isEmpty() || raf.isRotate() || raf.isSkew()) {
+            raf.axis = Axis.Y;
+            logger.debug("axis y");
+          }
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.Y, BeeUtils.toDouble(value));
+            logger.debug("to y", raf.to.get(Axis.Y));
+          }
+          break;
+
+        case 'z':
+          raf.axis = Axis.Z;
+          logger.debug("axis z");
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.Z, BeeUtils.toDouble(value));
+            logger.debug("to z", raf.to.get(Axis.Z));
+          }
+          break;
+      }
+    }
+
+    if (raf.style == null) {
+      IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
+      if (widget == null) {
+        widget = BeeKeeper.getScreen().getScreenPanel();
+      }
+      raf.style = widget.asWidget().getElement().getStyle();
+    }
+
+    raf.start();
   }
 
   private static void clear(String args) {
@@ -1171,6 +1374,14 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
+  private static void getTables(String args) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
+    if (!BeeUtils.isEmpty(args)) {
+      params.addPositionalHeader(args.trim());
+    }
+    BeeKeeper.getRpc().makeGetRequest(params);
+  }
+
   private static void inform(String... messages) {
     List<String> lst = Lists.newArrayList(messages);
     Global.showInfo(lst);
@@ -1429,6 +1640,8 @@ public final class CliWorker {
     });
   }
 
+  // CHECKSTYLE:ON
+
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
@@ -1440,103 +1653,6 @@ public final class CliWorker {
       }
     }
   }-*/;
-
-  // CHECKSTYLE:ON
-
-  private static void scale(String[] arr) {
-
-    final class Raf extends RafCallback {
-      private double fromX = 1.0;
-      private double fromY = 1.0;
-
-      private double toX = 0.1;
-      private double toY = 0.1;
-
-      private Style style;
-
-      private Raf(double duration) {
-        super(duration);
-      }
-
-      @Override
-      protected void onComplete() {
-        StyleUtils.clearTransform(style);
-      }
-
-      @Override
-      protected boolean run(double elapsed) {
-        double x;
-        double y;
-
-        if (elapsed < getDuration() / 2) {
-          x = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromX, toX);
-          y = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromY, toY);
-        } else {
-          x = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toX, fromX);
-          y = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toY, fromY);
-        }
-
-        StyleUtils.setTransformScale(style, x, y);
-        return true;
-      }
-    }
-
-    Raf raf = new Raf(5000);
-
-    for (int i = 1; i < ArrayUtils.length(arr); i++) {
-      char prop = arr[i].toLowerCase().charAt(0);
-      String value = arr[i].substring(1);
-
-      value = BeeUtils.removePrefix(value, '=');
-      value = BeeUtils.removePrefix(value, ':');
-      if (value.isEmpty()) {
-        continue;
-      }
-
-      switch (prop) {
-        case '#':
-          Element elem = Document.get().getElementById(value);
-          if (elem == null) {
-            logger.warning("element id:", value, "not found");
-          } else {
-            raf.style = elem.getStyle();
-            logger.debug("id", value, elem.getTagName(), elem.getClassName());
-          }
-          break;
-
-        case 'd':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.setDuration(BeeUtils.toDouble(value));
-            logger.debug("duration", raf.getDuration());
-          }
-          break;
-
-        case 'x':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.toX = BeeUtils.toDouble(value);
-            logger.debug("toX", raf.toX);
-          }
-          break;
-
-        case 'y':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.toY = BeeUtils.toDouble(value);
-            logger.debug("toY", raf.toY);
-          }
-          break;
-      }
-    }
-
-    if (raf.style == null) {
-      IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
-      if (widget == null) {
-        widget = BeeKeeper.getScreen().getScreenPanel();
-      }
-      raf.style = widget.asWidget().getElement().getStyle();
-    }
-
-    raf.start();
-  }
 
   private static void setDebug(String args) {
     if (BeeUtils.same(args, "ec")) {

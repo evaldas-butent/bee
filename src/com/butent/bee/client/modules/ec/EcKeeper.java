@@ -88,7 +88,7 @@ public final class EcKeeper {
   public static boolean checkResponse(EcRequest request, ResponseObject response) {
     boolean pending = pendingRequests.contains(request);
     if (isDebug()) {
-      logger.debug(request.getService(), request.getQuery());
+      logger.debug(request.getService(), request.getLabel());
       logger.debug("response received", request.elapsedMillis(), pending);
     }
 
@@ -237,10 +237,10 @@ public final class EcKeeper {
     return debug;
   }
 
-  public static EcRequest maybeCreateRequest(String service, String query) {
+  public static EcRequest maybeCreateRequest(String service, String label) {
     if (!pendingRequests.isEmpty()) {
       for (EcRequest request : pendingRequests) {
-        if (request.sameService(service) && request.sameQuery(query)) {
+        if (request.sameService(service) && request.sameLabel(label)) {
           return null;
         }
       }
@@ -251,7 +251,7 @@ public final class EcKeeper {
       pendingRequests.clear();
     }
 
-    return new EcRequest(service, query);
+    return new EcRequest(service, label);
   }
 
   public static void onRequestStart(final EcRequest request, int requestId) {
@@ -265,7 +265,7 @@ public final class EcKeeper {
       }
     });
 
-    String progressId = BeeKeeper.getScreen().createProgress(request.getQuery(), null, cancel);
+    String progressId = BeeKeeper.getScreen().createProgress(request.getLabel(), null, cancel);
     request.setProgressId(progressId);
 
     pendingRequests.add(request);
@@ -397,14 +397,14 @@ public final class EcKeeper {
     });
   }
 
-  public static void requestItems(String service, String query, ParameterList params,
+  public static void requestItems(String service, String label, ParameterList params,
       final Consumer<List<EcItem>> callback) {
 
     Assert.notEmpty(service);
     Assert.notNull(params);
     Assert.notNull(callback);
 
-    final EcRequest request = maybeCreateRequest(service, query);
+    final EcRequest request = maybeCreateRequest(service, label);
     if (request == null) {
       return;
     }

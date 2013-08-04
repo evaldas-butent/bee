@@ -6,6 +6,7 @@
   position: relative;
   border-bottom: 1px solid #ccc;
   background-color: #ebebeb;
+  overflow: hidden;
 }
 
 .bee-ec-Logo {
@@ -91,25 +92,70 @@
   font-weight: bold;
 }
 
-.bee-ec-cartList {
+.bee-ec-Command-generalItems,
+.bee-ec-Command-bikeItems {
+  display: none;
+}  
+
+.bee-ec-carts {
   position: absolute;
   right: 1em;
-  bottom: 2ex;
+  bottom: 2px;
   border-collapse: collapse;
 }
-.bee-ec-cartList td {
-  padding: 1px 3px;
+.bee-ec-cartPicture {
+  width: 40px;
+  height: 40px;
+  margin-right: 1em;
+  cursor: default;
 }
+
+.bee-ec-cartList {
+  border-collapse: collapse;
+  color: white;
+}
+
+.bee-ec-cartList tr:first-child {
+  border-bottom: 2px solid transparent;
+}
+.bee-ec-cartList-active {
+  background-image: url("images/ec/red_background.png");
+}
+.bee-ec-cartList-inactive {
+  background-color: black;
+  opacity: 0.5;
+}
+
+.bee-ec-cartList td {
+  padding: 2px 4px;
+}
+.bee-ec-cartList-activate-cell {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.bee-ec-cartList-info-cell {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
 .bee-ec-cartList-activate input {
   margin: 1px 0;
 }
 .bee-ec-cartList-hasItems .bee-ec-cartList-label {
-  color: #00d;
-  text-decoration: underline;
   cursor: pointer;
-}  
-.bee-ec-cartList-inactive {
-  opacity: 0.5;
+}
+
+@keyframes rotate {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+@-webkit-keyframes rotate {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
+.bee-ec-cartList-updated .bee-ec-cartList-info {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
 }
 
 .bee-ec-UserContainer {
@@ -182,8 +228,8 @@
 .bee-ec-Featured-name,
 .bee-ec-Novelty-name {
   position: absolute;
-  top: 20px;
-  height: 44px;
+  top: 2px;
+  height: 64px;
   left: 120px;
   overflow: hidden;
   font-size: medium;
@@ -241,12 +287,15 @@
   font-weight: bold;
 }
 
-.bee-ec-ItemList-itemRow:nth-child(odd) {
+.bee-ec-ItemList-itemRow:nth-child(odd),
+.bee-ec-shoppingCart-itemRow:nth-child(odd) {
   background-color: #f5f5f5;
 }
-.bee-ec-ItemList-itemRow:nth-child(even) {
+.bee-ec-ItemList-itemRow:nth-child(even),
+.bee-ec-shoppingCart-itemRow:nth-child(even) {
   background-color: #ebebeb;
 }
+
 .bee-ec-ItemList-itemRow:hover {
   background-color: #dfd;
 }
@@ -268,9 +317,6 @@
 .bee-ec-ItemList-picture {
   width: 100px;
   height: 100px;
-}
-.bee-ec-ItemList-info {
-  max-width: 240px;
 }
 
 .bee-ec-ItemList-name {
@@ -313,9 +359,10 @@
 
 .bee-ec-ItemList-more {
   margin-top: 5px;
-  margin-left: 380px;
+  margin-left: 360px;
+  background-image: url("images/ec/red_background.png");
+  color: white;
   font-size: medium;
-  color: black;
 }
 
 .bee-ec-ItemPanel {
@@ -354,12 +401,19 @@
 }
 
 .bee-ec-ItemPanel-brandsAndItems-wrapper {
-  overflow: hidden;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
 }
+
 .bee-ec-ItemPanel-brands-wrapper {
   margin-right: 1em;
-  float: left;
-  max-width: 200px;
 }
 .bee-ec-ItemPanel-brands-caption {
   font-weight: bold;
@@ -372,6 +426,13 @@
 }
 .bee-ec-ItemPanel-brand-selected {
   color: red;
+}
+
+.bee-ec-ItemPanel-items-wrapper {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  overflow: auto;
 }
 
 .bee-ec-searchByCar-carPanel {
@@ -633,6 +694,7 @@
 .bee-ec-cartAccumulator-plus,
 .bee-ec-cartAccumulator-minus {
   display: block;
+  width: 28px;
   height: 28px;
 }
 .bee-ec-cartAccumulator-plus {

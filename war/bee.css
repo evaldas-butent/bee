@@ -1906,14 +1906,10 @@ body {
   position: absolute;
   border: none;
 }
-.bee-HtmlEditor-label-html,
-.bee-HtmlEditor-label-text {
+.bee-HtmlEditor-label-html {
   position: absolute;
   background-color: white;
   overflow: auto;
-}
-.bee-HtmlEditor-label-text {
-  white-space: pre;
 }
 
 .bee-HtmlEditor-inputArea {

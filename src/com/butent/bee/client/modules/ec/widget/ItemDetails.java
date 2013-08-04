@@ -69,11 +69,7 @@ public class ItemDetails extends Flow {
     String styleCarInfo = stylePrefix + "info";
 
     for (EcCarType ect : info.getCarTypes()) {
-      String carInfo = BeeUtils.joinItems(ect.getManufacturer(), ect.getModelName(),
-          ect.getTypeName(), EcUtils.renderProduced(ect.getProducedFrom(), ect.getProducedTo()),
-          ect.getPower());
-
-      Label infoLabel = new Label(carInfo);
+      Label infoLabel = new Label(ect.getInfo());
       infoLabel.addStyleName(styleCarInfo);
 
       wrapper.add(infoLabel);

@@ -225,6 +225,15 @@ class SearchByCar extends EcView {
     });
   }
 
+  private EcCarType findType(long id) {
+    for (EcCarType type : types) {
+      if (type.getTypeId() == id) {
+        return type;
+      }
+    }
+    return null;
+  }
+
   private String getEngine() {
     return engine;
   }
@@ -326,16 +335,18 @@ class SearchByCar extends EcView {
       resetItems();
       renderTypes();
 
+      EcCarType type = findType(id);
+      String label = (type == null) ? BeeUtils.toString(id) : type.getInfo();
+
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
       params.addQueryItem(VAR_TYPE, id);
 
-      EcKeeper.requestItems(SVC_GET_ITEMS_BY_CAR_TYPE, BeeUtils.toString(id), params,
-          new Consumer<List<EcItem>>() {
-            @Override
-            public void accept(List<EcItem> items) {
-              EcKeeper.renderItems(itemPanel, items);
-            }
-          });
+      EcKeeper.requestItems(SVC_GET_ITEMS_BY_CAR_TYPE, label, params, new Consumer<List<EcItem>>() {
+        @Override
+        public void accept(List<EcItem> items) {
+          EcKeeper.renderItems(itemPanel, items);
+        }
+      });
     }
   }
 

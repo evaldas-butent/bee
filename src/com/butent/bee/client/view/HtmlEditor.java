@@ -64,9 +64,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   private final Flow canvas;
 
   private final Frame urlFrame;
-
   private final CustomDiv htmlLabel;
-  private final CustomDiv textLabel;
 
   private final InputArea inputArea;
   private final RichTextEditor richText;
@@ -105,9 +103,6 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
     this.htmlLabel = new CustomDiv(STYLE_LABEL + STYLE_SUFFIX_HTML);
     canvas.add(htmlLabel);
-
-    this.textLabel = new CustomDiv(STYLE_LABEL + STYLE_SUFFIX_TEXT);
-    canvas.add(textLabel);
 
     add(canvas);
 
@@ -319,10 +314,8 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
     if (hasHtml()) {
       htmlLabel.setHTML(getCurrentHtml());
-      textLabel.setText(getCurrentHtml());
     } else {
       StyleUtils.hideDisplay(htmlLabel);
-      StyleUtils.hideDisplay(textLabel);
     }
   }
 
@@ -388,18 +381,12 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
     if (hasHtml()) {
       if (!had) {
         StyleUtils.unhideDisplay(htmlLabel);
-        StyleUtils.unhideDisplay(textLabel);
       }
-
       htmlLabel.setHTML(getCurrentHtml());
-      textLabel.setText(getCurrentHtml());
 
     } else if (had) {
       htmlLabel.setHTML(BeeConst.STRING_EMPTY);
-      textLabel.setText(BeeConst.STRING_EMPTY);
-
       StyleUtils.hideDisplay(htmlLabel);
-      StyleUtils.hideDisplay(textLabel);
     }
   }
 
@@ -430,11 +417,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
       StyleUtils.setLeft(htmlLabel, width / 2 + margin);
       StyleUtils.setTop(htmlLabel, margin);
-      StyleUtils.setSize(htmlLabel, width / 2 - margin * 2, height / 2 - margin * 2);
-
-      StyleUtils.setLeft(textLabel, width / 2 + margin);
-      StyleUtils.setTop(textLabel, height / 2 + margin);
-      StyleUtils.setSize(textLabel, width / 2 - margin * 2, height / 2 - margin * 2);
+      StyleUtils.setSize(htmlLabel, width / 2 - margin * 2, height - margin * 2);
 
     } else if (hasUrl()) {
       StyleUtils.setLeft(urlFrame, margin);
@@ -444,11 +427,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
     } else if (hasHtml()) {
       StyleUtils.setLeft(htmlLabel, margin);
       StyleUtils.setTop(htmlLabel, margin);
-      StyleUtils.setSize(htmlLabel, width / 2 - margin * 2, height - margin * 2);
-
-      StyleUtils.setLeft(textLabel, width / 2 + margin);
-      StyleUtils.setTop(textLabel, margin);
-      StyleUtils.setSize(textLabel, width / 2 - margin * 2, height - margin * 2);
+      StyleUtils.setSize(htmlLabel, width - margin * 2, height - margin * 2);
     }
   }
 

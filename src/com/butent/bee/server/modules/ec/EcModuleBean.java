@@ -228,8 +228,8 @@ public class EcModuleBean implements BeeModule {
       response = getItemAnalogs(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_INFO)) {
-      query = reqInfo.getParameter(COL_TCD_ARTICLE);
-      response = getItemInfo(BeeUtils.toLongOrNull(query));
+      article = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
+      response = getItemInfo(article);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_PICTURES)) {

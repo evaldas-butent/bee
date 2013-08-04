@@ -261,8 +261,8 @@ public class SystemBean {
     return getTable(tblName).getExtendedInfo();
   }
 
-  public Collection<String> getTableNames() {
-    Collection<String> tables = Lists.newArrayList();
+  public List<String> getTableNames() {
+    List<String> tables = Lists.newArrayList();
 
     for (BeeTable table : getTables()) {
       tables.add(table.getName());

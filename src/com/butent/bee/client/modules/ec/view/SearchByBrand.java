@@ -34,18 +34,18 @@ class SearchByBrand extends EcView {
 
   private final Button brandWidget;
   private final IndexSelector brandSelector;
-  
+
   private final ItemPanel itemPanel;
-  
+
   private final List<EcBrand> brands = Lists.newArrayList();
   private int brandIndex = BeeConst.UNDEF;
-  
+
   SearchByBrand() {
     super();
-    
+
     this.brandWidget = new Button(Localized.getConstants().ecItemBrand());
     brandWidget.addStyleName(STYLE_BRAND + "widget");
-    
+
     this.brandSelector = new IndexSelector(STYLE_BRAND + "selector");
 
     this.itemPanel = new ItemPanel();
@@ -84,33 +84,33 @@ class SearchByBrand extends EcView {
   private int getBrandIndex() {
     return brandIndex;
   }
-  
+
   private void onSelectBrand(int index) {
     UiHelper.closeDialog(brandSelector);
     if (!BeeUtils.isIndex(brands, index)) {
       return;
     }
-    
+
     if (index != getBrandIndex()) {
       setBrandIndex(index);
-      
-      brandWidget.setText(brands.get(index).getName());
-      brandWidget.addStyleName(STYLE_BRAND + "selected");
-      
-      itemPanel.clear();
-      
-      long id = brands.get(index).getId();
-      
-      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_BRAND);
-      params.addQueryItem(COL_TCD_BRAND, id);
 
-      EcKeeper.requestItems(SVC_GET_ITEMS_BY_BRAND, BeeUtils.toString(id), params,
-          new Consumer<List<EcItem>>() {
-            @Override
-            public void accept(List<EcItem> items) {
-              EcKeeper.renderItems(itemPanel, items);
-            }
-          });
+      EcBrand brand = brands.get(index);
+      String name = brand.getName();
+
+      brandWidget.setText(name);
+      brandWidget.addStyleName(STYLE_BRAND + "selected");
+
+      itemPanel.clear();
+
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_BRAND);
+      params.addQueryItem(COL_TCD_BRAND, brand.getId());
+
+      EcKeeper.requestItems(SVC_GET_ITEMS_BY_BRAND, name, params, new Consumer<List<EcItem>>() {
+        @Override
+        public void accept(List<EcItem> items) {
+          EcKeeper.renderItems(itemPanel, items);
+        }
+      });
     }
   }
 
@@ -120,7 +120,7 @@ class SearchByBrand extends EcView {
       public void accept(List<EcBrand> input) {
         brands.clear();
         brands.addAll(input);
-        
+
         if (!brandSelector.hasSelectionHandler()) {
           brandSelector.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -129,19 +129,19 @@ class SearchByBrand extends EcView {
             }
           });
         }
-        
+
         List<String> names = Lists.newArrayList();
         for (EcBrand brand : brands) {
           names.add(brand.getName());
         }
         brandSelector.render(names);
-        
+
         Popup popup = new Popup(OutsideClick.CLOSE, STYLE_BRAND + "dialog");
         popup.setWidget(brandSelector);
 
         popup.setHideOnEscape(true);
         popup.showRelativeTo(brandWidget.getElement());
-        
+
         brandSelector.focus();
       }
     });

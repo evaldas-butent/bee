@@ -228,8 +228,17 @@ public class EcScreen extends ScreenImpl {
         Localized.getConstants().ecBikeItems(), Type.LABEL));
 
     container.add(searchBy);
+    
+    Horizontal carts = new Horizontal();
+    EcStyles.add(carts, "carts");
 
-    container.add(EcKeeper.getCartlist());
+    Image image = new Image(EcUtils.imageUrl("cart.png"));
+    EcStyles.add(image, "cartPicture");
+    
+    carts.add(image);
+    carts.add(EcKeeper.getCartlist());
+
+    container.add(carts);
   }
 
   private static Widget createCommandWidget(String service, String html, Type type) {

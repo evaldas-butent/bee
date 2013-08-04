@@ -73,6 +73,7 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -557,9 +558,26 @@ public class UiServiceBean {
 
     if (sys.isTable(tableName)) {
       info.addAll(sys.getTableInfo(tableName));
+
     } else {
-      for (String name : sys.getTableNames()) {
-        PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
+      List<String> names = sys.getTableNames();
+      Collections.sort(names);
+
+      if (BeeUtils.isEmpty(tableName)) {
+        for (String name : names) {
+          PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
+        }
+
+      } else {
+        for (String name : names) {
+          if (BeeUtils.containsSame(name, tableName)) {
+            PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
+          }
+        }
+
+        if (info.isEmpty()) {
+          return ResponseObject.warning("table not found", tableName);
+        }
       }
     }
     return ResponseObject.response(info);

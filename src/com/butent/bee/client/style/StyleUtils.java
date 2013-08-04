@@ -384,6 +384,11 @@ public final class StyleUtils {
   public static final String BORDER_STYLE_INSET = "inset";
   public static final String BORDER_STYLE_OUTSET = "outset";
 
+  public static final String TRANSFORM_ROTATE = "rotate";
+  public static final String TRANSFORM_SCALE = "scale";
+  public static final String TRANSFORM_SKEW = "skew";
+  public static final String TRANSFORM_TRANSLATE = "translate";
+
   public static final String CSS_BORDER_WIDTH = "border-width";
   public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
   public static final String CSS_BORDER_RIGHT_WIDTH = "border-right-width";
@@ -1000,12 +1005,12 @@ public final class StyleUtils {
     Assert.notNull(obj);
     return getBackgroundImage(obj.getElement());
   }
-  
+
   public static int getBottom(Element el) {
     Assert.notNull(el);
     return getBottom(el.getStyle());
   }
-  
+
   public static int getBottom(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getBottom(), false);
@@ -2097,7 +2102,7 @@ public final class StyleUtils {
   }
 
   public static void setRectangle(Element el, int left, int top, int width, int height) {
-    Assert.notNull(el, "setRectangle: element is null");
+    Assert.notNull(el);
     setRectangle(el.getStyle(), left, top, width, height);
   }
 
@@ -2272,12 +2277,29 @@ public final class StyleUtils {
 
   public static void setTransformRotate(Style st, int angle) {
     Assert.notNull(st);
-    st.setProperty(getStyleTransformPropertyName(st), "rotate(" + angle + "deg)");
+    st.setProperty(getStyleTransformPropertyName(st),
+        TRANSFORM_ROTATE + BeeUtils.parenthesize(toDegrees(angle)));
   }
 
   public static void setTransformRotate(UIObject obj, int angle) {
     Assert.notNull(obj);
     setTransformRotate(obj.getElement(), angle);
+  }
+
+  public static void setTransformRotate(Element el, Axis axis, int angle) {
+    Assert.notNull(el);
+    setTransformRotate(el.getStyle(), axis, angle);
+  }
+
+  public static void setTransformRotate(Style st, Axis axis, int angle) {
+    Assert.notNull(st);
+    Assert.notNull(axis);
+    st.setProperty(getStyleTransformPropertyName(st), axis.rotate(angle));
+  }
+
+  public static void setTransformRotate(UIObject obj, Axis axis, int angle) {
+    Assert.notNull(obj);
+    setTransformRotate(obj.getElement(), axis, angle);
   }
 
   public static void setTransformScale(Element el, double x, double y) {
@@ -2287,12 +2309,77 @@ public final class StyleUtils {
 
   public static void setTransformScale(Style st, double x, double y) {
     Assert.notNull(st);
-    st.setProperty(getStyleTransformPropertyName(st), "scale(" + x + "," + y + ")");
+    st.setProperty(getStyleTransformPropertyName(st),
+        TRANSFORM_SCALE + BeeUtils.parenthesize(x + BeeConst.STRING_COMMA + y));
   }
 
   public static void setTransformScale(UIObject obj, double x, double y) {
     Assert.notNull(obj);
     setTransformScale(obj.getElement(), x, y);
+  }
+
+  public static void setTransformScale(Element el, Axis axis, double value) {
+    Assert.notNull(el);
+    setTransformScale(el.getStyle(), axis, value);
+  }
+
+  public static void setTransformScale(Style st, Axis axis, double value) {
+    Assert.notNull(st);
+    Assert.notNull(axis);
+    st.setProperty(getStyleTransformPropertyName(st), axis.scale(value));
+  }
+
+  public static void setTransformScale(UIObject obj, Axis axis, double value) {
+    Assert.notNull(obj);
+    setTransformScale(obj.getElement(), axis, value);
+  }
+
+  public static void setTransformSkew(Element el, Axis axis, int angle) {
+    Assert.notNull(el);
+    setTransformSkew(el.getStyle(), axis, angle);
+  }
+
+  public static void setTransformSkew(Style st, Axis axis, int angle) {
+    Assert.notNull(st);
+    Assert.notNull(axis);
+    st.setProperty(getStyleTransformPropertyName(st), axis.skew(angle));
+  }
+
+  public static void setTransformSkew(UIObject obj, Axis axis, int angle) {
+    Assert.notNull(obj);
+    setTransformSkew(obj.getElement(), axis, angle);
+  }
+  
+  public static void setTransformTranslate(Style st, double x, CssUnit xu, double y, CssUnit yu) {
+    Assert.notNull(st);
+    st.setProperty(getStyleTransformPropertyName(st), TRANSFORM_TRANSLATE
+        + BeeUtils.parenthesize(toCssLength(x, xu) + BeeConst.STRING_COMMA + toCssLength(y, yu)));
+  }
+
+  public static void setTransformTranslate(UIObject obj, double x, CssUnit xu,
+      double y, CssUnit yu) {
+    Assert.notNull(obj);
+    setTransformTranslate(obj.getElement(), x, xu, y, yu);
+  }
+
+  public static void setTransformTranslate(Element el, double x, CssUnit xu, double y, CssUnit yu) {
+    Assert.notNull(el);
+    setTransformTranslate(el.getStyle(), x, xu, y, yu);
+  }
+
+  public static void setTransformTranslate(Style st, Axis axis, double value, CssUnit unit) {
+    Assert.notNull(st);
+    st.setProperty(getStyleTransformPropertyName(st), axis.translate(value, unit));
+  }
+
+  public static void setTransformTranslate(UIObject obj, Axis axis, double value, CssUnit unit) {
+    Assert.notNull(obj);
+    setTransformTranslate(obj.getElement(), axis, value, unit);
+  }
+
+  public static void setTransformTranslate(Element el, Axis axis, double value, CssUnit unit) {
+    Assert.notNull(el);
+    setTransformTranslate(el.getStyle(), axis, value, unit);
   }
 
   public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
@@ -2398,6 +2485,10 @@ public final class StyleUtils {
 
   public static String toCssLength(double value, CssUnit unit) {
     return BeeUtils.toString(value) + normalizeUnit(unit).getCaption();
+  }
+
+  public static String toDegrees(int angle) {
+    return angle + "deg";
   }
 
   public static SafeStyles toSafeStyles(String s) {
