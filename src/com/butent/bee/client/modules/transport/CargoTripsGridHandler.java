@@ -63,6 +63,7 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
           Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
               "ExpeditionType", "ForwarderName"));
       relation.disableNewRow();
+      relation.setCaching(Relation.Caching.QUERY);
 
       CompoundFilter filter = Filter.and();
 

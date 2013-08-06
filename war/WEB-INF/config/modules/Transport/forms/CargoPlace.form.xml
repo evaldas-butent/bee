@@ -4,7 +4,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="CargoPlace" caption="Krovos taškai"
-  width="600" widthUnit="px" height="280" heightUnit="px"
+  width="600" widthUnit="px" height="310" heightUnit="px"
   >
   <SimplePanel class="flexBox-vertical-center">
     <xi:include href="widgets/CargoPlaces.widget.xml" />

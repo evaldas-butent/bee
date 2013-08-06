@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
@@ -143,6 +144,9 @@ public final class TransportHandler {
           Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
               "ExpeditionType", "ForwarderName"));
       relation.disableNewRow();
+
+      relation.setOrder(new Order(COL_TRIP_ID, false));
+      relation.setCaching(Relation.Caching.QUERY);
 
       final UnboundSelector selector = UnboundSelector.create(relation,
           Lists.newArrayList("TripNo"));
