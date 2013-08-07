@@ -66,6 +66,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
       }
       relation.setFilter(filter);
+      relation.setCaching(Relation.Caching.QUERY);
 
       final UnboundSelector selector = UnboundSelector.create(relation,
           Lists.newArrayList("OrderNo", "Description"));
