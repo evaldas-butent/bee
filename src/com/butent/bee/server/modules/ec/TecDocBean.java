@@ -130,7 +130,6 @@ public class TecDocBean {
   private static final String JPEG2000 = "JP2";
 
   private static final String TCD_SCHEMA = "TecDoc";
-  private static final String TCD_CRITERIA = "TcdCriteria";
 
   private static final String TCD_TECDOC_ID = "TecDocID";
   private static final String TCD_ARTICLE_ID = "ArticleID";
@@ -427,7 +426,7 @@ public class TecDocBean {
 
     builds.add(data);
 
-    data = new TcdData(new SqlCreate(TCD_CRITERIA, false)
+    data = new TcdData(new SqlCreate(TBL_TCD_CRITERIA, false)
         .addInteger(TCD_CRITERIA_ID, true)
         .addString(COL_TCD_CRITERIA_NAME, 50, true)
         .addString("ShortName", 50, false)
@@ -451,34 +450,24 @@ public class TecDocBean {
     data = new TcdData(new SqlCreate(TBL_TCD_ARTICLE_CRITERIA, false)
         .addInteger(TCD_ARTICLE_ID, true)
         .addInteger(TCD_CRITERIA_ID, true)
-        .addString(COL_TCD_CRITERIA_VALUE, 50, false)
-        .addInteger(TCD_TECDOC_ID, true),
+        .addString(COL_TCD_CRITERIA_VALUE, 50, false),
         new SqlSelect().setLimit(500000)
             .addField("_article_criteria", "acr_art_id", TCD_ARTICLE_ID)
             .addField("_article_criteria", "acr_cri_id", TCD_CRITERIA_ID)
             .addFields("_article_criteria", COL_TCD_CRITERIA_VALUE)
-            .addField("_article_criteria", "id", TCD_TECDOC_ID)
             .addFrom("_article_criteria"));
 
     data.addBaseIndexes(TCD_ARTICLE_ID);
-    data.addBaseIndexes(TCD_CRITERIA_ID);
 
     data.addPreparation(new SqlCreate("_article_criteria", false)
         .setDataSource(new SqlSelect().setDistinctMode(true)
             .addFields("tof_article_criteria", "acr_art_id", "acr_cri_id")
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("acr_value"),
                 SqlUtils.constant("NULL"), SqlUtils.field("_designations", "tex_text"),
-                "acr_value"), "Value")
+                "acr_value"), COL_TCD_CRITERIA_VALUE)
             .addFrom("tof_article_criteria")
             .addFromLeft("_designations", SqlUtils.join("tof_article_criteria", "acr_kv_des_id",
                 "_designations", "des_id"))));
-
-    data.addPreparation(new IsSql() {
-      @Override
-      public String getSqlString(SqlBuilder builder) {
-        return "ALTER TABLE _article_criteria ADD id INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST";
-      }
-    });
 
     builds.add(data);
 
@@ -711,20 +700,43 @@ public class TecDocBean {
         .setFrom(TBL_TCD_ARTICLES,
             SqlUtils.join(art, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID)));
 
-    // ---------------- TcdArticleCriteria
+    // ---------------- TcdArticleCriteria, TcdCriteria...
     String tcdArticleCriteria = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CRITERIA);
-    String tcdCriteria = SqlUtils.table(TCD_SCHEMA, TCD_CRITERIA);
 
-    insertData(TBL_TCD_ARTICLE_CRITERIA, new SqlSelect().setLimit(100000)
+    String artCrit = qs.sqlCreateTemp(new SqlSelect()
         .addFields(art, COL_TCD_ARTICLE)
-        .addField(tcdCriteria, "Name", COL_TCD_CRITERIA_NAME)
-        .addField(tcdArticleCriteria, "Value", COL_TCD_CRITERIA_VALUE)
+        .addFields(tcdArticleCriteria, COL_TCD_CRITERIA_VALUE, TCD_CRITERIA_ID)
         .addFrom(art)
         .addFromInner(tcdArticleCriteria,
-            SqlUtils.joinUsing(art, tcdArticleCriteria, TCD_ARTICLE_ID))
-        .addFromInner(tcdCriteria,
-            SqlUtils.joinUsing(tcdArticleCriteria, tcdCriteria, TCD_CRITERIA_ID))
-        .addOrder(tcdArticleCriteria, TCD_TECDOC_ID));
+            SqlUtils.joinUsing(art, tcdArticleCriteria, TCD_ARTICLE_ID)));
+
+    qs.sqlIndex(artCrit, TCD_CRITERIA_ID);
+    String tcdCriteria = SqlUtils.table(TCD_SCHEMA, TBL_TCD_CRITERIA);
+    String subq = SqlUtils.uniqueName();
+    String als = SqlUtils.uniqueName();
+
+    insertData(TBL_TCD_CRITERIA, new SqlSelect()
+        .addFields(tcdCriteria, COL_TCD_CRITERIA_NAME)
+        .addField(tcdCriteria, TCD_CRITERIA_ID, TCD_TECDOC_ID)
+        .addFrom(tcdCriteria)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(artCrit, TCD_CRITERIA_ID)
+            .addFrom(artCrit), subq, SqlUtils.joinUsing(tcdCriteria, subq, TCD_CRITERIA_ID))
+        .addFromLeft(TBL_TCD_CRITERIA, als,
+            SqlUtils.join(tcdCriteria, TCD_CRITERIA_ID, als, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_CRITERIA))));
+
+    insertData(TBL_TCD_ARTICLE_CRITERIA, new SqlSelect().setLimit(500000)
+        .addFields(artCrit, COL_TCD_ARTICLE, COL_TCD_CRITERIA_VALUE)
+        .addField(TBL_TCD_CRITERIA, sys.getIdName(TBL_TCD_CRITERIA), COL_TCD_CRITERIA)
+        .addFrom(artCrit)
+        .addFromInner(TBL_TCD_CRITERIA,
+            SqlUtils.join(artCrit, TCD_CRITERIA_ID, TBL_TCD_CRITERIA, TCD_TECDOC_ID))
+        .addOrder(artCrit, COL_TCD_ARTICLE)
+        .addOrder(TBL_TCD_CRITERIA, sys.getIdName(TBL_TCD_CRITERIA))
+        .addOrder(artCrit, COL_TCD_CRITERIA_VALUE));
+
+    qs.sqlDropTemp(artCrit);
 
     // ---------------- TcdArticleCategories, TcdCategories...
     String tcdArticleCategories = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CATEGORIES);
@@ -738,8 +750,6 @@ public class TecDocBean {
 
     qs.sqlIndex(artCateg, TCD_CATEGORY_ID);
     String tcdCategories = SqlUtils.table(TCD_SCHEMA, TBL_TCD_CATEGORIES);
-    String subq = SqlUtils.uniqueName();
-    String als = SqlUtils.uniqueName();
 
     String categ = qs.sqlCreateTemp(new SqlSelect()
         .addFields(tcdCategories, TCD_CATEGORY_ID, COL_TCD_CATEGORY_NAME, TCD_PARENT_ID)

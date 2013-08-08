@@ -82,8 +82,8 @@ public class EcModuleBean implements BeeModule {
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
 
   public static final String WS_ADDRESS = "http://82.135.245.222:8081/ButentWS/ButentWS.WSDL";
-  public static final String WS_LOGIN = "admin";
-  public static final String WS_PASSWORD = "gruntas";
+  public static final String WS_LOGIN = "www";
+  public static final String WS_PASSWORD = "bws";
 
   private static IsCondition oeNumberCondition = SqlUtils.equals(TBL_TCD_ANALOGS, COL_TCD_KIND, 3);
 
@@ -784,13 +784,15 @@ public class EcModuleBean implements BeeModule {
     }
     EcItemInfo ecItemInfo = new EcItemInfo();
 
-    SqlSelect criteriaQuery = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_NAME, COL_TCD_CRITERIA_VALUE)
+    SimpleRowSet criteriaData = qs.getData(new SqlSelect()
+        .addFields(TBL_TCD_CRITERIA, COL_TCD_CRITERIA_NAME)
+        .addFields(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE)
         .addFrom(TBL_TCD_ARTICLE_CRITERIA)
+        .addFromInner(TBL_TCD_CRITERIA,
+            sys.joinTables(TBL_TCD_CRITERIA, TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA))
         .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE, articleId))
-        .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_NAME);
+        .addOrder(TBL_TCD_CRITERIA, COL_TCD_CRITERIA_NAME));
 
-    SimpleRowSet criteriaData = qs.getData(criteriaQuery);
     if (!DataUtils.isEmpty(criteriaData)) {
       for (SimpleRow row : criteriaData) {
         ecItemInfo.addCriteria(new ArticleCriteria(row.getValue(COL_TCD_CRITERIA_NAME),

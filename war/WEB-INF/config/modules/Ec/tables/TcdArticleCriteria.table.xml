@@ -8,7 +8,7 @@
   >
   <Fields>
     <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
-    <String name="Name" precision="50" notNull="true" />
+    <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE" />
     <String name="Value" precision="50" />
   </Fields>
 </Table>

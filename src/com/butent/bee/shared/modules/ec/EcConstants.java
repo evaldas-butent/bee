@@ -173,6 +173,7 @@ public final class EcConstants {
   public static final String TBL_TCD_REMAINDERS = "TcdRemainders";
   public static final String TBL_TCD_BRANDS_MAPPING = "TcdBrandsMapping";
 
+  public static final String TBL_TCD_CRITERIA = "TcdCriteria";
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
 
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
@@ -330,7 +331,8 @@ public final class EcConstants {
   public static final String COL_TCD_ARTICLE_SUPPLIER = "ArticleSupplier";
   public static final String COL_TCD_SUPPLIER_BRAND = "SupplierBrand";
 
-  public static final String COL_TCD_CRITERIA_NAME = "Name";
+  public static final String COL_TCD_CRITERIA = "Criteria";
+  public static final String COL_TCD_CRITERIA_NAME = "CriteriaName";
   public static final String COL_TCD_CRITERIA_VALUE = "Value";
 
   public static final String COL_TCD_GRAPHICS = "Graphics";
