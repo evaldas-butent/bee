@@ -1,5 +1,7 @@
 package com.butent.bee.server;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
@@ -54,21 +56,13 @@ public class Invocation {
     String mode = reqInfo.getContent();
 
     if (BeeUtils.length(mode) >= 2) {
-      Locale lc = null;
-      for (String s : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
-        lc = I18nUtils.toLocale(s);
-        if (lc != null) {
-          break;
-        }
-      }
-      if (lc == null) {
-        lc = Localizations.getDefaultLocale();
-      }
+      List<Property> lst = Lists.newArrayList();
 
-      List<Property> lst = PropertyUtils.createProperties(
-          BeeUtils.joinWords("Locale", mode), I18nUtils.toString(lc),
-          "no", Localizations.getConstants(lc).no(),
-          "keyNotFound", Localizations.getMessages(lc).keyNotFound("test"));
+      Map<String, String> constants = Localizations.getDictionary(Localizations.getDefaultLocale());
+      for (String key : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
+        String value = constants.get(key);
+        PropertyUtils.addProperty(lst, key, BeeUtils.notEmpty(value, BeeConst.NULL)); 
+      }
 
       Map<Locale, File> avail = Localizations.getAvailableConstants();
       int idx = 0;
@@ -78,8 +72,6 @@ public class Invocation {
           PropertyUtils.addProperty(lst, 
               BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
         }
-        PropertyUtils.addProperty(lst, "Normalized",
-            I18nUtils.toString(Localizations.normalize(lc, avail)));
       }
 
       avail = Localizations.getAvailableMessages();
@@ -90,8 +82,6 @@ public class Invocation {
           PropertyUtils.addProperty(lst,
               BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
         }
-        PropertyUtils.addProperty(lst, "Normalized",
-            I18nUtils.toString(Localizations.normalize(lc, avail)));
       }
 
       Collection<Locale> locales = Localizations.getCachedConstantLocales();

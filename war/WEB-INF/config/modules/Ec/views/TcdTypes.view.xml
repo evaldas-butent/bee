@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdTypes" source="TcdTypes" newRowCaption="=tcdTypeNew"
+  >
+  <Columns>
+    <SimpleColumn name="Model" />
+    <SimpleJoin name="Model" joinType="LEFT">
+      <SimpleColumn name="Manufacturer" />
+      <SimpleJoin name="Manufacturer" joinType="LEFT">
+        <SimpleColumn name="ManufacturerName" />
+        <SimpleColumn name="Visible" />
+      </SimpleJoin>
+
+      <SimpleColumn name="ModelName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TypeName" />
+
+    <SimpleColumn name="ProducedFrom" />
+    <SimpleColumn name="ProducedTo" />
+    <SimpleColumn name="Ccm" />
+    <SimpleColumn name="KwFrom" />
+    <SimpleColumn name="KwTo" />
+    <SimpleColumn name="Cylinders" />
+    <SimpleColumn name="MaxWeight" />
+    <SimpleColumn name="Engine" />
+    <SimpleColumn name="Fuel" />
+    <SimpleColumn name="Body" />
+    <SimpleColumn name="Axle" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="ManufacturerName" />
+    <OrderBy column="ModelName" />
+    <OrderBy column="TypeName" />
+    <OrderBy column="ProducedFrom" />
+    <OrderBy column="KwFrom" />
+  </Order>
+</View>

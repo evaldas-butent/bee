@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Manufacturer" relation="TcdManufacturers" notNull="true" cascade="DELETE" label="=tcdManufacturer" />
-    <String name="ModelName" precision="50" notNull="true" label="=tcdModel" />
+    <String name="ModelName" precision="50" notNull="true" label="=ecCarModel" />
     <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

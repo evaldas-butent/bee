@@ -1,7 +1,6 @@
 package com.butent.bee.server.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -168,29 +167,6 @@ public class ResponseBuffer {
     add(el.getName());
     add(el.getValue());
     add(new DateTime().toTimeString());
-  }
-
-  public void addResource(String content) {
-    addResource(null, content, null, true);
-  }
-
-  public void addResource(String content, ContentType type) {
-    addResource(null, content, type, true);
-  }
-
-  public void addResource(String uri, String content) {
-    addResource(uri, content, null, false);
-  }
-
-  public void addResource(String uri, String content, ContentType type) {
-    addResource(uri, content, type, false);
-  }
-
-  public void addResource(String uri, String content, ContentType type, boolean readOnly) {
-    Assert.notNull(content);
-    buffer.append(new Resource(uri, content, type, readOnly).serialize());
-    count++;
-    setContentType(ContentType.RESOURCE);
   }
 
   public void addRow(Object... row) {

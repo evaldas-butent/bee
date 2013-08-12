@@ -5,7 +5,7 @@
   idName="UnitID"
   >
   <Fields>
-    <String name="Name" precision="10" notNull="true" unique="true" label="Mato.v" />
+    <String name="Name" precision="10" notNull="true" unique="true" label="=unit" />
     <String name="Caption" precision="30" />
     <Relation name="BaseUnit" relation="Units" />
     <Double name="Factor" />

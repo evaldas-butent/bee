@@ -186,6 +186,8 @@ public final class EcConstants {
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
   public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
 
+  public static final String VIEW_ARTICLE_CATEGORIES = "TcdArticleCategories";
+  public static final String VIEW_ARTICLE_GRAPHICS = "TcdArticleGraphics";
   public static final String VIEW_CATEGORIES = "TcdCategories";
 
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
@@ -285,6 +287,13 @@ public final class EcConstants {
   public static final String COL_TCD_ARTICLE = "Article";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";
   public static final String COL_TCD_ARTICLE_NR = "ArticleNr";
+  public static final String COL_TCD_ARTICLE_UNIT = "Unit";
+  public static final String COL_TCD_ARTICLE_WEIGHT = "Weight";
+  public static final String COL_TCD_ARTICLE_DESCRIPTION = "Description";
+  public static final String COL_TCD_ARTICLE_VISIBLE = "Visible";
+  public static final String COL_TCD_ARTICLE_NOVELTY = "Novelty";
+  public static final String COL_TCD_ARTICLE_FEATURED = "Featured";
+
   public static final String COL_TCD_SUPPLIER = "Supplier";
   public static final String COL_TCD_SUPPLIER_ID = "SupplierID";
 

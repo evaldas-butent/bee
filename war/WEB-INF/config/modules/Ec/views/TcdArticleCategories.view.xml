@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdArticleCategories" source="TcdArticleCategories" newRowCaption="=ecItemCategoryNew"
+  >
+  <Columns>
+    <SimpleColumn name="Article" />
+ 
+    <SimpleColumn name="Category" />
+    <SimpleJoin name="Category" joinType="LEFT">
+      <SimpleColumn name="CategoryName" />
+      <SimpleColumn name="MarginPercent" />
+      <SimpleColumn name="Note" />
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

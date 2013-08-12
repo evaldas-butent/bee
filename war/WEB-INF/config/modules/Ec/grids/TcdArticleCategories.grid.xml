@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TcdArticleCategories" viewName="TcdArticleCategories"
+  flexGrow="1" flexShrink="1"
+  >
+  <columns>
+    <RelColumn name="Category" minWidth="100" 
+        searchableColumns="CategoryName" choiceColumns="FullName"
+        selectorClass="bee-ec-CategorySelector" visibleLines="7" options="&#160;-&#160;" />
+  
+    <DataColumn name="MarginPercent" maxWidth="100" />
+    <DataColumn name="Note" maxWidth="200" />
+  </columns>
+</Grid>

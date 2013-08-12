@@ -6,16 +6,16 @@
   audit="false"
   >
   <Fields>
-    <Relation name="Model" relation="TcdModels" notNull="true" cascade="DELETE" label="=tcdModel" />
-    <String name="TypeName" precision="50" notNull="true" label="=tcdType" />
+    <Relation name="Model" relation="TcdModels" notNull="true" cascade="DELETE" label="=ecCarModel" />
+    <String name="TypeName" precision="50" notNull="true" label="=ecCarEngine" />
     
-    <Integer name="ProducedFrom" />
-    <Integer name="ProducedTo" />
-    <Integer name="Ccm" />
-    <Numeric name="KwFrom" precision="3" />
-    <Numeric name="KwTo" precision="3" />
-    <Numeric name="Cylinders" precision="2" />
-    <Numeric name="MaxWeight" precision="6" scale="2" />
+    <Integer name="ProducedFrom" label="=ecCarProducedFrom" />
+    <Integer name="ProducedTo" label="=ecCarProducedTo" />
+    <Integer name="Ccm" label="=ecCarVolume" />
+    <Numeric name="KwFrom" precision="3" label="=ecCarPowerFrom" />
+    <Numeric name="KwTo" precision="3" label="=ecCarPowerTo" />
+    <Numeric name="Cylinders" precision="2" label="=ecCarCylinders" />
+    <Numeric name="MaxWeight" precision="6" scale="2" label="=ecCarMaxWeight" />
     <String name="Engine" precision="50" />
     <String name="Fuel" precision="50" />
     <String name="Body" precision="50" />

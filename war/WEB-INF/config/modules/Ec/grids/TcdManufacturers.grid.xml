@@ -4,7 +4,7 @@
   name="TcdManufacturers" viewName="TcdManufacturers" caption="=tcdManufacturers"
   >
   <columns>
-    <DataColumn name="ManufacturerName" />
-    <DataColumn name="Visible" caption="-" />
+    <DataColumn name="ManufacturerName" minWidth="200" />
+    <DataColumn name="Visible" />
   </columns>
 </Grid>

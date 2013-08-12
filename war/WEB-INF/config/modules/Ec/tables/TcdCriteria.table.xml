@@ -7,7 +7,7 @@
   idChunk="100"
   >
   <Fields>
-    <String name="CriteriaName" precision="50" notNull="true" />
+    <String name="CriteriaName" precision="50" notNull="true" label="=ecCriteriaName" />
     <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

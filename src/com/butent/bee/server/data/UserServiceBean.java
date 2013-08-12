@@ -188,6 +188,11 @@ public class UserServiceBean {
     return p.getName().toLowerCase();
   }
 
+  public UserData getCurrentUserData() {
+    UserInfo userInfo = getCurrentUserInfo();
+    return (userInfo == null) ? null : userInfo.getUserData();
+  }
+  
   public Filter getCurrentUserFilter(String column) {
     return ComparisonFilter.isEqual(column, new LongValue(getCurrentUserId()));
   }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TcdArticleGraphics" viewName="TcdArticleGraphics" readOnly="true" headerMode="none"
+  >
+  <body height="60" /> 
+  <columns>
+    <DataColumn name="Sort" width="20" />
+    <DataColumn name="Type" width="40" />
+    <DataColumn name="ResourceID" visible="false" />
+    <DataColumn name="ResourceNo" visible="false" />
+
+    <CalcColumn name="Resource" type="string" cellType="html" width="60" caption="-" />
+  </columns>
+</Grid>

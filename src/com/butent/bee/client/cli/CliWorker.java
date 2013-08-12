@@ -50,6 +50,7 @@ import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
@@ -347,8 +348,8 @@ public final class CliWorker {
     } else if ("loaders".equals(z)) {
       BeeKeeper.getRpc().invoke("loaderInfo");
 
-    } else if ("locale".equals(z)) {
-      doLocale(arr);
+    } else if (z.startsWith("loc")) {
+      doLocale(arr, args);
 
     } else if ("log".equals(z)) {
       doLog(arr);
@@ -1132,15 +1133,21 @@ public final class CliWorker {
         NameUtils.addName("match", BeeUtils.toString(match)));
   }
 
-  private static void doLocale(String[] arr) {
-    String mode = ArrayUtils.getQuietly(arr, 1);
-    if (BeeUtils.isEmpty(mode)) {
+  private static void doLocale(String[] arr, String args) {
+    if (BeeUtils.isEmpty(args)) {
       showExtData(LocaleUtils.getInfo());
-      return;
-    }
 
-    String lang = ArrayUtils.getQuietly(arr, 2);
-    BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, BeeUtils.joinWords(mode, lang));
+    } else if (BeeUtils.contains(arr[0], 's')) {
+      BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args);
+    
+    } else {
+      List<Property> info = Lists.newArrayList();
+      for (int i = 1; i < arr.length; i++) {
+        String value = BeeKeeper.getUser().getConstant(arr[i]);
+        PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL)); 
+      }
+      showPropData(info);
+    }
   }
 
   private static void doLog(String[] arr) {
@@ -1371,7 +1378,17 @@ public final class CliWorker {
       params.addPositionalHeader(v);
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(Resource.class)) {
+          Resource resource = Resource.restore(response.getResponseAsString());
+          ResourceEditor resourceEditor = new ResourceEditor(resource);
+
+          BeeKeeper.getScreen().updateActivePanel(resourceEditor);
+        }
+      }
+    });
   }
 
   private static void getTables(String args) {
@@ -1560,7 +1577,7 @@ public final class CliWorker {
         if (response.hasResponse(Resource.class)) {
           final LayoutPanel p = new LayoutPanel();
 
-          final InputArea area = new InputArea(new Resource((String) response.getResponse()));
+          final InputArea area = new InputArea(Resource.restore(response.getResponseAsString()));
           p.add(area);
           p.setWidgetTopBottom(area, 0, CssUnit.EM, 2, CssUnit.EM);
 
@@ -1577,7 +1594,7 @@ public final class CliWorker {
                         if (resp.hasResponse(Resource.class)) {
                           p.getWidget(1).removeFromParent();
                           InputArea res =
-                              new InputArea(new Resource((String) resp.getResponse()));
+                              new InputArea(Resource.restore(resp.getResponseAsString()));
                           p.add(res);
                           p.setWidgetLeftRight(res, 50, CssUnit.PCT, 0, CssUnit.EM);
                           p.setWidgetTopBottom(area, 0, CssUnit.EM, 0, CssUnit.EM);
@@ -1616,7 +1633,7 @@ public final class CliWorker {
 
                           if (resp.hasResponse(Resource.class)) {
                             InputArea res =
-                                new InputArea(new Resource((String) resp.getResponse()));
+                                new InputArea(Resource.restore(resp.getResponseAsString()));
                             inform(res.getValue());
                           } else {
                             showError("Wrong response received");

@@ -21,8 +21,14 @@ name="Ec" label="=ecMenu" order="100"
   <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery" separator="true" />
   <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
 
+  <Item name="EcCatalog" label="=ecCatalog" service="open_ec_catalog" separator="true" />
+  <Item name="TcdCriteria" label="=tcdCriteria" service="grid" parameters="TcdCriteria" />
+
   <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true" />
-  <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" />
+  <Item name="TcdModels" label="=tcdModels" service="grid" parameters="TcdModels" />
+  <Item name="TcdTypes" label="=tcdTypes" service="grid" parameters="TcdTypes" />
+
+  <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" separator="true" />
   <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
   <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
 

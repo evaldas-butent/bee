@@ -371,9 +371,26 @@ public final class EcKeeper {
       }
     });
 
+    BeeKeeper.getMenu().registerMenuCallback("open_ec_catalog", new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        ensureCategoeries(new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (BeeUtils.isTrue(input)) {
+              GridFactory.openGrid("EcCatalog");
+            }
+          }
+        });
+      }
+    });
+    
     GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
     GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
+
+    GridFactory.registerGridInterceptor(VIEW_ARTICLE_CATEGORIES, new ArticleCategoriesHandler());
+    GridFactory.registerGridInterceptor(VIEW_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
 
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
   }

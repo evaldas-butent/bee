@@ -4,6 +4,6 @@
   name="TcdBrands" viewName="TcdBrands" caption="=tcdBrands"
   >
   <columns>
-    <DataColumn name="BrandName" />
+    <DataColumn name="BrandName" minWidth="250" />
   </columns>
 </Grid>

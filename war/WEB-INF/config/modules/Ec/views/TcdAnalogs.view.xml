@@ -1,30 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TcdArticleSuppliers" source="TcdArticleSuppliers"
+  name="TcdAnalogs" source="TcdAnalogs"
   >
   <Columns>
     <SimpleColumn name="Article" />
     <SimpleJoin name="Article" joinType="INNER">
       <SimpleColumn name="ArticleName" />
       <SimpleColumn name="ArticleNr" />
-
       <SimpleJoin name="Brand" joinType="INNER">
-        <SimpleColumn name="BrandName" />
+        <SimpleColumn name="BrandName" alias="ArticleBrandName" />
       </SimpleJoin>
+      <SimpleColumn name="Description" />
     </SimpleJoin>
 
-    <SimpleColumn name="Supplier" />
-    <SimpleColumn name="SupplierID" />
-
-    <SimpleColumn name="Cost" />
-    <SimpleColumn name="UpdatedCost" />
-    <SimpleColumn name="UpdateTime" />
+    <SimpleColumn name="SearchNr" />
+    <SimpleColumn name="AnalogNr" />
+    <SimpleColumn name="BrandName" />
+    <SimpleColumn name="Kind" />
   </Columns>
 
   <Order>
-    <OrderBy column="Supplier" />
     <OrderBy column="ArticleName" />
-    <OrderBy column="SupplierID" />
+    <OrderBy column="Kind" />
+    <OrderBy column="AnalogNr" />
   </Order>
 </View>

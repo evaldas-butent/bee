@@ -124,10 +124,6 @@ public final class CommUtils {
     return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);
   }
 
-  public static boolean isResource(ContentType ctp) {
-    return ContentType.RESOURCE.equals(ctp);
-  }
-
   public static boolean isText(ContentType ctp) {
     return ContentType.TEXT.equals(ctp);
   }

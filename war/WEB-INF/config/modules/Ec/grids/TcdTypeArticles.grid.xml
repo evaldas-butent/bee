@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TcdTypeArticles" viewName="TcdTypeArticles"
+  >
+  <columns>
+    <RelColumn name="Type" caption="=tcdManufacturer" renderColumns="ManufacturerName"
+      choiceColumns="ManufacturerName ModelName TypeName ProducedFrom ProducedTo KwFrom"
+      searchableColumns="ManufacturerName ModelName"
+      caching="none" visible="true" autoFit="true" />
+
+    <DataColumn name="ModelName" visible="true" autoFit="true" />
+    <DataColumn name="TypeName" visible="true" autoFit="true" />
+
+    <DataColumn name="ProducedFrom" visible="true" />
+    <DataColumn name="ProducedTo" visible="true" />
+    <DataColumn name="Ccm" />
+    <DataColumn name="KwFrom" visible="true" />
+
+    <DataColumn name="KwTo" visible="false" />
+    <DataColumn name="Cylinders" visible="false" />
+    <DataColumn name="MaxWeight" visible="false" />
+
+    <DataColumn name="Engine" visible="false" />
+    <DataColumn name="Fuel" visible="false" />
+    <DataColumn name="Body" visible="false" />
+    <DataColumn name="Axle" visible="false" />
+
+    <DataColumn name="Visible" visible="false" />
+  </columns>
+</Grid>

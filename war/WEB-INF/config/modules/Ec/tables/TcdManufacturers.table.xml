@@ -7,6 +7,6 @@
   >
   <Fields>
     <String name="ManufacturerName" precision="50" notNull="true" unique="true" label="=tcdManufacturer" />
-    <Boolean name="Visible" />
+    <Boolean name="Visible" label="=ecCarManufacturerVisible" defValue="true" />
   </Fields>
 </Table>

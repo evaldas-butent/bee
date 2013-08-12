@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdArticleGraphics" source="TcdArticleGraphics"
+  >
+  <Columns>
+    <SimpleColumn name="Article" />
+    <SimpleColumn name="Graphics" />
+    <SimpleJoin name="Graphics" joinType="LEFT">
+      <SimpleColumn name="Type" />
+      <SimpleColumn name="ResourceID" />
+      <SimpleColumn name="ResourceNo" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Sort" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="Article" />
+    <OrderBy column="Sort" />
+  </Order>
+</View>
+ 

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TcdArticles" source="TcdArticles"
+  name="TcdArticles" source="TcdArticles" caption="=ecCatalog"
+  editForm="TcdArticle" newRowForm="TcdArticle" newRowCaption="=ecItemNew"
   >
   <Columns>
     <SimpleColumn name="ArticleName" />
@@ -11,6 +12,18 @@
     <SimpleJoin name="Brand" joinType="INNER">
        <SimpleColumn name="BrandName" />
     </SimpleJoin>
+    
+    <SimpleColumn name="Unit" />
+    <SimpleJoin joinType="LEFT" name="Unit">
+      <SimpleColumn name="Name" alias="UnitName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Weight" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Visible" />
+    <SimpleColumn name="Novelty" />
+    <SimpleColumn name="Featured" />
   </Columns>
 
   <Order>

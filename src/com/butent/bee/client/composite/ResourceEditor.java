@@ -1,123 +1,104 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.LayoutPanel;
-import com.butent.bee.client.layout.Layout.Alignment;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
-import com.butent.bee.shared.ui.CssUnit;
-import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.EnumSet;
 
 /**
  * Implements a text area editor user interface component.
  */
-public class ResourceEditor extends Composite implements IdentifiableWidget, HasCaption {
+public class ResourceEditor extends Flow implements Presenter, View, Printable {
 
-  protected class SaveCommand extends Command {
-    @Override
-    public void execute() {
-      InputArea area = getTextArea();
-      if (!area.isValueChanged()) {
-        Global.showInfo(Lists.newArrayList("Value has not changed", area.getDigest()));
-        return;
-      }
+  private static final BeeLogger logger = LogUtils.getLogger(ResourceEditor.class);
 
-      String v = area.getValue();
-      if (BeeUtils.isEmpty(v)) {
-        Global.showInfo(Lists.newArrayList("Value is empty, not saved"));
-        return;
-      }
+  private static final String STYLE_PREFIX = "bee-ResourceEditor-";
 
-      String path = getUri();
-      if (BeeUtils.isEmpty(path)) {
-        Global.showError("Unknown URI");
-        return;
-      }
-
-      int len = v.length();
-      if (!Global.nativeConfirm("Save " + BeeUtils.bracket(len), path)) {
-        return;
-      }
-
-      String digest = Codec.md5(v);
-
-      ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
-      params.addHeaderItem(Service.RPC_VAR_URI, path);
-      params.addHeaderItem(Service.RPC_VAR_MD5, digest);
-
-      BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
-      area.onAfterSave(digest);
-
-      Global.showInfo(Lists.newArrayList("Sent to", path, digest));
-    }
-  }
-
-  private final InputArea textArea;
   private final String uri;
-  private final String caption;
+
+  private final HeaderView headerView;
+  private final InputArea textArea;
+
+  private boolean enabled = true;
 
   public ResourceEditor(Resource resource) {
-    LayoutPanel p = new LayoutPanel();
-    double top = 0;
-    double bottom = 0;
+    super();
+    addStyleName(STYLE_PREFIX + "view");
 
-    this.textArea = new InputArea(resource);
     this.uri = resource.getUri();
 
-    this.caption = BeeUtils.notEmpty(BeeUtils.getSuffix(uri, '/'), BeeUtils.getSuffix(uri, '\\'),
-        uri);
+    String caption = BeeUtils.notEmpty(BeeUtils.getSuffix(uri, BeeConst.CHAR_SLASH),
+        BeeUtils.getSuffix(uri, BeeConst.CHAR_BACKSLASH), uri);
 
-    Label label = new Label(uri);
-    p.add(label);
-    p.setWidgetVerticalPosition(label, Alignment.BEGIN);
-    p.setWidgetLeftRight(label, 10, CssUnit.PX, 10, CssUnit.PX);
-    top = 2;
-
-    if (resource.isReadOnly()) {
-      Label rd = new Label("read only");
-      p.add(rd);
-      p.setWidgetVerticalPosition(rd, Alignment.END);
-      p.setWidgetHorizontalPosition(rd, Alignment.END);
-      bottom = 1.5;
-    } else if (!BeeUtils.isEmpty(resource.getUri())) {
-      Button button = new Button("Save", new SaveCommand());
-      p.add(button);
-      p.setWidgetVerticalPosition(button, Alignment.END);
-      p.setWidgetLeftWidth(button, 42, CssUnit.PCT, 16, CssUnit.PCT);
-      bottom = 2;
+    EnumSet<Action> actions = EnumSet.of(Action.PRINT, Action.CLOSE);
+    if (!resource.isReadOnly()) {
+      actions.add(Action.SAVE);
     }
 
-    p.add(textArea);
-    p.setWidgetTopBottom(textArea, top, CssUnit.EM, bottom, CssUnit.EM);
-    
-    p.getElement().getStyle().clearPosition();
+    this.headerView = new HeaderSilverImpl();
+    headerView.create(caption, false, true, EnumSet.of(UiOption.ROOT), actions, Action.NO_ACTIONS,
+        Action.NO_ACTIONS);
 
-    initWidget(p);
-    DomUtils.createId(this, getIdPrefix());
+    if (!BeeUtils.isEmpty(uri) && !uri.equals(caption)) {
+      headerView.setCaptionTitle(uri);
+    }
+
+    headerView.setViewPresenter(this);
+    add(headerView);
+
+    this.textArea = new InputArea(resource);
+    textArea.addStyleName(STYLE_PREFIX + "inputArea");
+
+    Simple wrapper = new Simple(textArea);
+    wrapper.addStyleName(STYLE_PREFIX + "wrapper");
+
+    add(wrapper);
   }
 
   @Override
   public String getCaption() {
-    return caption;
+    return headerView.getCaption();
   }
 
   @Override
-  public String getId() {
-    return DomUtils.getId(this);
+  public String getEventSource() {
+    return null;
+  }
+
+  @Override
+  public HeaderView getHeader() {
+    return headerView;
   }
 
   @Override
@@ -125,16 +106,118 @@ public class ResourceEditor extends Composite implements IdentifiableWidget, Has
     return "resource-editor";
   }
 
-  public InputArea getTextArea() {
-    return textArea;
-  }
-
-  public String getUri() {
-    return uri;
+  @Override
+  public View getMainView() {
+    return this;
   }
 
   @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
+  public Element getPrintElement() {
+    Element el = Document.get().createDivElement();
+    el.addClassName(STYLE_PREFIX + "print");
+    el.setInnerText(textArea.getValue());
+    return el;
+  }
+
+  @Override
+  public Presenter getViewPresenter() {
+    return this;
+  }
+
+  @Override
+  public IdentifiableWidget getWidget() {
+    return this;
+  }
+
+  @Override
+  public String getWidgetId() {
+    return getId();
+  }
+
+  @Override
+  public void handleAction(Action action) {
+    switch (action) {
+      case SAVE:
+        save();
+        break;
+
+      case PRINT:
+        Printer.print(this);
+        break;
+
+      case CLOSE:
+        BeeKeeper.getScreen().closeWidget(this);
+        break;
+
+      default:
+        logger.warning(NameUtils.getName(this), action, "not implemented");
+    }
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return true;
+  }
+
+  @Override
+  public void onViewUnload() {
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  @Override
+  public void setEventSource(String eventSource) {
+  }
+
+  @Override
+  public void setViewPresenter(Presenter viewPresenter) {
+  }
+
+  private void save() {
+    if (!textArea.isValueChanged()) {
+      Global.showInfo(getCaption(), Lists.newArrayList("Value has not changed",
+          textArea.getDigest()));
+      return;
+    }
+
+    final String v = textArea.getValue();
+    if (BeeUtils.isEmpty(v)) {
+      Global.showInfo("Value is empty, not saved");
+      return;
+    }
+
+    if (BeeUtils.isEmpty(uri)) {
+      Global.showError("Unknown URI");
+      return;
+    }
+
+    Global.confirm(getCaption(), Icon.QUESTION, Lists.newArrayList(uri,
+        Localized.getConstants().saveChanges()), new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        final String digest = Codec.md5(v);
+        
+        ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
+        params.addHeaderItem(Service.RPC_VAR_URI, uri);
+        params.addHeaderItem(Service.RPC_VAR_MD5, digest);
+        
+        BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (!response.hasErrors()) {
+              textArea.onAfterSave(digest);
+            }
+          }
+        });
+      }
+    });
   }
 }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdCriteria" source="TcdCriteria" newRowCaption="=ecCriteriaNew"
+  >
+  <Columns>
+    <SimpleColumn name="CriteriaName" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="CriteriaName" />
+  </Order>
+</View>

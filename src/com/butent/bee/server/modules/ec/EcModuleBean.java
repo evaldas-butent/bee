@@ -90,6 +90,10 @@ public class EcModuleBean implements BeeModule {
   public static String normalizeCode(String code) {
     return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
   }
+  
+  public static String picture(String type, String text) {
+    return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
+  }
 
   private static Double getMarginPercent(Collection<Long> categories, Map<Long, Long> parents,
       Map<Long, Long> roots, Map<Long, Double> margins) {
@@ -358,6 +362,64 @@ public class EcModuleBean implements BeeModule {
                 return result;
               }
             });
+          }
+        }
+      }
+      
+      @Subscribe
+      public void getGraphics(ViewQueryEvent event) {
+        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_ARTICLE_GRAPHICS)) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (!DataUtils.isEmpty(rowSet)) {
+            int ridIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_ID);
+            int rnoIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_NO);
+            int typeIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_TYPE);
+            
+            Map<Long, Integer> resourceRows = Maps.newHashMap();
+            Map<Long, String> resourceTypes = Maps.newHashMap();
+
+            Multimap<String, Long> sources = HashMultimap.create();
+
+            for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+              BeeRow row = rowSet.getRow(i);
+              Long resource = row.getLong(ridIndex);
+
+              resourceRows.put(resource, i);
+              resourceTypes.put(resource, row.getString(typeIndex));
+
+              sources.put(row.getString(rnoIndex), resource);
+            }
+
+            for (String source : sources.keySet()) {
+              String table = TBL_TCD_GRAPHICS_RESOURCES + BeeUtils.trim(source);
+
+              SqlSelect resourceQuery = new SqlSelect();
+              resourceQuery.addFields(table, COL_TCD_GRAPHICS_RESOURCE_ID,
+                  COL_TCD_GRAPHICS_RESOURCE);
+              resourceQuery.addFrom(table);
+              resourceQuery.setWhere(SqlUtils.inList(table, COL_TCD_GRAPHICS_RESOURCE_ID,
+                  sources.get(source)));
+
+              SimpleRowSet resourceData = qs.getData(resourceQuery);
+              if (DataUtils.isEmpty(resourceData)) {
+                logger.warning("resources not found", table, sources.get(source));
+
+              } else {
+                for (SimpleRow row : resourceData) {
+                  Long resource = row.getLong(COL_TCD_GRAPHICS_RESOURCE_ID);
+                  String text = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
+
+                  String type = resourceTypes.get(resource);
+                  Integer rowIndex = resourceRows.get(resource);
+
+                  if (text != null && !BeeUtils.isEmpty(type) && rowIndex != null) {
+                    rowSet.getRow(rowIndex).setProperty(COL_TCD_GRAPHICS_RESOURCE,
+                        picture(type, text));
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -987,8 +1049,7 @@ public class EcModuleBean implements BeeModule {
           String type = resourceTypes.get(resource);
 
           if (text != null && !BeeUtils.isEmpty(type) && resourceArticles.containsKey(resource)) {
-            String picture = PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
-
+            String picture = picture(type, text);
             for (Long article : resourceArticles.get(resource)) {
               pictures.put(article, picture);
             }

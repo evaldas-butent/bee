@@ -1339,6 +1339,7 @@ body {
   max-width: 360px;
   margin-left: 10px;
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .bee-MessageBox-buttonGroup {
   margin-left: 100px;
@@ -1919,6 +1920,25 @@ body {
 .bee-HtmlEditor-richText {
   width: 500px;
   height: 400px;
+}
+
+.bee-ResourceEditor-wrapper {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: WhiteSmoke;
+}
+.bee-ResourceEditor-inputArea {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+}
+.bee-ResourceEditor-print {
+  white-space: pre;
 }
 
 .companyInfo-label, .companyInfo-item {

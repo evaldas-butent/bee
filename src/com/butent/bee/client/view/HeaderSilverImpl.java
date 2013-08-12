@@ -259,6 +259,11 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void setCaptionTitle(String title) {
+    captionWidget.setTitle(title);
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;

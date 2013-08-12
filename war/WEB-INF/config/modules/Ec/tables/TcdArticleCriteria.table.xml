@@ -9,6 +9,6 @@
   <Fields>
     <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
     <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE" />
-    <String name="Value" precision="50" />
+    <String name="Value" precision="50" label="=ecCriteriaValue" />
   </Fields>
 </Table>

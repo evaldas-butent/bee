@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="TcdCriteria" viewName="TcdCriteria" caption="=tcdCriteria"
+  >
+  <columns>
+    <DataColumn name="CriteriaName" visible="true" minWidth="350" />
+  </columns>
+</Grid>

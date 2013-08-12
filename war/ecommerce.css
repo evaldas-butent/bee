@@ -13,6 +13,12 @@
 }
 
 .bee-NewRow-input-EcDiscounts-Category,
+.bee-NewRow-input-TcdArticleCategories-Category,
 .bee-NewRow-input-EcDiscounts-Article {
   width: 600px;
+}
+
+.bee-ec-Picture {
+  max-width: 100%;
+  max-heigt: 100%;
 }

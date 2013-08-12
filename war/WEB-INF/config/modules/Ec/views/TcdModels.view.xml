@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdModels" source="TcdModels" newRowCaption="=tcdModelNew"
+  >
+  <Columns>
+    <SimpleColumn name="Manufacturer" />
+    <SimpleJoin name="Manufacturer" joinType="LEFT">
+      <SimpleColumn name="ManufacturerName" />
+      <SimpleColumn name="Visible" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ModelName" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="ManufacturerName" />
+    <OrderBy column="ModelName" />
+  </Order>
+</View>
