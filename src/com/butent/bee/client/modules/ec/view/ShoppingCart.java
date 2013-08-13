@@ -135,6 +135,7 @@ public class ShoppingCart extends Split {
     final String amount = EcUtils.renderCents(cart.totalCents());
 
     ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
+    params.addQueryItem(EcConstants.COL_SHOPPING_CART_TYPE, cartType.ordinal());
     params.addDataItem(EcConstants.VAR_CART, cart.serialize());
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -440,6 +441,8 @@ public class ShoppingCart extends Split {
         item.setQuantity(value);
         Cart cart = EcKeeper.refreshCart(cartType);
         updateTotal(cart);
+        
+        EcKeeper.persistCartItem(cartType, item);
       }
     });
     spin.add(plus);
@@ -457,6 +460,8 @@ public class ShoppingCart extends Split {
           item.setQuantity(value);
           Cart cart = EcKeeper.refreshCart(cartType);
           updateTotal(cart);
+
+          EcKeeper.persistCartItem(cartType, item);
         }
       }
     });

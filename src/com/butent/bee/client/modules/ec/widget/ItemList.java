@@ -19,6 +19,7 @@ import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
@@ -54,6 +55,7 @@ public class ItemList extends Flow {
   private static final String STYLE_ITEM_ANALOGS = EcStyles.name(STYLE_PRIMARY, "analogs");
 
   private static final String STYLE_ITEM_BRAND = EcStyles.name(STYLE_PRIMARY, "brand");
+  private static final String STYLE_ITEM_DESCRIPTION = EcStyles.name(STYLE_PRIMARY, "description");
 
   private static final String STYLE_LABEL = "-label";
 
@@ -237,6 +239,13 @@ public class ItemList extends Flow {
       Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
           EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
       panel.add(brandWidget);
+    }
+    
+    String description = item.getDescription();
+    if (!BeeUtils.isEmpty(description)) {
+      CustomDiv descriptionWidget = new CustomDiv(STYLE_ITEM_DESCRIPTION);
+      descriptionWidget.setHTML(description);
+      panel.add(descriptionWidget);
     }
 
     return panel;

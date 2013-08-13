@@ -35,15 +35,20 @@ public class Cart implements BeeSerializable {
     super();
   }
 
-  public void add(EcItem ecItem, int quantity) {
+  public CartItem add(EcItem ecItem, int quantity) {
     if (ecItem != null && quantity > 0) {
       CartItem item = getItem(ecItem.getArticleId());
 
       if (item == null) {
-        items.add(new CartItem(ecItem, quantity));
+        item = new CartItem(ecItem, quantity);
+        items.add(item);
       } else {
         item.add(quantity);
       }
+      return item;
+
+    } else {
+      return null;
     }
   }
 

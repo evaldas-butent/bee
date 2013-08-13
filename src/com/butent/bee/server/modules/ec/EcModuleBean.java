@@ -21,6 +21,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -90,7 +91,7 @@ public class EcModuleBean implements BeeModule {
   public static String normalizeCode(String code) {
     return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
   }
-  
+
   public static String picture(String type, String text) {
     return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }
@@ -246,6 +247,11 @@ public class EcModuleBean implements BeeModule {
       Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(COL_TCD_ARTICLE));
       response = updateCosts(ids);
 
+    } else if (BeeUtils.same(svc, SVC_GET_SHOPPING_CARTS)) {
+      response = getShoppingCarts();
+    } else if (BeeUtils.same(svc, SVC_UPDATE_SHOPPING_CART)) {
+      response = updateShoppingCart(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -365,7 +371,7 @@ public class EcModuleBean implements BeeModule {
           }
         }
       }
-      
+
       @Subscribe
       public void getGraphics(ViewQueryEvent event) {
         if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_ARTICLE_GRAPHICS)) {
@@ -375,7 +381,7 @@ public class EcModuleBean implements BeeModule {
             int ridIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_ID);
             int rnoIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_NO);
             int typeIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_TYPE);
-            
+
             Map<Long, Integer> resourceRows = Maps.newHashMap();
             Map<Long, String> resourceTypes = Maps.newHashMap();
 
@@ -759,6 +765,17 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(result);
   }
 
+  private Long getCurrentClientId() {
+    Long id = qs.getLong(new SqlSelect().addFrom(TBL_CLIENTS)
+        .addFields(TBL_CLIENTS, sys.getIdName(TBL_CLIENTS))
+        .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
+
+    if (!DataUtils.isId(id)) {
+      logger.severe("client not available for user", usr.getCurrentUser());
+    }
+    return id;
+  }
+
   private SimpleRow getCurrentClientInfo(String... fields) {
     return qs.getRow(new SqlSelect().addFrom(TBL_CLIENTS).addFields(TBL_CLIENTS, fields)
         .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
@@ -787,18 +804,11 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getFeaturedAndNoveltyItems() {
-    int offset = BeeUtils.randomInt(0, 30) * 100;
-    int limit = BeeUtils.randomInt(5, 30);
-
     SqlSelect articleIdQuery = new SqlSelect()
-        .addFields(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE)
-        .addFrom(TBL_TCD_ARTICLE_GRAPHICS)
-        .addFromInner(TBL_TCD_GRAPHICS,
-            sys.joinTables(TBL_TCD_GRAPHICS, TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_GRAPHICS))
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1))
-        .addOrder(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE)
-        .setOffset(offset)
-        .setLimit(limit);
+        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
+        .addFrom(TBL_TCD_ARTICLES)
+        .setWhere(SqlUtils.or(SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY),
+            SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED)));
 
     List<EcItem> items = getItems(articleIdQuery);
     return ResponseObject.response(items);
@@ -914,7 +924,8 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect articleQuery = new SqlSelect()
         .addFields(tempArticleIds, COL_TCD_ARTICLE)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR, COL_TCD_BRAND)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR, COL_TCD_BRAND,
+            COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_ARTICLE_NOVELTY, COL_TCD_ARTICLE_FEATURED)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES,
             sys.joinTables(TBL_TCD_ARTICLES, tempArticleIds, COL_TCD_ARTICLE))
@@ -929,6 +940,10 @@ public class EcModuleBean implements BeeModule {
         item.setBrand(row.getLong(COL_TCD_BRAND));
         item.setCode(row.getValue(COL_TCD_ARTICLE_NR));
         item.setName(row.getValue(COL_TCD_ARTICLE_NAME));
+
+        item.setDescription(row.getValue(COL_TCD_ARTICLE_DESCRIPTION));
+        item.setNovelty(row.getValue(COL_TCD_ARTICLE_NOVELTY) != null);
+        item.setFeatured(row.getValue(COL_TCD_ARTICLE_FEATURED) != null);
 
         items.add(item);
       }
@@ -1063,6 +1078,54 @@ public class EcModuleBean implements BeeModule {
     } else {
       return ResponseObject.response(pictures).setSize(pictures.size());
     }
+  }
+
+  private ResponseObject getShoppingCarts() {
+    Long client = getCurrentClientId();
+    if (client == null) {
+      return ResponseObject.error("client not available");
+    }
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_SHOPPING_CARTS, COL_SHOPPING_CART_TYPE, COL_SHOPPING_CART_CREATED,
+            COL_SHOPPING_CART_ARTICLE, COL_SHOPPING_CART_QUANTITY)
+        .addFrom(TBL_SHOPPING_CARTS)
+        .setWhere(SqlUtils.equals(TBL_SHOPPING_CARTS, COL_SHOPPING_CART_CLIENT, client))
+        .addOrder(TBL_SHOPPING_CARTS, COL_SHOPPING_CART_TYPE, COL_SHOPPING_CART_CREATED));
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Set<Long> articles = Sets.newHashSet(data.getLongColumn(COL_SHOPPING_CART_ARTICLE));
+
+    String idName = sys.getIdName(TBL_TCD_ARTICLES);
+    SqlSelect articleIdQuery = new SqlSelect()
+        .addField(TBL_TCD_ARTICLES, idName, COL_TCD_ARTICLE)
+        .addFrom(TBL_TCD_ARTICLES)
+        .setWhere(SqlUtils.inList(TBL_TCD_ARTICLES, idName, articles));
+
+    List<EcItem> ecItems = getItems(articleIdQuery);
+    if (ecItems.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+    
+    List<CartItem> result = Lists.newArrayList();
+    
+    for (SimpleRow row : data) {
+      Long article = row.getLong(COL_SHOPPING_CART_ARTICLE);
+      
+      for (EcItem ecItem : ecItems) {
+        if (Objects.equal(article, ecItem.getArticleId())) {
+          CartItem cartItem = new CartItem(ecItem, row.getInt(COL_SHOPPING_CART_QUANTITY));
+          cartItem.setNote(row.getValue(COL_SHOPPING_CART_TYPE));
+          result.add(cartItem);
+          break;
+        }
+      }
+    }
+    
+    return ResponseObject.response(result);
   }
 
   private void logHistory(String service, String query, Long artice, int count,
@@ -1429,6 +1492,14 @@ public class EcModuleBean implements BeeModule {
       }
     }
 
+    Integer cartType = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_SHOPPING_CART_TYPE));
+    if (cartType != null) {
+      qs.updateData(new SqlDelete(TBL_SHOPPING_CARTS)
+          .setWhere(SqlUtils.equals(TBL_SHOPPING_CARTS,
+              COL_SHOPPING_CART_CLIENT, clientInfo.getLong(colClientId),
+              COL_SHOPPING_CART_TYPE, cartType)));
+    }
+
     return response;
   }
 
@@ -1463,14 +1534,56 @@ public class EcModuleBean implements BeeModule {
     int c = 0;
 
     if (!BeeUtils.isEmpty(ids)) {
-      c =
-          qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
-              .addExpression(COL_TCD_COST, SqlUtils.name(COL_TCD_UPDATED_COST))
-              .setWhere(
-                  SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS, sys
-                      .getIdName(TBL_TCD_ARTICLE_SUPPLIERS),
-                      ids)));
+      c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
+          .addExpression(COL_TCD_COST, SqlUtils.name(COL_TCD_UPDATED_COST))
+          .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS,
+              sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS), ids)));
     }
     return ResponseObject.info(Localized.getMessages().rowsUpdated(c));
+  }
+
+  private ResponseObject updateShoppingCart(RequestInfo reqInfo) {
+    Integer cartType = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_SHOPPING_CART_TYPE));
+    if (cartType == null) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_SHOPPING_CART, COL_SHOPPING_CART_TYPE);
+    }
+
+    Long article = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SHOPPING_CART_ARTICLE));
+    if (!DataUtils.isId(article)) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_SHOPPING_CART, COL_SHOPPING_CART_ARTICLE);
+    }
+
+    Integer quantity = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_SHOPPING_CART_QUANTITY));
+    if (quantity == null) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_SHOPPING_CART, COL_SHOPPING_CART_QUANTITY);
+    }
+
+    Long client = getCurrentClientId();
+    if (!DataUtils.isId(client)) {
+      return ResponseObject.error("client not available");
+    }
+
+    IsCondition where = SqlUtils.equals(TBL_SHOPPING_CARTS, COL_SHOPPING_CART_CLIENT, client,
+        COL_SHOPPING_CART_TYPE, cartType, COL_SHOPPING_CART_ARTICLE, article);
+
+    if (BeeUtils.isPositive(quantity)) {
+      if (qs.sqlExists(TBL_SHOPPING_CARTS, where)) {
+        qs.updateData(new SqlUpdate(TBL_SHOPPING_CARTS)
+            .addConstant(COL_SHOPPING_CART_QUANTITY, quantity)
+            .setWhere(where));
+      } else {
+        qs.insertData(new SqlInsert(TBL_SHOPPING_CARTS)
+            .addConstant(COL_SHOPPING_CART_CREATED, System.currentTimeMillis())
+            .addConstant(COL_SHOPPING_CART_CLIENT, client)
+            .addConstant(COL_SHOPPING_CART_TYPE, cartType)
+            .addConstant(COL_SHOPPING_CART_ARTICLE, article)
+            .addConstant(COL_SHOPPING_CART_QUANTITY, quantity));
+      }
+
+    } else {
+      qs.updateData(new SqlDelete(TBL_SHOPPING_CARTS).setWhere(where));
+    }
+
+    return ResponseObject.response(article);
   }
 }

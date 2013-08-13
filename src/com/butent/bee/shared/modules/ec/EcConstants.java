@@ -129,6 +129,9 @@ public final class EcConstants {
 
   public static final String SVC_SEND_TO_ERP = "sendToERP";
 
+  public static final String SVC_GET_SHOPPING_CARTS = "getShoppingCarts";
+  public static final String SVC_UPDATE_SHOPPING_CART = "updateShoppingCart";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -280,9 +283,8 @@ public final class EcConstants {
   public static final String COL_SHOPPING_CART_CREATED = "Created";
   public static final String COL_SHOPPING_CART_CLIENT = "Client";
   public static final String COL_SHOPPING_CART_TYPE = "CartType";
-  public static final String COL_SHOPPING_CART_ITEM = "Item";
+  public static final String COL_SHOPPING_CART_ARTICLE = "Article";
   public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
-  public static final String COL_SHOPPING_CART_PRICE = "Price";
 
   public static final String COL_TCD_ARTICLE = "Article";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";

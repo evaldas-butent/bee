@@ -339,8 +339,9 @@
   margin-top: 3px;
   font-size: medium;
 }
-.bee-ec-ItemList-brand-container {
+.bee-ec-ItemList-description {
   font-size: 12px;
+  white-space: pre-line;
 }
 
 .bee-ec-ItemList-hasStock {
@@ -722,9 +723,12 @@
   padding-left: 1em;
 }
 
-.bee-ec-ItemDetails-info-supplier-container,
-.bee-ec-ItemDetails-info-brand-container {
+.bee-ec-ItemDetails-info-brand-container,
+.bee-ec-ItemDetails-info-description {
   margin-top: 5px;
+}
+.bee-ec-ItemDetails-info-description {
+  white-space: pre-line;
 }
 
 .bee-ec-ItemDetails-info-criteria-wrapper {

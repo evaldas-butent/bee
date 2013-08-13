@@ -83,7 +83,9 @@ public class EcScreen extends ScreenImpl {
   @Override
   public void onLoad() {
     EcKeeper.getSearchBox().setFocus(true);
+
     EcKeeper.showFeaturedAndNoveltyItems(true);
+    EcKeeper.restoreShoppingCarts();
   }
 
   @Override

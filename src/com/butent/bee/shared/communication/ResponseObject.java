@@ -29,6 +29,10 @@ public class ResponseObject implements BeeSerializable {
     MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE
   }
 
+  public static ResponseObject emptyResponse() {
+    return new ResponseObject();
+  }
+  
   public static ResponseObject error(Object... err) {
     return new ResponseObject().addError(err);
   }

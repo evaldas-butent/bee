@@ -95,9 +95,13 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   
   public void addToCart(EcItem ecItem, int quantity) {
     CartType cartType = getActiveCartType();
-    carts.get(cartType).add(ecItem, quantity);
+    CartItem cartItem = carts.get(cartType).add(ecItem, quantity);
 
     refresh(cartType);
+    
+    if (cartItem != null) {
+      EcKeeper.persistCartItem(cartType, cartItem);
+    }
   }
   
   public Cart getCart(CartType cartType) {

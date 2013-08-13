@@ -40,65 +40,56 @@ public class FeaturedAndNovelty extends Flow {
   
   public FeaturedAndNovelty(List<EcItem> items) {
     super(EcStyles.name("FeaturedAndNovelty"));
-
-    int total = items.size();
-    int featuredCount = BeeUtils.randomInt(0, total + 1);
-    int noveltyCount = total - featuredCount;
+    
+    Horizontal featuredTable = null;
+    Horizontal noveltyTable = null;
 
     Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
     
-    if (featuredCount > 0) {
-      Label featuredLabel = new Label(Localized.getConstants().ecFeaturedItems());
-      EcStyles.add(featuredLabel, STYLE_FEATURED, STYLE_LABEL);
-      add(featuredLabel);
+    for (EcItem item : items) {
+      ItemPicture pictureWidget = new ItemPicture();
+      pictureWidgets.put(item.getArticleId(), pictureWidget);
 
-      Flow featuredContainer = new Flow();
-      EcStyles.add(featuredContainer, STYLE_FEATURED, STYLE_CONTAINER);
-      
-      Horizontal featuredTable = new Horizontal();
-      EcStyles.add(featuredTable, STYLE_FEATURED, STYLE_TABLE);
-      
-      String banner = Localized.getConstants().ecFeaturedBanner();
+      if (item.isFeatured()) {
+        if (featuredTable == null) {
+          Label featuredLabel = new Label(Localized.getConstants().ecFeaturedItems());
+          EcStyles.add(featuredLabel, STYLE_FEATURED, STYLE_LABEL);
+          add(featuredLabel);
 
-      for (int i = 0; i < featuredCount; i++) {
-        EcItem item = items.get(i);
-        ItemPicture pictureWidget = new ItemPicture();
-        
-        featuredTable.add(renderItem(item, STYLE_FEATURED, banner, pictureWidget));
-        
-        pictureWidgets.put(item.getArticleId(), pictureWidget);
+          Flow featuredContainer = new Flow();
+          EcStyles.add(featuredContainer, STYLE_FEATURED, STYLE_CONTAINER);
+          
+          featuredTable = new Horizontal();
+          EcStyles.add(featuredTable, STYLE_FEATURED, STYLE_TABLE);
+
+          featuredContainer.add(featuredTable);
+          add(featuredContainer);
+        }
+
+        featuredTable.add(renderItem(item, STYLE_FEATURED,
+            Localized.getConstants().ecFeaturedBanner(), pictureWidget));
+
+      } else {
+        if (noveltyTable == null) {
+          Label noveltyLabel = new Label(Localized.getConstants().ecNoveltyItems());
+          EcStyles.add(noveltyLabel, STYLE_NOVELTY, STYLE_LABEL);
+          add(noveltyLabel);
+          
+          Flow noveltyContainer = new Flow();
+          EcStyles.add(noveltyContainer, STYLE_NOVELTY, STYLE_CONTAINER);
+          
+          noveltyTable = new Horizontal();
+          EcStyles.add(noveltyTable, STYLE_NOVELTY, STYLE_TABLE);
+          
+          noveltyContainer.add(noveltyTable);
+          add(noveltyContainer);
+        }
+
+        noveltyTable.add(renderItem(item, STYLE_NOVELTY, 
+            Localized.getConstants().ecNoveltyBanner(), pictureWidget));
       }
-
-      featuredContainer.add(featuredTable);
-      add(featuredContainer);
     }
 
-    if (noveltyCount > 0) {
-      Label noveltyLabel = new Label(Localized.getConstants().ecNoveltyItems());
-      EcStyles.add(noveltyLabel, STYLE_NOVELTY, STYLE_LABEL);
-      add(noveltyLabel);
-
-      Flow noveltyContainer = new Flow();
-      EcStyles.add(noveltyContainer, STYLE_NOVELTY, STYLE_CONTAINER);
-
-      Horizontal noveltyTable = new Horizontal();
-      EcStyles.add(noveltyTable, STYLE_NOVELTY, STYLE_TABLE);
-      
-      String banner = Localized.getConstants().ecNoveltyBanner();
-
-      for (int i = featuredCount; i < total; i++) {
-        EcItem item = items.get(i);
-        ItemPicture pictureWidget = new ItemPicture();
-        
-        noveltyTable.add(renderItem(item, STYLE_NOVELTY, banner, pictureWidget));
-
-        pictureWidgets.put(item.getArticleId(), pictureWidget);
-      }
-
-      noveltyContainer.add(noveltyTable);
-      add(noveltyContainer);
-    }
-    
     if (!pictureWidgets.isEmpty()) {
       EcKeeper.setBackgroundPictures(pictureWidgets);
     }

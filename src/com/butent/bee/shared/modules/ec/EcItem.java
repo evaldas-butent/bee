@@ -15,7 +15,8 @@ import java.util.List;
 public class EcItem implements BeeSerializable {
 
   private enum Serial {
-    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE
+    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
+    DESCRIPTION, NOVELTY, FEATURED
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -38,6 +39,11 @@ public class EcItem implements BeeSerializable {
 
   private int price;
   private int listPrice;
+  
+  private String description;
+  
+  private boolean novelty;
+  private boolean featured;
 
   public EcItem(long articleId) {
     this.articleId = articleId;
@@ -97,6 +103,18 @@ public class EcItem implements BeeSerializable {
         case LIST_PRICE:
           setListPrice(BeeUtils.toInt(value));
           break;
+          
+        case DESCRIPTION:
+          setDescription(value);
+          break;
+          
+        case NOVELTY:
+          setNovelty(Codec.unpack(value));
+          break;
+          
+        case FEATURED:
+          setFeatured(Codec.unpack(value));
+          break;
       }
     }
   }
@@ -131,6 +149,10 @@ public class EcItem implements BeeSerializable {
 
   public String getCode() {
     return code;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   public int getListPrice() {
@@ -197,11 +219,11 @@ public class EcItem implements BeeSerializable {
   }
 
   public boolean isFeatured() {
-    return true;
+    return featured;
   }
 
   public boolean isNovelty() {
-    return true;
+    return novelty;
   }
 
   @Override
@@ -243,6 +265,18 @@ public class EcItem implements BeeSerializable {
         case LIST_PRICE:
           arr[i++] = listPrice;
           break;
+          
+        case DESCRIPTION:
+          arr[i++] = description;
+          break;
+
+        case NOVELTY:
+          arr[i++] = Codec.pack(novelty);
+          break;
+
+        case FEATURED:
+          arr[i++] = Codec.pack(featured);
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -260,6 +294,14 @@ public class EcItem implements BeeSerializable {
     this.code = code;
   }
 
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setFeatured(boolean featured) {
+    this.featured = featured;
+  }
+
   public void setListPrice(Double listPrice) {
     this.listPrice = BeeUtils.isDouble(listPrice) ? BeeUtils.round(listPrice * 100) : 0;
   }
@@ -270,6 +312,10 @@ public class EcItem implements BeeSerializable {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setNovelty(boolean novelty) {
+    this.novelty = novelty;
   }
 
   public void setPrice(Double price) {

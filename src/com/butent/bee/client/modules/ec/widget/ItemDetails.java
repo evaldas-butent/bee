@@ -10,6 +10,7 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
@@ -98,6 +99,12 @@ public class ItemDetails extends Flow {
         if (brandWidget != null) {
           container.add(brandWidget);
         }
+      }
+      
+      if (!BeeUtils.isEmpty(item.getDescription())) {
+        CustomDiv descriptionWidget = new CustomDiv(stylePrefix + "description");
+        descriptionWidget.setHTML(item.getDescription());
+        container.add(descriptionWidget);
       }
     }
 

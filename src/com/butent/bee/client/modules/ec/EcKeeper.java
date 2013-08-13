@@ -39,6 +39,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.Cart;
+import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
@@ -53,8 +54,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -325,6 +328,12 @@ public final class EcKeeper {
       }
     });
   }
+  
+  public static void persistCartItem(CartType cartType, CartItem cartItem) {
+    Assert.notNull(cartType);
+    Assert.notNull(cartItem);
+    persistCartItem(cartType, cartItem.getEcItem().getArticleId(), cartItem.getQuantity());
+  }
 
   public static Cart refreshCart(CartType cartType) {
     cartList.refresh(cartType);
@@ -396,7 +405,9 @@ public final class EcKeeper {
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
-    cartList.removeFromCart(cartType, ecItem);
+    if (cartList.removeFromCart(cartType, ecItem)) {
+      persistCartItem(cartType, ecItem.getArticleId(), 0);
+    }
     return getCart(cartType);
   }
 
@@ -449,6 +460,37 @@ public final class EcKeeper {
       cart.reset();
       cartList.refresh(cartType);
     }
+  }
+  
+  public static void restoreShoppingCarts() {
+    BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_GET_SHOPPING_CARTS), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            Set<CartType> restoredTypes = EnumSet.noneOf(CartType.class);
+            
+            for (String s : arr) {
+              CartItem cartItem = CartItem.restore(s);
+              Integer type = BeeUtils.toIntOrNull(cartItem.getNote());
+              
+              if (BeeUtils.isOrdinal(CartType.class, type)) {
+                CartType cartType = NameUtils.getEnumByIndex(CartType.class, type);
+                cartList.getCart(cartType).add(cartItem.getEcItem(), cartItem.getQuantity());
+                
+                restoredTypes.add(cartType);
+              }
+            }
+            
+            for (CartType cartType : restoredTypes) {
+              cartList.refresh(cartType);
+            }
+          }
+        }
+      }
+    });
   }
 
   public static void saveConfiguration(String key, String value) {
@@ -575,6 +617,16 @@ public final class EcKeeper {
   private static String getActiveViewId() {
     IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
     return (activeWidget == null) ? null : activeWidget.getId();
+  }
+
+  private static void persistCartItem(CartType cartType, long article, int quantity) {
+    ParameterList params = createArgs(SVC_UPDATE_SHOPPING_CART);
+    
+    params.addDataItem(COL_SHOPPING_CART_TYPE, cartType.ordinal());
+    params.addDataItem(COL_SHOPPING_CART_ARTICLE, article);
+    params.addDataItem(COL_SHOPPING_CART_QUANTITY, quantity);
+    
+    BeeKeeper.getRpc().makeRequest(params);
   }
 
   private static void resetActiveCommand() {

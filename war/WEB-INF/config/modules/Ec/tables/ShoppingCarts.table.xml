@@ -10,6 +10,5 @@
     <Integer name="CartType" notNull="true" />
     <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
     <Integer name="Quantity" notNull="true" />
-    <Integer name="Price" notNull="true" />
   </Fields>
 </Table>
