@@ -12,6 +12,7 @@ import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -88,10 +89,6 @@ public class EcModuleBean implements BeeModule {
 
   public static String normalizeCode(String code) {
     return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
-  }
-
-  public static String picture(String type, String text) {
-    return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }
 
   private static Double getMarginPercent(Collection<Long> categories, Map<Long, Long> parents,
@@ -245,6 +242,10 @@ public class EcModuleBean implements BeeModule {
       Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(COL_TCD_ARTICLE));
       response = updateCosts(ids);
 
+    } else if (BeeUtils.same(svc, SVC_MERGE_CATEGORY)) {
+      response = mergeCategory(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_CATEGORY)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_CATEGORY_PARENT)));
+
     } else if (BeeUtils.same(svc, SVC_GET_SHOPPING_CARTS)) {
       response = getShoppingCarts();
     } else if (BeeUtils.same(svc, SVC_UPDATE_SHOPPING_CART)) {
@@ -262,6 +263,34 @@ public class EcModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject mergeCategory(Long categoryId, Long parentCategoryId) {
+    Assert.noNulls(categoryId, parentCategoryId);
+
+    qs.updateData(new SqlDelete(TBL_TCD_ARTICLE_CATEGORIES)
+        .setWhere(SqlUtils
+            .and(SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, parentCategoryId),
+                SqlUtils.in(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
+                    TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
+                    SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, categoryId)))));
+
+    for (String tblName : sys.getTableNames()) {
+      for (BeeForeignKey fKey : sys.getTable(tblName).getForeignKeys()) {
+        if (BeeUtils.same(fKey.getRefTable(), TBL_TCD_CATEGORIES)
+            && fKey.getFields().size() == 1) {
+
+          String tbl = fKey.getTable();
+          String fld = fKey.getFields().get(0);
+
+          qs.updateData(new SqlUpdate(tbl)
+              .addConstant(fld, parentCategoryId)
+              .setWhere(SqlUtils.equals(tbl, fld, categoryId)));
+        }
+      }
+    }
+    return qs.updateDataWithResponse(new SqlDelete(TBL_TCD_CATEGORIES)
+        .setWhere(sys.idEquals(TBL_TCD_CATEGORIES, categoryId)));
   }
 
   @Override
@@ -372,64 +401,6 @@ public class EcModuleBean implements BeeModule {
                 return result;
               }
             });
-          }
-        }
-      }
-
-      @Subscribe
-      public void getGraphics(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_ARTICLE_GRAPHICS)) {
-          BeeRowSet rowSet = event.getRowset();
-
-          if (!DataUtils.isEmpty(rowSet)) {
-            int ridIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_ID);
-            int rnoIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE_NO);
-            int typeIndex = rowSet.getColumnIndex(COL_TCD_GRAPHICS_TYPE);
-
-            Map<Long, Integer> resourceRows = Maps.newHashMap();
-            Map<Long, String> resourceTypes = Maps.newHashMap();
-
-            Multimap<String, Long> sources = HashMultimap.create();
-
-            for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-              BeeRow row = rowSet.getRow(i);
-              Long resource = row.getLong(ridIndex);
-
-              resourceRows.put(resource, i);
-              resourceTypes.put(resource, row.getString(typeIndex));
-
-              sources.put(row.getString(rnoIndex), resource);
-            }
-
-            for (String source : sources.keySet()) {
-              String table = TBL_TCD_GRAPHICS_RESOURCES + BeeUtils.trim(source);
-
-              SqlSelect resourceQuery = new SqlSelect();
-              resourceQuery.addFields(table, COL_TCD_GRAPHICS_RESOURCE_ID,
-                  COL_TCD_GRAPHICS_RESOURCE);
-              resourceQuery.addFrom(table);
-              resourceQuery.setWhere(SqlUtils.inList(table, COL_TCD_GRAPHICS_RESOURCE_ID,
-                  sources.get(source)));
-
-              SimpleRowSet resourceData = qs.getData(resourceQuery);
-              if (DataUtils.isEmpty(resourceData)) {
-                logger.warning("resources not found", table, sources.get(source));
-
-              } else {
-                for (SimpleRow row : resourceData) {
-                  Long resource = row.getLong(COL_TCD_GRAPHICS_RESOURCE_ID);
-                  String text = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
-
-                  String type = resourceTypes.get(resource);
-                  Integer rowIndex = resourceRows.get(resource);
-
-                  if (text != null && !BeeUtils.isEmpty(type) && rowIndex != null) {
-                    rowSet.getRow(rowIndex).setProperty(COL_TCD_GRAPHICS_RESOURCE,
-                        picture(type, text));
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -1017,75 +988,29 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_GET_PICTURES, COL_TCD_ARTICLE);
     }
 
-    SqlSelect graphicsQuery = new SqlSelect();
-    graphicsQuery.addFields(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE);
-    graphicsQuery.addFields(TBL_TCD_GRAPHICS, COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE_ID,
-        COL_TCD_GRAPHICS_RESOURCE_NO);
-
-    graphicsQuery.addFrom(TBL_TCD_ARTICLE_GRAPHICS);
-    graphicsQuery.addFromInner(TBL_TCD_GRAPHICS,
-        sys.joinTables(TBL_TCD_GRAPHICS, TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_GRAPHICS));
-
-    graphicsQuery.setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1),
-        SqlUtils.inList(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE, articles)));
+    SqlSelect graphicsQuery = new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE)
+        .addFields(TBL_TCD_GRAPHICS, COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE)
+        .addFrom(TBL_TCD_ARTICLE_GRAPHICS)
+        .addFromInner(TBL_TCD_GRAPHICS,
+            sys.joinTables(TBL_TCD_GRAPHICS, TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_GRAPHICS))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1),
+            SqlUtils.inList(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE, articles)));
 
     SimpleRowSet graphicsData = qs.getData(graphicsQuery);
+
     if (DataUtils.isEmpty(graphicsData)) {
       logger.warning("graphics not found for", articles);
       return ResponseObject.response(BeeConst.NULL);
     }
-
-    Multimap<Long, Long> resourceArticles = HashMultimap.create();
-    Map<Long, String> resourceTypes = Maps.newHashMap();
-
-    Multimap<String, Long> sources = HashMultimap.create();
-
-    for (SimpleRow row : graphicsData) {
-      Long resource = row.getLong(COL_TCD_GRAPHICS_RESOURCE_ID);
-
-      resourceArticles.put(resource, row.getLong(COL_TCD_ARTICLE));
-      resourceTypes.put(resource, row.getValue(COL_TCD_GRAPHICS_TYPE));
-
-      sources.put(row.getValue(COL_TCD_GRAPHICS_RESOURCE_NO), resource);
-    }
-
     Map<Long, String> pictures = Maps.newHashMap();
 
-    for (String source : sources.keySet()) {
-      String table = TBL_TCD_GRAPHICS_RESOURCES + BeeUtils.trim(source);
-
-      SqlSelect resourceQuery = new SqlSelect();
-      resourceQuery.addFields(table, COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE);
-      resourceQuery.addFrom(table);
-      resourceQuery.setWhere(SqlUtils.inList(table, COL_TCD_GRAPHICS_RESOURCE_ID,
-          sources.get(source)));
-
-      SimpleRowSet resourceData = qs.getData(resourceQuery);
-      if (DataUtils.isEmpty(resourceData)) {
-        logger.warning("resources not found", table, sources.get(source));
-
-      } else {
-        for (SimpleRow row : resourceData) {
-          Long resource = row.getLong(COL_TCD_GRAPHICS_RESOURCE_ID);
-          String text = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
-
-          String type = resourceTypes.get(resource);
-
-          if (text != null && !BeeUtils.isEmpty(type) && resourceArticles.containsKey(resource)) {
-            String picture = picture(type, text);
-            for (Long article : resourceArticles.get(resource)) {
-              pictures.put(article, picture);
-            }
-          }
-        }
-      }
+    for (SimpleRow row : graphicsData) {
+      pictures.put(row.getLong(COL_TCD_ARTICLE),
+          EcConstants.picture(row.getValue(COL_TCD_GRAPHICS_TYPE),
+              row.getValue(COL_TCD_GRAPHICS_RESOURCE)));
     }
-
-    if (pictures.isEmpty()) {
-      return ResponseObject.response(BeeConst.NULL);
-    } else {
-      return ResponseObject.response(pictures).setSize(pictures.size());
-    }
+    return ResponseObject.response(pictures).setSize(pictures.size());
   }
 
   private ResponseObject getShoppingCarts() {

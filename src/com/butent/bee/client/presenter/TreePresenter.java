@@ -332,7 +332,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow data = getView().getSelectedItem();
 
     if (data != null) {
-      String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
+      String message = BeeUtils.joinWords("Išmesti", BeeUtils.bracket(evaluate(data)), "?");
       Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
           new ConfirmationCallback() {
             @Override

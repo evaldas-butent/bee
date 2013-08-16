@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
@@ -10,6 +11,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
 import com.butent.bee.client.presenter.Presenter;
@@ -52,36 +54,38 @@ public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHa
 
   @Override
   public void onCatch(final CatchEvent<IsRow> event) {
-    if (treeView == null) {
+    final IsRow destination = event.getDestination();
+
+    if (treeView == null || destination == null) {
       return;
     }
     final TreePresenter presenter = treeView.getTreePresenter();
     final IsRow source = event.getPacket();
-    final IsRow destination = event.getDestination();
 
-    Global.confirm(Localized.getMessages().ecMergeCategory(presenter.evaluate(source),
-        presenter.evaluate(destination)), new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        ParameterList args = EcKeeper.createArgs(SVC_MERGE_CATEGORY);
-        args.addDataItem(COL_TCD_CATEGORY, source.getId());
-        args.addDataItem(COL_TCD_CATEGORY_PARENT, destination.getId());
-
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+    Global.confirm(presenter.getCaption(), Icon.QUESTION,
+        Lists.newArrayList(Localized.getMessages().ecMergeCategory(presenter.evaluate(source),
+            presenter.evaluate(destination))), new ConfirmationCallback() {
           @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getFormView());
+          public void onConfirm() {
+            ParameterList args = EcKeeper.createArgs(SVC_MERGE_CATEGORY);
+            args.addDataItem(COL_TCD_CATEGORY, source.getId());
+            args.addDataItem(COL_TCD_CATEGORY_PARENT, destination.getId());
 
-            if (response.hasErrors()) {
-              return;
-            }
-            treeView.removeItem(source);
-            BeeKeeper.getBus()
-                .fireEvent(new RowDeleteEvent(presenter.getViewName(), source.getId()));
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                response.notify(getFormView());
+
+                if (response.hasErrors()) {
+                  return;
+                }
+                treeView.removeItem(source);
+                BeeKeeper.getBus()
+                    .fireEvent(new RowDeleteEvent(presenter.getViewName(), source.getId()));
+              }
+            });
           }
         });
-      }
-    });
   }
 
   @Override

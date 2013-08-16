@@ -8,8 +8,7 @@
   >
   <Fields>
     <String name="Type" precision="3" notNull="true" />
-    <Long name="ResourceID" notNull="true" />
-    <String name="ResourceNo" precision="2" notNull="true" />
+    <Text name="Resource" notNull="true" />
     <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

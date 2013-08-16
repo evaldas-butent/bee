@@ -9,7 +9,6 @@ import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.IsSql;
 import com.butent.bee.server.sql.SqlBuilder;
@@ -132,6 +131,7 @@ public class TecDocBean {
   private static final String JPEG2000 = "JP2";
 
   private static final String TCD_SCHEMA = "TecDoc";
+  private static final String TCD_GRAPHICS_RESOURCES = "TcdResources";
 
   private static final String TCD_TECDOC_ID = "TecDocID";
   private static final String TCD_ARTICLE_ID = "ArticleID";
@@ -139,6 +139,8 @@ public class TecDocBean {
   private static final String TCD_MODEL_ID = "ModelID";
   private static final String TCD_TYPE_ID = "TypeID";
   private static final String TCD_GRAPHICS_ID = "GraphicsID";
+  private static final String TCD_GRAPHICS_RESOURCE_ID = "ResourceID";
+  private static final String TCD_GRAPHICS_RESOURCE_NO = "ResourceNo";
   private static final String TCD_CRITERIA_ID = "CriteriaID";
   private static final String TCD_PARENT_ID = "ParentID";
 
@@ -615,13 +617,13 @@ public class TecDocBean {
     data = new TcdData(new SqlCreate(TBL_TCD_GRAPHICS, false)
         .addLong(TCD_GRAPHICS_ID, true)
         .addString(COL_TCD_GRAPHICS_TYPE, 3, true)
-        .addInteger(COL_TCD_GRAPHICS_RESOURCE_ID, true)
-        .addString(COL_TCD_GRAPHICS_RESOURCE_NO, 2, true),
+        .addInteger(TCD_GRAPHICS_RESOURCE_ID, true)
+        .addString(TCD_GRAPHICS_RESOURCE_NO, 2, true),
         new SqlSelect().setLimit(1000000)
             .addField("tof_graphics", "gra_id", TCD_GRAPHICS_ID)
             .addField("tof_doc_types", "doc_extension", COL_TCD_GRAPHICS_TYPE)
-            .addField("tof_graphics", "gra_grd_id", COL_TCD_GRAPHICS_RESOURCE_ID)
-            .addField("tof_graphics", "gra_tab_nr", COL_TCD_GRAPHICS_RESOURCE_NO)
+            .addField("tof_graphics", "gra_grd_id", TCD_GRAPHICS_RESOURCE_ID)
+            .addField("tof_graphics", "gra_tab_nr", TCD_GRAPHICS_RESOURCE_NO)
             .addFrom("tof_graphics")
             .addFromLeft("tof_doc_types",
                 SqlUtils.join("tof_graphics", "gra_doc_type", "tof_doc_types", "doc_type"))
@@ -656,20 +658,20 @@ public class TecDocBean {
     builds.clear();
 
     for (String resource : qs.getColumn(new SqlSelect().setDistinctMode(true)
-        .addFields(SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS), COL_TCD_GRAPHICS_RESOURCE_NO)
+        .addFields(SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS), TCD_GRAPHICS_RESOURCE_NO)
         .addFrom(SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS)))) {
 
       String table = "tof_gra_data_" + resource;
 
-      data = new TcdData(new SqlCreate(TBL_TCD_GRAPHICS_RESOURCES + resource, false)
-          .addInteger(COL_TCD_GRAPHICS_RESOURCE_ID, true)
+      data = new TcdData(new SqlCreate(TCD_GRAPHICS_RESOURCES + resource, false)
+          .addInteger(TCD_GRAPHICS_RESOURCE_ID, true)
           .addText(COL_TCD_GRAPHICS_RESOURCE, true),
           new SqlSelect().setLimit(500)
-              .addField(table, "grd_id", COL_TCD_GRAPHICS_RESOURCE_ID)
+              .addField(table, "grd_id", TCD_GRAPHICS_RESOURCE_ID)
               .addField(table, "grd_graphic", COL_TCD_GRAPHICS_RESOURCE)
               .addFrom(table));
 
-      data.addBaseIndexes(COL_TCD_GRAPHICS_RESOURCE_ID);
+      data.addBaseIndexes(TCD_GRAPHICS_RESOURCE_ID);
       builds.add(data);
     }
     importTcd(builds);
@@ -935,7 +937,7 @@ public class TecDocBean {
             SqlUtils.joinUsing(tcdArticleCodes, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
         .addOrder(tcdArticleCodes, TCD_TECDOC_ID));
 
-    // ---------------- TcdArticleGraphics, TcdGraphics...
+    // ---------------- TcdArticleGraphics, TcdGraphics, TcdResources...
     String tcdArticleGraphics = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_GRAPHICS);
 
     String artGraph = qs.sqlCreateTemp(new SqlSelect()
@@ -949,8 +951,9 @@ public class TecDocBean {
     String tcdGraphics = SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS);
 
     String graph = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(tcdGraphics, TCD_GRAPHICS_ID, COL_TCD_GRAPHICS_TYPE,
-            COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE_NO)
+        .addFields(tcdGraphics, COL_TCD_GRAPHICS_TYPE,
+            TCD_GRAPHICS_RESOURCE_NO, TCD_GRAPHICS_RESOURCE_ID)
+        .addField(tcdGraphics, TCD_GRAPHICS_ID, TCD_TECDOC_ID)
         .addFrom(tcdGraphics)
         .addFromInner(new SqlSelect().setDistinctMode(true)
             .addFields(artGraph, TCD_GRAPHICS_ID)
@@ -959,56 +962,31 @@ public class TecDocBean {
             SqlUtils.join(tcdGraphics, TCD_GRAPHICS_ID, als, TCD_TECDOC_ID))
         .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_GRAPHICS))));
 
-    SqlSelect sql = new SqlSelect().setLimit(500000)
-        .addFields(graph, COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE_NO)
-        .addField(graph, TCD_GRAPHICS_ID, TCD_TECDOC_ID)
-        .addFrom(graph)
-        .addOrder(graph, TCD_GRAPHICS_ID);
-
-    if (supportsJPEG2000 == null) {
-      ImageIO.scanForPlugins();
-      supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
-    }
-    if (supportsJPEG2000) {
-      sql.addExpr(SqlUtils.sqlCase(SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE),
-          SqlUtils.constant(JPEG2000), SqlUtils.constant(JPEG),
-          SqlUtils.field(graph, COL_TCD_GRAPHICS_TYPE)), COL_TCD_GRAPHICS_TYPE);
-    } else {
-      sql.addFields(graph, COL_TCD_GRAPHICS_TYPE);
-    }
-    insertData(TBL_TCD_GRAPHICS, sql);
+    qs.sqlIndex(graph, TCD_GRAPHICS_RESOURCE_NO, TCD_GRAPHICS_RESOURCE_ID);
+    int tot = 0;
 
     for (String part : qs.getColumn(new SqlSelect().setDistinctMode(true)
-        .addFields(graph, COL_TCD_GRAPHICS_RESOURCE_NO)
+        .addFields(graph, TCD_GRAPHICS_RESOURCE_NO)
         .addFrom(graph))) {
 
-      String resource = TBL_TCD_GRAPHICS_RESOURCES + part;
+      String resource = TCD_GRAPHICS_RESOURCES + part;
 
-      sql = new SqlSelect()
-          .addFields(SqlUtils.table(TCD_SCHEMA, resource),
-              COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE)
+      SqlSelect sql = new SqlSelect()
+          .addFields(graph, COL_TCD_GRAPHICS_TYPE, TCD_TECDOC_ID)
+          .addFields(SqlUtils.table(TCD_SCHEMA, resource), COL_TCD_GRAPHICS_RESOURCE)
           .addFrom(SqlUtils.table(TCD_SCHEMA, resource))
           .addFromInner(graph, SqlUtils.and(SqlUtils.equals(graph,
-              COL_TCD_GRAPHICS_RESOURCE_NO, part),
+              TCD_GRAPHICS_RESOURCE_NO, part),
               SqlUtils.joinUsing(SqlUtils.table(TCD_SCHEMA, resource), graph,
-                  COL_TCD_GRAPHICS_RESOURCE_ID)));
+                  TCD_GRAPHICS_RESOURCE_ID)));
 
-      if (!qs.dbTableExists(sys.getDbName(), sys.getDbSchema(), resource)) {
-        IsCondition wh = sql.getWhere();
-
-        qs.updateData(new SqlCreate(resource, false)
-            .setDataSource(sql.setWhere(SqlUtils.sqlFalse())));
-
-        sql.setWhere(wh);
-        qs.sqlIndex(resource, COL_TCD_GRAPHICS_RESOURCE_ID);
-      }
       int chunk = 100;
       int offset = 0;
-      int tot = 0;
-      sql.addFields(graph, COL_TCD_GRAPHICS_TYPE).setLimit(chunk);
-      SqlInsert insert = new SqlInsert(resource)
-          .addFields(COL_TCD_GRAPHICS_RESOURCE_ID, COL_TCD_GRAPHICS_RESOURCE);
       SimpleRowSet data = null;
+      sql.setLimit(chunk);
+      SqlInsert insert = new SqlInsert(TBL_TCD_GRAPHICS)
+          .addFields(COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE, TCD_TECDOC_ID,
+              sys.getIdName(TBL_TCD_GRAPHICS), sys.getVersionName(TBL_TCD_GRAPHICS));
 
       do {
         data = qs.getData(sql.setOffset(offset));
@@ -1016,40 +994,47 @@ public class TecDocBean {
         if (isDebugEnabled) {
           messyLogger.setLevel(LogLevel.INFO);
         }
-        for (String[] row : data.getRows()) {
-          String resourceId = row[0];
-          String image = row[1];
-          String type = row[2];
+        for (SimpleRow row : data) {
+          String type = row.getValue(COL_TCD_GRAPHICS_TYPE);
+          String image = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
 
-          if (JPEG2000.equals(type) && supportsJPEG2000) {
-            try {
-              ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
-              BufferedImage img = ImageIO.read(in);
+          if (JPEG2000.equals(type)) {
+            if (supportsJPEG2000 == null) {
+              ImageIO.scanForPlugins();
+              supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
+            }
+            if (supportsJPEG2000) {
+              try {
+                ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
+                BufferedImage img = ImageIO.read(in);
 
-              if (img != null) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                if (img != null) {
+                  ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-                if (ImageIO.write(img, JPEG, out)) {
-                  image = Codec.toBase64(out.toByteArray());
+                  if (ImageIO.write(img, JPEG, out)) {
+                    image = Codec.toBase64(out.toByteArray());
+                    type = JPEG;
+                  }
+                  out.close();
                 }
-                out.close();
+                in.close();
+              } catch (IOException e) {
+                logger.error(e);
               }
-              in.close();
-            } catch (IOException e) {
-              logger.error(e);
             }
           }
-          insert.addValues(new Object[] {resourceId, image});
+          insert.addValues(new Object[] {type, image, row.getLong(TCD_TECDOC_ID),
+              ig.getId(TBL_TCD_GRAPHICS), System.currentTimeMillis()});
 
           if (++tot % chunk == 0) {
             qs.insertData(insert);
             insert.resetValues();
-            logger.info("Inserted", tot, "records into table", resource);
+            logger.info("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
           }
         }
         if (tot % chunk > 0) {
           qs.insertData(insert);
-          logger.info("Inserted", tot, "records into table", resource);
+          logger.info("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
         }
         if (isDebugEnabled) {
           messyLogger.setLevel(LogLevel.DEBUG);

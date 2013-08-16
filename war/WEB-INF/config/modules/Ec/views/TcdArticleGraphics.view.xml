@@ -8,8 +8,7 @@
     <SimpleColumn name="Graphics" />
     <SimpleJoin name="Graphics" joinType="LEFT">
       <SimpleColumn name="Type" />
-      <SimpleColumn name="ResourceID" />
-      <SimpleColumn name="ResourceNo" />
+      <SimpleColumn name="Resource" />
     </SimpleJoin>
 
     <SimpleColumn name="Sort" />

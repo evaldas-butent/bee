@@ -238,7 +238,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processUpdateCount(int updateCount) {
-        logger.debug("Affected rows:", updateCount);
+        logger.debug("affected rows:", updateCount);
         return updateCount;
       }
     });
@@ -610,6 +610,7 @@ public class QueryServiceBean {
           event.setUpdateCount(updateCount);
           sys.postDataEvent(event);
         }
+        logger.debug("affected rows:", updateCount);
         return ResponseObject.response(updateCount);
       }
     });
@@ -857,7 +858,7 @@ public class QueryServiceBean {
       }
       res.addRow(row);
     }
-    logger.debug("Retrieved rows:", res.getNumberOfRows());
+    logger.debug("cols:", res.getNumberOfColumns(), "rows:", res.getNumberOfRows());
     return res;
   }
 }
