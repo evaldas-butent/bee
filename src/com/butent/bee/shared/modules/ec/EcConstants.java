@@ -129,6 +129,8 @@ public final class EcConstants {
 
   public static final String SVC_SEND_TO_ERP = "sendToERP";
 
+  public static final String SVC_MERGE_CATEGORY = "mergeCategory";
+
   public static final String SVC_GET_SHOPPING_CARTS = "getShoppingCarts";
   public static final String SVC_UPDATE_SHOPPING_CART = "updateShoppingCart";
 
@@ -157,9 +159,10 @@ public final class EcConstants {
   public static final String TBL_SHOPPING_CARTS = "ShoppingCarts";
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
-  public static final String TBL_TCD_ANALOGS = "TcdAnalogs";
+  public static final String TBL_TCD_ARTICLE_CODES = "TcdArticleCodes";
 
   public static final String TBL_TCD_CATEGORIES = "TcdCategories";
+  public static final String TBL_TCD_TECDOC_CATEGORIES = "TcdTecDocCategories";
   public static final String TBL_TCD_ARTICLE_CATEGORIES = "TcdArticleCategories";
 
   public static final String TBL_TCD_GRAPHICS = "TcdGraphics";
@@ -300,8 +303,8 @@ public final class EcConstants {
   public static final String COL_TCD_SUPPLIER_ID = "SupplierID";
 
   public static final String COL_TCD_SEARCH_NR = "SearchNr";
-  public static final String COL_TCD_KIND = "Kind";
-  public static final String COL_TCD_ANALOG_NR = "AnalogNr";
+  public static final String COL_TCD_OE_CODE = "OECode";
+  public static final String COL_TCD_CODE_NR = "CodeNr";
 
   public static final String COL_TCD_CATEGORY = "Category";
   public static final String COL_TCD_CATEGORY_PARENT = "Parent";
@@ -329,7 +332,6 @@ public final class EcConstants {
   public static final String COL_TCD_BODY = "Body";
   public static final String COL_TCD_AXLE = "Axle";
 
-  public static final String COL_TCD_WAREHOUSE = "Warehouse";
   public static final String COL_TCD_REMAINDER = "Remainder";
 
   public static final String COL_TCD_COST = "Cost";
@@ -352,6 +354,10 @@ public final class EcConstants {
   public static final String COL_TCD_GRAPHICS_RESOURCE_ID = "ResourceID";
   public static final String COL_TCD_GRAPHICS_RESOURCE_NO = "ResourceNo";
   public static final String COL_TCD_GRAPHICS_RESOURCE = "Resource";
+
+  public static final String PRM_ERP_ADDRESS = "ERPAddress";
+  public static final String PRM_ERP_LOGIN = "ERPLogin";
+  public static final String PRM_ERP_PASSWORD = "ERPPassword";
 
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';

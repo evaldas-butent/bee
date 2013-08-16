@@ -8,7 +8,7 @@
   >
   <Fields>
     <Relation name="ArticleSupplier" relation="TcdArticleSuppliers" notNull="true" cascade="DELETE" />
-    <String name="Warehouse" precision="10" notNull="true" label="=warehouse" />
+    <Relation name="Warehouse" relation="Warehouses" notNull="true" label="=warehouse" />
     <Numeric name="Remainder" precision="12" scale="3" label="=ecRemainder" />
   </Fields>
   <Constraints>

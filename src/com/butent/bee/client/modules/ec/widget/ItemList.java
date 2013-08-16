@@ -207,8 +207,7 @@ public class ItemList extends Flow {
           ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
           params.addDataItem(EcConstants.COL_TCD_ARTICLE, item.getArticleId());
           params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
-          params.addDataItem(EcConstants.COL_TCD_BRAND_NAME,
-              EcKeeper.getBrandName(item.getBrand()));
+          params.addDataItem(EcConstants.COL_TCD_BRAND, item.getBrand());
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
             @Override
@@ -240,7 +239,7 @@ public class ItemList extends Flow {
           EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
       panel.add(brandWidget);
     }
-    
+
     String description = item.getDescription();
     if (!BeeUtils.isEmpty(description)) {
       CustomDiv descriptionWidget = new CustomDiv(STYLE_ITEM_DESCRIPTION);

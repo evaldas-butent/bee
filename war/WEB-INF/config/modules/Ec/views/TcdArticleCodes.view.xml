@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TcdAnalogs" source="TcdAnalogs"
+  name="TcdArticleCodes" source="TcdArticleCodes"
   >
   <Columns>
     <SimpleColumn name="Article" />
@@ -15,14 +15,15 @@
     </SimpleJoin>
 
     <SimpleColumn name="SearchNr" />
-    <SimpleColumn name="AnalogNr" />
-    <SimpleColumn name="BrandName" />
-    <SimpleColumn name="Kind" />
+    <SimpleColumn name="CodeNr" />
+    <SimpleJoin name="Brand" joinType="LEFT">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
+    <SimpleColumn name="OECode" />
   </Columns>
 
   <Order>
     <OrderBy column="ArticleName" />
-    <OrderBy column="Kind" />
-    <OrderBy column="AnalogNr" />
+    <OrderBy column="CodeNr" />
   </Order>
 </View>

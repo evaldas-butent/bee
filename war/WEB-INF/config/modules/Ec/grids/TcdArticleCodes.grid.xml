@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="TcdAnalogs" viewName="TcdAnalogs"
+  name="TcdArticleCodes" viewName="TcdArticleCodes"
   flexGrow="1" flexShrink="1" maxColumnWidth="200"
   >
   <columns>
     <DataColumn name="SearchNr" />
-    <DataColumn name="AnalogNr" />
+    <DataColumn name="CodeNr" />
     <DataColumn name="BrandName" />
-    <DataColumn name="Kind" maxWidth="60" />
+    <DataColumn name="OECode" maxWidth="50" />
   </columns>
 </Grid>

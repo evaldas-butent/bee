@@ -328,7 +328,7 @@ public final class EcKeeper {
       }
     });
   }
-  
+
   public static void persistCartItem(CartType cartType, CartItem cartItem) {
     Assert.notNull(cartType);
     Assert.notNull(cartItem);
@@ -393,7 +393,7 @@ public final class EcKeeper {
         });
       }
     });
-    
+
     GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
     GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
@@ -402,6 +402,7 @@ public final class EcKeeper {
     GridFactory.registerGridInterceptor(VIEW_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
 
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
+    FormFactory.registerFormInterceptor(TBL_TCD_CATEGORIES, new EcCategoriesForm());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
@@ -461,7 +462,7 @@ public final class EcKeeper {
       cartList.refresh(cartType);
     }
   }
-  
+
   public static void restoreShoppingCarts() {
     BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_GET_SHOPPING_CARTS), new ResponseCallback() {
       @Override
@@ -471,19 +472,19 @@ public final class EcKeeper {
 
           if (arr != null) {
             Set<CartType> restoredTypes = EnumSet.noneOf(CartType.class);
-            
+
             for (String s : arr) {
               CartItem cartItem = CartItem.restore(s);
               Integer type = BeeUtils.toIntOrNull(cartItem.getNote());
-              
+
               if (BeeUtils.isOrdinal(CartType.class, type)) {
                 CartType cartType = NameUtils.getEnumByIndex(CartType.class, type);
                 cartList.getCart(cartType).add(cartItem.getEcItem(), cartItem.getQuantity());
-                
+
                 restoredTypes.add(cartType);
               }
             }
-            
+
             for (CartType cartType : restoredTypes) {
               cartList.refresh(cartType);
             }
@@ -621,11 +622,11 @@ public final class EcKeeper {
 
   private static void persistCartItem(CartType cartType, long article, int quantity) {
     ParameterList params = createArgs(SVC_UPDATE_SHOPPING_CART);
-    
+
     params.addDataItem(COL_SHOPPING_CART_TYPE, cartType.ordinal());
     params.addDataItem(COL_SHOPPING_CART_ARTICLE, article);
     params.addDataItem(COL_SHOPPING_CART_QUANTITY, quantity);
-    
+
     BeeKeeper.getRpc().makeRequest(params);
   }
 

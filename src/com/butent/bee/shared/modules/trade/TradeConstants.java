@@ -10,8 +10,14 @@ public final class TradeConstants {
 
   public static final String PRM_VAT_PERCENT = "DefaultVatPercent";
 
+  public static final String TBL_WAREHOUSES = "Warehouses";
+
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
+
+  public static final String COL_WAREHOUSE = "Warehouse";
+  public static final String COL_WAREHOUSE_CODE = "Code";
+  public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
 
   public static final String COL_SALE = "Sale";
   public static final String COL_QUANTITY = "Quantity";

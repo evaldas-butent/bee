@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="TcdCategories" caption="=ecPricing">
+  <DataTree caption="=ecItemCategories" source="TcdCategories" parentColumn="Parent">
+    <calc>
+      <ui:expression>row.CategoryName + (row.MarginPercent ? ' (' + row.MarginPercent + '%)' : '')</ui:expression>
+    </calc>
+    <form>
+      <Table>
+        <row>
+          <Label text="=ecItemCategory" class="bee-required" horizontalAlignment="right" />
+          <InputText source="CategoryName" style="width: 300px;" />
+        </row>
+        <row>
+          <Label text="=ecMarginPercent" horizontalAlignment="right" />
+          <InputDecimal source="MarginPercent" style="width: 60px;" />
+        </row>
+        <row>
+          <Label text="=ecItemCategoryNote" horizontalAlignment="right" />
+          <InputArea source="Note" visibleLines="3" style="width: 300px;" />
+        </row>
+      </Table>
+    </form>
+  </DataTree>
+</f:Form>  

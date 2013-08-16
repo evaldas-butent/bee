@@ -63,7 +63,7 @@
 
       <page>
         <text>=ecItemAnalogs</text>
-        <ChildGrid name="TcdAnalogs" relColumn="Article" />
+        <ChildGrid name="TcdArticleCodes" relColumn="Article" />
       </page>
 
       <page>

@@ -9,6 +9,7 @@
     <DataColumn name="Name" />
 
     <RelColumn name="Branch" />
+    <DataColumn name="SupplierCode" />
 
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
