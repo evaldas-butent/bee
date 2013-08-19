@@ -11,7 +11,7 @@ public class EcInvoice implements BeeSerializable {
   private enum Serial {
     NUMBER, DATE, TERM, AMOUNT, DEBT
   }
-  
+
   public static EcInvoice restore(String s) {
     EcInvoice invoice = new EcInvoice();
     invoice.deserialize(s);

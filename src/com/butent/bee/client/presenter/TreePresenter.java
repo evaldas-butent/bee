@@ -3,6 +3,7 @@ package com.butent.bee.client.presenter;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -87,6 +88,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private final Element editor;
   private FormView formView;
 
+  private final HandlerRegistration catchHandler;
+
   public TreePresenter(TreeView view, String viewName, String parentColumnName,
       String orderColumnName, String relationColumnName, Calculation calc, Element editorForm) {
     Assert.notNull(view);
@@ -107,7 +110,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
           : expr, calc.getFunction());
     }
-    getView().addCatchHandler(this);
+    this.catchHandler = getView().addCatchHandler(this);
 
     if (BeeUtils.isEmpty(relationColumnName)) {
       requery();
@@ -199,6 +202,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   public void onViewUnload() {
     getView().setViewPresenter(null);
     super.onViewUnload();
+  }
+
+  public void removeCatchHandler() {
+    catchHandler.removeHandler();
   }
 
   public void updateRelation(Long parentId) {

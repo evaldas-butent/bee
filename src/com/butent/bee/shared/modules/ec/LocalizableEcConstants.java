@@ -18,6 +18,10 @@ public interface LocalizableEcConstants {
 
   String ecCategoryBatteries();
 
+  String ecCategoryMerge();
+
+  String ecCategoryMove();
+
   String ecCategoryOil();
 
   String ecCategoryTires();

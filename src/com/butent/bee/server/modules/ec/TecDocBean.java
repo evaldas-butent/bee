@@ -696,6 +696,7 @@ public class TecDocBean {
         .addFields(tcdArticles, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR)
         .addFields(art, COL_TCD_BRAND)
         .addField(tcdArticles, TCD_ARTICLE_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_ARTICLE_VISIBLE)
         .addFrom(art)
         .addFromInner(tcdArticles, SqlUtils.joinUsing(art, tcdArticles, TCD_ARTICLE_ID))
         .addOrder(tcdArticles, TCD_ARTICLE_ID));
@@ -907,17 +908,29 @@ public class TecDocBean {
     // ---------------- TcdArticleCodes
     String tcdArticleCodes = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CODES);
 
+    tcdArticleCodes = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdArticleCodes,
+            COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND_NAME, TCD_TECDOC_ID)
+        .addExpr(SqlUtils.sqlCase(SqlUtils.field(tcdArticleCodes, COL_TCD_OE_CODE), 3,
+            SqlUtils.constant(true), null), COL_TCD_OE_CODE)
+        .addFrom(art)
+        .addFromInner(tcdArticleCodes, SqlUtils.joinUsing(art, tcdArticleCodes, TCD_ARTICLE_ID)));
+
+    String brands = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
+        .addFields(tcdArticleCodes, COL_TCD_BRAND_NAME)
+        .addFrom(tcdArticleCodes)
+        .setWhere(SqlUtils.notNull(tcdArticleCodes, COL_TCD_BRAND_NAME)));
+
     if (isDebugEnabled) {
       messyLogger.setLevel(LogLevel.INFO);
     }
-    for (String brand : qs.getColumn(new SqlSelect().setDistinctMode(true)
-        .addFields(tcdArticleCodes, COL_TCD_BRAND_NAME)
-        .addFrom(art)
-        .addFromInner(tcdArticleCodes, SqlUtils.joinUsing(art, tcdArticleCodes, TCD_ARTICLE_ID))
+    for (String brand : qs.getColumn(new SqlSelect()
+        .addFields(brands, COL_TCD_BRAND_NAME)
+        .addFrom(brands)
         .addFromLeft(TBL_TCD_BRANDS,
-            SqlUtils.joinUsing(tcdArticleCodes, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
-        .setWhere(SqlUtils.and(SqlUtils.notNull(tcdArticleCodes, COL_TCD_BRAND_NAME),
-            SqlUtils.isNull(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS)))))) {
+            SqlUtils.joinUsing(brands, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
+        .setWhere(SqlUtils.isNull(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS))))) {
 
       qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
           .addConstant(COL_TCD_BRAND_NAME, brand));
@@ -925,17 +938,18 @@ public class TecDocBean {
     if (isDebugEnabled) {
       messyLogger.setLevel(LogLevel.DEBUG);
     }
+    qs.sqlDropTemp(brands);
+
     insertData(TBL_TCD_ARTICLE_CODES, new SqlSelect().setLimit(100000)
-        .addFields(art, COL_TCD_ARTICLE)
-        .addFields(tcdArticleCodes, COL_TCD_SEARCH_NR, COL_TCD_CODE_NR)
-        .addExpr(SqlUtils.sqlCase(SqlUtils.field(tcdArticleCodes, COL_TCD_OE_CODE), 3,
-            SqlUtils.constant(true), null), COL_TCD_OE_CODE)
+        .addFields(tcdArticleCodes,
+            COL_TCD_ARTICLE, COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_OE_CODE)
         .addField(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS), COL_TCD_BRAND)
-        .addFrom(art)
-        .addFromInner(tcdArticleCodes, SqlUtils.joinUsing(art, tcdArticleCodes, TCD_ARTICLE_ID))
+        .addFrom(tcdArticleCodes)
         .addFromLeft(TBL_TCD_BRANDS,
             SqlUtils.joinUsing(tcdArticleCodes, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
         .addOrder(tcdArticleCodes, TCD_TECDOC_ID));
+
+    qs.sqlDropTemp(tcdArticleCodes);
 
     // ---------------- TcdArticleGraphics, TcdGraphics, TcdResources...
     String tcdArticleGraphics = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_GRAPHICS);
@@ -963,23 +977,24 @@ public class TecDocBean {
         .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_GRAPHICS))));
 
     qs.sqlIndex(graph, TCD_GRAPHICS_RESOURCE_NO, TCD_GRAPHICS_RESOURCE_ID);
-    int tot = 0;
 
     for (String part : qs.getColumn(new SqlSelect().setDistinctMode(true)
         .addFields(graph, TCD_GRAPHICS_RESOURCE_NO)
-        .addFrom(graph))) {
+        .addFrom(graph)
+        .addOrder(graph, TCD_GRAPHICS_RESOURCE_NO))) {
 
-      String resource = TCD_GRAPHICS_RESOURCES + part;
+      String resource = SqlUtils.table(TCD_SCHEMA, TCD_GRAPHICS_RESOURCES + part);
 
       SqlSelect sql = new SqlSelect()
           .addFields(graph, COL_TCD_GRAPHICS_TYPE, TCD_TECDOC_ID)
-          .addFields(SqlUtils.table(TCD_SCHEMA, resource), COL_TCD_GRAPHICS_RESOURCE)
-          .addFrom(SqlUtils.table(TCD_SCHEMA, resource))
+          .addFields(resource, COL_TCD_GRAPHICS_RESOURCE)
+          .addFrom(resource)
           .addFromInner(graph, SqlUtils.and(SqlUtils.equals(graph,
               TCD_GRAPHICS_RESOURCE_NO, part),
-              SqlUtils.joinUsing(SqlUtils.table(TCD_SCHEMA, resource), graph,
-                  TCD_GRAPHICS_RESOURCE_ID)));
+              SqlUtils.joinUsing(resource, graph, TCD_GRAPHICS_RESOURCE_ID)))
+          .addOrder(resource, TCD_GRAPHICS_RESOURCE_ID);
 
+      int tot = 0;
       int chunk = 100;
       int offset = 0;
       SimpleRowSet data = null;
@@ -1145,13 +1160,10 @@ public class TecDocBean {
 
     String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
 
-    SqlUpdate query = new SqlUpdate(tmp)
+    qs.updateData(new SqlUpdate(tmp)
         .addExpression(TCD_ARTICLE_ID, SqlUtils.field(tcdArticles, TCD_ARTICLE_ID))
         .setFrom(tcdArticles,
-            SqlUtils.joinUsing(tmp, tcdArticles, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME));
-
-    analyzeQuery(query);
-    qs.updateData(query);
+            SqlUtils.joinUsing(tmp, tcdArticles, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME)));
 
     zz = qs.sqlCreateTemp(new SqlSelect()
         .addAllFields(tmp)
@@ -1283,6 +1295,8 @@ public class TecDocBean {
           .addConstant(TradeConstants.COL_WAREHOUSE_CODE, warehouse)
           .addConstant(supplierWarehouse, warehouse));
     }
+
+    qs.sqlIndex(tmp, COL_TCD_SUPPLIER_ID, supplierWarehouse);
 
     insertData(TBL_TCD_REMAINDERS, new SqlSelect().setLimit(500000)
         .addField(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS),

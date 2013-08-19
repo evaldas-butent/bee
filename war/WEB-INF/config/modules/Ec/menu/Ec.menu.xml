@@ -11,9 +11,7 @@ name="Ec" label="=ecMenu" order="100"
 
   <Item name="EcCatalog" label="=ecCatalog" service="open_ec_catalog" separator="true" />
 
-  <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
-
   <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
-  <Item name="EcCategories" label="=ecItemCategories" service="form" parameters="TcdCategories" />
+  <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
 
 </Entry>

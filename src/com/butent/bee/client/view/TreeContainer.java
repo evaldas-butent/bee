@@ -2,6 +2,7 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -57,7 +58,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   public TreeContainer(String caption, boolean hideActions) {
     super();
     addStyleName(STYLE_NAME);
-    
+
     this.caption = caption;
     this.hasActions = !hideActions;
 
@@ -203,11 +204,29 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
-  public void onCatch(CatchEvent<TreeItem> event) {
+  public void onCatch(final CatchEvent<TreeItem> event) {
+    final boolean isConsumable = !event.isConsumed();
+
+    if (isConsumable) {
+      event.consume();
+    }
     TreeItem destination = event.getDestination();
 
-    CatchEvent.fire(this, (IsRow) event.getPacket().getUserObject(),
-        destination == null ? null : (IsRow) destination.getUserObject());
+    CatchEvent<IsRow> catchEvent = CatchEvent.fire(this, (IsRow) event.getPacket().getUserObject(),
+        destination == null ? null : (IsRow) destination.getUserObject(),
+        new Scheduler.ScheduledCommand() {
+          @Override
+          public void execute() {
+            if (isConsumable) {
+              event.executeScheduled();
+            }
+          }
+        });
+
+    if (!catchEvent.isConsumed()) {
+      catchEvent.consume();
+      catchEvent.executeScheduled();
+    }
   }
 
   @Override

@@ -1,6 +1,7 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
@@ -188,17 +189,32 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
-          TreeItem destination = null;
+
+          final HasTreeItems target;
+          final TreeItem src = source;
+          TreeItem dst = null;
 
           if (isCaption(elem)) {
-            Tree.this.addItem(source);
+            target = Tree.this;
           } else {
-            destination = getItemByContentId(elem.getId());
-            destination.addItem(source);
+            dst = getItemByContentId(elem.getId());
+            target = dst;
           }
-          setSelectedItem(source);
-          ensureSelectedItemVisible();
-          CatchEvent.fire(Tree.this, source, destination);
+
+          CatchEvent<TreeItem> catchEvent = CatchEvent.fire(Tree.this, src, dst,
+              new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                  target.addItem(src);
+                  setSelectedItem(src);
+                  ensureSelectedItemVisible();
+                }
+              });
+
+          if (!catchEvent.isConsumed()) {
+            catchEvent.consume();
+            catchEvent.executeScheduled();
+          }
         }
       }
       return true;
@@ -493,7 +509,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     int eventType = event.getTypeInt();
 
     switch (eventType) {
-      case Event.ONCLICK: 
+      case Event.ONCLICK:
         Element el = DOM.eventGetTarget(event);
         if (!shouldTreeDelegateFocusToElement(el) && (getSelectedItem() != null)
             && getSelectedItem().getContentElem().isOrHasChild(el)) {
@@ -501,15 +517,15 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         }
         break;
 
-      case Event.ONMOUSEDOWN: 
+      case Event.ONMOUSEDOWN:
         if ((DOM.eventGetCurrentTarget(event) == getElement())
             && (event.getButton() == NativeEvent.BUTTON_LEFT)) {
           elementClicked(DOM.eventGetTarget(event));
         }
         break;
 
-      case Event.ONKEYDOWN: 
-        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) 
+      case Event.ONKEYDOWN:
+        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event)
             && !event.getAltKey() && !event.getMetaKey()) {
           navigate(event);
           event.preventDefault();

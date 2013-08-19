@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
@@ -10,28 +8,22 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
-import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeContainer;
-import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Map;
+import java.util.List;
 
 public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<IsRow> {
 
@@ -43,6 +35,7 @@ public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHa
 
     if (widget instanceof TreeContainer) {
       treeView = (TreeContainer) widget;
+      treeView.getTreePresenter().removeCatchHandler();
       treeView.addCatchHandler(this);
     }
   }
@@ -54,19 +47,40 @@ public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHa
 
   @Override
   public void onCatch(final CatchEvent<IsRow> event) {
-    final IsRow destination = event.getDestination();
-
-    if (treeView == null || destination == null) {
+    if (treeView == null) {
       return;
     }
     final TreePresenter presenter = treeView.getTreePresenter();
     final IsRow source = event.getPacket();
+    final IsRow destination = event.getDestination();
+    final boolean isConsumable = !event.isConsumed();
 
-    Global.confirm(presenter.getCaption(), Icon.QUESTION,
-        Lists.newArrayList(Localized.getMessages().ecMergeCategory(presenter.evaluate(source),
-            presenter.evaluate(destination))), new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
+    if (isConsumable) {
+      event.consume();
+    }
+    String prompt;
+    List<String> actions = Lists.newArrayList(Localized.getConstants().ecCategoryMove());
+
+    if (destination != null) {
+      actions.add(Localized.getConstants().ecCategoryMerge());
+      prompt = Localized.getMessages().ecCategoryMigrate(presenter.evaluate(source),
+          presenter.evaluate(destination));
+    } else {
+      prompt = Localized.getMessages().ecCategoryMigrate(presenter.evaluate(source),
+          LocaleUtils.maybeLocalize(presenter.getCaption()));
+    }
+    Global.choice(presenter.getCaption(), prompt, actions, new ChoiceCallback() {
+      @Override
+      public void onSuccess(int value) {
+        switch (value) {
+          case 0:
+            if (isConsumable) {
+              event.executeScheduled();
+            }
+            presenter.onCatch(event);
+            break;
+
+          case 1:
             ParameterList args = EcKeeper.createArgs(SVC_MERGE_CATEGORY);
             args.addDataItem(COL_TCD_CATEGORY, source.getId());
             args.addDataItem(COL_TCD_CATEGORY_PARENT, destination.getId());
@@ -84,41 +98,8 @@ public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHa
                     .fireEvent(new RowDeleteEvent(presenter.getViewName(), source.getId()));
               }
             });
-          }
-        });
-  }
-
-  @Override
-  public void onShow(final Presenter presenter) {
-    EcKeeper.getConfiguration(new Consumer<Map<String, String>>() {
-      @Override
-      public void accept(Map<String, String> input) {
-        String value = input.get(EcConstants.COL_CONFIG_MARGIN_DEFAULT_PERCENT);
-
-        String stylePrefix = EcStyles.name("Margins-defPercent-");
-
-        presenter.getHeader().clearCommandPanel();
-
-        Label label = new Label(Localized.getConstants().ecMarginDefaultPercent());
-        label.addStyleName(stylePrefix + "label");
-        presenter.getHeader().addCommandItem(label);
-
-        InputNumber dmpInput = new InputNumber();
-        dmpInput.addStyleName(stylePrefix + "input");
-
-        if (!BeeUtils.isEmpty(value)) {
-          dmpInput.setValue(value);
+            break;
         }
-
-        dmpInput.addValueChangeHandler(new ValueChangeHandler<String>() {
-          @Override
-          public void onValueChange(ValueChangeEvent<String> event) {
-            EcKeeper.saveConfiguration(EcConstants.COL_CONFIG_MARGIN_DEFAULT_PERCENT,
-                event.getValue());
-          }
-        });
-
-        presenter.getHeader().addCommandItem(dmpInput);
       }
     });
   }

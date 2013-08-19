@@ -14,7 +14,6 @@ name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separato
   <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery" separator="true" />
   <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
 
-  <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" separator="true" />
   <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec"  separator="true" />
 
 </Entry>
