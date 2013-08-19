@@ -173,6 +173,7 @@ public final class CommonsConstants {
   public static final String COL_SERVICE = "IsService";
 
   public static final String COL_UNIT = "Unit";
+  public static final String COL_UNIT_NAME = "Name";
   public static final String COL_ARTICLE = "Article";
   public static final String COL_BARCODE = "Barcode";
 

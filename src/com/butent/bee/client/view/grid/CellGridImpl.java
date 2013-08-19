@@ -1434,7 +1434,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
 
-      Label label = new Label(editableColumn.getCaption());
+      Label label = new Label();
+      label.setHTML(editableColumn.getCaption());
       label.addStyleName(RowFactory.STYLE_NEW_ROW_LABEL);
 
       if (editableColumn.hasDefaults()) {

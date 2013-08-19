@@ -32,6 +32,8 @@ public interface LocalizableEcConstants {
 
   String ecCreditLimit();
 
+  String ecDaysForPayment();
+
   String ecDebt();
 
   String ecDeliveryAddress();
@@ -124,6 +126,8 @@ public interface LocalizableEcConstants {
 
   String ecListPrice();
 
+  String ecManager();
+
   String ecMarginDefaultPercent();
 
   String ecMaxedOut();
@@ -159,6 +163,8 @@ public interface LocalizableEcConstants {
   String ecOrderSubmissionDate();
 
   String ecOrderSubmitted();
+
+  String ecRejectionReason();
 
   String ecRegister();
 
@@ -198,15 +204,13 @@ public interface LocalizableEcConstants {
 
   String ecTermsOfDelivery();
 
-  String ecTermsOfPayment();
-
   String ecSendToERP();
 
   String ecSendToERPConfirm();
 
   String ecTotalOrdered();
 
-  String ecTotalReceived();
+  String ecTotalTaken();
 
   String ecUpdateCosts();
 }

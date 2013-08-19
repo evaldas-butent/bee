@@ -352,6 +352,10 @@ public class TabbedPages extends Flow implements
     return stylePrefix;
   }
 
+  protected Flow getTabBar() {
+    return tabBar;
+  }
+
   protected void saveLayout() {
     setTabBarSize(isAttached() ? ElementSize.forOffset(tabBar) : null);
   }

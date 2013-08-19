@@ -288,11 +288,17 @@
 }
 
 .bee-ec-ItemList-itemRow:nth-child(odd),
-.bee-ec-shoppingCart-itemRow:nth-child(odd) {
+.bee-ec-shoppingCart-itemRow:nth-child(odd),
+.bee-ec-finInfo-order-data:nth-child(odd),
+.bee-ec-finInfo-order-item-data:nth-child(odd),
+.bee-ec-finInfo-invoice-data:nth-child(odd) {
   background-color: #f5f5f5;
 }
 .bee-ec-ItemList-itemRow:nth-child(even),
-.bee-ec-shoppingCart-itemRow:nth-child(even) {
+.bee-ec-shoppingCart-itemRow:nth-child(even),
+.bee-ec-finInfo-order-data:nth-child(even),
+.bee-ec-finInfo-order-item-data:nth-child(even),
+.bee-ec-finInfo-invoice-data:nth-child(even) {
   background-color: #ebebeb;
 }
 
@@ -775,3 +781,125 @@
   background-size: contain;
   cursor: pointer;
 }
+
+.bee-ec-finInfo-fin-table {
+  margin-left: 2em;
+  margin-top: 2ex;
+  border-collapse: collapse;
+}
+.bee-ec-finInfo-fin-table td {
+  padding: 8px;
+}
+.bee-ec-finInfo-fin-label {
+  font-size: medium;
+}
+.bee-ec-finInfo-fin-value {
+  min-width: 100px;
+  border: 1px solid #ccc;
+  text-align: right;
+  padding: 2px 5px 2px 0;
+  font-size: medium;
+}
+
+.bee-ec-finInfo-order-panel,
+.bee-ec-finInfo-invoice-panel {
+  margin-left: 2em;
+  margin-top: 2ex;
+}
+.bee-ec-finInfo-order-caption,
+.bee-ec-finInfo-invoice-caption {
+  font-size: medium;
+  font-weight: bold;
+}
+  
+.bee-ec-finInfo-order-table,
+.bee-ec-finInfo-invoice-table {
+  border-collapse: collapse;
+}
+.bee-ec-finInfo-order-header td,
+.bee-ec-finInfo-invoice-header td {
+  text-align: center;
+  padding: 3px 10px;
+  font-weight: bold;
+}
+.bee-ec-finInfo-order-data > td,
+.bee-ec-finInfo-invoice-data > td {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+}
+.bee-ec-finInfo-order-data:hover,
+.bee-ec-finInfo-invoice-data:hover {
+  background-color: #dfd;
+}
+
+.bee-ec-finInfo-order-number {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.bee-ec-finInfo-order-amount-cell {
+  text-align: right;
+}  
+.bee-ec-finInfo-order-comment,
+.bee-ec-finInfo-order-da {
+  white-space: pre-line;
+}
+
+.bee-ec-finInfo-invoice-indulgence-cell,
+.bee-ec-finInfo-invoice-overdue-cell {
+  text-align: center;
+}
+
+.bee-ec-finInfo-invoice-amount-cell,
+.bee-ec-finInfo-invoice-debt-cell {
+  text-align: right;
+}
+
+.bee-ec-finInfo-order-details-panel {
+  max-width: 800px;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.bee-ec-finInfo-order-details-table {
+  border-collapse: collapse;
+}
+.bee-ec-finInfo-order-details-table td {
+  padding: 3px 10px;
+}
+.bee-ec-finInfo-order-details-value {
+  width: 200px;
+  border: 1px solid #ccc;
+  padding: 2px 5px;
+  white-space: pre-line;
+}
+
+.bee-ec-finInfo-order-item-caption {
+  margin-top: 1ex;
+  font-weight: bold;
+}
+  
+.bee-ec-finInfo-order-item-table {
+  margin-left: 3em;
+  border-collapse: collapse;
+}
+.bee-ec-finInfo-order-item-header td {
+  text-align: center;
+  padding: 3px 10px;
+  font-weight: bold;
+}
+.bee-ec-finInfo-order-item-data > td {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+}
+.bee-ec-finInfo-order-item-data:hover {
+  background-color: #dfd;
+}
+
+.bee-ec-finInfo-order-item-picture {
+  width: 50px;
+  height: 50px;
+}
+.bee-ec-finInfo-order-item-quantity-cell,
+.bee-ec-finInfo-order-item-price-cell {
+  text-align: right;
+}  

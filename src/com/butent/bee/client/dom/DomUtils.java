@@ -52,6 +52,7 @@ import java.util.List;
  */
 public final class DomUtils {
 
+  public static final String TAG_ASIDE = "aside";
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
   public static final String TAG_CANVAS = "canvas";

@@ -2,7 +2,6 @@ package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.HasCaption;
 
 public final class EcConstants {
@@ -61,9 +60,9 @@ public final class EcConstants {
     ACTIVE(Localized.getConstants().ecOrderStatusActive()),
     REJECTED(Localized.getConstants().ecOrderStatusRejected());
 
-    public static boolean in(int status, TaskStatus... statuses) {
-      for (TaskStatus ts : statuses) {
-        if (ts.ordinal() == status) {
+    public static boolean in(int status, EcOrderStatus... statuses) {
+      for (EcOrderStatus st : statuses) {
+        if (st.ordinal() == status) {
           return true;
         }
       }
@@ -261,6 +260,11 @@ public final class EcConstants {
   public static final String COL_ORDER_REJECTION_REASON = "RejectionReason";
   public static final String COL_ORDER_NOTES = "Notes";
 
+  public static final String ALS_ORDER_MANAGER_FIRST_NAME = "ManagerFirstName";
+  public static final String ALS_ORDER_MANAGER_LAST_NAME = "ManagerLastName";
+  public static final String ALS_ORDER_DELIVERY_METHOD_NAME = "DeliveryMethodName";
+  public static final String ALS_ORDER_REJECTION_REASON_NAME = "RejectionReasonName";
+  
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";
   public static final String COL_REGISTRATION_BRANCH = "Branch";

@@ -38,6 +38,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -53,10 +56,13 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
+import com.butent.bee.shared.modules.ec.EcOrder;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -251,6 +257,10 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_UPDATE_SHOPPING_CART)) {
       response = updateShoppingCart(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_FINANCIAL_INFORMATION)) {
+      response = getFinancialInformation();
+      log = true;
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -263,34 +273,6 @@ public class EcModuleBean implements BeeModule {
     }
 
     return response;
-  }
-
-  private ResponseObject mergeCategory(Long categoryId, Long parentCategoryId) {
-    Assert.noNulls(categoryId, parentCategoryId);
-
-    qs.updateData(new SqlDelete(TBL_TCD_ARTICLE_CATEGORIES)
-        .setWhere(SqlUtils
-            .and(SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, parentCategoryId),
-                SqlUtils.in(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
-                    TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
-                    SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, categoryId)))));
-
-    for (String tblName : sys.getTableNames()) {
-      for (BeeForeignKey fKey : sys.getTable(tblName).getForeignKeys()) {
-        if (BeeUtils.same(fKey.getRefTable(), TBL_TCD_CATEGORIES)
-            && fKey.getFields().size() == 1) {
-
-          String tbl = fKey.getTable();
-          String fld = fKey.getFields().get(0);
-
-          qs.updateData(new SqlUpdate(tbl)
-              .addConstant(fld, parentCategoryId)
-              .setWhere(SqlUtils.equals(tbl, fld, categoryId)));
-        }
-      }
-    }
-    return qs.updateDataWithResponse(new SqlDelete(TBL_TCD_CATEGORIES)
-        .setWhere(sys.idEquals(TBL_TCD_CATEGORIES, categoryId)));
   }
 
   @Override
@@ -793,6 +775,87 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(items);
   }
 
+  private ResponseObject getFinancialInformation() {
+    EcFinInfo finInfo = new EcFinInfo();
+
+    Long client = getCurrentClientId();
+    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
+        ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
+        new Order(COL_ORDER_DATE, false));
+
+    if (!DataUtils.isEmpty(orderData)) {
+      int dateIndex = orderData.getColumnIndex(COL_ORDER_DATE);
+      int statusIndex = orderData.getColumnIndex(COL_ORDER_STATUS);
+
+      int mfIndex = orderData.getColumnIndex(ALS_ORDER_MANAGER_FIRST_NAME);
+      int mlIndex = orderData.getColumnIndex(ALS_ORDER_MANAGER_LAST_NAME);
+
+      int daIndex = orderData.getColumnIndex(COL_ORDER_DELIVERY_ADDRESS);
+      int dmIndex = orderData.getColumnIndex(ALS_ORDER_DELIVERY_METHOD_NAME);
+
+      int commentIndex = orderData.getColumnIndex(COL_ORDER_CLIENT_COMMENT);
+      int rrIndex = orderData.getColumnIndex(ALS_ORDER_REJECTION_REASON_NAME);
+
+      SqlSelect itemQuery = new SqlSelect()
+          .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
+              COL_ORDER_ITEM_PRICE)
+          .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
+              COL_TCD_ARTICLE_WEIGHT)
+          .addFields(CommonsConstants.TBL_UNITS, CommonsConstants.COL_UNIT_NAME)
+          .addFrom(TBL_ORDER_ITEMS)
+          .addFromInner(TBL_TCD_ARTICLES,
+              sys.joinTables(TBL_TCD_ARTICLES, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE))
+          .addFromLeft(CommonsConstants.TBL_UNITS,
+              sys.joinTables(CommonsConstants.TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
+          .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+      for (BeeRow orderRow : orderData.getRows()) {
+        EcOrder order = new EcOrder();
+
+        order.setOrderId(orderRow.getId());
+        order.setDate(orderRow.getDateTime(dateIndex));
+        order.setStatus(orderRow.getInteger(statusIndex));
+
+        order.setManager(BeeUtils.joinWords(orderRow.getString(mfIndex),
+            orderRow.getString(mlIndex)));
+
+        order.setDeliveryAddress(orderRow.getString(daIndex));
+        order.setDeliveryMethod(orderRow.getString(dmIndex));
+
+        order.setComment(orderRow.getString(commentIndex));
+        order.setRejectionReason(orderRow.getString(rrIndex));
+
+        itemQuery.setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER,
+            orderRow.getId()));
+        SimpleRowSet itemData = qs.getData(itemQuery);
+
+        if (!DataUtils.isEmpty(itemData)) {
+          for (SimpleRow itemRow : itemData) {
+            EcOrderItem item = new EcOrderItem();
+
+            item.setArticleId(itemRow.getLong(COL_ORDER_ITEM_ARTICLE));
+
+            item.setName(itemRow.getValue(COL_TCD_ARTICLE_NAME));
+            item.setCode(itemRow.getValue(COL_TCD_ARTICLE_NR));
+
+            item.setQuantity(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
+            item.setPrice(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
+
+            item.setUnit(itemRow.getValue(CommonsConstants.COL_UNIT_NAME));
+            item.setWeight(itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT));
+
+            order.getItems().add(item);
+          }
+        }
+
+        finInfo.getOrders().add(order);
+      }
+    }
+
+    int size = finInfo.getOrders().size() + finInfo.getInvoices().size();
+    return ResponseObject.response(finInfo).setSize(size);
+  }
+
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
     Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
     String code = normalizeCode(reqInfo.getParameter(COL_TCD_ARTICLE_NR));
@@ -1079,6 +1142,34 @@ public class EcModuleBean implements BeeModule {
     ins.addConstant(COL_HISTORY_DURATION, duration);
 
     qs.insertData(ins);
+  }
+
+  private ResponseObject mergeCategory(Long categoryId, Long parentCategoryId) {
+    Assert.noNulls(categoryId, parentCategoryId);
+
+    qs.updateData(new SqlDelete(TBL_TCD_ARTICLE_CATEGORIES)
+        .setWhere(SqlUtils
+            .and(SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, parentCategoryId),
+                SqlUtils.in(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
+                    TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE,
+                    SqlUtils.equals(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, categoryId)))));
+
+    for (String tblName : sys.getTableNames()) {
+      for (BeeForeignKey fKey : sys.getTable(tblName).getForeignKeys()) {
+        if (BeeUtils.same(fKey.getRefTable(), TBL_TCD_CATEGORIES)
+            && fKey.getFields().size() == 1) {
+
+          String tbl = fKey.getTable();
+          String fld = fKey.getFields().get(0);
+
+          qs.updateData(new SqlUpdate(tbl)
+              .addConstant(fld, parentCategoryId)
+              .setWhere(SqlUtils.equals(tbl, fld, categoryId)));
+        }
+      }
+    }
+    return qs.updateDataWithResponse(new SqlDelete(TBL_TCD_CATEGORIES)
+        .setWhere(sys.idEquals(TBL_TCD_CATEGORIES, categoryId)));
   }
 
   private ResponseObject saveConfiguration(RequestInfo reqInfo) {
