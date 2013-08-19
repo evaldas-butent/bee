@@ -6,34 +6,14 @@ name="Ec" label="=ecMenu" order="100"
   <Item name="EcOrders" label="=ecOrders" service="grid" parameters="EcOrders" />
 
   <Item name="EcRegistrations" label="=ecRegistrations" service="grid" parameters="EcRegistrations" separator="true" />
-  <Item name="EcClients" label="=ecClients" service="open_ec_clients" />
-
-  <Item name="EcManagers" label="=ecManagers" service="grid" parameters="EcManagers" separator="true" />
-
-  <Item name="Branches" label="=branches" service="grid" parameters="Branches" separator="true" />
-  <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses" />
-
-  <Item name="DeliveryMethods" label="=ecDeliveryMethods" service="grid" parameters="DeliveryMethods" separator="true" />
-  <Item name="RejectionReasons" label="=ecRejectionReasons" service="grid" parameters="RejectionReasons" />
 
   <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory" separator="true" />
 
-  <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery" separator="true" />
-  <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
-
   <Item name="EcCatalog" label="=ecCatalog" service="open_ec_catalog" separator="true" />
-  <Item name="TcdCriteria" label="=tcdCriteria" service="grid" parameters="TcdCriteria" />
 
-  <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true" />
-  <Item name="TcdModels" label="=tcdModels" service="grid" parameters="TcdModels" />
-  <Item name="TcdTypes" label="=tcdTypes" service="grid" parameters="TcdTypes" />
-
-  <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" separator="true" />
-  <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
   <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
 
   <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
   <Item name="EcCategories" label="=ecItemCategories" service="form" parameters="TcdCategories" />
 
-  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec"  separator="true" />
 </Entry>
