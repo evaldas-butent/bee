@@ -106,7 +106,7 @@
 .bee-ec-cartPicture {
   width: 40px;
   height: 40px;
-  margin-right: 1em;
+  margin-right: 3px;
   cursor: default;
 }
 
@@ -545,7 +545,7 @@
 
 .bee-ec-shoppingCart-caption {
   margin-left: 2em;
-  margin-top: 5px;
+  margin-top:  2ex;
   font-weight: bold;
   font-size: medium;
 }
@@ -557,6 +557,10 @@
   text-align: center;
   padding: 3px 10px;
   font-weight: bold;
+}
+.bee-ec-shoppingCart-items-wrapper {
+   margin-top: 2ex;
+   margin-left: 1em;
 }
 .bee-ec-shoppingCart-itemRow > td {
   padding: 3px 10px;
@@ -579,12 +583,20 @@
 .bee-ec-shoppingCart-item-price-cell {
   text-align: right;
 }
+
+.bee-ec-shoppingCart-item-price {
+  font-size: medium;
+  font-weight: bold;
+}
+
 .bee-ec-shoppingCart-item-remove-cell {
   text-align: center;
 }
 
 .bee-ec-shoppingCart-item-quantity {
   border-collapse: collapse;
+  font-size: medium;
+  font-weight: bold;
 }
 .bee-ec-shoppingCart-item-quantity-value {
   width: 40px;
@@ -594,25 +606,33 @@
   margin-left: 5px;
   margin-right: 1em;
 }
+
+.bee-ec-shoppingCart-item-quantity-plus{
+  margin-bottom: 5px;
+}
+
 .bee-ec-shoppingCart-item-quantity-plus,
 .bee-ec-shoppingCart-item-quantity-minus {
+  height: 25px;
+  width: 25px;
   display: block;
 }
 
 .bee-ec-shoppingCart-total {
   position: absolute;
-  top: 5px;
-  right: 1em;
+  top: 3px;
+  right: 20%;
   font-size: medium;
   font-weight: bold;
 }
 
 .bee-ec-shoppingCart-address-panel {
   position: absolute;
-  top: 5px;
+  top: 52px;
   height: 80px;
   left: 1em;
   width: 25%;
+  margin-top: 8px;
 }
 .bee-ec-shoppingCart-address-label {
   margin-left: 2px;
@@ -623,12 +643,21 @@
   bottom: 2px;
   left: 2px;
   right: 2px;
+  padding: 4px;
+  font-size: medium;
+  box-shadow: inset 3px 3px 10px silver; 
+  border: 1px solid #d9d9d9;
+  border-top: 1px solid silver;
+}
+
+.bee-ec-shoppingCart-method-label {
+  margin-left: 2px;
 }
 
 .bee-ec-shoppingCart-method-panel {
   position: absolute;
-  top: 5px;
-  left: 27%;
+  top: 16px;
+  left: 1em;
   width: 15%;
 }
 .bee-ec-shoppingCart-method-input {
@@ -636,14 +665,17 @@
   top: 20px;
   left: 0;
   min-width: 50%;
+  box-shadow: inset 1px 1px 10px silver;
+  padding: 2px 0px 2px 2px;  
 }
 
 .bee-ec-shoppingCart-comment-panel {
   position: absolute;
-  top: 5px;
-  height: 80px;
-  left: 45%;
+  top: 16px;
+  height: 124px;
+  left: 26%;
   width: 30%;
+  margin-left: 1em; 
 }
 .bee-ec-shoppingCart-comment-label {
   margin-left: 2px;
@@ -654,13 +686,22 @@
   bottom: 2px;
   left: 2px;
   right: 2px;
+  padding: 2px;
+  border: 1px solid #d9d9d9;
+  border-top: 1px solid silver;
+  color: #43494F
 }
 
 .bee-ec-shoppingCart-submit {
   position: absolute;
-  top: 50px;
-  right: 1em;
+  top: 140px;
+  left: 26%;
+  margin-left: 1em;
   font-size: medium;
+  margin-top: 8px;
+  background-image: url("images/ec/red_background.png");
+  height: 32px;
+  color: white
 }
 
 .bee-ec-htmlViewer-frame {
