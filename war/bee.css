@@ -244,6 +244,10 @@ body {
   overflow: auto;
 }
 
+.bee-SplitWest {
+  margin-bottom: 1.5em
+}
+
 .bee-MenuRoot, .bee-MenuBar {
   overflow: auto;
 }
@@ -1073,7 +1077,7 @@ body {
 }
 
 .bee-StackContainer {
-  position: relative;
+  /*position: relative;*/
 }
 
 .bee-StackHeader {
@@ -1965,6 +1969,28 @@ body {
 
 .bee-companyInfo-label:after {
   content: ":";
+}
+
+.bee-Copyright {
+  position: fixed;
+  bottom: 2px;
+  cursor: pointer;
+  margin-left: 1ex;
+}
+
+
+.bee-Copyright > div {
+  display: inline-block;
+  font-size: smaller;
+  margin: 0px 0.1em;
+}
+
+.bee-Copyright-logo {
+  max-height: 16px;
+  max-width: 16px;
+  width: auto;
+  height: auto;
+  margin-bottom: -4px;
 }
 
 .companyInfo-name .companyInfo-item {

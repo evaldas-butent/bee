@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -364,6 +365,39 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  protected Widget createCopyright(String stylePerfix) {
+    Flow copyright = new Flow();
+    copyright.addStyleName(stylePerfix + "Copyright");
+
+    Image logo = new Image("images/logo.gif");
+    logo.addStyleName(stylePerfix + "Copyright-logo");
+    copyright.add(logo);
+
+    Label company = new Label("UAB \"Būtenta\"");
+    company.addStyleName(stylePerfix + "Copyright-company");
+    copyright.add(company);
+
+    Label copySign = new Label("\u00A9"); /* © */
+    copySign.addStyleName(stylePerfix + "Copyright-sign");
+    copyright.add(copySign);
+
+    Label timePeriod = new Label("2010 - " + TimeUtils.today().getYear());
+    timePeriod.addStyleName(stylePerfix + "Copyright-timePeriod");
+    copyright.add(timePeriod);
+
+    final String url = "http://www.butent.com";
+    copyright.setTitle(url);
+
+    copyright.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Window.open(url, "_blank", null);
+      }
+    });
+
+    return copyright;
+  }
+
   protected Widget createLogo(ScheduledCommand command) {
     String imageUrl = Settings.getLogoImage();
     if (BeeUtils.isEmpty(imageUrl)) {
@@ -552,7 +586,11 @@ public class ScreenImpl implements Screen {
     setCentralScrutinizer(new CentralScrutinizer());
     getCentralScrutinizer().start();
 
-    return Pair.of(getCentralScrutinizer(), 240);
+    Flow westFlow = new Flow();
+    westFlow.add(getCentralScrutinizer());
+    westFlow.add(createCopyright("bee-"));
+
+    return Pair.of(westFlow, 240);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

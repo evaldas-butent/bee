@@ -170,6 +170,7 @@ public class EcScreen extends ScreenImpl {
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
     Flow panel = new Flow(EcStyles.name("ProgressPanel"));
+    panel.add(createCopyright("bee-ec-"));
     setProgressPanel(panel);
 
     return Pair.of(panel, 18);

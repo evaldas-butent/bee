@@ -87,6 +87,29 @@
 .bee-ec-commandPanel-searchBy td {
   padding-bottom: 0;
 }
+
+.bee-ec-Copyright {
+  position: fixed;
+  right: 1em; 
+  bottom: 2px;
+  cursor: pointer;
+}
+
+
+.bee-ec-Copyright > div {
+  display: inline-block;
+  font-size: smaller;
+  margin: 0px 0.1em;
+}
+
+.bee-ec-Copyright-logo {
+  max-height: 16px;
+  max-width: 16px;
+  width: auto;
+  height: auto;
+  margin-bottom: -4px;
+}
+
 .bee-ec-searchBy-label {
   padding-right: 5px;
   font-weight: bold;
