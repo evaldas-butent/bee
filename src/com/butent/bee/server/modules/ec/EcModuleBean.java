@@ -39,6 +39,8 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
@@ -56,14 +58,16 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
+import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.modules.ec.EcOrder;
+import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -779,8 +783,115 @@ public class EcModuleBean implements BeeModule {
     EcFinInfo finInfo = new EcFinInfo();
 
     Long client = getCurrentClientId();
+
+    SimpleRow comapnyInfo = qs.getRow(new SqlSelect()
+        .addFields(CommonsConstants.TBL_COMPANIES,
+            CommonsConstants.COL_NAME, CommonsConstants.COL_CODE)
+        .addFrom(TBL_CLIENTS)
+        .addFromInner(CommonsConstants.TBL_USERS, sys.joinTables(CommonsConstants.TBL_USERS,
+            TBL_CLIENTS, COL_CLIENT_USER))
+        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromInner(CommonsConstants.TBL_COMPANIES,
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_COMPANY))
+        .setWhere(sys.idEquals(TBL_CLIENTS, client)));
+
+    if (client != null) {
+      String company = null;
+      String wh = "LOWER(klientas) = '"
+          + comapnyInfo.getValue(CommonsConstants.COL_NAME).toLowerCase() + "'";
+
+      ResponseObject response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
+          prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+          "SELECT klientas, max_skola, dienos"
+              + " FROM klientai"
+              + " WHERE " + wh + " OR kodas = '" + comapnyInfo.getValue(CommonsConstants.COL_CODE)
+              + "' ORDER BY " + wh + " DESC",
+          new String[] {"klientas", "max_skola", "dienos"});
+
+      if (response.hasErrors()) {
+        logger.severe((Object[]) response.getErrors());
+      } else {
+        SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
+
+        if (row != null) {
+          finInfo.setCreditLimit(row.getDouble("max_skola"));
+          finInfo.setDaysForPayment(row.getInt("dienos"));
+          company = row.getValue("klientas");
+        }
+      }
+      if (!BeeUtils.isEmpty(company)) {
+        response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
+            prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+            "SELECT SUM(kiekis * kaina) AS suma"
+                + " FROM likuciai"
+                + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
+                + "   AND sand.konsign IS NOT NULL"
+                + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
+            new String[] {"suma"});
+
+        if (response.hasErrors()) {
+          logger.severe((Object[]) response.getErrors());
+        } else {
+          SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
+
+          if (row != null) {
+            finInfo.setTotalTaken(row.getDouble("suma"));
+          }
+        }
+        response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
+            prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+            "SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
+                + " FROM apyvarta"
+                + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
+                + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
+                + "   AND apyvarta.skola_w > 0 AND apyvarta.gavejas = '" + company + "'"
+                + " ORDER BY data",
+            new String[] {"data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w",
+                "terminas"});
+
+        if (response.hasErrors()) {
+          logger.severe((Object[]) response.getErrors());
+        } else {
+          double totalDebt = 0;
+          double timedOutDebt = 0;
+          SimpleRowSet data = (SimpleRowSet) response.getResponse();
+
+          for (SimpleRow row : data) {
+            DateTime date = TimeUtils.parseDateTime(row.getValue("data"));
+            DateTime term = TimeUtils.parseDateTime(row.getValue("terminas"));
+
+            if (term == null) {
+              term = TimeUtils.nextDay(date, finInfo.getDaysForPayment()).getDateTime();
+            }
+            double debt = BeeUtils.unbox(row.getDouble("skola_w"));
+            totalDebt += debt;
+
+            if (TimeUtils.dayDiff(term, TimeUtils.today()) > 0) {
+              timedOutDebt += debt;
+            }
+            EcInvoice invoice = new EcInvoice();
+            invoice.setDate(date);
+            invoice.setNumber(BeeUtils.notEmpty(BeeUtils.joinWords(row.getValue("dok_serija"),
+                row.getValue("kitas_dok")), row.getValue("dokumentas")));
+            invoice.setAmount(row.getDouble("viso"));
+            invoice.setDebt(debt);
+            invoice.setTerm(term);
+            finInfo.getInvoices().add(invoice);
+          }
+          finInfo.setDebt(totalDebt);
+          finInfo.setMaxedOut(timedOutDebt);
+        }
+      }
+    }
+
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
-        ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
+        Filter.and(ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
+            ComparisonFilter.isNotEqual(COL_ORDER_STATUS,
+                new IntegerValue(EcOrderStatus.ACTIVE.ordinal()))),
         new Order(COL_ORDER_DATE, false));
 
     if (!DataUtils.isEmpty(orderData)) {

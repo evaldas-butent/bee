@@ -162,7 +162,6 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     Assert.isPositive(ArrayUtils.length(cols));
 
     columns = HashBiMap.create(cols.length);
-    rows = Lists.newArrayList();
 
     for (int i = 0; i < cols.length; i++) {
       columns.put(cols[i], i);

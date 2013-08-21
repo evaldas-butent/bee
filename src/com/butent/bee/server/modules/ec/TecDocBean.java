@@ -19,7 +19,6 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -35,8 +34,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
-
-import org.w3c.dom.Node;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -163,27 +160,21 @@ public class TecDocBean {
         prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
         "SELECT preke AS pr, savikaina AS kn, gam_art AS ga, gamintojas AS gam"
             + " FROM prekes"
-            + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL");
+            + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL",
+        new String[] {"pr", "kn", "ga", "gam"});
 
     if (response.hasErrors()) {
       logger.severe(supplier, response.getErrors());
       return;
     }
-    Node node = (Node) response.getResponse();
+    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
 
-    if (node.hasChildNodes()) {
-      int size = node.getChildNodes().getLength();
-      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(size);
+    if (rows.getNumberOfRows() > 0) {
+      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
-      for (int i = 0; i < size; i++) {
-        Node row = node.getChildNodes().item(i);
-
-        if (row.hasChildNodes()) {
-          Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-
-          data.add(new RemoteItems(info.get("pr"), info.get("gam"), info.get("ga"),
-              BeeUtils.toDoubleOrNull(info.get("kn"))));
-        }
+      for (SimpleRow row : rows) {
+        data.add(new RemoteItems(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
+            row.getDouble("kn")));
       }
       importItems(supplier, data);
     }
@@ -192,32 +183,22 @@ public class TecDocBean {
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
             + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
             + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
-            + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0");
+            + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
+        new String[] {"sn", "pr", "lk"});
 
     if (response.hasErrors()) {
       logger.severe(supplier, response.getErrors());
       return;
     }
-    node = (Node) response.getResponse();
+    rows = (SimpleRowSet) response.getResponse();
 
-    if (node.hasChildNodes()) {
-      int size = node.getChildNodes().getLength();
-      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(size);
+    if (rows.getNumberOfRows() > 0) {
+      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
-      for (int i = 0; i < size; i++) {
-        Node row = node.getChildNodes().item(i);
-
-        if (row.hasChildNodes()) {
-          Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-
-          data.add(new RemoteRemainders(info.get("pr"), info.get("sn"),
-              BeeUtils.toDoubleOrNull(info.get("lk"))));
-        }
+      for (SimpleRow row : rows) {
+        data.add(new RemoteRemainders(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
       }
       importRemainders(supplier, data);
-
-    } else {
-      logger.info(supplier, "webService returned no remainders");
     }
   }
 

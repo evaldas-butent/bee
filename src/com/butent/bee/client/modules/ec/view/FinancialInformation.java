@@ -181,7 +181,7 @@ class FinancialInformation extends EcView {
 
     value = renderOrderDetailValue(order.getComment());
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
-    
+
     if (EcOrderStatus.REJECTED == status) {
       stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "rr";
       label = renderOrderDetailLabel(Localized.getConstants().ecRejectionReason());
@@ -192,14 +192,14 @@ class FinancialInformation extends EcView {
     }
 
     panel.add(orderTable);
-    
+
     Label itemCaption = new Label(Localized.getConstants().ecOrderItems());
     itemCaption.addStyleName(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_CAPTION);
     panel.add(itemCaption);
 
     HtmlTable itemTable = new HtmlTable(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_TABLE);
     row = 0;
-    
+
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_NAME_COL,
         renderOrderItemHeader(Localized.getConstants().ecItemName()),
         STYLE_ORDER_ITEM_NAME + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
@@ -213,19 +213,19 @@ class FinancialInformation extends EcView {
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL,
         renderOrderItemHeader(Localized.getConstants().price()),
         STYLE_ORDER_ITEM_PRICE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
-    
+
     itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_HEADER);
     row++;
 
     Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
     Widget widget;
-    
+
     for (EcOrderItem item : order.getItems()) {
       ItemPicture pictureWidget = new ItemPicture();
       itemTable.setWidgetAndStyle(row, ORDER_ITEM_PICTURE_COL, pictureWidget,
           STYLE_ORDER_ITEM_PICTURE);
       pictureWidgets.put(item.getArticleId(), pictureWidget);
-      
+
       if (item.getName() != null) {
         widget = new Label(item.getName());
         itemTable.setWidgetAndStyle(row, ORDER_ITEM_NAME_COL, widget, STYLE_ORDER_ITEM_NAME);
@@ -242,17 +242,17 @@ class FinancialInformation extends EcView {
       int cents = BeeUtils.round(BeeUtils.unbox(item.getPrice()) * 100);
       widget = new Label(EcUtils.renderCents(cents));
       itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL, widget, STYLE_ORDER_ITEM_PRICE);
-    
+
       itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_DATA);
       row++;
     }
-    
+
     if (!pictureWidgets.isEmpty()) {
       EcKeeper.setBackgroundPictures(pictureWidgets);
     }
-    
+
     panel.add(itemTable);
-    
+
     DialogBox dialog = DialogBox.create(Localized.getConstants().ecOrder(),
         STYLE_PREFIX_ORDER_DETAILS + "dialog");
     dialog.setWidget(panel);
@@ -420,10 +420,12 @@ class FinancialInformation extends EcView {
         }
 
         if (BeeUtils.isPositive(invoice.getDebt())) {
-          int overdue = TimeUtils.dayDiff(TimeUtils.today(), invoice.getTerm());
-          widget = new Label((overdue > 0) ? (BeeConst.STRING_PLUS + overdue)
-              : BeeUtils.toString(overdue));
-          table.setWidgetAndStyle(row, INVOICE_OVERDUE_COL, widget, STYLE_INVOICE_OVERDUE);
+          int overdue = TimeUtils.dayDiff(invoice.getTerm(), TimeUtils.today());
+
+          if (overdue > 0) {
+            widget = new Label(BeeUtils.toString(overdue));
+            table.setWidgetAndStyle(row, INVOICE_OVERDUE_COL, widget, STYLE_INVOICE_OVERDUE);
+          }
         }
       }
 
@@ -472,7 +474,7 @@ class FinancialInformation extends EcView {
     label.addStyleName(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_LABEL);
     return label;
   }
-  
+
   private static Widget renderOrders(List<EcOrder> orders) {
     if (BeeUtils.isEmpty(orders)) {
       return null;

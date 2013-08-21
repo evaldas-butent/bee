@@ -2,11 +2,13 @@ package com.butent.webservice;
 
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -72,32 +74,46 @@ public class ButentWS extends Service {
   }
 
   public static ResponseObject getSQLData(String address, String login, String password,
-      String query) {
+      String query, String[] columns) {
 
     ResponseObject response = getPort(address, login, password);
 
     if (response.hasErrors()) {
       return response;
     }
-    logger.info("GetSQLData:", "waiting for data...");
+    logger.info("GetSQLData:", query);
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("GetSQLData", "<query>" + query + "</query>");
 
+    SimpleRowSet data = new SimpleRowSet(columns);
     Node node = null;
+
     try {
       node = XmlUtils.fromString(answer).getFirstChild();
 
-      if (BeeUtils.same(node.getNodeName(), "Error")) {
+      if (BeeUtils.same(node.getLocalName(), "Error")) {
         return ResponseObject.error(node.getTextContent());
       }
     } catch (Exception e) {
       return ResponseObject.error(answer);
     }
-    logger.info("GetSQLData:", "received",
-        node.hasChildNodes() ? node.getChildNodes().getLength() : 0, "records");
+    if (node.hasChildNodes()) {
+      for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+        NodeList row = node.getChildNodes().item(i).getChildNodes();
+        int c = row.getLength();
 
-    return ResponseObject.response(node);
+        String[] cells = new String[data.getNumberOfColumns()];
+
+        for (int j = 0; j < c; j++) {
+          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
+        }
+        data.addRow(cells);
+      }
+    }
+    logger.info("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+
+    return ResponseObject.response(data);
   }
 
   public static ResponseObject importDoc(String address, String login, String password,
@@ -117,7 +133,7 @@ public class ButentWS extends Service {
       try {
         Node node = XmlUtils.fromString(answer).getFirstChild();
 
-        if (BeeUtils.same(node.getNodeName(), "Error")) {
+        if (BeeUtils.same(node.getLocalName(), "Error")) {
           return ResponseObject.error(node.getTextContent());
         }
       } catch (Exception e) {
@@ -151,7 +167,7 @@ public class ButentWS extends Service {
     try {
       Node node = XmlUtils.fromString(answer).getFirstChild();
 
-      if (BeeUtils.same(node.getNodeName(), "Error")) {
+      if (BeeUtils.same(node.getLocalName(), "Error")) {
         return ResponseObject.error(node.getTextContent());
       } else {
         answer = node.getTextContent();
