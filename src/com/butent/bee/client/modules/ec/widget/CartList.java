@@ -12,6 +12,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -92,18 +93,22 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
       row++;
     }
   }
-  
+
   public void addToCart(EcItem ecItem, int quantity) {
     CartType cartType = getActiveCartType();
     CartItem cartItem = carts.get(cartType).add(ecItem, quantity);
 
+    BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+        .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(),
+            BeeUtils.toString(cartItem.getQuantity())));
+
     refresh(cartType);
-    
+
     if (cartItem != null) {
       EcKeeper.persistCartItem(cartType, cartItem);
     }
   }
-  
+
   public Cart getCart(CartType cartType) {
     return carts.get(cartType);
   }
@@ -133,7 +138,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   public void refresh(CartType cartType) {
     boolean updated = updateInfo(cartType);
     updateTitle(cartType);
-    
+
     final Element rowElement = getRowFormatter().getElement(typesToRows.get(cartType));
     if (carts.get(cartType).isEmpty()) {
       rowElement.removeClassName(STYLE_HAS_ITEMS);
@@ -156,6 +161,9 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
 
   public boolean removeFromCart(CartType cartType, EcItem ecItem) {
     if (cartType != null && carts.get(cartType).remove(ecItem)) {
+      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+          .ecRemoveCartItem(cartType.getCaption(), ecItem.getName()));
+
       refresh(cartType);
       return true;
     } else {

@@ -1442,7 +1442,7 @@ public class EcModuleBean implements BeeModule {
             data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
         docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-        docItem.setVatPercent(BeeUtils.toString(prm.getInteger(EC_MODULE, "ERPBasicVATPercent")));
+        docItem.setVatPercent(prm.getInteger(EC_MODULE, "ERPBasicVATPercent"));
       }
     }
     if (!response.hasErrors()) {

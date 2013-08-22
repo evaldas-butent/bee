@@ -13,7 +13,7 @@ public class WSDocument {
     private final String itemId;
     private final String quantity;
     private String price;
-    private String vatPercent;
+    private Integer vatPercent;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -24,7 +24,7 @@ public class WSDocument {
       this.price = price;
     }
 
-    public void setVatPercent(String vatPercent) {
+    public void setVatPercent(Integer vatPercent) {
       this.vatPercent = vatPercent;
     }
   }
@@ -94,7 +94,7 @@ public class WSDocument {
       if (!BeeUtils.isEmpty(item.price)) {
         sb.append("<kaina>").append(item.price).append("</kaina>");
 
-        if (!BeeUtils.isEmpty(item.vatPercent)) {
+        if (BeeUtils.isPositive(item.vatPercent)) {
           sb.append("<pvm>").append(item.vatPercent).append("</pvm>");
         }
       }

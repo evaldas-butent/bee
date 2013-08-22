@@ -36,6 +36,9 @@ public class ButentWS extends Service {
   private static BeeLogger logger = LogUtils.getLogger(ButentWS.class);
 
   public static ResponseObject getPort(String address, String login, String password) {
+    if (BeeUtils.anyEmpty(address, login, password)) {
+      return ResponseObject.error("WebService address/login/password not defined");
+    }
     logger.info("Connecting to webservice:", address);
 
     ButentWS butentWS;

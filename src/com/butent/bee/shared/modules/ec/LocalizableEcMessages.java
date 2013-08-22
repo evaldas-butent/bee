@@ -8,5 +8,9 @@ public interface LocalizableEcMessages {
 
   String ecOrderTotal(String amount, String currency);
 
+  String ecRemoveCartItem(String cart, String item);
+
   String ecSearchDidNotMatch(String query);
+
+  String ecUpdateCartItem(String cart, String item, String quantity);
 }

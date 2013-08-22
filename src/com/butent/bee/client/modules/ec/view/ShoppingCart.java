@@ -393,7 +393,7 @@ public class ShoppingCart extends Split {
 
         pictureWidgets.put(item.getEcItem().getArticleId(), pictureWidget);
       }
-      
+
       if (!pictureWidgets.isEmpty()) {
         EcKeeper.setBackgroundPictures(pictureWidgets);
       }
@@ -439,9 +439,14 @@ public class ShoppingCart extends Split {
         setInt(valueWidget, value);
 
         item.setQuantity(value);
+
+        BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+            .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(),
+                BeeUtils.toString(value)));
+
         Cart cart = EcKeeper.refreshCart(cartType);
         updateTotal(cart);
-        
+
         EcKeeper.persistCartItem(cartType, item);
       }
     });
@@ -458,6 +463,11 @@ public class ShoppingCart extends Split {
           setInt(valueWidget, value);
 
           item.setQuantity(value);
+
+          BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+              .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(),
+                  BeeUtils.toString(value)));
+
           Cart cart = EcKeeper.refreshCart(cartType);
           updateTotal(cart);
 

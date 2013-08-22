@@ -2,11 +2,13 @@ package com.butent.bee.client.modules.ec.view;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.HtmlTable;
@@ -15,7 +17,9 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -27,6 +31,7 @@ import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcOrder;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -253,9 +258,18 @@ class FinancialInformation extends EcView {
 
     panel.add(itemTable);
 
-    DialogBox dialog = DialogBox.create(Localized.getConstants().ecOrder(),
+    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.getConstants().ecOrder(),
         STYLE_PREFIX_ORDER_DETAILS + "dialog");
     dialog.setWidget(panel);
+
+    Image print = new Image(Global.getImages().silverPrint(), new ScheduledCommand() {
+      @Override
+      public void execute() {
+        Printer.print(dialog);
+      }
+    });
+    dialog.addAction(Action.PRINT, print);
+    dialog.addDefaultCloseBox();
 
     dialog.setHideOnEscape(true);
     dialog.setAnimationEnabled(true);
