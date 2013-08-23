@@ -87,8 +87,9 @@ public class BeeServlet extends HttpServlet {
     boolean doLogout = false;
 
     if (BeeUtils.same(svc, Service.LOGIN)) {
-      doLogin = true;
-    
+      doLogin = session.getAttribute(Service.VAR_USER) == null;
+      doLogout = !doLogin;
+
     } else if (BeeUtils.same(svc, Service.LOGOUT)) {
       doLogout = true;
 
@@ -114,7 +115,7 @@ public class BeeServlet extends HttpServlet {
 
       } else {
         session.setAttribute(Service.VAR_USER, req.getRemoteUser());
-        
+
         resp.setHeader(Service.RPC_VAR_SID, session.getId());
         resp.setHeader(Service.RPC_VAR_QID, rid);
 
