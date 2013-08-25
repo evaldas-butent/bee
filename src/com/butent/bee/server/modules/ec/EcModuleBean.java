@@ -21,6 +21,8 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.ParameterEvent;
+import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -77,6 +79,7 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -147,6 +150,8 @@ public class EcModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  TecDocBean tcd;
 
   @Override
   public Collection<String> dependsOn() {
@@ -281,7 +286,7 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return Lists.newArrayList(
+    ArrayList<BeeParameter> params = Lists.newArrayList(
         new BeeParameter(EC_MODULE, PRM_ERP_ADDRESS, ParameterType.TEXT,
             "Address of ERP system WebService", false, null),
         new BeeParameter(EC_MODULE, PRM_ERP_LOGIN, ParameterType.TEXT,
@@ -294,6 +299,9 @@ public class EcModuleBean implements BeeModule {
             "Document warehouse name in ERP system", false, null),
         new BeeParameter(EC_MODULE, "ERPBasicVATPercent", ParameterType.NUMBER,
             "Basic VAT percent in ERP system", false, null));
+
+    params.addAll(tcd.getDefaultParameters());
+    return params;
   }
 
   @Override
@@ -308,6 +316,20 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    tcd.initTimers();
+
+    prm.registerParameterEventHandler(new ParameterEventHandler() {
+      @Subscribe
+      public void initTimers(ParameterEvent event) {
+        if (BeeUtils.same(event.getModule(), EC_MODULE)
+            && BeeUtils.inListSame(event.getParameter(),
+                PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
+
+          tcd.initTimers();
+        }
+      }
+    });
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void orderCategories(ViewQueryEvent event) {

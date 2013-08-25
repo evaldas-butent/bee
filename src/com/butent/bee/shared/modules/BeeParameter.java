@@ -299,26 +299,14 @@ public class BeeParameter implements BeeSerializable {
         String[] entries = Codec.beeDeserializeCollection(expr);
 
         if (entries != null) {
-          List<String> lst = Lists.newArrayListWithCapacity(entries.length);
-
-          for (String entry : entries) {
-            lst.add(entry);
-          }
-          val = lst;
+          val = Lists.newArrayList(entries);
+        } else {
+          val = Lists.newArrayList();
         }
         break;
 
       case MAP:
-        entries = Codec.beeDeserializeCollection(expr);
-
-        if (entries != null) {
-          Map<String, String> map = Maps.newHashMapWithExpectedSize(entries.length / 2);
-
-          for (int i = 0; i < entries.length; i += 2) {
-            map.put(entries[i], entries[i + 1]);
-          }
-          val = map;
-        }
+        val = Codec.beeDeserializeMap(expr);
         break;
 
       case NUMBER:
@@ -329,12 +317,9 @@ public class BeeParameter implements BeeSerializable {
         entries = Codec.beeDeserializeCollection(expr);
 
         if (entries != null) {
-          Set<String> set = Sets.newHashSetWithExpectedSize(entries.length);
-
-          for (String entry : entries) {
-            set.add(entry);
-          }
-          val = set;
+          val = Sets.newHashSet(entries);
+        } else {
+          val = Sets.newHashSet();
         }
         break;
 

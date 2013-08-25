@@ -264,7 +264,7 @@ public final class EcConstants {
   public static final String ALS_ORDER_MANAGER_LAST_NAME = "ManagerLastName";
   public static final String ALS_ORDER_DELIVERY_METHOD_NAME = "DeliveryMethodName";
   public static final String ALS_ORDER_REJECTION_REASON_NAME = "RejectionReasonName";
-  
+
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";
   public static final String COL_REGISTRATION_BRANCH = "Branch";
@@ -359,6 +359,9 @@ public final class EcConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
+
+  public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
+  public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
 
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';

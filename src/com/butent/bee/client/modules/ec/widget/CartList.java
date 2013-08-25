@@ -98,13 +98,13 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     CartType cartType = getActiveCartType();
     CartItem cartItem = carts.get(cartType).add(ecItem, quantity);
 
-    BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-        .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(),
-            BeeUtils.toString(cartItem.getQuantity())));
-
-    refresh(cartType);
-
     if (cartItem != null) {
+      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+          .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(),
+              BeeUtils.toString(cartItem.getQuantity())));
+
+      refresh(cartType);
+
       EcKeeper.persistCartItem(cartType, cartItem);
     }
   }

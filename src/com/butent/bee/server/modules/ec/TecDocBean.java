@@ -28,8 +28,11 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -39,13 +42,19 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -151,6 +160,56 @@ public class TecDocBean {
   IdGeneratorBean ig;
   @EJB
   ParamHolderBean prm;
+  @Resource
+  TimerService timerService;
+
+  private Timer butentTimer;
+  private Timer motonetTimer;
+
+  public Collection<BeeParameter> getDefaultParameters() {
+    return Lists.newArrayList(
+        new BeeParameter(EC_MODULE, PRM_BUTENT_INTERVAL, ParameterType.NUMBER,
+            "Interval of BŪTENT data renewal in minutes", false, null),
+        new BeeParameter(EC_MODULE, PRM_MOTONET_INTERVAL, ParameterType.NUMBER,
+            "Interval of MOTOPROFIL data renewal in minutes", false, null));
+  }
+
+  public void initTimers() {
+    Integer minutes = prm.getInteger(EC_MODULE, PRM_BUTENT_INTERVAL);
+
+    if (butentTimer != null) {
+      butentTimer.cancel();
+    }
+    if (BeeUtils.isPositive(minutes)) {
+      butentTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.EOLTAS, false));
+
+      logger.info(EcSupplier.EOLTAS, "created timer every", minutes, "minutes starting at",
+          butentTimer.getNextTimeout());
+    } else {
+      if (butentTimer != null) {
+        butentTimer = null;
+        logger.info(EcSupplier.EOLTAS, "removed timer");
+      }
+    }
+    minutes = prm.getInteger(EC_MODULE, PRM_MOTONET_INTERVAL);
+
+    if (motonetTimer != null) {
+      motonetTimer.cancel();
+    }
+    if (BeeUtils.isPositive(minutes)) {
+      motonetTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.MOTOPROFIL, false));
+
+      logger.info(EcSupplier.MOTOPROFIL, "created timer every", minutes, "minutes starting at",
+          motonetTimer.getNextTimeout());
+    } else {
+      if (motonetTimer != null) {
+        motonetTimer = null;
+        logger.info(EcSupplier.MOTOPROFIL, "removed timer");
+      }
+    }
+  }
 
   @Asynchronous
   public void suckButent() {
@@ -666,6 +725,21 @@ public class TecDocBean {
 
     for (BeeRow row : data.getRows()) {
       logger.warning((Object[]) row.getValueArray());
+    }
+  }
+
+  @Timeout
+  private void doTimerEvent(Timer timer) {
+    if (timer.getInfo() instanceof EcSupplier) {
+      switch ((EcSupplier) timer.getInfo()) {
+        case EOLTAS:
+          suckButent();
+          break;
+
+        case MOTOPROFIL:
+          suckMotonet();
+          break;
+      }
     }
   }
 
