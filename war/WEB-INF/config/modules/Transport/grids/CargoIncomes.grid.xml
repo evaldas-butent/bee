@@ -8,6 +8,7 @@
   >
   <columns>
     <DataColumn name="Date" caption="Data" />
+
     <RelColumn name="Service" caption="Paslauga" />
     <DataColumn name="Amount" caption="Suma" format="#.00">
       <style>
@@ -16,6 +17,9 @@
       </style>
     </DataColumn>
     <RelColumn name="Currency" caption="Val." flexGrow="0" />
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" />
+
     <RelColumn name="Customer" caption="Mokėtojas" />
     <DataColumn name="Number" caption="Numeris" />
     <DataColumn name="Note" caption="Pastaba" />

@@ -8,8 +8,6 @@ public final class TradeConstants {
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
-  public static final String PRM_VAT_PERCENT = "DefaultVatPercent";
-
   public static final String TBL_WAREHOUSES = "Warehouses";
 
   public static final String TBL_SALES = "Sales";

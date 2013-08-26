@@ -44,6 +44,8 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
     
     <SimpleColumn name="Customer" alias="Company" />
     <SimpleJoin joinType="LEFT" name="Customer">

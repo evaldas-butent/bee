@@ -23,8 +23,9 @@
     <DataColumn name="Barcode" flexGrow="1" />
     <DataColumn name="Price" />
     <RelColumn name="CurrencyName" />
-    <DataColumn name="Vat">
+    <DataColumn name="Vat" width="40">
       <carry><ui:expression>row.Vat</ui:expression></carry>
     </DataColumn>
+    <DataColumn name="VatPercent" />
   </columns>
 </Grid>

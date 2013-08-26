@@ -37,6 +37,9 @@
       </style>
     </DataColumn>
     <RelColumn name="Currency" flexGrow="0" />
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" />
+
     <DataColumn name="Number" />
     <DataColumn name="Note" />
   </columns>

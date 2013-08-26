@@ -1,11 +1,11 @@
 package com.butent.bee.shared.modules.transport;
 
 public interface LocalizableTransportConstants {
-  
+
   String additionalServices();
-  
+
   String assessmentRequest();
-  
+
   String assessments();
 
   String assignCargosToTripCaption();
@@ -25,23 +25,23 @@ public interface LocalizableTransportConstants {
   String assignTruckToTripCaption();
 
   String assignTruckToTripQuestion();
-  
+
   String cargo();
-  
+
   String cargoChangeOfPallets();
 
   String cargoHandlingPlaces();
-  
+
   String cargoInformation();
 
   String cargoLoading();
 
   String cargoLoadingPlaces();
-  
+
   String cargoMiddleHandlingPlaces();
-  
+
   String cargoNumber();
-  
+
   String cargoProfit();
 
   String cargos();
@@ -52,76 +52,76 @@ public interface LocalizableTransportConstants {
 
   String cargoUnloading();
 
-  String cargoUnloadingPlaces(); 
-  
+  String cargoUnloadingPlaces();
+
   String cargoValue();
-  
+
   String carriers();
 
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();
-  
+
   String customerPrice();
-  
+
   String driverAbsence();
-  
+
   String driverEndingDate();
-  
+
   String driverExperience();
 
   String driverGroups();
 
   String driverGroupsShort();
-  
+
   String driverName();
-  
+
   String driverPosition();
 
   String drivers();
-  
+
   String driverStartingDate();
 
   String driverTimeBoard();
-  
+
   String emptyKilometers();
 
   String freightExchange();
-  
+
   String income();
 
   String intermediateLoading();
 
   String intermediateUnloading();
-  
+
   String loadedKilometers();
 
   String loading();
-  
+
   String newCargo();
-  
+
   String newTransportationOrder();
-  
+
   String newTransportationRequest();
-  
+
   String orderDate();
-  
+
   String orderNumber();
-  
+
   String otherCosts();
-  
+
   String partialCargo();
-  
+
   String payer();
-  
+
   String primeCost();
-  
+
   String ref();
 
   String refNumber();
-  
+
   String route();
-  
+
   String shipper();
 
   String shippingSchedule();
@@ -131,26 +131,14 @@ public interface LocalizableTransportConstants {
   String trailers();
 
   String trailerTimeBoard();
-  
-  String transportationContacts();
 
   String transportationCustomers();
-  
-  String transportationNumber1();
-  
-  String transportationNumber2();
 
   String transportationOrder();
 
   String transportationOrders();
 
   String transportationOrderStatuses();
-  
-  String transportationPrice();
-  
-  String transportationServicesTypes();
-
-  String transportOrder();
 
   String tripDuration();
 
@@ -165,7 +153,7 @@ public interface LocalizableTransportConstants {
   String vehicleBodyNumber();
 
   String vehicleBrutto();
-  
+
   String vehicleDriver();
 
   String vehicleEngineNumber();

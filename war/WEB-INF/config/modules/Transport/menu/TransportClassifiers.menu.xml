@@ -4,7 +4,7 @@
 name="TransportClassifiers" label="Transporto klasifikatoriai" parent="Transport" order="20" separator="true" 
 >
   <Item name="ShippingTerms" label="Krovinių pristatymo sąlygos" service="grid" parameters="ShippingTerms" />
-  <Item name="Services" label="Paslaugų rūšys" service="grid" parameters="Services" />
+  <Item name="Services" label="=trServices" service="grid" parameters="Services" />
   <Item name="AbsenceTypes" label="Nebuvimo darbe tipai" service="grid" parameters="AbsenceTypes" />
 
   <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" separator="true" />

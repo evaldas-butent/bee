@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -327,13 +326,10 @@ public class TransportModuleBean implements BeeModule {
     HasConditions wh = SqlUtils.or();
 
     for (String id : idList) {
-      wh.add(SqlUtils.equals(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES),
-          BeeUtils.toLong(id)));
+      wh.add(sys.idEquals(TBL_CARGO_INCOMES, BeeUtils.toLong(id)));
     }
     SqlSelect ss = new SqlSelect()
-        .addField(CommonsConstants.TBL_ITEMS, sys.getIdName(CommonsConstants.TBL_ITEMS),
-            CommonsConstants.COL_ITEM)
-        .addFields(CommonsConstants.TBL_ITEMS, TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
+        .addFields(TBL_CARGO_INCOMES, TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
         .addField("LoadingCountries", CommonsConstants.COL_CODE, COL_LOADING_PLACE)
         .addField("UnloadingCountries", CommonsConstants.COL_CODE, COL_UNLOADING_PLACE)
         .addFrom(TBL_CARGO_INCOMES)
@@ -353,17 +349,15 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(CommonsConstants.TBL_COUNTRIES, "UnloadingCountries",
                 "UnloadingPlaces", CommonsConstants.COL_COUNTRY))
         .setWhere(wh)
-        .addGroup(CommonsConstants.TBL_ITEMS, sys.getIdName(CommonsConstants.TBL_ITEMS),
-            TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
+        .addGroup(TBL_CARGO_INCOMES, TradeConstants.COL_VAT, TradeConstants.COL_VAT_PERC)
         .addGroup("LoadingCountries", CommonsConstants.COL_CODE)
         .addGroup("UnloadingCountries", CommonsConstants.COL_CODE);
 
     if (DataUtils.isId(mainItem)) {
-      ss.addFromLeft(CommonsConstants.TBL_ITEMS,
-          sys.idEquals(CommonsConstants.TBL_ITEMS, mainItem));
+      ss.addConstant(mainItem, CommonsConstants.COL_ITEM);
     } else {
-      ss.addFromLeft(CommonsConstants.TBL_ITEMS,
-          sys.joinTables(CommonsConstants.TBL_ITEMS, TBL_SERVICES, CommonsConstants.COL_ITEM));
+      ss.addFields(TBL_SERVICES, CommonsConstants.COL_ITEM)
+          .addGroup(TBL_SERVICES, CommonsConstants.COL_ITEM);
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
@@ -387,14 +381,10 @@ public class TransportModuleBean implements BeeModule {
             .addConstant(CommonsConstants.COL_ARTICLE, BeeUtils.join("-",
                 row.getValue(COL_LOADING_PLACE), row.getValue(COL_UNLOADING_PLACE)))
             .addConstant(TradeConstants.COL_QUANTITY, 1)
-            .addConstant(TradeConstants.COL_PRICE, row.getDouble(COL_AMOUNT));
+            .addConstant(TradeConstants.COL_PRICE, row.getDouble(COL_AMOUNT))
+            .addConstant(TradeConstants.COL_VAT, row.getDouble(TradeConstants.COL_VAT))
+            .addConstant(TradeConstants.COL_VAT_PERC, row.getBoolean(TradeConstants.COL_VAT_PERC));
 
-        if (BeeUtils.unbox(row.getBoolean(TradeConstants.COL_VAT))) {
-          insert.addConstant(TradeConstants.COL_VAT,
-              Objects.firstNonNull(row.getDouble(TradeConstants.COL_VAT_PERC),
-                  prm.getNumber(TradeConstants.TRADE_MODULE, TradeConstants.PRM_VAT_PERCENT)))
-              .addConstant(TradeConstants.COL_VAT_PERC, true);
-        }
         qs.insertData(insert);
       }
     }

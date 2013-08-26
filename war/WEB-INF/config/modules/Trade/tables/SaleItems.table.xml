@@ -10,8 +10,8 @@
     <String name="Article" precision="30" label="Artikulas" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="Kiekis" />
     <Numeric name="Price" precision="12" scale="2" label="Kaina" />
-    <Numeric name="Vat" precision="12" scale="2" label="PVM" />
-    <Boolean name="VatPercent" label="PVM %" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="%" />
     <String name="Note" precision="50" label="Pastaba" />
   </Fields>
   <Triggers>

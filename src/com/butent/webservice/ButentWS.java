@@ -84,7 +84,7 @@ public class ButentWS extends Service {
     if (response.hasErrors()) {
       return response;
     }
-    logger.info("GetSQLData:", query);
+    logger.debug("GetSQLData:", query);
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("GetSQLData", "<query>" + query + "</query>");
@@ -114,7 +114,7 @@ public class ButentWS extends Service {
         data.addRow(cells);
       }
     }
-    logger.info("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
 
     return ResponseObject.response(data);
   }
@@ -127,7 +127,7 @@ public class ButentWS extends Service {
     if (response.hasErrors()) {
       return response;
     }
-    logger.info("ImportDoc:", "importing document...");
+    logger.debug("ImportDoc:", "importing document...");
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
         .process("ImportDoc", doc.getXml());
@@ -143,7 +143,7 @@ public class ButentWS extends Service {
         return ResponseObject.error(answer);
       }
     } else {
-      logger.info("ImportDoc:", "import succeeded");
+      logger.debug("ImportDoc:", "import succeeded");
     }
     return ResponseObject.response(answer);
   }
@@ -156,7 +156,7 @@ public class ButentWS extends Service {
     if (response.hasErrors()) {
       return response;
     }
-    logger.info("ImportItem:", "importing item...");
+    logger.debug("ImportItem:", "importing item...");
 
     StringBuilder sb = new StringBuilder("<item>")
         .append("<pavad>").append(itemName).append("</pavad>")
@@ -178,7 +178,7 @@ public class ButentWS extends Service {
     } catch (Exception e) {
       return ResponseObject.error(answer);
     }
-    logger.info("ImportItem:", "import succeeded. New ItemID =", answer);
+    logger.debug("ImportItem:", "import succeeded. New ItemID =", answer);
 
     return ResponseObject.response(answer);
   }

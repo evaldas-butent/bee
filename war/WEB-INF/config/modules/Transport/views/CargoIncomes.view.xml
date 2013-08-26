@@ -7,6 +7,7 @@
     <SimpleColumn name="Cargo" />
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
+
     <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Name" alias="ServiceName" />
@@ -16,6 +17,9 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="Customer" />
     <SimpleJoin name="Customer" joinType="LEFT">
       <SimpleColumn name="Name" alias="CustomerName" />

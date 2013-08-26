@@ -137,8 +137,8 @@ public class CommonsModuleBean implements BeeModule {
     List<BeeParameter> params = Lists.newArrayList(
         new BeeParameter(COMMONS_MODULE,
             "ProgramTitle", ParameterType.TEXT, null, false, "BEE"),
-        new BeeParameter(COMMONS_MODULE,
-            "Precission", ParameterType.NUMBER, "Precission of calculations", true, 5),
+        new BeeParameter(COMMONS_MODULE, PRM_VAT_PERCENT, ParameterType.NUMBER,
+            "Default VAT percent", false, 21),
         new BeeParameter(COMMONS_MODULE,
             PRM_AUDIT_OFF, ParameterType.BOOLEAN, "Disable database level auditing", false, false));
 
@@ -309,6 +309,10 @@ public class CommonsModuleBean implements BeeModule {
         params.add(param);
       }
       response = ResponseObject.response(params);
+
+    } else if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
+      response = ResponseObject.response(prm.getValue(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
+          reqInfo.getParameter(VAR_PARAMETERS)));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_PARAMETER)) {
       prm.createParameter(BeeParameter.restore(

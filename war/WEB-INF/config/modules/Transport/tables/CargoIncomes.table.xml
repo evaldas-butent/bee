@@ -8,9 +8,13 @@
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
     <Date name="Date" label="Data" />
+
     <Relation name="Service" notNull="true" relation="Services" label="Paslauga" />
     <Numeric name="Amount" precision="12" scale="2" notNull="true" label="Suma" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="%" />
+
     <String name="Number" precision="20" label="Numeris" />
     <Relation name="Customer" relation="Companies" label="Klientas" />
     <String name="Note" precision="50" label="Pastaba" />

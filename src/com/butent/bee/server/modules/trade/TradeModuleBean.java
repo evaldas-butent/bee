@@ -31,7 +31,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -89,9 +88,7 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    List<BeeParameter> params = Lists.newArrayList(new BeeParameter(TRADE_MODULE,
-        PRM_VAT_PERCENT, ParameterType.NUMBER, "Default VAT percent", false, 21));
-    return params;
+    return null;
   }
 
   @Override

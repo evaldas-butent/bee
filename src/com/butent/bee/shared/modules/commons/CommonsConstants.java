@@ -69,6 +69,7 @@ public final class CommonsConstants {
 
   public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
 
+  public static final String SVC_GET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
   public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
   public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
@@ -82,7 +83,7 @@ public final class CommonsConstants {
   public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
-  
+
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
@@ -207,7 +208,7 @@ public final class CommonsConstants {
   public static final String COL_FILTER_USER = "User";
   public static final String COL_FILTER_KEY = "Key";
   public static final String COL_FILTER_ORDINAL = "Ordinal";
-  
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
@@ -216,6 +217,7 @@ public final class CommonsConstants {
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
   public static final String PRM_AUDIT_OFF = "DisableAuditing";
+  public static final String PRM_VAT_PERCENT = "VATPercent";
 
   public static final String PROP_CATEGORIES = "CategList";
 

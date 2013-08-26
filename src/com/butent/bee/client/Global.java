@@ -8,6 +8,10 @@ import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -29,6 +33,8 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
@@ -164,6 +170,27 @@ public class Global implements Module {
     return msgBoxen;
   }
 
+  public static void getParameter(String module, String prm, final Consumer<String> prmConsumer) {
+    if (prmConsumer == null || BeeUtils.anyEmpty(module, prm)) {
+      return;
+    }
+    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
+    args.addQueryItem(COMMONS_METHOD, SVC_GET_PARAMETER);
+    args.addDataItem(VAR_PARAMETERS_MODULE, module);
+    args.addDataItem(VAR_PARAMETERS, prm);
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(BeeKeeper.getScreen());
+
+        if (!response.hasErrors()) {
+          prmConsumer.accept(response.getResponseAsString());
+        }
+      }
+    });
+  }
+
   public static Reports getReports() {
     return reports;
   }
@@ -247,7 +274,7 @@ public class Global implements Module {
   public static void sayHuh(String... huhs) {
     String caption;
     List<String> messages;
-    
+
     if (huhs == null) {
       caption = null;
       messages = Lists.newArrayList("Huh");
@@ -255,7 +282,7 @@ public class Global implements Module {
       caption = "Huh";
       messages = Lists.newArrayList(huhs);
     }
-    
+
     messageBox(caption, Icon.QUESTION, messages, Lists.newArrayList("kthxbai"), 0, null);
   }
 
@@ -272,7 +299,7 @@ public class Global implements Module {
     if (!BeeUtils.isEmpty(message)) {
       messages.add(message);
     }
-    
+
     showError(messages);
   }
 
@@ -296,11 +323,11 @@ public class Global implements Module {
       BeeKeeper.getScreen().updateActivePanel(grid);
     }
   }
-  
+
   public static void showInfo(List<String> messages) {
     showInfo(null, messages, null, null);
   }
-  
+
   public static void showInfo(String message) {
     List<String> messages = Lists.newArrayList();
     if (!BeeUtils.isEmpty(message)) {
@@ -309,11 +336,11 @@ public class Global implements Module {
 
     showInfo(messages);
   }
-  
+
   public static void showInfo(String caption, List<String> messages) {
     showInfo(caption, messages, null, null);
   }
-  
+
   public static void showInfo(String caption, List<String> messages, String dialogStyle) {
     showInfo(caption, messages, dialogStyle, null);
   }
@@ -370,14 +397,15 @@ public class Global implements Module {
   public void start() {
   }
 
-//CHECKSTYLE:OFF
+  // CHECKSTYLE:OFF
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_getCaption = $entry(@com.butent.bee.shared.ui.Captions::getCaption(Ljava/lang/String;I));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
   }-*/;
-//CHECKSTYLE:ON
+
+  // CHECKSTYLE:ON
 
   private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);

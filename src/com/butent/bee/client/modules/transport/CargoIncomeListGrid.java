@@ -129,6 +129,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor {
             newRow.setValue(Data.getColumnIndex(turnovers, COL_NUMBER), BeeUtils.join(",", orders));
             newRow.setValue(Data.getColumnIndex(turnovers, COL_CUSTOMER), clientId);
             newRow.setValue(Data.getColumnIndex(turnovers, COL_CUSTOMER_NAME), clientName);
+            newRow.setValue(Data.getColumnIndex(turnovers, TradeConstants.COL_VAT_INCL), true);
 
             if (currencies.size() == 1) {
               for (Entry<Long, String> entry : currencies.entrySet()) {

@@ -296,9 +296,7 @@ public class EcModuleBean implements BeeModule {
         new BeeParameter(EC_MODULE, "ERPOperation", ParameterType.TEXT,
             "Document operation name in ERP system", false, null),
         new BeeParameter(EC_MODULE, "ERPWarehouse", ParameterType.TEXT,
-            "Document warehouse name in ERP system", false, null),
-        new BeeParameter(EC_MODULE, "ERPBasicVATPercent", ParameterType.NUMBER,
-            "Basic VAT percent in ERP system", false, null));
+            "Document warehouse name in ERP system", false, null));
 
     params.addAll(tcd.getDefaultParameters());
     return params;
@@ -1464,7 +1462,8 @@ public class EcModuleBean implements BeeModule {
             data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
         docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-        docItem.setVatPercent(prm.getInteger(EC_MODULE, "ERPBasicVATPercent"));
+        docItem.setVatPercent(prm.getInteger(CommonsConstants.COMMONS_MODULE,
+            CommonsConstants.PRM_VAT_PERCENT));
       }
     }
     if (!response.hasErrors()) {

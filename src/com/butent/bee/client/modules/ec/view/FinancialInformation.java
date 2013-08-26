@@ -602,6 +602,9 @@ class FinancialInformation extends EcView {
 
   @Override
   protected void createUi() {
+    clear();
+    add(new Image(Global.getImages().loading()));
+
     BeeKeeper.getRpc().makeRequest(EcKeeper.createArgs(EcConstants.SVC_FINANCIAL_INFORMATION),
         new ResponseCallback() {
           @Override

@@ -724,7 +724,7 @@ public class TecDocBean {
     BeeRowSet data = (BeeRowSet) qs.doSql("EXPLAIN " + query.getQuery());
 
     for (BeeRow row : data.getRows()) {
-      logger.warning((Object[]) row.getValueArray());
+      logger.debug((Object[]) row.getValueArray());
     }
   }
 
@@ -1099,12 +1099,12 @@ public class TecDocBean {
           if (++tot % chunk == 0) {
             qs.insertData(insert);
             insert.resetValues();
-            logger.info("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
+            logger.debug("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
           }
         }
         if (tot % chunk > 0) {
           qs.insertData(insert);
-          logger.info("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
+          logger.debug("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
         }
         if (isDebugEnabled) {
           messyLogger.setLevel(LogLevel.DEBUG);
@@ -1173,14 +1173,14 @@ public class TecDocBean {
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
         insert.resetValues();
-        logger.info(log, "Processed", tot, "records");
+        logger.debug(log, "Processed", tot, "records");
       }
     }
     if (tot % 1e4 > 0) {
       if (!insert.isEmpty()) {
         qs.insertData(insert);
       }
-      logger.info(log, "Processed", tot, "records");
+      logger.debug(log, "Processed", tot, "records");
     }
     if (isDebugEnabled) {
       messyLogger.setLevel(LogLevel.DEBUG);
@@ -1303,14 +1303,14 @@ public class TecDocBean {
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
         insert.resetValues();
-        logger.info(log, "Processed", tot, "records");
+        logger.debug(log, "Processed", tot, "records");
       }
     }
     if (tot % 1e4 > 0) {
       if (!insert.isEmpty()) {
         qs.insertData(insert);
       }
-      logger.info(log, "Processed", tot, "records");
+      logger.debug(log, "Processed", tot, "records");
     }
     if (isDebugEnabled) {
       messyLogger.setLevel(LogLevel.DEBUG);
@@ -1416,7 +1416,7 @@ public class TecDocBean {
           int cnt = (Integer) qs.doSql(sql.toString());
           total += cnt;
           chunkTotal += cnt;
-          logger.info(target, "inserted rows:", total);
+          logger.debug(target, "inserted rows:", total);
         }
         if (isDebugEnabled) {
           messyLogger.setLevel(LogLevel.DEBUG);
@@ -1467,12 +1467,12 @@ public class TecDocBean {
         if (++tot % 1e4 == 0) {
           qs.insertData(insert);
           insert.resetValues();
-          logger.info("Inserted", tot, "records into table", table);
+          logger.debug("Inserted", tot, "records into table", table);
         }
       }
       if (tot % 1e4 > 0) {
         qs.insertData(insert);
-        logger.info("Inserted", tot, "records into table", table);
+        logger.debug("Inserted", tot, "records into table", table);
       }
       if (isDebugEnabled) {
         messyLogger.setLevel(LogLevel.DEBUG);
