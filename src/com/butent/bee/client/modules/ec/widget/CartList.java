@@ -100,8 +100,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
 
     if (cartItem != null) {
       BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-          .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(),
-              BeeUtils.toString(cartItem.getQuantity())));
+          .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(), cartItem.getQuantity()));
 
       refresh(cartType);
 

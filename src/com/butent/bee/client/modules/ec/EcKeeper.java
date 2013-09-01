@@ -18,6 +18,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.ec.render.CategoryFullNameRenderer;
 import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
@@ -25,6 +26,7 @@ import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -143,14 +145,14 @@ public final class EcKeeper {
     data.ensureBrands(callback);
   }
 
-  public static void ensureCategoeries(Consumer<Boolean> callback) {
+  public static void ensureCategories(Consumer<Boolean> callback) {
     Assert.notNull(callback);
-    data.ensureCategoeries(callback);
+    data.ensureCategories(callback);
   }
 
-  public static void ensureCategoeriesAndBrands(Consumer<Boolean> callback) {
+  public static void ensureCategoriesAndBrands(Consumer<Boolean> callback) {
     Assert.notNull(callback);
-    data.ensureCategoeriesAndBrands(callback);
+    data.ensureCategoriesAndBrands(callback);
   }
 
   public static void finalizeRequest(EcRequest request, boolean remove) {
@@ -348,17 +350,15 @@ public final class EcKeeper {
     key = Captions.register(EcOrderStatus.class);
     Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
 
-    key = Captions.register(EcSupplier.class);
+    Captions.register(EcSupplier.class);
 
-    BeeKeeper.getMenu().registerMenuCallback("open_ec_clients", new MenuCallback() {
+    BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {
       @Override
-      public void onSelection(String parameters) {
-        ensureCategoeries(new Consumer<Boolean>() {
+      public void onSelection(final String parameters) {
+        ensureCategories(new Consumer<Boolean>() {
           @Override
           public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input)) {
-              GridFactory.openGrid("EcClients");
-            }
+            GridFactory.openGrid(parameters);
           }
         });
       }
@@ -380,29 +380,19 @@ public final class EcKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("open_ec_catalog", new MenuCallback() {
-      @Override
-      public void onSelection(String parameters) {
-        ensureCategoeries(new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input)) {
-              GridFactory.openGrid("EcCatalog");
-            }
-          }
-        });
-      }
-    });
+    CategoryFullNameRenderer.Provider provider = new CategoryFullNameRenderer.Provider();
+    
+    RendererFactory.registerGcrProvider(GRID_DISCOUNTS, COL_DISCOUNT_CATEGORY, provider);
+    RendererFactory.registerGcrProvider(GRID_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, provider);
+    RendererFactory.registerGcrProvider(GRID_GROUP_CATEGORIES, COL_GROUP_CATEGORY, provider);
 
-    GridFactory.registerGridInterceptor("EcDiscounts", new EcDiscountHandler());
     GridFactory.registerGridInterceptor("EcPricing", new EcPricingHandler());
     GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
 
-    GridFactory.registerGridInterceptor(VIEW_ARTICLE_CATEGORIES, new ArticleCategoriesHandler());
-    GridFactory.registerGridInterceptor(VIEW_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
+    GridFactory.registerGridInterceptor(GRID_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
 
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
-    FormFactory.registerFormInterceptor(TBL_TCD_CATEGORIES, new EcCategoriesForm());
+    FormFactory.registerFormInterceptor(FORM_CATEGORIES, new EcCategoriesForm());
   }
 
   public static Cart removeFromCart(CartType cartType, EcItem ecItem) {
@@ -416,7 +406,7 @@ public final class EcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    ensureCategoeriesAndBrands(new Consumer<Boolean>() {
+    ensureCategoriesAndBrands(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {

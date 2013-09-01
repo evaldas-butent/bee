@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="EcGroups" viewName="EcGroups" caption="=ecGroups" editInPlace="Ordinal"
+  >
+  <columns>
+    <DataColumn name="Ordinal" visible="true" />
+    <DataColumn name="GroupName" visible="true" autoFit="true" minWidth="200" />
+    <DataColumn name="Moto" visible="true" />
+    <DataColumn name="BrandSelection" />
+    <DataColumn name="Notes" autoFit="true" minWidth="100" />
+  </columns>
+</Grid>

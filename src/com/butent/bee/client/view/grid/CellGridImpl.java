@@ -477,6 +477,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         renderer = interceptor.getRenderer(columnName, dataCols, columnDescr);
       }
       if (renderer == null) {
+        renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnName, dataCols,
+            columnDescr);
+      }
+      if (renderer == null) {
         renderer = RendererFactory.getRenderer(columnDescr.getRendererDescription(),
             columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
             renderColumns, dataCols, cellSource, columnDescr.getRelation());

@@ -1,33 +1,40 @@
 package com.butent.bee.shared.modules.ec;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class EcBrand implements BeeSerializable {
+import java.util.List;
+
+public class EcGroup implements BeeSerializable {
 
   private enum Serial {
-    ID, NAME, SELECTED
+    ID, NAME, BRAND_SELECTION, CRITERIA
   }
 
-  public static EcBrand restore(String s) {
-    EcBrand ecBrand = new EcBrand();
-    ecBrand.deserialize(s);
-    return ecBrand;
+  public static EcGroup restore(String s) {
+    EcGroup group = new EcGroup();
+    group.deserialize(s);
+    return group;
   }
 
   private long id;
   private String name;
-  
-  private boolean selected;
 
-  public EcBrand(long id, String name) {
+  private boolean brandSelection;
+
+  private final List<Long> criteria = Lists.newArrayList();
+
+  public EcGroup(long id, String name) {
     this.id = id;
     this.name = name;
   }
 
-  private EcBrand() {
+  private EcGroup() {
   }
 
   @Override
@@ -48,12 +55,20 @@ public class EcBrand implements BeeSerializable {
         case NAME:
           setName(value);
           break;
-        
-        case SELECTED:
-          setSelected(Codec.unpack(value));
+
+        case BRAND_SELECTION:
+          setBrandSelection(Codec.unpack(value));
+          break;
+
+        case CRITERIA:
+          BeeUtils.overwrite(getCriteria(), DataUtils.parseIdList(value));
           break;
       }
     }
+  }
+
+  public List<Long> getCriteria() {
+    return criteria;
   }
 
   public long getId() {
@@ -64,8 +79,8 @@ public class EcBrand implements BeeSerializable {
     return name;
   }
 
-  public boolean isSelected() {
-    return selected;
+  public boolean hasBrandSelection() {
+    return brandSelection;
   }
 
   @Override
@@ -83,25 +98,28 @@ public class EcBrand implements BeeSerializable {
         case NAME:
           arr[i++] = getName();
           break;
-          
-        case SELECTED:
-          arr[i++] = Codec.pack(isSelected());
+
+        case BRAND_SELECTION:
+          arr[i++] = Codec.pack(hasBrandSelection());
+          break;
+
+        case CRITERIA:
+          arr[i++] = DataUtils.buildIdList(getCriteria());
           break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setSelected(boolean selected) {
-    this.selected = selected;
+  public void setBrandSelection(boolean brandSelection) {
+    this.brandSelection = brandSelection;
   }
 
-  private void setId(long id) {
+  public void setId(long id) {
     this.id = id;
   }
 
-  private void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
 }
-

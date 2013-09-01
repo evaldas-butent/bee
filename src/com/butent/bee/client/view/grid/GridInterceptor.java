@@ -7,7 +7,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
-    EditStartEvent.Handler {
+    EditStartEvent.Handler, ProvidesGridColumnRenderer {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
@@ -94,9 +94,6 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   GridInterceptor getInstance();
   
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
-
-  AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription);
 
   String getRowCaption(IsRow row, boolean edit);
 

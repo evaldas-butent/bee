@@ -30,8 +30,8 @@ public class EcFinInfo implements BeeSerializable {
   private Double totalTaken;
 
   private final List<EcOrder> orders = Lists.newArrayList();
-
   private final List<EcInvoice> invoices = Lists.newArrayList();
+
   public EcFinInfo() {
     super();
   }

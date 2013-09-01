@@ -31,6 +31,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -60,9 +61,12 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcCriterion;
+import com.butent.bee.shared.modules.ec.EcGroupFilters;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
+import com.butent.bee.shared.modules.ec.EcGroup;
 import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
@@ -268,6 +272,16 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_FINANCIAL_INFORMATION)) {
       response = getFinancialInformation();
+      log = true;
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEM_GROUPS)) {
+      boolean moto = reqInfo.hasParameter(COL_GROUP_MOTO);
+      query = moto ? SVC_BIKE_ITEMS : SVC_GENERAL_ITEMS;
+      response = getItemGroups(moto);
+      log = true;
+    } else if (BeeUtils.same(svc, SVC_GET_GROUP_FILTERS)) {
+      query = reqInfo.getParameter(COL_GROUP);
+      response = getGroupFilters(BeeUtils.toLongOrNull(query));
       log = true;
 
     } else {
@@ -987,6 +1001,80 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(finInfo).setSize(size);
   }
 
+  private ResponseObject getGroupFilters(Long groupId) {
+    if (!DataUtils.isId(groupId)) {
+      return ResponseObject.parameterNotFound(SVC_GET_GROUP_FILTERS, COL_GROUP);
+    }
+
+    EcGroupFilters groupFilters = new EcGroupFilters();
+
+    IsCondition grCatJoin = SqlUtils.join(TBL_GROUP_CATEGORIES, COL_GROUP_CATEGORY,
+        TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY);
+    IsCondition grCatWhere = SqlUtils.equals(TBL_GROUP_CATEGORIES, COL_GROUP, groupId);
+    
+    Boolean needsBrands = qs.getBoolean(new SqlSelect()
+        .addFields(TBL_GROUPS, COL_GROUP_BRAND_SELECTION)
+        .addFrom(TBL_GROUPS)
+        .setWhere(SqlUtils.equals(TBL_GROUPS, sys.getIdName(TBL_GROUPS), groupId)));
+
+    if (BeeUtils.isTrue(needsBrands)) {
+      String colBrandId = sys.getIdName(TBL_TCD_BRANDS);
+
+      SimpleRowSet brandData = qs.getData(new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_TCD_BRANDS, colBrandId, COL_TCD_BRAND_NAME)
+          .addFrom(TBL_TCD_ARTICLES)
+          .addFromInner(TBL_TCD_BRANDS,
+              sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLES, COL_TCD_BRAND))
+          .addFromInner(TBL_TCD_ARTICLE_CATEGORIES,
+              sys.joinTables(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE))
+          .addFromInner(TBL_GROUP_CATEGORIES, grCatJoin)
+          .setWhere(grCatWhere)
+          .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME, colBrandId));
+
+      if (!DataUtils.isEmpty(brandData)) {
+        for (SimpleRow row : brandData) {
+          EcBrand brand = new EcBrand(row.getLong(colBrandId), row.getValue(COL_TCD_BRAND_NAME));
+          groupFilters.getBrands().add(brand);
+        }
+      }
+    }
+    
+    BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
+        ComparisonFilter.isEqual(COL_GROUP, new LongValue(groupId)));
+
+    if (!DataUtils.isEmpty(criteria)) {
+      int idIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
+      int nameIndex = criteria.getColumnIndex(COL_TCD_CRITERIA_NAME);
+
+      SqlSelect criterionQuery = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE)
+          .addFrom(TBL_TCD_ARTICLE_CRITERIA)
+          .addFromInner(TBL_TCD_ARTICLE_CATEGORIES, SqlUtils.join(TBL_TCD_ARTICLE_CATEGORIES,
+              COL_TCD_ARTICLE, TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE))
+          .addFromInner(TBL_GROUP_CATEGORIES, grCatJoin)
+          .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE);
+      
+      for (int i = 0; i < criteria.getNumberOfRows(); i++) {
+        long criterionId = criteria.getLong(i, idIndex);
+        
+        criterionQuery.setWhere(SqlUtils.and(grCatWhere,
+            SqlUtils.equals(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA, criterionId)));
+        String[] values = qs.getColumn(criterionQuery);
+        
+        if (!ArrayUtils.isEmpty(values)) {
+          EcCriterion criterion = new EcCriterion(criterionId, criteria.getString(i, nameIndex));
+          for (String value : values) {
+            criterion.getValues().add(new SelectableValue(value));
+          }
+          
+          groupFilters.getCriteria().add(criterion);
+        }
+      }
+    }
+
+    return ResponseObject.response(groupFilters).setSize(groupFilters.getSize());
+  }
+
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
     Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
     String code = normalizeCode(reqInfo.getParameter(COL_TCD_ARTICLE_NR));
@@ -1021,6 +1109,51 @@ public class EcModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(brands);
+  }
+
+  private ResponseObject getItemGroups(boolean moto) {
+    String colGroupId = sys.getIdName(TBL_GROUPS);
+    IsCondition where = moto ? SqlUtils.notNull(TBL_GROUPS, COL_GROUP_MOTO)
+        : SqlUtils.isNull(TBL_GROUPS, COL_GROUP_MOTO);
+
+    SimpleRowSet groupData = qs.getData(new SqlSelect()
+        .addFields(TBL_GROUPS, colGroupId, COL_GROUP_NAME, COL_GROUP_BRAND_SELECTION,
+            COL_GROUP_ORDINAL)
+        .addFrom(TBL_GROUPS)
+        .setWhere(where)
+        .addOrder(TBL_GROUPS, COL_GROUP_ORDINAL, COL_GROUP_NAME));
+
+    if (DataUtils.isEmpty(groupData)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<EcGroup> groups = Lists.newArrayList();
+
+    for (SimpleRow groupRow : groupData) {
+      Long id = groupRow.getLong(colGroupId);
+
+      if (qs.sqlExists(TBL_GROUP_CATEGORIES,
+          SqlUtils.equals(TBL_GROUP_CATEGORIES, COL_GROUP, id))) {
+
+        EcGroup group = new EcGroup(id, groupRow.getValue(COL_GROUP_NAME));
+        if (BeeUtils.isTrue(groupRow.getBoolean(COL_GROUP_BRAND_SELECTION))) {
+          group.setBrandSelection(true);
+        }
+
+        BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
+            ComparisonFilter.isEqual(COL_GROUP, new LongValue(id)));
+        if (!DataUtils.isEmpty(criteria)) {
+          int colIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
+          for (int i = 0; i < criteria.getNumberOfRows(); i++) {
+            group.getCriteria().add(criteria.getLong(i, colIndex));
+          }
+        }
+
+        groups.add(group);
+      }
+    }
+
+    return ResponseObject.response(groups).setSize(groups.size());
   }
 
   private ResponseObject getItemInfo(Long articleId) {

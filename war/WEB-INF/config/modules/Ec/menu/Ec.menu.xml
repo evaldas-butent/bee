@@ -9,7 +9,7 @@ name="Ec" label="=ecMenu" order="100"
 
   <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory" separator="true" />
 
-  <Item name="EcCatalog" label="=ecCatalog" service="open_ec_catalog" separator="true" />
+  <Item name="EcCatalog" label="=ecCatalog" service="ensure_categories_and_open_grid" parameters="EcCatalog" separator="true" />
 
   <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
   <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />

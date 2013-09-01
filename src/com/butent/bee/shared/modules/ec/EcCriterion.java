@@ -1,33 +1,38 @@
 package com.butent.bee.shared.modules.ec;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class EcBrand implements BeeSerializable {
+import java.util.List;
+
+public class EcCriterion implements BeeSerializable {
 
   private enum Serial {
-    ID, NAME, SELECTED
+    ID, NAME, VALUES
   }
 
-  public static EcBrand restore(String s) {
-    EcBrand ecBrand = new EcBrand();
-    ecBrand.deserialize(s);
-    return ecBrand;
+  public static EcCriterion restore(String s) {
+    EcCriterion criterion = new EcCriterion();
+    criterion.deserialize(s);
+    return criterion;
   }
 
   private long id;
   private String name;
-  
-  private boolean selected;
 
-  public EcBrand(long id, String name) {
+  private final List<SelectableValue> values = Lists.newArrayList();
+
+  public EcCriterion(long id, String name) {
     this.id = id;
     this.name = name;
   }
 
-  private EcBrand() {
+  private EcCriterion() {
   }
 
   @Override
@@ -48,9 +53,16 @@ public class EcBrand implements BeeSerializable {
         case NAME:
           setName(value);
           break;
-        
-        case SELECTED:
-          setSelected(Codec.unpack(value));
+
+        case VALUES:
+          getValues().clear();
+
+          String[] vs = Codec.beeDeserializeCollection(value);
+          if (vs != null) {
+            for (String v : vs) {
+              getValues().add(SelectableValue.restore(v));
+            }
+          }
           break;
       }
     }
@@ -63,9 +75,13 @@ public class EcBrand implements BeeSerializable {
   public String getName() {
     return name;
   }
+  
+  public int getSize() {
+    return getValues().size();
+  }
 
-  public boolean isSelected() {
-    return selected;
+  public List<SelectableValue> getValues() {
+    return values;
   }
 
   @Override
@@ -83,25 +99,20 @@ public class EcBrand implements BeeSerializable {
         case NAME:
           arr[i++] = getName();
           break;
-          
-        case SELECTED:
-          arr[i++] = Codec.pack(isSelected());
+
+        case VALUES:
+          arr[i++] = getValues();
           break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setSelected(boolean selected) {
-    this.selected = selected;
-  }
-
-  private void setId(long id) {
+  public void setId(long id) {
     this.id = id;
   }
 
-  private void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
 }
-

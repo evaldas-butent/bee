@@ -244,10 +244,6 @@ body {
   overflow: auto;
 }
 
-.bee-SplitWest {
-  margin-bottom: 1.5em
-}
-
 .bee-MenuRoot, .bee-MenuBar {
   overflow: auto;
 }
@@ -1077,7 +1073,7 @@ body {
 }
 
 .bee-StackContainer {
-  /*position: relative;*/
+  position: relative;
 }
 
 .bee-StackHeader {
@@ -1496,6 +1492,10 @@ body {
 }
 .bee-CellGridActiveCell.bee-EditableRelation {
   text-decoration: underline;
+}
+
+.bee-CentralScrutinizer {
+  height: calc(100% - 24px);
 }
 
 .bee-CentralScrutinizer > .bee-StackHeader {
@@ -1972,12 +1972,11 @@ body {
 }
 
 .bee-Copyright {
-  position: fixed;
+  position: absolute;
+  left: 1ex;
   bottom: 2px;
   cursor: pointer;
-  margin-left: 1ex;
 }
-
 
 .bee-Copyright > div {
   display: inline-block;

@@ -95,7 +95,6 @@
   cursor: pointer;
 }
 
-
 .bee-ec-Copyright > div {
   display: inline-block;
   font-size: smaller;
@@ -114,11 +113,6 @@
   padding-right: 5px;
   font-weight: bold;
 }
-
-.bee-ec-Command-generalItems,
-.bee-ec-Command-bikeItems {
-  display: none;
-}  
 
 .bee-ec-carts {
   position: absolute;

@@ -244,7 +244,7 @@ public class QueryServiceBean {
     });
   }
 
-  public boolean getBoolean(IsQuery query) {
+  public Boolean getBoolean(IsQuery query) {
     return getSingleValue(query).getBoolean(0, 0);
   }
 

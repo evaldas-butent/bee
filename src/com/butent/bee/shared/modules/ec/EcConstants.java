@@ -133,6 +133,10 @@ public final class EcConstants {
   public static final String SVC_GET_SHOPPING_CARTS = "getShoppingCarts";
   public static final String SVC_UPDATE_SHOPPING_CART = "updateShoppingCart";
 
+  public static final String SVC_GET_ITEM_GROUPS = "getItemGroups";
+  public static final String SVC_GET_GROUP_FILTERS = "getGroupFilters";
+  public static final String SVC_GET_GROUP_ITEMS = "getGroupItems";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -149,6 +153,9 @@ public final class EcConstants {
   public static final String TBL_CLIENTS = "EcClients";
   public static final String TBL_CONFIGURATION = "EcConfiguration";
   public static final String TBL_DISCOUNTS = "EcDiscounts";
+  public static final String TBL_GROUP_CATEGORIES = "EcGroupCategories";
+  public static final String TBL_GROUP_CRITERIA = "EcGroupCriteria";
+  public static final String TBL_GROUPS = "EcGroups";
   public static final String TBL_HISTORY = "EcHistory";
   public static final String TBL_MANAGERS = "EcManagers";
   public static final String TBL_ORDER_ITEMS = "EcOrderItems";
@@ -181,18 +188,16 @@ public final class EcConstants {
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
 
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
+  public static final String VIEW_CATEGORIES = "TcdCategories";
   public static final String VIEW_CLIENTS = "EcClients";
   public static final String VIEW_CONFIGURATION = "EcConfiguration";
+  public static final String VIEW_GROUP_CRITERIA = "EcGroupCriteria";
   public static final String VIEW_HISTORY = "EcHistory";
   public static final String VIEW_MANAGERS = "EcManagers";
   public static final String VIEW_ORDER_ITEMS = "EcOrderItems";
   public static final String VIEW_ORDERS = "EcOrders";
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
   public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
-
-  public static final String VIEW_ARTICLE_CATEGORIES = "TcdArticleCategories";
-  public static final String VIEW_ARTICLE_GRAPHICS = "TcdArticleGraphics";
-  public static final String VIEW_CATEGORIES = "TcdCategories";
 
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
@@ -227,6 +232,15 @@ public final class EcConstants {
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
 
+  public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_BRAND_SELECTION = "BrandSelection";
+  public static final String COL_GROUP_CATEGORY = "Category";
+  public static final String COL_GROUP_CRITERIA = "Criteria";
+  public static final String COL_GROUP_CRITERIA_ORDINAL = "Ordinal";
+  public static final String COL_GROUP_MOTO = "Moto";
+  public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_GROUP_ORDINAL = "Ordinal";
+  
   public static final String COL_HISTORY_DATE = "Date";
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";
@@ -363,6 +377,13 @@ public final class EcConstants {
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
   public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
 
+  public static final String GRID_DISCOUNTS = "EcDiscounts";
+  public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
+  public static final String GRID_ARTICLE_GRAPHICS = "TcdArticleGraphics";
+  public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
+
+  public static final String FORM_CATEGORIES = "TcdCategories";
+  
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 

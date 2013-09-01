@@ -83,8 +83,8 @@ public final class Captions {
     }
   }
 
-  public static String getColumnKey(String viewName, String columnid) {
-    return COLUMN_KEYS.get(viewName, columnid);
+  public static String getColumnKey(String viewName, String columnId) {
+    return COLUMN_KEYS.get(viewName, columnId);
   }
 
   public static Table<String, String, String> getColumnKeys() {
@@ -95,16 +95,16 @@ public final class Captions {
     return CLASSES.keySet();
   }
 
-  public static String getValueCaption(String viewName, String columnid, int index) {
-    return getCaption(getColumnKey(viewName, columnid), index);
+  public static String getValueCaption(String viewName, String columnId, int index) {
+    return getCaption(getColumnKey(viewName, columnId), index);
   }
   
   public static boolean isCaption(String caption) {
     return !BeeUtils.isEmpty(caption) && !BeeConst.STRING_MINUS.equals(caption);
   }
 
-  public static boolean isColumnRegistered(String viewName, String columnid) {
-    return COLUMN_KEYS.contains(viewName, columnid);
+  public static boolean isColumnRegistered(String viewName, String columnId) {
+    return COLUMN_KEYS.contains(viewName, columnId);
   }
 
   public static <E extends Enum<?> & HasCaption> String register(Class<E> clazz) {
@@ -122,8 +122,8 @@ public final class Captions {
     return normalized;
   }
 
-  public static void registerColumn(String viewName, String columnid, String key) {
-    COLUMN_KEYS.put(viewName, columnid, key);
+  public static void registerColumn(String viewName, String columnId, String key) {
+    COLUMN_KEYS.put(viewName, columnId, key);
   }
 
   private Captions() {

@@ -77,7 +77,7 @@ public class ShoppingCart extends Split {
   private static final int COL_REMOVE = 6;
 
   private static final int SIZE_NORTH = 32;
-  private static final int SIZE_SOUTH = 100;
+  private static final int SIZE_SOUTH = 180;
   private static final int MARGIN_SOUTH = 25;
 
   private final CartType cartType;
@@ -441,8 +441,7 @@ public class ShoppingCart extends Split {
         item.setQuantity(value);
 
         BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-            .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(),
-                BeeUtils.toString(value)));
+            .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
 
         Cart cart = EcKeeper.refreshCart(cartType);
         updateTotal(cart);
@@ -465,8 +464,7 @@ public class ShoppingCart extends Split {
           item.setQuantity(value);
 
           BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-              .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(),
-                  BeeUtils.toString(value)));
+              .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
 
           Cart cart = EcKeeper.refreshCart(cartType);
           updateTotal(cart);

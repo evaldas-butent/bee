@@ -12,5 +12,5 @@ public interface LocalizableEcMessages {
 
   String ecSearchDidNotMatch(String query);
 
-  String ecUpdateCartItem(String cart, String item, String quantity);
+  String ecUpdateCartItem(String cart, String item, int quantity);
 }

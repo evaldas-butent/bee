@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcGroupCriteria" source="EcGroupCriteria" newRowCaption="=ecCriteriaNew"
+  >
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="Group" />
+    <SimpleColumn name="Criteria" />
+    <SimpleJoin name="Criteria" joinType="LEFT">
+      <SimpleColumn name="CriteriaName" />
+    </SimpleJoin>
+  </Columns>
+  
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="CriteriaName" />
+  </Order>
+</View>
+ 

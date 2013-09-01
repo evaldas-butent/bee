@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="EcGroupCategories" viewName="EcGroupCategories" caption="=ecItemCategories"
+  flexGrow="1" flexShrink="1"
+  >
+  <body height="32" />
+  <columns>
+    <RelColumn name="Category" searchableColumns="CategoryName" choiceColumns="FullName"
+        selectorClass="bee-ec-CategorySelector" visibleLines="7" newRowEnabled="false"
+        visible="true" />
+  </columns>
+</Grid>

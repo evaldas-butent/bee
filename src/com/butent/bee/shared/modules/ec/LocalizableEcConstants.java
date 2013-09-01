@@ -16,15 +16,9 @@ public interface LocalizableEcConstants {
 
   String ecCarYear();
 
-  String ecCategoryBatteries();
-
   String ecCategoryMerge();
 
   String ecCategoryMove();
-
-  String ecCategoryOil();
-
-  String ecCategoryTires();
 
   String ecClientPrice();
 
@@ -61,6 +55,8 @@ public interface LocalizableEcConstants {
   String ecGeneralItems();
 
   String ecGlobalSearchPlaceholder();
+
+  String ecGroups();
 
   String ecInvoiceAmount();
 
@@ -185,6 +181,8 @@ public interface LocalizableEcConstants {
   String ecSelectBrand();
 
   String ecSelectCategory();
+
+  String ecSelectGroup();
 
   String ecShoppingCart();
 

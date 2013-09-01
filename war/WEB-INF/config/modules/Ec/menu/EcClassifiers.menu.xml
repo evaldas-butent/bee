@@ -9,6 +9,7 @@ name="EcClassifiers" label="=ecClassifiers" order="20" parent="Ec" separator="tr
 
   <Item name="TcdCriteria" label="=tcdCriteria" service="grid" parameters="TcdCriteria" separator="true" />
   <Item name="EcCategories" label="=ecItemCategories" service="form" parameters="TcdCategories" />
+  <Item name="EcGroups" label="=ecGroups" service="ensure_categories_and_open_grid" parameters="EcGroups" />
 
   <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true" />
   <Item name="TcdModels" label="=tcdModels" service="grid" parameters="TcdModels" />

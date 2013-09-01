@@ -4,7 +4,7 @@
 name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separator="true"
 >
 
-  <Item name="EcClients" label="=ecClients" service="open_ec_clients" />
+  <Item name="EcClients" label="=ecClients" service="ensure_categories_and_open_grid" parameters="EcClients" />
 
   <Item name="EcManagers" label="=ecManagers" service="grid" parameters="EcManagers" separator="true" />
 

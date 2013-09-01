@@ -365,24 +365,24 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  protected Widget createCopyright(String stylePerfix) {
+  protected Widget createCopyright(String stylePrefix) {
     Flow copyright = new Flow();
-    copyright.addStyleName(stylePerfix + "Copyright");
+    copyright.addStyleName(stylePrefix + "Copyright");
 
     Image logo = new Image("images/logo.gif");
-    logo.addStyleName(stylePerfix + "Copyright-logo");
+    logo.addStyleName(stylePrefix + "Copyright-logo");
     copyright.add(logo);
 
     Label company = new Label("UAB \"Būtenta\"");
-    company.addStyleName(stylePerfix + "Copyright-company");
+    company.addStyleName(stylePrefix + "Copyright-company");
     copyright.add(company);
 
     Label copySign = new Label("\u00A9"); /* © */
-    copySign.addStyleName(stylePerfix + "Copyright-sign");
+    copySign.addStyleName(stylePrefix + "Copyright-sign");
     copyright.add(copySign);
 
     Label timePeriod = new Label("2010 - " + TimeUtils.today().getYear());
-    timePeriod.addStyleName(stylePerfix + "Copyright-timePeriod");
+    timePeriod.addStyleName(stylePrefix + "Copyright-timePeriod");
     copyright.add(timePeriod);
 
     final String url = "http://www.butent.com";
@@ -586,11 +586,11 @@ public class ScreenImpl implements Screen {
     setCentralScrutinizer(new CentralScrutinizer());
     getCentralScrutinizer().start();
 
-    Flow westFlow = new Flow();
-    westFlow.add(getCentralScrutinizer());
-    westFlow.add(createCopyright("bee-"));
+    Flow panel = new Flow();
+    panel.add(getCentralScrutinizer());
+    panel.add(createCopyright("bee-"));
 
-    return Pair.of(westFlow, 240);
+    return Pair.of(panel, 240);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

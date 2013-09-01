@@ -95,7 +95,7 @@ class EcData {
     }
   }
 
-  void ensureCategoeries(final Consumer<Boolean> callback) {
+  void ensureCategories(final Consumer<Boolean> callback) {
     if (categoryNames.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CATEGORIES);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
@@ -135,7 +135,7 @@ class EcData {
     }
   }
 
-  void ensureCategoeriesAndBrands(final Consumer<Boolean> callback) {
+  void ensureCategoriesAndBrands(final Consumer<Boolean> callback) {
     if (!categoryNames.isEmpty() && !itemBrands.isEmpty()) {
       callback.accept(true);
     }
@@ -153,7 +153,7 @@ class EcData {
       }
     };
     
-    ensureCategoeries(consumer);
+    ensureCategories(consumer);
     ensureBrands(consumer);
   }
 

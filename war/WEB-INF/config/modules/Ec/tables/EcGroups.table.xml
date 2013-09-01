@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="EcGroups"
+  idName="GroupID"
+  >
+  <Fields>
+    <Numeric name="Ordinal" precision="3" label="=ordinal" />
+    <String name="GroupName" precision="50" notNull="true" label="=ecGroup" />
+    <Boolean name="Moto" label="=ecGroupMoto" />    
+    <Boolean name="BrandSelection" label="=ecGroupBrandSelection" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+  <Constraints>
+    <Unique fields="GroupName Moto" />
+  </Constraints>
+</Table>

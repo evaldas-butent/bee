@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcGroupCategories" source="EcGroupCategories" newRowCaption="=ecItemCategoryNew"
+  >
+  <Columns>
+    <SimpleColumn name="Group" />
+ 
+    <SimpleColumn name="Category" />
+    <SimpleJoin name="Category" joinType="LEFT">
+      <SimpleColumn name="CategoryName" />
+    </SimpleJoin>
+  </Columns>
+</View>
+ 
