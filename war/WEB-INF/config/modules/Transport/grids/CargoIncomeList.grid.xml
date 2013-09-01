@@ -12,7 +12,7 @@
     <DataColumn name="OrderDate" caption="Užsakymo data" />
     <RelColumn name="OrderNo" minWidth="100" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" itemKey="OrderStatus" />    
-    <DataColumn name="CustomerName" />
+    <DataColumn name="CustomerName" caption="Užsakovas" />
     <DataColumn name="Payer" caption="Mokėtojas">
       <render>
         <ui:expression>row.Company ? row.CompanyName : row.PayerName</ui:expression>
@@ -42,5 +42,9 @@
 
     <DataColumn name="Number" />
     <DataColumn name="Note" />
+
+    <DataColumn name="Vehicle" caption="Vilkikas" />
+    <DataColumn name="Trailer" caption="Puspriekabė" />
+    <DataColumn name="Driver" caption="Vairuotojas" searchBy="FirstName LastName" />
   </columns>
 </Grid>

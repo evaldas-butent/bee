@@ -58,6 +58,8 @@ public interface LocalizableTransportConstants {
 
   String carriers();
 
+  String createInvoice();
+
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();

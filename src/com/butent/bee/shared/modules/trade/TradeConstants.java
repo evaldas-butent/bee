@@ -26,6 +26,7 @@ public final class TradeConstants {
   public static final String COL_AMOUNT = "Amount";
   public static final String COL_INVOICE_PREFIX = "InvoicePrefix";
   public static final String COL_INVOICE_NO = "InvoiceNo";
+  public static final String COL_TERM = "Term";
 
   private TradeConstants() {
   }

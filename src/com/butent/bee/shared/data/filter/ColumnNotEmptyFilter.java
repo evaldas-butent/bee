@@ -81,6 +81,6 @@ public class ColumnNotEmptyFilter extends Filter {
 
   @Override
   public String toString() {
-    return BeeUtils.joinWords(column, "NOT EMPTY");
+    return column;
   }
 }

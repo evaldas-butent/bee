@@ -35,7 +35,7 @@
           <ChildGrid name="CargoHandling" relColumn="Cargo" />
         </page>
         <page>
-          <text>Papildomos paslaugos</text>
+          <text>Paslaugos</text>
           <ChildGrid name="CargoIncomes" relColumn="Cargo"  />
         </page>
       </TabbedPages> 

@@ -25,24 +25,36 @@
           <CheckBox source="VatIncluded" html="PVM tame sk." />
         </HorizontalPanel>
 
-        <Label html="Sąskaita" style="&lbl;" />
+        <Label html="Serija" class="bee-required" style="&lbl;" />
         <FlowPanel>
-          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;"
-          caption="Ser." d:style="width:30px; text-align:right;" />
-          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;" />
+          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;" />
+          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;"
+            d:rootStyle="display:inline-block;" />
         </FlowPanel>
-      </row>
-      <row>
-        <Label html="Klientas" class="bee-required" style="&lbl;" />
-        <DataSelector source="Customer" required="true" />
-        <Label html="Terminas" style="&lbl;" />
-        <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
         <Label html="Tiekėjas" style="&lbl;" />
         <DataSelector source="Supplier" />
+        <Label html="Gavėjas" class="bee-required" style="&lbl;" />
+        <DataSelector source="Customer" required="true" />
+      </row>
+      <row>
         <Label html="Vadybininkas" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
+        <Label html="Mokėtojas" style="&lbl;" />
+        <DataSelector source="Payer" />
+      </row>
+      <row>
+        <cell colSpan="3">
+          <Label html="Terminas" style="&lbl; text-align:right;" />
+        </cell>
+        <InputDate source="Term" style="width:70px;" />
+      </row>
+      <row>
+        <Label html="Vilkikas" style="&lbl;" />
+        <InputText source="Vehicle" />
+        <Label html="Vairuotojas" style="&lbl;" />
+        <InputText source="Driver" />
       </row>
       <row>
         <cell colSpan="3">

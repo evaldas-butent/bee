@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Sales" source="Sales"
-  caption="Sąskaitos" newRowCaption="Nauja sąskaita"
-  editForm="Invoice" newRowForm="Invoice"
+  name="CargoInvoices" source="Sales"
+  caption="=invoices"
+  editForm="CargoInvoice"
   >
   <Columns>
     <SimpleColumn name="Date" />

@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -18,6 +20,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -25,11 +28,14 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -46,6 +52,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -61,12 +68,14 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -89,6 +98,16 @@ public final class TransportHandler {
     public FormInterceptor getInstance() {
       return new CargoFormHandler();
     }
+
+    @Override
+    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+      Presenter presenter = form.getViewPresenter();
+      presenter.getHeader().clearCommandPanel();
+      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
+          Value.getValue(row.getId()))));
+
+      return true;
+    }
   }
 
   private static class CargoGridHandler extends CargoPlaceRenderer {
@@ -97,6 +116,43 @@ public final class TransportHandler {
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
       return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
+    }
+  }
+
+  private static class InvoiceCreator extends Button implements ClickHandler {
+
+    final Filter filter;
+
+    public InvoiceCreator(Filter filter) {
+      super(Localized.getConstants().createInvoice());
+      addClickHandler(this);
+
+      Assert.notNull(filter);
+      this.filter = Filter.and(filter, Filter.isEmpty(TradeConstants.COL_SALE));
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+      Queries.getRowCount(VIEW_CARGO_INCOME_LIST, filter, new IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          if (BeeUtils.isPositive(result)) {
+            GridPanel grid = new GridPanel(VIEW_CARGO_INCOME_LIST,
+                GridFactory.getGridOptions(ImmutableMap.of(UiConstants.ATTR_FILTER,
+                    filter.toString())));
+
+            StyleUtils.setSize(grid, 800, 600);
+
+            DialogBox dialog = DialogBox.create(null);
+            dialog.setWidget(grid);
+            dialog.setAnimationEnabled(true);
+            dialog.setHideOnEscape(true);
+            dialog.center();
+          } else {
+            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+          }
+        }
+      });
     }
   }
 
@@ -116,7 +172,17 @@ public final class TransportHandler {
 
     @Override
     public FormInterceptor getInstance() {
-      return this;
+      return new OrderFormHandler();
+    }
+
+    @Override
+    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+      Presenter presenter = form.getViewPresenter();
+      presenter.getHeader().clearCommandPanel();
+      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_ORDER,
+          Value.getValue(row.getId()))));
+
+      return true;
     }
   }
 

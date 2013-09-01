@@ -42,7 +42,7 @@ public class TransportSelectorHandler implements Handler {
     }
     final DataView dataView = UiHelper.getDataView(event.getSelector());
 
-    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName())) {
+    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName()) || !dataView.isFlushable()) {
       return;
     }
     final DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
@@ -66,13 +66,7 @@ public class TransportSelectorHandler implements Handler {
             if (BeeConst.isUndef(targetIndex)) {
               continue;
             }
-            Value value = updatedColumns.get(targetColumn);
-
-            if (dataView.isFlushable()) {
-              target.setValue(targetIndex, value);
-            } else {
-              target.preliminaryUpdate(targetIndex, value.getString());
-            }
+            target.setValue(targetIndex, updatedColumns.get(targetColumn));
             dataView.refreshBySource(targetColumn);
           }
         }

@@ -60,7 +60,7 @@
 
       <FlowPanel class="flexBox-horizontal">
         <CheckBox text="=ecOrderCopyByMail" source="CopyByMail"
-          style="width: 250px; margin-left: 100px;" />
+          style="width: 250px; margin-left: 100px; visibility: hidden;" />
         <Label text="=ecRejectionReason" style="&lbl;" />
         <DataSelector source="RejectionReason" style="&inp;" />
       </FlowPanel>

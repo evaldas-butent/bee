@@ -261,6 +261,8 @@ public final class TransportConstants {
   public static final String COL_ORDER_DATE = "Date";
   public static final String COL_CUSTOMER = "Customer";
   public static final String COL_CUSTOMER_NAME = "CustomerName";
+  public static final String COL_PAYER = "Payer";
+  public static final String COL_PAYER_NAME = "PayerName";
 
   public static final String COL_SERVICE = "Service";
   public static final String COL_DATE = "Date";

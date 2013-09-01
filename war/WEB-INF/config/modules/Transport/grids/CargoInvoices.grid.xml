@@ -2,10 +2,9 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoInvoices" viewName="Sales"
+  name="CargoInvoices" viewName="CargoInvoices"
   editShowId="true" flexGrow="1" flexShrink="1"
-  editForm="CargoInvoice" disabledActions="add"
-  caption="=invoices"
+  disabledActions="add"
   >
   <columns>
     <IdColumn name="ID" />
@@ -25,7 +24,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <RelColumn name="Customer" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Customer" flexGrow="1" flexShrink="1" caption="Gavėjas" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
   </columns>

@@ -33,6 +33,6 @@ public class IsFalseFilter extends Filter {
 
   @Override
   public String toString() {
-    return "FALSE";
+    return "1=0";
   }
 }

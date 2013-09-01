@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
   name="CargoIncomeList" source="CargoIncomes"
   >
@@ -15,11 +16,13 @@
         <SimpleColumn name="Customer" />
         <SimpleJoin joinType="LEFT" name="Customer">
           <SimpleColumn name="Name" alias="CustomerName" />
+          <SimpleColumn name="CreditDays" alias="CustomerCreditDays" />
         </SimpleJoin>
 
         <SimpleColumn name="Payer" />
         <SimpleJoin joinType="LEFT" name="Payer">
           <SimpleColumn name="Name" alias="PayerName" />
+          <SimpleColumn name="CreditDays" alias="PayerCreditDays" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
@@ -31,6 +34,39 @@
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <SimpleJoin name="Trip" joinType="LEFT">
+          <SimpleJoin name="Vehicle" joinType="LEFT">
+            <SimpleColumn name="Number" alias="Vehicle" />
+          </SimpleJoin>
+          <SimpleJoin name="Trailer" joinType="LEFT">
+            <SimpleColumn name="Number" alias="Trailer" />
+          </SimpleJoin>
+        
+          <SimpleJoin source="TripDrivers" name="Trip" joinType="LEFT">
+            <SimpleJoin name="Driver" joinType="LEFT">
+              <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
+                  <HiddenColumn name="FirstName" />
+                  <HiddenColumn name="LastName" />
+                  <SimpleColumn name="Driver">
+                    <x:concat>
+                      <x:string>"FirstName"</x:string>
+                      <x:string>' '</x:string>
+                      <x:nvl type="STRING">
+                        <x:string>"LastName"</x:string>
+                        <x:string>''</x:string>
+                      </x:nvl>
+                    </x:concat>
+                  </SimpleColumn>
+                </SimpleJoin>
+              </SimpleJoin>
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+        
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Date" />
@@ -50,6 +86,7 @@
     <SimpleColumn name="Customer" alias="Company" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleColumn name="CreditDays" alias="CompanyCreditDays" />
     </SimpleJoin>
 
     <SimpleColumn name="Number" />

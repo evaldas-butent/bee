@@ -155,10 +155,10 @@ public final class GridFactory {
 
       case LONG:
         return new LongColumn(cellSource);
-        
+
       case NUMBER:
         return new DoubleColumn(cellSource);
-      
+
       case TEXT:
         if (cellSource.isText()) {
           return new AreaColumn(cellSource);
@@ -169,7 +169,7 @@ public final class GridFactory {
       case TIME_OF_DAY:
         return new StringColumn(cellSource);
     }
-    
+
     Assert.untouchable();
     return null;
   }
@@ -523,7 +523,7 @@ public final class GridFactory {
       GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(), uiOptions,
           gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
-      
+
       Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
 
       createPresenter(gridDescription, gridView, brs.getNumberOfRows(), brs, providerType,
@@ -554,7 +554,7 @@ public final class GridFactory {
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
         Data.getColumns(viewName), uiOptions, gridInterceptor, order);
-    
+
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
     Filter queryFilter = getInitialQueryFilter(immutableFilter, initialParentFilters,
