@@ -4,6 +4,8 @@ public interface LocalizableEcConstants {
 
   String ecBikeItems();
 
+  String ecBikeItemsShort();
+
   String ecCarEngine();
 
   String ecCarManufacturer();
@@ -53,6 +55,8 @@ public interface LocalizableEcConstants {
   String ecFoundItems();
 
   String ecGeneralItems();
+
+  String ecGeneralItemsShort();
 
   String ecGlobalSearchPlaceholder();
 

@@ -34,6 +34,17 @@ public class EcCriterion implements BeeSerializable {
 
   private EcCriterion() {
   }
+  
+  public boolean clearSelection() {
+    boolean changed = false;
+    
+    for (SelectableValue selectableValue : values) {
+      changed |= selectableValue.isSelected();
+      selectableValue.setSelected(false);
+    }
+    
+    return changed;
+  }
 
   @Override
   public void deserialize(String s) {

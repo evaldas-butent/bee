@@ -226,9 +226,9 @@ public class EcScreen extends ScreenImpl {
         Localized.getConstants().ecSearchByBrand(), Type.LABEL));
 
     searchBy.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
-        Localized.getConstants().ecGeneralItems(), Type.LABEL));
+        Localized.getConstants().ecGeneralItemsShort(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
-        Localized.getConstants().ecBikeItems(), Type.LABEL));
+        Localized.getConstants().ecBikeItemsShort(), Type.LABEL));
 
     container.add(searchBy);
     

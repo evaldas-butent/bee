@@ -2,7 +2,6 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="EcClients" viewName="EcClients" caption="=ecClients"
-  flexGrow="1" flexShrink="1"
   >
   <columns>
     <RelColumn name="User" renderColumns="Login" editEnabled="true"

@@ -2,7 +2,6 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="EcRegistrations" viewName="EcRegistrations" caption="=ecRegistrations"
-  flexGrow="1" flexShrink="1"
   >
   <columns>
     <DataColumn name="Date" visible="true" />

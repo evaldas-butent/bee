@@ -237,7 +237,9 @@ public class ItemList extends Flow {
     if (brand != null) {
       Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
           EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
-      panel.add(brandWidget);
+      if (brandWidget != null) {
+        panel.add(brandWidget);
+      }
     }
 
     String description = item.getDescription();

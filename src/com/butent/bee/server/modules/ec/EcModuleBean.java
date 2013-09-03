@@ -23,6 +23,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -100,6 +101,9 @@ import javax.ejb.Stateless;
 public class EcModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(EcModuleBean.class);
+
+  private static IsCondition articleCondition =
+      SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_VISIBLE);
 
   private static IsCondition oeNumberCondition =
       SqlUtils.notNull(TBL_TCD_ARTICLE_CODES, COL_TCD_OE_CODE);
@@ -283,6 +287,10 @@ public class EcModuleBean implements BeeModule {
       query = reqInfo.getParameter(COL_GROUP);
       response = getGroupFilters(BeeUtils.toLongOrNull(query));
       log = true;
+    } else if (BeeUtils.same(svc, SVC_GET_GROUP_ITEMS)) {
+      query = reqInfo.getParameter(COL_GROUP);
+      response = getGroupItems(reqInfo, BeeUtils.toLongOrNull(query));
+      log = true;
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -461,14 +469,14 @@ public class EcModuleBean implements BeeModule {
 
     if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
       condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
-
     } else {
       condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query);
     }
+
     SqlSelect articleIdQuery = new SqlSelect()
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLES)
-        .setWhere(condition);
+        .setWhere(SqlUtils.and(condition, articleCondition));
 
     List<EcItem> items = getItems(articleIdQuery);
     if (items.isEmpty()) {
@@ -803,11 +811,13 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getFeaturedAndNoveltyItems() {
+    long time = System.currentTimeMillis();
+
     SqlSelect articleIdQuery = new SqlSelect()
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLES)
-        .setWhere(SqlUtils.or(SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY),
-            SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED)));
+        .setWhere(SqlUtils.or(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY, time),
+            SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED, time)));
 
     List<EcItem> items = getItems(articleIdQuery);
     return ResponseObject.response(items);
@@ -1001,6 +1011,23 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(finInfo).setSize(size);
   }
 
+  private Set<Long> getGroupCategories(Long groupId) {
+    Set<Long> categories = Sets.newHashSet();
+
+    Long[] arr = qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_GROUP_CATEGORIES, COL_GROUP_CATEGORY)
+        .addFrom(TBL_GROUP_CATEGORIES)
+        .setWhere(SqlUtils.equals(TBL_GROUP_CATEGORIES, COL_GROUP, groupId)));
+
+    if (arr != null) {
+      for (Long category : arr) {
+        categories.add(category);
+      }
+    }
+
+    return categories;
+  }
+
   private ResponseObject getGroupFilters(Long groupId) {
     if (!DataUtils.isId(groupId)) {
       return ResponseObject.parameterNotFound(SVC_GET_GROUP_FILTERS, COL_GROUP);
@@ -1008,10 +1035,14 @@ public class EcModuleBean implements BeeModule {
 
     EcGroupFilters groupFilters = new EcGroupFilters();
 
-    IsCondition grCatJoin = SqlUtils.join(TBL_GROUP_CATEGORIES, COL_GROUP_CATEGORY,
-        TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY);
-    IsCondition grCatWhere = SqlUtils.equals(TBL_GROUP_CATEGORIES, COL_GROUP, groupId);
-    
+    Set<Long> categories = getGroupCategories(groupId);
+    if (categories.isEmpty()) {
+      return ResponseObject.response(groupFilters);
+    }
+
+    IsCondition catWhere = SqlUtils.inList(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY,
+        categories);
+
     Boolean needsBrands = qs.getBoolean(new SqlSelect()
         .addFields(TBL_GROUPS, COL_GROUP_BRAND_SELECTION)
         .addFrom(TBL_GROUPS)
@@ -1027,8 +1058,7 @@ public class EcModuleBean implements BeeModule {
               sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLES, COL_TCD_BRAND))
           .addFromInner(TBL_TCD_ARTICLE_CATEGORIES,
               sys.joinTables(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE))
-          .addFromInner(TBL_GROUP_CATEGORIES, grCatJoin)
-          .setWhere(grCatWhere)
+          .setWhere(SqlUtils.and(catWhere, articleCondition))
           .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME, colBrandId));
 
       if (!DataUtils.isEmpty(brandData)) {
@@ -1038,7 +1068,7 @@ public class EcModuleBean implements BeeModule {
         }
       }
     }
-    
+
     BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
         ComparisonFilter.isEqual(COL_GROUP, new LongValue(groupId)));
 
@@ -1051,28 +1081,96 @@ public class EcModuleBean implements BeeModule {
           .addFrom(TBL_TCD_ARTICLE_CRITERIA)
           .addFromInner(TBL_TCD_ARTICLE_CATEGORIES, SqlUtils.join(TBL_TCD_ARTICLE_CATEGORIES,
               COL_TCD_ARTICLE, TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE))
-          .addFromInner(TBL_GROUP_CATEGORIES, grCatJoin)
           .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE);
-      
+
       for (int i = 0; i < criteria.getNumberOfRows(); i++) {
         long criterionId = criteria.getLong(i, idIndex);
-        
-        criterionQuery.setWhere(SqlUtils.and(grCatWhere,
+
+        criterionQuery.setWhere(SqlUtils.and(catWhere,
             SqlUtils.equals(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA, criterionId)));
         String[] values = qs.getColumn(criterionQuery);
-        
+
         if (!ArrayUtils.isEmpty(values)) {
           EcCriterion criterion = new EcCriterion(criterionId, criteria.getString(i, nameIndex));
           for (String value : values) {
             criterion.getValues().add(new SelectableValue(value));
           }
-          
+
           groupFilters.getCriteria().add(criterion);
         }
       }
     }
 
     return ResponseObject.response(groupFilters).setSize(groupFilters.getSize());
+  }
+
+  private ResponseObject getGroupItems(RequestInfo reqInfo, Long groupId) {
+    if (!DataUtils.isId(groupId)) {
+      return ResponseObject.parameterNotFound(SVC_GET_GROUP_ITEMS, COL_GROUP);
+    }
+
+    Set<Long> categories = getGroupCategories(groupId);
+    if (categories.isEmpty()) {
+      String message = BeeUtils.joinWords(SVC_GET_GROUP_ITEMS, COL_GROUP, groupId,
+          "categories not available");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
+
+    EcGroupFilters filters = null;
+    if (reqInfo.hasParameter(VAR_FILTER)) {
+      filters = EcGroupFilters.restore(reqInfo.getParameter(VAR_FILTER));
+    }
+
+    SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
+        .addFrom(TBL_TCD_ARTICLES)
+        .addFromInner(TBL_TCD_ARTICLE_CATEGORIES,
+            sys.joinTables(TBL_TCD_ARTICLES, TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE));
+
+    HasConditions where = SqlUtils.and(articleCondition,
+        SqlUtils.inList(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, categories));
+
+    if (filters != null && !filters.isEmpty()) {
+      Set<Long> selectedBrands = filters.getSelectedBrands();
+      if (!selectedBrands.isEmpty()) {
+        where.add(SqlUtils.inList(TBL_TCD_ARTICLES, COL_TCD_BRAND, selectedBrands));
+      }
+
+      Multimap<Long, String> selectedCriteria = filters.getSelectedCriteria();
+      if (!selectedCriteria.isEmpty()) {
+
+        for (Long criterion : selectedCriteria.keySet()) {
+          String alias = SqlUtils.uniqueName();
+
+          HasConditions conditions = SqlUtils.or();
+          for (String value : selectedCriteria.get(criterion)) {
+            conditions.add(SqlUtils.equals(alias, COL_TCD_CRITERIA_VALUE, value));
+          }
+
+          if (!conditions.isEmpty()) {
+            articleIdQuery.addFromInner(TBL_TCD_ARTICLE_CRITERIA, alias,
+                sys.joinTables(TBL_TCD_ARTICLES, alias, COL_TCD_ARTICLE));
+
+            where.add(SqlUtils.and(SqlUtils.equals(alias, COL_TCD_CRITERIA, criterion),
+                conditions));
+          }
+        }
+      }
+    }
+
+    articleIdQuery.setWhere(where);
+
+    List<EcItem> items = getItems(articleIdQuery);
+
+    if (items.isEmpty()) {
+      return didNotMatch(qs.getValue(new SqlSelect()
+          .addFields(TBL_GROUPS, COL_GROUP_NAME)
+          .addFrom(TBL_GROUPS)
+          .setWhere(SqlUtils.equals(TBL_GROUPS, sys.getIdName(TBL_GROUPS), groupId))));
+    } else {
+      return ResponseObject.response(items).setSize(items.size());
+    }
   }
 
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
@@ -1097,6 +1195,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLES)
         .addFromInner(TBL_TCD_BRANDS,
             sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLES, COL_TCD_BRAND))
+        .setWhere(articleCondition)
         .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME, colBrandId));
 
     if (DataUtils.isEmpty(data)) {
@@ -1235,6 +1334,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES,
             sys.joinTables(TBL_TCD_ARTICLES, tempArticleIds, COL_TCD_ARTICLE))
+        .setWhere(articleCondition)
         .addOrder(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME)
         .addOrder(tempArticleIds, COL_TCD_ARTICLE);
 
@@ -1276,10 +1376,12 @@ public class EcModuleBean implements BeeModule {
     if (!DataUtils.isId(brand)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_BRAND, COL_TCD_BRAND);
     }
+
     SqlSelect articleIdQuery = new SqlSelect()
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLES)
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLES, COL_TCD_BRAND, brand));
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLES, COL_TCD_BRAND, brand),
+            articleCondition));
 
     List<EcItem> items = getItems(articleIdQuery);
 

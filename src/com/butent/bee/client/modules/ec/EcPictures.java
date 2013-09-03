@@ -95,7 +95,7 @@ class EcPictures {
             }
           }
 
-          if (!articles.isEmpty() && response != null && !response.hasErrors()) {
+          if (!articles.isEmpty() && !response.hasErrors()) {
             noPicture.addAll(articles);
             logger.debug("no picture", articles, noPicture.size());
           }

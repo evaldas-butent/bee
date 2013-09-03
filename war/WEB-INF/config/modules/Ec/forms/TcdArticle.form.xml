@@ -36,10 +36,10 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=ecItemNovelty" style="&lbl;" />
+        <Label text="=ecNoveltyUntil" style="&lbl;" />
         <InputDateTime source="Novelty" style="width: 120px; margin-right: 80px;" />
 
-        <Label text="=ecItemFeatured" style="&lbl;" />
+        <Label text="=ecFeaturedUntil" style="&lbl;" />
         <InputDateTime source="Featured" style="width: 120px;" />
       </FlowPanel>
       &separator;

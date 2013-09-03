@@ -16,8 +16,8 @@
     <Text name="Description" label="=ecItemDescription" />
     
     <Boolean name="Visible" label="=ecItemVisible" defValue="true" />
-    <DateTime name="Novelty" label="=ecItemNovelty" />
-    <DateTime name="Featured" label="=ecItemFeatured" />
+    <DateTime name="Novelty" label="=ecNoveltyUntil" />
+    <DateTime name="Featured" label="=ecFeaturedUntil" />
     
     <Long name="TecDocID" unique="true" />
   </Fields>

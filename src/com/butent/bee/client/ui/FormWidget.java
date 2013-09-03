@@ -46,6 +46,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.FieldSet;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Complex;
@@ -110,6 +111,7 @@ import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.client.widget.Legend;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
@@ -183,6 +185,7 @@ public enum FormWidget {
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
+  FIELD_SET("FieldSet", EnumSet.of(Type.HAS_CHILDREN)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
   FLAG("Flag", EnumSet.of(Type.DISPLAY)),
@@ -215,6 +218,7 @@ public enum FormWidget {
   INTERNAL_LINK("InternalLink", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
+  LEGEND("Legend", null),
   LINK("Link", EnumSet.of(Type.DISPLAY)),
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
@@ -635,14 +639,9 @@ public enum FormWidget {
           widget = new DoubleLabel(format, inline);
         }
         break;
-
-      case FLAG:
-        String country = attributes.get(Flag.ATTR_COUNTRY);
-        if (BeeUtils.isEmpty(country)) {
-          widget = new Flag();
-        } else {
-          widget = new Flag(country);
-        }
+        
+      case FIELD_SET:
+        widget = new FieldSet();
         break;
 
       case FILE_COLLECTOR:
@@ -668,6 +667,15 @@ public enum FormWidget {
             FileGroup.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
         break;
 
+      case FLAG:
+        String country = attributes.get(Flag.ATTR_COUNTRY);
+        if (BeeUtils.isEmpty(country)) {
+          widget = new Flag();
+        } else {
+          widget = new Flag(country);
+        }
+        break;
+        
       case FLOW_PANEL:
         widget = new Flow();
         break;
@@ -855,6 +863,10 @@ public enum FormWidget {
 
       case LAYOUT_PANEL:
         widget = new LayoutPanel();
+        break;
+        
+      case LEGEND:
+        widget = new Legend(html);
         break;
 
       case LINK:

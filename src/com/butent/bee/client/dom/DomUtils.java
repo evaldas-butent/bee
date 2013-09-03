@@ -413,7 +413,7 @@ public final class DomUtils {
     }
   }
 
-  public static Element getChildByDataIndex(Element parent, int dataIndex) {
+  public static Element getChildByDataIndex(Element parent, int dataIndex, boolean recurse) {
     if (parent == null || BeeConst.isUndef(dataIndex)) {
       return null;
     }
@@ -422,6 +422,13 @@ public final class DomUtils {
         child.getNextSiblingElement()) {
       if (getDataIndexInt(child) == dataIndex) {
         return child;
+      }
+      
+      if (recurse) {
+        Element element = getChildByDataIndex(child, dataIndex, recurse);
+        if (element != null) {
+          return element;
+        }
       }
     }
     return null;

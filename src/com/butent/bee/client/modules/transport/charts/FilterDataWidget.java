@@ -237,7 +237,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   void removeItem(int index, boolean selected) {
     Element itemElement = DomUtils.getChildByDataIndex(selected
-        ? selectedContainer : unselectedContainer, index);
+        ? selectedContainer : unselectedContainer, index, false);
 
     if (itemElement != null) {
       if (!selected && !UIObject.isVisible(itemElement)) {

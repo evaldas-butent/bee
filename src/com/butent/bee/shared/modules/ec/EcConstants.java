@@ -148,6 +148,7 @@ public final class EcConstants {
   public static final String VAR_TYPE = VAR_PREFIX + "type";
 
   public static final String VAR_CART = VAR_PREFIX + "cart";
+  public static final String VAR_FILTER = VAR_PREFIX + "filter";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
   public static final String TBL_CLIENTS = "EcClients";

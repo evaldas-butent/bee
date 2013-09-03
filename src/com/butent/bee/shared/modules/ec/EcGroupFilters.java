@@ -1,14 +1,25 @@
 package com.butent.bee.shared.modules.ec;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Set;
 
 public class EcGroupFilters implements BeeSerializable {
+  
+  public static EcGroupFilters restore(String s) {
+    EcGroupFilters groupFilters = new EcGroupFilters();
+    groupFilters.deserialize(s);
+    return groupFilters;
+  }
   
   private final List<EcBrand> brands = Lists.newArrayList();
 
@@ -16,6 +27,21 @@ public class EcGroupFilters implements BeeSerializable {
 
   public EcGroupFilters() {
     super();
+  }
+  
+  public boolean clearSelection() {
+    boolean changed = false;
+
+    for (EcBrand brand : brands) {
+      changed |= brand.isSelected();
+      brand.setSelected(false);
+    }
+    
+    for (EcCriterion criterion : criteria) {
+      changed |= criterion.clearSelection();
+    }
+    
+    return changed;
   }
   
   @Override
@@ -47,6 +73,32 @@ public class EcGroupFilters implements BeeSerializable {
 
   public List<EcCriterion> getCriteria() {
     return criteria;
+  }
+  
+  public Set<Long> getSelectedBrands() {
+    Set<Long> selectedBrands = Sets.newHashSet();
+
+    for (EcBrand brand : brands) {
+      if (brand.isSelected()) {
+        selectedBrands.add(brand.getId());
+      }
+    }
+    
+    return selectedBrands;
+  }
+  
+  public Multimap<Long, String> getSelectedCriteria() {
+    Multimap<Long, String> selectedCriteria = ArrayListMultimap.create();
+
+    for (EcCriterion criterion : criteria) {
+      for (SelectableValue sv : criterion.getValues()) {
+        if (sv.isSelected()) {
+          selectedCriteria.put(criterion.getId(), sv.getValue());
+        }
+      }
+    }
+    
+    return selectedCriteria;
   }
 
   public int getSize() {

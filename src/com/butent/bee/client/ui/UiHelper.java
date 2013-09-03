@@ -44,6 +44,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -119,6 +120,30 @@ public final class UiHelper {
     } else {
       return DomUtils.focus(target);
     }
+  }
+
+  public static Collection<Widget> getChildrenByStyleName(Widget parent,
+      Collection<String> styleNames) {
+
+    Collection<Widget> result = Lists.newArrayList();
+    if (parent == null || styleNames == null) {
+      return result;
+    }
+    
+    if (StyleUtils.hasAnyClass(parent.getElement(), styleNames)) {
+      result.add(parent);
+    }
+
+    if (parent instanceof HasOneWidget) {
+      result.addAll(getChildrenByStyleName(((HasOneWidget) parent).getWidget(), styleNames));
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getChildrenByStyleName(child, styleNames));
+      }
+    }
+
+    return result;
   }
   
   public static DataView getDataView(Widget widget) {

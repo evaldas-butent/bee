@@ -88,6 +88,10 @@
   padding-bottom: 0;
 }
 
+.bee-ec-Command-generalItems {
+  margin-left: 1em;
+}
+
 .bee-ec-Copyright {
   position: fixed;
   right: 1em; 
@@ -960,4 +964,85 @@
 .bee-ec-finInfo-order-item-quantity-cell,
 .bee-ec-finInfo-order-item-price-cell {
   text-align: right;
+}
+
+.bee-ec-searchByGroup {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
+.bee-ec-searchByGroup-filtersAndItemsitems {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  overflow: auto;
+}
+
+.bee-ec-searchByGroup-groups {
+  min-width: 120px;
+  margin: 1ex 1em 0 1em;
+}
+.bee-ec-searchByGroup-groupsLegend {
+  font-weight: bolder;
+}
+
+.bee-ec-searchByGroup-group {
+  margin-top: 4px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.bee-ec-searchByGroup-groupSelected {
+  color: red;
+}
+
+.bee-ec-searchByGroup-groupLabel {
+  margin: 1ex 0 1ex 2em;
+  text-transform: uppercase;
+}
+
+.bee-ec-searchByGroup-filters {
+  overflow: auto;
+}
+
+.bee-ec-searchByGroup-filtersContainer {
+  border-collapse: collapse;
+}
+.bee-ec-searchByGroup-filtersContainer td {
+  vertical-align: top;
+}
+
+.bee-ec-searchByGroup-brandsContainer,
+.bee-ec-searchByGroup-valuesContainer {
+  max-height: 125px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }  
+
+.bee-ec-searchByGroup-brand,
+.bee-ec-searchByGroup-value {
+  display: block;
+  margin-top: 4px;
+  margin-right: 1em;
+  white-space: nowrap;
+}
+.bee-ec-searchByGroup-brandSelected,
+.bee-ec-searchByGroup-valueSelected {
+  color: red;
+}
+
+.bee-ec-searchByGroup-doFilter, 
+.bee-ec-searchByGroup-clearSelection {
+  background-image: url("images/ec/red_background.png");
+  color: white;
+}
+
+.bee-ec-searchByGroup-actions {
+  margin-top: 1ex;
+}
