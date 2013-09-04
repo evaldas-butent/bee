@@ -4,13 +4,13 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewOrderCargo" viewName="OrderCargo" caption="Naujas krovinys" 
+  name="NewOrderCargo" viewName="OrderCargo" caption="=newCargo" 
   height="220" width="520"
   >  
   <FlowPanel class="flexBox-vertical" style="margin: 10px" >
-    <InputText source="Description" caption="Krovinys"
+    <InputText source="Description" caption="=cargo"
       style="font-weight: bold; color: blue; width:300px;"  d:size="60" d:unit="px" />        
-    <CheckBox source="Partial" html="Dalinis krovinys"/>
+    <CheckBox source="Partial" text="=partialCargo"/>
     <FlowPanel class="flexBox-vertical">
     	<xi:include href="widgets/CargoPlaces.widget.xml" />
     </FlowPanel>

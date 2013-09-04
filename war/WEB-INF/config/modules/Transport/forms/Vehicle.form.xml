@@ -4,22 +4,22 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Vehicle" viewName="Vehicles" caption="Transporto priemonė"
+  name="Vehicle" viewName="Vehicles" caption="=vehicle"
   >
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/VehicleDescription.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
-        <text>Papildoma informacija</text>
+        <text>=additionalInfo</text>
         <AbsolutePanel>
           <layer top="1" topUnit="ex" width="240">
             <VerticalPanel horizontalAlignment="right" cellStyle="padding-top: 5px;">
-              <DataSelector source="Fuel" caption="Kuro rūšis" />
-              <InputInteger source="TankCapacity" caption="Kuro bako talpa l" style="width: 2em;" />
-              <InputInteger source="Speedometer" caption="Spidometro skalė" style="width: 5em;" />
-              <InputDate source="StartDate" caption="Eksploatacijos pradžia" style="width: 7em;" />
-              <InputDate source="EndDate" caption="Eksploatacijos pabaiga" style="width: 7em;" />
+              <DataSelector source="Fuel" caption="=vehicleFuel" />
+              <InputInteger source="TankCapacity" caption="=vehicleTankCapacity" style="width: 2em;" />
+              <InputInteger source="Speedometer" caption="=vehicleSpeedometer" style="width: 5em;" />
+              <InputDate source="StartDate" caption="=vehicleStartDate" style="width: 7em;" />
+              <InputDate source="EndDate" caption="=vehicleEndDate" style="width: 7em;" />
             </VerticalPanel>
           </layer>
           
@@ -32,15 +32,15 @@
         </AbsolutePanel>
       </page>
       <page>
-        <text>Remontai</text>
+        <text>=vehicleRepairs</text>
         <ChildGrid name="Repairs" relColumn="Vehicle" />
       </page>
       <page>
-        <text>Servisas</text>
+        <text>=vehicleService</text>
         <ChildGrid name="VehicleServices" relColumn="Vehicle" />
       </page>
       <page>
-        <text>Reisai</text>
+        <text>=trips</text>
         <ChildGrid name="Trips" relColumn="Vehicle" />
       </page>
       <page>
@@ -48,7 +48,7 @@
         <ChildGrid name="RelatedDocuments" relColumn="Vehicle" />
       </page>
       <page>
-        <text>Keičiamos dalys</text>
+        <text>=vehiclePartUsage</text>
         <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
       </page>
     </TabbedPages>

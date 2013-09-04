@@ -9,37 +9,37 @@
   
   class="flexBox-vertical">
   <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-    <InputText source="Number" caption="Valst.Nr." upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
-    <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
+    <InputText source="Number" caption="=vehicleNumber" upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
+    <DataSelector source="Model" caption="=vehicleModel" class="flexible" newRowForm="NewVehicleModel"
       renderColumns="ParentModelName ModelName" decorator="flex-left" d:size="50" d:rootStyle="&MARGIN;"
       filter="parent" />
-    <DataSelector source="Type" caption="Tipas" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
-    <Label html="Grupės:" class="bee-required" />
+    <DataSelector source="Type" caption="=vehicleType" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
+    <Label text="=groups" class="bee-required" />
     <ChildSelector viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="Grupės" />
   </FlowPanel>
     
   <FlowPanel class="flexBox-horizontal">
     <FlowPanel class="flexBox-vertical flexible">
       <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-        <DataSelector source="Owner" caption="Savininkas" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-        <InputDate source="ProductionDate" caption="Pagaminimo data" style="width: 7em" />
+        <DataSelector source="Owner" caption="=vehicleOwnerName" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
+        <InputDate source="ProductionDate" caption="=vehicleProductionDate" style="width: 7em" />
       </FlowPanel>
         
       <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-        <InputText source="BodyNumber" caption="Kėbulo Nr." decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-        <InputInteger source="Netto" caption="Svoris Neto" style="width: 5em" d:rootStyle="&MARGIN;" />
-        <InputInteger source="Brutto" caption="Svoris Bruto" style="width: 5em" />
+        <InputText source="BodyNumber" caption="=vehicleBodyNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
+        <InputInteger source="Netto" caption="=vehicleNetto" style="width: 5em" d:rootStyle="&MARGIN;" />
+        <InputInteger source="Brutto" caption="=vehicleBrutto" style="width: 5em" />
       </FlowPanel>
         
       <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-        <InputInteger source="EngineNumber" caption="Variklio Nr." decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-        <InputText source="Power" caption="Galia kW" style="width: 2em" d:rootStyle="&MARGIN;" />
-        <InputInteger source="EngineVolume" caption="Darbinis tūris cm&#x00b3;" style="width: 4em" />
+        <InputInteger source="EngineNumber" caption="=vehicleEngineNumber" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
+        <InputText source="Power" caption="=vehiclePower" style="width: 2em" d:rootStyle="&MARGIN;" />
+        <InputInteger source="EngineVolume" caption="=vehicleEngineVolume" style="width: 4em" />
       </FlowPanel>
     </FlowPanel>
       
     <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-      <Label html="Pastabos" />
+      <Label text="=notes" />
       <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
         <InputArea source="Notes" class="occupy" />
       </SimplePanel>

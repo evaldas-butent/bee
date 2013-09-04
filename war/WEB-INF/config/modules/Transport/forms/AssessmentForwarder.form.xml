@@ -10,42 +10,42 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="AssessmentForwarder" viewName="AssessmentForwarders" caption="Vežėjas"
+  name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
   >
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <FlowPanel style="&section;">
-      <Label html="Vežėjas" class="bee-required" style="&labelLeft; width:140px;" />
+      <Label text="=carrier" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Forwarder" required="true" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Ekspedijavimo rūšis" class="bee-required" style="&labelLeft; width:140px;" />
+      <Label text="=transportExpeditionType" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Expedition" required="true" style="&input; width:150px;"  />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Data" class="bee-required" style="&labelLeft;" />
+      <Label text="=date" class="bee-required" style="&labelLeft;" />
       <InputDate source="Date" required="true" style="&input;" />
-      <Label html="Paslauga" class="bee-required" style="&labelRight;" />
+      <Label text="=trServiceName" class="bee-required" style="&labelRight;" />
       <DataSelector source="Service" style="&input; width:190px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Numeris" style="&labelLeft;" />
+      <Label text="=number" style="&labelLeft;" />
       <InputText source="Number" style="&input;" />
-      <Label html="Suma" class="bee-required" style="&labelRight;" />
+      <Label text="=amount" class="bee-required" style="&labelRight;" />
       <InputCurrency source="Amount" style="&input; width:70px;" />
       <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
         editEnabled="false" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Tiekėjas" style="&labelLeft;" />
+      <Label text="=transportSupplier" style="&labelLeft;" />
       <DataSelector source="Supplier" style="&input; width:200px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Sąlygos" style="&labelLeft;" />
+      <Label text="=transportConditions" style="&labelLeft;" />
       <InputText source="Note" style="&input; width:400px;" />
     </FlowPanel>
 
@@ -81,11 +81,11 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Transporto Nr." style="&labelLeft;" />
+      <Label text="=transportationNumber1" style="&labelLeft;" />
       <InputText source="ForwarderVehicle" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label html="Kiti duomenys" style="&labelLeft; vertical-align:top;" />
+      <Label text="=transportOtherDetails" style="&labelLeft; vertical-align:top;" />
       <InputArea source="Notes" style="width:400px;" />
     </FlowPanel>
   </FlowPanel>

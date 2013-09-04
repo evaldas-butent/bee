@@ -3,39 +3,39 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
+  name="TransportationOrder" viewName="TransportationOrders" caption="=transportOrder"
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
       <Table style="border-spacing: 10px;">
         <row>
-          <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
+          <Label text="=date" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputDateTime source="Date" />
-          <Label html="Būsena:" horizontalAlignment="right" />
+          <Label text="=status" horizontalAlignment="right" />
           <ListBox source="Status" itemKey="OrderStatus" />
-          <Label html="Pastabos" />
+          <Label text="=notes" />
         </row>
         <row>
-          <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
+          <Label text="=orderNumber" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
-            <Button name="profit" html="Pelnas" />
-            <Button name="trips" html="Prisikirti reisą" />
+            <Button name="profit" text="=cargoProfit" />
+            <Button name="trips" text="=transportAssignTrip" />
           <cell rowSpan="3">
             <InputArea source="Notes" visibleLines="5" style="width:150px;" />
           </cell>
         </row>
         <row>
-          <Label html="Užsakovas:" horizontalAlignment="right" class="bee-required" />
+          <Label text="=customer" horizontalAlignment="right" class="bee-required" />
           <DataSelector source="Customer" />
-          <Label html="Mokėtojas:" horizontalAlignment="right" />
+          <Label text="=payer" horizontalAlignment="right" />
           <DataSelector source="Payer" />
         </row>
         <row>
-          <Label html="Kontaktas:" horizontalAlignment="right" />
+          <Label text="=contact" horizontalAlignment="right" />
           <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
-          <Label html="Vadybininkas:" horizontalAlignment="right" />
+          <Label text="=manager" horizontalAlignment="right" />
           <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
         </row>
       </Table>

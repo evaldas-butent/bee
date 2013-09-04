@@ -4,8 +4,6 @@ public interface LocalizableTransportConstants {
 
   String additionalServices();
 
-  String assessmentRequest();
-
   String assessments();
 
   String assignCargosToTripCaption();
@@ -99,6 +97,8 @@ public interface LocalizableTransportConstants {
   String loadedKilometers();
 
   String loading();
+
+  String newAssessmentRequest();
 
   String newCargo();
 

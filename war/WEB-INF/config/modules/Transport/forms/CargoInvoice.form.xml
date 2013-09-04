@@ -6,28 +6,28 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="CargoInvoice" viewName="Sales" caption="Sąskaita"
+  name="CargoInvoice" viewName="Sales" caption="=transportSalesInvoice"
   width="800" height="600"
   >
   <FlowPanel class="flexBox-vertical">
     <Table>
       <row>
-        <Label html="Data" class="bee-required" style="&lbl;" />
+        <Label text="=date" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="width:110px;" />
 
-        <Label html="Užsakymo Nr." style="&lbl;" />
+        <Label text="=orderNumber" style="&lbl;" />
         <InputText source="Number" />
       </row>
       <row>
-        <Label html="Suma" style="&lbl;" />
+        <Label text="=amount" style="&lbl;" />
         <HorizontalPanel>
           <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
-          <DataSelector source="CurrencyName" placeholder="Val."
+          <DataSelector source="CurrencyName" placeholder="=currencyShort"
             style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" html="PVM tame sk." />
+          <CheckBox source="VatIncluded" text="=transportVATIncluded" />
         </HorizontalPanel>
 
-        <Label html="Serija" class="bee-required" style="&lbl;" />
+        <Label text="=transportSalesInvoiceSerialNo" class="bee-required" style="&lbl;" />
         <FlowPanel>
           <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;" />
           <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;"
@@ -35,42 +35,42 @@
         </FlowPanel>
       </row>
       <row>
-        <Label html="Tiekėjas" style="&lbl;" />
+        <Label text="=transportSupplier" style="&lbl;" />
         <DataSelector source="Supplier" />
-        <Label html="Gavėjas" style="&lbl;" />
+        <Label text="=transportCustomer" style="&lbl;" />
         <DataSelector source="Customer" />
       </row>
       <row>
-        <Label html="Vadybininkas" style="&lbl;" />
+        <Label text="=manager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
-        <Label html="Mokėtojas" style="&lbl;" />
+        <Label text="=payer" style="&lbl;" />
         <DataSelector source="Payer" />
       </row>
       <row>
         <cell colSpan="3">
-          <Label html="Terminas" style="&lbl; text-align:right;" />
+          <Label text="=transportSalesTerm" style="&lbl; text-align:right;" />
         </cell>
         <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
-        <Label html="Vilkikas" style="&lbl;" />
+        <Label text="=transportTruck" style="&lbl;" />
         <InputText source="Vehicle" />
-        <Label html="Vairuotojas" style="&lbl;" />
+        <Label text="=vehicleDriver" style="&lbl;" />
         <InputText source="Driver" />
       </row>
     </Table>
 
     <TabbedPages class="flexible">
       <page>
-        <text>Prekės/Paslaugos</text>
+        <text>=transportProductsServices</text>
         <ChildGrid name="SaleItems" relColumn="Sale" />
       </page>
       <page>
-        <text>Pastabos</text>
+        <text>=notes</text>
         <InputArea source="Notes" />
       </page>
       <page>
-        <text>Transporto pajamos</text>
+        <text>=transportIncomes</text>
         <ChildGrid name="CargoInvoiceIncomes" relColumn="Sale" />
       </page>
     </TabbedPages>

@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
@@ -1688,7 +1689,7 @@ public final class DomUtils {
   public static boolean setPlaceholder(Element elem, String value) {
     if ((isInputElement(elem) || isTextAreaElement(elem))
         && Features.supportsAttributePlaceholder()) {
-      elem.setAttribute(ATTRIBUTE_PLACEHOLDER, value);
+      elem.setAttribute(ATTRIBUTE_PLACEHOLDER, LocaleUtils.maybeLocalize(value));
       return true;
     } else {
       return false;

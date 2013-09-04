@@ -8,15 +8,15 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
+  name="OrderCargo" viewName="OrderCargo" caption="=cargo"
   width="925" height="750"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <InputText source="Description" caption="Krovinys" decorator="flex-left"
+      <InputText source="Description" caption="=cargo" decorator="flex-left"
         style="font-weight: bold; color: blue;" d:size="60" d:unit="px" />
       <HorizontalPanel>
-        <InputCurrency source="Price" caption="Pervežimo kaina" style="width: 70px; font-weight: bold; color: green;" />
+        <InputCurrency source="Price" caption="=transportationPrice" style="width: 70px; font-weight: bold; color: green;" />
         <DataSelector source="Currency" editEnabled="false"
           style="width: 40px; font-weight: bold; display: inline-block;" />
       </HorizontalPanel>
@@ -25,39 +25,39 @@
     <FlowPanel class="flexBox-horizontal" style="&section;">
       <TabbedPages style="height: 300px; width: 480px">
         <page>
-          <text>Krovos informacija</text>
+          <text>=cargoInformation</text>
           <FlowPanel>
             <xi:include href="widgets/CargoPlaces.widget.xml" />
           </FlowPanel>
         </page>
         <page>
-          <text>Tarpiniai krovos taškai</text>
+          <text>=cargoMiddleHandlingPlaces</text>
           <ChildGrid name="CargoHandling" relColumn="Cargo" />
         </page>
         <page>
-          <text>Paslaugos</text>
+          <text>=transportOrderCargoServices</text>
           <ChildGrid name="CargoIncomes" relColumn="Cargo"  />
         </page>
       </TabbedPages> 
       <FlowPanel class="flexBox-vertical" style="margin:10px; margin-top:35px;">
       	<Table>
       	  <row>
-      	    <Label text="Krovinio vertė" horizontalAlignment="right" />
+      	    <Label text="=cargoValue" horizontalAlignment="right" />
               <FlowPanel>
               <InputCurrency source="Value" />
       	      <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:3px;"/>
             </FlowPanel>
-            <CheckBox source="Partial" html="Dalinis" style="margin:3px;"/>
+            <CheckBox source="Partial" text="=partial" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	  	<Label text="Pakrauti km" horizontalAlignment="right" />
+      	  	<Label text="=loadedKilometers" horizontalAlignment="right" />
       	  	<InputDecimal source="LoadedKilometers" />
-            <CheckBox source="Outsized" html="Negabaritinis" style="margin:3px;"/>
+            <CheckBox source="Outsized" text="=outsized" style="margin:3px;"/>
       	  </row>
       	  <row>
-            <Label text="Tušti km"  horizontalAlignment="right" />
+            <Label text="=emptyKilometers"  horizontalAlignment="right" />
             <InputDecimal source="EmptyKilometers" />
-            <CheckBox source="Dangerous" html="Pavojingas" style="margin:3px;"/>
+            <CheckBox source="Dangerous" text="=dangerous" style="margin:3px;"/>
       	  </row>
       	</Table>
       </FlowPanel>
@@ -65,26 +65,26 @@
     &separator;
     <Table>
       <row>
-        <Label text="Pristatymo sąlygos" horizontalAlignment="right" />
+        <Label text="=cargoTermsOfService" horizontalAlignment="right" />
         <DataSelector source="ShippingTerm" />
-        <Label html="Svoris" horizontalAlignment="right" />
+        <Label text="=weight" horizontalAlignment="right" />
         <InputDecimal source="Weight" format="#.000" />
-        <Label html="Ilgis" horizontalAlignment="right" />
+        <Label text="=length" horizontalAlignment="right" />
         <InputDecimal source="Length" format="#.00" />
-        <Label html="Pastabos" />
+        <Label text="=notes" />
       </row>
       <row>
-        <Label text="Palečių keitimas" horizontalAlignment="right" />
+        <Label text="=cargoChangeOfPallets" horizontalAlignment="right" />
         <InputInteger source="ExchangeOfPalettes" />
-        <Label html="Tūris" horizontalAlignment="right" />
+        <Label text="=volume" horizontalAlignment="right" />
         <InputDecimal format="#.000" scale="1" source="Volume" />
-        <Label html="Plotis" horizontalAlignment="right" />
+        <Label text="=width" horizontalAlignment="right" />
         <InputDecimal source="Width" format="#.00" />
         <cell rowSpan="3">
           <InputArea source="Notes" characterWidth="30" style="height: 100%" />
         </cell>
         <cell rowSpan="2">
-          <Button name="profit" html="Pelnas" />
+          <Button name="profit" text="=cargoProfit" />
         </cell>
       </row>
       <row>
@@ -92,26 +92,26 @@
         <InputText source="Cmr" />
         <Label html="LDM" horizontalAlignment="right" />
         <InputDecimal source="LDM" format="#.00" />
-        <Label html="Aukštis" horizontalAlignment="right" />
+        <Label text="=height" horizontalAlignment="right" />
         <InputDecimal source="Height" format="#.00" />        
       </row>
       <row>
-        <Label html="Numeris" horizontalAlignment="right" />
+        <Label text="=number" horizontalAlignment="right" />
         <InputText source="Number" />
-        <Label html="Kiekis" horizontalAlignment="right" />
+        <Label text="=quantity" horizontalAlignment="right" />
         <InputInteger source="Quantity" />
-        <Label html="Paletės" horizontalAlignment="right" />
+        <Label text="=pallets" horizontalAlignment="right" />
         <InputInteger source="Palettes" />        
       </row>
     </Table>
 
       <TabbedPages class="flexible" style="&section;">
         <page>
-          <text>Reisai</text>
+          <text>=trips</text>
           <ChildGrid name="CargoTrips" relColumn="Cargo" />
         </page>
         <page>
-          <text>Kitos sąnaudos</text>
+          <text>=otherCosts</text>
           <ChildGrid name="CargoExpenses" relColumn="Cargo" />
         </page>
         <page>

@@ -22,67 +22,67 @@
   <FlowPanel style="background-color: WhiteSmoke;">
 
     <FlowPanel style="&row; margin-top: 2ex;">
-      <Label html="Vilkiko stulpelio plotis px:" style="&lbl;" />
+      <Label text="=trTbSettingsPixelsPerTruck" style="&lbl;" />
       <InputSpinner source="SsPixelsPerTruck" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
-      <Label html="Reiso stulpelio plotis px:" style="&lbl;" />
+      <Label text="=trTbSettingsPixelsPerTrip" style="&lbl;" />
       <InputSpinner source="SsPixelsPerTrip" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&cb_row;">
-      <Label html="Reisus rodyti atskirai:" style="&lbl;" />
+      <Label text="=trTbSettingsSeparateTrips" style="&lbl;" />
       <CheckBox source="SsSeparateTrips" style="&cb_inp;"/>
     </FlowPanel>
     <FlowPanel style="&cb_row;">
-      <Label html="Krovinius rodyti atskirai:" style="&lbl;" />
+      <Label text="=trTbSettingsSeparateCargo" style="&lbl;" />
       <CheckBox source="SsSeparateCargo" style="&cb_inp;"/>
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&cb_row;">
-      <Label html="Rodyti šalių vėliavas:" style="&lbl;" />
+      <Label text="=trTbSettingsCountryFlags" style="&lbl;" />
       <CheckBox source="SsCountryFlags" style="&cb_inp;"/>
     </FlowPanel>
     <FlowPanel style="&cb_row;">
-      <Label html="Rodyti pakrovimo / iškrovimo vietą:" style="&lbl;" />
+      <Label text="=trTbSettingsPlaceInfo" style="&lbl;" />
       <CheckBox source="SsPlaceInfo" style="&cb_inp;"/>
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
-      <Label html="Dienos stulpelio plotis px:" style="&lbl;" />
+      <Label text="=trTbSettingsPixelsPerDay" style="&lbl;" />
       <InputSpinner source="SsPixelsPerDay" minValue="1" maxValue="100" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
-      <Label html="Dienos stulpelio aukštis px:" style="&lbl;" />
+      <Label text="=trTbSettingsPixelsPerRow" style="&lbl;" />
       <InputSpinner source="SsPixelsPerRow" minValue="2" maxValue="1000" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
-      <Label html="Kalendoriaus srities aukštis px:" style="&lbl;" />
+      <Label text="=trTbSettingsHeaderHeight" style="&lbl;" />
       <InputSpinner source="SsHeaderHeight" minValue="1" maxValue="100" style="&spin;" />
     </FlowPanel>
     <FlowPanel style="&row;">
-      <Label html="Laikotarpio pasirinkimo srities aukštis px:" style="&lbl;" />
+      <Label text="=trTbSettingsFooterHeight" style="&lbl;" />
       <InputSpinner source="SsFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&row;">
-      <Label html="Spalvų tema:" style="&lbl;" />
+      <Label text="=colorTheme" style="&lbl;" />
       <DataSelector source="SsTheme" style="&inline; width: 100px;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&slider_row;">
-      <Label html="Item opacity:" style="&lbl;" />
+      <Label text="=transportItemOpacity" style="&lbl;" />
       <InputSlider source="SsItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
     <FlowPanel style="&slider_row;">
-      <Label html="Strip opacity:" style="&lbl;" />
+      <Label text="=transportStripOpacity" style="&lbl;" />
       <InputSlider source="SsStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
 
