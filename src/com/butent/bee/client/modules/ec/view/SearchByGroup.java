@@ -309,7 +309,7 @@ class SearchByGroup extends EcView implements HasCaption {
   }
 
   private void renderItems(final List<EcItem> items) {
-    EcKeeper.ensureBrands(new Consumer<Boolean>() {
+    EcKeeper.ensureCategoriesAndBrandsAndBranches(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         for (Widget widget : filtersAndItemsPanel) {

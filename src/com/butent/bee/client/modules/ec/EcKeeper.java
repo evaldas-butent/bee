@@ -150,9 +150,9 @@ public final class EcKeeper {
     data.ensureCategories(callback);
   }
 
-  public static void ensureCategoriesAndBrands(Consumer<Boolean> callback) {
+  public static void ensureCategoriesAndBrandsAndBranches(Consumer<Boolean> callback) {
     Assert.notNull(callback);
-    data.ensureCategoriesAndBrands(callback);
+    data.ensureCategoriesAndBrandsAndBranches(callback);
   }
 
   public static void finalizeRequest(EcRequest request, boolean remove) {
@@ -217,6 +217,10 @@ public final class EcKeeper {
     data.getItemBrands(callback);
   }
 
+  public static String getPrimaryBranch() {
+    return data.getPrimaryBranch();
+  }
+
   public static List<EcItem> getResponseItems(ResponseObject response) {
     List<EcItem> items = Lists.newArrayList();
 
@@ -236,6 +240,14 @@ public final class EcKeeper {
     }
 
     return items;
+  }
+
+  public static String getSecondaryBranch() {
+    return data.getSecondaryBranch();
+  }
+
+  public static Collection<String> getWarehouses(String branch) {
+    return data.getWarehouses(branch);
   }
 
   public static boolean isDebug() {
@@ -381,7 +393,7 @@ public final class EcKeeper {
     });
 
     CategoryFullNameRenderer.Provider provider = new CategoryFullNameRenderer.Provider();
-    
+
     RendererFactory.registerGcrProvider(GRID_DISCOUNTS, COL_DISCOUNT_CATEGORY, provider);
     RendererFactory.registerGcrProvider(GRID_ARTICLE_CATEGORIES, COL_TCD_CATEGORY, provider);
     RendererFactory.registerGcrProvider(GRID_GROUP_CATEGORIES, COL_GROUP_CATEGORY, provider);
@@ -406,7 +418,7 @@ public final class EcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    ensureCategoriesAndBrands(new Consumer<Boolean>() {
+    ensureCategoriesAndBrandsAndBranches(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {

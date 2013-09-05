@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,10 +24,12 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +52,9 @@ class EcData {
   private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
 
   private final Map<String, String> configuration = Maps.newHashMap();
+  
+  private final List<String> clientBranches = Lists.newArrayList();
+  private final Multimap<String, String> clientWarehousesByBranch = ArrayListMultimap.create();
 
   EcData() {
     super();
@@ -135,8 +141,8 @@ class EcData {
     }
   }
 
-  void ensureCategoriesAndBrands(final Consumer<Boolean> callback) {
-    if (!categoryNames.isEmpty() && !itemBrands.isEmpty()) {
+  void ensureCategoriesAndBrandsAndBranches(final Consumer<Boolean> callback) {
+    if (!categoryNames.isEmpty() && !itemBrands.isEmpty() && !clientBranches.isEmpty()) {
       callback.accept(true);
     }
 
@@ -145,7 +151,7 @@ class EcData {
     Consumer<Boolean> consumer = new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
-        if (latch.get() >= 1) {
+        if (latch.get() >= 2) {
           callback.accept(input);
         } else {
           latch.set(latch.get() + 1);
@@ -155,8 +161,22 @@ class EcData {
     
     ensureCategories(consumer);
     ensureBrands(consumer);
+    ensureClientBranches(consumer);
   }
 
+  void ensureClientBranches(final Consumer<Boolean> callback) {
+    if (clientBranches.isEmpty()) {
+      getClientBranches(new Consumer<Boolean>() {
+        @Override
+        public void accept(Boolean input) {
+          callback.accept(true);
+        }
+      });
+    } else {
+      callback.accept(true);
+    }
+  }
+  
   String getBrandName(long brand) {
     return brandNames.get(brand);
   }
@@ -187,7 +207,7 @@ class EcData {
       callback.accept(carManufacturers);
     }
   }
-
+  
   void getCarModels(final String manufacturer, final Consumer<List<EcCarModel>> callback) {
     if (carModelsByManufacturer.containsKey(manufacturer)) {
       callback.accept(carModelsByManufacturer.get(manufacturer));
@@ -215,7 +235,7 @@ class EcData {
       });
     }
   }
-
+  
   void getCarTypes(final long modelId, final Consumer<List<EcCarType>> callback) {
     if (carTypesByModel.containsKey(modelId)) {
       callback.accept(carTypesByModel.get(modelId));
@@ -360,6 +380,22 @@ class EcData {
     }
   }
 
+  String getPrimaryBranch() {
+    return BeeUtils.getQuietly(clientBranches, 0);
+  }
+  
+  String getSecondaryBranch() {
+    return BeeUtils.getQuietly(clientBranches, 1);
+  }
+
+  Collection<String> getWarehouses(String branch) {
+    if (branch != null && clientWarehousesByBranch.containsKey(branch)) {
+      return clientWarehousesByBranch.get(branch);
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
   void saveConfiguration(final String key, final String value) {
     ParameterList params;
 
@@ -398,6 +434,46 @@ class EcData {
 
         fillTree(data, id, childItem);
       }
+    }
+  }
+
+  private void getClientBranches(final Consumer<Boolean> callback) {
+    if (clientBranches.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_BRANCHES);
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (!ArrayUtils.isEmpty(arr)) {
+            clientBranches.clear();
+            clientWarehousesByBranch.clear();
+            
+            int pos = 0;
+            while (pos < arr.length) {
+              int cnt = BeeUtils.toInt(arr[pos]);
+              pos++;
+              
+              if (cnt <= 0) {
+                clientBranches.add(null);
+              } else {
+                String branch = arr[pos++];
+                clientBranches.add(branch);
+                
+                for (int i = 0; i < cnt - 1; i++) {
+                  clientWarehousesByBranch.put(branch, arr[pos++]);
+                }
+              }
+            }
+
+            callback.accept(true);
+          }
+        }
+      });
+
+    } else {
+      callback.accept(true);
     }
   }
 

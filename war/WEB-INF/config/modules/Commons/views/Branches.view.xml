@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Code" />
     <SimpleColumn name="Description" />
 
     <SimpleJoin name="Contact" joinType="LEFT">

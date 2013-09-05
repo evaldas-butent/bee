@@ -8,14 +8,8 @@ public final class TradeConstants {
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
-  public static final String TBL_WAREHOUSES = "Warehouses";
-
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
-
-  public static final String COL_WAREHOUSE = "Warehouse";
-  public static final String COL_WAREHOUSE_CODE = "Code";
-  public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
 
   public static final String COL_SALE = "Sale";
   public static final String COL_QUANTITY = "Quantity";

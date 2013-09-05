@@ -426,6 +426,13 @@ public class ShoppingCart extends Split {
     setInt(valueWidget, item.getQuantity());
 
     panel.add(valueWidget);
+    
+    if (item.getEcItem().getUnit() != null) {
+      Label unitWidget = new Label(item.getEcItem().getUnit());
+      unitWidget.addStyleName(stylePrefix + "unit");
+      
+      panel.add(unitWidget);
+    }
 
     Flow spin = new Flow(stylePrefix + "spin");
 

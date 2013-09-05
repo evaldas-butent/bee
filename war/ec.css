@@ -331,9 +331,14 @@
   border: 1px solid #ddd;
 }
 
+.bee-ec-ItemList-stock0-cell,
 .bee-ec-ItemList-stock1-cell,
 .bee-ec-ItemList-stock2-cell {
   text-align: center;
+}
+
+.bee-ec-ItemList-unit {
+  padding-left: 5px;
 }
 
 .bee-ec-ItemList-listPrice-cell,

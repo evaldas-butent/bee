@@ -5,6 +5,7 @@
   >
   <columns>
     <DataColumn name="Name" visible="true" />
+    <DataColumn name="Code" />
 
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />

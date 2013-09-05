@@ -9,6 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class ArticleSupplier implements BeeSerializable {
@@ -26,7 +27,7 @@ public class ArticleSupplier implements BeeSerializable {
   private EcSupplier supplier;
   private String supplierId;
   private int price;
-  private Map<String, String> remainders = Maps.newHashMap();
+  private final Map<String, String> remainders = Maps.newHashMap();
 
   public ArticleSupplier(EcSupplier supplier, String supplierId, Double price) {
     this.supplier = supplier;
@@ -52,6 +53,9 @@ public class ArticleSupplier implements BeeSerializable {
     for (int i = 0; i < members.length; i++) {
       Serial member = members[i];
       String value = arr[i];
+      if (value == null) {
+        continue;
+      }
 
       switch (member) {
         case PRICE:
@@ -67,7 +71,8 @@ public class ArticleSupplier implements BeeSerializable {
           break;
 
         case REMAINDERS:
-          remainders = Codec.beeDeserializeMap(value);
+          remainders.clear();
+          remainders.putAll(Codec.beeDeserializeMap(value));
           break;
       }
     }
@@ -83,6 +88,20 @@ public class ArticleSupplier implements BeeSerializable {
 
   public Map<String, String> getRemainders() {
     return remainders;
+  }
+
+  public int getStock(Collection<String> warehouses) {
+    int stock = 0;
+
+    if (!remainders.isEmpty()) {
+      for (Map.Entry<String, String> entry : remainders.entrySet()) {
+        if (warehouses.contains(entry.getKey())) {
+          stock += BeeUtils.toInt(entry.getValue());
+        }
+      }
+    }
+
+    return stock;
   }
 
   public EcSupplier getSupplier() {
@@ -127,6 +146,16 @@ public class ArticleSupplier implements BeeSerializable {
 
   public void setPrice(int price) {
     this.price = price;
+  }
+
+  public int totalStock() {
+    int stock = 0;
+
+    for (String remainder : remainders.values()) {
+      stock += BeeUtils.toInt(remainder);
+    }
+
+    return stock;
   }
 
   private void setSupplier(EcSupplier supplier) {

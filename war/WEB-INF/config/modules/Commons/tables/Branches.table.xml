@@ -6,6 +6,8 @@
   >
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="=name" />
+    <String name="Code" precision="20" label="=code" />
+
     <Text name="Description" label="=description" />
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />

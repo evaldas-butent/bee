@@ -30,6 +30,7 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ItemList extends Flow {
@@ -42,10 +43,13 @@ public class ItemList extends Flow {
 
   private static final String STYLE_PICTURE = EcStyles.name(STYLE_PRIMARY, "picture");
   private static final String STYLE_INFO = EcStyles.name(STYLE_PRIMARY, "info");
+  private static final String STYLE_STOCK_0 = EcStyles.name(STYLE_PRIMARY, "stock0");
   private static final String STYLE_STOCK_1 = EcStyles.name(STYLE_PRIMARY, "stock1");
   private static final String STYLE_STOCK_2 = EcStyles.name(STYLE_PRIMARY, "stock2");
+  private static final String STYLE_STOCK_WRAPPER = EcStyles.name(STYLE_PRIMARY, "stockWrapper");
   private static final String STYLE_NO_STOCK = EcStyles.name(STYLE_PRIMARY, "noStock");
   private static final String STYLE_HAS_STOCK = EcStyles.name(STYLE_PRIMARY, "hasStock");
+  private static final String STYLE_UNIT = EcStyles.name(STYLE_PRIMARY, "unit");
   private static final String STYLE_QUANTITY = EcStyles.name(STYLE_PRIMARY, "quantity");
   private static final String STYLE_LIST_PRICE = EcStyles.name(STYLE_PRIMARY, "listPrice");
   private static final String STYLE_PRICE = EcStyles.name(STYLE_PRIMARY, "price");
@@ -59,111 +63,7 @@ public class ItemList extends Flow {
 
   private static final String STYLE_LABEL = "-label";
 
-  private static final int COL_PICTURE = 0;
-  private static final int COL_INFO = 1;
-  private static final int COL_STOCK_1 = 2;
-  private static final int COL_STOCK_2 = 3;
-  private static final int COL_LIST_PRICE = 4;
-  private static final int COL_PRICE = 5;
-  private static final int COL_QUANTITY = 6;
-
   private static final int PAGE_SIZE = 50;
-
-  private final HtmlTable table;
-  private final Button moreWidget;
-
-  private final List<EcItem> data = Lists.newArrayList();
-
-  public ItemList(List<EcItem> items) {
-    this();
-    render(items);
-  }
-
-  private ItemList() {
-    super();
-    addStyleName(EcStyles.name(STYLE_PRIMARY));
-
-    this.table = new HtmlTable();
-    EcStyles.add(table, STYLE_PRIMARY, "table");
-    add(table);
-
-    this.moreWidget = new Button(Localized.getConstants().ecMoreItems());
-    EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
-    moreWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        showMoreItems();
-      }
-    });
-    add(moreWidget);
-  }
-
-  public void render(List<EcItem> items) {
-    if (!table.isEmpty()) {
-      table.clear();
-    }
-    StyleUtils.hideDisplay(moreWidget);
-
-    if (!data.isEmpty()) {
-      data.clear();
-    }
-
-    if (!BeeUtils.isEmpty(items)) {
-      data.addAll(items);
-      int row = 0;
-
-      if (items.size() > 1) {
-        Label caption = new Label(BeeUtils.joinWords(Localized.getConstants().ecFoundItems(),
-            BeeUtils.bracket(items.size())));
-        EcStyles.add(caption, STYLE_PRIMARY, "caption");
-        table.setWidget(row, COL_PICTURE, caption);
-      }
-
-      Label wrh1 = new Label("S1");
-      EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE);
-      EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE + "1");
-      table.setWidget(row, COL_STOCK_1, wrh1);
-
-      Label wrh2 = new Label("S2");
-      EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
-      EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
-      table.setWidget(row, COL_STOCK_2, wrh2);
-
-      Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
-      EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
-      table.setWidget(row, COL_LIST_PRICE, listPriceLabel);
-
-      Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
-      EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
-      table.setWidget(row, COL_PRICE, priceLabel);
-
-      table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
-
-      Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
-
-      int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
-
-      row++;
-      for (EcItem item : items) {
-        if (row > pageSize) {
-          break;
-        }
-
-        ItemPicture pictureWidget = new ItemPicture();
-        renderItem(row++, item, pictureWidget);
-
-        pictureWidgets.put(item.getArticleId(), pictureWidget);
-      }
-
-      if (pageSize < items.size()) {
-        StyleUtils.unhideDisplay(moreWidget);
-      }
-
-      if (!pictureWidgets.isEmpty()) {
-        EcKeeper.setBackgroundPictures(pictureWidgets);
-      }
-    }
-  }
 
   private static Widget renderInfo(final EcItem item) {
     Flow panel = new Flow();
@@ -252,43 +152,6 @@ public class ItemList extends Flow {
     return panel;
   }
 
-  private void renderItem(int row, EcItem item, Widget pictureWidget) {
-    if (pictureWidget != null) {
-      table.setWidgetAndStyle(row, COL_PICTURE, pictureWidget, STYLE_PICTURE);
-    }
-
-    Widget info = renderInfo(item);
-    if (info != null) {
-      table.setWidgetAndStyle(row, COL_INFO, info, STYLE_INFO);
-    }
-
-    Widget stock1 = renderStock(item.getStock1());
-    if (stock1 != null) {
-      table.setWidgetAndStyle(row, COL_STOCK_1, stock1, STYLE_STOCK_1);
-    }
-    Widget stock2 = renderStock(item.getStock2());
-    if (stock2 != null) {
-      table.setWidgetAndStyle(row, COL_STOCK_2, stock2, STYLE_STOCK_2);
-    }
-
-    int listPrice = item.getListPrice();
-    int price = item.getPrice();
-
-    if (listPrice > 0 && listPrice >= price) {
-      Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
-      table.setWidgetAndStyle(row, COL_LIST_PRICE, listPriceWidget, STYLE_LIST_PRICE);
-    }
-    if (price > 0) {
-      Widget priceWidget = renderPrice(price, STYLE_PRICE);
-      table.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
-    }
-
-    Widget accumulator = new CartAccumulator(item, 1);
-    table.setWidgetAndStyle(row, COL_QUANTITY, accumulator, STYLE_QUANTITY);
-
-    table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
-  }
-
   private static Widget renderPrice(int price, String style) {
     String stylePrefix = style + "-";
 
@@ -305,11 +168,205 @@ public class ItemList extends Flow {
     return panel;
   }
 
-  private static Widget renderStock(int stock) {
+  private static Widget renderStock(int stock, String unit) {
+    Flow wrapper = new Flow(STYLE_STOCK_WRAPPER);
+
     String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.getConstants().ecStockAsk();
-    Label widget = new Label(text);
-    widget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
-    return widget;
+    InlineLabel stockWidget = new InlineLabel(text);
+    stockWidget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
+    wrapper.add(stockWidget);
+
+    if (stock > 0 && unit != null) {
+      InlineLabel unitWidget = new InlineLabel(unit);
+      unitWidget.addStyleName(STYLE_UNIT);
+      wrapper.add(unitWidget);
+    }
+
+    return wrapper;
+  }
+
+  private final HtmlTable table;
+  private final Button moreWidget;
+
+  private final List<EcItem> data = Lists.newArrayList();
+  private final String primaryBranch;
+
+  private final String secondaryBranch;
+
+  private final Collection<String> primaryWarehouses;
+
+  private final Collection<String> secondaryWarehouses;
+
+  public ItemList(List<EcItem> items) {
+    this();
+    render(items);
+  }
+
+  private ItemList() {
+    super();
+    addStyleName(EcStyles.name(STYLE_PRIMARY));
+
+    this.table = new HtmlTable();
+    EcStyles.add(table, STYLE_PRIMARY, "table");
+    add(table);
+
+    this.moreWidget = new Button(Localized.getConstants().ecMoreItems());
+    EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
+    moreWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        showMoreItems();
+      }
+    });
+    add(moreWidget);
+
+    this.primaryBranch = EcKeeper.getPrimaryBranch();
+    this.secondaryBranch = EcKeeper.getSecondaryBranch();
+
+    this.primaryWarehouses = EcKeeper.getWarehouses(primaryBranch);
+    this.secondaryWarehouses = EcKeeper.getWarehouses(secondaryBranch);
+  }
+
+  public void render(List<EcItem> items) {
+    if (!table.isEmpty()) {
+      table.clear();
+    }
+    StyleUtils.hideDisplay(moreWidget);
+
+    if (!data.isEmpty()) {
+      data.clear();
+    }
+
+    if (!BeeUtils.isEmpty(items)) {
+      data.addAll(items);
+      int row = 0;
+      int col = 0;
+
+      if (items.size() > 1) {
+        Label caption = new Label(BeeUtils.joinWords(Localized.getConstants().ecFoundItems(),
+            BeeUtils.bracket(items.size())));
+        EcStyles.add(caption, STYLE_PRIMARY, "caption");
+        table.setWidget(row, col, caption);
+      }
+
+      col += 2;
+
+      if (hasWarehouses()) {
+        if (!primaryWarehouses.isEmpty()) {
+          Label wrh1 = new Label(primaryBranch);
+          EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE);
+          EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE + "1");
+          table.setWidget(row, col++, wrh1);
+        }
+
+        if (!secondaryWarehouses.isEmpty()) {
+          Label wrh2 = new Label(secondaryBranch);
+          EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
+          EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
+          table.setWidget(row, col++, wrh2);
+        }
+
+      } else {
+        Label wrh = new Label("S1");
+        EcStyles.add(wrh, STYLE_PRIMARY, STYLE_WAREHOUSE);
+        EcStyles.add(wrh, STYLE_PRIMARY, STYLE_WAREHOUSE + "0");
+        table.setWidget(row, col++, wrh);
+      }
+
+      Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
+      EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
+      table.setWidget(row, col++, listPriceLabel);
+
+      Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
+      EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
+      table.setWidget(row, col++, priceLabel);
+
+      table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
+
+      Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
+
+      int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
+
+      row++;
+      for (EcItem item : items) {
+        if (row > pageSize) {
+          break;
+        }
+
+        ItemPicture pictureWidget = new ItemPicture();
+        renderItem(row++, item, pictureWidget);
+
+        pictureWidgets.put(item.getArticleId(), pictureWidget);
+      }
+
+      if (pageSize < items.size()) {
+        StyleUtils.unhideDisplay(moreWidget);
+      }
+
+      if (!pictureWidgets.isEmpty()) {
+        EcKeeper.setBackgroundPictures(pictureWidgets);
+      }
+    }
+  }
+
+  private boolean hasWarehouses() {
+    return !primaryWarehouses.isEmpty() || !secondaryWarehouses.isEmpty();
+  }
+
+  private void renderItem(int row, EcItem item, Widget pictureWidget) {
+    int col = 0;
+    if (pictureWidget != null) {
+      table.setWidgetAndStyle(row, col, pictureWidget, STYLE_PICTURE);
+    }
+    col++;
+
+    Widget info = renderInfo(item);
+    if (info != null) {
+      table.setWidgetAndStyle(row, col, info, STYLE_INFO);
+    }
+    col++;
+
+    if (hasWarehouses()) {
+      if (!primaryWarehouses.isEmpty()) {
+        Widget stock1 = renderStock(item.getStock(primaryWarehouses), item.getUnit());
+        if (stock1 != null) {
+          table.setWidgetAndStyle(row, col++, stock1, STYLE_STOCK_1);
+        }
+      }
+
+      if (!secondaryWarehouses.isEmpty()) {
+        Widget stock2 = renderStock(item.getStock(secondaryWarehouses), item.getUnit());
+        if (stock2 != null) {
+          table.setWidgetAndStyle(row, col++, stock2, STYLE_STOCK_2);
+        }
+      }
+
+    } else {
+      Widget stock0 = renderStock(item.totalStock(), item.getUnit());
+      if (stock0 != null) {
+        table.setWidgetAndStyle(row, col++, stock0, STYLE_STOCK_0);
+      }
+    }
+
+    int listPrice = item.getListPrice();
+    int price = item.getPrice();
+
+    if (listPrice > 0 && listPrice >= price) {
+      Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
+      table.setWidgetAndStyle(row, col, listPriceWidget, STYLE_LIST_PRICE);
+    }
+    col++;
+
+    if (price > 0) {
+      Widget priceWidget = renderPrice(price, STYLE_PRICE);
+      table.setWidgetAndStyle(row, col, priceWidget, STYLE_PRICE);
+    }
+    col++;
+
+    Widget accumulator = new CartAccumulator(item, 1);
+    table.setWidgetAndStyle(row, col++, accumulator, STYLE_QUANTITY);
+
+    table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
   }
 
   private void showMoreItems() {

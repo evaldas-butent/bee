@@ -137,6 +137,8 @@ public final class EcConstants {
   public static final String SVC_GET_GROUP_FILTERS = "getGroupFilters";
   public static final String SVC_GET_GROUP_ITEMS = "getGroupItems";
 
+  public static final String SVC_GET_CLIENT_BRANCHES = "getClientBranches";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";

@@ -16,7 +16,7 @@ public class EcItem implements BeeSerializable {
 
   private enum Serial {
     ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
-    DESCRIPTION, NOVELTY, FEATURED
+    DESCRIPTION, NOVELTY, FEATURED, UNIT
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -35,15 +35,17 @@ public class EcItem implements BeeSerializable {
   private String name;
 
   private String categories;
-  private Collection<ArticleSupplier> suppliers = Lists.newArrayList();
+  private final Collection<ArticleSupplier> suppliers = Lists.newArrayList();
 
   private int price;
   private int listPrice;
-  
+
   private String description;
-  
+
   private boolean novelty;
   private boolean featured;
+
+  private String unit;
 
   public EcItem(long articleId) {
     this.articleId = articleId;
@@ -65,6 +67,9 @@ public class EcItem implements BeeSerializable {
     for (int i = 0; i < members.length; i++) {
       Serial member = members[i];
       String value = arr[i];
+      if (value == null) {
+        continue;
+      }
 
       switch (member) {
         case ARTICLE_ID:
@@ -103,17 +108,21 @@ public class EcItem implements BeeSerializable {
         case LIST_PRICE:
           setListPrice(BeeUtils.toInt(value));
           break;
-          
+
         case DESCRIPTION:
           setDescription(value);
           break;
-          
+
         case NOVELTY:
           setNovelty(Codec.unpack(value));
           break;
-          
+
         case FEATURED:
           setFeatured(Codec.unpack(value));
+          break;
+
+        case UNIT:
+          setUnit(value);
           break;
       }
     }
@@ -184,23 +193,20 @@ public class EcItem implements BeeSerializable {
     return price / 100d;
   }
 
-  public int getStock1() {
+  public int getStock(Collection<String> warehouses) {
     int stock = 0;
-
     for (ArticleSupplier supplier : getSuppliers()) {
-      for (String remainder : supplier.getRemainders().values()) {
-        stock += BeeUtils.toInt(remainder);
-      }
+      stock += supplier.getStock(warehouses);
     }
     return stock;
   }
 
-  public int getStock2() {
-    return 0;
-  }
-
   public Collection<ArticleSupplier> getSuppliers() {
     return suppliers;
+  }
+
+  public String getUnit() {
+    return unit;
   }
 
   public boolean hasAnalogs() {
@@ -265,7 +271,7 @@ public class EcItem implements BeeSerializable {
         case LIST_PRICE:
           arr[i++] = listPrice;
           break;
-          
+
         case DESCRIPTION:
           arr[i++] = description;
           break;
@@ -276,6 +282,10 @@ public class EcItem implements BeeSerializable {
 
         case FEATURED:
           arr[i++] = Codec.pack(featured);
+          break;
+
+        case UNIT:
+          arr[i++] = unit;
           break;
       }
     }
@@ -327,6 +337,18 @@ public class EcItem implements BeeSerializable {
   }
 
   public void setSuppliers(Collection<ArticleSupplier> suppliers) {
-    this.suppliers = suppliers;
+    BeeUtils.overwrite(this.suppliers, suppliers);
+  }
+
+  public void setUnit(String unit) {
+    this.unit = unit;
+  }
+  
+  public int totalStock() {
+    int stock = 0;
+    for (ArticleSupplier supplier : getSuppliers()) {
+      stock += supplier.totalStock();
+    }
+    return stock;
   }
 }
