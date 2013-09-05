@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
  
-  name="ExpeditionTypes" viewName="ExpeditionTypes" caption="Ekspedijavimo rūšys"
+  name="ExpeditionTypes" viewName="ExpeditionTypes" caption="=trExpeditionTypes"
   >
   <columns>
     <DataColumn name="Name" minWidth="200" />

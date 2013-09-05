@@ -22,7 +22,7 @@
   <FlowPanel style="background-color: WhiteSmoke;">
 
     <FlowPanel style="&row; margin-top: 2ex;">
-      <Label text="=trDtbSettingsDtbPixelsPerDriver" style="&lbl;" />
+      <Label text="=trTbSettingsPixelsPerDriver" style="&lbl;" />
       <InputSpinner source="DtbPixelsPerDriver" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
 

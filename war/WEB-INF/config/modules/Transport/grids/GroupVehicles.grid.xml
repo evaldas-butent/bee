@@ -2,10 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="GroupVehicles" viewName="GroupVehicles" caption="Transportas"
+  name="GroupVehicles" viewName="GroupVehicles" caption="=transport"
   >
   <columns>
-    <RelColumn name="Vehicle" viewName="AllVehicles" caption="Tipas, valst.nr." newRowEnabled="false"
+    <RelColumn name="Vehicle" viewName="AllVehicles" caption="=trVehicleTypeNumberShort" newRowEnabled="false"
       flexGrow="1" flexShrink="1" />
   </columns>
 </Grid>

@@ -9,16 +9,16 @@
 
   <columns>
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
-    <DataColumn name="CompanyName" caption="Įmonė" />
+    <DataColumn name="CompanyName" caption="=company" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
 
-    <RelColumn name="Email" caption="El.paštas">
+    <RelColumn name="Email" caption="=email">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
 
-    <DataColumn name="Experience" caption="Stažas nuo" width="88" />
-    <DataColumn name="Notes" caption="Pastabos" />
+    <DataColumn name="Experience" caption="=driverExperience" width="88" />
+    <DataColumn name="Notes" caption="=notes" />
   </columns>
 </Grid>

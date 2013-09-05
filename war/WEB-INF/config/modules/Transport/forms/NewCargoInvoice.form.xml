@@ -35,7 +35,7 @@
       <row>
         <Label text="=transportSupplier" style="&lbl;" />
         <DataSelector source="Supplier" />
-        <Label text="=transportCustomer" class="bee-required" style="&lbl;" />
+        <Label text="=trCustomer" class="bee-required" style="&lbl;" />
         <DataSelector source="Customer" required="true" />
       </row>
       <row>
@@ -51,7 +51,7 @@
         <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
-        <Label text="=transportTruck" style="&lbl;" />
+        <Label text="=trTruck" style="&lbl;" />
         <InputText source="Vehicle" />
         <Label text="=vehicleDriver" style="&lbl;" />
         <InputText source="Driver" />

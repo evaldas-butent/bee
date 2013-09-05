@@ -2,21 +2,21 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ExpeditionTrips" viewName="ExpeditionTrips" caption="Ekspedijavimo reisai"
+  name="ExpeditionTrips" viewName="ExpeditionTrips" caption="=trExpeditionTrips"
   newRowPopup="true" order="TripID desc"
   >
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <DataColumn name="TripNo" caption="Reiso Nr." />
-    <DataColumn name="Status" caption="Būsena" itemKey="TripStatus" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="ForwarderVehicle" caption="Transportas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="ForwarderDriver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" width="80" />
-    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" width="80" />
-    <DataColumn name="Notes" caption="Pastabos">
+    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <DataColumn name="TripNo" caption="=trTripNo" />
+    <DataColumn name="Status" caption="=status" itemKey="TripStatus" />
+    <DataColumn name="ForwarderName" caption="=carrier" flexGrow="1" flexShrink="1" />
+    <DataColumn name="ForwarderVehicle" caption="=transport" flexGrow="1" flexShrink="1" />
+    <DataColumn name="ForwarderDriver" caption="=vehicleDriver" flexGrow="1" flexShrink="1" />
+    <DataColumn name="DateFrom" source="DateFrom" caption="=trDeparted" width="80" />
+    <DataColumn name="DateTo" source="DateTo" caption="=trReturned" width="80" />
+    <DataColumn name="Notes" caption="=notes">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>

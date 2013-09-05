@@ -8,9 +8,9 @@
   >
   <columns>
     <IdColumn name="ID" />
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="=date" />
     <DataColumn name="Number" />
-    <CalcColumn name="Invoice" type="string" caption="Sąskaitos Nr." 
+    <CalcColumn name="Invoice" type="string" caption="=invoiceNumber" 
       searchBy="InvoicePrefix InvoiceNumber">
       <render>
         <ui:function>
@@ -24,7 +24,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <RelColumn name="Customer" flexGrow="1" flexShrink="1" caption="Gavėjas" />
+    <RelColumn name="Customer" flexGrow="1" flexShrink="1" caption="=trCustomer" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
   </columns>

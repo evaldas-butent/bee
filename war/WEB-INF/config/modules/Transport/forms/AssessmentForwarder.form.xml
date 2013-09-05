@@ -18,7 +18,7 @@
       <DataSelector source="Forwarder" required="true" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=transportExpeditionType" class="bee-required" style="&labelLeft; width:140px;" />
+      <Label text="=trExpeditionType" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Expedition" required="true" style="&input; width:150px;"  />
     </FlowPanel>
 

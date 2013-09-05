@@ -72,15 +72,15 @@
     <InputArea source="Description" visibleLines="5" style="width:200px;" />
     <VerticalPanel style="&inline;">
       <CheckBox source="Partial" text="=partialCargo" />
-      <CheckBox source="Outsized" html="=outsized" />
-      <CheckBox source="Dangerous" html="=dangerous" />
+      <CheckBox source="Outsized" text="=outsized" />
+      <CheckBox source="Dangerous" text="=dangerous" />
     </VerticalPanel>
   </FlowPanel>
     
   <FlowPanel style="&section;">
     <Label text="=quantity" style="&labelLeft;" />
     <InputInteger source="Quantity" style="&input;" />
-    <Label html="=weight" style="&labelRight;" />
+    <Label text="=weight" style="&labelRight;" />
     <InputDecimal source="Weight" format="#.000" style="&input;" />
   </FlowPanel>
 

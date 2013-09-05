@@ -2,15 +2,15 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="FuelConsumptions" viewName="FuelConsumptions" caption="Kuro sąnaudos"
+  name="FuelConsumptions" viewName="FuelConsumptions" caption="=trFuelConsumptions"
   >
 
   <columns>
-    <DataColumn name="DateFrom" caption="Nuo" />
-    <DataColumn name="DateTo" caption="Iki" />
-    <DataColumn name="Summer" caption="Vasara l/100km" format="#.00"  />
-    <DataColumn name="Winter" caption="Žiema l/100km" format="#.00"  />
-    <DataColumn name="TonneKilometer" caption="Tonkilometris" format="#.0000"  />
-    <DataColumn name="MotoHour" caption="Motovalanda" format="#.00"  />
+    <DataColumn name="DateFrom" caption="=trDateFrom" />
+    <DataColumn name="DateTo" caption="=trDateTo" />
+    <DataColumn name="Summer" caption="=trFuelConsumptionsSummer" format="#.00"  />
+    <DataColumn name="Winter" caption="=trFuelConsumptionsWinter" format="#.00"  />
+    <DataColumn name="TonneKilometer" caption="=trTonneKilometer" format="#.0000"  />
+    <DataColumn name="MotoHour" caption="=trMotoHour" format="#.00"  />
   </columns>
 </Grid>

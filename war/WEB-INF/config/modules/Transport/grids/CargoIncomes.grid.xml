@@ -7,22 +7,22 @@
   newRowCaption="Nauja paslauga"
   >
   <columns>
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="=date" />
 
-    <RelColumn name="Service" caption="Paslauga" />
-    <DataColumn name="Amount" caption="Suma" format="#.00">
+    <RelColumn name="Service" caption="=trServiceName" />
+    <DataColumn name="Amount" caption="=amount" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Currency" caption="Val." flexGrow="0" />
+    <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
     <DataColumn name="Vat" />
     <DataColumn name="VatPercent" width="20" sortable="false" />
 
-    <RelColumn name="Customer" caption="Mokėtojas" />
-    <DataColumn name="Number" caption="Numeris" />
-    <DataColumn name="Note" caption="Pastaba" />
-    <RelColumn name="Sale" caption="Sąsk.ID" readOnly="true" editEnabled="true" editForm="CargoInvoice" />
+    <RelColumn name="Customer" caption="=payer" />
+    <DataColumn name="Number" caption="=number" />
+    <DataColumn name="Note" caption="=note" />
+    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" editEnabled="true" editForm="CargoInvoice" />
   </columns>
 </Grid>

@@ -7,21 +7,21 @@
   readOnly="true"
   >
   <columns>
-    <DataColumn name="OrderDate" caption="Užsakymo data" />
+    <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" minWidth="100" editEnabled="true" editSource="Order" />
-    <DataColumn name="CustomerName" caption="Užsakovas" />
-    <DataColumn name="Payer" caption="Mokėtojas">
+    <DataColumn name="CustomerName" caption="=customer" />
+    <DataColumn name="Payer" caption="=payer">
       <render>
         <ui:expression>row.Company ? row.CompanyName : row.PayerName</ui:expression>
       </render>
     </DataColumn>
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="Iš" horizontalAlignment="center">
+      caption="=from" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="Į" horizontalAlignment="center">
+      caption="=to" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
 
@@ -37,8 +37,8 @@
     <DataColumn name="Number" />
     <DataColumn name="Note" />
 
-    <DataColumn name="Vehicle" caption="Vilkikas" />
-    <DataColumn name="Trailer" caption="Puspriekabė" />
-    <DataColumn name="Driver" caption="Vairuotojas" searchBy="FirstName LastName" />
+    <DataColumn name="Vehicle" caption="=trTruck" />
+    <DataColumn name="Trailer" caption="=trailer" />
+    <DataColumn name="Driver" caption="=vehicleDriver" searchBy="FirstName LastName" />
   </columns>
 </Grid>

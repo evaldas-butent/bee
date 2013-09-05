@@ -8,10 +8,10 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="LoadingDate" caption="Pakrovimo data" width="80" format="DATE_SHORT" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <ActionColumn element="button" name="Contract" caption="Spausdinti" width="70">
+    <DataColumn name="LoadingDate" caption="=transportLoadingDate" width="80" format="DATE_SHORT" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <ActionColumn element="button" name="Contract" caption="=print" width="70">
       <render><ui:expression>'Sutartis'</ui:expression></render>
     </ActionColumn>
   </columns>

@@ -21,7 +21,7 @@
                   decorator="flex-left" d:unit="px" d:align="left" d:size="60" />
             </SimplePanel>  
             <SimplePanel style="margin-top: 10px"> 
-              <DataSelector source="Vehicle" caption="=transportTruck"  style="width: 140px;"  renderColumns="VehicleNumber"
+              <DataSelector source="Vehicle" caption="=trTruck"  style="width: 140px;"  renderColumns="VehicleNumber"
                 filter="IsTruck" d:size="60" d:unit="px" d:align="left" required="true" />
             </SimplePanel>    
           </FlowPanel>
@@ -47,7 +47,7 @@
         <row>
           <FlowPanel  class="flexBox-vertical" style="margin-left: 1em;">   
             <SimplePanel style="margin-top: 10px"> 
-              <InputText source="TripNo" caption="=transportTripNo"  style="width: 100px;" />
+              <InputText source="TripNo" caption="=trTripNo"  style="width: 100px;" />
             </SimplePanel>  
             <ListBox source="Status" itemKey="TripStatus"
               caption="=status"

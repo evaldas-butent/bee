@@ -3,14 +3,14 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="OrderCargo" viewName="OrderCargo" caption="=cargos"
-  newRowForm="OrderCargo" newRowCaption="Naujas krovinys" newRowPopup="true"
+  newRowForm="OrderCargo" newRowCaption="=newCargo" newRowPopup="true"
   editForm="OrderCargo" editPopup="true"
   flexGrow="1" flexShrink="1"
   >
   <body height="50" />
 
   <columns>
-    <DataColumn name="Description" caption="Krovinys" />
+    <DataColumn name="Description" caption="=cargo" />
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
       minWidth="140" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
@@ -23,16 +23,16 @@
       <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
     </CalcColumn>
 
-    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="Pastabos">
+    <DataColumn name="Notes" caption="=notes">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
     </DataColumn>
-    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="=incomes" format="#.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>

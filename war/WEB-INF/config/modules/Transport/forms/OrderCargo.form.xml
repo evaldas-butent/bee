@@ -35,7 +35,7 @@
           <ChildGrid name="CargoHandling" relColumn="Cargo" />
         </page>
         <page>
-          <text>=transportOrderCargoServices</text>
+          <text>=trOrderCargoServices</text>
           <ChildGrid name="CargoIncomes" relColumn="Cargo"  />
         </page>
       </TabbedPages> 

@@ -39,7 +39,7 @@
         <row>   
           <FlowPanel class="flexBox-vertical"  style="margin-left: 11em;">
             <SimplePanel style="margin-top: 10px; margin-bottom: 10px;"> 
-              <InputText source="TripNo" style="width: 10em;" caption="=transportTripNo" />
+              <InputText source="TripNo" style="width: 10em;" caption="=trTripNo" />
             </SimplePanel>  
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
               <Label text="=transportDeparture" style="font-weight: bold; margin-left: 20px" />
@@ -62,7 +62,7 @@
         <row>
           <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;"> 
             <SimplePanel style="margin-bottom: 10px;"> 
-              <DataSelector source="Expedition" caption="=transportExpeditionType" required="true"
+              <DataSelector source="Expedition" caption="=trExpeditionType" required="true"
                   style="width: 120px"  d:unit="px" d:align="left" d:size="125" />
             </SimplePanel>  
             <Label text="=notes" />

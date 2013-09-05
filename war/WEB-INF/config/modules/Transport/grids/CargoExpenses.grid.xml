@@ -4,7 +4,7 @@
 
   name="CargoExpenses" viewName="CargoExpenses"
   flexGrow="1" flexShrink="1"
-  newRowCaption="Naujos išlaidos"
+  newRowCaption="=trNewCargoExpense"
   >
   <columns>
     <DataColumn name="Date" />

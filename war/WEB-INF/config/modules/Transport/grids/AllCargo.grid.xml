@@ -8,12 +8,12 @@
   <body height="50" />
 
   <columns>
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />    
-    <RelColumn name="Customer" caption="Užsakovas" />
-    <RelColumn name="Manager" caption="Vadybininkas" />
+    <DataColumn name="OrderNo" caption="=orderNumber" />
+    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />    
+    <RelColumn name="Customer" caption="=customer" />
+    <RelColumn name="Manager" caption="=manager" />
 
-    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="Krovinys"
+    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="=cargo"
       minWidth="100" editEnabled="true" filterSupplier="value" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
@@ -24,9 +24,9 @@
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
-    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="CargoNotes" caption="Krovinio pastabos">
+    <DataColumn name="CargoNotes" caption="=cargoNotes">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>
@@ -35,9 +35,9 @@
     </DataColumn>
 
     <ActionColumn name="TripNo" element="link" />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas" 
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport" 
       searchBy="ForwarderVehicle VehicleNumber TrailerNumber">
       <render>
         <ui:function>
@@ -54,7 +54,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <CalcColumn name="Driver" type="string" caption="Vairuotojas"
+    <CalcColumn name="Driver" type="string" caption="=vehicleDriver"
       searchBy="ForwarderDriver DriverLastName DriverFirstName">
       <render>
         <ui:function>

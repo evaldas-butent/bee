@@ -3,20 +3,20 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="CargoRequests" viewName="CargoRequests" caption="Pervežimo užklausimai"
+  name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
   flexGrow="1" flexShrink="1" order="Date desc"
   >
   <north size="40">
     <w:HorizontalPanel>
-      <w:CheckBox name="Owned" html="Tik priklausantys man" checked="true" />
-      <w:CheckBox name="Finished" html="Rodyti baigtus" />
+      <w:CheckBox name="Owned" text="=trOwned" checked="true" />
+      <w:CheckBox name="Finished" text="=trShowFinished" />
     </w:HorizontalPanel>
   </north>
   <columns>
-    <DataColumn name="Date" caption="Data" width="100" />
-    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" />
+    <DataColumn name="Date" caption="=date" width="100" />
+    <DataColumn name="Finished" caption="=trRequestFinished" width="100" format="DATE_TIME_SHORT" />
     
-    <RelColumn name="Customer" caption="Užsakovas" minWidth="100">
+    <RelColumn name="Customer" caption="=customer" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
@@ -24,7 +24,7 @@
       </style>
     </RelColumn>
 
-    <DataColumn name="LoadingDate" caption="Krov.data" width="70" format="DATE_SHORT" />
+    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       caption="Iš" horizontalAlignment="center">
@@ -36,7 +36,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="Maršrutas" minWidth="100">
+    <DataColumn name="Route" caption="=route" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
@@ -44,7 +44,7 @@
       </style>
     </DataColumn>
 
-    <DataColumn name="Description" caption="Krovinys" minWidth="100">
+    <DataColumn name="Description" caption="=cargo" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
@@ -56,7 +56,7 @@
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
 
-    <RelColumn name="Manager" caption="Vadybininkas" minWidth="100">
+    <RelColumn name="Manager" caption="=manager" minWidth="100">
       <style>
         <bodyStyle>
           <ui:inline>white-space: nowrap;</ui:inline>
