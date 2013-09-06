@@ -33,7 +33,7 @@
         </FlowPanel>
       </row>
       <row>
-        <Label text="=transportSupplier" style="&lbl;" />
+        <Label text="=trSupplier" style="&lbl;" />
         <DataSelector source="Supplier" />
         <Label text="=trCustomer" class="bee-required" style="&lbl;" />
         <DataSelector source="Customer" required="true" />

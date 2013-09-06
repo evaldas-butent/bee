@@ -35,7 +35,7 @@
         </FlowPanel>
       </row>
       <row>
-        <Label text="=transportSupplier" style="&lbl;" />
+        <Label text="=trSupplier" style="&lbl;" />
         <DataSelector source="Supplier" />
         <Label text="=trCustomer" style="&lbl;" />
         <DataSelector source="Customer" />
@@ -62,7 +62,7 @@
 
     <TabbedPages class="flexible">
       <page>
-        <text>=transportProductsServices</text>
+        <text>=trProductsServices</text>
         <ChildGrid name="SaleItems" relColumn="Sale" />
       </page>
       <page>

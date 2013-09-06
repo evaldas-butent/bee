@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="ServiceTypes" viewName="ServiceTypes" caption="Serviso tipai"
+  name="ServiceTypes" viewName="ServiceTypes" caption="=trServiceTypes"
   >
   <columns>
     <DataColumn name="Name" source="Name" minWidth="200" />

@@ -8,7 +8,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewVehicle" viewName="Vehicles" caption="=vehicle" width="800" height="280"
+  name="NewVehicle" viewName="Vehicles" caption="=trVehicle" width="800" height="280"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 1ex 1em;">
     <xi:include href="widgets/VehicleDescription.widget.xml" />

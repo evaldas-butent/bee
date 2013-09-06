@@ -2,14 +2,14 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="SparePartUsage" viewName="SparePartUsage" caption="Panaudojimo istorija" autoFit="true"
+  name="SparePartUsage" viewName="SparePartUsage" caption="=trSparePartUsage" autoFit="true"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
 
   <columns>
-    <RelColumn name="Vehicle" caption="Transporto priemonė" />
-    <DataColumn name="Mounted" caption="Uždėta" width="80" />
-    <DataColumn name="Removed" caption="Nuimta" width="80" />
-    <DataColumn name="Note" caption="Pastaba" />
+    <RelColumn name="Vehicle" caption="=trVehicle" />
+    <DataColumn name="Mounted" caption="=trSparePartMounted" width="80" />
+    <DataColumn name="Removed" caption="=trSparePartRemoved" width="80" />
+    <DataColumn name="Note" caption="=note" />
   </columns>
 </Grid>

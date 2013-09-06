@@ -14,7 +14,7 @@
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 1ex;">
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=driverName" class="bee-required" style="&lbl;" />
+        <Label text="=trDriverName" class="bee-required" style="&lbl;" />
         <DataSelector source="CompanyPerson" style="&w2;" 
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 

@@ -74,8 +74,6 @@ public interface LocalizableTransportConstants {
 
   String driverGroupsShort();
 
-  String driverName();
-
   String driverPosition();
 
   String drivers();
@@ -128,8 +126,6 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
-  String showPayerInfo();
-
   String terminal();
 
   String trailers();
@@ -143,6 +139,8 @@ public interface LocalizableTransportConstants {
   String transportationOrders();
 
   String transportationOrderStatuses();
+
+  String trDriverName();
 
   String tripDuration();
 

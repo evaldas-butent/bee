@@ -2,14 +2,14 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TransportationOrders" viewName="TransportationOrders" caption="Pervežimo užsakymai"
+  name="TransportationOrders" viewName="TransportationOrders" caption="=trTransportationOrders"
   editShowId="true" flexGrow="1" flexShrink="1" order="OrderID desc"
   >
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />
+    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="OrderNo" caption="=orderNumber" />
+    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
@@ -17,9 +17,9 @@
       <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
     </CalcColumn>
     
-    <RelColumn name="Customer" caption="Užsakovas" flexGrow="1" />
-    <RelColumn name="Payer" caption="Mokėtojas" flexGrow="1" flexShrink="1" />
-    <RelColumn name="Manager" caption="Vadybininkas" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Customer" caption="=customer" flexGrow="1" />
+    <RelColumn name="Payer" caption="=payer" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Manager" caption="=manager" flexGrow="1" flexShrink="1" />
     <CalcColumn name="Cargo" type="string" caption="=cargos" searchBy="MinCargo MaxCargo"
       flexGrow="2" flexShrink="3" flexBasis="200">
       <render>

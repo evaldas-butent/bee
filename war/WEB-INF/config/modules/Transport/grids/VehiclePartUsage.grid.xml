@@ -6,11 +6,11 @@
   >
 
   <columns>
-    <RelColumn name="Part" renderColumns="ParentTypeName TypeName" caption="Tipas" readOnly="true" />
-    <DataColumn name="Number" caption="Numeris" readOnly="true" />
-    <DataColumn name="Description" caption="Aprašymas" readOnly="true" />
-    <DataColumn name="Mounted" caption="Uždėta" />
-    <DataColumn name="Removed" caption="Nuimta" />
-    <DataColumn name="Note" caption="Pastaba" />
+    <RelColumn name="Part" renderColumns="ParentTypeName TypeName" caption="=vehicleType" readOnly="true" />
+    <DataColumn name="Number" caption="=number" readOnly="true" />
+    <DataColumn name="Description" caption="=description" readOnly="true" />
+    <DataColumn name="Mounted" caption="=trSparePartMounted" />
+    <DataColumn name="Removed" caption="=trSparePartRemoved" />
+    <DataColumn name="Note" caption="=note" />
   </columns>
 </Grid>

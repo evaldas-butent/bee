@@ -10,7 +10,7 @@
     <AbsolutePanel style="top: 5px; height: 240px; left: 1em; right: 1em;">
       <layer top="0" bottom="0" width="240">
         <FlowPanel>
-          <DataSelector source="CompanyName" caption="Įmonė" style="width: 140px;"
+          <DataSelector source="CompanyName" caption="=company" style="width: 140px;"
             d:size="80" d:unit="px" />
           <TextLabel source="CompanyPhone" caption="Telefonas" inline="true"
             d:size="80" d:unit="px" />

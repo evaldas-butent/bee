@@ -4,7 +4,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Vehicle" viewName="Vehicles" caption="=vehicle"
+  name="Vehicle" viewName="Vehicles" caption="=trVehicle"
   >
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/VehicleDescription.widget.xml" />
@@ -48,7 +48,7 @@
         <ChildGrid name="RelatedDocuments" relColumn="Vehicle" />
       </page>
       <page>
-        <text>=vehiclePartUsage</text>
+        <text>=trVehiclePartUsage</text>
         <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
       </page>
     </TabbedPages>

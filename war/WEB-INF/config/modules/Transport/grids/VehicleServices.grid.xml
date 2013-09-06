@@ -2,17 +2,17 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="VehicleServices" viewName="VehicleServices" caption="Serviso istorija"
+  name="VehicleServices" viewName="VehicleServices" caption="=trServiceHistory"
   >
 
   <columns>
-    <RelColumn name="Type" caption="Tipas" minWidth="100" />
-    <DataColumn name="Date" caption="Data" minWidth="80" />
-    <DataColumn name="DateTo" caption="Data iki" minWidth="80" />
-    <DataColumn name="Run" caption="Rida" />
-    <DataColumn name="ValidUntil" caption="Galioja iki" />
-    <DataColumn name="ValidForKilometers" caption="Galioja km" />
-    <DataColumn name="ValidForHours" caption="Galioja motoval." />
-    <DataColumn name="Notes" caption="Pastabos" flexGrow="1" flexShrink="1" />
+    <RelColumn name="Type" caption="=type" minWidth="100" />
+    <DataColumn name="Date" caption="=date" minWidth="80" />
+    <DataColumn name="DateTo" caption="=dateTo" minWidth="80" />
+    <DataColumn name="Run" caption="=trVehicleRun" />
+    <DataColumn name="ValidUntil" caption="=trVehicleServiceValid" />
+    <DataColumn name="ValidForKilometers" caption="=trVehicleServiceValidKilometers" />
+    <DataColumn name="ValidForHours" caption="=trVehicleServiceValidMotohours" />
+    <DataColumn name="Notes" caption="=notes" flexGrow="1" flexShrink="1" />
   </columns>
 </Grid>

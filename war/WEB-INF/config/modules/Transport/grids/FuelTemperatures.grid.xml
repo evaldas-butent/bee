@@ -6,7 +6,7 @@
   >
 
   <columns>
-    <DataColumn name="Season" caption="=trSeson">
+    <DataColumn name="Season" caption="=trSeason">
       <renderer type="list" />
       <editor type="list">
         <ui:item>=summer</ui:item>

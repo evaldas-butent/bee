@@ -40,7 +40,7 @@
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label text="=transportSupplier" style="&labelLeft;" />
+      <Label text="=trSupplier" style="&labelLeft;" />
       <DataSelector source="Supplier" style="&input; width:200px;" />
     </FlowPanel>
 

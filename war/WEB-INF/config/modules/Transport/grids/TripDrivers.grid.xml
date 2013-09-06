@@ -6,11 +6,11 @@
   >
 
   <columns>
-    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo" minWidth="80" visible="false" >
+    <DataColumn name="DateFrom" source="DateFrom" caption="=trTripDateFrom" minWidth="80" visible="false" >
       <carry><ui:expression>row.DateTo</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="DateTo" source="DateTo" caption="Data iki" minWidth="80" visible="false"/>
-    <RelColumn name="Driver" caption="Vardas, Pavardė" newRowEnabled="false" flexGrow="1" flexShrink="1" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" flexGrow="2" flexShrink="2" visible="false"/>
+    <DataColumn name="DateTo" source="DateTo" caption="=trTripDateTo" minWidth="80" visible="false"/>
+    <RelColumn name="Driver" caption="=trDriverName" newRowEnabled="false" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Note" source="Note" caption="=note" flexGrow="2" flexShrink="2" visible="false"/>
   </columns>
 </Grid>

@@ -7,10 +7,10 @@
   >
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
-    <DataColumn name="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
-    <DataColumn name="Status" caption="Būsena" itemKey="TripStatus" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas" flexGrow="1" flexShrink="1"
+    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="TripNo" caption="=trTripNo" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Status" caption="=status" itemKey="TripStatus" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport" flexGrow="1" flexShrink="1"
       searchBy="VehicleNumber TrailerNumber">
       <render>
         <ui:function>
@@ -23,9 +23,9 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="Driver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="DateFrom" caption="Išvyko" />
-    <DataColumn name="DateTo" caption="Sugrįžo" />
-    <DataColumn name="PlannedEndDate" caption="Planuojama pabaiga" />
+    <DataColumn name="Driver" caption="=vehicleDriver" flexGrow="1" flexShrink="1" />
+    <DataColumn name="DateFrom" caption="=trDeparted" />
+    <DataColumn name="DateTo" caption="=trReturned" />
+    <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
   </columns>
 </Grid>

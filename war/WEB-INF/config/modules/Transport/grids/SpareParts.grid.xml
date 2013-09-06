@@ -4,17 +4,17 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="SpareParts" viewName="SpareParts" parent="SparePartTypes"
-  caption="Keičiamos dalys" newRowCaption="Nauja dalis"
+  caption="=trVehiclePartUsage" newRowCaption="=trNewSparePart"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <west size="150" splitterSize="2">
-    <w:DataTree name="SparePartTypes" caption="Tipai" source="SparePartTypes" parentColumn="Parent">
+    <w:DataTree name="SparePartTypes" caption="=types" source="SparePartTypes" parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>
-      <w:form name="Tipo koregavimas">
+      <w:form text="=trModifyType">
         <w:FlowPanel>
-          <w:Label html="Tipas" class="bee-required" />
+          <w:Label text="=trModifyType" class="bee-required" />
           <w:InputText source="Name" style="width: 20em" />
         </w:FlowPanel>
       </w:form>
@@ -26,12 +26,12 @@
   </south>
   
   <columns>
-    <RelColumn name="Type" searchableColumns="ParentName Name" caption="Tipas" />
-    <DataColumn name="Number" caption="Numeris" />
-    <DataColumn name="Description" caption="Aprašymas" />
-    <DataColumn name="Run" caption="Pradinė rida" />
-    <DataColumn name="Obtained" caption="Gauta" width="80" />
-    <DataColumn name="WrittenOff" caption="Nurašyta" width="80" />
-    <DataColumn name="Notes" caption="Pastabos" />
+    <RelColumn name="Type" searchableColumns="ParentName Name" caption="=type" />
+    <DataColumn name="Number" caption="=number" />
+    <DataColumn name="Description" caption="=description" />
+    <DataColumn name="Run" caption="=trVehicleRunStart" />
+    <DataColumn name="Obtained" caption="=received" width="80" />
+    <DataColumn name="WrittenOff" caption="=trWrittenOff" width="80" />
+    <DataColumn name="Notes" caption="=notes" />
   </columns>
 </Grid>

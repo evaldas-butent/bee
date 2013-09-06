@@ -21,7 +21,7 @@
   </west>
   
   <columns>
-    <RelColumn name="Type" caption="Tipas" renderColumns="TypeName" />
+    <RelColumn name="Type" caption="=vehicleType" renderColumns="TypeName" />
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />
     <DataColumn name="Number" caption="Valst.Nr." />
     <RelColumn name="Owner" caption="Savininkas" />

@@ -9,17 +9,17 @@
   <body height="50" />
 
   <columns>
-    <DataColumn name="CargoOrder" caption="Eil.Nr." />
-    <RelColumn name="OrderNo" caption="Užsakymo Nr." minWidth="100" editEnabled="true"
+    <DataColumn name="CargoOrder" caption="=ordinal" />
+    <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
       editPopup="true" editSource="Order" />
-    <RelColumn name="Description" caption="Krovinys" editEnabled="true" editPopup="true"
+    <RelColumn name="Description" caption="=cargo" editEnabled="true" editPopup="true"
       minWidth="100" />
-    <DataColumn name="Weight" caption="Svoris" />
-    <DataColumn name="Volume" caption="Tūris" />
-    <DataColumn name="Quantity" caption="Kiekis" />
-    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Weight" caption="=weight" />
+    <DataColumn name="Volume" caption="=volume" />
+    <DataColumn name="Quantity" caption="=quantity" />
+    <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="Pastabos">
+    <DataColumn name="Notes" caption="=notes">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>
@@ -31,7 +31,7 @@
       minWidth="140" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
       minWidth="140" flexBasis="120" />
-    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="=income" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
