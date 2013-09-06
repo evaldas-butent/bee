@@ -9,7 +9,6 @@
       <SimpleColumn name="Manufacturer" />
       <SimpleJoin name="Manufacturer" joinType="LEFT">
         <SimpleColumn name="ManufacturerName" />
-        <SimpleColumn name="Visible" />
       </SimpleJoin>
 
       <SimpleColumn name="ModelName" />
@@ -28,6 +27,8 @@
     <SimpleColumn name="Fuel" />
     <SimpleColumn name="Body" />
     <SimpleColumn name="Axle" />
+
+    <SimpleColumn name="Visible" />
   </Columns>
 
   <Order>

@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="TcdTypeArticles" viewName="TcdTypeArticles"
+  filter="ManufacturerVisible and ModelVisible and TypeVisible"
   >
   <columns>
     <RelColumn name="Type" caption="=tcdManufacturer" renderColumns="ManufacturerName"
@@ -25,7 +26,5 @@
     <DataColumn name="Fuel" visible="false" />
     <DataColumn name="Body" visible="false" />
     <DataColumn name="Axle" visible="false" />
-
-    <DataColumn name="Visible" visible="false" />
   </columns>
 </Grid>

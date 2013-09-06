@@ -7,10 +7,10 @@
     <SimpleColumn name="Manufacturer" />
     <SimpleJoin name="Manufacturer" joinType="LEFT">
       <SimpleColumn name="ManufacturerName" />
-      <SimpleColumn name="Visible" />
     </SimpleJoin>
 
     <SimpleColumn name="ModelName" />
+    <SimpleColumn name="Visible" />
   </Columns>
 
   <Order>

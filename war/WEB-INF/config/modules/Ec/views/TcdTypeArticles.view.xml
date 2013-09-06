@@ -13,10 +13,11 @@
         <SimpleColumn name="Manufacturer" />
         <SimpleJoin name="Manufacturer" joinType="LEFT">
           <SimpleColumn name="ManufacturerName" />
-          <SimpleColumn name="Visible" />
+          <SimpleColumn name="Visible" alias="ManufacturerVisible" />
         </SimpleJoin>
 
         <SimpleColumn name="ModelName" />
+        <SimpleColumn name="Visible" alias="ModelVisible" />
       </SimpleJoin>
 
       <SimpleColumn name="TypeName" />
@@ -32,6 +33,8 @@
       <SimpleColumn name="Fuel" />
       <SimpleColumn name="Body" />
       <SimpleColumn name="Axle" />
+      
+      <SimpleColumn name="Visible" alias="TypeVisible" />
     </SimpleJoin>
   </Columns>
 

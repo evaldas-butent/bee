@@ -334,6 +334,7 @@ public final class EcConstants {
 
   public static final String COL_TCD_MODEL = "Model";
   public static final String COL_TCD_MODEL_NAME = "ModelName";
+  public static final String COL_TCD_MODEL_VISIBLE = "Visible";
   public static final String COL_TCD_MANUFACTURER_NAME = "ManufacturerName";
   public static final String COL_TCD_MANUFACTURER = "Manufacturer";
   public static final String COL_TCD_MF_VISIBLE = "Visible";
@@ -351,6 +352,7 @@ public final class EcConstants {
   public static final String COL_TCD_FUEL = "Fuel";
   public static final String COL_TCD_BODY = "Body";
   public static final String COL_TCD_AXLE = "Axle";
+  public static final String COL_TCD_TYPE_VISIBLE = "Visible";
 
   public static final String COL_TCD_REMAINDER = "Remainder";
 

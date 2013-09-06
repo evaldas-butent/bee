@@ -8,6 +8,7 @@
   <Fields>
     <Relation name="Manufacturer" relation="TcdManufacturers" notNull="true" cascade="DELETE" label="=tcdManufacturer" />
     <String name="ModelName" precision="50" notNull="true" label="=ecCarModel" />
+    <Boolean name="Visible" label="=ecCarModelVisible" defValue="true" />
     <Long name="TecDocID" unique="true" />
   </Fields>
 </Table>

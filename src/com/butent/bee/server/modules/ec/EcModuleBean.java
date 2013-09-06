@@ -619,7 +619,10 @@ public class EcModuleBean implements BeeModule {
         .addFromInner(TBL_TCD_MANUFACTURERS,
             sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
         .addFromInner(TBL_TCD_TYPES, sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
-        .setWhere(SqlUtils.equals(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, manufacturer))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME, manufacturer),
+            SqlUtils.notNull(TBL_TCD_MODELS, COL_TCD_MODEL_VISIBLE),
+            SqlUtils.notNull(TBL_TCD_TYPES, COL_TCD_TYPE_VISIBLE)))
         .addGroup(TBL_TCD_TYPES, COL_TCD_MODEL)
         .addGroup(TBL_TCD_MODELS, COL_TCD_MODEL_NAME)
         .addGroup(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
@@ -656,7 +659,8 @@ public class EcModuleBean implements BeeModule {
         .addFromInner(TBL_TCD_MANUFACTURERS,
             sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
         .addFromInner(TBL_TCD_TYPES, sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
-        .setWhere(SqlUtils.equals(TBL_TCD_TYPES, COL_TCD_MODEL, modelId))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_TYPES, COL_TCD_MODEL, modelId),
+            SqlUtils.notNull(TBL_TCD_TYPES, COL_TCD_TYPE_VISIBLE)))
         .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,
             COL_TCD_KW_FROM, COL_TCD_KW_TO);
 
@@ -1360,7 +1364,10 @@ public class EcModuleBean implements BeeModule {
         .addFromInner(TBL_TCD_MODELS, sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
         .addFromInner(TBL_TCD_MANUFACTURERS,
             sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER))
-        .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE, articleId))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_ARTICLE, articleId),
+            SqlUtils.notNull(TBL_TCD_TYPES, COL_TCD_TYPE_VISIBLE),
+            SqlUtils.notNull(TBL_TCD_MODELS, COL_TCD_MODEL_VISIBLE),
+            SqlUtils.notNull(TBL_TCD_MANUFACTURERS, COL_TCD_MF_VISIBLE)))
         .addOrder(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
         .addOrder(TBL_TCD_MODELS, COL_TCD_MODEL_NAME)
         .addOrder(TBL_TCD_TYPES, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO,

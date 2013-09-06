@@ -2,12 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="TcdModels" viewName="TcdModels" caption="=tcdModels"
-  flexGrow="1" flexShrink="1"
   >
   <columns>
-    <RelColumn name="Manufacturer" renderColumns="ManufacturerName" width="200" />
-    <DataColumn name="ModelName" />
-
-    <DataColumn name="Visible" visible="false" />
+    <RelColumn name="Manufacturer" renderColumns="ManufacturerName" minWidth="200" />
+    <DataColumn name="ModelName" minWidth="200" />
+    <DataColumn name="Visible" />
   </columns>
 </Grid>

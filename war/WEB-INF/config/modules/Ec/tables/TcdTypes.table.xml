@@ -20,6 +20,8 @@
     <String name="Fuel" precision="50" />
     <String name="Body" precision="50" />
     <String name="Axle" precision="50" />
+
+    <Boolean name="Visible" label="=ecCarTypeVisible" defValue="true" />
     
     <Long name="TecDocID" unique="true" />
   </Fields>
