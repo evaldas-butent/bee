@@ -19,6 +19,8 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
     <SimpleColumn name="IsService"/>
+
+    <SimpleColumn name="ExternalCode"/>
   </Columns>
   <Order>
     <OrderBy column="Name" />

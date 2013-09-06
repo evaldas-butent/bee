@@ -340,7 +340,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       if (!BeeUtils.isEmpty(selectorClass)) {
         popup.addStyleName(selectorClass);
       }
-      
+
       popup.setWidget(menu);
 
       popup.setKeyboardPartner(partner);
@@ -1065,8 +1065,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     hideSelector();
     reset();
 
-    SelectorEvent.fire(this, State.CHANGED);
     fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
+    SelectorEvent.fire(this, State.CHANGED);
   }
 
   @Override
@@ -1465,7 +1465,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       SelectorColumn sc = entry.getValue();
       int index = dataInfo.getColumnIndex(sc.getSource());
 
-      CellSource cellSource = BeeConst.isUndef(index) 
+      CellSource cellSource = BeeConst.isUndef(index)
           ? null : CellSource.forColumn(dataInfo.getColumns().get(index), index);
 
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),

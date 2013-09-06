@@ -243,7 +243,7 @@ public final class EcConstants {
   public static final String COL_GROUP_MOTO = "Moto";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_GROUP_ORDINAL = "Ordinal";
-  
+
   public static final String COL_HISTORY_DATE = "Date";
   public static final String COL_HISTORY_USER = "User";
   public static final String COL_HISTORY_SERVICE = "Service";
@@ -373,10 +373,6 @@ public final class EcConstants {
   public static final String COL_TCD_GRAPHICS_TYPE = "Type";
   public static final String COL_TCD_GRAPHICS_RESOURCE = "Resource";
 
-  public static final String PRM_ERP_ADDRESS = "ERPAddress";
-  public static final String PRM_ERP_LOGIN = "ERPLogin";
-  public static final String PRM_ERP_PASSWORD = "ERPPassword";
-
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
   public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
 
@@ -386,7 +382,7 @@ public final class EcConstants {
   public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
 
   public static final String FORM_CATEGORIES = "TcdCategories";
-  
+
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 

@@ -101,7 +101,7 @@ public final class Queries {
       }
       return false;
 
-    } else if (clazz != null && !response.hasResponse(clazz)) {
+    } else if (clazz != null && response.hasResponse() && !response.hasResponse(clazz)) {
       error(callback, Lists.newArrayList(service, viewName, "response type:", response.getType(),
           "expected:", NameUtils.getClassName(clazz)));
       return false;

@@ -75,7 +75,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   public boolean onLoad(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isEmpty(CommonsConstants.COL_SERVICE);
+    Filter filter = Filter.isEmpty(CommonsConstants.COL_ITEM_IS_SERVICE);
 
     if (showServices()) {
       filter = Filter.isNot(filter);

@@ -11,11 +11,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 public final class ExchangeUtils {
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
-  public static final String FLD_CURRENCY_NAME = "Name";
-  public static final String FLD_CURRENCY = "Currency";
-  public static final String FLD_DATE = "Date";
-  public static final String FLD_QUANTITY = "Quantity";
-  public static final String FLD_RATE = "Rate";
+  public static final String COL_CURRENCY_NAME = "Name";
+  public static final String COL_CURRENCY = "Currency";
+  public static final String COL_RATES_DATE = "Date";
+  public static final String COL_RATES_QUANTITY = "Quantity";
+  public static final String COL_RATES_RATE = "Rate";
 
   public static IsExpression exchangeField(SqlSelect query, String tbl, String amountFld,
       String currencyFld, String dateFld) {
@@ -38,7 +38,8 @@ public final class ExchangeUtils {
     addExchangeFrom(query, rates, currency, date);
 
     return SqlUtils.multiply(amount,
-        SqlUtils.divide(SqlUtils.field(rates, FLD_RATE), SqlUtils.field(rates, FLD_QUANTITY)));
+        SqlUtils.divide(SqlUtils.field(rates, COL_RATES_RATE), SqlUtils.field(rates,
+            COL_RATES_QUANTITY)));
   }
 
   public static IsExpression exchangeFieldTo(SqlSelect query, String tbl, String amountFld,
@@ -60,8 +61,10 @@ public final class ExchangeUtils {
     Assert.notNull(currencyTo);
     String ratesTo = SqlUtils.uniqueName();
 
-    IsExpression xpr = SqlUtils.multiply(exchangeField(query, amount, currency, date),
-        SqlUtils.divide(SqlUtils.field(ratesTo, FLD_QUANTITY), SqlUtils.field(ratesTo, FLD_RATE)));
+    IsExpression xpr =
+        SqlUtils.multiply(exchangeField(query, amount, currency, date),
+            SqlUtils.divide(SqlUtils.field(ratesTo, COL_RATES_QUANTITY), SqlUtils.field(ratesTo,
+                COL_RATES_RATE)));
 
     addExchangeFrom(query, ratesTo, currencyTo, date);
 
@@ -74,8 +77,10 @@ public final class ExchangeUtils {
     Assert.notNull(currencyTo);
     String ratesTo = SqlUtils.uniqueName();
 
-    IsExpression xpr = SqlUtils.multiply(amount,
-        SqlUtils.divide(SqlUtils.field(ratesTo, FLD_QUANTITY), SqlUtils.field(ratesTo, FLD_RATE)));
+    IsExpression xpr =
+        SqlUtils.multiply(amount,
+            SqlUtils.divide(SqlUtils.field(ratesTo, COL_RATES_QUANTITY), SqlUtils.field(ratesTo,
+                COL_RATES_RATE)));
 
     addExchangeFrom(query, ratesTo, currencyTo, date);
 
@@ -89,16 +94,16 @@ public final class ExchangeUtils {
     IsCondition dateClause = null;
 
     if (date != null) {
-      dateClause = SqlUtils.less(TBL_CURRENCY_RATES, FLD_DATE, date);
+      dateClause = SqlUtils.less(TBL_CURRENCY_RATES, COL_RATES_DATE, date);
     }
     // TODO: ORACLE workaround needed
     query.addFromLeft(TBL_CURRENCY_RATES, ratesAlias,
-        SqlUtils.equals(ratesAlias, FLD_CURRENCY, currency, FLD_DATE,
+        SqlUtils.equals(ratesAlias, COL_CURRENCY, currency, COL_RATES_DATE,
             new SqlSelect()
-                .addMax(TBL_CURRENCY_RATES, FLD_DATE)
+                .addMax(TBL_CURRENCY_RATES, COL_RATES_DATE)
                 .addFrom(TBL_CURRENCY_RATES)
                 .setWhere(SqlUtils.and(dateClause,
-                    SqlUtils.equals(TBL_CURRENCY_RATES, FLD_CURRENCY, currency)))));
+                    SqlUtils.equals(TBL_CURRENCY_RATES, COL_CURRENCY, currency)))));
   }
 
   private ExchangeUtils() {

@@ -87,9 +87,11 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public List<SearchResult> doSearch(String query) {
 
-    List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-            COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
+    List<SearchResult> companiesSr =
+        qs.getSearchResults(VIEW_COMPANIES,
+            Filter.anyContains(Sets.newHashSet(COL_NAME, COL_COMPANY_CODE, COL_PHONE,
+                COL_EMAIL_ADDRESS,
+                COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
 
     List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
         Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
@@ -99,7 +101,7 @@ public class CommonsModuleBean implements BeeModule {
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
 
     List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_ARTICLE, COL_BARCODE), query));
+        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE), query));
 
     List<SearchResult> commonsSr = Lists.newArrayList();
     commonsSr.addAll(companiesSr);
@@ -140,7 +142,17 @@ public class CommonsModuleBean implements BeeModule {
         new BeeParameter(COMMONS_MODULE, PRM_VAT_PERCENT, ParameterType.NUMBER,
             "Default VAT percent", false, 21),
         new BeeParameter(COMMONS_MODULE,
-            PRM_AUDIT_OFF, ParameterType.BOOLEAN, "Disable database level auditing", false, false));
+            PRM_AUDIT_OFF, ParameterType.BOOLEAN, "Disable database level auditing", false, false),
+        new BeeParameter(COMMONS_MODULE, PRM_ERP_ADDRESS, ParameterType.TEXT,
+            "Address of ERP system WebService", false, null),
+        new BeeParameter(COMMONS_MODULE, PRM_ERP_LOGIN, ParameterType.TEXT,
+            "Login name of ERP system WebService", false, null),
+        new BeeParameter(COMMONS_MODULE, PRM_ERP_PASSWORD, ParameterType.TEXT,
+            "Password of ERP system WebService", false, null),
+        new BeeParameter(COMMONS_MODULE, "ERPOperation", ParameterType.TEXT,
+            "Document operation name in ERP system", false, null),
+        new BeeParameter(COMMONS_MODULE, "ERPWarehouse", ParameterType.TEXT,
+            "Document warehouse name in ERP system", false, null));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -347,7 +359,7 @@ public class CommonsModuleBean implements BeeModule {
       return ResponseObject.error("Wrong company ID");
     }
     SimpleRowSet res = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_NAME, COL_CODE, COL_VAT_CODE)
+        .addFields(TBL_COMPANIES, COL_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
         .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addField(TBL_CITIES, COL_NAME, COL_CITY)

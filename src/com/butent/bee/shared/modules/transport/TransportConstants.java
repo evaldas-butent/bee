@@ -139,6 +139,10 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
+  public static final String SVC_SEND_TO_ERP = "SendToERP";
+
+  public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
+
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
@@ -185,6 +189,7 @@ public final class TransportConstants {
   public static final String VIEW_ALL_CARGO = "AllCargo";
   public static final String VIEW_WAITING_CARGO = "WaitingCargo";
   public static final String VIEW_CARGO_INCOME_LIST = "CargoIncomeList";
+  public static final String VIEW_CARGO_INVOICES = "CargoInvoices";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";

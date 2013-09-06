@@ -13,7 +13,9 @@ public class WSDocument {
     private final String itemId;
     private final String quantity;
     private String price;
-    private Integer vatPercent;
+    private String vatMode;
+    private String vat;
+    private String vatPercent;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -24,24 +26,21 @@ public class WSDocument {
       this.price = price;
     }
 
-    public void setVatPercent(Integer vatPercent) {
-      this.vatPercent = vatPercent;
+    public void setVat(String vatAmount, Boolean isPercent, Boolean isIncluded) {
+      this.vatMode = BeeUtils.unbox(isIncluded) ? "T" : "S";
+      this.vat = vatAmount;
+      this.vatPercent = BeeUtils.unbox(isPercent) ? "%" : null;
     }
   }
 
   private final String documentId;
   private final DateTime date;
   private final String operation;
+  private final String warehouse;
 
   private final String company;
-  private String companyCode;
-  private String companyVATCode;
-  private String companyAddress;
-  private String companyPostIndex;
-  private String companyCity;
-  private String companyCountry;
-
-  private final String warehouse;
+  private String supplier;
+  private String payer;
 
   private final List<WSDocumentItem> items = Lists.newArrayList();
 
@@ -65,37 +64,23 @@ public class WSDocument {
 
     for (WSDocumentItem item : items) {
       sb.append("<row>")
-          .append("<apyv_id>").append(documentId).append("</apyv_id>")
-          .append("<data>").append(date.toString()).append("</data>")
-          .append("<operacija>").append(operation).append("</operacija>")
-          .append("<klientas>").append(company).append("</klientas>")
-          .append("<sandelis>").append(warehouse).append("</sandelis>")
-          .append("<preke>").append(item.itemId).append("</preke>")
-          .append("<kiekis>").append(item.quantity).append("</kiekis>");
+          .append(ButentWS.tag("apyv_id", documentId))
+          .append(ButentWS.tag("data", date))
+          .append(ButentWS.tag("operacija", operation))
+          .append(ButentWS.tag("tiekejas", supplier))
+          .append(ButentWS.tag("klientas", company))
+          .append(ButentWS.tag("moketojas", payer))
+          .append(ButentWS.tag("sandelis", warehouse))
+          .append(ButentWS.tag("preke", item.itemId))
+          .append(ButentWS.tag("kiekis", item.quantity));
 
-      if (!BeeUtils.isEmpty(companyCode)) {
-        sb.append("<kodas>").append(companyCode).append("</kodas>");
-      }
-      if (!BeeUtils.isEmpty(companyVATCode)) {
-        sb.append("<pvm_kodas>").append(companyVATCode).append("</pvm_kodas>");
-      }
-      if (!BeeUtils.isEmpty(companyAddress)) {
-        sb.append("<adresas>").append(companyAddress).append("</adresas>");
-      }
-      if (!BeeUtils.isEmpty(companyPostIndex)) {
-        sb.append("<indeksas>").append(companyPostIndex).append("</indeksas>");
-      }
-      if (!BeeUtils.isEmpty(companyCity)) {
-        sb.append("<miestas>").append(companyCity).append("</miestas>");
-      }
-      if (!BeeUtils.isEmpty(companyCountry)) {
-        sb.append("<salis>").append(companyCountry).append("</salis>");
-      }
       if (!BeeUtils.isEmpty(item.price)) {
-        sb.append("<kaina>").append(item.price).append("</kaina>");
+        sb.append(ButentWS.tag("kaina", item.price));
 
-        if (BeeUtils.isPositive(item.vatPercent)) {
-          sb.append("<pvm>").append(item.vatPercent).append("</pvm>");
+        if (!BeeUtils.isEmpty(item.vat)) {
+          sb.append(ButentWS.tag("pvm_stat", item.vatMode))
+              .append(ButentWS.tag("pvm", item.vat))
+              .append(ButentWS.tag("pvm_p_md", item.vatPercent));
         }
       }
       sb.append("</row>");
@@ -103,27 +88,11 @@ public class WSDocument {
     return sb.append("</VFPData>").toString();
   }
 
-  public void setCompanyAddress(String companyAddress) {
-    this.companyAddress = companyAddress;
+  public void setPayer(String payer) {
+    this.payer = payer;
   }
 
-  public void setCompanyCity(String companyCity) {
-    this.companyCity = companyCity;
-  }
-
-  public void setCompanyCode(String companyCode) {
-    this.companyCode = companyCode;
-  }
-
-  public void setCompanyCountry(String companyCountry) {
-    this.companyCountry = companyCountry;
-  }
-
-  public void setCompanyPostIndex(String companyPostIndex) {
-    this.companyPostIndex = companyPostIndex;
-  }
-
-  public void setCompanyVATCode(String companyVATCode) {
-    this.companyVATCode = companyVATCode;
+  public void setSupplier(String supplier) {
+    this.supplier = supplier;
   }
 }

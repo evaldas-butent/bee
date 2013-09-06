@@ -3,10 +3,11 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoInvoices" viewName="CargoInvoices"
-  editShowId="true" flexGrow="1" flexShrink="1"
+  editShowId="true" flexGrow="1"
   disabledActions="add"
   >
   <columns>
+    <SelectionColumn name="Select" caption="-" width="20" />
     <IdColumn name="ID" />
     <DataColumn name="Date" caption="=date" />
     <DataColumn name="Number" />
@@ -24,8 +25,29 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <RelColumn name="Customer" flexGrow="1" flexShrink="1" caption="=trCustomer" />
+    <RelColumn name="Customer" caption="=trCustomer" />
+    <RelColumn name="Payer" caption="Mokėtojas" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
+    <DataColumn name="Term" />
+    
+    <DataColumn name="PaymentTime" />
+    <DataColumn name="Paid" />
+
+    <CalcColumn name="Debt" type="decimal" caption="Skola">
+      <render>
+        <ui:function>
+          if (!row.Paid) {
+            return row.Amount;
+          } else {
+            return row.Amount - row.Paid;
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Vehicle" />
+    <DataColumn name="Driver" />
+    <DataColumn name="Exported" />
   </columns>
 </Grid>

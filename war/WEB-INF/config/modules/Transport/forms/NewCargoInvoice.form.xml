@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewCargoInvoice" viewName="Sales" caption="=transportNewCargoInvoice"
+  name="NewCargoInvoice" viewName="CargoInvoices" caption="=transportNewCargoInvoice"
   width="600" height="400"
   >
   <FlowPanel class="flexBox-vertical">

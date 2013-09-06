@@ -72,10 +72,10 @@ public class TradeModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.FLD_CURRENCY)));
+          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
 
     } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
-      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_AMOUNT)),
+      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE_AMOUNT)),
           reqInfo.getParameter("Locale"));
 
     } else {
@@ -120,16 +120,16 @@ public class TradeModuleBean implements BeeModule {
           } else {
             return;
           }
-          int idx = DataUtils.getColumnIndex(COL_INVOICE_PREFIX, cols);
+          int idx = DataUtils.getColumnIndex(COL_SALE_INVOICE_PREFIX, cols);
 
           if (idx != BeeConst.UNDEF) {
             prefix = row.getString(idx);
           }
           if (!BeeUtils.isEmpty(prefix)
-              && DataUtils.getColumnIndex(COL_INVOICE_NO, cols) == BeeConst.UNDEF) {
-            cols.add(new BeeColumn(COL_INVOICE_NO));
-            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_INVOICE_NO, prefix,
-                COL_INVOICE_PREFIX)));
+              && DataUtils.getColumnIndex(COL_SALE_INVOICE_NO, cols) == BeeConst.UNDEF) {
+            cols.add(new BeeColumn(COL_SALE_INVOICE_NO));
+            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_SALE_INVOICE_NO, prefix,
+                COL_SALE_INVOICE_PREFIX)));
           }
         }
       }
@@ -140,29 +140,31 @@ public class TradeModuleBean implements BeeModule {
     if (!DataUtils.isId(id)) {
       return ResponseObject.error("Wrong document ID");
     }
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_ITEMS, COL_NAME)
-        .addField(TBL_UNITS, COL_NAME, COL_UNIT)
-        .addFields(TBL_SALES, COL_VAT_INCL)
-        .addFields(TBL_SALE_ITEMS, COL_ARTICLE, COL_QUANTITY, COL_PRICE, COL_VAT, COL_VAT_PERC)
-        .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.FLD_CURRENCY_NAME,
-            ExchangeUtils.FLD_CURRENCY)
-        .addFrom(TBL_SALE_ITEMS)
-        .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
-        .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-        .addFromInner(ExchangeUtils.TBL_CURRENCIES,
-            sys.joinTables(ExchangeUtils.TBL_CURRENCIES, TBL_SALES, ExchangeUtils.FLD_CURRENCY))
-        .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, id))
-        .addOrder(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS));
+    SqlSelect query =
+        new SqlSelect()
+            .addFields(TBL_ITEMS, COL_NAME)
+            .addField(TBL_UNITS, COL_NAME, COL_UNIT)
+            .addFields(TBL_SALES, COL_SALE_VAT_INCL)
+            .addFields(TBL_SALE_ITEMS, COL_ITEM_ARTICLE, COL_SALE_ITEM_QUANTITY,
+                COL_SALE_ITEM_PRICE, COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)
+            .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME,
+                ExchangeUtils.COL_CURRENCY)
+            .addFrom(TBL_SALE_ITEMS)
+            .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+            .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+            .addFromInner(ExchangeUtils.TBL_CURRENCIES,
+                sys.joinTables(ExchangeUtils.TBL_CURRENCIES, TBL_SALES, ExchangeUtils.COL_CURRENCY))
+            .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, id))
+            .addOrder(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS));
 
     if (DataUtils.isId(currencyTo)) {
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-          SqlUtils.field(TBL_SALE_ITEMS, COL_PRICE),
-          SqlUtils.field(TBL_SALES, ExchangeUtils.FLD_CURRENCY),
+          SqlUtils.field(TBL_SALE_ITEMS, COL_SALE_ITEM_PRICE),
+          SqlUtils.field(TBL_SALES, ExchangeUtils.COL_CURRENCY),
           SqlUtils.field(TBL_SALES, COL_DEFAULT_COLOR), SqlUtils.constant(currencyTo));
 
-      query.addExpr(xpr, ExchangeUtils.FLD_CURRENCY + COL_PRICE);
+      query.addExpr(xpr, ExchangeUtils.COL_CURRENCY + COL_SALE_ITEM_PRICE);
     }
     return ResponseObject.response(qs.getData(query));
   }

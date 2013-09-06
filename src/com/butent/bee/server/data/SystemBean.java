@@ -367,6 +367,10 @@ public class SystemBean {
     return SqlUtils.equals(tblName, getIdName(tblName), id);
   }
 
+  public IsCondition idInList(String tblName, Collection<Long> ids) {
+    return SqlUtils.inList(tblName, getIdName(tblName), ids);
+  }
+
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));

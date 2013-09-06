@@ -14,16 +14,20 @@
     <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
     <Boolean name="VatIncluded" label="PVM tame sk." />
 
+    <DateTime name="PaymentTime" label="Apm.data" />
+    <Numeric name="Paid" precision="12" scale="2" label="Apm.suma" />
+
     <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
     <Relation name="Customer" relation="Companies" label="Gavėjas" />
     <Relation name="Payer" relation="Companies" label="Mokėtojas" />
 
     <Relation name="Manager" relation="Users" label="Vadybininkas" />
-    <Date name="Term" />
+    <Date name="Term" label="Terminas" />
 
     <String name="Vehicle" precision="100" label="Transportas" />
     <String name="Driver" precision="100" label="Vairuotojas" />
     <Text name="Notes" label="Pastabos" />
+    <DateTime name="Exported" label="Eksportuota" />
   </Fields>
   <Triggers>
     <Trigger events="UPDATE" scope="ROW" timing="AFTER">

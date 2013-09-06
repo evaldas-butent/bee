@@ -228,7 +228,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(),
-          COL_DATE, COL_AMOUNT, ExchangeUtils.FLD_CURRENCY)) {
+          COL_DATE, COL_AMOUNT, ExchangeUtils.COL_CURRENCY)) {
         refreshTotals();
       }
     }
@@ -435,10 +435,10 @@ public class AssessmentForm extends AbstractFormInterceptor {
     args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
     args.addDataItem(COL_ASSESSOR, row.getId());
 
-    final Long currency = row.getLong(form.getDataIndex(ExchangeUtils.FLD_CURRENCY));
+    final Long currency = row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY));
 
     if (currency != null) {
-      args.addDataItem(ExchangeUtils.FLD_CURRENCY, currency);
+      args.addDataItem(ExchangeUtils.COL_CURRENCY, currency);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override

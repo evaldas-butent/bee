@@ -47,10 +47,18 @@
             <FlowPanel name="SupplierInfo" />
           </cell>
           <cell style="vertical-align:top;">
-            <Label html="Pirkėjas:" />
+            <Label html="Pirkėjas:" horizontalAlignment="right" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
             <FlowPanel name="CustomerInfo" />
+          </cell>
+        </row>
+        <row>
+          <cell colSpan="3" style="vertical-align:top;">
+            <Label name="PayerCaption" html="Mokėtojas:" horizontalAlignment="right" />
+          </cell>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel name="PayerInfo" />
           </cell>
         </row>
       </Table>

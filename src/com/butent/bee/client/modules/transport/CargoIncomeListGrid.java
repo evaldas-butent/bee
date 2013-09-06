@@ -57,6 +57,11 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
   private UnboundSelector mainItem;
 
   @Override
+  public GridInterceptor getInstance() {
+    return new CargoIncomeListGrid();
+  }
+
+  @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
     CompoundFilter flt = CompoundFilter.or();
@@ -90,9 +95,9 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
         int driver = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, COL_DRIVER);
         int custId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, COL_CUSTOMER);
         int custName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, COL_CUSTOMER_NAME);
-        int currId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, ExchangeUtils.FLD_CURRENCY);
-        int currName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, ExchangeUtils.FLD_CURRENCY
-            + ExchangeUtils.FLD_CURRENCY_NAME);
+        int currId = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, ExchangeUtils.COL_CURRENCY);
+        int currName = Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, ExchangeUtils.COL_CURRENCY
+            + ExchangeUtils.COL_CURRENCY_NAME);
 
         for (BeeRow row : result.getRows()) {
           if (!itemEmpty) {
@@ -128,14 +133,14 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
           }
         }
         final boolean mainRequired = itemEmpty;
-        final DataInfo turnoversInfo = Data.getDataInfo(TradeConstants.TBL_SALES);
+        final DataInfo turnoversInfo = Data.getDataInfo(VIEW_CARGO_INVOICES);
 
         BeeRow newRow = RowFactory.createEmptyRow(turnoversInfo, true);
 
         newRow.setValue(turnoversInfo.getColumnIndex(COL_NUMBER), BeeUtils.join(",", orders));
         newRow.setValue(turnoversInfo.getColumnIndex(COL_VEHICLE), BeeUtils.join(",", vehicles));
         newRow.setValue(turnoversInfo.getColumnIndex(COL_DRIVER), BeeUtils.join(",", drivers));
-        newRow.setValue(turnoversInfo.getColumnIndex(TradeConstants.COL_VAT_INCL), true);
+        newRow.setValue(turnoversInfo.getColumnIndex(TradeConstants.COL_SALE_VAT_INCL), true);
 
         if (customers.size() == 1) {
           for (Entry<Long, String> entry : customers.entrySet()) {
@@ -155,7 +160,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
             Integer days = entry.getValue().getB();
 
             if (BeeUtils.isPositive(days)) {
-              newRow.setValue(turnoversInfo.getColumnIndex(TradeConstants.COL_TERM),
+              newRow.setValue(turnoversInfo.getColumnIndex(TradeConstants.COL_SALE_TERM),
                   TimeUtils.nextDay(newRow.getDateTime(turnoversInfo.getColumnIndex(COL_DATE)),
                       days));
             }
@@ -163,10 +168,10 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
         }
         if (currencies.size() == 1) {
           for (Entry<Long, String> entry : currencies.entrySet()) {
-            newRow.setValue(turnoversInfo.getColumnIndex(ExchangeUtils.FLD_CURRENCY),
+            newRow.setValue(turnoversInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY),
                 entry.getKey());
-            newRow.setValue(turnoversInfo.getColumnIndex(ExchangeUtils.FLD_CURRENCY
-                + ExchangeUtils.FLD_CURRENCY_NAME), entry.getValue());
+            newRow.setValue(turnoversInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY
+                + ExchangeUtils.COL_CURRENCY_NAME), entry.getValue());
           }
         }
         RowFactory.createRow("NewCargoInvoice", null, turnoversInfo, newRow, null,
@@ -204,8 +209,8 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
               public void onSuccess(final BeeRow row) {
                 ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
                 args.addDataItem(TradeConstants.COL_SALE, row.getId());
-                args.addDataItem(ExchangeUtils.FLD_CURRENCY,
-                    row.getLong(turnoversInfo.getColumnIndex(ExchangeUtils.FLD_CURRENCY)));
+                args.addDataItem(ExchangeUtils.COL_CURRENCY,
+                    row.getLong(turnoversInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY)));
                 args.addDataItem("IdList", Codec.beeSerialize(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
@@ -236,11 +241,6 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
             });
       }
     });
-  }
-
-  @Override
-  public GridInterceptor getInstance() {
-    return new CargoIncomeListGrid();
   }
 
   @Override

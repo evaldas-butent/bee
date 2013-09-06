@@ -119,6 +119,46 @@ public class ButentWS extends Service {
     return ResponseObject.response(data);
   }
 
+  public static ResponseObject importClient(String address, String login, String password,
+      String companyName, String companyCode, String companyVATCode,
+      String companyAddress, String companyPostIndex, String companyCity, String companyCountry) {
+
+    ResponseObject response = getPort(address, login, password);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+    logger.debug("ImportClient:", "importing client...");
+
+    StringBuilder sb = new StringBuilder("<client>")
+        .append(tag("klientas", companyName))
+        .append(tag("kodas", companyCode))
+        .append(tag("pvm_kodas", companyVATCode))
+        .append(tag("adresas", companyAddress))
+        .append(tag("indeksas", companyPostIndex))
+        .append(tag("miestas", companyCity))
+        .append(tag("salis", companyCountry))
+        .append("</client>");
+
+    String answer = ((ButentWebServiceSoapPort) response.getResponse())
+        .process("ImportClient", sb.toString());
+
+    try {
+      Node node = XmlUtils.fromString(answer).getFirstChild();
+
+      if (BeeUtils.same(node.getLocalName(), "Error")) {
+        return ResponseObject.error(node.getTextContent());
+      } else {
+        answer = XmlUtils.getElements(answer, null).get("klientas");
+      }
+    } catch (Exception e) {
+      return ResponseObject.error(answer);
+    }
+    logger.debug("ImportClient:", "import succeeded. ClientName =", answer);
+
+    return ResponseObject.response(answer);
+  }
+
   public static ResponseObject importDoc(String address, String login, String password,
       WSDocument doc) {
 
@@ -159,9 +199,9 @@ public class ButentWS extends Service {
     logger.debug("ImportItem:", "importing item...");
 
     StringBuilder sb = new StringBuilder("<item>")
-        .append("<pavad>").append(itemName).append("</pavad>")
-        .append("<gamintojas>").append(brandName).append("</gamintojas>")
-        .append("<gam_art>").append(brandCode).append("</gam_art>")
+        .append(tag("pavad", itemName))
+        .append(tag("gamintojas", brandName))
+        .append(tag("gam_art", brandCode))
         .append("</item>");
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
@@ -181,6 +221,16 @@ public class ButentWS extends Service {
     logger.debug("ImportItem:", "import succeeded. New ItemID =", answer);
 
     return ResponseObject.response(answer);
+  }
+
+  public static String tag(String tagName, Object value) {
+    if (value == null) {
+      return "";
+    }
+    return new StringBuilder("<").append(tagName).append(">")
+        .append(value)
+        .append("</").append(tagName).append(">")
+        .toString();
   }
 
   public ButentWS(URL wsdlLocation) {

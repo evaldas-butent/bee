@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.primitives.Longs;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -51,7 +52,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
@@ -62,12 +62,12 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcCriterion;
-import com.butent.bee.shared.modules.ec.EcGroupFilters;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
+import com.butent.bee.shared.modules.ec.EcGroupFilters;
 import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
@@ -83,7 +83,6 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -162,7 +161,7 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
+    return Lists.newArrayList(COMMONS_MODULE);
   }
 
   @Override
@@ -310,20 +309,7 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    ArrayList<BeeParameter> params = Lists.newArrayList(
-        new BeeParameter(EC_MODULE, PRM_ERP_ADDRESS, ParameterType.TEXT,
-            "Address of ERP system WebService", false, null),
-        new BeeParameter(EC_MODULE, PRM_ERP_LOGIN, ParameterType.TEXT,
-            "Login name of ERP system WebService", false, null),
-        new BeeParameter(EC_MODULE, PRM_ERP_PASSWORD, ParameterType.TEXT,
-            "Password of ERP system WebService", false, null),
-        new BeeParameter(EC_MODULE, "ERPOperation", ParameterType.TEXT,
-            "Document operation name in ERP system", false, null),
-        new BeeParameter(EC_MODULE, "ERPWarehouse", ParameterType.TEXT,
-            "Document warehouse name in ERP system", false, null));
-
-    params.addAll(tcd.getDefaultParameters());
-    return params;
+    return tcd.getDefaultParameters();
   }
 
   @Override
@@ -905,6 +891,10 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getFinancialInformation() {
+    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+
     EcFinInfo finInfo = new EcFinInfo();
 
     Long client = getCurrentClientId();
@@ -912,30 +902,26 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.response(finInfo);
     }
 
-    SimpleRow companyInfo = qs.getRow(new SqlSelect()
-        .addFields(CommonsConstants.TBL_COMPANIES,
-            CommonsConstants.COL_NAME, CommonsConstants.COL_CODE)
-        .addFrom(TBL_CLIENTS)
-        .addFromInner(CommonsConstants.TBL_USERS, sys.joinTables(CommonsConstants.TBL_USERS,
-            TBL_CLIENTS, COL_CLIENT_USER))
-        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                CommonsConstants.COL_COMPANY_PERSON))
-        .addFromInner(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_COMPANY))
-        .setWhere(sys.idEquals(TBL_CLIENTS, client)));
-
     if (client != null) {
+      SimpleRow companyInfo = qs.getRow(new SqlSelect()
+          .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE)
+          .addFrom(TBL_CLIENTS)
+          .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_CLIENTS, COL_CLIENT_USER))
+          .addFromInner(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+          .addFromInner(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+          .setWhere(sys.idEquals(TBL_CLIENTS, client)));
+
       String company = null;
       String wh = "LOWER(klientas) = '"
-          + companyInfo.getValue(CommonsConstants.COL_NAME).toLowerCase() + "'";
+          + companyInfo.getValue(COL_COMPANY_NAME).toLowerCase() + "'";
 
-      ResponseObject response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-          prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+      ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
           "SELECT klientas, max_skola, dienos"
               + " FROM klientai"
-              + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(CommonsConstants.COL_CODE)
+              + " WHERE " + wh + " OR kodas = '"
+              + companyInfo.getValue(COL_COMPANY_CODE)
               + "' ORDER BY " + wh + " DESC",
           new String[] {"klientas", "max_skola", "dienos"});
 
@@ -951,8 +937,7 @@ public class EcModuleBean implements BeeModule {
         }
       }
       if (!BeeUtils.isEmpty(company)) {
-        response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-            prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+        response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
             "SELECT SUM(kiekis * kaina) AS suma"
                 + " FROM likuciai"
                 + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
@@ -969,8 +954,7 @@ public class EcModuleBean implements BeeModule {
             finInfo.setTotalTaken(row.getDouble("suma"));
           }
         }
-        response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-            prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+        response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
             "SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
                 + " FROM apyvarta"
                 + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
@@ -1040,12 +1024,12 @@ public class EcModuleBean implements BeeModule {
               COL_ORDER_ITEM_PRICE)
           .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
               COL_TCD_ARTICLE_WEIGHT)
-          .addFields(CommonsConstants.TBL_UNITS, CommonsConstants.COL_UNIT_NAME)
+          .addFields(TBL_UNITS, COL_UNIT_NAME)
           .addFrom(TBL_ORDER_ITEMS)
           .addFromInner(TBL_TCD_ARTICLES,
               sys.joinTables(TBL_TCD_ARTICLES, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE))
-          .addFromLeft(CommonsConstants.TBL_UNITS,
-              sys.joinTables(CommonsConstants.TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
+          .addFromLeft(TBL_UNITS,
+              sys.joinTables(TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
           .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
 
       for (BeeRow orderRow : orderData.getRows()) {
@@ -1080,7 +1064,7 @@ public class EcModuleBean implements BeeModule {
             item.setQuantity(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
             item.setPrice(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
 
-            item.setUnit(itemRow.getValue(CommonsConstants.COL_UNIT_NAME));
+            item.setUnit(itemRow.getValue(COL_UNIT_NAME));
             item.setWeight(itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT));
 
             order.getItems().add(item);
@@ -1699,6 +1683,8 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_ORDER_ITEMS, COL_TCD_ARTICLE)
+        .addMax(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
+        .addSum(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)
         .addFrom(TBL_ORDER_ITEMS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderId),
             SqlUtils.positive(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)))
@@ -1709,104 +1695,87 @@ public class EcModuleBean implements BeeModule {
     if (items.isEmpty()) {
       return ResponseObject.error(Localized.getConstants().ecNothingToOrder());
     }
+    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+
     SimpleRow order = qs.getRow(new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
-        .addField(CommonsConstants.TBL_COMPANIES,
-            CommonsConstants.COL_NAME, CommonsConstants.COL_COMPANY)
-        .addFields(CommonsConstants.TBL_COMPANIES,
-            CommonsConstants.COL_CODE, CommonsConstants.COL_VAT_CODE)
-        .addFields(CommonsConstants.TBL_CONTACTS,
-            CommonsConstants.COL_ADDRESS, CommonsConstants.COL_POST_INDEX)
-        .addField(CommonsConstants.TBL_CITIES,
-            CommonsConstants.COL_NAME, CommonsConstants.COL_CITY)
-        .addField(CommonsConstants.TBL_COUNTRIES,
-            CommonsConstants.COL_NAME, CommonsConstants.COL_COUNTRY)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
+        .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
         .addFrom(TBL_ORDERS)
         .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
-        .addFromLeft(CommonsConstants.TBL_USERS, sys.joinTables(CommonsConstants.TBL_USERS,
-            TBL_CLIENTS, COL_CLIENT_USER))
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                CommonsConstants.COL_COMPANY_PERSON))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_COMPANY))
-        .addFromLeft(CommonsConstants.TBL_CONTACTS,
-            sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANIES,
-                CommonsConstants.COL_CONTACT))
-        .addFromLeft(CommonsConstants.TBL_CITIES,
-            sys.joinTables(CommonsConstants.TBL_CITIES, CommonsConstants.TBL_CONTACTS,
-                CommonsConstants.COL_CITY))
-        .addFromLeft(CommonsConstants.TBL_COUNTRIES,
-            sys.joinTables(CommonsConstants.TBL_COUNTRIES, CommonsConstants.TBL_CONTACTS,
-                CommonsConstants.COL_COUNTRY))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_CLIENTS, COL_CLIENT_USER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
         .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
-    SimpleRowSet data = qs.getData(query
-        .addMax(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
-        .addSum(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+    ResponseObject response = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
+        order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
+        order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
+        order.getValue(COL_POST_INDEX), order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
 
-    WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-        prm.getText(EC_MODULE, "ERPOperation"), order.getValue(CommonsConstants.COL_COMPANY),
-        prm.getText(EC_MODULE, "ERPWarehouse"));
+    if (!response.hasErrors()) {
+      WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
+          prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(),
+          prm.getText(COMMONS_MODULE, "ERPWarehouse"));
 
-    doc.setCompanyCode(order.getValue(CommonsConstants.COL_CODE));
-    doc.setCompanyVATCode(order.getValue(CommonsConstants.COL_VAT_CODE));
-    doc.setCompanyAddress(order.getValue(CommonsConstants.COL_ADDRESS));
-    doc.setCompanyPostIndex(order.getValue(CommonsConstants.COL_POST_INDEX));
-    doc.setCompanyCity(order.getValue(CommonsConstants.COL_CITY));
-    doc.setCompanyCountry(order.getValue(CommonsConstants.COL_COUNTRY));
+      SimpleRowSet data = qs.getData(query);
 
-    ResponseObject response = new ResponseObject();
+      for (EcItem item : items) {
+        String id = null;
 
-    for (EcItem item : items) {
-      String id = null;
-
-      for (ArticleSupplier supplier : item.getSuppliers()) {
-        if (EcSupplier.EOLTAS == supplier.getSupplier()) {
-          id = supplier.getSupplierId();
-          break;
-        }
-      }
-      if (BeeUtils.isEmpty(id)) {
-        String brandName = qs.getValue(new SqlSelect()
-            .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
-            .addFrom(TBL_TCD_BRANDS)
-            .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
-
-        ResponseObject resp = ButentWS.importItem(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-            prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
-            item.getName(), brandName, item.getCode());
-
-        if (resp.hasErrors()) {
-          response.addErrorsFrom(resp);
-          break;
-        } else {
-          id = resp.getResponseAsString();
-
-          if (!BeeUtils.isEmpty(id)) {
-            qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
-                .addConstant(COL_TCD_ARTICLE, item.getArticleId())
-                .addConstant(COL_TCD_COST, item.getRealCost())
-                .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
-                .addConstant(COL_TCD_SUPPLIER_ID, id));
+        for (ArticleSupplier supplier : item.getSuppliers()) {
+          if (EcSupplier.EOLTAS == supplier.getSupplier()) {
+            id = supplier.getSupplierId();
+            break;
           }
         }
-      }
-      if (!BeeUtils.isEmpty(id)) {
-        String article = BeeUtils.toString(item.getArticleId());
+        if (BeeUtils.isEmpty(id)) {
+          String brandName = qs.getValue(new SqlSelect()
+              .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+              .addFrom(TBL_TCD_BRANDS)
+              .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
 
-        WSDocumentItem docItem = doc.addItem(id,
-            data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+          ResponseObject resp = ButentWS.importItem(remoteAddress, remoteLogin, remotePassword,
+              item.getName(), brandName, item.getCode());
 
-        docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-        docItem.setVatPercent(prm.getInteger(CommonsConstants.COMMONS_MODULE,
-            CommonsConstants.PRM_VAT_PERCENT));
+          if (resp.hasErrors()) {
+            response.addErrorsFrom(resp);
+            break;
+          } else {
+            id = resp.getResponseAsString();
+
+            if (!BeeUtils.isEmpty(id)) {
+              qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+                  .addConstant(COL_TCD_ARTICLE, item.getArticleId())
+                  .addConstant(COL_TCD_COST, item.getRealCost())
+                  .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
+                  .addConstant(COL_TCD_SUPPLIER_ID, id));
+            }
+          }
+        }
+        if (!BeeUtils.isEmpty(id)) {
+          String article = BeeUtils.toString(item.getArticleId());
+
+          WSDocumentItem docItem = doc.addItem(id,
+              data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+
+          docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
+          docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, true);
+        }
       }
-    }
-    if (!response.hasErrors()) {
-      response = ButentWS.importDoc(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-          prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD), doc);
+      if (!response.hasErrors()) {
+        response = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
+      }
     }
     if (response.hasErrors()) {
       response.log(logger);

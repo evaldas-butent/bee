@@ -50,8 +50,8 @@ public final class CommonsUtils {
 
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, null);
-        cols.put(COL_CODE, Localized.getConstants().companyCode());
-        cols.put(COL_VAT_CODE, Localized.getConstants().companyVATCode());
+        cols.put(COL_COMPANY_CODE, Localized.getConstants().companyCode());
+        cols.put(COL_COMPANY_VAT_CODE, Localized.getConstants().companyVATCode());
         cols.put(COL_ADDRESS, Localized.getConstants().address());
         cols.put(COL_PHONE, null);
         cols.put(COL_EMAIL_ADDRESS, Localized.getConstants().email());

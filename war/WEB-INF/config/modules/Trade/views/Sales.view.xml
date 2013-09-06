@@ -24,6 +24,10 @@
     </SimpleJoin>
     <SimpleColumn name="VatIncluded" />
     
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+
+
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />

@@ -149,6 +149,7 @@ public final class CommonsConstants {
   public static final String COL_ROLE = "Role";
 
   public static final String COL_COMPANY = "Company";
+  public static final String COL_COMPANY_NAME = "Name";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_PERSON = "Person";
@@ -172,17 +173,20 @@ public final class CommonsConstants {
   public static final String COL_PHOTO = "Photo";
 
   public static final String COL_NAME = "Name";
-  public static final String COL_ITEM = "Item";
   public static final String COL_CATEGORY = "Category";
-  public static final String COL_SERVICE = "IsService";
+
+  public static final String COL_ITEM = "Item";
+  public static final String COL_ITEM_NAME = "Name";
+  public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_BARCODE = "Barcode";
+  public static final String COL_ITEM_IS_SERVICE = "IsService";
+  public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
-  public static final String COL_ARTICLE = "Article";
-  public static final String COL_BARCODE = "Barcode";
 
-  public static final String COL_CODE = "Code";
-  public static final String COL_VAT_CODE = "VATCode";
+  public static final String COL_COMPANY_CODE = "Code";
+  public static final String COL_COMPANY_VAT_CODE = "VATCode";
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
@@ -193,7 +197,9 @@ public final class CommonsConstants {
   public static final String COL_POST_INDEX = "PostIndex";
 
   public static final String COL_CITY = "City";
+  public static final String COL_CITY_NAME = "Name";
   public static final String COL_COUNTRY = "Country";
+  public static final String COL_COUNTRY_NAME = "Name";
 
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
@@ -229,6 +235,10 @@ public final class CommonsConstants {
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
   public static final String PRM_AUDIT_OFF = "DisableAuditing";
   public static final String PRM_VAT_PERCENT = "VATPercent";
+
+  public static final String PRM_ERP_ADDRESS = "ERPAddress";
+  public static final String PRM_ERP_LOGIN = "ERPLogin";
+  public static final String PRM_ERP_PASSWORD = "ERPPassword";
 
   public static final String PROP_CATEGORIES = "CategList";
 

@@ -15,6 +15,7 @@
     <SimpleColumn name="Vehicle" />
     <SimpleColumn name="Driver" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
 
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
@@ -23,6 +24,9 @@
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
     <SimpleColumn name="VatIncluded" />
+    
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
     
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">

@@ -43,7 +43,7 @@ public final class TradeUtils {
     args.addDataItem(COL_SALE, saleId);
 
     if (DataUtils.isId(currencyTo)) {
-      args.addDataItem(ExchangeUtils.FLD_CURRENCY, currencyTo);
+      args.addDataItem(ExchangeUtils.COL_CURRENCY, currencyTo);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -57,12 +57,12 @@ public final class TradeUtils {
 
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, Localized.getConstants().item());
-        cols.put(COL_ARTICLE, Localized.getConstants().article());
-        cols.put(COL_QUANTITY, Localized.getConstants().quantity());
+        cols.put(COL_ITEM_ARTICLE, Localized.getConstants().article());
+        cols.put(COL_SALE_ITEM_QUANTITY, Localized.getConstants().quantity());
         cols.put(COL_UNIT, Localized.getConstants().unit());
-        cols.put(COL_PRICE, Localized.getConstants().price());
-        cols.put(COL_AMOUNT, Localized.getConstants().amount());
-        cols.put(COL_VAT, Localized.getConstants().vat());
+        cols.put(COL_SALE_ITEM_PRICE, Localized.getConstants().price());
+        cols.put(COL_SALE_AMOUNT, Localized.getConstants().amount());
+        cols.put(COL_SALE_ITEM_VAT, Localized.getConstants().vat());
 
         HtmlTable table = new HtmlTable();
         table.setStyleName(STYLE_ITEMS_TABLE);
@@ -76,9 +76,9 @@ public final class TradeUtils {
           cell.getElement().setInnerText(cols.get(col));
           table.setWidget(0, c++, cell);
 
-          if (BeeUtils.same(col, COL_QUANTITY)) {
+          if (BeeUtils.same(col, COL_SALE_ITEM_QUANTITY)) {
             qtyIdx = c - 1;
-          } else if (BeeUtils.same(col, COL_AMOUNT)) {
+          } else if (BeeUtils.same(col, COL_SALE_AMOUNT)) {
             sumIdx = c - 1;
           }
         }
@@ -92,24 +92,24 @@ public final class TradeUtils {
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           table.getRowFormatter().addStyleName(i + 1, STYLE_ITEMS_DATA);
           c = 0;
-          double qty = rs.getDouble(i, COL_QUANTITY);
+          double qty = rs.getDouble(i, COL_SALE_ITEM_QUANTITY);
           qtyTotal += qty;
-          double sum = qty * BeeUtils.unbox(rs.getDouble(i, COL_PRICE));
-          double vat = BeeUtils.unbox(rs.getDouble(i, COL_VAT));
+          double sum = qty * BeeUtils.unbox(rs.getDouble(i, COL_SALE_ITEM_PRICE));
+          double vat = BeeUtils.unbox(rs.getDouble(i, COL_SALE_ITEM_VAT));
 
           if (BeeUtils.isEmpty(currency)) {
-            currency = " " + rs.getValue(i, ExchangeUtils.FLD_CURRENCY);
+            currency = " " + rs.getValue(i, ExchangeUtils.COL_CURRENCY);
           }
           if (!vatExists) {
-            vatExists = rs.getDouble(i, COL_VAT) != null;
+            vatExists = rs.getDouble(i, COL_SALE_ITEM_VAT) != null;
           }
-          if (BeeUtils.unbox(rs.getBoolean(i, COL_VAT_INCL))) {
-            if (BeeUtils.unbox(rs.getBoolean(i, COL_VAT_PERC))) {
+          if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_VAT_INCL))) {
+            if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
               vat = sum - sum / (1 + vat / 100);
             }
             sum -= vat;
           } else {
-            if (BeeUtils.unbox(rs.getBoolean(i, COL_VAT_PERC))) {
+            if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
               vat = sum / 100 * vat;
             }
           }
@@ -121,19 +121,19 @@ public final class TradeUtils {
             Widget cell = new CustomDiv(STYLE_ITEMS + col.toLowerCase());
             String value;
 
-            if (BeeUtils.same(col, COL_QUANTITY)) {
+            if (BeeUtils.same(col, COL_SALE_ITEM_QUANTITY)) {
               value = BeeUtils.toString(qty);
 
-            } else if (BeeUtils.same(col, COL_PRICE)) {
+            } else if (BeeUtils.same(col, COL_SALE_ITEM_PRICE)) {
               value = BeeUtils.toString(BeeUtils.round(sum / qty, 5));
 
-            } else if (BeeUtils.same(col, COL_VAT)) {
+            } else if (BeeUtils.same(col, COL_SALE_ITEM_VAT)) {
               value = rs.getValue(i, col);
 
-              if (value != null && BeeUtils.unbox(rs.getBoolean(i, COL_VAT_PERC))) {
+              if (value != null && BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
                 value = BeeUtils.removeTrailingZeros(value) + "%";
               }
-            } else if (BeeUtils.same(col, COL_AMOUNT)) {
+            } else if (BeeUtils.same(col, COL_SALE_AMOUNT)) {
               value = formater.format(sum);
 
             } else {
@@ -199,7 +199,7 @@ public final class TradeUtils {
     final int fraction = BeeUtils.toInt((amount - number) * 100);
 
     ParameterList args = TradeKeeper.createArgs(SVC_NUMBER_TO_WORDS);
-    args.addDataItem(COL_AMOUNT, number);
+    args.addDataItem(COL_SALE_AMOUNT, number);
 
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem("Locale", locale);

@@ -128,6 +128,8 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
+  String showPayerInfo();
+
   String terminal();
 
   String trailers();
@@ -145,6 +147,10 @@ public interface LocalizableTransportConstants {
   String tripDuration();
 
   String trips();
+
+  String trSendToERP();
+
+  String trSendToERPConfirm();
 
   String trucks();
 

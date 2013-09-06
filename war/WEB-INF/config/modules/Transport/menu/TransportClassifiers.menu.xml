@@ -14,4 +14,5 @@ name="TransportClassifiers" label="Transporto klasifikatoriai" parent="Transport
   <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
   <Item name="TransportGroups" label="Transporto grupės" service="grid" parameters="TransportGroups" />
  
+  <Item name="Parameters" label="Transporto parametrai" service="parameters" parameters="Transport"  separator="true" />
 </Entry>

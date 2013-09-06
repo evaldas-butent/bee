@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="Items" viewName="Items"
-  newRowForm="Item" editForm="Item" editShowId="true"
+  newRowForm="Item" editForm="Item" editShowId="true" editInPlace="ExternalCode"
   newRowPopup="true" editPopup="true"
   >
   <west size="200" splitterSize="2">
@@ -27,5 +27,7 @@
       <carry><ui:expression>row.Vat</ui:expression></carry>
     </DataColumn>
     <DataColumn name="VatPercent" />
+
+    <DataColumn name="ExternalCode" />
   </columns>
 </Grid>

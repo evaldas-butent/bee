@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.ec;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -214,9 +215,11 @@ public class TecDocBean {
   @Asynchronous
   public void suckButent() {
     EcSupplier supplier = EcSupplier.EOLTAS;
+    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
-    ResponseObject response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-        prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT preke AS pr, savikaina AS kn, gam_art AS ga, gamintojas AS gam"
             + " FROM prekes"
             + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL",
@@ -237,8 +240,7 @@ public class TecDocBean {
       }
       importItems(supplier, data);
     }
-    response = ButentWS.getSQLData(prm.getText(EC_MODULE, PRM_ERP_ADDRESS),
-        prm.getText(EC_MODULE, PRM_ERP_LOGIN), prm.getText(EC_MODULE, PRM_ERP_PASSWORD),
+    response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
             + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
             + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
