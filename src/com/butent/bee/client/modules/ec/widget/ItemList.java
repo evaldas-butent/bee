@@ -8,16 +8,16 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
@@ -118,11 +118,22 @@ public class ItemList extends Flow {
                 List<EcItem> items = EcKeeper.getResponseItems(response);
 
                 if (!BeeUtils.isEmpty(items)) {
-                  ItemPanel itemPanel = new ItemPanel();
-                  itemPanel.setHeight("600px");
-                  StyleUtils.setOverflow(itemPanel.getElement(), ScrollBars.VERTICAL, "auto");
-                  EcKeeper.renderItems(itemPanel, items);
-                  Global.getMsgBoxen().showWidget(itemPanel);
+                  ItemList analogList = new ItemList(items);
+
+                  Simple analogPanel = new Simple(analogList);
+                  analogPanel.addStyleName(STYLE_ITEM_ANALOGS + "-panel");
+                  
+                  String caption = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
+                      item.getName(), item.getCode(), EcKeeper.getBrandName(item.getBrand()));
+                  DialogBox dialog = DialogBox.create(caption, STYLE_ITEM_ANALOGS + "-dialog");
+                  
+                  dialog.setWidget(analogPanel);
+                  
+                  dialog.setAnimationEnabled(true);
+                  dialog.setHideOnEscape(true);
+
+                  dialog.center();
+                  
                 } else {
                   BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
                 }

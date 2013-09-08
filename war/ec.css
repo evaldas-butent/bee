@@ -1051,3 +1051,10 @@
 .bee-ec-searchByGroup-actions {
   margin-top: 1ex;
 }
+
+.bee-ec-ItemList-analogs-panel {
+  max-width: 800px;
+  max-height: 600px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}

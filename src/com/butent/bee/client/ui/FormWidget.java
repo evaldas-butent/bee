@@ -116,6 +116,7 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
+import com.butent.bee.client.widget.RowIdLabel;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
@@ -229,6 +230,7 @@ public enum FormWidget {
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   RICH_TEXT_EDITOR("RichTextEditor", EnumSet.of(Type.DISPLAY)),
+  ROW_ID_LABEL("RowIdLabel", EnumSet.of(Type.DISPLAY)),
   SCROLL_PANEL("ScrollPanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_INLINE_PANEL("SimpleInlinePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_PANEL("SimplePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
@@ -967,6 +969,12 @@ public enum FormWidget {
         widget = new RichTextEditor(true);
         break;
 
+      case ROW_ID_LABEL:
+        format = attributes.get(UiConstants.ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
+        widget = new RowIdLabel(format, inline);
+        break;
+        
       case SCROLL_PANEL:
         widget = new Scroll();
         break;

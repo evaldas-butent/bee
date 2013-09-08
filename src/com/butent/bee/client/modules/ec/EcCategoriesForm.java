@@ -25,7 +25,7 @@ import com.butent.bee.shared.i18n.Localized;
 
 import java.util.List;
 
-public class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<IsRow> {
+class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<IsRow> {
 
   private TreeContainer treeView;
 

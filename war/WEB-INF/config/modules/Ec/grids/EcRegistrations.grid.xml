@@ -21,9 +21,9 @@
     <DataColumn name="Email" visible="true" />
     <DataColumn name="Phone" visible="true" />
 
-    <DataColumn name="City" />
-    <DataColumn name="Address" />
-    <DataColumn name="PostIndex" />
+    <DataColumn name="City" visible="true" />
+    <DataColumn name="Address" visible="true" />
+    <DataColumn name="PostIndex" visible="true" />
 
     <DataColumn name="Country" visible="false" />
 

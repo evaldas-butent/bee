@@ -126,6 +126,8 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
+  String showPayerInfo();
+
   String terminal();
 
   String trailers();

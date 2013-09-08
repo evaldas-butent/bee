@@ -23,3 +23,23 @@
   max-width: 100%;
   max-heigt: 100%;
 }
+
+.bee-ec-Order-form .bee-disabled,
+.bee-ec-Order-form .bee-disabled input {
+  background-color: #f3f3eb;
+}
+
+.bee-ec-OrderRejection-table td {
+  padding: 8px;
+}
+
+.bee-ec-OrderRejection-reason-input {
+  width: 300px;
+}
+.bee-ec-OrderRejection-comment-label-cell {
+  vertical-align: top;
+}
+.bee-ec-OrderRejection-comment-input {
+  width: 300px;
+  height: 100px;
+}

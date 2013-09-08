@@ -2,19 +2,19 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="EcOrderItems" viewName="EcOrderItems"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
   <columns>
-    <RelColumn name="ArticleName" label="=ecItemName" caching="none"
-        renderColumns="ArticleName" searchableColumns="ArticleName"
-        choiceColumns="ArticleName BrandName ArticleNr" />
+    <RelColumn name="ArticleName" label="=ecItemName" caching="none" newRowEnabled="false"
+        renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
+        choiceColumns="ArticleName BrandName ArticleNr" visible="true" />
     <DataColumn name="BrandName" />
-    <DataColumn name="ArticleNr" />
+    <DataColumn name="ArticleNr" visible="true" />
       
-    <DataColumn name="QuantityOrdered" visible="true" />
-    <DataColumn name="QuantitySubmit" visible="true" />
+    <DataColumn name="QuantityOrdered" visible="true" maxWidth="100" />
+    <DataColumn name="QuantitySubmit" visible="true" maxWidth="100" />
 
-    <DataColumn name="Price" visible="true" />
+    <DataColumn name="Price" visible="true" maxWidth="100" />
 
     <DataColumn name="Note" />
   </columns>

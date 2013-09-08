@@ -981,4 +981,6 @@
   <xs:element name="FieldSet" type="hasChildren" substitutionGroup="widget" />
   <xs:element name="Legend" type="widgetType" substitutionGroup="widget" />
 
+  <xs:element name="RowIdLabel" type="valueLabel" substitutionGroup="widget" />
+
 </xs:schema>

@@ -453,12 +453,16 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(query)) {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
     }
+
     IsCondition condition;
+    String code;
 
     if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
       condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
+      code = null;
     } else {
       condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query);
+      code = query;
     }
 
     SqlSelect articleIdQuery = new SqlSelect()
@@ -466,7 +470,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLES)
         .setWhere(SqlUtils.and(condition, articleCondition));
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, code);
     if (items.isEmpty()) {
       return didNotMatch(query);
     } else {
@@ -890,7 +894,7 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.or(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY, time),
             SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED, time)));
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, null);
     return ResponseObject.response(items);
   }
 
@@ -1233,7 +1237,7 @@ public class EcModuleBean implements BeeModule {
 
     articleIdQuery.setWhere(where);
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, null);
 
     if (items.isEmpty()) {
       return didNotMatch(qs.getValue(new SqlSelect()
@@ -1256,7 +1260,7 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.notEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, id),
             SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, code, COL_TCD_BRAND, brand)));
 
-    return ResponseObject.response(getItems(articleIdQuery));
+    return ResponseObject.response(getItems(articleIdQuery, null));
   }
 
   private ResponseObject getItemBrands() {
@@ -1397,7 +1401,7 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(ecItemInfo);
   }
 
-  private List<EcItem> getItems(SqlSelect query) {
+  private List<EcItem> getItems(SqlSelect query, String code) {
     List<EcItem> items = Lists.newArrayList();
 
     String tempArticleIds = createTempArticleIds(query);
@@ -1441,8 +1445,12 @@ public class EcModuleBean implements BeeModule {
         }
 
         item.setUnit(row.getValue(unitName));
-
-        items.add(item);
+        
+        if (code != null && code.equals(item.getCode())) {
+          items.add(0, item);
+        } else {
+          items.add(item);
+        }
       }
     }
 
@@ -1477,7 +1485,7 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLES, COL_TCD_BRAND, brand),
             articleCondition));
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, null);
 
     if (items.isEmpty()) {
       return didNotMatch(BeeUtils.toString(brand));
@@ -1497,7 +1505,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_TYPE_ARTICLES)
         .setWhere(SqlUtils.equals(TBL_TCD_TYPE_ARTICLES, COL_TCD_TYPE, typeId));
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, null);
 
     if (items.isEmpty()) {
       return didNotMatch(BeeUtils.toString(typeId));
@@ -1561,7 +1569,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLES)
         .setWhere(SqlUtils.inList(TBL_TCD_ARTICLES, idName, articles));
 
-    List<EcItem> ecItems = getItems(articleIdQuery);
+    List<EcItem> ecItems = getItems(articleIdQuery, null);
     if (ecItems.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
@@ -1670,7 +1678,7 @@ public class EcModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, search),
             clause));
 
-    List<EcItem> items = getItems(articleIdQuery);
+    List<EcItem> items = getItems(articleIdQuery, code);
     if (items.isEmpty()) {
       return didNotMatch(code);
     } else {
@@ -1697,7 +1705,7 @@ public class EcModuleBean implements BeeModule {
             SqlUtils.positive(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)))
         .addGroup(TBL_ORDER_ITEMS, COL_TCD_ARTICLE);
 
-    List<EcItem> items = getItems(query);
+    List<EcItem> items = getItems(query, null);
 
     if (items.isEmpty()) {
       return ResponseObject.error(Localized.getConstants().ecNothingToOrder());

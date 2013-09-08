@@ -154,6 +154,12 @@ public interface LocalizableEcConstants {
 
   String ecOrderNumber();
 
+  String ecOrderRejectCaption();
+
+  String ecOrderRejectCommand();
+  
+  String ecOrderRejectConfirm();
+
   String ecOrdersSubmitted();
 
   String ecOrderStatus();
@@ -169,6 +175,8 @@ public interface LocalizableEcConstants {
   String ecOrderSubmitted();
 
   String ecRejectionReason();
+
+  String ecRejectionReasonRequired();
 
   String ecRegister();
 

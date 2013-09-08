@@ -2,15 +2,15 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
-  editForm="EcOrder"
+  editForm="EcOrder" newRowColumns="Date Client Manager DeliveryMethod"
+  order="Date desc" cacheData="false" asyncThreshold="-1"
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <IdColumn name="ID" />
-    <DataColumn name="Date" visible="true" />
-    <DataColumn name="Number" visible="false" />
+    <IdColumn name="ID" caption="=ecOrderNumber" maxWidth="80" />
+    <DataColumn name="Date" visible="true" maxWidth="120" />
 
-    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" />
+    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" maxWidth="80" />
 
     <RelColumn name="Client" visible="true">
       <renderToken source="ClientFirstName" />
