@@ -3,7 +3,7 @@
 
   name="TransportGroups"
   source="TransportGroups"
-  newRowCaption="Nauja transporto grupė" 
+  newRowCaption="=trNewTransportGroup" 
   >
   <Columns>
     <SimpleColumn name="Name" />

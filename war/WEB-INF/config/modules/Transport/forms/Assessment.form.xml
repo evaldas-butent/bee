@@ -47,7 +47,7 @@
           newRowEnabled="false" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label text="=transportComment" style="&labelLeft; vertical-align:top;" />
+        <Label text="=trComment" style="&labelLeft; vertical-align:top;" />
         <InputArea source="Notes" style="width:400px;" />
       </FlowPanel>
       <FlowPanel style="&section;">

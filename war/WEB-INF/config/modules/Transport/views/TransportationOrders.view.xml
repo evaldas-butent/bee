@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TransportationOrders" source="TransportationOrders"
-  caption="Pervežimo užsakymai" newRowCaption="Naujas pervežimo užsakymas"
+  caption="=trTransportationOrders" newRowCaption="=newTransportationOrder"
   editForm="TransportationOrder" newRowForm="TransportationOrder"
   >
   <Columns>

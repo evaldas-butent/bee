@@ -3,7 +3,7 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Assessments" source="CargoAssessors"
-  newRowForm="Assessment" newRowCaption="Naujas vertinimo užklausimas"
+  newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
   editForm="Assessment"
   >
   <Columns>
@@ -11,7 +11,7 @@
     <SimpleColumn name="Date" />
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Notes" label="Komentaras" />
+    <SimpleColumn name="Notes" label="=trComment" />
 
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="INNER">

@@ -3,7 +3,7 @@
 
   name="ServiceTypes"
   source="ServiceTypes"
-  newRowCaption="Naujas serviso tipas"
+  newRowCaption="=trNewServiceTypes"
   >
   <Columns>
     <SimpleColumn name="Name" />

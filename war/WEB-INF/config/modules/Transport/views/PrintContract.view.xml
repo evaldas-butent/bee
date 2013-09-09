@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="PrintContract" source="CargoTrips" caption="Sutartis"
+  name="PrintContract" source="CargoTrips" caption="=trContract"
   >
   <Columns>
     <SimpleJoin joinType="LEFT" name="Assessor">

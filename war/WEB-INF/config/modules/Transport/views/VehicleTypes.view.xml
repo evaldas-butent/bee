@@ -3,7 +3,7 @@
 
   name="VehicleTypes"
   source="VehicleTypes"
-  newRowCaption="Naujas transporto tipas" 
+  newRowCaption="=trNewVehicleModel" 
   >
   <Columns>
     <SimpleColumn name="Name" />

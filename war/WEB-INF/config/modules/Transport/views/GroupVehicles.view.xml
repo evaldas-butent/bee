@@ -3,7 +3,7 @@
 
   name="GroupVehicles"
   source="VehicleGroups"
-  newRowCaption="Priskirti transporto priemonę" 
+  newRowCaption="=trAssignVehicle" 
   >
   <Columns>
     <SimpleColumn name="Group" />

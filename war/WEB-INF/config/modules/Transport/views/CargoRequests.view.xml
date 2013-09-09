@@ -9,13 +9,13 @@
     <SimpleColumn name="Request" />
     <SimpleJoin name="Request" joinType="INNER">
       <SimpleColumn name="Date" editable="true" />
-      <SimpleColumn name="Content" alias="Route" label="Maršrutas" editable="true" />
+      <SimpleColumn name="Content" alias="Route" label="=route" editable="true" />
       <SimpleColumn name="Contacts" editable="true" />
       <SimpleColumn name="Created" />
       <SimpleColumn name="Finished" editable="true" />
       <SimpleColumn name="Result" editable="true" />
       
-      <SimpleColumn name="Customer" label="Užsakovas" editable="true" />
+      <SimpleColumn name="Customer" label="=customer" editable="true" />
       <SimpleJoin joinType="LEFT" name="Customer">
         <SimpleColumn name="Name" alias="CustomerName" />
       </SimpleJoin>
@@ -60,21 +60,21 @@
         <SimpleColumn name="CustomerPerson" alias="OrderCustomerPerson" editable="true" />
         <SimpleColumn name="Manager" alias="OrderManager" editable="true" />
       </SimpleJoin>
-      <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
+      <SimpleColumn name="Notes" alias="CargoNotes" label="=additionalInfo" editable="true" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
+        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
         <SimpleColumn name="Address" alias="LoadingAddress" label="=cargoLoadingAddress" editable="true" />
-        <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />
+        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
+        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
         <SimpleColumn name="Address" alias="UnloadingAddress" label="=cargoUnloadingAddress" editable="true" />
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="Iškrovimo šalis" editable="true" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />

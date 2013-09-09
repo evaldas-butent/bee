@@ -4,7 +4,7 @@
   name="ExpeditionTrips"
   source="Trips"
   filter="Expedition"
-  editForm="ExpeditionTrip" newRowForm="ExpeditionTrip" newRowCaption="Naujas ekspedijavimo reisas"
+  editForm="ExpeditionTrip" newRowForm="ExpeditionTrip" newRowCaption="=trNewExpeditionTrip"
   >
   <Columns>
     <SimpleColumn name="Status" />

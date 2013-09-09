@@ -8,7 +8,7 @@
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="LoadingDate" caption="=transportLoadingDate" width="80" format="DATE_SHORT" />
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="80" format="DATE_SHORT" />
     <DataColumn name="ForwarderName" caption="=carrier" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <ActionColumn element="button" name="Contract" caption="=print" width="70">
