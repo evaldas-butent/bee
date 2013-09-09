@@ -156,6 +156,10 @@ public interface LocalizableTransportConstants {
 
   String truckTimeBoard();
 
+  String trVehicleTypes();
+
+  String trVehicleTypesShort();
+
   String unloading();
 
   String vehicleBodyNumber();
@@ -198,7 +202,5 @@ public interface LocalizableTransportConstants {
 
   String vehicleType();
 
-  String vehicleTypes();
 
-  String vehicleTypesShort();
 }

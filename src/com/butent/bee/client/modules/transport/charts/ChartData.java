@@ -105,7 +105,7 @@ class ChartData {
     UNLOADING(Localized.getConstants().cargoUnloading()),
     VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
     VEHICLE_MODEL(Localized.getConstants().vehicleModelsShort()),
-    VEHICLE_TYPE(Localized.getConstants().vehicleTypesShort());
+    VEHICLE_TYPE(Localized.getConstants().trVehicleTypesShort());
 
     private final String caption;
 
