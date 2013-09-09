@@ -7,17 +7,17 @@
   <Fields>
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
-    <Date name="Date" label="Data" />
+    <Date name="Date" label="=date" />
 
-    <Relation name="Service" notNull="true" relation="Services" label="Paslauga" />
-    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="Suma" />
-    <Relation name="Currency" relation="Currencies" notNull="true" label="Valiuta" />
+    <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />
+    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=amount" />
+    <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="%" />
 
-    <String name="Number" precision="20" label="Numeris" />
-    <Relation name="Customer" relation="Companies" label="Klientas" />
-    <String name="Note" precision="50" label="Pastaba" />
+    <String name="Number" precision="20" label="=number" />
+    <Relation name="Customer" relation="Companies" label="=client" />
+    <String name="Note" precision="50" label="=note" />
     <Relation name="Sale" relation="Sales" cascade="SET_NULL" />
   </Fields>
 </Table>

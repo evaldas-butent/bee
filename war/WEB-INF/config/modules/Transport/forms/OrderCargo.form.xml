@@ -16,7 +16,7 @@
       <InputText source="Description" caption="=cargo" decorator="flex-left"
         style="font-weight: bold; color: blue;" d:size="60" d:unit="px" />
       <HorizontalPanel>
-        <InputCurrency source="Price" caption="=transportationPrice" style="width: 70px; font-weight: bold; color: green;" />
+        <InputCurrency source="Price" caption="=trTransportationPrice" style="width: 70px; font-weight: bold; color: green;" />
         <DataSelector source="Currency" editEnabled="false"
           style="width: 40px; font-weight: bold; display: inline-block;" />
       </HorizontalPanel>
@@ -50,12 +50,12 @@
             <CheckBox source="Partial" text="=partial" style="margin:3px;"/>
       	  </row>
       	  <row>
-      	  	<Label text="=loadedKilometers" horizontalAlignment="right" />
+      	  	<Label text="=trLoadedKilometers" horizontalAlignment="right" />
       	  	<InputDecimal source="LoadedKilometers" />
             <CheckBox source="Outsized" text="=outsized" style="margin:3px;"/>
       	  </row>
       	  <row>
-            <Label text="=emptyKilometers"  horizontalAlignment="right" />
+            <Label text="=trEmptyKilometers"  horizontalAlignment="right" />
             <InputDecimal source="EmptyKilometers" />
             <CheckBox source="Dangerous" text="=dangerous" style="margin:3px;"/>
       	  </row>

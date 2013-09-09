@@ -66,10 +66,6 @@ public interface LocalizableTransportConstants {
 
   String driverAbsence();
 
-  String driverEndingDate();
-
-  String driverExperience();
-
   String driverGroups();
 
   String driverGroupsShort();
@@ -78,11 +74,7 @@ public interface LocalizableTransportConstants {
 
   String drivers();
 
-  String driverStartingDate();
-
   String driverTimeBoard();
-
-  String emptyKilometers();
 
   String freightExchange();
 
@@ -91,8 +83,6 @@ public interface LocalizableTransportConstants {
   String intermediateLoading();
 
   String intermediateUnloading();
-
-  String loadedKilometers();
 
   String loading();
 
@@ -142,11 +132,21 @@ public interface LocalizableTransportConstants {
 
   String transportationOrderStatuses();
 
-  String trDriverName();
-
   String tripDuration();
 
   String trips();
+
+  String trDriverName();
+
+  String trDriverEndingDate();
+
+  String trDriverExperience();
+
+  String trDriverStartingDate();
+
+  String trEmptyKilometers();
+
+  String trLoadedKilometers();
 
   String trSendToERP();
 

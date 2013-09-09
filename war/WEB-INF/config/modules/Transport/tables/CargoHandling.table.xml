@@ -9,6 +9,6 @@
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Text name="Notes" label="Pastabos" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

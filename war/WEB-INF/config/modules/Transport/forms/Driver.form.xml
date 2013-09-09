@@ -34,7 +34,7 @@
         <Label text="=driverPosition" class="bee-companyInfo-label" style="&lbl;" />
         <TextLabel source="PositionName" style="&w2;" />
 
-        <Label text="=driverExperience" style="&lbl;" />
+        <Label text="=trDriverExperience" style="&lbl;" />
         <SimplePanel style="&w2;">
           <InputDate source="Experience" style="&inpdt;" minValue="1960" />
         </SimplePanel>
@@ -46,7 +46,7 @@
         <TextLabel source="Phone" style="&w2;" />
 
 
-        <Label text="=driverStartingDate" style="&lbl;" />
+        <Label text="=trDriverStartingDate" style="&lbl;" />
         <SimplePanel style="&w2;">
           <InputDate source="StartDate" style="&inpdt;" />
         </SimplePanel>
@@ -61,7 +61,7 @@
         </TextLabel>
       
 
-        <Label text="=driverEndingDate" style="&lbl;" />
+        <Label text="=trDriverEndingDate" style="&lbl;" />
         <SimplePanel style="&w2;">
            <InputDate source="EndDate" style="&inpdt; color: red;" />
           </SimplePanel>

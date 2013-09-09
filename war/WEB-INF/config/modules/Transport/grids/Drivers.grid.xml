@@ -18,7 +18,7 @@
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
 
-    <DataColumn name="Experience" caption="=driverExperience" width="88" />
+    <DataColumn name="Experience" caption="=trDriverExperience" width="88" />
     <DataColumn name="Notes" caption="=notes" />
   </columns>
 </Grid>

@@ -4,8 +4,8 @@
   name="VehicleTypes" idName="TypeID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="Tipas" />
-    <Boolean name="IsTruck" label="Vilkikas" />
-    <Boolean name="IsTrailer" label="Puspriekabė" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=vehicleType" />
+    <Boolean name="IsTruck" label="=trTruck" />
+    <Boolean name="IsTrailer" label="=trailer" />
   </Fields>
 </Table>

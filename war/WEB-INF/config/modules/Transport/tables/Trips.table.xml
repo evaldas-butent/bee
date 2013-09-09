@@ -6,23 +6,23 @@
   x="0" y="0"
   >
   <Fields>
-    <Integer name="Status" notNull="true" label="Būsena" defValue="0" />
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
+    <Integer name="Status" notNull="true" label="=status" defValue="0" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
     <String name="TripNo" precision="20" unique="true" notNull="true"
-      defExpr="NEXT_NUMBER" defValue="R/" label="Reiso Nr." />
-    <Relation name="Vehicle" relation="Vehicles" label="Vilkikas" />
-    <Relation name="Trailer" relation="Vehicles" label="Puspriekabė" />
-    <Date name="DateFrom" label="Data nuo" />
-    <Date name="DateTo" label="Data iki" />
-    <Date name="PlannedEndDate" label="Planuojama pabaigos data" />
-    <Double name="SpeedometerBefore" label="Spidomentras prieš" />
-    <Double name="SpeedometerAfter" label="Spidomentras po" />
-    <Numeric name="FuelBefore" precision="7" scale="2" label="Kuro likutis prieš" />
-    <Numeric name="FuelAfter" precision="7" scale="2" label="Kuro likutis po" />
-    <Relation name="Expedition" relation="ExpeditionTypes" label="Ekspedijavimo rūšis" />
-    <Relation name="Forwarder" relation="Companies" label="Vežėjas" />
-    <String name="ForwarderVehicle" precision="50" label="Vežėjo transportas" />
-    <String name="ForwarderDriver" precision="50" label="Vežėjo vairuotojas" />
-    <Text name="Notes" label="Pastabos" />
+      defExpr="NEXT_NUMBER" defValue="R/" label="=trTripNo" />
+    <Relation name="Vehicle" relation="Vehicles" label="=trTruck" />
+    <Relation name="Trailer" relation="Vehicles" label="=trailer" />
+    <Date name="DateFrom" label="=trTripDateFrom" />
+    <Date name="DateTo" label="=trTripDateTo" />
+    <Date name="PlannedEndDate" label="=scheduledEndingDate" />
+    <Double name="SpeedometerBefore" label="=trSpeedometerFrom" />
+    <Double name="SpeedometerAfter" label="=trSpeedometerAfter" />
+    <Numeric name="FuelBefore" precision="7" scale="2" label="=trFuelBalanceBefore" />
+    <Numeric name="FuelAfter" precision="7" scale="2" label="=trFuelBalanceAfter" />
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
+    <Relation name="Forwarder" relation="Companies" label="=carrier" />
+    <String name="ForwarderVehicle" precision="50" label="=trCarrierVehicle" />
+    <String name="ForwarderDriver" precision="50" label="=trCarrierDriver" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

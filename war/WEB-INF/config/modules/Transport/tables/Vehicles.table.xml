@@ -7,14 +7,14 @@
   >
   <Fields>
     <Relation name="Type" notNull="true" relation="VehicleTypes" />
-    <Relation name="Model" notNull="true" relation="VehicleModels" label="Modelis" />
+    <Relation name="Model" notNull="true" relation="VehicleModels" label="=vehicleModel" />
     <String name="Number" precision="10" unique="true" notNull="true" />
     <String name="BodyNumber" precision="20" unique="true" />
     <String name="EngineNumber" precision="20" unique="true" />
     <Numeric name="EngineVolume" precision="5" />
     <Date name="ProductionDate" />
-    <Date name="StartDate" label="Eksploatacijos pradžia" />
-    <Date name="EndDate" label="Eksploatacijos pabaiga" />
+    <Date name="StartDate" label="=trVehicleStartDate" />
+    <Date name="EndDate" label="=trVehicleEndDate" />
     <Relation name="Owner" relation="Companies" />
     <Integer name="Speedometer" />
     <Relation name="Fuel" relation="FuelTypes" />
@@ -22,7 +22,7 @@
     <Numeric name="Power" precision="4" />
     <Double name="Netto" />
     <Double name="Brutto" />
-    <Text name="Notes" label="Pastabos" />
+    <Text name="Notes" label="=notes" />
   </Fields>
   <Extensions>
     <Numeric name="Body" precision="1" />

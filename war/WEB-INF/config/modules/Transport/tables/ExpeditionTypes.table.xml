@@ -6,6 +6,6 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="Rūšis" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=trExpeditionTypeName" />
   </Fields>
 </Table>

@@ -7,7 +7,7 @@
   >
   <FlowPanel class="flexBox-vertical" style="margin: 10px">
     <InputText source="Name" caption="=vehicleModel" decorator="flex-left" d:size="50" />
-    <DataSelector source="Parent" caption="=vehicleMake" newRowEnabled="false" filter="!(parent)"
+    <DataSelector source="Parent" caption="=trVehicleMake" newRowEnabled="false" filter="!(parent)"
       required="true" decorator="flex-left" d:size="50" d:rootStyle="margin-top: 10px" />
   </FlowPanel>
 </f:Form>

@@ -18,8 +18,8 @@
               <DataSelector source="Fuel" caption="=vehicleFuel" />
               <InputInteger source="TankCapacity" caption="=vehicleTankCapacity" style="width: 2em;" />
               <InputInteger source="Speedometer" caption="=vehicleSpeedometer" style="width: 5em;" />
-              <InputDate source="StartDate" caption="=vehicleStartDate" style="width: 7em;" />
-              <InputDate source="EndDate" caption="=vehicleEndDate" style="width: 7em;" />
+              <InputDate source="StartDate" caption="=trVehicleStartDate" style="width: 7em;" />
+              <InputDate source="EndDate" caption="=trVehicleEndDate" style="width: 7em;" />
             </VerticalPanel>
           </layer>
           

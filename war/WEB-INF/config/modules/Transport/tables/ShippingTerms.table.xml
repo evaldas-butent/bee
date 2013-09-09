@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="3" notNull="true" unique="true" label="Sąlyga" />
-    <Text name="Description" label="Aprašymas" />
+    <String name="Name" precision="3" notNull="true" unique="true" label="=trShippingTermName" />
+    <Text name="Description" label="=colorDescription" />
   </Fields>
 </Table>
