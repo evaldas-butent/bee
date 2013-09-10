@@ -57,7 +57,7 @@
           <ChildGrid name="TcdArticleSuppliers" relColumn="Article" class="flexible"
             style="margin-right: 2em;" />
           <ChildGrid name="TcdRemainders" parent="TcdArticleSuppliers" relColumn="ArticleSupplier"
-            style="width: 200px;" />
+            style="width: 240px;" />
         </FlowPanel>
       </page>
 

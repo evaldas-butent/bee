@@ -5,7 +5,10 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -160,6 +163,63 @@ public class EcItem implements BeeSerializable {
     return code;
   }
 
+  public double getCost(EcDisplayedPrice displayedPrice) {
+    EcSupplier costSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
+
+    double cost = BeeConst.DOUBLE_ZERO;
+
+    for (ArticleSupplier articleSupplier : getSuppliers()) {
+      double supplierCost = articleSupplier.getRealPrice();
+
+      if (BeeUtils.isPositive(supplierCost)) {
+        if (costSupplier != null && articleSupplier.getSupplier() == costSupplier) {
+          cost = supplierCost;
+          break;
+        }
+
+        if (displayedPrice == EcDisplayedPrice.MIN) {
+          if (articleSupplier.totalStock() > 0) {
+            if (BeeUtils.isPositive(cost)) {
+              cost = Math.min(cost, supplierCost);
+            } else {
+              cost = supplierCost;
+            }
+          }
+
+        } else if (displayedPrice == EcDisplayedPrice.MAX) {
+          if (articleSupplier.totalStock() > 0) {
+            cost = Math.max(cost, supplierCost);
+          }
+
+        } else {
+          cost = Math.max(cost, supplierCost);
+        }
+      }
+    }
+
+    if (!BeeUtils.isPositive(cost)
+        && (displayedPrice == EcDisplayedPrice.MIN || displayedPrice == EcDisplayedPrice.MAX)) {
+      for (ArticleSupplier articleSupplier : getSuppliers()) {
+        double supplierCost = articleSupplier.getRealPrice();
+
+        if (BeeUtils.isPositive(supplierCost)) {
+          if (displayedPrice == EcDisplayedPrice.MIN) {
+            if (BeeUtils.isPositive(cost)) {
+              cost = Math.min(cost, supplierCost);
+            } else {
+              cost = supplierCost;
+            }
+
+          } else if (displayedPrice == EcDisplayedPrice.MAX) {
+            cost = Math.max(cost, supplierCost);
+          }
+        }
+      }
+    }
+
+    return cost;
+  }
+
   public String getDescription() {
     return description;
   }
@@ -174,15 +234,6 @@ public class EcItem implements BeeSerializable {
 
   public int getPrice() {
     return price;
-  }
-
-  public double getRealCost() {
-    double cost = 0;
-
-    for (ArticleSupplier supplier : getSuppliers()) {
-      cost = Math.max(cost, supplier.getRealPrice());
-    }
-    return cost;
   }
 
   public double getRealListPrice() {
@@ -343,7 +394,7 @@ public class EcItem implements BeeSerializable {
   public void setUnit(String unit) {
     this.unit = unit;
   }
-  
+
   public int totalStock() {
     int stock = 0;
     for (ArticleSupplier supplier : getSuppliers()) {

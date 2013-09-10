@@ -10,7 +10,7 @@
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=ecClientUser" style="&lbl;" />
+        <Label text="=ecClientUser" class="bee-required" style="&lbl;" />
         <DataSelector source="User" editSource="CompanyPerson" style="width: 550px;">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
@@ -21,7 +21,7 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=ecClientRegistrationDate" style="&lbl;" />
+        <Label text="=ecClientRegistrationDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Registered" style="&inp;" />
 
         <Label text="=ecClientType" class="bee-required" style="&lbl;" />
@@ -61,15 +61,18 @@
         <FlowPanel class="flexBox-vertical">
           &separator;
           <FlowPanel class="flexBox-horizontal">
-            <Label text="=ecDiscountPercent" style="&lbl;" />
+            <Label text="=ecDiscountPercent" style="margin-left: 2em; margin-right: 10px;" />
             <InputDecimal source="DiscountPercent" style="width: 80px;" />
 
-            <Label text="=ecDiscountParent" style="&lbl;" />
-            <DataSelector source="DiscountParent" style="width: 400px;">
+            <Label text="=ecDiscountParent" style="margin-left: 2em; margin-right: 10px;" />
+            <DataSelector source="DiscountParent" class="flexible" style="min-width: 100px; max-width: 400px;">
               <renderToken source="ParentFirstName" />
               <renderToken source="ParentLastName" />
               <renderToken source="ParentCompanyName" prefix=", " />
             </DataSelector>
+
+            <Label text="=ecDisplayedPrice" style="margin-left: 2em; margin-right: 10px;" />
+            <ListBox source="DisplayedPrice" itemKey="EcDisplayedPrice" style="margin-right: 2em;" />
           </FlowPanel>
           &separator;
 

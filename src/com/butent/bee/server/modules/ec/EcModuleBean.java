@@ -1772,7 +1772,7 @@ public class EcModuleBean implements BeeModule {
             if (!BeeUtils.isEmpty(id)) {
               qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
                   .addConstant(COL_TCD_ARTICLE, item.getArticleId())
-                  .addConstant(COL_TCD_COST, item.getRealCost())
+                  .addConstant(COL_TCD_COST, item.getCost(null))
                   .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
                   .addConstant(COL_TCD_SUPPLIER_ID, id));
             }
@@ -1854,10 +1854,19 @@ public class EcModuleBean implements BeeModule {
       }
     }
 
+    SimpleRow clientInfo = getCurrentClientInfo(COL_CLIENT_DISPLAYED_PRICE);
+    EcDisplayedPrice displayedPrice;
+    if (clientInfo == null) {
+      displayedPrice = null;
+    } else {
+      displayedPrice = NameUtils.getEnumByIndex(EcDisplayedPrice.class,
+          clientInfo.getInt(COL_CLIENT_DISPLAYED_PRICE));
+    }
+    
     for (EcItem item : items) {
       Double margin = getMarginPercent(item.getCategoryList(), catParents, catRoots, catMargins);
 
-      double cost = item.getRealCost();
+      double cost = item.getCost(displayedPrice);
       Double listPrice;
 
       if (margin != null) {

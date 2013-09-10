@@ -5,8 +5,9 @@
   >
   <Columns>
     <SimpleColumn name="ArticleSupplier" />
+    <SimpleColumn name="Warehouse" />
     <SimpleJoin name="Warehouse" joinType="INNER">
-      <SimpleColumn name="Code" alias="Warehouse" />
+      <SimpleColumn name="Code" />
     </SimpleJoin>
     <SimpleColumn name="Remainder" />
   </Columns>

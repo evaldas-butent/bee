@@ -362,6 +362,9 @@ public final class EcKeeper {
     key = Captions.register(EcOrderStatus.class);
     Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
 
+    key = Captions.register(EcDisplayedPrice.class);
+    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_DISPLAYED_PRICE, key);
+
     Captions.register(EcSupplier.class);
 
     BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {

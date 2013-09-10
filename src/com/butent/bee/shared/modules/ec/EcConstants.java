@@ -6,15 +6,6 @@ import com.butent.bee.shared.ui.HasCaption;
 
 public final class EcConstants {
 
-  public enum EcSupplier implements HasCaption {
-    EOLTAS, MOTOPROFIL;
-
-    @Override
-    public String getCaption() {
-      return name();
-    }
-  }
-
   public enum CartType implements HasCaption {
     MAIN(Localized.getConstants().ecShoppingCartMain(),
         Localized.getConstants().ecShoppingCartMainShort()),
@@ -55,6 +46,23 @@ public final class EcConstants {
     }
   }
 
+  public enum EcDisplayedPrice implements HasCaption {
+    EOLTAS, MOTOPROFIL, MIN, MAX;
+    
+    public static EcSupplier getSupplier(EcDisplayedPrice displayedPrice) {
+      if (displayedPrice != null && displayedPrice.ordinal() < EcSupplier.values().length) {
+        return EcSupplier.values()[displayedPrice.ordinal()];
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public String getCaption() {
+      return name();
+    }
+  }
+  
   public enum EcOrderStatus implements HasCaption {
     NEW(Localized.getConstants().ecOrderStatusNew()),
     ACTIVE(Localized.getConstants().ecOrderStatusActive()),
@@ -78,6 +86,15 @@ public final class EcConstants {
     @Override
     public String getCaption() {
       return caption;
+    }
+  }
+
+  public enum EcSupplier implements HasCaption {
+    EOLTAS, MOTOPROFIL;
+
+    @Override
+    public String getCaption() {
+      return name();
     }
   }
 
@@ -217,6 +234,7 @@ public final class EcConstants {
   public static final String COL_CLIENT_CREDIT_LIMIT_WARNING = "CreditLimitWarning";
   public static final String COL_CLIENT_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_CLIENT_DISCOUNT_PARENT = "DiscountParent";
+  public static final String COL_CLIENT_DISPLAYED_PRICE = "DisplayedPrice";
   public static final String COL_CLIENT_NOTES = "Notes";
 
   public static final String COL_CONFIG_ID = "ConfigurationID";

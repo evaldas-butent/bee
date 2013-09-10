@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="TcdRemainders" viewName="TcdRemainders" readOnly="true" caption="=tcdRemainders"
+  name="TcdRemainders" viewName="TcdRemainders" caption="=tcdRemainders"
   flexGrow="1" flexShrink="1"
   >
   <columns>
-    <DataColumn name="Warehouse" />
+    <RelColumn name="Warehouse" />
     <DataColumn name="Remainder" maxWidth="80" />
   </columns>
 </Grid>
