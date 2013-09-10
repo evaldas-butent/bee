@@ -285,7 +285,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     setDataColumns(dataCols);
 
     boolean hasHeaders = gridDescr.hasColumnHeaders();
-    boolean hasFooters = BeeUtils.isTrue(gridDescr.hasFooters());
 
     List<ColumnDescription> columnDescriptions = null;
 
@@ -299,7 +298,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (gridDescr.getBody() != null) {
       getGrid().setBodyComponent(gridDescr.getBody());
     }
-    if (hasFooters && gridDescr.getFooter() != null) {
+    if (gridDescr.getFooter() != null) {
       getGrid().setFooterComponent(gridDescr.getFooter());
     }
 
@@ -607,10 +606,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         header = new ColumnHeader(columnName, headerCaption);
       }
 
-      footer = null;
-      if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())) {
-        footer = new ColumnFooter(columnName);
-      }
+      footer = (columnDescr.getFooterDescription() == null) ? null : new ColumnFooter(columnName);
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
           header, footer, editableColumn)) {

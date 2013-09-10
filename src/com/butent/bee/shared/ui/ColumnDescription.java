@@ -69,12 +69,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, NAME, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
-    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
@@ -109,8 +109,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String format;
   private String horAlign;
-
-  private Boolean hasFooter;
 
   private Calculation validation;
   private Calculation editable;
@@ -151,6 +149,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private RefreshType updateMode;
   private String elementType;
+  
+  private FooterDescription footerDescription;
 
   private String options;
 
@@ -248,9 +248,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case HOR_ALIGN:
           setHorAlign(value);
           break;
-        case HAS_FOOTER:
-          setHasFooter(BeeUtils.toBooleanOrNull(value));
-          break;
         case MAX_VALUE:
           setMaxValue(value);
           break;
@@ -337,6 +334,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
             setRenderColumns(Lists.newArrayList(cols));
           }
           break;
+        case FOOTER_DESCRIPTION:
+          setFooterDescription(FooterDescription.restore(value));
+          break;
       }
     }
   }
@@ -397,6 +397,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return flexibility;
   }
 
+  public FooterDescription getFooterDescription() {
+    return footerDescription;
+  }
+
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
@@ -431,7 +435,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Visible", getVisible(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
-        "Has Footer", hasFooter(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", getRequired(),
@@ -505,6 +508,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
               conditionalStyle.getInfo());
         }
       }
+    }
+
+    if (getFooterDescription() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Footer", getFooterDescription().getInfo());
     }
     
     PropertyUtils.addWhenEmpty(info, getClass());
@@ -623,10 +630,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return width;
   }
 
-  public Boolean hasFooter() {
-    return hasFooter;
-  }
-
   public boolean isRelationInitialized() {
     return relationInitialized;
   }
@@ -703,9 +706,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case HOR_ALIGN:
           arr[i++] = getHorAlign();
           break;
-        case HAS_FOOTER:
-          arr[i++] = hasFooter();
-          break;
         case MAX_VALUE:
           arr[i++] = getMaxValue();
           break;
@@ -778,6 +778,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case RENDER_COLUMNS:
           arr[i++] = getRenderColumns();
           break;
+        case FOOTER_DESCRIPTION:
+          arr[i++] = getFooterDescription();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -835,16 +838,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.flexibility = flexibility;
   }
 
+  public void setFooterDescription(FooterDescription footerDescription) {
+    this.footerDescription = footerDescription;
+  }
+
   public void setFooterStyle(StyleDeclaration footerStyle) {
     this.footerStyle = footerStyle;
   }
 
   public void setFormat(String format) {
     this.format = format;
-  }
-
-  public void setHasFooter(Boolean hasFooter) {
-    this.hasFooter = hasFooter;
   }
 
   public void setHeaderStyle(StyleDeclaration headerStyle) {

@@ -14,6 +14,8 @@
       <SimpleJoin name="Brand" joinType="LEFT">
         <SimpleColumn name="BrandName" />
       </SimpleJoin>
+      
+      <SimpleColumn name="Weight" />
     </SimpleJoin>
 
     <SimpleColumn name="QuantityOrdered" />

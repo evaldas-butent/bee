@@ -32,6 +32,7 @@
         <xs:element name="render" type="ui:calcType" />
         <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
       </xs:choice>
+      <xs:element name="footer" type="columnFooter" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="columnName" use="required" />
     <xs:attribute name="caption" type="xs:string" />
@@ -46,7 +47,6 @@
     <xs:attribute name="visible" type="xs:boolean" />
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
-    <xs:attribute name="hasFooter" type="xs:boolean" />
     <xs:attribute name="cellType" type="ui:cellType" />
     <xs:attribute name="cellResizable" type="xs:boolean" />
     <xs:attribute name="renderColumns" type="type:nameList" />
@@ -170,4 +170,15 @@
       <xs:maxLength value="30" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:complexType name="columnFooter">
+    <xs:attribute name="sum" type="xs:string" />
+    <xs:attribute name="text" type="xs:string" />
+    <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="format" type="xs:normalizedString" />
+    <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
+    <xs:attribute name="scale" type="xs:unsignedByte" />
+    <xs:attribute name="options" type="xs:normalizedString" />
+  </xs:complexType>
+  
 </xs:schema>

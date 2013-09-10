@@ -36,7 +36,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
-  
+
   public CalculatedColumn(Cell<String> cell, ValueType valueType, AbstractCellRenderer renderer) {
     super(cell);
     this.valueType = valueType;
@@ -92,7 +92,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   public String getStyleSuffix() {
     return (getValueType() == null) ? "calc" : ("calc-" + getValueType().getTypeCode());
   }
-  
+
   @Override
   public String getValue(IsRow object) {
     return null;
@@ -106,13 +106,10 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   @Override
   public void render(Context context, IsRow rowValue, SafeHtmlBuilder sb) {
     String value = getString(context, rowValue);
-    if (BeeUtils.isEmpty(value)) {
-      return;
+    if (!BeeUtils.isEmpty(value)) {
+      getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
+          getNumberFormat(), getScale()), sb);
     }
-
-    getCell().render(context,
-        Format.render(value, getValueType(), getDateTimeFormat(), getNumberFormat(), getScale()),
-        sb);
   }
 
   @Override

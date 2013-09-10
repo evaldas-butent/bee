@@ -34,7 +34,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    */
 
   private enum Serial {
-    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE, HAS_FOOTERS,
+    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE,
     ASYNC_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
@@ -76,7 +76,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Order order;
 
   private String headerMode;
-  private Boolean hasFooters;
 
   private Boolean cacheData;
   private Boolean cacheDescription;
@@ -214,9 +213,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case FOOTER:
           setFooter(GridComponentDescription.restore(value));
-          break;
-        case HAS_FOOTERS:
-          setHasFooters(BeeUtils.toBooleanOrNull(value));
           break;
         case HEADER_MODE:
           setHeaderMode(value);
@@ -486,7 +482,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Filter", getFilter(),
         "Order", getOrder(),
         "Header Mode", getHeaderMode(),
-        "Has Footers", hasFooters(),
         "Cache Data", getCacheData(),
         "Cache Description", getCacheDescription(),
         "Async Threshold", getAsyncThreshold(),
@@ -741,10 +736,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         || BeeUtils.inListSame(getHeaderMode(), HEADER_MODE_ALL, HEADER_MODE_COLUMN);
   }
 
-  public Boolean hasFooters() {
-    return hasFooters;
-  }
-
   public boolean hasGridHeader() {
     return BeeUtils.isEmpty(getHeaderMode())
         || BeeUtils.inListSame(getHeaderMode(), HEADER_MODE_ALL, HEADER_MODE_GRID);
@@ -793,9 +784,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case FOOTER:
           arr[i++] = getFooter();
-          break;
-        case HAS_FOOTERS:
-          arr[i++] = hasFooters();
           break;
         case HEADER_MODE:
           arr[i++] = getHeaderMode();
@@ -953,8 +941,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public void setDefaults() {
-    setHasFooters(true);
-
     setCacheData(true);
     setCacheDescription(true);
   }
@@ -1013,10 +999,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
-  }
-
-  public void setHasFooters(Boolean hasFooters) {
-    this.hasFooters = hasFooters;
   }
 
   public void setHeader(GridComponentDescription header) {

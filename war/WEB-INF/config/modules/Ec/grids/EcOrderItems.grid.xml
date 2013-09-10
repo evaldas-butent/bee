@@ -1,21 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="EcOrderItems" viewName="EcOrderItems"
-  flexGrow="1"
+  flexGrow="1" minColumnWidth="60"
   >
   <columns>
     <RelColumn name="ArticleName" label="=ecItemName" caching="none" newRowEnabled="false"
         renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
         choiceColumns="ArticleName BrandName ArticleNr" visible="true" />
     <DataColumn name="BrandName" />
-    <DataColumn name="ArticleNr" visible="true" />
+    <DataColumn name="ArticleNr" visible="true">
+      <footer text="=total" horizontalAlignment="right" />
+    </DataColumn>
+
+    <DataColumn name="Weight" maxWidth="80">
+      <footer sum="row.QuantitySubmit * row.Weight" />
+    </DataColumn>
       
-    <DataColumn name="QuantityOrdered" visible="true" maxWidth="100" />
-    <DataColumn name="QuantitySubmit" visible="true" maxWidth="100" />
+    <DataColumn name="QuantityOrdered" visible="true" maxWidth="100">
+      <footer sum="*" />
+    </DataColumn>
+    <DataColumn name="QuantitySubmit" visible="true" maxWidth="100">
+      <footer sum="*" />
+    </DataColumn>
 
     <DataColumn name="Price" visible="true" maxWidth="100" />
+    <CalcColumn name="Amount" type="decimal" scale="2" caption="=amount" maxWidth="100">
+      <render>
+        <ui:expression>row.QuantitySubmit * row.Price</ui:expression>
+      </render>
+      <footer sum="*" />
+    </CalcColumn>
 
-    <DataColumn name="Note" />
+    <DataColumn name="Note" visible="false" />
   </columns>
 </Grid>
