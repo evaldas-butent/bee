@@ -10,7 +10,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="CargoRequest" viewName="CargoRequests" caption="=transportationRequest"
+  name="CargoRequest" viewName="CargoRequests" caption="=trRequest"
   >
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="bee-tr-request-form">
     <FlowPanel style="&section;">

@@ -136,6 +136,30 @@ public interface LocalizableTransportConstants {
 
   String trips();
 
+  String trAssessmentCancelOrderQuestion();
+
+  String trAssessmentMarkAsAnsweredQuestion();
+
+  String trAssessmentMarkAsCompletedQuestion();
+
+  String trAssessmentMarkAsLostQuestion();
+
+  String trAssessmentReturnToOrderQuestion();
+
+  String trAssessmentReturnToRequestQuestion();
+
+  String trAssessmentStatusActive();
+
+  String trAssessmentStatusAnswered();
+
+  String trAssessmentStatusCanceled();
+
+  String trAssessmentStatusCompleted();
+
+  String trAssessmentStatusLost();
+  
+  String trAssessmentStatusNew();
+
   String trDriverName();
 
   String trDriverEndingDate();
@@ -148,10 +172,28 @@ public interface LocalizableTransportConstants {
 
   String trLoadedKilometers();
 
+  String trOrderStatusActive();
+
+  String trOrderStatusCanceled();
+
+  String trOrderStatusCompleted();
+
+  String trOrderStatusNew();
+
+  String trOrderStatusRequest();
+
   String trSendToERP();
 
   String trSendToERPConfirm();
 
+  String trTripStatusActive();
+
+  String trTripStatusCanceled();
+
+  String trTripStatusCompleted();
+
+  String trTripStatusNew();
+  
   String trucks();
 
   String truckTimeBoard();

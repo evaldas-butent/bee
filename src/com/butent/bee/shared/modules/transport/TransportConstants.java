@@ -1,16 +1,17 @@
 package com.butent.bee.shared.modules.transport;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public final class TransportConstants {
 
   public enum OrderStatus implements HasCaption {
-    NEW("Naujas"),
-    ACTIVE("Vykdomas"),
-    CANCELED("Atšauktas"),
-    COMPLETED("Baigtas"),
-    REQUEST("Užklausimas");
+    NEW(Localized.getConstants().trOrderStatusNew()),
+    ACTIVE(Localized.getConstants().trOrderStatusActive()),
+    CANCELED(Localized.getConstants().trOrderStatusCanceled()),
+    COMPLETED(Localized.getConstants().trOrderStatusCompleted()),
+    REQUEST(Localized.getConstants().trOrderStatusRequest());
 
     private final String caption;
 
@@ -25,12 +26,24 @@ public final class TransportConstants {
   }
 
   public enum AssessmentStatus implements HasCaption {
-    NEW("Naujas", "Grąžinti į užklausimus?", OrderStatus.REQUEST, true),
-    ANSWERED("Atsakytas", "Pažymėti kaip atsakytą?", null, false),
-    LOST("Pralaimėtas", "Pažymėti kaip pralaimėtą?", OrderStatus.CANCELED, false),
-    ACTIVE("Vykdomas", "Perkelti į užsakymus?", OrderStatus.ACTIVE, true),
-    CANCELED("Atšauktas", "Atšaukti užsakymą?", OrderStatus.CANCELED, false),
-    COMPLETED("Įvykdytas", "Pažymėti kaip įvykdytą?", OrderStatus.COMPLETED, false);
+    NEW(Localized.getConstants().trAssessmentStatusNew(), Localized.getConstants()
+        .trAssessmentReturnToRequestQuestion(),
+        OrderStatus.REQUEST, true),
+    ANSWERED(Localized.getConstants().trAssessmentStatusAnswered(), Localized.getConstants()
+        .trAssessmentMarkAsAnsweredQuestion(),
+        null, false),
+    LOST(Localized.getConstants().trAssessmentStatusLost(), Localized.getConstants()
+        .trAssessmentMarkAsLostQuestion(),
+        OrderStatus.CANCELED, false),
+    ACTIVE(Localized.getConstants().trAssessmentStatusActive(), Localized.getConstants()
+        .trAssessmentReturnToOrderQuestion(),
+        OrderStatus.ACTIVE, true),
+    CANCELED(Localized.getConstants().trAssessmentStatusCanceled(), Localized.getConstants()
+        .trAssessmentCancelOrderQuestion(),
+        OrderStatus.CANCELED, false),
+    COMPLETED(Localized.getConstants().trAssessmentStatusCompleted(), Localized.getConstants()
+        .trAssessmentMarkAsCompletedQuestion(),
+        OrderStatus.COMPLETED, false);
 
     public static boolean in(int status, AssessmentStatus... statuses) {
       for (AssessmentStatus ts : statuses) {
@@ -77,10 +90,10 @@ public final class TransportConstants {
   }
 
   public enum TripStatus implements HasCaption {
-    NEW("Naujas"),
-    ACTIVE("Vykdomas"),
-    CANCELED("Atšauktas"),
-    COMPLETED("Baigtas");
+    NEW(Localized.getConstants().trTripStatusNew()),
+    ACTIVE(Localized.getConstants().trTripStatusActive()),
+    CANCELED(Localized.getConstants().trTripStatusCanceled()),
+    COMPLETED(Localized.getConstants().trTripStatusCompleted());
 
     private final String caption;
 
