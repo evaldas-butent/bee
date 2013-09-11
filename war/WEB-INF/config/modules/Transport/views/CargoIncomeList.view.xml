@@ -91,7 +91,11 @@
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
+
     <SimpleColumn name="Sale" />
+    <SimpleJoin name="Sale" joinType="LEFT">
+      <SimpleColumn name="Proforma" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

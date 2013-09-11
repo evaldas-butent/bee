@@ -1533,8 +1533,10 @@ public class TransportModuleBean implements BeeModule {
         .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
         .addFields(TBL_SALES, COL_SALE_PAID)
         .addFrom(TBL_SALES)
-        .setWhere(SqlUtils.or(SqlUtils.isNull(TBL_SALES, COL_SALE_PAID),
-            SqlUtils.less(TBL_SALES, COL_SALE_PAID, SqlUtils.field(TBL_SALES, COL_SALE_AMOUNT)))));
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
+            SqlUtils.or(SqlUtils.isNull(TBL_SALES, COL_SALE_PAID),
+                SqlUtils.less(TBL_SALES, COL_SALE_PAID,
+                    SqlUtils.field(TBL_SALES, COL_SALE_AMOUNT))))));
 
     if (debts.isEmpty()) {
       return;
@@ -1552,10 +1554,9 @@ public class TransportModuleBean implements BeeModule {
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT extern_id AS " + COL_SALE + ", apm_data AS " + COL_SALE_PAYMENT_TIME
-            + ", apm_suma AS " + COL_SALE_PAID
+        "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
             + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
-        new String[] {COL_SALE, COL_SALE_PAYMENT_TIME, COL_SALE_PAID});
+        new String[] {"id", "data", "suma"});
 
     if (response.hasErrors()) {
       logger.severe((Object[]) response.getErrors());
@@ -1563,15 +1564,15 @@ public class TransportModuleBean implements BeeModule {
       SimpleRowSet payments = (SimpleRowSet) response.getResponse();
 
       for (SimpleRow payment : payments) {
-        if (!Objects.equal(payment.getDouble(COL_SALE_PAID),
-            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, payment.getValue(COL_SALE),
+        if (!Objects.equal(payment.getDouble("suma"),
+            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, payment.getValue("id"),
                 COL_SALE_PAID)))) {
 
           qs.updateData(new SqlUpdate(TBL_SALES)
-              .addConstant(COL_SALE_PAID, payment.getDouble(COL_SALE_PAID))
+              .addConstant(COL_SALE_PAID, payment.getDouble("suma"))
               .addConstant(COL_SALE_PAYMENT_TIME,
-                  TimeUtils.parseDateTime(payment.getValue(COL_SALE_PAYMENT_TIME)))
-              .setWhere(sys.idEquals(TBL_SALES, payment.getLong(COL_SALE))));
+                  TimeUtils.parseDateTime(payment.getValue("data")))
+              .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
         }
       }
     }

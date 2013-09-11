@@ -18,6 +18,7 @@ public final class TradeConstants {
   public static final String COL_SALE_INVOICE_NO = "InvoiceNo";
   public static final String COL_SALE_VAT_INCL = "VatIncluded";
   public static final String COL_SALE_AMOUNT = "Amount";
+  public static final String COL_SALE_PROFORMA = "Proforma";
 
   public static final String COL_SALE_TERM = "Term";
   public static final String COL_SALE_PAYMENT_TIME = "PaymentTime";

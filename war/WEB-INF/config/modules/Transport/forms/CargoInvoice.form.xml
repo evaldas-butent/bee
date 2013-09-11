@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="CargoInvoice" viewName="CargoInvoices" caption="=transportSalesInvoice"
+  name="CargoInvoice" viewName="CargoInvoices"
   width="800" height="600"
   >
   <FlowPanel class="flexBox-vertical">
@@ -27,9 +27,9 @@
           <CheckBox source="VatIncluded" text="=transportVATIncluded" />
         </HorizontalPanel>
 
-        <Label text="=transportSalesInvoiceSerialNo" class="bee-required" style="&lbl;" />
+        <Label text="=transportSalesInvoiceSerialNo" style="&lbl;" />
         <FlowPanel>
-          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;" />
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
           <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;"
             d:rootStyle="display:inline-block;" />
         </FlowPanel>

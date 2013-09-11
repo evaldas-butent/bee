@@ -164,7 +164,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     columns = HashBiMap.create(cols.length);
 
     for (int i = 0; i < cols.length; i++) {
-      columns.put(cols[i].toLowerCase(), i);
+      columns.put(cols[i], i);
     }
   }
 
@@ -250,8 +250,8 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   public int getColumnIndex(String colName) {
-    Assert.contains(columns, colName.toLowerCase());
-    return columns.get(colName.toLowerCase());
+    Assert.contains(columns, colName);
+    return columns.get(colName);
   }
 
   public String getColumnName(int colIndex) {

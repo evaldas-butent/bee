@@ -27,6 +27,8 @@
     <String name="Vehicle" precision="100" label="Transportas" />
     <String name="Driver" precision="100" label="Vairuotojas" />
     <Text name="Notes" label="Pastabos" />
+
+    <Boolean name="Proforma" label="Išansktinė" />
     <DateTime name="Exported" label="Eksportuota" />
   </Fields>
   <Triggers>

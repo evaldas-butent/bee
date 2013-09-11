@@ -12,6 +12,11 @@
   <FlowPanel class="flexBox-vertical">
     <Table>
       <row>
+        <cell colSpan="4">
+          <CheckBox source="Proforma" text="=proformaInvoice" style="float:right;" tabIndex="99" />
+        </cell>
+      </row>
+      <row>
         <Label text="=date" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="width:110px;" />
 
@@ -25,9 +30,9 @@
           <CheckBox source="VatIncluded" text="=transportVATIncluded" />
         </HorizontalPanel>
 
-        <Label text="=transportSalesInvoiceSerialNo" class="bee-required" style="&lbl;" />
+        <Label text="=transportSalesInvoiceSerialNo" style="&lbl;" />
         <FlowPanel>
-          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;" />
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
           <InputText source="InvoiceNo" caption="=numeroSign" d:style="width:30px; text-align:right;"
             d:rootStyle="display:inline-block;" />
         </FlowPanel>

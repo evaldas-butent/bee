@@ -933,6 +933,7 @@ public class TecDocBean {
             COL_TCD_MANUFACTURER)
         .addFields(mod, COL_TCD_MODEL_NAME)
         .addField(mod, TCD_MODEL_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_MODEL_VISIBLE)
         .addFrom(mod)
         .addFromInner(TBL_TCD_MANUFACTURERS,
             SqlUtils.joinUsing(mod, TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)));
@@ -945,6 +946,7 @@ public class TecDocBean {
             COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT, COL_TCD_ENGINE,
             COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
         .addField(typ, TCD_TYPE_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_TYPE_VISIBLE)
         .addFrom(typ)
         .addFromInner(TBL_TCD_MODELS,
             SqlUtils.join(typ, TCD_MODEL_ID, TBL_TCD_MODELS, TCD_TECDOC_ID)));

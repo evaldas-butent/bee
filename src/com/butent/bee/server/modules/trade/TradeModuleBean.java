@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -106,7 +107,8 @@ public class TradeModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_SALES) && event.isBefore()) {
+        if (BeeUtils.inListSame(event.getTargetName(), TBL_SALES,
+            TransportConstants.VIEW_CARGO_INVOICES) && event.isBefore()) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;

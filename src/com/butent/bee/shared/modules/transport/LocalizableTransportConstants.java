@@ -186,6 +186,8 @@ public interface LocalizableTransportConstants {
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
+  String trConfirmProforma();
+
   String trContractPrinting();
 
   String trDriverName();
@@ -199,6 +201,8 @@ public interface LocalizableTransportConstants {
   String trChildOrder();
 
   String trEmptyKilometers();
+
+  String trInvoice();
 
   String trLoadedKilometers();
 
@@ -217,6 +221,8 @@ public interface LocalizableTransportConstants {
   String trOrderStatusNew();
 
   String trOrderStatusRequest();
+
+  String trProformaInvoice();
 
   String trRequestFinishAction();
 
@@ -287,6 +293,5 @@ public interface LocalizableTransportConstants {
   String vehicleTankCapacity();
 
   String vehicleType();
-
 
 }

@@ -4,7 +4,7 @@
 
   name="CargoTrips" viewName="CargoTrips"
   editForm="CargoPlace" editPopup="true" editInPlace="TripPercent"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
   <body height="50" />
 
