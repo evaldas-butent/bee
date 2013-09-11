@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="AssessmentOrders" viewName="Assessments" caption="=assessmentOrders"
+  name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
   flexGrow="1" flexShrink="1" disabledActions="add" order="AssessorID desc"
   >
   <north size="40">

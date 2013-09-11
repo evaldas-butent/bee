@@ -34,6 +34,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String chooseFiles();
 
+  String chooseLanguage();
+
   String city();
 
   String clear();
@@ -77,6 +79,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String contact();
 
   String contacts();
+
+  String continueQuestion();
 
   String country();
 

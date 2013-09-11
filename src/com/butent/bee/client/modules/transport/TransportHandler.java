@@ -205,7 +205,7 @@ public final class TransportHandler {
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, Localized.getConstants().cargoSelectTrip());
+      container.setText(0, 0, Localized.getConstants().trCargoSelectTrip());
 
       Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
           Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",

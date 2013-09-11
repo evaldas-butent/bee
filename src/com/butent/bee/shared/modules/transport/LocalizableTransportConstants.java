@@ -44,8 +44,6 @@ public interface LocalizableTransportConstants {
 
   String cargos();
 
-  String cargoSelectTrip();
-
   String cargoTermsOfService();
 
   String cargoUnloading();
@@ -126,8 +124,6 @@ public interface LocalizableTransportConstants {
 
   String transportationCustomers();
 
-  String transportationOrder();
-
   String transportationOrders();
 
   String transportationOrderStatuses();
@@ -136,6 +132,8 @@ public interface LocalizableTransportConstants {
 
   String trips();
 
+  String trAssessment();
+
   String trAssessmentCancelOrderQuestion();
 
   String trAssessmentMarkAsAnsweredQuestion();
@@ -143,6 +141,10 @@ public interface LocalizableTransportConstants {
   String trAssessmentMarkAsCompletedQuestion();
 
   String trAssessmentMarkAsLostQuestion();
+
+  String trAssessmentRejection();
+
+  String trAssessmentRejectionReasonRequired();
 
   String trAssessmentReturnToOrderQuestion();
 
@@ -159,6 +161,32 @@ public interface LocalizableTransportConstants {
   String trAssessmentStatusLost();
   
   String trAssessmentStatusNew();
+  
+  String trAssessmentThereActiveChildrenOrders();
+
+  String trAssessmentThereUnconfirmedAssessments();
+
+  String trAssignCargo();
+
+  String trCargoRequestCreateTransportationOrderQuestion();
+
+  String trCargoRequestFinish();
+
+  String trCargoRequestReturn();
+
+  String trCargoRequestReturnToOrder();
+
+  String trCargoRequestsSetActiveRequestQuestion();
+
+  String trCargoSelectCargo();
+
+  String trCargoSelectTrip();
+
+  String trCargoTripsAssignTrip();
+
+  String trCargoTripThereCargosAssignedInTripsAlarm();
+
+  String trContractPrinting();
 
   String trDriverName();
 
@@ -168,9 +196,17 @@ public interface LocalizableTransportConstants {
 
   String trDriverStartingDate();
 
+  String trChildOrder();
+
   String trEmptyKilometers();
 
   String trLoadedKilometers();
+
+  String trNewExpedition();
+
+  String trNewTrip();
+
+  String trOrder();
 
   String trOrderStatusActive();
 
@@ -182,9 +218,15 @@ public interface LocalizableTransportConstants {
 
   String trOrderStatusRequest();
 
+  String trRequestFinishAction();
+
+  String trRequestFinishReason();
+
   String trSendToERP();
 
   String trSendToERPConfirm();
+
+  String trPreInvoice();
 
   String trTripStatusActive();
 
@@ -193,6 +235,8 @@ public interface LocalizableTransportConstants {
   String trTripStatusCompleted();
 
   String trTripStatusNew();
+  
+  String trWriteEmail();
   
   String trucks();
 

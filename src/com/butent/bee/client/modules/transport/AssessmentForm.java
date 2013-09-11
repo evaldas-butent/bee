@@ -61,6 +61,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -248,7 +249,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
       final int oldStatus = activeRow.getInteger(Data.getColumnIndex(view, COL_STATUS));
 
       if (AssessmentStatus.ANSWERED.is(oldStatus)) {
-        Global.inputString("Vertinimo atmetimas", "Nurodykite priežastį",
+        Global.inputString(Localized.getConstants().trAssessmentRejection(),
+            Localized.getConstants().trAssessmentRejectionReasonRequired(),
             new StringCallback() {
               @Override
               public void onSuccess(String value) {
@@ -401,7 +403,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
           event.getRowId(), false, null, null, null);
 
     } else if (event.hasView("AssessmentForwarders")) {
-      Global.choice("Sutarties spausdinimas", "Pasirinkite kalbą",
+      Global.choice(Localized.getConstants().trContractPrinting(), Localized.getConstants()
+          .chooseLanguage(),
           Lists.newArrayList("LT", "RU", "EN"),
           new ChoiceCallback() {
             @Override
@@ -484,22 +487,28 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
   private IsRow currentRow;
 
-  private final Button cmdNew = new Button("Užklausimas",
+  private final Button cmdNew = new Button(Localized.getConstants().request(),
       new StatusUpdater(AssessmentStatus.NEW, null));
 
-  private final Button cmdLost = new Button("Pralaimėtas",
+  private final Button cmdLost = new Button(Localized.getConstants().trAssessmentStatusLost(),
       new StatusUpdater(AssessmentStatus.LOST, null));
 
-  private final Button cmdAnswered = new Button("Atsakytas",
-      new StatusUpdater(AssessmentStatus.ANSWERED, "Yra likę nepatvirtintų vertinimų"));
+  private final Button cmdAnswered = new Button(Localized.getConstants()
+      .trAssessmentStatusAnswered(),
+      new StatusUpdater(AssessmentStatus.ANSWERED, Localized.getConstants()
+          .trAssessmentThereUnconfirmedAssessments()));
 
-  private final Button cmdActive = new Button("Užsakymas",
+  private final Button cmdActive = new Button(Localized.getConstants()
+      .trOrder(),
       new StatusUpdater(AssessmentStatus.ACTIVE, null));
 
-  private final Button cmdCompleted = new Button("Įvykdytas",
-      new StatusUpdater(AssessmentStatus.COMPLETED, "Yra likę vykdomų antrinių užsakymų"));
+  private final Button cmdCompleted = new Button(Localized.getConstants()
+      .trAssessmentStatusCompleted(),
+      new StatusUpdater(AssessmentStatus.COMPLETED, Localized.getConstants()
+          .trAssessmentThereActiveChildrenOrders()));
 
-  private final Button cmdCanceled = new Button("Atšauktas",
+  private final Button cmdCanceled = new Button(Localized.getConstants()
+      .trAssessmentStatusCanceled(),
       new StatusUpdater(AssessmentStatus.CANCELED, null));
 
   private final List<ChildGrid> grids = Lists.newArrayList();
@@ -562,14 +571,14 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     String caption = AssessmentStatus.in(status,
         AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED, AssessmentStatus.CANCELED)
-        ? (primary ? "Užsakymas" : "Antrinis užsakymas")
-        : (primary ? null : "Vertinimas");
+        ? (primary ? Localized.getConstants().trOrder() : Localized.getConstants().trChildOrder())
+        : (primary ? null : Localized.getConstants().trAssessment());
 
     if (!BeeUtils.isEmpty(caption)) {
       header.setCaption(caption);
     }
     if (owner && !newRecord) {
-      header.addCommandItem(new Button("Rašyti laišką", new ClickHandler() {
+      header.addCommandItem(new Button(Localized.getConstants().trWriteEmail(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element div = Document.get().createDivElement();
@@ -595,7 +604,8 @@ public class AssessmentForm extends AbstractFormInterceptor {
       }
       if (primary) {
         if (AssessmentStatus.in(status, AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED)) {
-          header.addCommandItem(new Button("Išankstinė S/F", new ClickHandler() {
+          header.addCommandItem(new Button(Localized.getConstants().trPreInvoice(),
+              new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
             }

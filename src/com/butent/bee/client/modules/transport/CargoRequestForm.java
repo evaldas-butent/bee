@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.CssUnit;
@@ -84,7 +85,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
 
     if (enabled) {
       if (!DataUtils.isId(currentRow.getLong(form.getDataIndex(COL_ORDER)))) {
-        header.addCommandItem(new Button("Į užsakymus", new ClickHandler() {
+        header.addCommandItem(new Button(Localized.getConstants().trCargoRequestReturnToOrder(),
+            new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             requestToOrders();
@@ -95,7 +97,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
           currentRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) != null;
 
       if (finished) {
-        header.addCommandItem(new Button("Grąžinti", new ClickHandler() {
+        header.addCommandItem(new Button(Localized.getConstants().trCargoRequestReturn(),
+            new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             restoreRequest();
@@ -104,7 +107,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
         enabled = false;
 
       } else {
-        header.addCommandItem(new Button("Užbaigti", new ClickHandler() {
+        header.addCommandItem(new Button(Localized.getConstants().trCargoRequestFinish(),
+            new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             finishRequest();
@@ -128,7 +132,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
   private void finishRequest() {
     final FormView form = getFormView();
 
-    Global.inputString("Užklausimo užbaigimas", "Nurodykite rezultatą", new StringCallback(true) {
+    Global.inputString(Localized.getConstants().trRequestFinishAction(), Localized.getConstants()
+        .trRequestFinishReason(), new StringCallback(true) {
       @Override
       public void onSuccess(String value) {
         List<BeeColumn> columns = Lists.newArrayList(DataUtils
@@ -150,7 +155,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   private void requestToOrders() {
-    Global.confirm("Kurti užsakymą pervežimui?", new ConfirmationCallback() {
+    Global.confirm(Localized.getConstants().trCargoRequestCreateTransportationOrderQuestion(),
+        new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         FormView form = getFormView();
@@ -176,7 +182,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   private void restoreRequest() {
-    Global.confirm("Grąžinti užklausimą į vykdomus?", new ConfirmationCallback() {
+    Global.confirm(Localized.getConstants().trCargoRequestsSetActiveRequestQuestion(),
+        new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         FormView form = getFormView();

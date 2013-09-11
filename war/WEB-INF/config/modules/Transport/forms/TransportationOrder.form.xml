@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="TransportationOrder" viewName="TransportationOrders" caption="=transportOrder"
+  name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
