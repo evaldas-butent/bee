@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.FooterDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -172,8 +173,18 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public ColumnFooter getFooter(String columnName, FooterDescription footerDescription) {
+    return null;
+  }
+
+  @Override
   public GridPresenter getGridPresenter() {
     return gridPresenter;
+  }
+
+  @Override
+  public ColumnHeader getHeader(String columnName, String caption) {
+    return null;
   }
 
   @Override

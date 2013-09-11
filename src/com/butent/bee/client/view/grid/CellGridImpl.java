@@ -337,13 +337,13 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     String versionName = gridDescr.getVersionName();
 
     AbstractColumn<?> column;
-    ColumnHeader header = null;
-    ColumnFooter footer = null;
 
     int dataIndex;
     EditableColumn editableColumn = null;
 
     final String viewName = gridDescr.getViewName();
+
+    List<ColumnFooter> footers = Lists.newArrayList();
 
     for (ColumnDescription cd : columnDescriptions) {
       ColumnDescription columnDescr;
@@ -593,6 +593,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       if (!BeeUtils.isEmpty(columnDescr.getOptions())) {
         column.setOptions(columnDescr.getOptions());
       }
+      
+      ColumnHeader header = null;
 
       if (hasHeaders) {
         String headerCaption = null;
@@ -602,15 +604,30 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
           headerCaption = BeeUtils.notEmpty(caption, columnName);
         }
-
-        header = new ColumnHeader(columnName, headerCaption);
+        
+        if (interceptor != null) {
+          header = interceptor.getHeader(columnName, headerCaption);
+        }
+        if (header == null) {
+          header = new ColumnHeader(columnName, headerCaption);
+        }
       }
 
-      footer = (columnDescr.getFooterDescription() == null) ? null : new ColumnFooter(columnName);
+      ColumnFooter footer = null;
+      if (interceptor != null) {
+        footer = interceptor.getFooter(columnName, columnDescr.getFooterDescription());
+      }
+      if (footer == null && columnDescr.getFooterDescription() != null) {
+        footer = new ColumnFooter(columnName, columnDescr.getFooterDescription());
+      }
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
           header, footer, editableColumn)) {
         continue;
+      }
+      
+      if (footer != null) {
+        footers.add(footer);
       }
 
       AbstractFilterSupplier filterSupplier = null;
@@ -650,6 +667,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     getGrid().setDefaultFlexibility(gridDescr.getFlexibility());
 
     initOrder(order);
+    
+    for (ColumnFooter footer : footers) {
+      footer.init(dataCols);
+    }
 
     getGrid().addEditStartHandler(this);
 
@@ -695,7 +716,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       generateNewRowForm(gridDescr);
       setNewRowFormGenerated(true);
     }
-
+    
     if (interceptor != null) {
       interceptor.afterCreate(this);
     }

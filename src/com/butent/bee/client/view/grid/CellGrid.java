@@ -1090,12 +1090,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static final BeeLogger logger = LogUtils.getLogger(CellGrid.class);
 
   private static Edges defaultBodyCellPadding = new Edges(2, 3);
-
   private static Edges defaultBodyBorderWidth = new Edges(1);
-
   private static Edges defaultBodyCellMargin;
 
-  private static Edges defaultFooterCellPadding = new Edges(1, 2, 0);
+  private static Edges defaultFooterCellPadding = new Edges(2, 3, 0);
   private static Edges defaultFooterBorderWidth = new Edges(1);
   private static Edges defaultFooterCellMargin;
 
@@ -1157,7 +1155,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public static int getDefaultFooterCellHeight() {
-    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1500, 16, 25);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1500, 16, 21);
   }
 
   public static int getDefaultHeaderCellHeight() {
@@ -4358,15 +4356,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       ColumnInfo columnInfo = getColumnInfo(i);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-
+      HorizontalAlignmentConstant hAlign = null;
+      
       if (isHeader) {
         if (columnInfo.getHeader() != null) {
           CellContext context = new CellContext(0, i, null, this);
           columnInfo.getHeader().render(context, cellBuilder);
         }
+
       } else if (columnInfo.getFooter() != null) {
         CellContext context = new CellContext(0, i, null, this);
         columnInfo.getFooter().render(context, cellBuilder);
+        hAlign = columnInfo.getFooter().getHorizontalAlignment();
       }
 
       int width = columnInfo.getWidth();
@@ -4385,7 +4386,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
 
       SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
-          width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(), null,
+          width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(), hAlign,
           cellBuilder.toSafeHtml(), false).render();
       sb.append(contents);
 

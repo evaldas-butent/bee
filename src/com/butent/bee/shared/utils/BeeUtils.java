@@ -2382,7 +2382,12 @@ public final class BeeUtils {
     if (isEmpty(s)) {
       return null;
     }
-    return toDouble(s);
+
+    try {
+      return Double.parseDouble(s.trim());
+    } catch (NumberFormatException ex) {
+      return null;
+    }
   }
 
   /**

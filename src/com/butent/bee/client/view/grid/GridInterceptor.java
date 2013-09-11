@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.FooterDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
 
@@ -85,7 +86,11 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
+  ColumnFooter getFooter(String columnName, FooterDescription footerDescription);
+
   GridPresenter getGridPresenter();
+
+  ColumnHeader getHeader(String columnName, String caption);
 
   Map<String, Filter> getInitialParentFilters();
 
