@@ -52,7 +52,7 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
   private boolean addPrefixWhenEmpty;
   private boolean addSuffixWhenEmpty;
 
-  private DateTimeFormat dateTimeformat;
+  private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
   private int scale = BeeConst.UNDEF;
@@ -75,13 +75,9 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     return dataIndex;
   }
 
-  public DateTimeFormat getDateTimeformat() {
-    return dateTimeformat;
-  }
-
   @Override
   public DateTimeFormat getDateTimeFormat() {
-    return dateTimeformat;
+    return dateTimeFormat;
   }
 
   @Override
@@ -135,13 +131,9 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     this.addSuffixWhenEmpty = addSuffixWhenEmpty;
   }
 
-  public void setDateTimeformat(DateTimeFormat dateTimeformat) {
-    this.dateTimeformat = dateTimeformat;
-  }
-
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
-    this.dateTimeformat = format;
+    this.dateTimeFormat = format;
   }
 
   @Override

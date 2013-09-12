@@ -343,8 +343,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     final String viewName = gridDescr.getViewName();
 
-    List<ColumnFooter> footers = Lists.newArrayList();
-
     for (ColumnDescription cd : columnDescriptions) {
       ColumnDescription columnDescr;
       if (interceptor == null) {
@@ -615,10 +613,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       ColumnFooter footer = null;
       if (interceptor != null) {
-        footer = interceptor.getFooter(columnName, columnDescr.getFooterDescription());
+        footer = interceptor.getFooter(columnName, columnDescr);
       }
       if (footer == null && columnDescr.getFooterDescription() != null) {
-        footer = new ColumnFooter(columnName, columnDescr.getFooterDescription());
+        footer = new ColumnFooter(cellSource, column, columnDescr, dataCols);
       }
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
@@ -626,10 +624,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         continue;
       }
       
-      if (footer != null) {
-        footers.add(footer);
-      }
-
       AbstractFilterSupplier filterSupplier = null;
       if (interceptor != null) {
         filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
@@ -668,10 +662,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     initOrder(order);
     
-    for (ColumnFooter footer : footers) {
-      footer.init(dataCols);
-    }
-
     getGrid().addEditStartHandler(this);
 
     getGrid().addSortHandler(this);

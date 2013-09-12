@@ -31,7 +31,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   private final ValueType valueType;
   private AbstractCellRenderer renderer;
 
-  private DateTimeFormat dateTimeformat;
+  private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
   private int precision = BeeConst.UNDEF;
@@ -56,7 +56,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   @Override
   public DateTimeFormat getDateTimeFormat() {
-    return dateTimeformat;
+    return dateTimeFormat;
   }
 
   @Override
@@ -114,7 +114,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
-    this.dateTimeformat = format;
+    this.dateTimeFormat = format;
   }
 
   @Override
