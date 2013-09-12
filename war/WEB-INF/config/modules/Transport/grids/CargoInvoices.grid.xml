@@ -28,7 +28,7 @@
       </render>
     </CalcColumn>
     <RelColumn name="Customer" caption="=trCustomer" />
-    <RelColumn name="Payer" caption="Mokėtojas" />
+    <RelColumn name="Payer" caption="=payer" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
@@ -36,7 +36,7 @@
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />
 
-    <CalcColumn name="Debt" type="decimal" scale="2" caption="Skola">
+    <CalcColumn name="Debt" type="decimal" scale="2" caption="=trDept">
       <render>
         <ui:function>
           if (!row.Paid) {

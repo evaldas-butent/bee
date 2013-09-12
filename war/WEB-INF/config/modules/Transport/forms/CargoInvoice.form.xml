@@ -30,7 +30,7 @@
         <Label text="=transportSalesInvoiceSerialNo" style="&lbl;" />
         <FlowPanel>
           <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
-          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;"
+          <InputText source="InvoiceNo" caption="=numeroSign" d:style="width:30px; text-align:right;"
             d:rootStyle="display:inline-block;" />
         </FlowPanel>
       </row>

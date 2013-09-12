@@ -10,7 +10,7 @@
 
   <columns>
     <ActionColumn element="link" name="TripNo" caption="=trTripNo" />
-    <DataColumn name="ExpeditionType" caption="=transportExpeditionType" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <DataColumn name="ForwarderName" caption="=carrier" />
     <CalcColumn name="Vehicle" type="string" caption="=transport" flexBasis="120">
       <render>

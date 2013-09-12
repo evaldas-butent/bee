@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentForwarders" viewName="AssessmentForwarders"
-  newRowForm="AssessmentForwarder" newRowCaption="Naujas vežėjas" newRowPopup="true"
+  newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier" newRowPopup="true"
   editForm="AssessmentForwarder"
   flexGrow="1" flexShrink="1"
   >
