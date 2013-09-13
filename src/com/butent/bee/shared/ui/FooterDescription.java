@@ -15,10 +15,12 @@ import java.util.Map;
 public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum Serial {
-    SUM, TEXT, HTML, FORMAT, HOR_ALIGN, SCALE, OPTIONS
+    AGGREGATE, EXPRESSION, TYPE, TEXT, HTML, FORMAT, HOR_ALIGN, SCALE, OPTIONS
   }
 
-  private static final String ATTR_SUM = "sum";
+  private static final String ATTR_AGGREGATE = "aggregate";
+  private static final String ATTR_EXPRESSION = "expression";
+  private static final String ATTR_TYPE = "type";
   
   public static FooterDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -29,7 +31,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return footerDescription;
   }
 
-  private String sum;
+  private String aggregate;
+  private String expression;
+  private String type;
 
   private String text;
   private String html;
@@ -66,8 +70,14 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
       }
 
       switch (member) {
-        case SUM:
-          setSum(value);
+        case AGGREGATE:
+          setAggregate(value);
+          break;
+        case EXPRESSION:
+          setExpression(value);
+          break;
+        case TYPE:
+          setType(value);
           break;
         case TEXT:
           setText(value);
@@ -91,6 +101,14 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     }
   }
 
+  public String getAggregate() {
+    return aggregate;
+  }
+
+  public String getExpression() {
+    return expression;
+  }
+
   public String getFormat() {
     return format;
   }
@@ -106,7 +124,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-        "Sum", getSum(),
+        "Aggregate", getAggregate(),
+        "Expression", getExpression(),
+        "Type", getType(),
         "Text", getText(),
         "Html", getHtml(),
         "Format", getFormat(),
@@ -127,12 +147,12 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return scale;
   }
 
-  public String getSum() {
-    return sum;
-  }
-
   public String getText() {
     return text;
+  }
+
+  public String getType() {
+    return type;
   }
 
   @Override
@@ -143,8 +163,14 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
     for (Serial member : members) {
       switch (member) {
-        case SUM:
-          arr[i++] = getSum();
+        case AGGREGATE:
+          arr[i++] = getAggregate();
+          break;
+        case EXPRESSION:
+          arr[i++] = getExpression();
+          break;
+        case TYPE:
+          arr[i++] = getType();
           break;
         case TEXT:
           arr[i++] = getText();
@@ -169,6 +195,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return Codec.beeSerialize(arr);
   }
 
+  public void setAggregate(String aggregate) {
+    this.aggregate = aggregate;
+  }
+
   public void setAttributes(Map<String, String> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return;
@@ -181,12 +211,18 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         continue;
       }
 
-      if (BeeUtils.same(key, ATTR_SUM)) {
-        setSum(value);
+      if (BeeUtils.same(key, ATTR_AGGREGATE)) {
+        setAggregate(value);
+      } else if (BeeUtils.same(key, ATTR_EXPRESSION)) {
+        setExpression(value);
+      } else if (BeeUtils.same(key, ATTR_TYPE)) {
+        setType(value);
+
       } else if (BeeUtils.same(key, UiConstants.ATTR_TEXT)) {
         setText(value);
       } else if (BeeUtils.same(key, UiConstants.ATTR_HTML)) {
         setHtml(value);
+      
       } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
         setFormat(value);
       } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
@@ -197,6 +233,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setOptions(value);
       }
     }
+  }
+
+  public void setExpression(String expression) {
+    this.expression = expression;
   }
 
   public void setFormat(String format) {
@@ -220,11 +260,11 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     this.scale = scale;
   }
 
-  public void setSum(String sum) {
-    this.sum = sum;
-  }
-
   public void setText(String text) {
     this.text = text;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 }

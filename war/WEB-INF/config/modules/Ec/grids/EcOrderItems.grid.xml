@@ -14,14 +14,14 @@
     </DataColumn>
 
     <DataColumn name="Weight" maxWidth="80">
-      <footer sum="row.QuantitySubmit * row.Weight" />
+      <footer expression="row.Weight ? (row.QuantitySubmit * row.Weight) : null" />
     </DataColumn>
       
     <DataColumn name="QuantityOrdered" visible="true" maxWidth="100">
-      <footer sum="*" />
+      <footer aggregate="sum" options="0" />
     </DataColumn>
     <DataColumn name="QuantitySubmit" visible="true" maxWidth="100">
-      <footer sum="*" />
+      <footer aggregate="sum" options="0" />
     </DataColumn>
 
     <DataColumn name="Price" visible="true" maxWidth="100" />
@@ -29,7 +29,7 @@
       <render>
         <ui:expression>row.QuantitySubmit * row.Price</ui:expression>
       </render>
-      <footer sum="*" />
+      <footer aggregate="sum" options="0" />
     </CalcColumn>
 
     <DataColumn name="Note" visible="false" />

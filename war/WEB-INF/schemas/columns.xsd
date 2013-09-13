@@ -170,9 +170,21 @@
       <xs:maxLength value="30" />
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:simpleType name="columnAggregate">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="sum" />
+      <xs:enumeration value="count" />
+      <xs:enumeration value="max" />
+      <xs:enumeration value="min" />
+      <xs:enumeration value="avg" />
+    </xs:restriction>
+  </xs:simpleType>
   
   <xs:complexType name="columnFooter">
-    <xs:attribute name="sum" type="xs:string" />
+    <xs:attribute name="aggregate" type="columnAggregate" />
+    <xs:attribute name="expression" type="xs:string" />
+    <xs:attribute name="type" type="type:valueType" />
     <xs:attribute name="text" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="format" type="xs:normalizedString" />

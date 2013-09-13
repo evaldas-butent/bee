@@ -14,7 +14,6 @@
     </style>
   </header>
   <body maxHeight="100" />
-  <footer height="30" />
 
   <columns>
     <IdColumn name="Id" caption="ID" horizontalAlignment="left">
@@ -157,11 +156,6 @@
 
     <DataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
       horizontalAlignment="center">
-      <style>
-        <footerStyle>
-          <ui:class>bee-afraid</ui:class>
-        </footerStyle>
-      </style>
       <editor type="date" minWidth="100" />
       <carry>
         <ui:function>return new Date();</ui:function>

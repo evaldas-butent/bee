@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -21,7 +22,15 @@ import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.HasValueType;
+import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.FooterDescription;
@@ -31,14 +40,20 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 
 public class ColumnFooter extends Header<String> implements HasHorizontalAlignment,
-    HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions {
+    HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType {
+
+  public enum Aggregate {
+    SUM, COUNT, MIN, MAX, AVG
+  }
+
+  private static final Aggregate DEFAULT_AGGREGATE = Aggregate.SUM;
+  private static final ValueType DEFAULT_VALUE_TYPE = ValueType.NUMBER;
 
   private String html;
-  
-  private boolean reduce; 
-  
+
   private CellSource cellSource;
   private Evaluator rowEvaluator;
+  private ValueType valueType;
 
   private HorizontalAlignmentConstant horizontalAlignment;
 
@@ -49,14 +64,34 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
 
   private String options;
 
+  private Aggregate aggregate;
+
   public ColumnFooter(CellSource cellSource, AbstractColumn<?> column,
       ColumnDescription columnDescription, List<? extends IsColumn> dataColumns) {
 
     super(new FooterCell());
-    
+
     this.cellSource = cellSource;
 
     init(column, columnDescription, dataColumns);
+  }
+  
+  public boolean dependsOnSource(String source) {
+    if (BeeUtils.isEmpty(source)) {
+      return false;
+    } else if (getAggregate() == null) {
+      return false;
+    } else if (getRowEvaluator() != null) {
+      return BeeUtils.containsSame(getRowEvaluator().getExpression(), source);
+    } else if (getCellSource() != null) {
+      return BeeUtils.same(getCellSource().getName(), source);
+    } else {
+      return false;
+    }
+  }
+
+  public Aggregate getAggregate() {
+    return aggregate;
   }
 
   public CellSource getCellSource() {
@@ -101,24 +136,35 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
     return getHtml();
   }
 
-  public boolean reduce() {
-    return reduce;
+  @Override
+  public ValueType getValueType() {
+    return valueType;
   }
 
   @Override
   public void render(Context context, SafeHtmlBuilder sb) {
-    if (reduce() && context instanceof CellContext) {
+    if (getAggregate() != null && context instanceof CellContext) {
       List<IsRow> data = ((CellContext) context).getGrid().getRowData();
+
       if (!BeeUtils.isEmpty(data)) {
-        Double value = sum(data);
+        Value value = calculate(data);
+        if (value == null && BeeUtils.contains(getOptions(), BeeConst.CHAR_ZERO)) {
+          value = new NumberValue(BeeConst.DOUBLE_ZERO);
+        }
+
         if (value != null) {
-          getCell().render(context, BeeUtils.toString(value), sb);
+          getCell().render(context, Format.render(value.getString(), getValueType(),
+              getDateTimeFormat(), getNumberFormat(), getScale()), sb);
           return;
         }
       }
     }
 
     super.render(context, sb);
+  }
+
+  public void setAggregate(Aggregate aggregate) {
+    this.aggregate = aggregate;
   }
 
   public void setCellSource(CellSource cellSource) {
@@ -149,10 +195,6 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
     this.options = options;
   }
 
-  public void setReduce(boolean reduce) {
-    this.reduce = reduce;
-  }
-  
   public void setRowEvaluator(Evaluator rowEvaluator) {
     this.rowEvaluator = rowEvaluator;
   }
@@ -162,14 +204,83 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
     this.scale = scale;
   }
 
-  protected String getRowValue(IsRow row) {
+  public void setValueType(ValueType valueType) {
+    this.valueType = valueType;
+  }
+
+  protected Value calculate(List<IsRow> data) {
+    double total = BeeConst.DOUBLE_ZERO;
+    long count = 0;
+    Value reduced = null;
+
+    for (IsRow row : data) {
+      Value value = getRowValue(row);
+      if (value != null && !value.isNull()) {
+        switch (getAggregate()) {
+          case AVG:
+            total += value.getDouble();
+            break;
+
+          case COUNT:
+            break;
+
+          case MAX:
+            if (reduced == null || BeeUtils.isMore(value, reduced)) {
+              reduced = value;
+            }
+            break;
+
+          case MIN:
+            if (reduced == null || BeeUtils.isLess(value, reduced)) {
+              reduced = value;
+            }
+            break;
+
+          case SUM:
+            total += value.getDouble();
+            break;
+        }
+        count++;
+      }
+    }
+
+    if (count <= 0) {
+      return null;
+    }
+
+    switch (getAggregate()) {
+      case AVG:
+        if (ValueType.isNumeric(getValueType())) {
+          return new NumberValue(total / count);
+        } else if (getValueType() == ValueType.DATE) {
+          return new DateValue(new JustDate(BeeUtils.toInt(total / count)));
+        } else if (getValueType() == ValueType.DATE_TIME) {
+          return new DateTimeValue(new DateTime(BeeUtils.toLong(total / count)));
+        } else {
+          return null;
+        }
+
+      case COUNT:
+        return new LongValue(count);
+
+      case MAX:
+      case MIN:
+        return reduced;
+
+      case SUM:
+        return new NumberValue(total);
+    }
+    return null;
+  }
+
+  protected Value getRowValue(IsRow row) {
     if (row == null) {
       return null;
-    } else if (getRowEvaluator() != null) {
+    } else if (getRowEvaluator() != null && getValueType() != null) {
       getRowEvaluator().update(row);
-      return getRowEvaluator().evaluate();
+      return Value.parseValue(getValueType(), getRowEvaluator().evaluate(), false);
     } else if (getCellSource() != null) {
-      return getCellSource().getString(row);
+      return getCellSource().getValue(row);
     } else {
       return null;
     }
@@ -189,10 +300,14 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
         setHtml(footerDescription.getHtml());
       }
 
+      if (!BeeUtils.isEmpty(footerDescription.getType())) {
+        setValueType(ValueType.getByTypeCode(footerDescription.getType()));
+      }
+
       if (!BeeUtils.isEmpty(footerDescription.getHorAlign())) {
         UiHelper.setHorizontalAlignment(this, footerDescription.getHorAlign());
       }
-      
+
       if (footerDescription.getScale() != null) {
         setScale(footerDescription.getScale());
       }
@@ -201,40 +316,29 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
         setOptions(footerDescription.getOptions());
       }
 
-      String sumExpr = footerDescription.getSum();
-      if (!BeeUtils.isEmpty(sumExpr)) {
+      if (!BeeUtils.isEmpty(footerDescription.getAggregate())) {
+        setAggregate(NameUtils.getEnumByName(Aggregate.class, footerDescription.getAggregate()));
+      }
+
+      String expression = footerDescription.getExpression();
+      if (!BeeUtils.isEmpty(expression) && getAggregate() == null) {
+        setAggregate(DEFAULT_AGGREGATE);
+      }
+
+      if (getAggregate() != null) {
         Calculation calculation;
-        if (sumExpr.trim().length() <= 1 && !NameUtils.isIdentifier(sumExpr)) {
+        if (BeeUtils.isEmpty(expression)) {
           calculation = columnDescription.getRender();
         } else {
-          calculation = new Calculation(sumExpr, null);
-        }
-        
-        if (calculation != null) {
-          setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
-        }
-        
-        if (calculation != null || getCellSource() != null) {
-          setReduce(true);
+          calculation = new Calculation(expression, null);
         }
 
-        if (getHorizontalAlignment() == null) {
-          setHorizontalAlignment(ALIGN_RIGHT);
+        if (calculation != null) {
+          setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
         }
       }
     }
 
-    if (getHorizontalAlignment() == null && column.getHorizontalAlignment() != null) {
-      setHorizontalAlignment(column.getHorizontalAlignment());
-    }
-    
-    if (column instanceof HasDateTimeFormat) {
-      setDateTimeFormat(((HasDateTimeFormat) column).getDateTimeFormat());
-    }
-    if (getNumberFormat() == null && column instanceof HasNumberFormat) {
-      setNumberFormat(((HasNumberFormat) column).getNumberFormat());
-    }
-    
     if (BeeConst.isUndef(getScale())) {
       if (column instanceof HasScale) {
         setScale(((HasScale) column).getScale());
@@ -244,23 +348,43 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
         setScale(getCellSource().getScale());
       }
     }
-  }
 
-  protected Double sum(List<IsRow> data) {
-    double total = BeeConst.DOUBLE_ZERO;
-    int count = 0;
-
-    for (IsRow row : data) {
-      Double value = BeeUtils.toDoubleOrNull(getRowValue(row));
-      if (BeeUtils.isDouble(value) && !BeeUtils.isZero(value)) {
-        total += value;
-        count++;
+    if (getValueType() == null) {
+      if (getAggregate() == Aggregate.COUNT) {
+        setValueType(ValueType.LONG);
+      } else if (column.getValueType() != null) {
+        setValueType(column.getValueType());
+      } else if (columnDescription.getValueType() != null) {
+        setValueType(columnDescription.getValueType());
+      } else if (getCellSource() != null && getCellSource().getValueType() != null) {
+        setValueType(getCellSource().getValueType());
+      } else if (getAggregate() != null) {
+        setValueType(DEFAULT_VALUE_TYPE);
       }
     }
 
-    LogUtils.getRootLogger().debug("footer",
-        (getCellSource() == null) ? null : getCellSource().getName(), count, total);
+    if (getHorizontalAlignment() == null) {
+      if (getAggregate() == Aggregate.COUNT) {
+        setHorizontalAlignment(ALIGN_RIGHT);
+      } else if (getAggregate() != null && getValueType() != null) {
+        UiHelper.setDefaultHorizontalAlignment(this, getValueType());
+      } else if (column.getHorizontalAlignment() != null) {
+        setHorizontalAlignment(column.getHorizontalAlignment());
+      }
+    }
 
-    return (count > 0) ? total : null;
+    if (footerDescription != null && !BeeUtils.isEmpty(footerDescription.getFormat())
+        && getValueType() != null) {
+      Format.setFormat(this, getValueType(), footerDescription.getFormat());
+    }
+
+    if (getValueType() == column.getValueType()) {
+      if (getDateTimeFormat() == null && column instanceof HasDateTimeFormat) {
+        setDateTimeFormat(((HasDateTimeFormat) column).getDateTimeFormat());
+      }
+      if (getNumberFormat() == null && column instanceof HasNumberFormat) {
+        setNumberFormat(((HasNumberFormat) column).getNumberFormat());
+      }
+    }
   }
 }
