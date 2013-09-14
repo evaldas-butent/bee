@@ -41,7 +41,7 @@
     <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
       <Label text="=notes" />
       <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-        <InputArea source="Notes" class="occupy" />
+        <InputArea source="Notes" class="occupy-1" />
       </SimplePanel>
     </FlowPanel>
   </FlowPanel>

@@ -20,7 +20,7 @@
     <FlowPanel class="flexBox-vertical flexible">
       <Label html="Aprašymas" />
       <SimplePanel style="position: relative; height: 10ex;">
-        <InputArea source="Description" class="occupy" />
+        <InputArea source="Description" class="occupy-1" />
       </SimplePanel>
     </FlowPanel>
   </FlowPanel>

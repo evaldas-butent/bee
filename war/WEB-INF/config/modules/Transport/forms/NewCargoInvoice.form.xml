@@ -73,7 +73,9 @@
     <TabbedPages class="flexible">
       <page>
         <text>=notes</text>
-        <InputArea source="Notes" />
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
       </page>
     </TabbedPages>
   </FlowPanel>

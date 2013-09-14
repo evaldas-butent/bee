@@ -9,7 +9,7 @@
     <Table style="border-spacing: 10px;">
       <row>
         <Label html="Prisijungimo vardas" class="bee-required" />
-        <InputText source="Login" style="width:150px" />
+        <InputText source="Login" style="width: 150px;" />
         <cell horizontalAlignment="center" colSpan="2">
           <Button html="Pakeisti slaptažodį" name="ChangePassword" />
         </cell>
@@ -17,11 +17,13 @@
       </row>
       <row>
         <Label html="Vardas, pavardė" class="bee-required" />
-        <DataSelector source="CompanyPerson" editSource="Person" style="width:150px"
+        <DataSelector source="CompanyPerson" editSource="Person" style="width: 150px;"
           renderColumns="FirstName Lastname" choiceColumns="FirstName Lastname CompanyName" />
         <Label html="Įmonė" horizontalAlignment="right" />
-        <TextLabel source="CompanyName" style="width:150px" />
-        <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
+        <TextLabel source="CompanyName" style="width: 150px;" />
+        <cell rowSpan="3">
+          <InputArea source="Properties" style="width: 200px; height: 100px;" />
+        </cell>
       </row>
       <row>
         <Label html="Gimimo data" />
@@ -31,7 +33,7 @@
       </row>
       <row>
         <cell colSpan="4">
-          <ChildSelector childTable="UserRoles" viewName="Roles" style="width:400px"
+          <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;"
             caption="Rolės" required="true" />
         </cell>
       </row>

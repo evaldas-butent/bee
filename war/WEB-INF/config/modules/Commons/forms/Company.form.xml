@@ -18,7 +18,7 @@
   <FlowPanel class="flexBox-vertical">
     <VerticalPanel>
       <FlowPanel style="position:relative; width: 790px; height: 90px;">
-  <Table >
+  <Table>
     <row>
       <Label text="=name" style="width: 90px; margin-right: 8px; text-align: right" class="bee-required" />
       <InputText source="Name" style="width: 200px;"  />
@@ -31,7 +31,7 @@
     </row>
   </Table>
 
-  <Table >
+  <Table>
     <row>
       <Label text="=companyCode" style="&lbl1;" />
       <InputText source="Code" style="width: 200px;" d:size="93" d:unit="px" />
@@ -115,7 +115,9 @@
       </page>
       <page>
         <text>=notes</text>
-        <InputArea source="Notes" />
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
       </page>  
     </TabbedPages>
 

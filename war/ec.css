@@ -665,10 +665,10 @@
 }
 .bee-ec-shoppingCart-address-input {
   position: absolute;
-  top: 20px;
-  bottom: 2px;
   left: 2px;
-  right: 2px;
+  top: 20px;
+  width: calc(100% - 4px);
+  height: calc(100% - 22px);
   padding: 4px;
   font-size: medium;
   box-shadow: inset 3px 3px 10px silver; 
@@ -708,10 +708,10 @@
 }
 .bee-ec-shoppingCart-comment-input {
   position: absolute;
-  top: 20px;
-  bottom: 2px;
   left: 2px;
-  right: 2px;
+  top: 20px;
+  width: calc(100% - 4px);
+  height: calc(100% - 22px);
   padding: 2px;
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;

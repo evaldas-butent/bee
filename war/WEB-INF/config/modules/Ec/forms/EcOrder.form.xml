@@ -74,7 +74,9 @@
       </page>
       <page>
         <text>=notes</text>
-        <InputArea source="Notes" disablable="false" />
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" disablable="false" />
+        </SimplePanel>
       </page>  
     </TabbedPages>
   </FlowPanel>

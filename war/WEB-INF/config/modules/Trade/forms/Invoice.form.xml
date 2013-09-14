@@ -60,7 +60,9 @@
       </page>
       <page>
         <text>Pastabos</text>
-        <InputArea source="Notes" />
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
       </page>  
     </TabbedPages>
   </FlowPanel>

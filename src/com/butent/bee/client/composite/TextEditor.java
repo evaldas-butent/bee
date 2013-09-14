@@ -16,6 +16,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
@@ -37,6 +38,8 @@ import java.util.List;
  */
 
 public class TextEditor extends Absolute implements Editor, HasTextDimensions, HasTextBox {
+  
+  private static final String STYLE_NAME = "bee-TextEditor";
 
   private final InputArea area;
   private final String acceptId;
@@ -48,22 +51,26 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   
   public TextEditor() {
     super();
+
     this.area = new InputArea();
-    area.addStyleName("bee-TextEditor-area");
+    area.addStyleName(STYLE_NAME + "-area");
+    
+    Simple wrapper = new Simple(area);
+    wrapper.addStyleName(STYLE_NAME + "-wrapper");
 
     Image accept = new Image(Global.getImages().accept(), new EditorFactory.Accept(area));
-    accept.addStyleName("bee-TextEditor-accept");
+    accept.addStyleName(STYLE_NAME + "-accept");
     this.acceptId = accept.getId();
 
     Image noes = new Image(Global.getImages().noes(), new EditorFactory.Cancel(area));
-    noes.addStyleName("bee-TextEditor-noes");
+    noes.addStyleName(STYLE_NAME + "-cancel");
     this.noesId = noes.getId();
 
-    add(area);
+    add(wrapper);
     add(accept);
     add(noes);
 
-    addStyleName("bee-TextEditor");
+    addStyleName(STYLE_NAME);
     sinkEvents(Event.ONMOUSEDOWN);
   }
 
