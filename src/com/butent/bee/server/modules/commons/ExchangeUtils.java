@@ -61,10 +61,9 @@ public final class ExchangeUtils {
     Assert.notNull(currencyTo);
     String ratesTo = SqlUtils.uniqueName();
 
-    IsExpression xpr =
-        SqlUtils.multiply(exchangeField(query, amount, currency, date),
-            SqlUtils.divide(SqlUtils.field(ratesTo, COL_RATES_QUANTITY), SqlUtils.field(ratesTo,
-                COL_RATES_RATE)));
+    IsExpression xpr = SqlUtils.multiply(exchangeField(query, amount, currency, date),
+        SqlUtils.divide(SqlUtils.field(ratesTo, COL_RATES_QUANTITY), SqlUtils.field(ratesTo,
+            COL_RATES_RATE)));
 
     addExchangeFrom(query, ratesTo, currencyTo, date);
 

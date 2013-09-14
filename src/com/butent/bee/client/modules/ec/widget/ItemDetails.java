@@ -37,7 +37,7 @@ public class ItemDetails extends Flow {
 
     int price = item.getPrice();
     if (price > 0) {
-      String priceInfo = BeeUtils.joinWords(Localized.getConstants().price()
+      String priceInfo = BeeUtils.joinWords(Localized.getConstants().trdPrice()
           + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
       Label itemPrice = new Label(priceInfo);
       itemPrice.addStyleName(stylePrefix + "price");

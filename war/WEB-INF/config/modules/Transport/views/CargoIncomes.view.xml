@@ -27,5 +27,6 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     <SimpleColumn name="Sale" />
+    <SimpleColumn name="Purchase" />
   </Columns>
 </View>

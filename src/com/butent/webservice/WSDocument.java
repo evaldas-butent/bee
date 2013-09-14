@@ -16,10 +16,15 @@ public class WSDocument {
     private String vatMode;
     private String vat;
     private String vatPercent;
+    private String note;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
       this.quantity = quantity;
+    }
+
+    public void setNote(String note) {
+      this.note = note;
     }
 
     public void setPrice(String price) {
@@ -72,7 +77,8 @@ public class WSDocument {
           .append(ButentWS.tag("moketojas", payer))
           .append(ButentWS.tag("sandelis", warehouse))
           .append(ButentWS.tag("preke", item.itemId))
-          .append(ButentWS.tag("kiekis", item.quantity));
+          .append(ButentWS.tag("kiekis", item.quantity))
+          .append(ButentWS.tag("pastaba", item.note));
 
       if (!BeeUtils.isEmpty(item.price)) {
         sb.append(ButentWS.tag("kaina", item.price));

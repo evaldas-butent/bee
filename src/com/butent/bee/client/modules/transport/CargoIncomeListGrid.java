@@ -46,7 +46,6 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -119,10 +118,10 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
             }
           }
           if (DataUtils.isId(id)) {
-            payers.put(id, Pair.of(row.getString(Data.getColumnIndex(
-                VIEW_CARGO_INCOME_LIST,
-                name + "Name")), row.getInteger(Data.getColumnIndex(VIEW_CARGO_INCOME_LIST,
-                name + "CreditDays"))));
+            payers.put(id,
+                Pair.of(row.getString(Data.getColumnIndex(VIEW_CARGO_INCOME_LIST, name + "Name")),
+                    row.getInteger(Data.getColumnIndex(VIEW_CARGO_INCOME_LIST,
+                        name + "CreditDays"))));
           }
           customers.put(row.getLong(custId), row.getString(custName));
 
@@ -137,9 +136,9 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
 
         BeeRow newRow = RowFactory.createEmptyRow(turnoversInfo, true);
 
-        newRow.setValue(turnoversInfo.getColumnIndex(COL_NUMBER), BeeUtils.join(",", orders));
-        newRow.setValue(turnoversInfo.getColumnIndex(COL_VEHICLE), BeeUtils.join(",", vehicles));
-        newRow.setValue(turnoversInfo.getColumnIndex(COL_DRIVER), BeeUtils.join(",", drivers));
+        newRow.setValue(turnoversInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
+        newRow.setValue(turnoversInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
+        newRow.setValue(turnoversInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
         newRow.setValue(turnoversInfo.getColumnIndex(TradeConstants.COL_SALE_VAT_INCL), true);
 
         if (customers.size() == 1) {
@@ -211,7 +210,7 @@ public class CargoIncomeListGrid extends AbstractGridInterceptor implements Clic
                 args.addDataItem(TradeConstants.COL_SALE, row.getId());
                 args.addDataItem(ExchangeUtils.COL_CURRENCY,
                     row.getLong(turnoversInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY)));
-                args.addDataItem("IdList", Codec.beeSerialize(ids));
+                args.addDataItem("IdList", DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
                   args.addDataItem(CommonsConstants.COL_ITEM, mainItem.getRelatedId());

@@ -10,7 +10,7 @@
     <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Service" caption="=trServiceName" />
-    <DataColumn name="Amount" caption="=amount" format="#.00">
+    <DataColumn name="Amount" caption="=amount" format="0.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
@@ -18,12 +18,14 @@
     </DataColumn>
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
     <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
 
     <RelColumn name="Customer" caption="=payer" />
     <DataColumn name="Number" caption="=number" />
     <DataColumn name="Note" caption="=note" />
-    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true"
+    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" renderColumns="Sale"
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
   </columns>
 </Grid>

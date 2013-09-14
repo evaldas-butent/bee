@@ -116,7 +116,7 @@ public final class TransportConstants {
 
       @Override
       public String getTripVehicleNumberColumnName() {
-        return COL_VEHICLE_NUMBER;
+        return COL_VEHICLE + COL_VEHICLE_NUMBER;
       }
     },
     TRAILER {
@@ -127,7 +127,7 @@ public final class TransportConstants {
 
       @Override
       public String getTripVehicleNumberColumnName() {
-        return COL_TRAILER_NUMBER;
+        return COL_TRAILER + COL_VEHICLE_NUMBER;
       }
     };
 
@@ -250,6 +250,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
+  public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
 
   public static final String COL_CARGO_REQUEST_ROUTE = "Route";
@@ -299,14 +300,10 @@ public final class TransportConstants {
   public static final String COL_PLACE_POST_INDEX = "PostIndex";
   public static final String COL_PLACE_TERMINAL = "Terminal";
 
-  public static final String COL_USER = "User";
-
   public static final String COL_VEHICLE_ID = "VehicleID";
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_TRAILER = "Trailer";
-
-  public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
-  public static final String COL_TRAILER_NUMBER = "TrailerNumber";
+  public static final String COL_VEHICLE_NUMBER = "Number";
 
   public static final String COL_VEHICLE_START_DATE = "StartDate";
   public static final String COL_VEHICLE_END_DATE = "EndDate";

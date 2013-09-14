@@ -2,22 +2,33 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoIncomeList" viewName="CargoIncomeList"
+  name="CargoCreditIncomes" viewName="CargoCreditIncomes"
   flexGrow="1"
-  readOnly="true" caption="=trOrderCargoIncomes"
-  filter="!(Sale)"
+  readOnly="true" caption="=trCreditIncomes"
   >
   <columns>
     <SelectionColumn name="Select" caption="-" width="20" />
     <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
-    <DataColumn name="Status" itemKey="OrderStatus" />    
-    <DataColumn name="CustomerName" caption="=customer" />
-    <DataColumn name="Payer" caption="=payer">
+
+    <RelColumn name="Sale" editEnabled="true" renderColumns="Sale"
+      editForm="CargoInvoice" editViewName="CargoInvoices" />
+    <DataColumn name="InvoiceDate" />
+    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNumber">
       <render>
-        <ui:expression>row.Company ? row.CompanyName : row.PayerName</ui:expression>
+        <ui:function>
+          if (!row.InvoicePrefix) {
+            return row.InvoiceNo;
+          } else if(!row.InvoiceNo) {
+            return row.InvoicePrefix;
+          } else {
+            return row.InvoicePrefix + " " + row.InvoiceNo;
+          }
+        </ui:function>
       </render>
     </DataColumn>
+    <DataColumn name="CustomerName" caption="=trdCustomer" />
+    <DataColumn name="PayerName" caption="=trdPayer" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       caption="=from" horizontalAlignment="center">
@@ -27,24 +38,18 @@
       caption="=to" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
-    <DataColumn name="UnloadingDate" caption="=unloading" />
-    <DataColumn name="Cmr" />
 
     <DataColumn name="ServiceName" />
-    <DataColumn name="Amount" format="0.00">
+    <DataColumn name="Amount">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
     <DataColumn name="CurrencyName" flexGrow="0" />
-    <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" />
-
+    <DataColumn name="Vat" horizontalAlignment="right">
+      <render><ui:expression>row.Vat ? (row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression></render>
+    </DataColumn>
     <DataColumn name="Note" />
-
-    <DataColumn name="Vehicle" caption="=trTruck" />
-    <DataColumn name="Trailer" caption="=trailer" />
-    <DataColumn name="Driver" caption="=vehicleDriver" searchBy="FirstName LastName" />
   </columns>
 </Grid>

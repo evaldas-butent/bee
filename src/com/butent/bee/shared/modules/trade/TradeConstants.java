@@ -32,6 +32,7 @@ public final class TradeConstants {
   public static final String COL_SALE_ITEM_PRICE = "Price";
   public static final String COL_SALE_ITEM_VAT = "Vat";
   public static final String COL_SALE_ITEM_VAT_PERC = "VatPercent";
+  public static final String COL_SALE_ITEM_NOTE = "Note";
 
   private TradeConstants() {
   }

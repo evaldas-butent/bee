@@ -10,11 +10,10 @@
   >
   <columns>
     <SelectionColumn name="Select" caption="-" width="20" />
-    <IdColumn name="ID" />
-    <DataColumn name="Date" caption="=date" />
+    <IdColumn name="ID" caption="=trdInvoiceId" />
+    <DataColumn name="Date" />
     <DataColumn name="Number" />
-    <CalcColumn name="Invoice" type="string" caption="=invoiceNumber" 
-      searchBy="InvoicePrefix InvoiceNumber">
+    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
       <render>
         <ui:function>
           if (!row.InvoicePrefix) {
@@ -26,9 +25,9 @@
           }
         </ui:function>
       </render>
-    </CalcColumn>
-    <RelColumn name="Customer" caption="=trCustomer" />
-    <RelColumn name="Payer" caption="=payer" />
+    </DataColumn>
+    <DataColumn name="CustomerName" caption="=trdCustomer" />
+    <DataColumn name="PayerName" caption="=trdPayer" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
@@ -36,19 +35,7 @@
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />
 
-    <CalcColumn name="Debt" type="decimal" scale="2" caption="=trDept">
-      <render>
-        <ui:function>
-          if (!row.Paid) {
-            return row.Amount;
-          } else if (row.Paid == row.Amount) {
-            return null;
-          } else {
-            return row.Amount - row.Paid;
-          }
-        </ui:function>
-      </render>
-    </CalcColumn>
+    <DataColumn name="Debt" caption="=trdDebt" format="0.00" />
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
@@ -57,6 +44,10 @@
 
   <rowStyle>
     <ui:inline>="color:red"</ui:inline>
-    <ui:expression>row.Paid &lt; row.Amount</ui:expression>
+    <ui:expression>row.Debt &gt; 0 &amp;&amp; row.Term &lt; new Date().getTime()</ui:expression>
+  </rowStyle>
+  <rowStyle>
+    <ui:inline>="color:green"</ui:inline>
+    <ui:expression>row.Debt == 0</ui:expression>
   </rowStyle>
 </Grid>

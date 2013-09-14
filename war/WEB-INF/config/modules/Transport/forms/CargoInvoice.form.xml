@@ -12,50 +12,50 @@
   <FlowPanel class="flexBox-vertical">
     <Table>
       <row>
-        <Label text="=date" class="bee-required" style="&lbl;" />
+        <Label text="=trdDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="width:110px;" />
 
         <Label text="=orderNumber" style="&lbl;" />
         <InputText source="Number" />
       </row>
       <row>
-        <Label text="=amount" style="&lbl;" />
+        <Label text="=trdTotal" style="&lbl;" />
         <HorizontalPanel>
           <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
           <DataSelector source="CurrencyName" placeholder="=currencyShort"
             style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" text="=transportVATIncluded" />
+          <CheckBox source="VatIncluded" text="=trdVatIncluded" />
         </HorizontalPanel>
 
-        <Label text="=transportSalesInvoiceSerialNo" style="&lbl;" />
+        <Label text="=trdInvoicePrefix" style="&lbl;" />
         <FlowPanel>
           <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
-          <InputText source="InvoiceNo" caption="=numeroSign" d:style="width:30px; text-align:right;"
-            d:rootStyle="display:inline-block;" />
+          <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
+          <InputText source="InvoiceNo" />
         </FlowPanel>
       </row>
       <row>
-        <Label text="=trSupplier" style="&lbl;" />
+        <Label text="=trdSupplier" style="&lbl;" />
         <DataSelector source="Supplier" />
-        <Label text="=trCustomer" style="&lbl;" />
+        <Label text="=trdCustomer" style="&lbl;" />
         <DataSelector source="Customer" />
       </row>
       <row>
-        <Label text="=manager" style="&lbl;" />
+        <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
-        <Label text="=payer" style="&lbl;" />
+        <Label text="=trdPayer" style="&lbl;" />
         <DataSelector source="Payer" />
       </row>
       <row>
         <cell colSpan="3">
-          <Label text="=transportSalesTerm" style="&lbl; text-align:right;" />
+          <Label text="=trdTerm" style="&lbl; text-align:right;" />
         </cell>
         <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
-        <Label text="=trTruck" style="&lbl;" />
+        <Label text="=trdVehicle" style="&lbl;" />
         <InputText source="Vehicle" />
-        <Label text="=vehicleDriver" style="&lbl;" />
+        <Label text="=trdDriver" style="&lbl;" />
         <InputText source="Driver" />
       </row>
     </Table>
@@ -66,7 +66,7 @@
         <ChildGrid name="SaleItems" relColumn="Sale" />
       </page>
       <page>
-        <text>=notes</text>
+        <text>=trdNotes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" />
         </SimplePanel>

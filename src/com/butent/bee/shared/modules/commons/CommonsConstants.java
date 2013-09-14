@@ -119,7 +119,7 @@ public final class CommonsConstants {
 
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
-  
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -200,6 +200,7 @@ public final class CommonsConstants {
   public static final String COL_CITY_NAME = "Name";
   public static final String COL_COUNTRY = "Country";
   public static final String COL_COUNTRY_NAME = "Name";
+  public static final String COL_COUNTRY_CODE = "Code";
 
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
@@ -225,7 +226,7 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_CODE = "Code";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
-  
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 

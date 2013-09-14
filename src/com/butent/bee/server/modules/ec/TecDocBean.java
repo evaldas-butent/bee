@@ -51,6 +51,7 @@ import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -177,9 +178,15 @@ public class TecDocBean {
 
   public void initTimers() {
     Integer minutes = prm.getInteger(EC_MODULE, PRM_BUTENT_INTERVAL);
+    boolean timerExists = butentTimer != null;
 
-    if (butentTimer != null) {
-      butentTimer.cancel();
+    if (timerExists) {
+      try {
+        butentTimer.cancel();
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e, EcSupplier.EOLTAS);
+      }
+      butentTimer = null;
     }
     if (BeeUtils.isPositive(minutes)) {
       butentTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
@@ -188,15 +195,20 @@ public class TecDocBean {
       logger.info(EcSupplier.EOLTAS, "created timer every", minutes, "minutes starting at",
           butentTimer.getNextTimeout());
     } else {
-      if (butentTimer != null) {
-        butentTimer = null;
+      if (timerExists) {
         logger.info(EcSupplier.EOLTAS, "removed timer");
       }
     }
     minutes = prm.getInteger(EC_MODULE, PRM_MOTONET_INTERVAL);
+    timerExists = motonetTimer != null;
 
-    if (motonetTimer != null) {
-      motonetTimer.cancel();
+    if (timerExists) {
+      try {
+        motonetTimer.cancel();
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e, EcSupplier.MOTOPROFIL);
+      }
+      motonetTimer = null;
     }
     if (BeeUtils.isPositive(minutes)) {
       motonetTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
@@ -205,8 +217,7 @@ public class TecDocBean {
       logger.info(EcSupplier.MOTOPROFIL, "created timer every", minutes, "minutes starting at",
           motonetTimer.getNextTimeout());
     } else {
-      if (motonetTimer != null) {
-        motonetTimer = null;
+      if (timerExists) {
         logger.info(EcSupplier.MOTOPROFIL, "removed timer");
       }
     }

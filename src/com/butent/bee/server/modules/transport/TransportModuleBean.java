@@ -1,8 +1,10 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -23,13 +25,13 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
-import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -45,11 +47,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -66,6 +66,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -100,7 +101,7 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE, TradeConstants.TRADE_MODULE);
+    return Lists.newArrayList(COMMONS_MODULE, TRADE_MODULE);
   }
 
   @Override
@@ -176,10 +177,10 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       response = createInvoiceItems(
-          BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_SALE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)),
-          Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(CommonsConstants.COL_ITEM)));
+          DataUtils.parseIdSet(reqInfo.getParameter("IdList")),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM)));
 
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
@@ -360,7 +361,7 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject createInvoiceItems(Long saleId, Long currency, String[] idList,
+  private ResponseObject createInvoiceItems(Long saleId, Long currency, Set<Long> idList,
       Long mainItem) {
     if (!DataUtils.isId(saleId)) {
       return ResponseObject.error("Wrong account ID");
@@ -368,48 +369,65 @@ public class TransportModuleBean implements BeeModule {
     if (!DataUtils.isId(currency)) {
       return ResponseObject.error("Wrong currency ID");
     }
-    HasConditions wh = SqlUtils.or();
-
-    for (String id : idList) {
-      wh.add(sys.idEquals(TBL_CARGO_INCOMES, BeeUtils.toLong(id)));
+    if (BeeUtils.isEmpty(idList)) {
+      return ResponseObject.error("Empty ID list");
     }
-    SqlSelect ss =
-        new SqlSelect()
-            .addFields(TBL_CARGO_INCOMES, TradeConstants.COL_SALE_ITEM_VAT,
-                TradeConstants.COL_SALE_ITEM_VAT_PERC)
-            .addField("LoadingCountries", CommonsConstants.COL_COMPANY_CODE, COL_LOADING_PLACE)
-            .addField("UnloadingCountries", CommonsConstants.COL_COMPANY_CODE, COL_UNLOADING_PLACE)
-            .addFrom(TBL_CARGO_INCOMES)
-            .addFromInner(TBL_SERVICES,
-                sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, TransportConstants.COL_SERVICE))
-            .addFromInner(TBL_ORDER_CARGO,
-                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
-            .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-            .addFromLeft(
-                TBL_CARGO_PLACES,
-                "LoadingPlaces",
-                sys.joinTables(TBL_CARGO_PLACES, "LoadingPlaces", TBL_ORDER_CARGO,
-                    COL_LOADING_PLACE))
-            .addFromLeft(CommonsConstants.TBL_COUNTRIES, "LoadingCountries",
-                sys.joinTables(CommonsConstants.TBL_COUNTRIES, "LoadingCountries",
-                    "LoadingPlaces", CommonsConstants.COL_COUNTRY))
-            .addFromLeft(TBL_CARGO_PLACES, "UnloadingPlaces",
-                sys.joinTables(TBL_CARGO_PLACES, "UnloadingPlaces",
-                    TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
-            .addFromLeft(CommonsConstants.TBL_COUNTRIES, "UnloadingCountries",
-                sys.joinTables(CommonsConstants.TBL_COUNTRIES, "UnloadingCountries",
-                    "UnloadingPlaces", CommonsConstants.COL_COUNTRY))
-            .setWhere(wh)
-            .addGroup(TBL_CARGO_INCOMES, TradeConstants.COL_SALE_ITEM_VAT,
-                TradeConstants.COL_SALE_ITEM_VAT_PERC)
-            .addGroup("LoadingCountries", CommonsConstants.COL_COMPANY_CODE)
-            .addGroup("UnloadingCountries", CommonsConstants.COL_COMPANY_CODE);
+    IsCondition wh = sys.idInList(TBL_CARGO_INCOMES, idList);
+
+    String loadPlace = SqlUtils.uniqueName();
+    String unloadPlace = SqlUtils.uniqueName();
+    String loadCountry = SqlUtils.uniqueName();
+    String unloadCountry = SqlUtils.uniqueName();
+    String loadCity = SqlUtils.uniqueName();
+    String unloadCity = SqlUtils.uniqueName();
+
+    SqlSelect ss = new SqlSelect()
+        .addFields(TBL_ORDERS, COL_ORDER_NO)
+        .addFields(TBL_ORDER_CARGO, COL_CARGO_CMR)
+        .addFields(TBL_CARGO_INCOMES, COL_CARGO, COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)
+        .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
+        .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
+        .addField(loadPlace, COL_POST_INDEX, loadPlace)
+        .addField(unloadPlace, COL_POST_INDEX, unloadPlace)
+        .addField(loadCity, COL_CITY_NAME, loadCity)
+        .addField(unloadCity, COL_CITY_NAME, unloadCity)
+        .addField(loadCountry, COL_COUNTRY_CODE, loadCountry)
+        .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
+        .addFrom(TBL_CARGO_INCOMES)
+        .addFromInner(TBL_SERVICES,
+            sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_PLACES, loadPlace,
+            sys.joinTables(TBL_CARGO_PLACES, loadPlace, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+        .addFromLeft(TBL_CITIES, loadCity,
+            sys.joinTables(TBL_CITIES, loadCity, loadPlace, COL_CITY))
+        .addFromLeft(TBL_COUNTRIES, loadCountry,
+            sys.joinTables(TBL_COUNTRIES, loadCountry, loadPlace, COL_COUNTRY))
+        .addFromLeft(TBL_CARGO_PLACES, unloadPlace,
+            sys.joinTables(TBL_CARGO_PLACES, unloadPlace, TBL_ORDER_CARGO,
+                COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_CITIES, unloadCity,
+            sys.joinTables(TBL_CITIES, unloadCity, unloadPlace, COL_CITY))
+        .addFromLeft(TBL_COUNTRIES, unloadCountry,
+            sys.joinTables(TBL_COUNTRIES, unloadCountry, unloadPlace, COL_COUNTRY))
+        .setWhere(wh)
+        .addGroup(TBL_ORDERS, COL_ORDER_NO)
+        .addGroup(TBL_ORDER_CARGO, COL_CARGO_CMR)
+        .addGroup(TBL_CARGO_INCOMES, COL_CARGO, COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)
+        .addGroup(loadPlace, COL_DATE, COL_POST_INDEX)
+        .addGroup(unloadPlace, COL_DATE, COL_POST_INDEX)
+        .addGroup(loadCity, COL_CITY_NAME)
+        .addGroup(unloadCity, COL_CITY_NAME)
+        .addGroup(loadCountry, COL_COUNTRY_CODE)
+        .addGroup(unloadCountry, COL_COUNTRY_CODE);
 
     if (DataUtils.isId(mainItem)) {
-      ss.addConstant(mainItem, CommonsConstants.COL_ITEM);
+      ss.addConstant(mainItem, COL_ITEM);
     } else {
-      ss.addFields(TBL_SERVICES, CommonsConstants.COL_ITEM)
-          .addGroup(TBL_SERVICES, CommonsConstants.COL_ITEM);
+      ss.addFields(TBL_SERVICES, COL_ITEM)
+          .addGroup(TBL_SERVICES, COL_ITEM);
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
@@ -420,31 +438,82 @@ public class TransportModuleBean implements BeeModule {
     SimpleRowSet rs = qs.getData(ss.addSum(xpr, COL_AMOUNT));
     ResponseObject response = new ResponseObject();
 
+    String vehicle = SqlUtils.uniqueName();
+    String trailer = SqlUtils.uniqueName();
+
+    SimpleRowSet tripData = qs.getData(new SqlSelect()
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addField(vehicle, COL_VEHICLE_NUMBER, vehicle)
+        .addField(trailer, COL_VEHICLE_NUMBER, trailer)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_CARGO_TRIPS, COL_TRIP))
+        .addFromLeft(TBL_VEHICLES, vehicle,
+            sys.joinTables(TBL_VEHICLES, vehicle, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_VEHICLES, trailer,
+            sys.joinTables(TBL_VEHICLES, trailer, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .setWhere(SqlUtils.inList(TBL_CARGO_TRIPS, COL_CARGO,
+            Sets.newHashSet(rs.getLongColumn(COL_CARGO)))));
+
+    Multimap<Long, String> drivers = HashMultimap.create();
+    Multimap<Long, String> vehicles = HashMultimap.create();
+
+    for (SimpleRow trip : tripData) {
+      Long cargo = trip.getLong(COL_CARGO);
+      String txt = BeeUtils.joinWords(trip.getValue(COL_FIRST_NAME), trip.getValue(COL_LAST_NAME));
+
+      if (!BeeUtils.isEmpty(txt)) {
+        drivers.put(cargo, txt);
+      }
+      txt = BeeUtils.join("/", trip.getValue(vehicle), trip.getValue(trailer));
+
+      if (!BeeUtils.isEmpty(txt)) {
+        vehicles.put(cargo, txt);
+      }
+    }
     for (SimpleRow row : rs) {
-      Long item = row.getLong(CommonsConstants.COL_ITEM);
+      Long item = row.getLong(COL_ITEM);
 
       if (!DataUtils.isId(item)) {
         response.addWarning("Pajamos, nesurištos su apskaitos prekėmis, "
             + "nebus įtrauktos į sąskaitą");
       } else {
-        SqlInsert insert =
-            new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
-                .addConstant(TradeConstants.COL_SALE, saleId)
-                .addConstant(CommonsConstants.COL_ITEM, item)
-                .addConstant(CommonsConstants.COL_ITEM_ARTICLE, BeeUtils.join("-",
-                    row.getValue(COL_LOADING_PLACE), row.getValue(COL_UNLOADING_PLACE)))
-                .addConstant(TradeConstants.COL_SALE_ITEM_QUANTITY, 1)
-                .addConstant(TradeConstants.COL_SALE_ITEM_PRICE, row.getDouble(COL_AMOUNT))
-                .addConstant(TradeConstants.COL_SALE_ITEM_VAT,
-                    row.getDouble(TradeConstants.COL_SALE_ITEM_VAT))
-                .addConstant(TradeConstants.COL_SALE_ITEM_VAT_PERC,
-                    row.getBoolean(TradeConstants.COL_SALE_ITEM_VAT_PERC));
+        String xml = XmlUtils.createString("CargoInfo",
+            COL_ORDER_NO, row.getValue(COL_ORDER_NO),
+            COL_LOADING_PLACE,
+            BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_LOADING_PLACE)),
+                row.getValue(loadCountry),
+                BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(loadPlace),
+                    row.getValue(loadCity)))),
+            COL_UNLOADING_PLACE,
+            BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_UNLOADING_PLACE)),
+                row.getValue(unloadCountry),
+                BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(unloadPlace),
+                    row.getValue(unloadCity)))),
+            COL_CARGO_CMR, row.getValue(COL_CARGO_CMR),
+            COL_DRIVER, BeeUtils.joinItems(drivers.get(row.getLong(COL_CARGO))),
+            COL_VEHICLE, BeeUtils.joinItems(vehicles.get(row.getLong(COL_CARGO))));
+
+        SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
+            .addConstant(COL_SALE, saleId)
+            .addConstant(COL_ITEM, item)
+            .addConstant(COL_SALE_ITEM_QUANTITY, 1)
+            .addConstant(COL_SALE_ITEM_PRICE, row.getDouble(COL_AMOUNT))
+            .addConstant(COL_SALE_ITEM_VAT, row.getDouble(COL_SALE_ITEM_VAT))
+            .addConstant(COL_SALE_ITEM_VAT_PERC, row.getBoolean(COL_SALE_ITEM_VAT_PERC))
+            .addConstant(COL_SALE_ITEM_NOTE, xml);
 
         qs.insertData(insert);
       }
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_INCOMES)
-        .addConstant(TradeConstants.COL_SALE, saleId)
+        .addConstant(COL_SALE, saleId)
         .setWhere(wh)));
   }
 
@@ -458,7 +527,7 @@ public class TransportModuleBean implements BeeModule {
       String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
 
       SqlSelect ss = new SqlSelect()
-          .addConstant(tbl, TransportConstants.COL_SERVICE)
+          .addConstant(tbl, COL_SERVICE)
           .addFrom(tbl)
           .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
           .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
@@ -679,7 +748,7 @@ public class TransportModuleBean implements BeeModule {
     List<Color> colors = getThemeColors(null);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
-    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
+    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
     BeeRowSet drivers = qs.getViewData(VIEW_DRIVERS);
@@ -790,8 +859,7 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_CARGO_PLACES, defUnlAlias,
             SqlUtils.join(defUnlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
         .addFields(TBL_TRIPS, COL_TRIP_ID, COL_VEHICLE, COL_TRAILER)
         .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID)
         .addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION)
@@ -814,7 +882,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(defUnlAlias, COL_PLACE_TERMINAL, defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))
         .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
         .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
-        .addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME)
         .setWhere(where)
         .addOrder(TBL_TRIPS, COL_TRIP_ID);
   }
@@ -896,7 +964,7 @@ public class TransportModuleBean implements BeeModule {
 
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
-    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
+    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
     String loadAlias = "load_" + SqlUtils.uniqueName();
@@ -907,8 +975,7 @@ public class TransportModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_ORDER_CARGO)
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
             SqlUtils.join(loadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
@@ -917,7 +984,7 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID));
 
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
-    query.addField(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME, COL_CUSTOMER_NAME);
+    query.addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME);
 
     query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_CARGO_DESCRIPTION,
         COL_CARGO_NOTES);
@@ -939,7 +1006,7 @@ public class TransportModuleBean implements BeeModule {
 
     query.setWhere(cargoWhere);
 
-    query.addOrder(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME);
+    query.addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
     query.addOrder(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_NO);
     query.addOrder(loadAlias, COL_PLACE_DATE);
     query.addOrder(unlAlias, COL_PLACE_DATE);
@@ -986,7 +1053,7 @@ public class TransportModuleBean implements BeeModule {
 
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
-    Filter filter = ComparisonFilter.isEqual(CommonsConstants.COL_USER, new LongValue(userId));
+    Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
     if (!DataUtils.isEmpty(rowSet)) {
@@ -994,7 +1061,7 @@ public class TransportModuleBean implements BeeModule {
     }
 
     SqlInsert sqlInsert = new SqlInsert(TBL_TRANSPORT_SETTINGS)
-        .addConstant(CommonsConstants.COL_USER, userId);
+        .addConstant(COL_USER, userId);
 
     ResponseObject response = qs.insertDataWithResponse(sqlInsert);
     if (response.hasErrors()) {
@@ -1009,21 +1076,21 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet rowSet;
     if (theme != null) {
-      rowSet = qs.getViewData(CommonsConstants.VIEW_THEME_COLORS,
-          ComparisonFilter.isEqual(CommonsConstants.COL_THEME, new LongValue(theme)));
+      rowSet = qs.getViewData(VIEW_THEME_COLORS,
+          ComparisonFilter.isEqual(COL_THEME, new LongValue(theme)));
     } else {
       rowSet = null;
     }
 
     if (DataUtils.isEmpty(rowSet)) {
-      rowSet = qs.getViewData(CommonsConstants.VIEW_COLORS);
+      rowSet = qs.getViewData(VIEW_COLORS);
       if (DataUtils.isEmpty(rowSet)) {
         return result;
       }
     }
 
-    int bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
-    int fgIndex = rowSet.getColumnIndex(CommonsConstants.COL_FOREGROUND);
+    int bgIndex = rowSet.getColumnIndex(COL_BACKGROUND);
+    int fgIndex = rowSet.getColumnIndex(COL_FOREGROUND);
 
     for (BeeRow row : rowSet.getRows()) {
       String bg = row.getString(bgIndex);
@@ -1303,16 +1370,13 @@ public class TransportModuleBean implements BeeModule {
         .addFrom(TBL_TRIP_DRIVERS)
         .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP))
         .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_DRIVER_PERSON))
-        .addFromLeft(CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON));
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_DRIVERS, COL_DRIVER_PERSON))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
 
     query.addFields(TBL_TRIP_DRIVERS, COL_TRIP, COL_DRIVER,
         COL_TRIP_DRIVER_FROM, COL_TRIP_DRIVER_TO, COL_TRIP_DRIVER_NOTE);
-    query.addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-        CommonsConstants.COL_LAST_NAME);
+    query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
 
     if (condition != null) {
       query.setWhere(condition);
@@ -1472,7 +1536,7 @@ public class TransportModuleBean implements BeeModule {
     List<Color> colors = getThemeColors(theme);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
-    BeeRowSet countries = qs.getViewData(CommonsConstants.VIEW_COUNTRIES);
+    BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
     Order vehicleOrder = new Order(COL_NUMBER, true);
@@ -1580,9 +1644,15 @@ public class TransportModuleBean implements BeeModule {
 
   private void initTimer() {
     Integer minutes = prm.getInteger(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL);
+    boolean timerExists = erpTimer != null;
 
-    if (erpTimer != null) {
-      erpTimer.cancel();
+    if (timerExists) {
+      try {
+        erpTimer.cancel();
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e, "ERP");
+      }
+      erpTimer = null;
     }
     if (BeeUtils.isPositive(minutes)) {
       erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
@@ -1591,8 +1661,7 @@ public class TransportModuleBean implements BeeModule {
       logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
           erpTimer.getNextTimeout());
     } else {
-      if (erpTimer != null) {
-        erpTimer = null;
+      if (timerExists) {
         logger.info("Removed ERP timer");
       }
     }
@@ -1657,7 +1726,7 @@ public class TransportModuleBean implements BeeModule {
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
           .addFields(TBL_SALE_ITEMS, COL_SALE_ITEM_QUANTITY, COL_SALE_ITEM_PRICE,
-              COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)
+              COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC, COL_SALE_ITEM_NOTE)
           .addFrom(TBL_SALE_ITEMS)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
           .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, invoice.getLong(COL_SALE))));
@@ -1674,6 +1743,7 @@ public class TransportModuleBean implements BeeModule {
         wsItem.setPrice(item.getValue(COL_SALE_ITEM_PRICE));
         wsItem.setVat(item.getValue(COL_SALE_ITEM_VAT), invoice.getBoolean(COL_SALE_VAT_INCL),
             item.getBoolean(COL_SALE_ITEM_VAT_PERC));
+        wsItem.setNote(item.getValue(COL_SALE_ITEM_NOTE));
       }
       if (response.hasErrors()) {
         break;

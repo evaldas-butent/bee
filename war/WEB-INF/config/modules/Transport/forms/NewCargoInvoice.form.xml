@@ -13,7 +13,7 @@
     <Table>
       <row>
         <cell colSpan="4">
-          <CheckBox source="Proforma" text="=proformaInvoice" style="float:right;" tabIndex="99" />
+          <CheckBox source="Proforma" text="=trdProformaInvoice" style="float:right;" tabIndex="99" />
         </cell>
       </row>
       <row>

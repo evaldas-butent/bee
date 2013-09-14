@@ -18,7 +18,9 @@
     </DataColumn>
     <RelColumn name="Currency" flexGrow="0" />
     <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
 
     <RelColumn name="Supplier" />
     <DataColumn name="Number" />

@@ -13,7 +13,7 @@
     <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
       editPopup="true" editSource="Order" />
     <RelColumn name="Description" caption="=cargo" editEnabled="true" editPopup="true"
-      minWidth="100" />
+      maxWidth="300" />
     <DataColumn name="Weight" caption="=weight" />
     <DataColumn name="Volume" caption="=volume" />
     <DataColumn name="Quantity" caption="=quantity" />

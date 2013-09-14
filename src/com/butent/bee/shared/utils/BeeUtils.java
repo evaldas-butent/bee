@@ -46,7 +46,7 @@ public final class BeeUtils {
       return true;
     }
   }
-  
+
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -1209,7 +1209,7 @@ public final class BeeUtils {
     }
     return idx < clazz.getEnumConstants().length;
   }
-  
+
   public static boolean isPositive(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) > 0;
@@ -1371,6 +1371,10 @@ public final class BeeUtils {
 
   public static String joinInts(Collection<Integer> ints) {
     return isEmpty(ints) ? null : NUMBER_JOINER.join(ints);
+  }
+
+  public static String joinItems(Collection<?> col) {
+    return join(BeeConst.DEFAULT_LIST_SEPARATOR, col);
   }
 
   public static String joinItems(Object first, Object second, Object... rest) {
@@ -1625,7 +1629,7 @@ public final class BeeUtils {
       return d;
     }
   }
-  
+
   public static int positive(int x, int def) {
     return (x > 0) ? x : def;
   }
@@ -1703,7 +1707,7 @@ public final class BeeUtils {
   public static char randomChar(char min, char max) {
     return (char) randomInt(min, max);
   }
-  
+
   public static double randomDouble(double min, double max) {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="SaleItems"
-  idName="SaleItemID"
+  name="PurchaseItems"
+  idName="PurchaseItemID"
   >
   <Fields>
-    <Relation name="Sale" notNull="true" relation="Sales" cascade="DELETE" />
+    <Relation name="Purchase" notNull="true" relation="Purchases" cascade="DELETE" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <String name="Article" precision="30" label="=article" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=trdQuantity" />
@@ -22,17 +22,18 @@
 DECLARE _id BIGINT;
 BEGIN
   IF (TG_OP='INSERT') THEN
-    _id:=NEW."Sale";
+    _id:=NEW."Purchase";
   ELSE
-    _id:=OLD."Sale";
+    _id:=OLD."Purchase";
   END IF;
 
-  UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
+  UPDATE "Purchases" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
       CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
            WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
            ELSE "Vat" END)
-    FROM "SaleItems" INNER JOIN "Sales" ON "SaleItems"."Sale"="Sales"."SaleID"
-    WHERE "Sale"=_id) WHERE "SaleID"=_id;
+    FROM "PurchaseItems" INNER JOIN "Purchases"
+      ON "PurchaseItems"."Purchase"="Purchases"."PurchaseID"
+    WHERE "Purchase"=_id) WHERE "PurchaseID"=_id;
   RETURN NULL;
 END;
         ]]>

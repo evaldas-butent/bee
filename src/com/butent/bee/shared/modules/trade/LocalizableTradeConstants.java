@@ -2,7 +2,7 @@ package com.butent.bee.shared.modules.trade;
 
 public interface LocalizableTradeConstants {
 
-  String amount();
+  String trdAmount();
   
   String barcode();
   
@@ -12,15 +12,15 @@ public interface LocalizableTradeConstants {
 
   String itemUnits();
 
-  String price();
+  String trdPrice();
 
-  String quantity();
+  String trdQuantity();
   
   String sellingPrice();
 
-  String total();
+  String trdTotal();
 
-  String vat();
+  String trdVat();
 
   String vatSum();
 }

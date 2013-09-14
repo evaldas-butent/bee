@@ -242,10 +242,10 @@ class FinancialInformation extends EcView {
         STYLE_ORDER_ITEM_CODE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_QUANTITY_COL,
-        renderOrderItemHeader(Localized.getConstants().quantity()),
+        renderOrderItemHeader(Localized.getConstants().trdQuantity()),
         STYLE_ORDER_ITEM_QUANTITY + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL,
-        renderOrderItemHeader(Localized.getConstants().price()),
+        renderOrderItemHeader(Localized.getConstants().trdPrice()),
         STYLE_ORDER_ITEM_PRICE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_HEADER);

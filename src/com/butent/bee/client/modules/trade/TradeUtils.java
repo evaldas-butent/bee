@@ -58,11 +58,11 @@ public final class TradeUtils {
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, Localized.getConstants().item());
         cols.put(COL_ITEM_ARTICLE, Localized.getConstants().article());
-        cols.put(COL_SALE_ITEM_QUANTITY, Localized.getConstants().quantity());
+        cols.put(COL_SALE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
         cols.put(COL_UNIT, Localized.getConstants().unit());
-        cols.put(COL_SALE_ITEM_PRICE, Localized.getConstants().price());
-        cols.put(COL_SALE_AMOUNT, Localized.getConstants().amount());
-        cols.put(COL_SALE_ITEM_VAT, Localized.getConstants().vat());
+        cols.put(COL_SALE_ITEM_PRICE, Localized.getConstants().trdPrice());
+        cols.put(COL_SALE_AMOUNT, Localized.getConstants().trdAmount());
+        cols.put(COL_SALE_ITEM_VAT, Localized.getConstants().trdVat());
 
         HtmlTable table = new HtmlTable();
         table.setStyleName(STYLE_ITEMS_TABLE);
@@ -158,7 +158,7 @@ public final class TradeUtils {
 
           if (sumIdx > 0) {
             cell = new CustomDiv(STYLE_ITEMS + "totalAmount-label");
-            cell.getElement().setInnerText(Localized.getConstants().amount());
+            cell.getElement().setInnerText(Localized.getConstants().trdAmount());
             table.setWidget(c, sumIdx - 1, cell);
           }
           if (vatExists) {
@@ -177,7 +177,7 @@ public final class TradeUtils {
 
             if (sumIdx > 0) {
               cell = new CustomDiv(STYLE_ITEMS + "total-label");
-              cell.getElement().setInnerText(Localized.getConstants().total());
+              cell.getElement().setInnerText(Localized.getConstants().trdTotal());
               table.setWidget(c, sumIdx - 1, cell);
             }
           }

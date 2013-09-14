@@ -7,6 +7,7 @@
   <Columns>
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleColumn name="Cmr" />
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Status" />
@@ -34,6 +35,7 @@
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
+        <SimpleColumn name="Date" alias="UnloadingDate" />
       </SimpleJoin>
       
       <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
@@ -69,7 +71,7 @@
         
       </SimpleJoin>
     </SimpleJoin>
-    <SimpleColumn name="Date" />
+
     <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Item" />
@@ -89,13 +91,13 @@
       <SimpleColumn name="CreditDays" alias="CompanyCreditDays" />
     </SimpleJoin>
 
-    <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
 
     <SimpleColumn name="Sale" />
     <SimpleJoin name="Sale" joinType="LEFT">
       <SimpleColumn name="Proforma" />
     </SimpleJoin>
+    <SimpleColumn name="Purchase" />
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

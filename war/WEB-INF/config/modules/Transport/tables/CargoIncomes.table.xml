@@ -11,13 +11,15 @@
 
     <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />
     <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=amount" />
-    <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" />
+    <Relation name="Currency" relation="Currencies" notNull="true" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="%" />
 
     <String name="Number" precision="20" label="=number" />
     <Relation name="Customer" relation="Companies" label="=client" />
     <String name="Note" precision="50" label="=note" />
-    <Relation name="Sale" relation="Sales" cascade="SET_NULL" />
+
+    <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
+    <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
   </Fields>
 </Table>

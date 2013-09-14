@@ -11,8 +11,10 @@ name="Transport" label="=transport" order="60"
   <Item name="AssessmentOrders" label="=trAssessmentOrders" service="grid" parameters="AssessmentOrders" />
 
   <Item name="CargoIncomes" label="=trCargoIncomes" service="grid" parameters="CargoIncomeList" separator="true" />
+  <Item name="CargoCreditIncomes" label="=trCreditIncomes" service="grid" parameters="CargoCreditIncomes" />
   <Item name="CargoProformaInvoices" label="=trProformaInvoices" service="grid" parameters="CargoProformaInvoices" />
   <Item name="CargoInvoices" label="=trInvoices" service="grid" parameters="CargoInvoices" />
+  <Item name="CargoCreditInvoices" label="=trCreditInvoices" service="grid" parameters="CargoCreditInvoices" />
 
   <Item name="Trips" label="=trips" service="grid" parameters="Trips" separator="true" />
   <Item name="ExpeditionTrips" label="=trExpeditionTrips" service="grid" parameters="ExpeditionTrips" />

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
   name="CargoInvoices" source="Sales"
   editForm="CargoInvoice"
@@ -28,6 +29,16 @@
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
     
+    <SimpleColumn name="Debt">
+      <x:minus>
+        <x:number>"Amount"</x:number>
+        <x:nvl type="DECIMAL">
+          <x:number>"Paid"</x:number>
+          <x:number>0</x:number>
+        </x:nvl>
+      </x:minus>
+    </SimpleColumn>
+
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />

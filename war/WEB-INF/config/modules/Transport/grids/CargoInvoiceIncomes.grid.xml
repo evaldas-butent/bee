@@ -24,8 +24,9 @@
       caption="=to" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
+    <DataColumn name="UnloadingDate" caption="=unloading" />
+    <DataColumn name="Cmr" />
 
-    <DataColumn name="Date" />
     <RelColumn name="Service" />
     <DataColumn name="Amount" format="#.00">
       <style>
@@ -34,7 +35,6 @@
       </style>
     </DataColumn>
     <RelColumn name="Currency" flexGrow="0" />
-    <DataColumn name="Number" />
     <DataColumn name="Note" />
 
     <DataColumn name="Vehicle" caption="=trTruck" />
