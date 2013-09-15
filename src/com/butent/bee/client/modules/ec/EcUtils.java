@@ -110,6 +110,10 @@ public final class EcUtils {
     return (value == null) ? null : value.toString();
   }
 
+  public static int toCents(Double d) {
+    return BeeUtils.isDouble(d) ? BeeUtils.round(d * 100) : 0;
+  }
+  
   public static Range<Integer> yearsProduced(Integer producedFrom, Integer producedTo) {
     Integer yearFrom = normalizeYear(producedFrom);
     if (yearFrom == null) {

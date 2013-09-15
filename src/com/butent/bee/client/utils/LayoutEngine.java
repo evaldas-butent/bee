@@ -6,7 +6,7 @@ import elemental.js.JsBrowser;
 public enum LayoutEngine {
   WEBKIT("webkit", "webkit.css"),
   GECKO("gecko", null),
-  TRIDENT("trident", null);
+  TRIDENT("trident", "trident.css");
   
   public static LayoutEngine detect() {
     Info info = JsBrowser.getInfo();

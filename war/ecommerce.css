@@ -15,8 +15,10 @@
 .bee-NewRow-input-EcDiscounts-Category,
 .bee-NewRow-input-TcdArticleCategories-Category,
 .bee-NewRow-input-EcGroupCategories-Category,
-.bee-NewRow-input-EcDiscounts-Article {
-  width: 600px;
+.bee-NewRow-input-EcDiscounts-Article,
+.bee-NewRow-input-EcOrderItems-ArticleName,
+.bee-NewRow-input-UnsuppliedItems-ArticleName {
+  width: 500px;
 }
 
 .bee-ec-Picture {
@@ -42,4 +44,48 @@
 .bee-ec-OrderRejection-comment-input {
   width: 300px;
   height: 100px;
+}
+
+.bee-ec-Order-UnsuppliedItems-wrapper {
+  max-height: 500px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.bee-ec-Order-UnsuppliedItems-table {
+  border-collapse: collapse;
+}
+
+.bee-ec-Order-UnsuppliedItems-row:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.bee-ec-Order-UnsuppliedItems-row:nth-child(even) {
+  background-color: #ebebeb;
+}
+.bee-ec-Order-UnsuppliedItems-row:hover {
+  background-color: #dfd;
+}
+.bee-ec-Order-UnsuppliedItems-selected {
+  background-color: #ffa !important;
+}
+
+.bee-ec-Order-UnsuppliedItems-header > td {
+  text-align: center;
+  padding: 3px 10px;
+  font-weight: bold;
+}
+.bee-ec-Order-UnsuppliedItems-row > td {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+}
+
+.bee-ec-Order-UnsuppliedItems-quantity-cell,
+.bee-ec-Order-UnsuppliedItems-price-cell {
+  text-align: right;
+}
+
+.bee-ec-Order-UnsuppliedItems-append {
+  margin-top: 1ex;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
 }

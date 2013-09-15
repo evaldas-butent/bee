@@ -370,11 +370,11 @@ public class ShoppingCart extends Split {
       brandLabel.addStyleName(STYLE_BRAND + STYLE_LABEL);
       itemTable.setWidget(row, COL_BRAND, brandLabel);
 
-      Label qtyLabel = new Label(Localized.getConstants().trdQuantity());
+      Label qtyLabel = new Label(Localized.getConstants().ecItemQuantity());
       qtyLabel.addStyleName(STYLE_QUANTITY + STYLE_LABEL);
       itemTable.setWidget(row, COL_QUANTITY, qtyLabel);
 
-      Label priceLabel = new Label(Localized.getConstants().trdPrice());
+      Label priceLabel = new Label(Localized.getConstants().ecItemPrice());
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       itemTable.setWidget(row, COL_PRICE, priceLabel);
 

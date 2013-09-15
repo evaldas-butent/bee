@@ -81,6 +81,11 @@
       </page>
 
       <page>
+        <text>=ecUnsuppliedItems</text>
+        <ChildGrid name="UnsuppliedItems" relColumn="Client" />
+      </page>
+
+      <page>
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" />

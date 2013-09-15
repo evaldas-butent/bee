@@ -10,7 +10,7 @@
 
     <Integer name="Status" notNull="true" defValue="0" label="=ecOrderStatus" />
 
-    <Relation name="Client" relation="EcClients" notNull="true" label="=ecClient" />
+    <Relation name="Client" relation="EcClients" notNull="true" cascade="DELETE" label="=ecClient" />
     <Relation name="Manager" relation="EcManagers" label="=ecManager" />
 
     <Relation name="DeliveryMethod" relation="DeliveryMethods" label="=ecDeliveryMethod" />

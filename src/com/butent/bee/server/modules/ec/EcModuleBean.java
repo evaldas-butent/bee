@@ -293,6 +293,10 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CLIENT_BRANCHES)) {
       response = getClientBranches();
 
+    } else if (BeeUtils.same(svc, SVC_ADD_TO_UNSUPPLIED_ITEMS)) {
+      Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ORDER_ITEM_ORDER));
+      response = addToUnsuppliedItems(orderId);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -421,6 +425,62 @@ public class EcModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject addToUnsuppliedItems(Long orderId) {
+    if (!DataUtils.isId(orderId)) {
+      return ResponseObject.parameterNotFound(SVC_ADD_TO_UNSUPPLIED_ITEMS, COL_ORDER_ITEM_ORDER);
+    }
+
+    int itemsAdded = 0;
+
+    SqlSelect orderQuery =
+        new SqlSelect()
+            .addFields(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER_CLIENT)
+            .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
+                COL_ORDER_ITEM_QUANTITY_SUBMIT, COL_ORDER_ITEM_PRICE, COL_ORDER_ITEM_NOTE)
+            .addFrom(TBL_ORDER_ITEMS)
+            .addFromInner(TBL_ORDERS,
+                sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER))
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderId),
+                SqlUtils.positive(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_ORDERED),
+                SqlUtils.or(SqlUtils.isNull(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT),
+                    SqlUtils.more(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_ORDERED,
+                        SqlUtils.field(TBL_ORDER_ITEMS, COL_ORDER_ITEM_QUANTITY_SUBMIT)))));
+
+    SimpleRowSet orderData = qs.getData(orderQuery);
+
+    if (!DataUtils.isEmpty(orderData)) {
+      for (SimpleRow row : orderData) {
+        int quantity = BeeUtils.unbox(row.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED))
+            - BeeUtils.unbox(row.getInt(COL_ORDER_ITEM_QUANTITY_SUBMIT));
+        if (quantity > 0) {
+          SqlInsert insItem = new SqlInsert(TBL_UNSUPPLIED_ITEMS);
+
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_CLIENT, row.getLong(COL_ORDER_CLIENT));
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_DATE, row.getLong(COL_ORDER_DATE));
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_ORDER, orderId);
+
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_ARTICLE, row.getLong(COL_ORDER_ITEM_ARTICLE));
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_QUANTITY, quantity);
+          insItem.addConstant(COL_UNSUPPLIED_ITEM_PRICE, row.getDouble(COL_ORDER_ITEM_PRICE));
+          
+          String note = row.getValue(COL_ORDER_ITEM_NOTE);
+          if (!BeeUtils.isEmpty(note)) {
+            insItem.addConstant(COL_UNSUPPLIED_ITEM_NOTE, note);
+          }
+
+          ResponseObject itemResponse = qs.insertDataWithResponse(insItem);
+          if (itemResponse.hasErrors()) {
+            return itemResponse;
+          }
+          
+          itemsAdded++;
+        }
+      }
+    }
+
+    return ResponseObject.response(itemsAdded).setSize(itemsAdded);
   }
 
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
@@ -1084,6 +1144,14 @@ public class EcModuleBean implements BeeModule {
     }
 
     int size = finInfo.getOrders().size() + finInfo.getInvoices().size();
+
+    BeeRowSet unsuppliedItems = qs.getViewData(VIEW_UNSUPPLIED_ITEMS,
+        ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client)));
+    if (!DataUtils.isEmpty(unsuppliedItems)) {
+      finInfo.setUnsuppliedItems(unsuppliedItems);
+      size += unsuppliedItems.getNumberOfRows();
+    }
+    
     return ResponseObject.response(finInfo).setSize(size);
   }
 
@@ -1445,7 +1513,7 @@ public class EcModuleBean implements BeeModule {
         }
 
         item.setUnit(row.getValue(unitName));
-        
+
         if (code != null && code.equals(item.getCode())) {
           items.add(0, item);
         } else {
@@ -1798,6 +1866,8 @@ public class EcModuleBean implements BeeModule {
       qs.updateData(new SqlUpdate(TBL_ORDERS)
           .addConstant(COL_ORDER_STATUS, EcOrderStatus.ACTIVE.ordinal())
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
+      
+      addToUnsuppliedItems(orderId);
     }
     return response;
   }
@@ -1862,7 +1932,7 @@ public class EcModuleBean implements BeeModule {
       displayedPrice = NameUtils.getEnumByIndex(EcDisplayedPrice.class,
           clientInfo.getInt(COL_CLIENT_DISPLAYED_PRICE));
     }
-    
+
     for (EcItem item : items) {
       Double margin = getMarginPercent(item.getCategoryList(), catParents, catRoots, catMargins);
 
@@ -1933,7 +2003,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.error(message);
     }
 
-    SqlInsert insOrder = new SqlInsert(VIEW_ORDERS);
+    SqlInsert insOrder = new SqlInsert(TBL_ORDERS);
 
     insOrder.addConstant(COL_ORDER_DATE, TimeUtils.nowMinutes().getTime());
     insOrder.addConstant(COL_ORDER_STATUS, EcOrderStatus.NEW.ordinal());
@@ -1965,7 +2035,7 @@ public class EcModuleBean implements BeeModule {
     Long orderId = (Long) response.getResponse();
 
     for (CartItem cartItem : cart.getItems()) {
-      SqlInsert insItem = new SqlInsert(VIEW_ORDER_ITEMS);
+      SqlInsert insItem = new SqlInsert(TBL_ORDER_ITEMS);
 
       insItem.addConstant(COL_ORDER_ITEM_ORDER, orderId);
       insItem.addConstant(COL_ORDER_ITEM_ARTICLE, cartItem.getEcItem().getArticleId());

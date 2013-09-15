@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
-  name="EcOrderItems" viewName="EcOrderItems"
+  name="UnsuppliedItems" viewName="UnsuppliedItems"
   flexGrow="1" minColumnWidth="60"
   >
   <columns>
+    <DataColumn name="Date" visible="true" maxWidth="120" />
+    <DataColumn name="Order" readOnly="true" maxWidth="100" />
+
     <RelColumn name="ArticleName" label="=ecItemName" caching="none" newRowEnabled="false"
         renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
         choiceColumns="ArticleName BrandName ArticleNr" editEnabled="true" visible="true" />
     <DataColumn name="BrandName" />
     <DataColumn name="ArticleNr" visible="true">
-      <footer text="=ecOrderTotal" horizontalAlignment="right" />
+      <footer text="=ecUnsuppliedItemsTotal" horizontalAlignment="right" />
     </DataColumn>
 
-    <DataColumn name="Weight" maxWidth="80">
-      <footer expression="row.Weight ? (row.QuantitySubmit * row.Weight) : null" />
-    </DataColumn>
-      
-    <DataColumn name="QuantityOrdered" visible="true" maxWidth="100">
-      <footer aggregate="sum" options="0" />
-    </DataColumn>
-    <DataColumn name="QuantitySubmit" visible="true" maxWidth="100">
-      <footer aggregate="sum" options="0" />
+    <DataColumn name="Quantity" visible="true" maxWidth="100">
+      <footer aggregate="sum" />
     </DataColumn>
 
     <DataColumn name="Price" visible="true" maxWidth="100" />
     <CalcColumn name="Amount" type="decimal" scale="2" caption="=amount" maxWidth="100">
       <render>
-        <ui:expression>row.QuantitySubmit * row.Price</ui:expression>
+        <ui:expression>row.Quantity * row.Price</ui:expression>
       </render>
       <footer aggregate="sum" options="0" />
     </CalcColumn>

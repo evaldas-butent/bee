@@ -112,6 +112,10 @@ public interface LocalizableEcConstants {
 
   String ecItemOriginalNumber();
 
+  String ecItemPrice();
+
+  String ecItemQuantity();
+
   String ecItemSeason();
 
   String ecItemSpeedIndex();
@@ -225,6 +229,16 @@ public interface LocalizableEcConstants {
   String ecTotalOrdered();
 
   String ecTotalTaken();
+
+  String ecUnsuppliedItems();
+
+  String ecUnsuppliedItemOrder();
+
+  String ecUnsuppliedItemsAppend();
+
+  String ecUnsuppliedItemsNotFound();
+
+  String ecUnsuppliedItemsRemove();
 
   String ecUpdateCosts();
 }

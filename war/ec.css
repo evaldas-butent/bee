@@ -312,14 +312,16 @@
 .bee-ec-shoppingCart-itemRow:nth-child(odd),
 .bee-ec-finInfo-order-data:nth-child(odd),
 .bee-ec-finInfo-order-item-data:nth-child(odd),
-.bee-ec-finInfo-invoice-data:nth-child(odd) {
+.bee-ec-finInfo-invoice-data:nth-child(odd),
+.bee-ec-finInfo-unsupplied-data:nth-child(odd) {
   background-color: #f5f5f5;
 }
 .bee-ec-ItemList-itemRow:nth-child(even),
 .bee-ec-shoppingCart-itemRow:nth-child(even),
 .bee-ec-finInfo-order-data:nth-child(even),
 .bee-ec-finInfo-order-item-data:nth-child(even),
-.bee-ec-finInfo-invoice-data:nth-child(even) {
+.bee-ec-finInfo-invoice-data:nth-child(even),
+.bee-ec-finInfo-unsupplied-data:nth-child(even) {
   background-color: #ebebeb;
 }
 
@@ -585,8 +587,8 @@
   font-weight: bold;
 }
 .bee-ec-shoppingCart-items-wrapper {
-   margin-top: 2ex;
-   margin-left: 1em;
+  margin-top: 2ex;
+  margin-left: 1em;
 }
 .bee-ec-shoppingCart-itemRow > td {
   padding: 3px 10px;
@@ -869,33 +871,39 @@
 }
 
 .bee-ec-finInfo-order-panel,
-.bee-ec-finInfo-invoice-panel {
+.bee-ec-finInfo-invoice-panel,
+.bee-ec-finInfo-unsupplied-panel {
   margin-left: 2em;
   margin-top: 2ex;
 }
 .bee-ec-finInfo-order-caption,
-.bee-ec-finInfo-invoice-caption {
+.bee-ec-finInfo-invoice-caption,
+.bee-ec-finInfo-unsupplied-caption {
   font-size: medium;
   font-weight: bold;
 }
   
 .bee-ec-finInfo-order-table,
-.bee-ec-finInfo-invoice-table {
+.bee-ec-finInfo-invoice-table,
+.bee-ec-finInfo-unsupplied-table {
   border-collapse: collapse;
 }
 .bee-ec-finInfo-order-header td,
-.bee-ec-finInfo-invoice-header td {
+.bee-ec-finInfo-invoice-header td,
+.bee-ec-finInfo-unsupplied-header td {
   text-align: center;
   padding: 3px 10px;
   font-weight: bold;
 }
 .bee-ec-finInfo-order-data > td,
-.bee-ec-finInfo-invoice-data > td {
+.bee-ec-finInfo-invoice-data > td,
+.bee-ec-finInfo-unsupplied-data > td {
   padding: 3px 10px;
   border: 1px solid #ddd;
 }
 .bee-ec-finInfo-order-data:hover,
-.bee-ec-finInfo-invoice-data:hover {
+.bee-ec-finInfo-invoice-data:hover,
+.bee-ec-finInfo-unsupplied-data:hover {
   background-color: #dfd;
 }
 
@@ -918,6 +926,15 @@
 
 .bee-ec-finInfo-invoice-amount-cell,
 .bee-ec-finInfo-invoice-debt-cell {
+  text-align: right;
+}
+
+.bee-ec-finInfo-unsupplied-order-cell,
+.bee-ec-finInfo-unsupplied-remove-cell {
+  text-align: center;
+}
+.bee-ec-finInfo-unsupplied-quantity-cell,
+.bee-ec-finInfo-unsupplied-price-cell {
   text-align: right;
 }
 

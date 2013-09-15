@@ -250,6 +250,9 @@ body {
 .bee-SplitChild {
   overflow: auto;
 }
+.bee-Split-hidden {
+  display: none;
+}
 
 .bee-MenuRoot, .bee-MenuBar {
   overflow: auto;

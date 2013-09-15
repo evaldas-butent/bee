@@ -156,6 +156,8 @@ public final class EcConstants {
 
   public static final String SVC_GET_CLIENT_BRANCHES = "getClientBranches";
 
+  public static final String SVC_ADD_TO_UNSUPPLIED_ITEMS = "addToUnsuppliedItems";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -183,6 +185,7 @@ public final class EcConstants {
   public static final String TBL_REGISTRATIONS = "EcRegistrations";
   public static final String TBL_REJECTION_REASONS = "RejectionReasons";
   public static final String TBL_SHOPPING_CARTS = "ShoppingCarts";
+  public static final String TBL_UNSUPPLIED_ITEMS = "UnsuppliedItems";
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
   public static final String TBL_TCD_ARTICLE_CODES = "TcdArticleCodes";
@@ -218,6 +221,7 @@ public final class EcConstants {
   public static final String VIEW_ORDERS = "EcOrders";
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
   public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
+  public static final String VIEW_UNSUPPLIED_ITEMS = "UnsuppliedItems";
 
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
@@ -326,6 +330,14 @@ public final class EcConstants {
   public static final String COL_SHOPPING_CART_TYPE = "CartType";
   public static final String COL_SHOPPING_CART_ARTICLE = "Article";
   public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
+
+  public static final String COL_UNSUPPLIED_ITEM_CLIENT = "Client";
+  public static final String COL_UNSUPPLIED_ITEM_DATE = "Date";
+  public static final String COL_UNSUPPLIED_ITEM_ORDER = "Order";
+  public static final String COL_UNSUPPLIED_ITEM_ARTICLE = "Article";
+  public static final String COL_UNSUPPLIED_ITEM_QUANTITY = "Quantity";
+  public static final String COL_UNSUPPLIED_ITEM_PRICE = "Price";
+  public static final String COL_UNSUPPLIED_ITEM_NOTE = "Note";
 
   public static final String COL_TCD_ARTICLE = "Article";
   public static final String COL_TCD_ARTICLE_NAME = "ArticleName";

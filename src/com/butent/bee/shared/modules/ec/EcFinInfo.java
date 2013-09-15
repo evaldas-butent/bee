@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public class EcFinInfo implements BeeSerializable {
 
   private enum Serial {
-    CREDIT_LIMIT, DAYS, DEBT, MAXED_OUT, TOTAL_TAKEN, ORDERS, INVOICES
+    CREDIT_LIMIT, DAYS, DEBT, MAXED_OUT, TOTAL_TAKEN, ORDERS, INVOICES, UNSUPPLIED_ITEMS
   }
 
   public static EcFinInfo restore(String s) {
@@ -31,6 +32,8 @@ public class EcFinInfo implements BeeSerializable {
 
   private final List<EcOrder> orders = Lists.newArrayList();
   private final List<EcInvoice> invoices = Lists.newArrayList();
+
+  private BeeRowSet unsuppliedItems;
 
   public EcFinInfo() {
     super();
@@ -86,6 +89,14 @@ public class EcFinInfo implements BeeSerializable {
             }
           }
           break;
+
+        case UNSUPPLIED_ITEMS:
+          if (BeeUtils.isEmpty(value)) {
+            setUnsuppliedItems(null);
+          } else {
+            setUnsuppliedItems(BeeRowSet.restore(value));
+          }
+          break;
       }
     }
   }
@@ -116,6 +127,10 @@ public class EcFinInfo implements BeeSerializable {
 
   public Double getTotalTaken() {
     return totalTaken;
+  }
+
+  public BeeRowSet getUnsuppliedItems() {
+    return unsuppliedItems;
   }
 
   @Override
@@ -153,6 +168,10 @@ public class EcFinInfo implements BeeSerializable {
         case INVOICES:
           arr[i++] = getInvoices();
           break;
+          
+        case UNSUPPLIED_ITEMS:
+          arr[i++] = getUnsuppliedItems();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -176,5 +195,9 @@ public class EcFinInfo implements BeeSerializable {
 
   public void setTotalTaken(Double totalTaken) {
     this.totalTaken = totalTaken;
+  }
+
+  public void setUnsuppliedItems(BeeRowSet unsuppliedItems) {
+    this.unsuppliedItems = unsuppliedItems;
   }
 }
