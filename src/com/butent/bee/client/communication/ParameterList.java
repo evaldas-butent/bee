@@ -27,7 +27,7 @@ import java.util.List;
 public class ParameterList extends ArrayList<RpcParameter> {
 
   private static final BeeLogger logger = LogUtils.getLogger(ParameterList.class);
-  
+
   private boolean ready;
   private List<RpcParameter> dataItems;
   private List<RpcParameter> headerItems;
@@ -71,6 +71,10 @@ public class ParameterList extends ArrayList<RpcParameter> {
   }
 
   public void addDataItem(String name, long value) {
+    addDataItem(name, BeeUtils.toString(value));
+  }
+
+  public void addDataItem(String name, double value) {
     addDataItem(name, BeeUtils.toString(value));
   }
 
@@ -128,11 +132,11 @@ public class ParameterList extends ArrayList<RpcParameter> {
   public void addQueryItem(String name, int value) {
     addQueryItem(name, BeeUtils.toString(value));
   }
- 
+
   public void addQueryItem(String name, long value) {
     addQueryItem(name, BeeUtils.toString(value));
   }
-  
+
   public void addQueryItem(String name, String value) {
     addItem(new RpcParameter(Section.QUERY, name, value));
   }
@@ -239,7 +243,7 @@ public class ParameterList extends ArrayList<RpcParameter> {
     }
     return false;
   }
-  
+
   public boolean hasParameter(String name) {
     Assert.notEmpty(name);
     boolean ok = false;
@@ -264,7 +268,7 @@ public class ParameterList extends ArrayList<RpcParameter> {
       logger.severe("Invalid rpc parameter:", item);
     }
   }
-  
+
   private void addPositionalItem(Section section, String value) {
     addItem(new RpcParameter(section, null, value));
   }

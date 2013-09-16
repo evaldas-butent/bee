@@ -12,8 +12,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -32,15 +32,17 @@ public final class TradeUtils {
   private static final String STYLE_ITEMS_LABEL = STYLE_ITEMS + "label";
   private static final String STYLE_ITEMS_DATA = STYLE_ITEMS + "data";
 
-  public static void getSaleItems(Long saleId, final HasWidgets target, Long currencyTo) {
+  public static void getSaleItems(String viewName, Long tradeId, final HasWidgets target,
+      Long currencyTo) {
     Assert.notNull(target);
     target.clear();
 
-    if (!DataUtils.isId(saleId)) {
+    if (BeeUtils.isEmpty(viewName) || !DataUtils.isId(tradeId)) {
       return;
     }
     ParameterList args = TradeKeeper.createArgs(SVC_ITEMS_INFO);
-    args.addDataItem(COL_SALE, saleId);
+    args.addDataItem("view_name", viewName);
+    args.addDataItem("id", tradeId);
 
     if (DataUtils.isId(currencyTo)) {
       args.addDataItem(ExchangeUtils.COL_CURRENCY, currencyTo);
@@ -58,11 +60,11 @@ public final class TradeUtils {
         Map<String, String> cols = Maps.newLinkedHashMap();
         cols.put(COL_NAME, Localized.getConstants().item());
         cols.put(COL_ITEM_ARTICLE, Localized.getConstants().article());
-        cols.put(COL_SALE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
+        cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
         cols.put(COL_UNIT, Localized.getConstants().unit());
-        cols.put(COL_SALE_ITEM_PRICE, Localized.getConstants().trdPrice());
-        cols.put(COL_SALE_AMOUNT, Localized.getConstants().trdAmount());
-        cols.put(COL_SALE_ITEM_VAT, Localized.getConstants().trdVat());
+        cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
+        cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmount());
+        cols.put(COL_TRADE_ITEM_VAT, Localized.getConstants().trdVat());
 
         HtmlTable table = new HtmlTable();
         table.setStyleName(STYLE_ITEMS_TABLE);
@@ -74,13 +76,14 @@ public final class TradeUtils {
         for (String col : cols.keySet()) {
           Widget cell = new CustomDiv(STYLE_ITEMS + col.toLowerCase());
           cell.getElement().setInnerText(cols.get(col));
-          table.setWidget(0, c++, cell);
+          table.setWidget(0, c, cell);
 
-          if (BeeUtils.same(col, COL_SALE_ITEM_QUANTITY)) {
-            qtyIdx = c - 1;
-          } else if (BeeUtils.same(col, COL_SALE_AMOUNT)) {
-            sumIdx = c - 1;
+          if (BeeUtils.same(col, COL_TRADE_ITEM_QUANTITY)) {
+            qtyIdx = c;
+          } else if (BeeUtils.same(col, COL_TRADE_AMOUNT)) {
+            sumIdx = c;
           }
+          c++;
         }
         String currency = null;
         NumberFormat formater = NumberFormat.getFormat("0.00");
@@ -92,24 +95,24 @@ public final class TradeUtils {
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           table.getRowFormatter().addStyleName(i + 1, STYLE_ITEMS_DATA);
           c = 0;
-          double qty = rs.getDouble(i, COL_SALE_ITEM_QUANTITY);
+          double qty = rs.getDouble(i, COL_TRADE_ITEM_QUANTITY);
           qtyTotal += qty;
-          double sum = qty * BeeUtils.unbox(rs.getDouble(i, COL_SALE_ITEM_PRICE));
-          double vat = BeeUtils.unbox(rs.getDouble(i, COL_SALE_ITEM_VAT));
+          double sum = qty * BeeUtils.unbox(rs.getDouble(i, COL_TRADE_ITEM_PRICE));
+          double vat = BeeUtils.unbox(rs.getDouble(i, COL_TRADE_ITEM_VAT));
 
           if (BeeUtils.isEmpty(currency)) {
             currency = " " + rs.getValue(i, ExchangeUtils.COL_CURRENCY);
           }
           if (!vatExists) {
-            vatExists = rs.getDouble(i, COL_SALE_ITEM_VAT) != null;
+            vatExists = rs.getDouble(i, COL_TRADE_ITEM_VAT) != null;
           }
-          if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_VAT_INCL))) {
-            if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
+          if (BeeUtils.unbox(rs.getBoolean(i, COL_TRADE_VAT_INCL))) {
+            if (BeeUtils.unbox(rs.getBoolean(i, COL_TRADE_ITEM_VAT_PERC))) {
               vat = sum - sum / (1 + vat / 100);
             }
             sum -= vat;
           } else {
-            if (BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
+            if (BeeUtils.unbox(rs.getBoolean(i, COL_TRADE_ITEM_VAT_PERC))) {
               vat = sum / 100 * vat;
             }
           }
@@ -121,19 +124,19 @@ public final class TradeUtils {
             Widget cell = new CustomDiv(STYLE_ITEMS + col.toLowerCase());
             String value;
 
-            if (BeeUtils.same(col, COL_SALE_ITEM_QUANTITY)) {
+            if (BeeUtils.same(col, COL_TRADE_ITEM_QUANTITY)) {
               value = BeeUtils.toString(qty);
 
-            } else if (BeeUtils.same(col, COL_SALE_ITEM_PRICE)) {
+            } else if (BeeUtils.same(col, COL_TRADE_ITEM_PRICE)) {
               value = BeeUtils.toString(BeeUtils.round(sum / qty, 5));
 
-            } else if (BeeUtils.same(col, COL_SALE_ITEM_VAT)) {
+            } else if (BeeUtils.same(col, COL_TRADE_ITEM_VAT)) {
               value = rs.getValue(i, col);
 
-              if (value != null && BeeUtils.unbox(rs.getBoolean(i, COL_SALE_ITEM_VAT_PERC))) {
+              if (value != null && BeeUtils.unbox(rs.getBoolean(i, COL_TRADE_ITEM_VAT_PERC))) {
                 value = BeeUtils.removeTrailingZeros(value) + "%";
               }
-            } else if (BeeUtils.same(col, COL_SALE_AMOUNT)) {
+            } else if (BeeUtils.same(col, COL_TRADE_AMOUNT)) {
               value = formater.format(sum);
 
             } else {
@@ -199,7 +202,7 @@ public final class TradeUtils {
     final int fraction = BeeUtils.toInt((amount - number) * 100);
 
     ParameterList args = TradeKeeper.createArgs(SVC_NUMBER_TO_WORDS);
-    args.addDataItem(COL_SALE_AMOUNT, number);
+    args.addDataItem(COL_TRADE_AMOUNT, number);
 
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem("Locale", locale);

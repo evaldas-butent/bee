@@ -5,8 +5,9 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="CargoInvoice" viewName="CargoInvoices"
+  name="CargoCreditInvoice" viewName="CargoCreditInvoices"
   width="800" height="600"
+  caption="=trCreditInvoice"
   >
   <FlowPanel class="flexBox-vertical">
     <Table>
@@ -34,35 +35,29 @@
         </FlowPanel>
       </row>
       <row>
-        <Label text="=trdSupplier" style="&lbl;" />
-        <DataSelector source="Supplier" />
-        <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
-        <DataSelector source="Customer" required="true" />
+        <cell colSpan="3">
+          <Label text="=trdWarehouseTo" class="bee-required" style="&lbl;" />
+        </cell>
+        <DataSelector source="WarehouseTo" />
       </row>
       <row>
+        <Label text="=trdSupplier" class="bee-required" style="&lbl;" />
+        <DataSelector source="Supplier" required="true" />
+        <Label text="=trdCustomer" style="&lbl;" />
+        <DataSelector source="Customer" />
+      </row>
+      <row>
+        <Label text="=trdTerm" style="&lbl; text-align:right;" />
+        <InputDate source="Term" style="width:70px;" />
         <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
-        <Label text="=trdPayer" style="&lbl;" />
-        <DataSelector source="Payer" />
-      </row>
-      <row>
-        <cell colSpan="3">
-          <Label text="=trdTerm" style="&lbl; text-align:right;" />
-        </cell>
-        <InputDate source="Term" style="width:70px;" />
-      </row>
-      <row>
-        <Label text="=trdVehicle" style="&lbl;" />
-        <InputText source="Vehicle" />
-        <Label text="=trdDriver" style="&lbl;" />
-        <InputText source="Driver" />
       </row>
     </Table>
 
     <TabbedPages class="flexible">
       <page>
         <text>=trProductsServices</text>
-        <ChildGrid name="SaleItems" relColumn="Sale" />
+        <ChildGrid name="PurchaseItems" relColumn="Purchase" />
       </page>
       <page>
         <text>=trdNotes</text>
@@ -72,7 +67,7 @@
       </page>
       <page>
         <text>=transportIncomes</text>
-        <ChildGrid name="CargoInvoiceIncomes" relColumn="Sale" />
+        <ChildGrid name="CargoCreditIncomes" relColumn="Purchase" />
       </page>
     </TabbedPages>
   </FlowPanel>

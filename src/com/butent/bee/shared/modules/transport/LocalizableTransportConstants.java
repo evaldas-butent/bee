@@ -56,6 +56,8 @@ public interface LocalizableTransportConstants {
 
   String createInvoice();
 
+  String createCreditInvoice();
+
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();
@@ -114,8 +116,6 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
-  String showPayerInfo();
-
   String terminal();
 
   String trailers();
@@ -159,9 +159,9 @@ public interface LocalizableTransportConstants {
   String trAssessmentStatusCompleted();
 
   String trAssessmentStatusLost();
-  
+
   String trAssessmentStatusNew();
-  
+
   String trAssessmentThereActiveChildrenOrders();
 
   String trAssessmentThereUnconfirmedAssessments();
@@ -241,9 +241,9 @@ public interface LocalizableTransportConstants {
   String trTripStatusCompleted();
 
   String trTripStatusNew();
-  
+
   String trWriteEmail();
-  
+
   String trucks();
 
   String truckTimeBoard();

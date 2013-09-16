@@ -61,13 +61,13 @@ public class TransportSelectorHandler implements Handler {
         int days = BeeUtils.toInt(result);
 
         if (BeeUtils.isPositive(days)) {
-          target.setValue(targetInfo.getColumnIndex(COL_SALE_TERM),
+          target.setValue(targetInfo.getColumnIndex(COL_TRADE_TERM),
               new DateValue(TimeUtils
                   .nextDay(target.getDateTime(targetInfo.getColumnIndex(COL_DATE)), days)));
         } else {
-          target.clearCell(targetInfo.getColumnIndex(COL_SALE_TERM));
+          target.clearCell(targetInfo.getColumnIndex(COL_TRADE_TERM));
         }
-        dataView.refreshBySource(COL_SALE_TERM);
+        dataView.refreshBySource(COL_TRADE_TERM);
       }
     };
 
@@ -104,15 +104,15 @@ public class TransportSelectorHandler implements Handler {
     if (target == null) {
       return;
     }
-    final Value hasVat = source.getValue(sourceInfo.getColumnIndex(COL_SALE_ITEM_VAT));
+    final Value hasVat = source.getValue(sourceInfo.getColumnIndex(COL_TRADE_ITEM_VAT));
 
     if (BeeUtils.unbox(hasVat.getBoolean())) {
       Consumer<String> consumer = new Consumer<String>() {
         @Override
         public void accept(String prm) {
           Map<String, Value> updatedColumns = ImmutableMap
-              .of(COL_SALE_ITEM_VAT, Value.getValue(BeeUtils.toIntOrNull(prm)),
-                  COL_SALE_ITEM_VAT_PERC, hasVat);
+              .of(COL_TRADE_ITEM_VAT, Value.getValue(BeeUtils.toIntOrNull(prm)),
+                  COL_TRADE_ITEM_VAT_PERC, hasVat);
 
           for (String targetColumn : updatedColumns.keySet()) {
             int targetIndex = targetInfo.getColumnIndex(targetColumn);
@@ -125,7 +125,7 @@ public class TransportSelectorHandler implements Handler {
           }
         }
       };
-      String vat = source.getString(sourceInfo.getColumnIndex(COL_SALE_ITEM_VAT_PERC));
+      String vat = source.getString(sourceInfo.getColumnIndex(COL_TRADE_ITEM_VAT_PERC));
 
       if (BeeUtils.isPositiveInt(vat)) {
         consumer.accept(vat);

@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
@@ -192,7 +191,7 @@ public class UserServiceBean {
     UserInfo userInfo = getCurrentUserInfo();
     return (userInfo == null) ? null : userInfo.getUserData();
   }
-  
+
   public Filter getCurrentUserFilter(String column) {
     return ComparisonFilter.isEqual(column, new LongValue(getCurrentUserId()));
   }
@@ -496,7 +495,7 @@ public class UserServiceBean {
     getCurrentUserInfo().removeSessionObject(type);
   }
 
-  @PreDestroy
+  // TODO @PreDestroy
   private void destroy() {
     for (long userId : getUsers()) {
       UserInfo info = getUserInfo(userId);

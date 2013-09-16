@@ -4,11 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE_AMOUNT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.style.StyleUtils;
@@ -20,7 +18,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -40,48 +37,32 @@ public class PrintCargoInvoiceForm extends AbstractFormInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    Widget widget = form.getWidgetByName("SupplierInfo");
+    for (String company : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
+      Widget widget = form.getWidgetByName(company);
 
-    if (widget instanceof HasWidgets) {
-      Long supplier = row.getLong(form.getDataIndex("Supplier"));
+      if (widget instanceof HasWidgets) {
+        Long companyId = row.getLong(form.getDataIndex(company));
 
-      if (!DataUtils.isId(supplier)) {
-        supplier = BeeKeeper.getUser().getUserData().getCompany();
-      }
-      CommonsUtils.getCompanyInfo(supplier, (HasWidgets) widget);
-    }
-    widget = form.getWidgetByName("CustomerInfo");
+        if (!DataUtils.isId(companyId) && BeeUtils.same(company, COL_TRADE_SUPPLIER)) {
+          companyId = BeeKeeper.getUser().getUserData().getCompany();
+        }
+        if (BeeUtils.same(company, COL_SALE_PAYER)) {
+          final Widget payerCaption = form.getWidgetByName("PayerCaption");
 
-    if (widget instanceof HasWidgets) {
-      CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), (HasWidgets) widget);
-    }
-    final Widget payerCaption = form.getWidgetByName("PayerCaption");
-
-    if (payerCaption != null) {
-      StyleUtils.setVisible(payerCaption, false);
-    }
-    final Widget payerInfo = form.getWidgetByName("PayerInfo");
-
-    if (payerInfo instanceof HasWidgets) {
-      final Long payer = row.getLong(form.getDataIndex("Payer"));
-
-      if (DataUtils.isId(payer)) {
-        Global.confirm(Localized.getConstants().showPayerInfo(), new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            StyleUtils.setVisible(payerCaption, true);
-            CommonsUtils.getCompanyInfo(payer, (HasWidgets) payerInfo);
+          if (payerCaption != null) {
+            StyleUtils.setVisible(payerCaption, DataUtils.isId(companyId));
           }
-        });
+        }
+        CommonsUtils.getCompanyInfo(companyId, (HasWidgets) widget);
       }
     }
-    widget = form.getWidgetByName("InvoiceDetails");
+    Widget widget = form.getWidgetByName("InvoiceDetails");
 
     if (widget instanceof HasWidgets) {
-      TradeUtils.getSaleItems(row.getId(), (HasWidgets) widget, null);
+      TradeUtils.getSaleItems(getFormView().getViewName(), row.getId(), (HasWidgets) widget, null);
     }
     for (HasWidgets total : totals) {
-      TradeUtils.getTotalInWords(row.getDouble(form.getDataIndex(COL_SALE_AMOUNT)),
+      TradeUtils.getTotalInWords(row.getDouble(form.getDataIndex(COL_TRADE_AMOUNT)),
           row.getString(form.getDataIndex("CurrencyName")),
           row.getString(form.getDataIndex("MinorName")), total,
           total instanceof HasOptions ? ((HasOptions) total).getOptions() : null);

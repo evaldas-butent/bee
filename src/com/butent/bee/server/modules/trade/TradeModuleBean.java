@@ -72,11 +72,12 @@ public class TradeModuleBean implements BeeModule {
     String svc = reqInfo.getParameter(TRADE_METHOD);
 
     if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
-      response = getItemsInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE)),
+      response = getItemsInfo(reqInfo.getParameter("view_name"),
+          BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
 
     } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
-      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE_AMOUNT)),
+      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT)),
           reqInfo.getParameter("Locale"));
 
     } else {
@@ -122,51 +123,66 @@ public class TradeModuleBean implements BeeModule {
           } else {
             return;
           }
-          int idx = DataUtils.getColumnIndex(COL_SALE_INVOICE_PREFIX, cols);
+          int idx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_PREFIX, cols);
 
           if (idx != BeeConst.UNDEF) {
             prefix = row.getString(idx);
           }
           if (!BeeUtils.isEmpty(prefix)
-              && DataUtils.getColumnIndex(COL_SALE_INVOICE_NO, cols) == BeeConst.UNDEF) {
-            cols.add(new BeeColumn(COL_SALE_INVOICE_NO));
-            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_SALE_INVOICE_NO, prefix,
-                COL_SALE_INVOICE_PREFIX)));
+              && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
+            cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
+            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
+                COL_TRADE_INVOICE_PREFIX)));
           }
         }
       }
     });
   }
 
-  private ResponseObject getItemsInfo(Long id, Long currencyTo) {
+  private ResponseObject getItemsInfo(String viewName, Long id, Long currencyTo) {
+    if (!sys.isView(viewName)) {
+      return ResponseObject.error("Wrong view name");
+    }
     if (!DataUtils.isId(id)) {
       return ResponseObject.error("Wrong document ID");
     }
-    SqlSelect query =
-        new SqlSelect()
-            .addFields(TBL_ITEMS, COL_NAME)
-            .addField(TBL_UNITS, COL_NAME, COL_UNIT)
-            .addFields(TBL_SALES, COL_SALE_VAT_INCL)
-            .addFields(TBL_SALE_ITEMS, COL_ITEM_ARTICLE, COL_SALE_ITEM_QUANTITY,
-                COL_SALE_ITEM_PRICE, COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)
-            .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME,
-                ExchangeUtils.COL_CURRENCY)
-            .addFrom(TBL_SALE_ITEMS)
-            .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
-            .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-            .addFromInner(ExchangeUtils.TBL_CURRENCIES,
-                sys.joinTables(ExchangeUtils.TBL_CURRENCIES, TBL_SALES, ExchangeUtils.COL_CURRENCY))
-            .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, id))
-            .addOrder(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS));
+    String trade = sys.getView(viewName).getSourceName();
+    String tradeItems;
+    String itemsRelation;
+
+    if (BeeUtils.same(trade, TBL_SALES)) {
+      tradeItems = TBL_SALE_ITEMS;
+      itemsRelation = COL_SALE;
+    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
+      tradeItems = TBL_PURCHASE_ITEMS;
+      itemsRelation = COL_PURCHASE;
+    } else {
+      return ResponseObject.error("View source not supported:", trade);
+    }
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_ITEMS, COL_NAME)
+        .addField(TBL_UNITS, COL_NAME, COL_UNIT)
+        .addFields(trade, COL_TRADE_VAT_INCL)
+        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
+            COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC, COL_TRADE_ITEM_NOTE)
+        .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME,
+            ExchangeUtils.COL_CURRENCY)
+        .addFrom(tradeItems)
+        .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
+        .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+        .addFromInner(ExchangeUtils.TBL_CURRENCIES,
+            sys.joinTables(ExchangeUtils.TBL_CURRENCIES, trade, ExchangeUtils.COL_CURRENCY))
+        .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
+        .addOrder(tradeItems, sys.getIdName(tradeItems));
 
     if (DataUtils.isId(currencyTo)) {
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-          SqlUtils.field(TBL_SALE_ITEMS, COL_SALE_ITEM_PRICE),
-          SqlUtils.field(TBL_SALES, ExchangeUtils.COL_CURRENCY),
-          SqlUtils.field(TBL_SALES, COL_DEFAULT_COLOR), SqlUtils.constant(currencyTo));
+          SqlUtils.field(tradeItems, COL_TRADE_ITEM_PRICE),
+          SqlUtils.field(trade, ExchangeUtils.COL_CURRENCY),
+          SqlUtils.field(trade, COL_TRADE_DATE), SqlUtils.constant(currencyTo));
 
-      query.addExpr(xpr, ExchangeUtils.COL_CURRENCY + COL_SALE_ITEM_PRICE);
+      query.addExpr(xpr, ExchangeUtils.COL_CURRENCY + COL_TRADE_ITEM_PRICE);
     }
     return ResponseObject.response(qs.getData(query));
   }

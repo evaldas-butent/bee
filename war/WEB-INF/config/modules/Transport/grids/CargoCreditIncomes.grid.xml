@@ -14,7 +14,7 @@
     <RelColumn name="Sale" editEnabled="true" renderColumns="Sale"
       editForm="CargoInvoice" editViewName="CargoInvoices" />
     <DataColumn name="InvoiceDate" />
-    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNumber">
+    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
       <render>
         <ui:function>
           if (!row.InvoicePrefix) {
@@ -48,8 +48,11 @@
     </DataColumn>
     <DataColumn name="CurrencyName" flexGrow="0" />
     <DataColumn name="Vat" horizontalAlignment="right">
-      <render><ui:expression>row.Vat ? (row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression></render>
+      <render>
+        <ui:expression>row.Vat ? (row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression>
+      </render>
     </DataColumn>
+
     <DataColumn name="Note" />
   </columns>
 </Grid>

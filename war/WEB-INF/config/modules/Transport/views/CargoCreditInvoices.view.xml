@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
-  name="Sales" source="Sales"
-  caption="Sąskaitos" newRowCaption="Nauja sąskaita"
-  editForm="Invoice" newRowForm="Invoice"
+  name="CargoCreditInvoices" source="Purchases"
+  editForm="CargoCreditInvoice"
   >
   <Columns>
     <SimpleColumn name="Date" />
@@ -12,9 +12,8 @@
     <SimpleColumn name="InvoiceNo" />
     <SimpleColumn name="Term" />
 
-    <SimpleColumn name="Vehicle" />
-    <SimpleColumn name="Driver" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
 
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
@@ -23,10 +22,11 @@
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
     <SimpleColumn name="VatIncluded" />
-    
-    <SimpleColumn name="PaymentTime" />
-    <SimpleColumn name="Paid" />
 
+    <SimpleColumn name="WarehouseTo" />
+    <SimpleJoin joinType="LEFT" name="WarehouseTo">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+    </SimpleJoin>
 
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
@@ -36,11 +36,6 @@
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
-    </SimpleJoin>
-    
-    <SimpleColumn name="Payer" />
-    <SimpleJoin joinType="LEFT" name="Payer">
-      <SimpleColumn name="Name" alias="PayerName" />
     </SimpleJoin>
     
     <SimpleColumn name="Manager" />

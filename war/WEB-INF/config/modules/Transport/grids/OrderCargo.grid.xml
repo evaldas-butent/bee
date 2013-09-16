@@ -30,7 +30,7 @@
         </bodyStyle>
       </style>
     </DataColumn>
-    <PropColumn name="Income" type="decimal" caption="=income" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>

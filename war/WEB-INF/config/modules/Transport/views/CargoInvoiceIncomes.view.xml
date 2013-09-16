@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="CargoIncomeList" source="CargoIncomes"
+  name="CargoInvoiceIncomes" source="CargoIncomes"
   >
   <Columns>
     <SimpleColumn name="Cargo" />
@@ -38,22 +38,23 @@
         <SimpleColumn name="Date" alias="UnloadingDate" />
       </SimpleJoin>
       
-      <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-        <SimpleJoin name="Trip" joinType="LEFT">
-          <SimpleJoin name="Vehicle" joinType="LEFT">
-            <SimpleColumn name="Number" alias="Vehicle" />
-          </SimpleJoin>
-          <SimpleJoin name="Trailer" joinType="LEFT">
-            <SimpleColumn name="Number" alias="Trailer" />
-          </SimpleJoin>
+      
+      <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <AggregateJoin name="Trip" joinType="LEFT">
+          <AggregateJoin name="Vehicle" joinType="LEFT">
+            <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" />
+          </AggregateJoin>
+          <AggregateJoin name="Trailer" joinType="LEFT">
+            <AggregateColumn name="Number" alias="Trailer" aggregate="MAX" />
+          </AggregateJoin>
         
-          <SimpleJoin source="TripDrivers" name="Trip" joinType="LEFT">
-            <SimpleJoin name="Driver" joinType="LEFT">
-              <SimpleJoin name="CompanyPerson" joinType="LEFT">
-                <SimpleJoin name="Person" joinType="LEFT">
+          <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
+            <AggregateJoin name="Driver" joinType="LEFT">
+              <AggregateJoin name="CompanyPerson" joinType="LEFT">
+                <AggregateJoin name="Person" joinType="LEFT">
                   <HiddenColumn name="FirstName" />
                   <HiddenColumn name="LastName" />
-                  <SimpleColumn name="Driver">
+                  <AggregateColumn name="Driver" aggregate="MAX">
                     <x:concat>
                       <x:string>"FirstName"</x:string>
                       <x:string>' '</x:string>
@@ -62,14 +63,14 @@
                         <x:string>''</x:string>
                       </x:nvl>
                     </x:concat>
-                  </SimpleColumn>
-                </SimpleJoin>
-              </SimpleJoin>
-            </SimpleJoin>
-          </SimpleJoin>
-        </SimpleJoin>
+                  </AggregateColumn>
+                </AggregateJoin>
+              </AggregateJoin>
+            </AggregateJoin>
+          </ExternalJoin>
+        </AggregateJoin>
         
-      </SimpleJoin>
+      </ExternalJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Service" />
@@ -97,7 +98,6 @@
     <SimpleJoin name="Sale" joinType="LEFT">
       <SimpleColumn name="Proforma" />
     </SimpleJoin>
-    <SimpleColumn name="Purchase" />
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

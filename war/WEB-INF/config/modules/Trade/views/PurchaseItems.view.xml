@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="SaleItems" source="SaleItems"
+  name="PurchaseItems" source="PurchaseItems"
   >
   <Columns>
-    <SimpleColumn name="Sale" />
+    <SimpleColumn name="Purchase" />
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />

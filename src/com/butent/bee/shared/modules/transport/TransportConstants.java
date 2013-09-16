@@ -201,8 +201,10 @@ public final class TransportConstants {
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
   public static final String VIEW_WAITING_CARGO = "WaitingCargo";
-  public static final String VIEW_CARGO_INCOME_LIST = "CargoIncomeList";
+  public static final String VIEW_CARGO_INVOICE_INCOMES = "CargoInvoiceIncomes";
   public static final String VIEW_CARGO_INVOICES = "CargoInvoices";
+  public static final String VIEW_CARGO_CREDIT_INCOMES = "CargoCreditIncomes";
+  public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
@@ -434,6 +436,11 @@ public final class TransportConstants {
   public static final String FORM_CARGO = "OrderCargo";
   public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_ASSESSMENT = "Assessment";
+
+  public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
+  public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
+  public static final String FORM_CARGO_INVOICE = "CargoInvoice";
+  public static final String FORM_CARGO_CREDIT_INVOICE = "CargoCreditInvoice";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";

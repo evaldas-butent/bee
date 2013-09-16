@@ -2,7 +2,6 @@
 <View xmlns="http://www.butent.com/view"
 
   name="CargoCreditIncomes" source="CargoIncomes"
-  filter="!(Proforma) AND !(Purchase)"
   >
   <Columns>
     <SimpleJoin name="Cargo" joinType="INNER">
@@ -28,6 +27,7 @@
       <SimpleColumn name="Name" alias="ServiceName" />
     </SimpleJoin>
     <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
@@ -38,7 +38,7 @@
 
     <SimpleColumn name="Sale" />
     <SimpleJoin name="Sale" joinType="INNER">
-      <SimpleColumn name="Proforma" />
+      <HiddenColumn name="Proforma" />
       <SimpleColumn name="Date" alias="InvoiceDate" />
       <SimpleColumn name="InvoicePrefix" />
       <SimpleColumn name="InvoiceNo" />

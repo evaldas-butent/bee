@@ -4,13 +4,12 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_INVOICE_INCOMES;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
@@ -25,11 +24,9 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -44,38 +41,15 @@ public class CargoInvoiceForm extends AbstractFormInterceptor implements ClickHa
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_SALE_ITEMS)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-        @Override
-        public void afterDeleteRow(long rowId) {
-          refreshTotals();
-        }
+    if (widget instanceof ChildGrid) {
+      ChildGrid grid = (ChildGrid) widget;
 
-        @Override
-        public void afterInsertRow(IsRow result) {
-          refreshTotals();
-        }
+      if (BeeUtils.same(name, TBL_SALE_ITEMS)) {
+        grid.setGridInterceptor(new InvoiceItemsGrid(getFormView()));
 
-        @Override
-        public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
-          if (BeeUtils.inListSame(column.getId(), COL_SALE_ITEM_QUANTITY, COL_SALE_ITEM_PRICE,
-              COL_SALE_ITEM_VAT, COL_SALE_ITEM_VAT_PERC)) {
-            refreshTotals();
-          }
-        }
-
-        private void refreshTotals() {
-          final FormView form = getFormView();
-
-          Queries.getRow(form.getViewName(), form.getActiveRow().getId(), new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              form.updateRow(result, false);
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
-            }
-          });
-        }
-      });
+      } else if (BeeUtils.same(name, VIEW_CARGO_INVOICE_INCOMES)) {
+        grid.setGridInterceptor(new AbstractGridInterceptor());
+      }
     }
   }
 
@@ -91,8 +65,12 @@ public class CargoInvoiceForm extends AbstractFormInterceptor implements ClickHa
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    boolean proforma = BeeUtils.unbox(row.getBoolean(DataUtils.getColumnIndex(COL_SALE_PROFORMA,
-        form.getDataColumns())));
+    int idx = DataUtils.getColumnIndex(COL_SALE_PROFORMA, form.getDataColumns());
+
+    if (idx == BeeConst.UNDEF) {
+      return;
+    }
+    boolean proforma = BeeUtils.unbox(row.getBoolean(idx));
 
     form.getViewPresenter().getHeader().setCaption(proforma
         ? Localized.getConstants().trProformaInvoice()

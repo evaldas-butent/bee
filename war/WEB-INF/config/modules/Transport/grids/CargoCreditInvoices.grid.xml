@@ -2,13 +2,13 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoProformaInvoices" viewName="CargoInvoices"
+  name="CargoCreditInvoices" viewName="CargoCreditInvoices"
   editShowId="true" flexGrow="1"
   disabledActions="add"
-  caption="=trProformaInvoices"
-  filter="Proforma"
+  caption="=trCreditInvoices"
   >
   <columns>
+    <SelectionColumn name="Select" caption="-" width="20" />
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <DataColumn name="Number" />
@@ -25,13 +25,8 @@
         </ui:function>
       </render>
     </DataColumn>
-    <DataColumn name="CustomerName" caption="=trdCustomer" />
-    <DataColumn name="PayerName" caption="=trdPayer" />
+    <DataColumn name="SupplierName" caption="=trdSupplier" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
-    <DataColumn name="Term" />
-
-    <DataColumn name="Vehicle" />
-    <DataColumn name="Driver" />
   </columns>
 </Grid>

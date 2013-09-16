@@ -14,17 +14,17 @@
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
     <Relation name="Payer" relation="Companies" label="=trdPayer" />
 
-    <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseFrom" />
+    <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
 
     <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
     <Relation name="Currency" relation="Currencies" notNull="true" />
     <Boolean name="VatIncluded" label="=trdVatIncluded" />
 
+    <Date name="Term" label="=trdTerm" />
     <DateTime name="PaymentTime" label="=trdPaymentTime" />
     <Numeric name="Paid" precision="12" scale="2" label="=trdPaid" />
 
     <Relation name="Manager" relation="Users" label="=trdManager" />
-    <Date name="Term" label="=trdTerm" />
 
     <String name="Vehicle" precision="100" label="=trdVehicle" />
     <String name="Driver" precision="100" label="=trdDriver" />

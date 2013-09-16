@@ -25,7 +25,10 @@
     <RelColumn name="Customer" caption="=payer" />
     <DataColumn name="Number" caption="=number" />
     <DataColumn name="Note" caption="=note" />
+
     <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" renderColumns="Sale"
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
+    <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true" renderColumns="Purchase"
+      editEnabled="true" editForm="CargoCreditInvoice" editViewName="CargoCreditInvoices" />
   </columns>
 </Grid>

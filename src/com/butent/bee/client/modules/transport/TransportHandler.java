@@ -133,11 +133,11 @@ public final class TransportHandler {
 
     @Override
     public void onClick(ClickEvent event) {
-      Queries.getRowCount(VIEW_CARGO_INCOME_LIST, filter, new IntCallback() {
+      Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, filter, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
           if (BeeUtils.isPositive(result)) {
-            GridPanel grid = new GridPanel(VIEW_CARGO_INCOME_LIST,
+            GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES,
                 GridFactory.getGridOptions(ImmutableMap.of(UiConstants.ATTR_FILTER,
                     filter.toString())));
 
@@ -673,7 +673,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_INCOME_LIST, new CargoIncomeListGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INCOMES, new CargoCreditIncomesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
@@ -682,7 +683,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
-    FormFactory.registerFormInterceptor("CargoInvoice", new CargoInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 

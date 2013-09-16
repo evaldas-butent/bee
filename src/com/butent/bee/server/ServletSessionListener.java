@@ -6,7 +6,6 @@ import com.butent.bee.shared.logging.LogUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
@@ -14,7 +13,7 @@ import javax.servlet.http.HttpSessionListener;
  * Destroys user sessions after configured amount of idle time.
  */
 
-@WebListener
+// TODO @WebListener
 public class ServletSessionListener implements HttpSessionListener {
 
   private static BeeLogger logger = LogUtils.getLogger(ServletSessionListener.class);
