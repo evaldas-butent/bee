@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
-  editForm="EcOrder" newRowColumns="Date Client Manager DeliveryMethod"
+  newRowColumns="Date Client Manager DeliveryMethod"
   order="Date desc" cacheData="false" asyncThreshold="-1"
   flexGrow="1"
   >

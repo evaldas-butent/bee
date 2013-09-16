@@ -424,6 +424,60 @@ public class EcModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      public void setSuppliersAndRemainders(ViewQueryEvent event) {
+        if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
+            && BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
+
+          BeeRowSet rowSet = event.getRowset();
+          Long orderId = rowSet.getLong(0, rowSet.getColumnIndex(COL_ORDER_ITEM_ORDER));
+          if (!DataUtils.isId(orderId)) {
+            return;
+          }
+          
+          SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
+              .addField(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_TCD_ARTICLE)
+              .addFrom(TBL_ORDER_ITEMS)
+              .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS,  COL_ORDER_ITEM_ORDER, orderId));
+          
+          String tempArticleIds = createTempArticleIds(articleIdQuery);
+          Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds);
+          qs.sqlDropTemp(tempArticleIds);
+          
+          if (articleSuppliers.isEmpty()) {
+            return;
+          }
+          
+          int articleIndex = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE);
+          for (BeeRow row : rowSet.getRows()) {
+            Long article = row.getLong(articleIndex);
+
+            if (article != null && articleSuppliers.containsKey(article)) {
+              for (ArticleSupplier articleSupplier : articleSuppliers.get(article)) {
+                String supplierSuffix = BeeUtils.toString(articleSupplier.getSupplier().ordinal());
+                
+                String supplierId = articleSupplier.getSupplierId();
+                if (!BeeUtils.isEmpty(supplierId)) {
+                  row.setProperty(COL_TCD_SUPPLIER_ID + supplierSuffix, supplierId);
+                }
+                
+                double cost = articleSupplier.getRealPrice();
+                if (BeeUtils.isPositive(cost)) {
+                  row.setProperty(COL_TCD_COST + supplierSuffix, BeeUtils.toString(cost));
+                }
+                
+                Map<String, String> remainders = articleSupplier.getRemainders();
+                if (!BeeUtils.isEmpty(remainders)) {
+                  for (Map.Entry<String, String> entry : remainders.entrySet()) {
+                    row.setProperty(COL_TCD_REMAINDER + entry.getKey(), entry.getValue());
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -464,7 +518,7 @@ public class EcModuleBean implements BeeModule {
           insItem.addConstant(COL_UNSUPPLIED_ITEM_ARTICLE, row.getLong(COL_ORDER_ITEM_ARTICLE));
           insItem.addConstant(COL_UNSUPPLIED_ITEM_QUANTITY, quantity);
           insItem.addConstant(COL_UNSUPPLIED_ITEM_PRICE, row.getDouble(COL_ORDER_ITEM_PRICE));
-          
+
           String note = row.getValue(COL_ORDER_ITEM_NOTE);
           if (!BeeUtils.isEmpty(note)) {
             insItem.addConstant(COL_UNSUPPLIED_ITEM_NOTE, note);
@@ -474,7 +528,7 @@ public class EcModuleBean implements BeeModule {
           if (itemResponse.hasErrors()) {
             return itemResponse;
           }
-          
+
           itemsAdded++;
         }
       }
@@ -1151,7 +1205,7 @@ public class EcModuleBean implements BeeModule {
       finInfo.setUnsuppliedItems(unsuppliedItems);
       size += unsuppliedItems.getNumberOfRows();
     }
-    
+
     return ResponseObject.response(finInfo).setSize(size);
   }
 
@@ -1866,7 +1920,7 @@ public class EcModuleBean implements BeeModule {
       qs.updateData(new SqlUpdate(TBL_ORDERS)
           .addConstant(COL_ORDER_STATUS, EcOrderStatus.ACTIVE.ordinal())
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
-      
+
       addToUnsuppliedItems(orderId);
     }
     return response;

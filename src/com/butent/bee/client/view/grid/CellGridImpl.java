@@ -1795,9 +1795,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     } else {
       Integer editKey = editableColumn.getRelation().getEditKey();
       if (editKey == null) {
-        ok = false;
-      } else if (BeeUtils.inList(editKey, EditStartEvent.ENTER, KeyCodes.KEY_ENTER)) {
-        ok = BeeUtils.inList(charCode, EditStartEvent.ENTER, KeyCodes.KEY_ENTER);
+        ok = !isEnabled() && EditStartEvent.isEnter(charCode);
+      } else if (EditStartEvent.isEnter(editKey)) {
+        ok = EditStartEvent.isEnter(charCode);
       } else {
         ok = editKey == charCode;
       }
@@ -1887,11 +1887,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   private void openEditor(EditStartEvent event) {
-    if (!isEnabled()) {
-      return;
-    }
-
-    if (getGridInterceptor() != null) {
+    if (getGridInterceptor() != null && isEnabled()) {
       getGridInterceptor().onEditStart(event);
       if (event.isConsumed()) {
         return;
@@ -1906,6 +1902,10 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return;
     }
 
+    if (!isEnabled()) {
+      return;
+    }
+    
     boolean useForm = useFormForEdit(columnId);
     boolean editable = !isReadOnly();
 

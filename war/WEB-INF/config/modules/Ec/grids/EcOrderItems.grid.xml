@@ -33,5 +33,7 @@
     </CalcColumn>
 
     <DataColumn name="Note" visible="false" />
+    
+    <CalcColumn type="string" name="Properties" maxWidth="300" visible="true" />
   </columns>
 </Grid>
