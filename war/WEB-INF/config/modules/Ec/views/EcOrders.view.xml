@@ -24,6 +24,11 @@
   
           <SimpleJoin name="Company" joinType="LEFT">
             <SimpleColumn alias="ClientCompanyName" name="Name" />
+            <SimpleColumn alias="ClientCreditLimit" name="CreditLimit1" />
+            <SimpleColumn alias="ClientCreditDays" name="CreditDays" />
+            <SimpleJoin name="LimitCurrency" joinType="LEFT">
+              <SimpleColumn alias="ClientLimitCurrency" name="Name"/>
+            </SimpleJoin>
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>

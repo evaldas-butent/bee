@@ -31,40 +31,54 @@
           <renderToken source="ClientCompanyName" prefix=", " />
         </DataSelector>
 
+        <Label text="=ecCreditLimit" style="&lbl;" />
+        <TextLabel name="creditLimit">
+          <renderToken source="ClientCreditLimit" />
+          <renderToken source="ClientLimitCurrency" prefix=" " />
+        </TextLabel>
+        <Label text="=ecDaysForPayment" style="margin-left: 1.5em; margin-right: 10px;" />
+        <TextLabel name="clientCreditDays">
+          <renderToken source="ClientCreditDays" suffix="=dayShort" />
+        </TextLabel>
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">      
         <Label text="=ecManager" style="&lbl;" />
         <DataSelector source="Manager" style="&inp;" editSource="ManagerCompanyPerson">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />
           <renderToken source="ManagerCompanyName" prefix=", " />
         </DataSelector>
-      </FlowPanel>
-      &separator;
 
-      <FlowPanel class="flexBox-horizontal-top">
         <Label text="=ecDeliveryMethod" style="&lbl;" />
         <DataSelector source="DeliveryMethod" style="&inp;" />
+      </FlowPanel>      
+      &separator;
+      
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecOrderCommentManager" style="&lbl;" />
+        <InputArea source="ManagerComment" style="&inp; height: 40px;"
+          disablable="false" />
 
         <Label text="=ecDeliveryAddress" style="&lbl;" />
         <InputArea source="DeliveryAddress" style="&inp; height: 40px;" />
       </FlowPanel>
       &separator;
-      
+
       <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecRejectionReason" style="&lbl;" />
+        <DataSelector source="RejectionReason" style="&inp;" readOnly="true" />
+           
         <Label text="=ecOrderCommentClient" style="&lbl;" />
         <InputArea source="ClientComment" style="&inp; height: 40px;" />
-
-        <Label text="=ecOrderCommentManager" style="&lbl;" />
-        <InputArea source="ManagerComment" style="&inp; height: 40px;" disablable="false" />
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
         <CheckBox text="=ecOrderCopyByMail" source="CopyByMail"
           style="width: 250px; margin-left: 100px; visibility: hidden;" />
-        <Label text="=ecRejectionReason" style="&lbl;" />
-        <DataSelector source="RejectionReason" style="&inp;" readOnly="true" />
       </FlowPanel>
-
     </FlowPanel>
 
     <TabbedPages class="flexible">
@@ -77,7 +91,7 @@
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" disablable="false" />
         </SimplePanel>
-      </page>  
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

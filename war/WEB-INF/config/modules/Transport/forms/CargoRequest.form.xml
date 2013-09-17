@@ -49,13 +49,13 @@
       <Label text="=createdOn" style="&labelLeft;" />
       <DateTimeLabel source="Created" style="&inline; width:110px;" />
       <TextLabel style="&inline; margin-left:20px; font-weight:bold;">
-        <renderToken source="Finished" prefix="Baigtas " />
+        <renderToken source="Finished" prefix="=trCargoRequestFinishedPrefix" />
       </TextLabel>
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=result" style="&labelLeft; vertical-align:top;" />
       <TextLabel name="OrderNo" style="&inline; color:blue; cursor:pointer; margin-right:5px;">
-        <renderToken source="OrderNo" prefix="(Užsakymas: " suffix=") " />
+        <renderToken source="OrderNo" prefix="=trCargoRequestResultPrefix" suffix=") " />
       </TextLabel>
       <TextLabel source="Result" style="&inline;" />
     </FlowPanel>

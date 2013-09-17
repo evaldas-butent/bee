@@ -6,6 +6,7 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.DataUtils;
@@ -22,8 +23,8 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     ColumnToken columnToken = new ColumnToken(dataIndex, valueType);
     
     if (renderableToken != null) {
-      columnToken.setPrefix(renderableToken.getPrefix());
-      columnToken.setSuffix(renderableToken.getSuffix());
+      columnToken.setPrefix(LocaleUtils.maybeLocalize(renderableToken.getPrefix()));
+      columnToken.setSuffix(LocaleUtils.maybeLocalize(renderableToken.getSuffix()));
       
       if (BeeUtils.isTrue(renderableToken.getAddPrefixWhenEmpty())) {
         columnToken.setAddPrefixWhenEmpty(true);
