@@ -2,15 +2,15 @@
 <xs:schema targetNamespace="http://www.butent.com/grid" elementFormDefault="qualified"
   xmlns="http://www.butent.com/grid"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:col="http://www.butent.com/column"
   xmlns:type="http://www.butent.com/type"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:widget="http://www.butent.com/widget">
 
+  <xs:import namespace="http://www.butent.com/column" schemaLocation="column.xsd" />
   <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
   <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
   <xs:import namespace="http://www.butent.com/widget" schemaLocation="widget.xsd" />
-
-  <xs:include schemaLocation="columns.xsd" />
 
   <xs:element name="Grid" type="grid" />
 
@@ -26,7 +26,7 @@
       <xs:element name="header" type="componentType" minOccurs="0" />
       <xs:element name="body" type="componentType" minOccurs="0" />
       <xs:element name="footer" type="componentType" minOccurs="0" />
-      <xs:element name="columns" type="columnList" maxOccurs="unbounded" />
+      <xs:element name="columns" type="columnList" />
       <xs:element name="rowStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="rowMessage" type="ui:calcType" minOccurs="0" />
       <xs:element name="rowEditable" type="ui:calcType" minOccurs="0" />
@@ -41,10 +41,10 @@
     <xs:attribute name="viewName" type="type:nameType" />
     <xs:attribute name="filter" type="xs:normalizedString" />
     <xs:attribute name="order" type="xs:normalizedString" />
-    <xs:attribute name="minColumnWidth" type="columnWidth" />
-    <xs:attribute name="maxColumnWidth" type="columnWidth" />
+    <xs:attribute name="minColumnWidth" type="col:columnWidth" />
+    <xs:attribute name="maxColumnWidth" type="col:columnWidth" />
     <xs:attribute name="autoFit" type="type:intOrBoolean" />
-    <xs:attributeGroup ref="flex" />
+    <xs:attributeGroup ref="col:flex" />
     <xs:attribute name="headerMode" type="headerMode" />
     <xs:attribute name="cacheData" type="xs:boolean" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
@@ -71,6 +71,12 @@
     <xs:attribute name="maxNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="renderMode" type="renderMode" />
     <xs:attribute name="rowChangeSensitivityMillis" type="xs:nonNegativeInteger" />
+  </xs:complexType>
+
+  <xs:complexType name="columnList">
+    <xs:sequence>
+      <xs:element ref="col:column" maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="extWidget">

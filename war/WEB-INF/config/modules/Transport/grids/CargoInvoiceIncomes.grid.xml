@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoInvoiceIncomes" viewName="CargoInvoiceIncomes"
   flexGrow="1"
   readOnly="true" caption="=trOrderCargoIncomes"
   >
-  <columns>
+  <g:columns>
     <SelectionColumn name="Select" caption="-" width="20" />
     <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
@@ -48,5 +48,5 @@
     <DataColumn name="Vehicle" caption="=trTruck" />
     <DataColumn name="Trailer" caption="=trailer" />
     <DataColumn name="Driver" caption="=vehicleDriver" searchBy="FirstName LastName" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

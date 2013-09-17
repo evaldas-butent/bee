@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="EcGroupCategories" viewName="EcGroupCategories" caption="=ecItemCategories"
   flexGrow="1" flexShrink="1"
   >
-  <body height="32" />
-  <columns>
-    <RelColumn name="Category" searchableColumns="CategoryName" choiceColumns="FullName"
-        selectorClass="bee-ec-CategorySelector" visibleLines="7" newRowEnabled="false"
-        visible="true" />
-  </columns>
-</Grid>
+  <g:body height="32" />
+  <g:columns>
+    <xi:include href="columns/Category.column.xml" />
+  </g:columns>
+</g:Grid>

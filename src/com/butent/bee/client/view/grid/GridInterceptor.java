@@ -52,6 +52,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void afterInsertRow(IsRow result);
 
+  void afterRender(GridView gridView);
+
   void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode);
 
   void afterUpdateRow(IsRow result);
@@ -74,6 +76,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void beforeRefresh(GridPresenter presenter);
 
+  void beforeRender(GridView gridView);
+  
   String getColumnCaption(String columnName);
 
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,

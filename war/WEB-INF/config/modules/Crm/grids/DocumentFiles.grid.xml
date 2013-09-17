@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="DocumentFiles" viewName="DocumentFiles" caption="=documentFiles"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="File" caption="=documentFileOpen" readOnly="true" cellType="html"
       sortable="false" minWidth="100" />
 
@@ -27,5 +27,5 @@
 
     <DataColumn name="FileName" readOnly="true" visible="false" />
     <DataColumn name="FileType" readOnly="true" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

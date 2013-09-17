@@ -27,6 +27,7 @@ import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ActionEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -133,8 +134,8 @@ import java.util.Set;
  */
 
 public class CellGridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler,
-    SettingsChangeEvent.Handler {
+    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler, SettingsChangeEvent.Handler,
+    RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -161,8 +162,32 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private static final String STYLE_NAME = "bee-GridView";
 
+  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
+    popup.attachAmendDetach(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
+        int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
+            + form.getViewPresenter().getHeader().getHeight() + 1;
+
+        if (width > BeeUtils.toInt(form.getWidthValue())) {
+          StyleUtils.setWidth(popup, width + 10);
+        }
+        StyleUtils.setHeight(popup, height);
+      }
+    });
+  }
+  private static String normalizeFormName(String formName) {
+    if (BeeUtils.isEmpty(formName) || formName.trim().equals(BeeConst.STRING_MINUS)) {
+      return null;
+    } else {
+      return formName.trim();
+    }
+  }
   private final String gridName;
+
   private final String gridKey;
+
   private final DataInfo dataInfo;
 
   private GridPresenter viewPresenter;
@@ -174,7 +199,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
-
   private List<BeeColumn> dataColumns;
 
   private final String relColumn;
@@ -185,21 +209,22 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private FormView newRowForm;
   private String newRowFormName;
-
   private String newRowFormContainerId;
+
   private boolean newRowFormGenerated;
   private final Set<State> newRowFormState = EnumSet.noneOf(State.class);
-
   private FormView editForm;
   private String editFormName;
   private boolean editMode;
   private boolean editSave;
   private Evaluator editMessage;
+
   private boolean editShowId;
   private final Set<String> editInPlace = Sets.newHashSet();
-
   private String editFormContainerId;
+
   private final Set<State> editFormState = EnumSet.noneOf(State.class);
+
   private EditStartEvent pendingEditStartEvent;
 
   private boolean singleForm;
@@ -207,14 +232,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private boolean adding;
 
   private String activeFormContainerId;
-
   private boolean showNewRowPopup;
-
   private boolean showEditPopup;
+
   private ModalForm newRowPopup;
   private ModalForm editPopup;
 
   private GridInterceptor gridInterceptor;
+
   private SaveChangesCallback saveChangesCallback;
 
   private final Set<String> pendingResize = Sets.newHashSet();
@@ -666,6 +691,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     getGrid().addSortHandler(this);
     getGrid().addSettingsChangeHandler(this);
+    getGrid().addRenderingHandler(this);
 
     add(getGrid());
     add(getNotification());
@@ -1125,6 +1151,19 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
+  public void onRender(RenderingEvent event) {
+    Assert.notNull(event);
+
+    if (getGridInterceptor() != null) {
+      if (event.isBefore()) {
+        getGridInterceptor().beforeRender(this);
+      } else if (event.isAfter()) {
+        getGridInterceptor().afterRender(this);
+      }
+    }
+  }
+
+  @Override
   public void onResize() {
     pendingResize.clear();
 
@@ -1276,22 +1315,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     super.onUnload();
-  }
-
-  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
-    popup.attachAmendDetach(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
-        int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
-            + form.getViewPresenter().getHeader().getHeight() + 1;
-
-        if (width > BeeUtils.toInt(form.getWidthValue())) {
-          StyleUtils.setWidth(popup, width + 10);
-        }
-        StyleUtils.setHeight(popup, height);
-      }
-    });
   }
 
   private void closeEditForm() {
@@ -1875,14 +1898,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   private void maybeResizeGrid() {
     if (pendingResize.remove(getGrid().getId())) {
       getGrid().onResize();
-    }
-  }
-
-  private static String normalizeFormName(String formName) {
-    if (BeeUtils.isEmpty(formName) || formName.trim().equals(BeeConst.STRING_MINUS)) {
-      return null;
-    } else {
-      return formName.trim();
     }
   }
 

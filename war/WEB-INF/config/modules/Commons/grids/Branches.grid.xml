@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Branches" viewName="Branches" caption="=branches"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="Code" />
 
@@ -31,5 +31,5 @@
     <DataColumn name="Fax" visible="false" />
     <DataColumn name="PostIndex" visible="false" />
     <DataColumn name="Website" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

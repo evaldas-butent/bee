@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
   name="Vehicles" viewName="Vehicles" editForm="Vehicle" caption="=vehicles"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
-  <west size="160" splitterSize="2">
+  <g:west size="160" splitterSize="2">
     <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
@@ -18,9 +18,9 @@
         </w:FlowPanel>
       </w:form>
     </w:DataTree>
-  </west>
+  </g:west>
   
-  <columns>
+  <g:columns>
     <RelColumn name="Type" caption="=vehicleType" renderColumns="TypeName" />
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />
     <DataColumn name="Number" caption="Valst.Nr." />
@@ -29,5 +29,5 @@
     <RelColumn name="Fuel" caption="Kuro rūšis" />
     <DataColumn name="Power" caption="Galia kW" />
     <DataColumn name="EngineVolume" caption="Tūris cm&#x00b3;" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

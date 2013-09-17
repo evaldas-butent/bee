@@ -2,13 +2,13 @@
 <!DOCTYPE Grid [
   <!ENTITY nowrap "<style><bodyStyle><ui:inline>white-space: pre-wrap;</ui:inline></bodyStyle></style>">
 ]>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="AppointmentStyles" viewName="AppointmentStyles" caption="=appointmentStyles"
   >
-  <body height="80" /> 
-  <columns>
+  <g:body height="80" /> 
+  <g:columns>
     <DataColumn name="Name" caption="Pavadinimas" visible="true" />
     <DataColumn name="Description" caption="Aprašymas" />
 
@@ -19,5 +19,5 @@
     <DataColumn name="Header" caption="=appointmentStyleHeader">&nowrap;</DataColumn>
     <DataColumn name="Body" caption="=appointmentStyleBody">&nowrap;</DataColumn>
     <DataColumn name="Footer" caption="=appointmentStyleFooter">&nowrap;</DataColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

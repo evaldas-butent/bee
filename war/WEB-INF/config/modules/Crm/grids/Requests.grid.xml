@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
@@ -7,14 +7,14 @@
   flexGrow="1" flexShrink="1" order="RequestID desc"
   >
 
-  <north size="40">
+  <g:north size="40">
     <w:HorizontalPanel style="border-spacing: 8px 0px">
       <w:CheckBox name="Registred" text="=requestShowRegistered" checked="true"/>
       <w:CheckBox name="Finished" text="=requestShowFinished" />
     </w:HorizontalPanel>
-  </north>
+  </g:north>
 
-  <columns>
+  <g:columns>
     <IdColumn name="ID" />
     <DataColumn name="Date" caption="Data" width="100"/>
     <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" 
@@ -31,9 +31,9 @@
 
     <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
     <DataColumn name="Result" visible="false"/>
-  </columns>
+  </g:columns>
   
-  <!-- <predefinedFilter name="Executing" label="Vykdomi">
-    <column name="Finished" emptyValues="true" />
-  </predefinedFilter> -->
-</Grid>
+  <!-- <g:predefinedFilter name="Executing" label="Vykdomi">
+    <g:column name="Finished" emptyValues="true" />
+  </g:predefinedFilter> -->
+</g:Grid>

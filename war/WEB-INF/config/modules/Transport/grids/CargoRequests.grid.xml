@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
   flexGrow="1" flexShrink="1" order="Date desc"
   >
-  <north size="40">
+  <g:north size="40">
     <w:HorizontalPanel>
       <w:CheckBox name="Owned" text="=trOwned" checked="true" />
       <w:CheckBox name="Finished" text="=trShowFinished" />
     </w:HorizontalPanel>
-  </north>
-  <columns>
+  </g:north>
+  <g:columns>
     <DataColumn name="Date" caption="=date" width="100" />
     <DataColumn name="Finished" caption="=trRequestFinished" width="100" format="DATE_TIME_SHORT" />
     
@@ -63,5 +63,5 @@
         </bodyStyle>
       </style>
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="VehicleServices" viewName="VehicleServices" caption="=trServiceHistory"
   >
 
-  <columns>
+  <g:columns>
     <RelColumn name="Type" caption="=type" minWidth="100" />
     <DataColumn name="Date" caption="=date" minWidth="80" />
     <DataColumn name="DateTo" caption="=dateTo" minWidth="80" />
@@ -14,5 +14,5 @@
     <DataColumn name="ValidForKilometers" caption="=trVehicleServiceValidKilometers" />
     <DataColumn name="ValidForHours" caption="=trVehicleServiceValidMotohours" />
     <DataColumn name="Notes" caption="=notes" flexGrow="1" flexShrink="1" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

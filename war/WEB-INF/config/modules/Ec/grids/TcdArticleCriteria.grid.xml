@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TcdArticleCriteria" viewName="TcdArticleCriteria"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="Criteria" caption="=ecCriteriaName" />
     <DataColumn name="Value" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

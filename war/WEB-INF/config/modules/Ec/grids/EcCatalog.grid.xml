@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcCatalog" viewName="TcdArticles" caption="=ecCatalog"
   editShowId="true"
   >
-  <columns>
+  <g:columns>
     <IdColumn name="Id" caption="ID" width="60" />
     <DataColumn name="ArticleName" visible="true" autoFit="true" />
     <DataColumn name="ArticleNr" visible="true" autoFit="true" />
@@ -16,5 +16,5 @@
     <DataColumn name="Featured" autoFit="true" filterOptions="empty" />
 
     <DataColumn name="Description" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

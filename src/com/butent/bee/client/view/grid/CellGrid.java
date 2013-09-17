@@ -42,6 +42,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -103,7 +104,7 @@ import java.util.Set;
 
 public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable,
     HasEditStartHandlers, HasEnabled, HasActiveRow, RequiresResize, VisibilityChangeEvent.Handler,
-    SettingsChangeEvent.HasSettingsChangeHandlers {
+    SettingsChangeEvent.HasSettingsChangeHandlers, RenderingEvent.HasRenderingHandlers {
 
   public final class ColumnInfo implements HasValueType, Flexible {
     private final String columnId;
@@ -1503,6 +1504,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public HandlerRegistration addEditStartHandler(EditStartEvent.Handler handler) {
     return addHandler(handler, EditStartEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addRenderingHandler(RenderingEvent.Handler handler) {
+    return addHandler(handler, RenderingEvent.getType());
   }
 
   @Override
@@ -4064,6 +4070,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void render(boolean focus) {
+    RenderingEvent.fireBefore(this);
+
     RenderMode mode = getEffectiveRenderMode();
 
     if (RenderMode.CONTENT.equals(mode)) {
@@ -4088,6 +4096,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     setZIndex(0);
 
+    RenderingEvent.fireAfter(this);
+    
     rowChangeScheduler.scheduleEvent();
 
     if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {

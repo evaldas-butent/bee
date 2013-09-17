@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="EcDiscounts" viewName="EcDiscounts"
   flexGrow="1" flexShrink="1"
   >
-  <body height="45" />
-  <columns>
+  <g:body height="45" />
+  <g:columns>
     <DataColumn name="DateFrom" width="70" />
     <DataColumn name="DateTo" width="70" />
 
-    <RelColumn name="Category" minWidth="150" 
-        searchableColumns="CategoryName" choiceColumns="FullName"
-        selectorClass="bee-ec-CategorySelector" visibleLines="7" newRowEnabled="false" />
+    <xi:include href="columns/Category.column.xml" />
 
     <RelColumn name="Brand" renderColumns="BrandName" width="100" />
 
@@ -27,5 +26,5 @@
     <DataColumn name="Price" visible="true" width="80" sortable="false" />
 
     <DataColumn name="Note" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

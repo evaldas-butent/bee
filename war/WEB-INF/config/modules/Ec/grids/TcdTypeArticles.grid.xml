@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TcdTypeArticles" viewName="TcdTypeArticles"
   filter="ManufacturerVisible and ModelVisible and TypeVisible"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="Type" caption="=tcdManufacturer" renderColumns="ManufacturerName"
       choiceColumns="ManufacturerName ModelName TypeName ProducedFrom ProducedTo KwFrom"
       searchableColumns="ManufacturerName ModelName"
@@ -26,5 +26,5 @@
     <DataColumn name="Fuel" visible="false" />
     <DataColumn name="Body" visible="false" />
     <DataColumn name="Axle" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

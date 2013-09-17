@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TcdArticleGraphics" viewName="TcdArticleGraphics" readOnly="true" headerMode="none"
   >
-  <body height="60" /> 
-  <columns>
+  <g:body height="60" /> 
+  <g:columns>
     <DataColumn name="Sort" width="20" />
     <DataColumn name="Type" width="40" />
     <CalcColumn name="Resource" type="string" cellType="html" width="60" caption="-" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="Companies" viewName="Companies" caption="Klientai" favorite="Name" flexGrow="1"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="TypeName" caption="Statusas" />
     <DataColumn name="GroupName" caption="Grupė" />
@@ -29,5 +29,5 @@
       filterOptions="-" visible="false">
       <renderer type="flag" />
     </CalcColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

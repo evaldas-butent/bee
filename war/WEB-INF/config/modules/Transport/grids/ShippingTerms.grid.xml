@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
  
   name="ShippingTerms" viewName="ShippingTerms" caption="=trShippingTerms"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" minWidth="50" />
     <DataColumn name="Description" minWidth="200" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

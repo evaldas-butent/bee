@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcRegistrations" viewName="EcRegistrations" caption="=ecRegistrations"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" visible="true" />
 
     <DataColumn name="FirstName" visible="true" />
@@ -29,5 +29,5 @@
 
     <DataColumn name="Activity" visible="false" />
     <DataColumn name="Notes" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

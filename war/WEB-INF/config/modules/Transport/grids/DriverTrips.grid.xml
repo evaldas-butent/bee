@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="DriverTrips" viewName="DriverTrips" readOnly="true"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Date" source="Date" caption="=date" />
     <DataColumn name="TripNo" source="TripNo" caption="=trTripNo" />
     <DataColumn name="ForwarderName" source="ForwarderName" caption="=carrier" />
@@ -28,5 +28,5 @@
     </CalcColumn>
     <DataColumn name="DateFrom" source="DateFrom" caption="=trDateFrom" />
     <DataColumn name="DateTo" source="DateTo" caption="=trDateTo" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

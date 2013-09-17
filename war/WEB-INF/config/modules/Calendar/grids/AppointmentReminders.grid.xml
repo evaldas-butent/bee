@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentReminders" viewName="AppointmentReminders" newRowCaption="Naujas priminimas"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="Recipient" caption="Gavėjas">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
@@ -25,5 +25,5 @@
     <DataColumn name="Message" caption="Tekstas" />
     <DataColumn name="Sent" caption="Išsiųstas" readOnly="true" />
     <DataColumn name="Error" caption="Klaidos pranešimas" readOnly="true" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

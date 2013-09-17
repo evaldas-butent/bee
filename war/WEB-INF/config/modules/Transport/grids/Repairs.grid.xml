@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Repairs" viewName="Repairs" caption="=trRepairsHistory"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Date" caption="=date" />
     <RelColumn name="Item" caption="=trProductService" />
     <RelColumn name="Unit" caption="=unit" />
@@ -20,5 +20,5 @@
     <DataColumn name="DocumentNo" caption="=trDocumentNumberShort" />
     <RelColumn name="Supplier" caption="=trSupplier" />
     <RelColumn name="Country" caption="=country" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

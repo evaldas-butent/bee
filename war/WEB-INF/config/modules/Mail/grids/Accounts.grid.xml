@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Accounts" viewName="Accounts" caption="Paskyros"
@@ -7,7 +7,7 @@
   editForm="Account" editPopup="true"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Description" caption="Pavadinimas" />
     <DataColumn name="Main" caption="Pagr." />
     <RelColumn name="Address" caption="El.paštas">
@@ -15,5 +15,5 @@
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
     <DataColumn name="StoreType" caption="Tipas" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

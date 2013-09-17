@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
@@ -7,7 +7,7 @@
   caption="=trVehiclePartUsage" newRowCaption="=trNewSparePart"
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
-  <west size="150" splitterSize="2">
+  <g:west size="150" splitterSize="2">
     <w:DataTree name="SparePartTypes" caption="=types" source="SparePartTypes" parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
@@ -19,13 +19,13 @@
         </w:FlowPanel>
       </w:form>
     </w:DataTree>
-  </west>
+  </g:west>
   
-  <south size="200" splitterSize="2">
+  <g:south size="200" splitterSize="2">
     <w:ChildGrid name="SparePartUsage" relColumn="Part" />
-  </south>
+  </g:south>
   
-  <columns>
+  <g:columns>
     <RelColumn name="Type" searchableColumns="ParentName Name" caption="=type" />
     <DataColumn name="Number" caption="=number" />
     <DataColumn name="Description" caption="=description" />
@@ -33,5 +33,5 @@
     <DataColumn name="Obtained" caption="=received" width="80" />
     <DataColumn name="WrittenOff" caption="=trWrittenOff" width="80" />
     <DataColumn name="Notes" caption="=notes" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

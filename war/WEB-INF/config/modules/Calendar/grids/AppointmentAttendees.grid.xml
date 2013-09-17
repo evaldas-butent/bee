@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentAttendees" viewName="AppointmentAttendees" newRowCaption="Naujas resursas"
   minColumnWidth="100"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="TypeName" caption="Tipas" visible="true" />
     <RelColumn name="AttendeeName" caption="Pavadinimas" visible="true" />
     
     <DataColumn name="Comment" caption="Komentaras" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="DurationTypes" viewName="DurationTypes" caption="Darbų tipai">
   
-  <columns>
+  <g:columns>
     <DataColumn name="Name" flexGrow="1" flexShrink="1" visible="true" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

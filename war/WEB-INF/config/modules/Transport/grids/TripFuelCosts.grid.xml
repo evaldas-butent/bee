@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="TripFuelCosts" viewName="TripFuelCosts" caption="=trFuelCosts"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Date" caption="=date">
       <carry><ui:expression>row.Date</ui:expression></carry>
     </DataColumn>
@@ -28,5 +28,5 @@
     <RelColumn name="Item" caption="=trAccountItem">
       <carry><ui:expression>row.Item</ui:expression></carry>
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

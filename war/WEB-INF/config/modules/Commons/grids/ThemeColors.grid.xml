@@ -2,17 +2,17 @@
 <!DOCTYPE Grid [
   <!ENTITY dyn "<dynStyle><ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline></dynStyle>">
 ]>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja temos spalva"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="ColorName" caption="Pavadinimas" visible="true" />
 
     <DataColumn name="Background" caption="Fono spalva">&dyn;</DataColumn>
     <DataColumn name="Foreground" caption="Teksto spalva">&dyn;</DataColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>
 

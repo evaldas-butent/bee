@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.butent.com/grid" elementFormDefault="qualified"
-  xmlns="http://www.butent.com/grid"
+<xs:schema targetNamespace="http://www.butent.com/column" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/column"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:type="http://www.butent.com/type"
   xmlns:ui="http://www.butent.com/ui">
@@ -9,21 +9,7 @@
   <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
   <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
 
-  <xs:complexType name="columnList">
-    <xs:choice minOccurs="1" maxOccurs="unbounded">
-      <xs:element name="DataColumn" type="dataColumn" />
-      <xs:element name="RelColumn" type="relatedColumn" />
-      <xs:element name="CalcColumn" type="calculatedColumn" />
-      <xs:element name="IdColumn" type="column" />
-      <xs:element name="VerColumn" type="column" />
-      <xs:element name="SelectionColumn" type="column" />
-      <xs:element name="ActionColumn" type="actionColumn" />
-      <xs:element name="PropColumn" type="propertyColumn" />
-    </xs:choice>
-    <xs:attribute ref="xml:base" />
-  </xs:complexType>
-
-  <xs:complexType name="column">
+  <xs:complexType name="columnType">
     <xs:sequence>
       <xs:element name="style" type="columnStyle" minOccurs="0" />
       <xs:element name="dynStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
@@ -55,11 +41,19 @@
     <xs:attribute name="filterSupplier" type="type:filterSupplier" />
     <xs:attribute name="filterOptions" type="xs:normalizedString" />
     <xs:attribute name="options" type="xs:normalizedString" />
+    <xs:attribute ref="xml:base" />
   </xs:complexType>
+  
+  <xs:element name="column" type="columnType" abstract="true" />
+
+  <xs:element name="IdColumn" type="columnType" substitutionGroup="column" />
+  <xs:element name="VerColumn" type="columnType" substitutionGroup="column" />
+
+  <xs:element name="SelectionColumn" type="columnType" substitutionGroup="column" />
 
   <xs:complexType name="baseColumn">
     <xs:complexContent>
-      <xs:extension base="column">
+      <xs:extension base="columnType">
         <xs:sequence>
           <xs:element name="editable" type="ui:calcType" minOccurs="0" />
           <xs:element name="editor" type="ui:editor" minOccurs="0" />
@@ -83,6 +77,8 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:element name="DataColumn" type="dataColumn" substitutionGroup="column" />
+
   <xs:complexType name="relatedColumn">
     <xs:complexContent>
       <xs:extension base="baseColumn">
@@ -97,10 +93,12 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
+
+  <xs:element name="RelColumn" type="relatedColumn" substitutionGroup="column" />
    
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>
-      <xs:extension base="column">
+      <xs:extension base="columnType">
         <xs:attribute name="type" type="type:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />
@@ -109,18 +107,22 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:element name="CalcColumn" type="calculatedColumn" substitutionGroup="column" />
+
   <xs:complexType name="actionColumn">
     <xs:complexContent>
-      <xs:extension base="column">
+      <xs:extension base="columnType">
         <xs:attribute name="source" type="type:nameType" />
         <xs:attribute name="element" type="ui:elementType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:element name="ActionColumn" type="actionColumn" substitutionGroup="column" />
+
   <xs:complexType name="propertyColumn">
     <xs:complexContent>
-      <xs:extension base="column">
+      <xs:extension base="columnType">
         <xs:attribute name="type" type="type:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />
@@ -129,6 +131,8 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
+
+  <xs:element name="PropColumn" type="propertyColumn" substitutionGroup="column" />
 
   <xs:complexType name="columnStyle">
     <xs:sequence>

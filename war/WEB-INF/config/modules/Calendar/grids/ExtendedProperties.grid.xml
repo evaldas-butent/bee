@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ExtendedProperties" viewName="ExtendedProperties"
   caption="Parametrai" newRowCaption="Naujas parametras"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="GroupName" caption="Grupė" minWidth="100" visible="true" />
     <DataColumn name="Name" caption="Pavadinimas" minWidth="100" visible="true" />
 
@@ -13,5 +13,5 @@
     <DataColumn name="Minutes" caption="Minutės" flexGrow="0" />
 
     <DataColumn name="Description" caption="Aprašymas" flexGrow="2" flexShrink="2" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

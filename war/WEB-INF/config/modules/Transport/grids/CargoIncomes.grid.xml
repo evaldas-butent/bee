@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoIncomes" viewName="CargoIncomes"
   flexGrow="1"
   newRowCaption="Nauja paslauga"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Service" caption="=trServiceName" />
@@ -30,5 +30,5 @@
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true" renderColumns="Purchase"
       editEnabled="true" editForm="CargoCreditInvoice" editViewName="CargoCreditInvoices" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

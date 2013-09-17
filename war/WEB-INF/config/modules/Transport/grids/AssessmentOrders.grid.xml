@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
   flexGrow="1" flexShrink="1" disabledActions="add" order="AssessorID desc"
   >
-  <north size="40">
+  <g:north size="40">
     <w:HorizontalPanel>
       <w:CheckBox name="Active" text="=trOrdersStatusActive" checked="true" />
       <w:CheckBox name="Completed" text="=trOrdersStatusCompleted" />
       <w:CheckBox name="Canceled" text="=trOrdersStatusCanceled" checked="true" />
     </w:HorizontalPanel>
-  </north>
-  <columns>
+  </g:north>
+  <g:columns>
     <IdColumn name="ID" width="40" />
     <DataColumn name="Assessor" caption="PID" width="40" />
     <DataColumn name="Status" itemKey="AssessmentStatus" width="70" />
@@ -60,5 +60,5 @@
 
     <DataColumn name="Number" caption="=refNumber" width="70" />
     <DataColumn name="Cmr" caption="CMR" width="70" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

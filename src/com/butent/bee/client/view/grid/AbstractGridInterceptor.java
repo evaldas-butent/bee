@@ -82,6 +82,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void afterRender(GridView gridView) {
+  }
+
+  @Override
   public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
   }
 
@@ -132,6 +136,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void beforeRefresh(GridPresenter presenter) {
+  }
+
+  @Override
+  public void beforeRender(GridView gridView) {
   }
 
   @Override

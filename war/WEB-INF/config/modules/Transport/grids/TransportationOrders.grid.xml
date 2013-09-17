@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="TransportationOrders" viewName="TransportationOrders" caption="=trTransportationOrders"
   editShowId="true" flexGrow="1" order="OrderID desc"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Date" caption="=date" />
     <DataColumn name="OrderNo" caption="=orderNumber" />
     <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />
@@ -35,18 +35,18 @@
         </ui:function>
       </render>
     </CalcColumn>
-  </columns>
+  </g:columns>
 
-  <rowStyle>
+  <g:rowStyle>
     <ui:inline>="color:red"</ui:inline>
     <ui:expression>row.UnloadingDate &lt; new Date().getTime() &amp;&amp; row.SaleID == 0</ui:expression>
-  </rowStyle>
-  <rowStyle>
+  </g:rowStyle>
+  <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
     <ui:expression>row.Debt == 0</ui:expression>
-  </rowStyle>
-  <rowStyle>
+  </g:rowStyle>
+  <g:rowStyle>
     <ui:inline>="color:gold"</ui:inline>
     <ui:expression>row.SaleID &gt; 0</ui:expression>
-  </rowStyle>
-</Grid>
+  </g:rowStyle>
+</g:Grid>

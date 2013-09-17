@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TcdArticleSuppliers" viewName="TcdArticleSuppliers"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Supplier" itemKey="EcSupplier" visible="true" />
     <DataColumn name="SupplierID" />
 
@@ -12,5 +12,5 @@
 
     <DataColumn name="UpdatedCost" visible="false" />
     <DataColumn name="UpdateTime" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
@@ -7,16 +7,16 @@
   newRowForm="Item" editForm="Item" editShowId="true" editInPlace="ExternalCode"
   newRowPopup="true" editPopup="true"
   >
-  <west size="200" splitterSize="2">
+  <g:west size="200" splitterSize="2">
     <w:DataTree name="Categories" caption="Kategorijos" source="CategoryTree" parentColumn="Parent"
               hideActions="true">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>
     </w:DataTree>
-  </west>
+  </g:west>
   
-  <columns>
+  <g:columns>
     <DataColumn name="Name" flexGrow="2" visible="true" />
     <RelColumn name="UnitName" />
     <DataColumn name="Article" flexGrow="1" />
@@ -29,5 +29,5 @@
     <DataColumn name="VatPercent" />
 
     <DataColumn name="ExternalCode" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

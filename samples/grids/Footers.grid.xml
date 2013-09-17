@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Footers" viewName="DataTypes" caption="Footers"
   >
-  <footer height="30" />
+  <g:footer height="30" />
 
-  <columns>
+  <g:columns>
     <IdColumn name="Id" caption="ID" horizontalAlignment="left">
       <footer html="total" />
     </IdColumn>
@@ -78,5 +78,5 @@
     <DataColumn name="DateTime" format="yyyy-MM-dd HH:mm:ss" caption="datetime avg">
       <footer aggregate="avg" format="yyyy.MM.dd" horizontalAlignment="center" />
     </DataColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

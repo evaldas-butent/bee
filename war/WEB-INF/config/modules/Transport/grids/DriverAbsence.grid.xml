@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="DriverAbsence" viewName="DriverAbsence"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="DateFrom" width="80" />
     <DataColumn name="DateTo" width="80" />
     <RelColumn name="Absence" renderColumns="AbsenceName" flexGrow="1" flexShrink="1" />
     <DataColumn name="Notes" flexGrow="3" flexShrink="3" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

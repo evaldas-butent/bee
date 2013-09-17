@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcClients" viewName="EcClients" caption="=ecClients"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="User" renderColumns="Login" editEnabled="true"
       choiceColumns="Login FirstName LastName CompanyName" visible="true" />
 
@@ -23,5 +23,5 @@
     <DataColumn name="PersonCode" visible="false" />
     <DataColumn name="Activity" visible="false" />
     <DataColumn name="Notes" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

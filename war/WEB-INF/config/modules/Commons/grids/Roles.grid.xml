@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Roles" viewName="Roles" caption="Rolės"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" source="Name" minWidth="100" visible="true" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

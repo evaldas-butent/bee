@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Appointments" viewName="Appointments" caption="=appointments"
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="CompanyName" caption="Klientas" />
     <RelColumn name="CompanyPhone" caption="Telefonas" />
 
@@ -36,5 +36,5 @@
     <DataColumn name="StyleName" caption="Stilius" />
 
     <DataColumn name="TypeName" caption="Tipas" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

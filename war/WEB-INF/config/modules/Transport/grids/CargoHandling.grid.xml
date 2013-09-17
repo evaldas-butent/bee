@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoHandling" viewName="CargoHandling"
@@ -7,11 +7,11 @@
   editInPlace="Notes"
   flexGrow="1" flexShrink="1"
   >
-  <body height="50" />
+  <g:body height="50" />
 
-  <columns>
+  <g:columns>
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" minWidth="140" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" minWidth="140" flexBasis="120" />
     <DataColumn name="Notes" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

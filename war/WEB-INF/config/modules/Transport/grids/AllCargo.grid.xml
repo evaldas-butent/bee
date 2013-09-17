@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="delete"
   flexGrow="1" newRowPopup="true" order="OrderID desc"
   >
-  <body height="50" />
+  <g:body height="50" />
 
-  <columns>
+  <g:columns>
     <DataColumn name="OrderNo" caption="=orderNumber" />
     <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />    
     <RelColumn name="Customer" caption="=customer" />
@@ -71,5 +71,5 @@
         </ui:function>
       </render>
     </CalcColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

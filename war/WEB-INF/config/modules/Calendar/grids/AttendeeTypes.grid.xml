@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AttendeeTypes" viewName="AttendeeTypes"
   caption="Resursų tipai" newRowCaption="Naujas resursų tipas"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" caption="Pavadinimas" minWidth="100" flexGrow="1" visible="true" />
     <DataColumn name="Description" caption="Aprašymas" flexGrow="3" flexShrink="3" />
 
     <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" flexShrink="1" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

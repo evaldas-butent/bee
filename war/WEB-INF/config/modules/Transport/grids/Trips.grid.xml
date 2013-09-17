@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Trips" viewName="Trips" caption="=trips"
   newRowPopup="true" order="TripID desc"
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="Date" caption="=date" />
     <DataColumn name="TripNo" caption="=trTripNo" flexGrow="1" flexShrink="1" />
     <DataColumn name="Status" caption="=status" itemKey="TripStatus" />
@@ -27,5 +27,5 @@
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

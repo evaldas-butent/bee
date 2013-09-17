@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TcdTypes" viewName="TcdTypes" caption="=tcdTypes"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="ManufacturerName" visible="true" autoFit="true" />
     <RelColumn name="Model" renderColumns="ModelName" choiceColumns="ManufacturerName ModelName"
       visible="true" autoFit="true" />
@@ -24,5 +24,5 @@
     <DataColumn name="Axle" visible="false" />
 
     <DataColumn name="Visible" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

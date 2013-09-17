@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentHistory" viewName="AppointmentHistory"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="PublishTime" caption="Laikas" />
     <RelColumn name="Publisher" caption="Vartotojas" renderColumns="FirstName LastName" />
 
@@ -12,6 +12,6 @@
     <DataColumn name="Minutes" caption="Minutės" />
     
     <DataColumn name="Comment" caption="Komentaras" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>
  

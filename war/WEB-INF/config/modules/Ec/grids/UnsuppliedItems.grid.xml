@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="UnsuppliedItems" viewName="UnsuppliedItems"
   flexGrow="1" minColumnWidth="60"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" visible="true" maxWidth="120" />
     <RelColumn name="Order" renderColumns="Order" horizontalAlignment="right"
       readOnly="true" editEnabled="true" maxWidth="100" />
@@ -30,5 +30,5 @@
     </CalcColumn>
 
     <DataColumn name="Note" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

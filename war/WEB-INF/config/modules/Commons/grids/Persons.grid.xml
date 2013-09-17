@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Persons" viewName="Persons" caption="Asmenys"
   editForm="Person" flexGrow="1" flexShrink="1"
   >
-  <body height="30" /> 
-  <columns>
+  <g:body height="30" /> 
+  <g:columns>
     <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false"
       width="30" horizontalAlignment="center" filterOptions="-">
       <renderer type="photo" />
@@ -32,5 +32,5 @@
       filterOptions="-">
       <renderer type="flag" />
     </CalcColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

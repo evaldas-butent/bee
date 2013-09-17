@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
   name="VehiclePartUsage" viewName="VehiclePartUsage" disabledActions="add delete"
   >
 
-  <columns>
+  <g:columns>
     <RelColumn name="Part" renderColumns="ParentTypeName TypeName" caption="=vehicleType" readOnly="true" />
     <DataColumn name="Number" caption="=number" readOnly="true" />
     <DataColumn name="Description" caption="=description" readOnly="true" />
     <DataColumn name="Mounted" caption="=trSparePartMounted" />
     <DataColumn name="Removed" caption="=trSparePartRemoved" />
     <DataColumn name="Note" caption="=note" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

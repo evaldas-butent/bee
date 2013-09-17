@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="EcOrderItems" viewName="EcOrderItems"
   flexGrow="1" minColumnWidth="60"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="ArticleName" label="=ecItemName" caching="none" newRowEnabled="false"
         renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
         choiceColumns="ArticleName BrandName ArticleNr" editEnabled="true" visible="true" />
@@ -35,5 +35,5 @@
     <DataColumn name="Note" visible="false" />
     
     <CalcColumn type="string" name="Properties" maxWidth="300" visible="true" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

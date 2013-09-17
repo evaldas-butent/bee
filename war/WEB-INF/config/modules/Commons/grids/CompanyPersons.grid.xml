@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="CompanyPersons" viewName="CompaniesAndPersons"
   newRowForm="CompanyPerson" newRowCaption="Naujas įmonės asmuo"
   editForm="CompanyPerson"
   flexGrow="1" flexShrink="1" flexBasis="100"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="Person" editEnabled="true" visible="true" />
     <RelColumn name="Position" />
     <DataColumn name="Phone" />
@@ -15,5 +15,5 @@
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>
