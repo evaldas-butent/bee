@@ -1,34 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="UnsuppliedItems" viewName="UnsuppliedItems"
-  flexGrow="1" minColumnWidth="60"
+  name="UnsuppliedItems" viewName="UnsuppliedItems" caption="=ecUnsuppliedItems"
+  footerMode="none" flexGrow="1" minColumnWidth="60"
   >
   <g:columns>
-    <DataColumn name="Date" visible="true" maxWidth="120" />
-    <RelColumn name="Order" renderColumns="Order" horizontalAlignment="right"
-      readOnly="true" editEnabled="true" maxWidth="100" />
-
-    <RelColumn name="ArticleName" label="=ecItemName" caching="none" newRowEnabled="false"
-      renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
-      choiceColumns="ArticleName BrandName ArticleNr" editEnabled="true" visible="true" />
-    <DataColumn name="BrandName" />
-    <DataColumn name="ArticleNr" visible="true">
-      <footer text="=ecUnsuppliedItemsTotal" horizontalAlignment="right" />
-    </DataColumn>
-
-    <DataColumn name="Quantity" visible="true" maxWidth="100">
-      <footer aggregate="sum" />
-    </DataColumn>
-
-    <DataColumn name="Price" visible="true" maxWidth="100" />
-    <CalcColumn name="Amount" type="decimal" scale="2" caption="=amount" maxWidth="100">
-      <render>
-        <ui:expression>row.Quantity * row.Price</ui:expression>
-      </render>
-      <footer aggregate="sum" options="0" />
-    </CalcColumn>
-
-    <DataColumn name="Note" visible="false" />
+    <RelColumn name="Client" minWidth="150" editEnabled="true" visible="true">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+      <renderToken source="CompanyName" prefix=", " />
+    </RelColumn>
   </g:columns>
+
+  <xi:include href="columns/UnsuppliedItems.columns.xml" />
 </g:Grid>

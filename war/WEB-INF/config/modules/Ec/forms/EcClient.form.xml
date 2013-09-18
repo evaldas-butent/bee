@@ -82,7 +82,7 @@
 
       <page>
         <text>=ecUnsuppliedItems</text>
-        <ChildGrid name="UnsuppliedItems" relColumn="Client" />
+        <ChildGrid name="ClientUnsuppliedItems" relColumn="Client" />
       </page>
 
       <page>

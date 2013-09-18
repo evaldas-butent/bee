@@ -177,6 +177,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
     });
   }
+
   private static String normalizeFormName(String formName) {
     if (BeeUtils.isEmpty(formName) || formName.trim().equals(BeeConst.STRING_MINUS)) {
       return null;
@@ -184,6 +185,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return formName.trim();
     }
   }
+
   private final String gridName;
 
   private final String gridKey;
@@ -310,6 +312,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     setDataColumns(dataCols);
 
     boolean hasHeaders = gridDescr.hasColumnHeaders();
+    boolean hasFooters = gridDescr.hasFooters();
 
     List<ColumnDescription> columnDescriptions = null;
 
@@ -409,7 +412,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
           columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
               sourceHolder, listHolder, Relation.RenderMode.TARGET);
-          
+
           source = sourceHolder.get();
           renderColumns = listHolder.get();
 
@@ -460,7 +463,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       } else {
         label = BeeUtils.notEmpty(LocaleUtils.maybeLocalize(columnDescr.getLabel()), columnName);
       }
-      
+
       CellSource cellSource;
 
       switch (colType) {
@@ -616,9 +619,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       if (!BeeUtils.isEmpty(columnDescr.getOptions())) {
         column.setOptions(columnDescr.getOptions());
       }
-      
-      ColumnHeader header = null;
 
+      ColumnHeader header = null;
       if (hasHeaders) {
         String headerCaption = null;
         if (interceptor != null) {
@@ -627,7 +629,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
           headerCaption = BeeUtils.notEmpty(caption, columnName);
         }
-        
+
         if (interceptor != null) {
           header = interceptor.getHeader(columnName, headerCaption);
         }
@@ -637,18 +639,20 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
 
       ColumnFooter footer = null;
-      if (interceptor != null) {
-        footer = interceptor.getFooter(columnName, columnDescr);
-      }
-      if (footer == null && columnDescr.getFooterDescription() != null) {
-        footer = new ColumnFooter(cellSource, column, columnDescr, dataCols);
+      if (hasFooters) {
+        if (interceptor != null) {
+          footer = interceptor.getFooter(columnName, columnDescr);
+        }
+        if (footer == null && columnDescr.getFooterDescription() != null) {
+          footer = new ColumnFooter(cellSource, column, columnDescr, dataCols);
+        }
       }
 
       if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
           header, footer, editableColumn)) {
         continue;
       }
-      
+
       AbstractFilterSupplier filterSupplier = null;
       if (interceptor != null) {
         filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
@@ -656,7 +660,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(columnDescr.getFilterOptions())
           && (filterSupplierType != null
-          || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
+              || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
 
         filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataCols, dataIndex,
             label, column.getSearchBy(), filterSupplierType, renderColumns, column.getSortBy(),
@@ -686,7 +690,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     getGrid().setDefaultFlexibility(gridDescr.getFlexibility());
 
     initOrder(order);
-    
+
     getGrid().addEditStartHandler(this);
 
     getGrid().addSortHandler(this);
@@ -732,7 +736,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       generateNewRowForm(gridDescr);
       setNewRowFormGenerated(true);
     }
-    
+
     if (interceptor != null) {
       interceptor.afterCreate(this);
     }
@@ -1920,7 +1924,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (!isEnabled()) {
       return;
     }
-    
+
     boolean useForm = useFormForEdit(columnId);
     boolean editable = !isReadOnly();
 

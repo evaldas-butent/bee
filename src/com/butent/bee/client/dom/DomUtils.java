@@ -47,6 +47,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains necessary functions for reading and changing DOM information.
@@ -92,10 +93,12 @@ public final class DomUtils {
   public static final String ATTRIBUTE_STEP = "step";
   public static final String ATTRIBUTE_VALUE = "value";
 
-  public static final String ATTRIBUTE_DATA_INDEX = "data-idx";
-  public static final String ATTRIBUTE_DATA_COLUMN = "data-col";
-  public static final String ATTRIBUTE_DATA_ROW = "data-row";
-  public static final String ATTRIBUTE_ROLE = "data-role";
+  public static final String DATA_ATTRIBUTE_PREFIX = "data-";
+
+  public static final String ATTRIBUTE_DATA_INDEX = DATA_ATTRIBUTE_PREFIX + "idx";
+  public static final String ATTRIBUTE_DATA_COLUMN = DATA_ATTRIBUTE_PREFIX + "col";
+  public static final String ATTRIBUTE_DATA_ROW = DATA_ATTRIBUTE_PREFIX + "row";
+  public static final String ATTRIBUTE_ROLE = DATA_ATTRIBUTE_PREFIX + "role";
 
   public static final String TYPE_SEARCH = "search";
 
@@ -424,7 +427,7 @@ public final class DomUtils {
       if (getDataIndexInt(child) == dataIndex) {
         return child;
       }
-      
+
       if (recurse) {
         Element element = getChildByDataIndex(child, dataIndex, recurse);
         if (element != null) {
@@ -556,6 +559,11 @@ public final class DomUtils {
     }
   }
 
+  public static String getData(Element elem, String key) {
+    return (elem == null || BeeUtils.isEmpty(key)) ? null 
+        : elem.getAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
+  }
+
   public static String getDataColumn(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
@@ -569,7 +577,7 @@ public final class DomUtils {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toLong(value);
   }
-  
+
   public static String getDataRow(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
@@ -1279,7 +1287,7 @@ public final class DomUtils {
   public static boolean isImageElement(JavaScriptObject obj) {
     if (obj != null && Element.is(obj)) {
       return Element.as(obj).getTagName().equalsIgnoreCase(TAG_IMG);
-    } else { 
+    } else {
       return false;
     }
   }
@@ -1609,6 +1617,17 @@ public final class DomUtils {
     TableCellElement.as(elem).setColSpan(span);
   }
 
+  public static void setDataAttributes(Element elem, Map<String, String> attributes) {
+    Assert.notNull(elem);
+    Assert.notNull(attributes);
+
+    for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+      if (!BeeUtils.isEmpty(attribute.getKey())) {
+        elem.setAttribute(DATA_ATTRIBUTE_PREFIX + attribute.getKey().trim(), attribute.getValue());
+      }
+    }
+  }
+
   public static void setDataColumn(Element elem, int col) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_COLUMN, Integer.toString(col));
@@ -1664,7 +1683,7 @@ public final class DomUtils {
   public static boolean setInputType(Element elem, String type) {
     assertInputElement(elem);
     Assert.notEmpty(type);
-    
+
     if (Features.supportsInputType(type)) {
       setType(InputElement.as(elem), type);
       return true;

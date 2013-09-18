@@ -3,15 +3,22 @@
 
 name="Ec" label="=ecMenu" order="100"
 >
-  <Item name="EcOrders" label="=ecOrders" service="ensure_categories_and_open_grid" parameters="EcOrders" />
+  <Item name="EcOrders" label="=ecOrders" service="ensure_categories_and_open_grid"
+    parameters="EcOrders" />
 
 <!--   <Item name="EcRegistrations" label="=ecRegistrations" service="grid" parameters="EcRegistrations" separator="true" /> -->
 
-  <Item name="EcCatalog" label="=ecCatalog" service="ensure_categories_and_open_grid" parameters="EcCatalog" separator="true" />
+  <Item name="EcCatalog" label="=ecCatalog" service="ensure_categories_and_open_grid"
+    parameters="EcCatalog" separator="true" />
 
-  <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing" separator="true"  />
+  <Item name="EcPricing" label="=ecPricing" service="grid" parameters="EcPricing"
+    separator="true"  />
   <Item name="EcCostChanges" label="=ecCostChanges" service="grid" parameters="EcCostChanges" />
 
-  <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory" separator="true" />
+  <Item name="UnsuppliedItems" label="=ecUnsuppliedItems" service="ensure_categories_and_open_grid"
+    parameters="UnsuppliedItems" separator="true" />
+
+  <Item name="EcHistory" label="=ecUserActions" service="grid" parameters="EcHistory"
+    separator="true" />
 
 </Entry>

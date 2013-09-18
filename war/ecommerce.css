@@ -17,7 +17,9 @@
 .bee-NewRow-input-EcGroupCategories-Category,
 .bee-NewRow-input-EcDiscounts-Article,
 .bee-NewRow-input-EcOrderItems-ArticleName,
-.bee-NewRow-input-UnsuppliedItems-ArticleName {
+.bee-NewRow-input-UnsuppliedItems-Client,
+.bee-NewRow-input-UnsuppliedItems-ArticleName,
+.bee-NewRow-input-ClientUnsuppliedItems-ArticleName {
   width: 500px;
 }
 

@@ -96,6 +96,7 @@ public class GridLoaderBean {
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
   private static final String ATTR_HEADER_MODE = "headerMode";
+  private static final String ATTR_FOOTER_MODE = "footerMode";
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
@@ -741,6 +742,10 @@ public class GridLoaderBean {
     String headerMode = src.getAttribute(ATTR_HEADER_MODE);
     if (!BeeUtils.isEmpty(headerMode)) {
       dst.setHeaderMode(headerMode);
+    }
+    String footerMode = src.getAttribute(ATTR_FOOTER_MODE);
+    if (!BeeUtils.isEmpty(footerMode)) {
+      dst.setFooterMode(footerMode);
     }
 
     Boolean cacheData = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DATA);

@@ -405,6 +405,7 @@ public enum FormWidget {
   private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
   private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
 
+  private static final String TAG_DATA = "data";
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -1191,7 +1192,10 @@ public enum FormWidget {
       for (Element child : children) {
         String childTag = XmlUtils.getLocalName(child);
 
-        if (BeeUtils.same(childTag, TAG_CSS)) {
+        if (BeeUtils.same(childTag, TAG_DATA)) {
+          DomUtils.setDataAttributes(widget.getElement(), XmlUtils.getAttributes(child, false));
+
+        } else if (BeeUtils.same(childTag, TAG_CSS)) {
           Global.addStyleSheet(child.getAttribute(ATTR_ID), XmlUtils.getText(child));
 
         } else if (BeeUtils.same(childTag, ConditionalStyleDeclaration.TAG_DYN_STYLE)) {

@@ -5,6 +5,24 @@
   >
   <Columns>
     <SimpleColumn name="Client" />
+    <SimpleJoin name="Client" joinType="LEFT">
+      <SimpleColumn name="User" />
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleColumn name="CompanyPerson" />
+
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+  
+          <SimpleJoin name="Company" joinType="LEFT">
+            <SimpleColumn name="Name" alias="CompanyName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Date" />
     <SimpleColumn name="Order" />
 

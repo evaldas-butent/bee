@@ -34,6 +34,12 @@
     <xs:complexContent>
       <xs:extension base="widgetBase">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:anyAttribute processContents="lax" />
+            </xs:complexType>
+          </xs:element>
+          
           <xs:element name="css">
             <xs:complexType>
               <xs:simpleContent>

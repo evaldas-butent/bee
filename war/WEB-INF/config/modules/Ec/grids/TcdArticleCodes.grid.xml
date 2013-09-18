@@ -8,6 +8,6 @@
     <DataColumn name="SearchNr" />
     <DataColumn name="CodeNr" />
     <DataColumn name="BrandName" />
-    <DataColumn name="OECode" maxWidth="50" />
+    <DataColumn name="OECode" maxWidth="80" />
   </g:columns>
 </g:Grid>
