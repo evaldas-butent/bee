@@ -164,10 +164,10 @@ public final class Data {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
   
-  public static void onTableChange(String tableName) {
+  public static void onTableChange(String tableName, boolean reset) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
     for (String viewName : viewNames) {
-      DataChangeEvent.fire(viewName);
+      DataChangeEvent.fire(viewName, reset);
     }
   }
   

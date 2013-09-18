@@ -169,7 +169,12 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    handleAction(Action.REFRESH);
+    if (event.hasView(getViewName())) {
+      if (event.reset()) {
+        getDisplay().reset();
+      }
+      handleAction(Action.REFRESH);
+    }
   }
 
   @Override

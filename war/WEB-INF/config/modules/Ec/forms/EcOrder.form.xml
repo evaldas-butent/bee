@@ -10,7 +10,7 @@
   name="EcOrder" viewName="EcOrders" caption="=ecOrder"
   >
   <FlowPanel class="flexBox-vertical bee-ec-Order-form">
-    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecOrderDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="&inp;" />

@@ -16,8 +16,8 @@ public class DataChangeEvent extends Event<DataChangeEvent.Handler> implements D
 
   private static final Type<Handler> TYPE = new Type<Handler>();
   
-  public static void fire(String viewName) {
-    BeeKeeper.getBus().fireEvent(new DataChangeEvent(viewName));
+  public static void fire(String viewName, boolean reset) {
+    BeeKeeper.getBus().fireEvent(new DataChangeEvent(viewName, reset));
   }
 
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
@@ -27,9 +27,11 @@ public class DataChangeEvent extends Event<DataChangeEvent.Handler> implements D
   }
 
   private final String viewName;
+  private final boolean reset;
 
-  public DataChangeEvent(String viewName) {
+  public DataChangeEvent(String viewName, boolean reset) {
     this.viewName = viewName;
+    this.reset = reset;
   }
   
   @Override
@@ -45,6 +47,10 @@ public class DataChangeEvent extends Event<DataChangeEvent.Handler> implements D
   @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
+  }
+
+  public boolean reset() {
+    return reset;
   }
 
   @Override

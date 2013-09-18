@@ -8,7 +8,7 @@
     name="EcClient" viewName="EcClients" caption="=ecClient">
 
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecClientUser" class="bee-required" style="&lbl;" />
         <DataSelector source="User" editSource="CompanyPerson" style="width: 550px;">
