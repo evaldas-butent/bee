@@ -4,17 +4,21 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class RowTransformEvent extends Event<RowTransformEvent.Handler> implements DataEvent {
+public class DataChangeEvent extends Event<DataChangeEvent.Handler> implements DataEvent {
 
   public interface Handler {
-    void onRowTransform(RowTransformEvent event);
+    void onDataChange(DataChangeEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
+  
+  public static void fire(String viewName) {
+    BeeKeeper.getBus().fireEvent(new DataChangeEvent(viewName));
+  }
 
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);
@@ -23,13 +27,9 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
   }
 
   private final String viewName;
-  private final BeeRow row;
 
-  private String result;
-
-  public RowTransformEvent(String viewName, BeeRow row) {
+  public DataChangeEvent(String viewName) {
     this.viewName = viewName;
-    this.row = row;
   }
   
   @Override
@@ -37,30 +37,18 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
     return TYPE;
   }
 
-  public String getResult() {
-    return result;
-  }
-
-  public BeeRow getRow() {
-    return row;
-  }
-  
   @Override
   public String getViewName() {
     return viewName;
   }
-
+  
   @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
   }
-  
-  public void setResult(String result) {
-    this.result = result;
-  }
 
   @Override
   protected void dispatch(Handler handler) {
-    handler.onRowTransform(this);
+    handler.onDataChange(this);
   }
 }

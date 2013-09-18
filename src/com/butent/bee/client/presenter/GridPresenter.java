@@ -158,8 +158,19 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private static final BeeLogger logger = LogUtils.getLogger(GridPresenter.class);
 
+  private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
+      int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
+
+    GridContainerView view = new GridContainerImpl();
+    view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
+        gridOptions);
+
+    return view;
+  }
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
+
   private final GridFilterManager filterManager;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
@@ -556,7 +567,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     BeeKeeper.getScreen().closeWidget(getMainView());
   }
 
-  private static Provider createProvider(GridContainerView view, String viewName,
+  private Provider createProvider(GridContainerView view, String viewName,
       List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter, Order order,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
@@ -571,18 +582,18 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, notificationListener, viewName, columns,
+        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter, cachingPolicy, parentFilters,
             userFilter);
         break;
 
       case CACHED:
-        provider = new CachedProvider(display, notificationListener, viewName, columns,
+        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, notificationListener, viewName, columns,
+        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
             immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
@@ -595,17 +606,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       provider.setOrder(order);
     }
     return provider;
-  }
-
-  private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
-      int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
-      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
-
-    GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
-        gridOptions);
-
-    return view;
   }
 
   private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {

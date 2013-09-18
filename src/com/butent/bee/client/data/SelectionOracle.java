@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -300,6 +301,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public void onCellUpdate(CellUpdateEvent event) {
     if (isEventRelevant(event) && event.applyTo(getViewData())) {
       resetState();
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (isEventRelevant(event)) {
+      clearData();
     }
   }
 

@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -409,6 +410,11 @@ public class CacheManager implements HandlesAllDataEvents {
     if (contains(key)) {
       get(key).onCellUpdate(event);
     }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    remove(event.getViewName());
   }
 
   @Override

@@ -339,7 +339,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
-  private static Provider createProvider(FormContainerView view, String viewName,
+  private Provider createProvider(FormContainerView view, String viewName,
       List<BeeColumn> columns, BeeRowSet rowSet, Provider.Type providerType,
       CachingPolicy cachingPolicy) {
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
@@ -352,14 +352,16 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, notificationListener, viewName, columns,
+        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
             null, null, null, cachingPolicy, null, null);
         break;
       case CACHED:
-        provider = new CachedProvider(display, notificationListener, viewName, columns, rowSet);
+        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
+            rowSet);
         break;
       case LOCAL:
-        provider = new LocalProvider(display, notificationListener, viewName, columns, rowSet);
+        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
+            rowSet);
         break;
       default:
         Assert.untouchable();

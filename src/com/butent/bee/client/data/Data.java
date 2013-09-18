@@ -9,6 +9,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 public final class Data {
@@ -160,6 +162,13 @@ public final class Data {
   
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
+  }
+  
+  public static void onTableChange(String tableName) {
+    Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
+    for (String viewName : viewNames) {
+      DataChangeEvent.fire(viewName);
+    }
   }
   
   public static void setValue(String viewName, IsRow row, String colName, BigDecimal value) {

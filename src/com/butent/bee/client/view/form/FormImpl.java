@@ -27,7 +27,6 @@ import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
-import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
@@ -297,11 +296,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public FormImpl(String formName, Position position) {
     super(position, Overflow.AUTO);
     this.formName = formName;
-  }
-
-  @Override
-  public HandlerRegistration addActionHandler(ActionEvent.Handler handler) {
-    return addHandler(handler, ActionEvent.getType());
   }
 
   @Override

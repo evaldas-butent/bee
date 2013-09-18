@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Handles an event when a row value is updated in table based user interface components.
@@ -55,6 +56,11 @@ public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> implements Dat
     return viewName;
   }
 
+  @Override
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
+  }
+  
   @Override
   protected void dispatch(Handler handler) {
     handler.onRowUpdate(this);

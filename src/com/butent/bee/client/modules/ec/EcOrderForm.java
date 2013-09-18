@@ -47,7 +47,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -85,7 +85,12 @@ class EcOrderForm extends AbstractFormInterceptor {
     ParameterList params = EcKeeper.createArgs(SVC_ADD_TO_UNSUPPLIED_ITEMS);
     params.addQueryItem(COL_ORDER_ITEM_ORDER, orderId);
 
-    BeeKeeper.getRpc().makeRequest(params);
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Data.onTableChange(TBL_UNSUPPLIED_ITEMS);
+      }
+    });
   }
 
   private Button unsupplied;
@@ -169,7 +174,7 @@ class EcOrderForm extends AbstractFormInterceptor {
         
         latch.set(latch.get() + 1);
         if (BeeUtils.unbox(latch.get()) == selectedIds.size()) {
-          getFormView().refreshChildWidgets(getFormView().getActiveRow());
+          DataChangeEvent.fire(VIEW_ORDER_ITEMS);
         }
       }
     };
@@ -190,7 +195,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       Queries.deleteRows(VIEW_UNSUPPLIED_ITEMS, delete, new Queries.IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(VIEW_UNSUPPLIED_ITEMS, delete));
+          DataChangeEvent.fire(VIEW_UNSUPPLIED_ITEMS);
         }
       });
     }
@@ -349,6 +354,8 @@ class EcOrderForm extends AbstractFormInterceptor {
               restoreCommandPanel(header);
 
             } else {
+              DataChangeEvent.fire(VIEW_UNSUPPLIED_ITEMS);
+              
               Queries.getRow(form.getViewName(), rowId, new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow result) {

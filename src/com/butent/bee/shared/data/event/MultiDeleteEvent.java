@@ -7,6 +7,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Set;
@@ -57,6 +58,11 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> implements
   @Override
   public String getViewName() {
     return viewName;
+  }
+
+  @Override
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
   }
 
   @Override

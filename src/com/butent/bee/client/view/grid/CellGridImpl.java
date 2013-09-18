@@ -26,7 +26,6 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
-import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -134,8 +133,7 @@ import java.util.Set;
  */
 
 public class CellGridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, ActionEvent.Handler, SortEvent.Handler, SettingsChangeEvent.Handler,
-    RenderingEvent.Handler {
+    EditEndEvent.Handler, SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -1089,22 +1087,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public void onAction(ActionEvent event) {
-    Assert.notNull(event);
-    if (event.contains(Action.REFRESH)) {
-      getViewPresenter().refresh(true);
-    }
-
-    if (!BeeUtils.isEmpty(getActiveFormContainerId())) {
-      if (event.contains(Action.SAVE)) {
-        formConfirm();
-      } else if (event.contains(Action.CLOSE)) {
-        formCancel();
-      }
-    }
-  }
-
-  @Override
   public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
     getGrid().setEditing(false);
@@ -1432,8 +1414,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     formView.setEditing(true);
     formView.setViewPresenter(gfp);
-
-    formView.addActionHandler(this);
 
     formView.setState(State.CLOSED);
 

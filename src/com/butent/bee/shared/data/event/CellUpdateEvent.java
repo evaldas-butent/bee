@@ -8,6 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Handles an event when a cell value is updated in table based user interface components.
@@ -99,6 +100,11 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
 
   public boolean hasColumn() {
     return source.hasColumn();
+  }
+  
+  @Override
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
   }
 
   @Override

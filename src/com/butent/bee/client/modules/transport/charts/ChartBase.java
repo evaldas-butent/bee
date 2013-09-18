@@ -69,6 +69,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -344,6 +345,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
     if (isDataEventRelevant(event)) {
       refresh();
     }

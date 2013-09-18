@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -234,18 +235,22 @@ public class AsyncProvider extends Provider {
 
   private boolean prefetchPending;
 
-  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+  public AsyncProvider(HasDataTable display, HandlesActions actionHandler, 
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, CachingPolicy cachingPolicy) {
-    this(display, notificationListener, viewName, columns, null, null, null, cachingPolicy, null,
-        null);
+    this(display, actionHandler, notificationListener,
+        viewName, columns, null, null,
+        null, cachingPolicy, null, null);
   }
 
-  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+  public AsyncProvider(HasDataTable display, HandlesActions actionHandler,
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
       Filter userFilter) {
 
-    super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
+    super(display, actionHandler, notificationListener,
+        viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
     this.cachingPolicy = cachingPolicy;
