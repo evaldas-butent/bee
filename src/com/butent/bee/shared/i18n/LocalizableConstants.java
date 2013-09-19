@@ -60,6 +60,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String chooseLanguage();
 
+  String choosePrintingForm();
+
   String city();
 
   String clear();

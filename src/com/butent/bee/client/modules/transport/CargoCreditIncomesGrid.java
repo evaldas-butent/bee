@@ -20,15 +20,12 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
@@ -194,19 +191,10 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                   public void onResponse(ResponseObject response) {
                     response.notify(presenter.getGridView());
 
-                    if (response.hasErrors()) {
-                      return;
+                    if (!response.hasErrors()) {
+                      Data.onViewChange(presenter.getViewName(), true);
+                      RowEditor.openRow(FORM_CARGO_CREDIT_INVOICE, purchaseInfo, row.getId());
                     }
-                    CellGrid grid = presenter.getGridView().getGrid();
-                    Popup popup = UiHelper.getParentPopup(grid);
-
-                    if (popup != null) {
-                      popup.close();
-                    } else {
-                      grid.reset();
-                      presenter.refresh(true);
-                    }
-                    RowEditor.openRow(FORM_CARGO_CREDIT_INVOICE, purchaseInfo, row.getId());
                   }
                 });
                 onCancel();

@@ -74,7 +74,7 @@ public class TradeModuleBean implements BeeModule {
     if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
+          reqInfo.getParameter(ExchangeUtils.COL_CURRENCY));
 
     } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
       response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT)),
@@ -139,7 +139,7 @@ public class TradeModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject getItemsInfo(String viewName, Long id, Long currencyTo) {
+  private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {
     if (!sys.isView(viewName)) {
       return ResponseObject.error("Wrong view name");
     }
@@ -176,13 +176,18 @@ public class TradeModuleBean implements BeeModule {
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
         .addOrder(tradeItems, sys.getIdName(tradeItems));
 
-    if (DataUtils.isId(currencyTo)) {
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-          SqlUtils.field(tradeItems, COL_TRADE_ITEM_PRICE),
-          SqlUtils.field(trade, ExchangeUtils.COL_CURRENCY),
-          SqlUtils.field(trade, COL_TRADE_DATE), SqlUtils.constant(currencyTo));
+    if (!BeeUtils.isEmpty(currencyTo)) {
+      String currAlias = SqlUtils.uniqueName();
 
-      query.addExpr(xpr, ExchangeUtils.COL_CURRENCY + COL_TRADE_ITEM_PRICE);
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query
+          .addFromLeft(ExchangeUtils.TBL_CURRENCIES, currAlias,
+              SqlUtils.equals(currAlias, ExchangeUtils.COL_CURRENCY_NAME, currencyTo)),
+          SqlUtils.constant(1),
+          SqlUtils.field(trade, ExchangeUtils.COL_CURRENCY),
+          SqlUtils.field(trade, COL_TRADE_DATE),
+          SqlUtils.field(currAlias, sys.getIdName(ExchangeUtils.TBL_CURRENCIES)));
+
+      query.addExpr(xpr, ExchangeUtils.COL_RATES_RATE);
     }
     return ResponseObject.response(qs.getData(query));
   }

@@ -10,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
@@ -62,9 +63,7 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
             header.clearCommandPanel();
             header.addCommandItem(action);
             response.notify(presenter.getGridView());
-
-            presenter.getGridView().getGrid().reset();
-            presenter.refresh(true);
+            Data.onViewChange(presenter.getViewName(), true);
           }
         });
       }

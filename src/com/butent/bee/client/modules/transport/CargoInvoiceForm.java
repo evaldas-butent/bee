@@ -10,19 +10,14 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
@@ -33,7 +28,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CargoInvoiceForm extends AbstractFormInterceptor implements ClickHandler {
+public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHandler {
 
   private final Button confirmAction = new Button(Localized.getConstants().trInvoice(), this);
 
@@ -51,16 +46,6 @@ public class CargoInvoiceForm extends AbstractFormInterceptor implements ClickHa
         grid.setGridInterceptor(new AbstractGridInterceptor());
       }
     }
-  }
-
-  @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.PRINT) {
-      RowEditor.openRow("PrintCargoInvoice", Data.getDataInfo(getFormView().getViewName()),
-          getFormView().getActiveRow(), true, null, null, null, new PrintCargoInvoiceForm());
-      return false;
-    }
-    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -102,15 +87,8 @@ public class CargoInvoiceForm extends AbstractFormInterceptor implements ClickHa
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  Presenter presenter = form.getViewPresenter();
-                  presenter.handleAction(Action.CLOSE);
-
-                  if (presenter instanceof HasGridView) {
-                    GridView gridView = ((HasGridView) presenter).getGridView();
-
-                    gridView.getGrid().reset();
-                    gridView.getViewPresenter().handleAction(Action.REFRESH);
-                  }
+                  form.getViewPresenter().handleAction(Action.CANCEL);
+                  Data.onViewChange(form.getViewName(), true);
                 }
               }
             });

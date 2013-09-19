@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -46,11 +47,9 @@ public class EcCostChangesHandler extends AbstractGridInterceptor {
               public void onResponse(ResponseObject response) {
                 response.notify(presenter.getGridView());
 
-                if (response.hasErrors()) {
-                  return;
+                if (!response.hasErrors()) {
+                  Data.onViewChange(presenter.getViewName(), true);
                 }
-                presenter.refresh(true);
-                presenter.getGridView().getGrid().reset();
               }
             });
           }

@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -112,7 +111,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
    */
 
   private enum Serial {
-    COLUMNS, ROWS
+    COLUMN_NAMES, COLUMNS, ROWS
   }
 
   public static SimpleRowSet getIfPresent(Map<String, String> map, String key) {
@@ -154,17 +153,19 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     }
   }
 
-  private BiMap<String, Integer> columns = HashBiMap.create(0);
+  private String[] columnNames = new String[0];
+  private Map<String, Integer> columns = Maps.newHashMap();
   private List<String[]> rows = Lists.newArrayList();
   private Map<Integer, Map<String, Integer>> indexes;
 
   public SimpleRowSet(String[] cols) {
     Assert.isPositive(ArrayUtils.length(cols));
 
-    columns = HashBiMap.create(cols.length);
+    columnNames = cols;
+    columns = Maps.newHashMap();
 
     for (int i = 0; i < cols.length; i++) {
-      columns.put(cols[i], i);
+      columns.put(cols[i].toLowerCase(), i);
     }
   }
 
@@ -189,6 +190,10 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       String value = arr[i];
 
       switch (member) {
+        case COLUMN_NAMES:
+          columnNames = Codec.beeDeserializeCollection(value);
+          break;
+
         case COLUMNS:
           String[] colData = Codec.beeDeserializeCollection(value);
 
@@ -250,22 +255,18 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   public int getColumnIndex(String colName) {
-    Assert.contains(columns, colName);
-    return columns.get(colName);
+    String col = colName == null ? null : colName.toLowerCase();
+    Assert.contains(columns, col);
+    return columns.get(col);
   }
 
   public String getColumnName(int colIndex) {
-    Assert.contains(columns.inverse(), colIndex);
-    return columns.inverse().get(colIndex);
+    Assert.isIndex(colIndex, columnNames.length);
+    return columnNames[colIndex];
   }
 
   public String[] getColumnNames() {
-    String[] fields = new String[getNumberOfColumns()];
-
-    for (int i = 0; i < getNumberOfColumns(); i++) {
-      fields[i] = getColumnName(i);
-    }
-    return fields;
+    return ArrayUtils.copyOf(columnNames);
   }
 
   public JustDate getDate(int rowIndex, int colIndex) {
@@ -444,6 +445,13 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return null;
   }
 
+  public boolean hasColumn(String colName) {
+    if (BeeUtils.isEmpty(colName)) {
+      return false;
+    }
+    return columns.containsKey(colName.toLowerCase());
+  }
+
   public boolean isEmpty() {
     return rows.isEmpty();
   }
@@ -461,6 +469,10 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
     for (Serial member : members) {
       switch (member) {
+        case COLUMN_NAMES:
+          arr[i++] = columnNames;
+          break;
+
         case COLUMNS:
           arr[i++] = columns;
           break;

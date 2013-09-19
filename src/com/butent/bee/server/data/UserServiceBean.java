@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
@@ -495,7 +496,7 @@ public class UserServiceBean {
     getCurrentUserInfo().removeSessionObject(type);
   }
 
-  // TODO @PreDestroy
+  @PreDestroy
   private void destroy() {
     for (long userId : getUsers()) {
       UserInfo info = getUserInfo(userId);

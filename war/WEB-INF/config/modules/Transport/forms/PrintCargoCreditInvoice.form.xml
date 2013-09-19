@@ -2,36 +2,28 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintCargoInvoice">
+  <!ENTITY form "PrintCargoCreditInvoice">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="&form;" caption="Sąskaita" disabledActions="save"
+  name="&form;" caption="Kreditinė sąskaita" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
   <FlowPanel style="padding: 10px; background-color: white;">
     <HorizontalPanel>
-      <Table>
-        <row>
-          <Label html="Užsakymų Nr.:" style="text-align:right; &bold;" />
-          <TextLabel source="Number" />
-        </row>
-        <row>
-          <Label html="PVM sąskaita-faktūra:" style="text-align:right; &bold;" />
+      <Image  url="images/logo.gif" />
+      <cell width="100" widthUnit="%">
+        <FlowPanel style="text-align:center;">
+          <Label html="Kreditinė PVM Sąskaita faktūra" style="&bold;" />
           <TextLabel source="InvoiceNo">
             <renderToken source="InvoicePrefix" prefix="Serija " suffix=" " />
             <renderToken source="InvoiceNo" prefix="Nr. " />
           </TextLabel>
-        </row>
-        <row>
-          <Label html="Data:" style="text-align:right; &bold;" />
-          <DateTimeLabel source="Date" format="DATE_SHORT" />
-        </row>
-      </Table>
-      <Image  url="images/logo.gif" />
+        </FlowPanel>
+      </cell>
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
@@ -50,64 +42,37 @@
             <FlowPanel name="Customer" />
           </cell>
         </row>
-        <row>
-          <cell colSpan="3" style="vertical-align:top;">
-            <Label name="PayerCaption" html="Mokėtojas:" horizontalAlignment="right" />
-          </cell>
-          <cell style="vertical-align:top; width:50%;">
-            <FlowPanel name="Payer" />
-          </cell>
-        </row>
       </Table>
     </FlowPanel>
+
+    <DateTimeLabel source="Date" format="DATE_SHORT" horizontalAlignment="right" />
 
     <Table name="InvoiceDetails" style="&section; width:100%">
       <data currency="EUR" />
       <row>
-        <cell rowSpan="2">
-          <Label text="Paslauga">
-            <data name="Name" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <Label text="Užsakymo Nr.">
-            <data name="OrderNo" />
-          </Label>
-        </cell>
-        <Label text="Pakrovimas">
-          <data name="LoadingPlace" />
+        <Label text="Paslauga">
+          <data name="Name" />
         </Label>
-        <Label text="Vairuotojas">
-          <data name="Driver" />
+        <Label text="Užsakymo Nr.">
+          <data name="OrderNo" />
         </Label>
-        <cell rowSpan="2">
-          <Label text="=trdAmountWoVat">
-            <data name="Amount" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <Label text="=trdVat" horizontalAlignment="right">
-            <data name="Vat" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <FlowPanel>
-            <data name="CurrencyAmount" />
-            <InlineLabel text="=trdAmount" />
-            <InlineLabel html="EUR" style="padding-left:3px;" />
-          </FlowPanel>
-        </cell>
+        <Label text="Sąskaitos faktūros Nr.">
+          <data name="InvoiceNo" />
+        </Label>
+        <Label text="=trdAmountWoVat">
+          <data name="Amount" />
+        </Label>
+        <Label text="=trdVat" horizontalAlignment="right">
+          <data name="Vat" />
+        </Label>
+        <FlowPanel>
+          <data name="CurrencyAmount" />
+          <InlineLabel text="=trdAmount" />
+          <InlineLabel html="EUR" style="padding-left:3px;" />
+        </FlowPanel>
       </row>
       <row>
-        <Label text="Iškrovimas">
-          <data name="UnloadingPlace" />
-        </Label>
-        <Label text="Transporto valst.Nr.">
-          <data name="Vehicle" />
-        </Label>
-      </row>
-      <row>
-        <cell colSpan="4">
+        <cell colSpan="3">
           <FlowPanel style="text-align:right;">
             <Label text="Bendra suma:" />
             <Label text="PVM suma:" />
@@ -124,7 +89,7 @@
           <Label>
             <data name="Total" />
           </Label>
-         </FlowPanel>
+        </FlowPanel>
         <FlowPanel>
           <Label>
             <data name="Currency" />
@@ -150,18 +115,10 @@
       </row>
     </Table>
 
-    <Table style="&section;">
-      <row>
-        <Label html="Suma žodžiais:" />
-        <Label name="TotalInWords" />
-      </row>
-      <row>
-        <Label html="Total in words:" />
-        <Label name="TotalInWords2">
-          <data locale="en" />
-        </Label>
-      </row>
-    </Table>
+    <HorizontalPanel style="&section;">
+      <Label html="Suma žodžiais:" />
+      <Label name="TotalInWords" />
+    </HorizontalPanel>
 
     <HorizontalPanel style="&section;">
       <cell style="vertical-align:top;">

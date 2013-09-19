@@ -2,20 +2,22 @@
   border-collapse:collapse;
 }
 .itemsInfo-table td {
-  padding:2px;
+  padding:2px 5px 2px 5px;
 }
-.itemsInfo-label {
+.itemsInfo-header {
   font-weight:bold;
   border:1px solid black;
 }
 .itemsInfo-data {
   border-bottom:1px solid silver;
 }
-.itemsInfo-quantity, .itemsInfo-price, .itemsInfo-vat, .itemsInfo-amount,
-  .itemsInfo-totalAmount-label, .itemsInfo-totalVat-label, .itemsInfo-total-label,
-  .itemsInfo-totalQuantity, .itemsInfo-totalAmount, .itemsInfo-totalVat, .itemsInfo-total {
+.itemsInfo-Quantity, .itemsInfo-Price, .itemsInfo-Vat, .itemsInfo-Amount, .itemsInfo-CurrencyAmount,
+  .itemsInfo-QuantityTotal, .itemsInfo-AmountTotal, .itemsInfo-VatTotal, .itemsInfo-Total,
+  .itemsInfo-CurrencyAmountTotal, .itemsInfo-CurrencyVatTotal, .itemsInfo-CurrencyTotal,
+  .itemsInfo-AmountTotal-caption, .itemsInfo-VatTotal-caption, .itemsInfo-Total-caption {
   text-align:right;
+  white-space: nowrap;
 }
-.itemsInfo-totalAmount-label:after, .itemsInfo-totalVat-label:after, .itemsInfo-total-label:after {
-  content:":";
+.itemsInfo-AmountTotal-caption:after, .itemsInfo-VatTotal-caption:after, .itemsInfo-Total-caption:after {
+  content: ":";
 }

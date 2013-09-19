@@ -29,7 +29,6 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
@@ -232,15 +231,12 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
                     if (response.hasErrors()) {
                       return;
                     }
-                    CellGrid grid = presenter.getGridView().getGrid();
-                    Popup popup = UiHelper.getParentPopup(grid);
+                    Popup popup = UiHelper.getParentPopup(presenter.getGridView().getGrid());
 
                     if (popup != null) {
                       popup.close();
-                    } else {
-                      grid.reset();
-                      presenter.refresh(true);
                     }
+                    Data.onViewChange(presenter.getViewName(), true);
                     RowEditor.openRow(FORM_CARGO_INVOICE, saleInfo, row.getId());
                   }
                 });

@@ -14,6 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
@@ -44,7 +45,7 @@ public class IdGeneratorBean {
 
   private final Map<String, long[]> idCache = Maps.newHashMap();
 
-  // TODO @PreDestroy
+  @PreDestroy
   public void destroy() {
     for (Entry<String, long[]> entry : idCache.entrySet()) {
       String source = entry.getKey();
