@@ -76,6 +76,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -320,6 +321,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         CalendarKeeper.editSettings(getCalendarId(), this);
         break;
 
+      case CANCEL:
       case CLOSE:
         BeeKeeper.getScreen().closeWidget(this);
         break;
@@ -329,7 +331,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.warning(NameUtils.getName(this), action, "not implemented");
     }
   }
 

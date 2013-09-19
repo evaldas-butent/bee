@@ -39,11 +39,13 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -181,7 +183,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.warning(NameUtils.getName(this), action, "not implemented");
     }
   }
 
@@ -339,7 +341,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow data = getView().getSelectedItem();
 
     if (data != null) {
-      String message = BeeUtils.joinWords("Išmesti", BeeUtils.bracket(evaluate(data)), "?");
+      String message = BeeUtils.joinWords(Localized.getConstants().delete(), 
+          BeeUtils.bracket(evaluate(data)), "?");
+
       Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
           new ConfirmationCallback() {
             @Override

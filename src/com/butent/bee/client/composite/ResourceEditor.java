@@ -145,6 +145,7 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
         Printer.print(this);
         break;
 
+      case CANCEL:
       case CLOSE:
         BeeKeeper.getScreen().closeWidget(this);
         break;

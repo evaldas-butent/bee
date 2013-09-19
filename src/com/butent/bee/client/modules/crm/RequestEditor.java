@@ -140,7 +140,7 @@ public class RequestEditor extends AbstractFormInterceptor {
     boolean edited = (activeRow != null) && form.isEditing();
 
     if (!edited) {
-      Global.showError(Localized.getConstants().actionCanNotExecuted());
+      Global.showError(Localized.getConstants().actionCanNotBeExecuted());
       return;
     }
 

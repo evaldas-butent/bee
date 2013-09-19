@@ -33,10 +33,13 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -59,6 +62,8 @@ public final class RowFactory {
 
   private static final String DEFAULT_CAPTION = "Naujas";
 
+  private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
+  
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
     if (defaults) {
@@ -366,10 +371,30 @@ public final class RowFactory {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
-        if (Action.CLOSE.equals(action)) {
-          formView.onClose(close);
-        } else if (Action.SAVE.equals(action)) {
-          close.onSave();
+        FormInterceptor interceptor = formView.getFormInterceptor();
+        if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
+          return;
+        }
+        
+        switch (action) {
+          case CANCEL:
+            close.onClose();
+            break;
+            
+          case CLOSE:
+            formView.onClose(close);
+            break;
+            
+          case SAVE:
+            close.onSave();
+            break;
+
+          default:
+            logger.warning(NameUtils.getName(this), action, "not implemented");
+        }
+        
+        if (interceptor != null) {
+          interceptor.afterAction(action, presenter);
         }
       }
     });

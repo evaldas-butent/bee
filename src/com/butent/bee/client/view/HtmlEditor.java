@@ -166,6 +166,10 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
       case PRINT:
         Printer.print(this);
         break;
+        
+      case CANCEL:
+        close();
+        break;
 
       case CLOSE:
         if (changed()) {

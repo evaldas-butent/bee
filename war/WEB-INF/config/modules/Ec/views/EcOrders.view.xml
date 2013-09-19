@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcOrders" source="EcOrders" caption="=ecOrders" newRowCaption="=ecOrderNew"
-  editForm="EcOrder"
-  >
+  name="EcOrders" source="EcOrders" caption="=ecOrders" editForm="EcOrder"
+  newRowCaption="=ecOrderNew" rowCaption="OrderID ClientFirstName ClientLastName">
+
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />

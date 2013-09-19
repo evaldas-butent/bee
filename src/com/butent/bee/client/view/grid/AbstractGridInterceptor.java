@@ -24,10 +24,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,14 +35,15 @@ import java.util.Map;
 
 public class AbstractGridInterceptor implements GridInterceptor {
 
-  public static final List<String> DELETE_ROW_MESSAGE = Lists.newArrayList("Išmesti eilutę ?");
+  public static final List<String> DELETE_ROW_MESSAGE = 
+      Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    String m1 = "Išmesti aktyvią eilutę";
+    String m1 = Localized.getConstants().deleteActiveRow();
 
     String m2 = (selectedRows == 1)
-        ? "Išmesti pažymėtą eilutę"
-        : BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes");
+        ? Localized.getConstants().deleteSelectedRow()
+        : Localized.getMessages().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }

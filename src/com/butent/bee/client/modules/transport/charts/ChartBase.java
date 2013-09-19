@@ -297,6 +297,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         editSettings();
         break;
 
+      case CANCEL:
       case CLOSE:
         BeeKeeper.getScreen().closeWidget(this);
         break;
@@ -334,7 +335,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         break;
 
       default:
-        logger.info(getCaption(), action, "not implemented");
+        logger.warning(getCaption(), action, "not implemented");
     }
   }
 

@@ -14,6 +14,10 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
 
   String dataNotAvailable(String key);
 
+  String deletedRows(int count);
+
+  String deleteSelectedRows(int count);
+
   String endSession(String appName);
 
   String fileSizeExceeded(long size, long max);

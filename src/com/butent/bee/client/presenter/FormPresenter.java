@@ -49,11 +49,13 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -175,6 +177,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     switch (action) {
+      case CANCEL:
       case CLOSE:
         BeeKeeper.getScreen().closeWidget(getMainView());
         break;
@@ -217,7 +220,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.warning(NameUtils.getName(this), action, "not implemented");
     }
 
     if (getFormInterceptor() != null) {
@@ -379,7 +382,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void deleteRow(long rowId, long version) {
-    Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList("Delete Record ?"),
+    Global.confirmDelete(getCaption(), Icon.WARNING,
+        Lists.newArrayList(Localized.getConstants().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 

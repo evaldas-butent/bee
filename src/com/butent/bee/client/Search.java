@@ -174,6 +174,7 @@ public class Search {
     @Override
     public void handleAction(Action action) {
       switch (action) {
+        case CANCEL:
         case CLOSE:
           BeeKeeper.getScreen().closeWidget(this);
           break;

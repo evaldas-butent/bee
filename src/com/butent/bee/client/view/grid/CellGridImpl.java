@@ -2305,8 +2305,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           if (isSingleFormInstance()) {
             newRowFormState.add(State.INITIALIZED);
           }
+      
           form.start(null);
+          form.observeData();
         }
+
       } else {
         if (!newRowFormState.contains(State.INITIALIZED)) {
           newRowFormState.add(State.INITIALIZED);

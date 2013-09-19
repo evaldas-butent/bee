@@ -77,6 +77,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Widget getWidgetBySource(String source);
 
   boolean isRowEditable(boolean warn);
+  
+  void observeData();
 
   void onClose(CloseCallback closeCallback);
 

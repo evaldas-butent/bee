@@ -12,7 +12,31 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
     LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants,
     LocalizableEcConstants {
 
-  String actionCanNotExecuted();
+  String actionAdd();
+
+  String actionBookmark();
+
+  String actionCancel();
+
+  String actionCanNotBeExecuted();
+
+  String actionClose();
+
+  String actionConfigure();
+
+  String actionDelete();
+
+  String actionEdit();
+
+  String actionFilter();
+
+  String actionPrint();
+
+  String actionRefresh();
+
+  String actionRemoveFilter();
+
+  String actionSave();
 
   String additionalInfo();
 
@@ -94,6 +118,18 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String defaultColor();
 
+  String delete();
+
+  String deleteActiveRow(); 
+  
+  String deleteQuestion(); 
+  
+  String deleteRecordQuestion(); 
+  
+  String deleteRowQuestion(); 
+  
+  String deleteSelectedRow(); 
+  
   String description();
 
   String deselectAll();

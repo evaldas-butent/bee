@@ -40,6 +40,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -177,6 +178,7 @@ public final class RowEditor {
             if (result != null) {
               result.setEditing(true);
               result.start(null);
+              result.observeData();
 
               openForm(formDescription, result, dataInfo, row,
                   modal || Popup.getActivePopup() != null, target, rowCallback, presenterCallback);
@@ -263,7 +265,7 @@ public final class RowEditor {
       @Override
       public void onSave() {
         if (validate(formView)) {
-          update(dataInfo, oldRow, formView.getActiveRow(), formView,
+          update(dataInfo, formView.getOldRow(), formView.getActiveRow(), formView,
               new RowCallback() {
                 @Override
                 public void onCancel() {
@@ -294,23 +296,35 @@ public final class RowEditor {
       @Override
       public void handleAction(Action action) {
         FormInterceptor interceptor = formView.getFormInterceptor();
-
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
-        if (Action.CLOSE.equals(action)) {
-          formView.onClose(close);
+        
+        switch (action) {
+          case CANCEL:
+            close.onClose();
+            break;
+            
+          case CLOSE:
+            formView.onClose(close);
+            break;
+            
+          case SAVE:
+            close.onSave();
+            break;
 
-        } else if (Action.SAVE.equals(action)) {
-          close.onSave();
+          case PRINT:
+            if (formView.printHeader()) {
+              Printer.print(presenter);
+            } else {
+              Printer.print(formView);
+            }
+            break;
 
-        } else if (Action.PRINT.equals(action)) {
-          if (formView.printHeader()) {
-            Printer.print(presenter);
-          } else {
-            Printer.print(formView);
-          }
+          default:
+            logger.warning(NameUtils.getName(this), action, "not implemented");
         }
+        
         if (interceptor != null) {
           interceptor.afterAction(action, presenter);
         }

@@ -68,6 +68,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -142,7 +143,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
               afterMulti(rowIds);
-              showInfo("Išmesta " + result + " eil.");
+              showInfo(Localized.getMessages().deletedRows(result));
             }
           });
         }
@@ -250,8 +251,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       options.add(Localized.getConstants().cancel());
 
-      Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
-          options, 2, new ChoiceCallback() {
+      Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
+          Lists.newArrayList(Localized.getConstants().deleteQuestion()), options, 2,
+          new ChoiceCallback() {
             @Override
             public void onSuccess(int value) {
               if (value == 0) {
@@ -333,6 +335,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             gridContainer.getFavorite());
         break;
 
+      case CANCEL:
       case CLOSE:
         close();
         break;
@@ -384,7 +387,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.warning(NameUtils.getName(this), action, "not implemented");
     }
 
     if (getGridInterceptor() != null) {
