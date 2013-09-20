@@ -15,7 +15,7 @@
       filter="parent" />
     <DataSelector source="Type" caption="=vehicleType" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
     <Label text="=groups" class="bee-required" />
-    <ChildSelector viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="Grupės" />
+    <ChildSelector viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="=groups" />
   </FlowPanel>
     
   <FlowPanel class="flexBox-horizontal">

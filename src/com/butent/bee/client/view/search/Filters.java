@@ -342,16 +342,17 @@ public class Filters {
 
       if (item.isRemovable()) {
         Image delete = new Image(Global.getImages().silverMinus());
-        delete.setTitle("pašalinti");
+        delete.setTitle(Localized.getConstants().actionRemove());
 
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             final Item delItem = getItem(items, id);
             List<String> messages =
-                Lists.newArrayList("Pašalinti filtrą", BeeUtils.joinWords(delItem.getLabel(), "?"));
+                Lists.newArrayList(Localized.getConstants().actionDeleteFilter(), BeeUtils
+                    .joinWords(delItem.getLabel(), "?"));
 
-            Global.confirmDelete("Filtro pašalinimas", Icon.WARNING, messages,
+            Global.confirmDelete(Localized.getConstants().filterRemove(), Icon.WARNING, messages,
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {

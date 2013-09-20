@@ -7,13 +7,13 @@
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <g:west size="160" splitterSize="2">
-    <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
+    <w:DataTree name="VehicleModels" caption="=vehicleModelsShort" source="VehicleModels" parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>
-      <w:form name="Modelio koregavimas">
+      <w:form name="=vehicleModelsEdit">
         <w:FlowPanel>
-          <w:Label html="Modelis" class="bee-required" />
+          <w:Label text="=vehicleModel" class="bee-required" />
           <w:InputText source="Name" style="width: 20em" />
         </w:FlowPanel>
       </w:form>
@@ -22,12 +22,12 @@
   
   <g:columns>
     <RelColumn name="Type" caption="=vehicleType" renderColumns="TypeName" />
-    <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />
-    <DataColumn name="Number" caption="Valst.Nr." />
-    <RelColumn name="Owner" caption="Savininkas" />
-    <DataColumn name="ProductionDate" caption="Pag. data" width="80" />
-    <RelColumn name="Fuel" caption="Kuro rūšis" />
-    <DataColumn name="Power" caption="Galia kW" />
-    <DataColumn name="EngineVolume" caption="Tūris cm&#x00b3;" />
+    <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="=vehicleModel" />
+    <DataColumn name="Number" caption="=vehicleNumber" />
+    <RelColumn name="Owner" caption="=vehicleOwnerName" />
+    <DataColumn name="ProductionDate" caption="=vehicleProductionDateShort" width="80" />
+    <RelColumn name="Fuel" caption="=vehicleFuel" />
+    <DataColumn name="Power" caption="=vehiclePower" />
+    <DataColumn name="EngineVolume" caption="=vehicleEngineVolume" />
   </g:columns>
 </g:Grid>

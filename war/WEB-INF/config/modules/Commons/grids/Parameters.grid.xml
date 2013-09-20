@@ -2,20 +2,20 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="Parameters" caption="Parametrai" enabledActions="refresh add delete"
+  name="Parameters" caption="=parameters" enabledActions="refresh add delete"
   editForm="Parameter" editPopup="true" editInPlace="Value"
-  newRowForm="Parameter" newRowCaption="Naujas parametras" newRowPopup="true"
+  newRowForm="Parameter" newRowCaption="=newParameter" newRowPopup="true"
   >
   <g:columns>
-    <DataColumn name="Name" source="Name" caption="Parametras" visible="true" />
-    <DataColumn name="Value" source="UserValue" caption="Reikšmė" maxWidth="400" visible="true">
+    <DataColumn name="Name" source="Name" caption="=parameter" visible="true" />
+    <DataColumn name="Value" source="UserValue" caption="=valueParameter" maxWidth="400" visible="true">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
     </DataColumn>    
-    <DataColumn name="Description" source="Description" caption="Aprašymas">
+    <DataColumn name="Description" source="Description" caption="=description">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>

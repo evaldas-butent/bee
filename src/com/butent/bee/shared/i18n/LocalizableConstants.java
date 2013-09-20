@@ -26,6 +26,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionDelete();
 
+  String actionDeleteFilter();
+
   String actionEdit();
 
   String actionFilter();
@@ -33,6 +35,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionPrint();
 
   String actionRefresh();
+
+  String actionRemove();
 
   String actionRemoveFilter();
 
@@ -118,6 +122,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String date();
 
+  String dateFromShort();
+
+  String dateToShort();
+
   String defaultColor();
 
   String delete();
@@ -152,6 +160,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String emailType();
 
+  String enterDate();
+
   String ended();
 
   String exchangeCode();
@@ -172,6 +182,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String filterNullLabel();
 
+  String filterRemove();
+
   String group();
 
   String height();
@@ -187,6 +199,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String location();
 
   String mainEmail();
+
+  String maxValue();
+
+  String minValue();
 
   String mobile();
 

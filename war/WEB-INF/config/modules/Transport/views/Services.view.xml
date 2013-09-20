@@ -3,7 +3,7 @@
 
   name="Services"
   source="Services"
-  newRowCaption="Nauja paslauga" newRowColumns="Name Item"
+  newRowCaption="=trNewService" newRowColumns="Name Item"
   >
   <Columns>
     <SimpleColumn name="Name" />

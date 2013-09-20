@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -97,10 +98,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
         return null;
 
       } else if (start == null) {
-        return "iki " + end.toCompactString();
+        return Localized.getConstants().dateToShort().toLowerCase() + " "
+            + end.toCompactString();
 
       } else if (end == null) {
-        return "nuo " + start.toCompactString();
+        return Localized.getConstants().dateFromShort().toLowerCase() + " "
+            + start.toCompactString();
 
       } else {
         return BeeUtils.join(" - ", start.toCompactString(), end.toCompactString());
@@ -234,7 +237,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   private Widget createWidget() {
     HtmlTable display = createDisplay(false);
 
-    Html labelFrom = new Html("Nuo");
+    Html labelFrom = new Html(Localized.getConstants().dateFromShort());
     display.setWidgetAndStyle(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL);
 
     InputDate dateFrom = new InputDate();
@@ -245,7 +248,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       display.setWidgetAndStyle(START_ROW, TIME_COL, timeFrom, STYLE_TIME);
     }
 
-    Html labelTo = new Html("Iki");
+    Html labelTo = new Html(Localized.getConstants().dateToShort());
     display.setWidgetAndStyle(END_ROW, LABEL_COL, labelTo, STYLE_LABEL);
 
     InputDate dateTo = new InputDate();

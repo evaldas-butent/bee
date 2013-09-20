@@ -5,7 +5,7 @@
   idName="DriverAbsenceID"
   >
   <Fields>
-    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" label="=Vairuotojas" />
+    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" label="=vehicleDriver" />
     <Date name="DateFrom" label="=trAbsenceDateFrom" notNull="true" />
     <Date name="DateTo" label="=trAbsenceDateTo" notNull="true" />
     <Relation name="Absence" relation="AbsenceTypes" notNull="true" label="=trAbsenceReason" />

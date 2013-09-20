@@ -9,7 +9,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Driver" viewName="Drivers" caption="Vairuotojas"
+  name="Driver" viewName="Drivers" caption="=vehicleDriver"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 1ex;">

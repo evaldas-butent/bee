@@ -4,7 +4,7 @@
 
   name="CargoIncomes" viewName="CargoIncomes"
   flexGrow="1"
-  newRowCaption="Nauja paslauga"
+  newRowCaption="=trNewService"
   >
   <g:columns>
     <DataColumn name="Date" caption="=date" />

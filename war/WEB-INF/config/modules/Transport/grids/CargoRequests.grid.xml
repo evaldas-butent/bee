@@ -27,12 +27,12 @@
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="Iš" horizontalAlignment="center">
+      caption="=from" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
 
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="Į" horizontalAlignment="center">
+      caption="=to" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
 

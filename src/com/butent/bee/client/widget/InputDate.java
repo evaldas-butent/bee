@@ -23,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -222,7 +223,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (isEmpty()) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite datą");
+        messages.add(Localized.getConstants().enterDate());
       }
       return messages;
     }
@@ -255,7 +256,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite datą");
+        messages.add(Localized.getConstants().enterDate());
       }
       return messages;
     }

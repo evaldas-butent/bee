@@ -10,7 +10,7 @@
     <Relation name="Model" notNull="true" relation="VehicleModels" label="=vehicleModel" />
     <String name="Number" precision="10" unique="true" notNull="true" />
     <String name="BodyNumber" precision="20" unique="true" />
-    <String name="EngineNumber" precision="20" unique="true" />
+    <String name="EngineNumber" precision="20" unique="true" label="=vehicleEngineNumber" />
     <Numeric name="EngineVolume" precision="5" />
     <Date name="ProductionDate" />
     <Date name="StartDate" label="=trVehicleStartDate" />

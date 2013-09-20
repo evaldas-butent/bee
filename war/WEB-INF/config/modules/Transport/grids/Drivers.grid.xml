@@ -8,7 +8,7 @@
   >
 
   <g:columns>
-    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=trDriverName" />
     <DataColumn name="CompanyName" caption="=company" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
