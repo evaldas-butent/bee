@@ -17,6 +17,7 @@
 
   <xs:complexType name="grid">
     <xs:sequence>
+      <xs:element name="properties" type="type:customProperties" minOccurs="0" />
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="css" type="ui:styleSheet" />
         <xs:element name="north" type="extWidget" />
@@ -73,6 +74,7 @@
     <xs:attribute name="maxNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="renderMode" type="renderMode" />
     <xs:attribute name="rowChangeSensitivityMillis" type="xs:nonNegativeInteger" />
+    <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="columnList">

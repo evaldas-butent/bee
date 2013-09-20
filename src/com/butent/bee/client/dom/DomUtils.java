@@ -559,11 +559,6 @@ public final class DomUtils {
     }
   }
 
-  public static String getData(Element elem, String key) {
-    return (elem == null || BeeUtils.isEmpty(key)) ? null 
-        : elem.getAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
-  }
-
   public static String getDataColumn(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
@@ -576,6 +571,10 @@ public final class DomUtils {
   public static long getDataIndexLong(Element elem) {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toLong(value);
+  }
+  public static String getDataProperty(Element elem, String key) {
+    return (elem == null || BeeUtils.isEmpty(key)) ? null 
+        : elem.getAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
   }
 
   public static String getDataRow(Element elem) {
@@ -1405,10 +1404,6 @@ public final class DomUtils {
     }
   }
 
-  public static void moveBy(String id, int dx, int dy) {
-    moveBy(getElement(id), dx, dy);
-  }
-
   public static void moveBy(Style st, int dx, int dy) {
     if (dx != 0) {
       StyleUtils.setLeft(st, StyleUtils.getLeft(st) + dx);
@@ -1416,6 +1411,10 @@ public final class DomUtils {
     if (dy != 0) {
       StyleUtils.setTop(st, StyleUtils.getTop(st) + dy);
     }
+  }
+
+  public static void moveBy(String id, int dx, int dy) {
+    moveBy(getElement(id), dx, dy);
   }
 
   public static void moveBy(UIObject obj, int dx, int dy) {
@@ -1515,10 +1514,6 @@ public final class DomUtils {
     }
   }
 
-  public static void resizeBy(String id, int dw, int dh) {
-    resizeBy(getElement(id), dw, dh);
-  }
-
   public static void resizeBy(Style st, int dw, int dh) {
     if (dw != 0) {
       StyleUtils.setWidth(st, StyleUtils.getWidth(st) + dw);
@@ -1526,6 +1521,10 @@ public final class DomUtils {
     if (dh != 0) {
       StyleUtils.setHeight(st, StyleUtils.getHeight(st) + dh);
     }
+  }
+
+  public static void resizeBy(String id, int dw, int dh) {
+    resizeBy(getElement(id), dw, dh);
   }
 
   public static void resizeBy(UIObject obj, int dw, int dh) {
@@ -1548,12 +1547,12 @@ public final class DomUtils {
     }
   }
 
-  public static void resizeHorizontalBy(String id, int dw) {
-    resizeHorizontalBy(getElement(id), dw);
-  }
-
   public static void resizeHorizontalBy(Style st, int dw) {
     resizeBy(st, dw, 0);
+  }
+
+  public static void resizeHorizontalBy(String id, int dw) {
+    resizeHorizontalBy(getElement(id), dw);
   }
 
   public static void resizeHorizontalBy(UIObject obj, int dw) {
@@ -1576,12 +1575,12 @@ public final class DomUtils {
     }
   }
 
-  public static void resizeVerticalBy(String id, int dh) {
-    resizeVerticalBy(getElement(id), dh);
-  }
-
   public static void resizeVerticalBy(Style st, int dh) {
     resizeBy(st, 0, dh);
+  }
+
+  public static void resizeVerticalBy(String id, int dh) {
+    resizeVerticalBy(getElement(id), dh);
   }
 
   public static void resizeVerticalBy(UIObject obj, int dh) {
@@ -1617,17 +1616,6 @@ public final class DomUtils {
     TableCellElement.as(elem).setColSpan(span);
   }
 
-  public static void setDataAttributes(Element elem, Map<String, String> attributes) {
-    Assert.notNull(elem);
-    Assert.notNull(attributes);
-
-    for (Map.Entry<String, String> attribute : attributes.entrySet()) {
-      if (!BeeUtils.isEmpty(attribute.getKey())) {
-        elem.setAttribute(DATA_ATTRIBUTE_PREFIX + attribute.getKey().trim(), attribute.getValue());
-      }
-    }
-  }
-
   public static void setDataColumn(Element elem, int col) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_COLUMN, Integer.toString(col));
@@ -1637,10 +1625,32 @@ public final class DomUtils {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Integer.toString(idx));
   }
-
+  
   public static void setDataIndex(Element elem, long idx) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
+  }
+
+  public static void setDataProperty(Element elem, String key, String value) {
+    Assert.notNull(elem);
+    Assert.notEmpty(key);
+    
+    if (value == null) {
+      elem.removeAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
+    } else {
+      elem.setAttribute(DATA_ATTRIBUTE_PREFIX + key.trim(), value);
+    }
+  }
+
+  public static void setDataProperties(Element elem, Map<String, String> properties) {
+    Assert.notNull(elem);
+    Assert.notNull(properties);
+
+    for (Map.Entry<String, String> property : properties.entrySet()) {
+      if (!BeeUtils.isEmpty(property.getKey())) {
+        setDataProperty(elem, property.getKey(), property.getValue());
+      }
+    }
   }
 
   public static void setDraggable(Element elem) {

@@ -62,37 +62,37 @@
     </FlowPanel>
 
     <Table name="InvoiceDetails" style="&section; width:100%">
-      <data currency="EUR" />
+      <properties currency="EUR" />
       <row>
         <cell rowSpan="2">
           <Label text="Paslauga">
-            <data name="Name" />
+            <properties name="Name" />
           </Label>
         </cell>
         <cell rowSpan="2">
           <Label text="Užsakymo Nr.">
-            <data name="OrderNo" />
+            <properties name="OrderNo" />
           </Label>
         </cell>
         <Label text="Pakrovimas">
-          <data name="LoadingPlace" />
+          <properties name="LoadingPlace" />
         </Label>
         <Label text="Vairuotojas">
-          <data name="Driver" />
+          <properties name="Driver" />
         </Label>
         <cell rowSpan="2">
           <Label text="=trdAmountWoVat">
-            <data name="Amount" />
+            <properties name="Amount" />
           </Label>
         </cell>
         <cell rowSpan="2">
           <Label text="=trdVat" horizontalAlignment="right">
-            <data name="Vat" />
+            <properties name="Vat" />
           </Label>
         </cell>
         <cell rowSpan="2">
           <FlowPanel>
-            <data name="CurrencyAmount" />
+            <properties name="CurrencyAmount" />
             <InlineLabel text="=trdAmount" />
             <InlineLabel html="EUR" style="padding-left:3px;" />
           </FlowPanel>
@@ -100,10 +100,10 @@
       </row>
       <row>
         <Label text="Iškrovimas">
-          <data name="UnloadingPlace" />
+          <properties name="UnloadingPlace" />
         </Label>
         <Label text="Transporto valst.Nr.">
-          <data name="Vehicle" />
+          <properties name="Vehicle" />
         </Label>
       </row>
       <row>
@@ -116,35 +116,35 @@
         </cell>
         <FlowPanel>
           <Label>
-            <data name="AmountTotal" />
+            <properties name="AmountTotal" />
           </Label>
           <Label>
-            <data name="VatTotal" />
+            <properties name="VatTotal" />
           </Label>
           <Label>
-            <data name="Total" />
+            <properties name="Total" />
           </Label>
          </FlowPanel>
         <FlowPanel>
           <Label>
-            <data name="Currency" />
+            <properties name="Currency" />
           </Label>
           <Label>
-            <data name="Currency" />
+            <properties name="Currency" />
           </Label>
           <Label>
-            <data name="Currency" />
+            <properties name="Currency" />
           </Label>
         </FlowPanel>
         <FlowPanel>
           <Label>
-            <data name="CurrencyAmountTotal" />
+            <properties name="CurrencyAmountTotal" />
           </Label>
           <Label>
-            <data name="CurrencyVatTotal" />
+            <properties name="CurrencyVatTotal" />
           </Label>
           <Label>
-            <data name="CurrencyTotal" />
+            <properties name="CurrencyTotal" />
           </Label>
         </FlowPanel>
       </row>
@@ -158,7 +158,7 @@
       <row>
         <Label html="Total in words:" />
         <Label name="TotalInWords2">
-          <data locale="en" />
+          <properties locale="en" />
         </Label>
       </row>
     </Table>

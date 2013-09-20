@@ -10,7 +10,7 @@
   caption="=trCreditInvoice"
   >
   <FlowPanel class="flexBox-vertical">
-    <data printing="PrintCargoCreditInvoice, Indulgencija" />
+    <properties printing="PrintCargoCreditInvoice, Indulgencija" />
     <Table>
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl;" />

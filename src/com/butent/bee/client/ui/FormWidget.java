@@ -130,6 +130,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -405,7 +406,6 @@ public enum FormWidget {
   private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
   private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
 
-  private static final String TAG_DATA = "data";
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -472,7 +472,7 @@ public enum FormWidget {
       return null;
     }
 
-    Map<String, String> attributes = XmlUtils.getAttributes(element, false);
+    Map<String, String> attributes = XmlUtils.getAttributes(element);
     List<Element> children = XmlUtils.getChildrenElements(element);
 
     String html = getTextOrHtml(element);
@@ -1192,8 +1192,8 @@ public enum FormWidget {
       for (Element child : children) {
         String childTag = XmlUtils.getLocalName(child);
 
-        if (BeeUtils.same(childTag, TAG_DATA)) {
-          DomUtils.setDataAttributes(widget.getElement(), XmlUtils.getAttributes(child, false));
+        if (BeeUtils.same(childTag, CustomProperties.TAG_PROPERTIES)) {
+          DomUtils.setDataProperties(widget.getElement(), XmlUtils.getAttributes(child));
 
         } else if (BeeUtils.same(childTag, TAG_CSS)) {
           Global.addStyleSheet(child.getAttribute(ATTR_ID), XmlUtils.getText(child));
@@ -1218,7 +1218,7 @@ public enum FormWidget {
             widgetDescription.setRender(render);
           }
         } else if (BeeUtils.same(childTag, RenderableToken.TAG_RENDER_TOKEN)) {
-          RenderableToken token = RenderableToken.create(XmlUtils.getAttributes(child, false));
+          RenderableToken token = RenderableToken.create(XmlUtils.getAttributes(child));
           if (token != null) {
             widgetDescription.addRenderToken(token);
           }

@@ -119,8 +119,8 @@ public final class FormFactory {
   private static final String ATTR_TYPE = "type";
 
   private static final Map<String, FormDescription> descriptionCache = Maps.newHashMap();
-  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors = Maps
-      .newHashMap();
+  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors = 
+      Maps.newHashMap();
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -233,7 +233,7 @@ public final class FormFactory {
     }
 
     EditorDescription editor = new EditorDescription(editorType);
-    editor.setAttributes(XmlUtils.getAttributes(element, false));
+    editor.setAttributes(XmlUtils.getAttributes(element));
 
     List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
     if (!BeeUtils.isEmpty(items)) {

@@ -43,7 +43,8 @@ public class CargoCreditInvoiceForm extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      String print = DomUtils.getData(getFormView().getRootWidget().getElement(), "printing");
+      String print = DomUtils.getDataProperty(getFormView().getRootWidget().getElement(),
+          "printing");
 
       if (!BeeUtils.isEmpty(print)) {
         final String[] reports = BeeUtils.split(print, BeeConst.CHAR_COMMA);

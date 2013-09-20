@@ -244,6 +244,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
   private final Set<String> pendingResize = Sets.newHashSet();
 
+  private String options;
+  private final Map<String, String> properties = Maps.newHashMap();  
+  
   public CellGridImpl(String gridName, String gridKey, String viewName, String relColumn) {
     super();
     addStyleName(STYLE_NAME);
@@ -352,6 +355,13 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
     if (gridDescr.getRowValidation() != null) {
       setRowValidation(Evaluator.create(gridDescr.getRowValidation(), null, dataCols));
+    }
+    
+    if (!BeeUtils.isEmpty(gridDescr.getOptions())) {
+      setOptions(gridDescr.getOptions());
+    }
+    if (!BeeUtils.isEmpty(gridDescr.getProperties())) {
+      setProperties(gridDescr.getProperties());
     }
 
     columnDescriptions = gridDescr.getColumns();
@@ -968,6 +978,21 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   @Override
   public String getGridName() {
     return gridName;
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
+  public Map<String, String> getProperties() {
+    return properties;
+  }
+
+  @Override
+  public String getProperty(String key) {
+    return properties.get(key);
   }
 
   @Override
@@ -2255,8 +2280,16 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     this.newRowPopup = newRowPopup;
   }
 
+  private void setOptions(String options) {
+    this.options = options;
+  }
+
   private void setPendingEditStartEvent(EditStartEvent pendingEditStartEvent) {
     this.pendingEditStartEvent = pendingEditStartEvent;
+  }
+
+  private void setProperties(Map<String, String> properties) {
+    BeeUtils.overwrite(this.properties, properties);
   }
 
   private void setRowValidation(Evaluator rowValidation) {
@@ -2353,7 +2386,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
     getNotification().show(level, messages);
   }
-
+  
   private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
       String oldValue, String newValue, final boolean rowMode) {
 

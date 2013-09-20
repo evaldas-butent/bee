@@ -9,6 +9,8 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 
+import java.util.Map;
+
 public interface DataView extends View, NotificationListener, HasViewName, HasActiveRow,
     HasDataRows {
 
@@ -18,6 +20,12 @@ public interface DataView extends View, NotificationListener, HasViewName, HasAc
   
   boolean isFlushable();
 
+  String getOptions();
+  
+  Map<String, String> getProperties();
+  
+  String getProperty(String key);
+  
   void refresh(boolean refreshChildren, boolean focus);
   
   int refreshBySource(String source);

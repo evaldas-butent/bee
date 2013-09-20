@@ -44,7 +44,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
-    PREDEFINED_FILTERS
+    PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
 
   public static final String VIEW_GRID_SETTINGS = "GridSettings";
@@ -139,6 +139,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private final List<FilterDescription> predefinedFilters = Lists.newArrayList();
 
+  private String options;
+  private final Map<String, String> properties = Maps.newHashMap();  
+  
   public GridDescription(String name) {
     this(name, null);
   }
@@ -394,6 +397,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case PREDEFINED_FILTERS:
           setPredefinedFilters(FilterDescription.restoreList(value));
           break;
+          
+        case OPTIONS:
+          setOptions(value);
+          break;
+        case PROPERTIES:
+          setProperties(Codec.beeDeserializeMap(value));
+          break;
       }
     }
   }
@@ -516,10 +526,22 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Min Number Of Rows", getMinNumberOfRows(),
         "Max Number Of Rows", getMaxNumberOfRows(),
         "Render Mode", getRenderMode(),
-        "Row Change Sensitivity Millis", getRowChangeSensitivityMillis());
+        "Row Change Sensitivity Millis", getRowChangeSensitivityMillis(),
+        "Options", getOptions());
 
     if (getFlexibility() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Flexibility", getFlexibility().getInfo());
+    }
+
+    if (!getProperties().isEmpty()) {
+      int cnt = getProperties().size();
+      PropertyUtils.addExtended(info, "Properties", BeeUtils.bracket(cnt));
+      int i = 0;
+      for (Map.Entry<String, String> entry : getProperties().entrySet()) {
+        i++;
+        PropertyUtils.addExtended(info, "Property " + BeeUtils.progress(i, cnt),
+            entry.getKey(), entry.getValue());
+      }
     }
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
@@ -675,6 +697,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return newRowPopup;
   }
 
+  public String getOptions() {
+    return options;
+  }
+
   public Order getOrder() {
     return order;
   }
@@ -685,6 +711,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public List<FilterDescription> getPredefinedFilters() {
     return predefinedFilters;
+  }
+
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   public String getRenderMode() {
@@ -925,6 +955,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case PREDEFINED_FILTERS:
           arr[i++] = getPredefinedFilters();
           break;
+        case OPTIONS:
+          arr[i++] = getOptions();
+          break;
+        case PROPERTIES:
+          arr[i++] = getProperties();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -1071,16 +1107,24 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.newRowPopup = newRowPopup;
   }
 
+  public void setOptions(String options) {
+    this.options = options;
+  }
+
   public void setOrder(Order order) {
     this.order = order;
   }
-
+  
   public void setParent(String parent) {
     this.parent = parent;
   }
 
   public void setPredefinedFilters(List<FilterDescription> predefinedFilters) {
     BeeUtils.overwrite(this.predefinedFilters, predefinedFilters);
+  }
+
+  public void setProperties(Map<String, String> properties) {
+    BeeUtils.overwrite(this.properties, properties);
   }
 
   public void setReadOnly(Boolean readOnly) {

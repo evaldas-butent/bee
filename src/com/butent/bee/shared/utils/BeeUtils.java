@@ -1556,7 +1556,7 @@ public final class BeeUtils {
     return nvl(nvl(o1, o2), nvl(o3, o4));
   }
 
-  public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
+  public static <T> void overwrite(Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
       target.clear();
@@ -1564,6 +1564,17 @@ public final class BeeUtils {
 
     if (!isEmpty(source)) {
       target.addAll(source);
+    }
+  }
+
+  public static <K, V> void overwrite(Map<K, V> target, Map<K, V> source) {
+    Assert.notNull(target);
+    if (!target.isEmpty()) {
+      target.clear();
+    }
+    
+    if (!isEmpty(source)) {
+      target.putAll(source);
     }
   }
 

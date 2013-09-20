@@ -187,5 +187,9 @@
       <xs:enumeration value="id" />
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:complexType name="customProperties">
+    <xs:anyAttribute processContents="lax" />
+  </xs:complexType>
   
 </xs:schema>

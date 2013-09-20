@@ -22,7 +22,7 @@ class Parameter {
     boolean required =
         BeeUtils.same(XmlUtils.getLocalName(element), DecoratorConstants.TAG_REQUIRED_PARAM);
 
-    Map<String, String> attributes = XmlUtils.getAttributes(element, false);
+    Map<String, String> attributes = XmlUtils.getAttributes(element);
     if (attributes.isEmpty()) {
       return result;
     }

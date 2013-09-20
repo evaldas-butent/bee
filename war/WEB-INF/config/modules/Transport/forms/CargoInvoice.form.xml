@@ -9,7 +9,7 @@
   width="800" height="600"
   >
   <FlowPanel class="flexBox-vertical">
-    <data printing="PrintCargoInvoice" />
+    <properties printing="PrintCargoInvoice" />
     <Table>
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl;" />

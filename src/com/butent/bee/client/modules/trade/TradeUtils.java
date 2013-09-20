@@ -59,7 +59,7 @@ public final class TradeUtils {
     args.addDataItem("view_name", viewName);
     args.addDataItem("id", tradeId);
 
-    final String currencyTo = DomUtils.getData(table.getElement(), COL_CURRENCY);
+    final String currencyTo = DomUtils.getDataProperty(table.getElement(), COL_CURRENCY);
     final boolean currencyExists = !BeeUtils.isEmpty(currencyTo);
 
     if (currencyExists) {
@@ -91,12 +91,12 @@ public final class TradeUtils {
 
           for (String col : cols.keySet()) {
             Element cell = DomUtils.createDiv(cols.get(col));
-            DomUtils.setDataAttributes(cell, ImmutableMap.of(COL_NAME, col));
+            DomUtils.setDataProperty(cell, COL_NAME, col);
             table.setHTML(0, j++, cell.getString());
           }
           Widget cell = new CustomDiv();
-          DomUtils.setDataAttributes(cell.getElement(),
-              ImmutableMap.of(COL_NAME, COL_TRADE_ITEM_QUANTITY + COL_TOTAL));
+          DomUtils.setDataProperty(cell.getElement(),
+              COL_NAME, COL_TRADE_ITEM_QUANTITY + COL_TOTAL);
 
           table.getCellFormatter().setColSpan(1, 0, 3);
           table.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_TOP);
@@ -116,11 +116,11 @@ public final class TradeUtils {
             cap.add(cell);
 
             cell = new CustomDiv();
-            DomUtils.setDataAttributes(cell.getElement(), ImmutableMap.of(COL_NAME, row.getKey()));
+            DomUtils.setDataProperty(cell.getElement(), COL_NAME, row.getKey());
             val.add(cell);
 
             cell = new CustomDiv();
-            DomUtils.setDataAttributes(cell.getElement(), ImmutableMap.of(COL_NAME, COL_CURRENCY));
+            DomUtils.setDataProperty(cell.getElement(), COL_NAME, COL_CURRENCY);
             curr.add(cell);
           }
           table.getCellFormatter().setColSpan(1, 1, 2);
@@ -135,7 +135,7 @@ public final class TradeUtils {
                 COL_CURRENCY_VAT + COL_TOTAL, COL_CURRENCY_TOTAL}) {
 
               cell = new CustomDiv();
-              DomUtils.setDataAttributes(cell.getElement(), ImmutableMap.of(COL_NAME, name));
+              DomUtils.setDataProperty(cell.getElement(), COL_NAME, name);
               flow.add(cell);
             }
             table.setWidget(1, 4, flow);
@@ -312,7 +312,7 @@ public final class TradeUtils {
   public static void getTotalInWords(Double amount, final String currencyName,
       final String minorName, final Element total) {
     Assert.notNull(total);
-    String locale = DomUtils.getData(total, "locale");
+    String locale = DomUtils.getDataProperty(total, "locale");
 
     if (amount == null || amount <= 0) {
       return;
@@ -345,7 +345,7 @@ public final class TradeUtils {
 
   private static Multimap<String, Element> getNamedElements(Element element) {
     Multimap<String, Element> elements = HashMultimap.create();
-    String name = DomUtils.getData(element, COL_NAME);
+    String name = DomUtils.getDataProperty(element, COL_NAME);
 
     if (!BeeUtils.isEmpty(name)) {
       elements.put(name, element);

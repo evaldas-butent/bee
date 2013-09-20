@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.form;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
@@ -103,6 +104,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class FormImpl extends Absolute implements FormView, PreviewHandler, TabulationHandler {
@@ -370,6 +372,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private State state;
 
   private DataObserver dataObserver;
+  
+  private String options;
+  private final Map<String, String> properties = Maps.newHashMap();  
 
   public FormImpl(String formName) {
     this(formName, Position.RELATIVE);
@@ -439,7 +444,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void applyOptions(String options) {
+  public void applyOptions(String opt) {
   }
 
   @Override
@@ -501,6 +506,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     setPrintFooter(formDescription.printFooter());
 
     setDimensions(formDescription.getDimensions());
+
+    setOptions(formDescription.getOptions());
+    setProperties(formDescription.getProperties());
 
     IdentifiableWidget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
         creationCallback, interceptor);
@@ -658,6 +666,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
   public int getPageSize() {
     return 1;
   }
@@ -670,6 +683,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public Element getPrintElement() {
     return getRootWidget().asWidget().getElement();
+  }
+
+  @Override
+  public Map<String, String> getProperties() {
+    return properties;
+  }
+
+  @Override
+  public String getProperty(String key) {
+    return properties.get(key);
   }
 
   @Override
@@ -1504,7 +1527,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private void fireDataRequest(NavigationOrigin origin) {
     fireEvent(new DataRequestEvent(origin));
   }
-
+  
   private void fireScopeChange() {
     fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
   }
@@ -1567,7 +1590,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       focus(i, forward, cycle && md);
     }
   }
-  
+
   private int getActiveEditableIndex() {
     return activeEditableIndex;
   }
@@ -1899,6 +1922,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     this.oldRow = oldRow;
   }
 
+  private void setOptions(String options) {
+    this.options = options;
+  }
+
   private void setPreviewId(String previewId) {
     this.previewId = previewId;
   }
@@ -1909,6 +1936,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setPrintHeader(boolean printHeader) {
     this.printHeader = printHeader;
+  }
+
+  private void setProperties(Map<String, String> properties) {
+    BeeUtils.overwrite(this.properties, properties);
   }
 
   private void setReadOnly(boolean readOnly) {
@@ -1942,7 +1973,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }
-
+  
   private void showNote(LogLevel level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget().asWidget()) + 1);
     getNotification().show(level, messages);
