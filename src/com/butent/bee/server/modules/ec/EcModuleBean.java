@@ -48,7 +48,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -273,7 +272,7 @@ public class EcModuleBean implements BeeModule {
       response = updateShoppingCart(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_FINANCIAL_INFORMATION)) {
-      response = getFinancialInformation();
+      response = getFinancialInformation(getCurrentClientId());
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_GROUPS)) {
@@ -1012,14 +1011,13 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(items);
   }
 
-  private ResponseObject getFinancialInformation() {
+  private ResponseObject getFinancialInformation(Long client) {
     String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
     EcFinInfo finInfo = new EcFinInfo();
 
-    Long client = getCurrentClientId();
     if (!DataUtils.isId(client)) {
       return ResponseObject.response(finInfo);
     }
@@ -1714,6 +1712,56 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(result);
   }
 
+  private ResponseObject isValidFinancialInfo(Long orderId) {
+    SimpleRow order = qs.getRow(new SqlSelect()
+        .addField(TBL_ORDERS, COL_CLIENT, COL_CLIENT)
+        .addField(TBL_ORDERS, COL_ORDER_MANAGER_COMMENT, COL_ORDER_MANAGER_COMMENT)
+        .addField(TBL_ORDERS, COL_ORDER_MANAGER, COL_ORDER_MANAGER)
+        .addFrom(TBL_ORDERS)
+        .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
+
+    ResponseObject finInfoResp = getFinancialInformation(order.getLong(COL_CLIENT));
+
+    if (finInfoResp.hasErrors()) {
+      return finInfoResp;
+    }
+
+    if (finInfoResp.hasResponse(EcFinInfo.class)) {
+
+      EcFinInfo ecFinInfo = (EcFinInfo) finInfoResp.getResponse();
+
+      Double orderTotal = new Double(0.0);
+
+      for (EcOrder orders : ecFinInfo.getOrders()) {
+        if (EcOrderStatus.in(orders.getStatus(), EcOrderStatus.NEW, EcOrderStatus.ACTIVE)
+            && (orders.getOrderId() == orderId)) {
+          orderTotal += orders.getAmount();
+        }
+      }
+
+      double totalTaken = BeeUtils.unbox(ecFinInfo.getTotalTaken());
+      double dept = BeeUtils.unbox(ecFinInfo.getDebt());
+      double maxedOut = BeeUtils.unbox(ecFinInfo.getMaxedOut());
+      double creditLimit = BeeUtils.unbox(ecFinInfo.getCreditLimit());
+
+      double totalDept = creditLimit - (totalTaken + dept + maxedOut + orderTotal);
+
+      if (totalDept < 0.0) {
+        
+        if (BeeUtils.isEmpty(order.getValue(COL_ORDER_MANAGER_COMMENT)
+            ) && !DataUtils.isId(order.getLong(COL_ORDER_MANAGER))) {
+          return ResponseObject.error(usr.getLocalizableConstants().ecExceededCreditLimit());
+        } else {
+          return ResponseObject.info(order.getValue(COL_ORDER_MANAGER_COMMENT));
+        }
+        
+      } else {
+        return ResponseObject.emptyResponse();
+      }
+    }
+    return ResponseObject.error(usr.getLocalizableConstants().actionCanNotBeExecuted());
+  }
+
   private void logHistory(String service, String query, Long artice, int count,
       long duration) {
     SqlInsert ins = new SqlInsert(TBL_HISTORY);
@@ -1818,6 +1866,11 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject sendToERP(Long orderId) {
     Assert.notNull(orderId);
 
+    ResponseObject finResp = isValidFinancialInfo(orderId);
+    if (finResp.hasErrors()) {
+      return finResp;
+    }
+    
     SqlSelect query = new SqlSelect()
         .addFields(TBL_ORDER_ITEMS, COL_TCD_ARTICLE)
         .addMax(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)
@@ -1830,7 +1883,7 @@ public class EcModuleBean implements BeeModule {
     List<EcItem> items = getItems(query, null);
 
     if (items.isEmpty()) {
-      return ResponseObject.error(Localized.getConstants().ecNothingToOrder());
+      return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
     String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
@@ -1922,6 +1975,11 @@ public class EcModuleBean implements BeeModule {
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
       addToUnsuppliedItems(orderId);
+
+      if (finResp.hasNotifications()) {
+        response.addInfo(usr.getLocalizableConstants().ecExceededCreditLimitSend(),
+            finResp.getNotifications());
+      }
     }
     return response;
   }
@@ -2152,7 +2210,7 @@ public class EcModuleBean implements BeeModule {
           .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS,
               sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS), ids)));
     }
-    return ResponseObject.info(Localized.getMessages().rowsUpdated(c));
+    return ResponseObject.info(usr.getLocalizableMesssages().rowsUpdated(c));
   }
 
   private ResponseObject updateShoppingCart(RequestInfo reqInfo) {

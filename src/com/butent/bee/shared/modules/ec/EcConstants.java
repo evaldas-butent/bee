@@ -227,6 +227,7 @@ public final class EcConstants {
   public static final String COL_DELIVERY_METHOD_NAME = "Name";
   public static final String COL_DELIVERY_METHOD_NOTES = "Notes";
 
+  public static final String COL_CLIENT = "Client";
   public static final String COL_CLIENT_USER = "User";
   public static final String COL_CLIENT_REGISTERED = "Registered";
   public static final String COL_CLIENT_TYPE = "Type";

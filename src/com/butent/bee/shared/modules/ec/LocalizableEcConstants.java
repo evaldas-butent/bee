@@ -46,6 +46,10 @@ public interface LocalizableEcConstants {
 
   String ecDoSearch();
 
+  String ecExceededCreditLimit();
+
+  String ecExceededCreditLimitSend();
+
   String ecFeaturedBanner();
 
   String ecFeaturedItems();
