@@ -34,6 +34,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.ActionCell;
 import com.butent.bee.client.grid.cell.CalculatedCell;
+import com.butent.bee.client.grid.cell.SelectionHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.ActionColumn;
 import com.butent.bee.client.grid.column.CalculatedColumn;
@@ -642,7 +643,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           header = interceptor.getHeader(columnName, headerCaption);
         }
         if (header == null) {
-          header = new ColumnHeader(columnName, headerCaption);
+          if (colType == ColType.SELECTION) {
+            header = new ColumnHeader(columnName, new SelectionHeader());
+          } else {
+            header = new ColumnHeader(columnName, headerCaption);
+          }
         }
       }
 

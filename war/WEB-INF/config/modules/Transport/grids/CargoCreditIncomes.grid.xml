@@ -7,7 +7,7 @@
   readOnly="true" caption="=trCreditIncomes"
   >
   <g:columns>
-    <SelectionColumn name="Select" caption="-" width="20" />
+    <SelectionColumn name="Select" width="20" />
     <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
 

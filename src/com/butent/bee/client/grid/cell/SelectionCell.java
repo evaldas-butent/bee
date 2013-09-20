@@ -10,20 +10,26 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class SimpleBooleanCell extends AbstractCell<Boolean> {
+public class SelectionCell extends AbstractCell<Boolean> {
   
-  private static final InputElement INPUT = Document.get().createCheckInputElement();
+  private static final InputElement INPUT;
   
-  public SimpleBooleanCell() {
+  static {
+    INPUT = Document.get().createCheckInputElement();
+    INPUT.addClassName("bee-SelectionCell");
+  }
+  
+  public SelectionCell() {
     super();
   }
   
   @Override
   public void render(Context context, Boolean value, SafeHtmlBuilder sb) {
     boolean b = BeeUtils.unbox(value);
-    if (INPUT.isChecked() != b) {
-      INPUT.setChecked(b);
-    }
+
+    INPUT.setChecked(b);
+    INPUT.setDefaultChecked(b);
+
     sb.append(SafeHtmlUtils.fromTrustedString(INPUT.getString()));
   }
 

@@ -7,7 +7,7 @@
   filter="Cost != UpdatedCost"
   >
   <g:columns>
-    <SelectionColumn name="Select" caption="-" width="20" />
+    <SelectionColumn name="Select" label="=selectionColumnLabel" width="20" />
     <DataColumn name="Supplier" itemKey="EcSupplier" />
     <DataColumn name="ArticleName" />
     <DataColumn name="BrandName" />

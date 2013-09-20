@@ -589,6 +589,13 @@ body {
   -moz-box-sizing: content-box !important;
 }
 
+.bee-SelectionHeader {
+  margin: auto;
+}
+.bee-SelectionCell {
+  margin: 0;
+}
+
 .bee-error {
   color: red;
 }

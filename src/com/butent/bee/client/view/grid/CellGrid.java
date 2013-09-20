@@ -2435,6 +2435,34 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return resizeColumnWidth(col, oldWidth, newWidth - oldWidth);
   }
 
+  public void selectRow(int rowIndex, IsRow rowValue) {
+    if (rowValue == null) {
+      return;
+    }
+    long rowId = rowValue.getId();
+    boolean wasSelected = isRowSelected(rowId);
+
+    if (wasSelected) {
+      getSelectedRows().remove(rowId);
+    } else {
+      getSelectedRows().put(rowId, new RowInfo(rowValue, isRowEditable(rowValue)));
+    }
+
+    for (int col = 0; col < getColumnCount(); col++) {
+      if (getColumnInfo(col).isSelection()) {
+        AbstractColumn<?> column = getColumnInfo(col).getColumn();
+        if (column instanceof SelectionColumn) {
+          ((SelectionColumn) column).update(getCellElement(rowIndex, col), !wasSelected);
+        } else {
+          refreshCell(rowIndex, col);
+        }
+      }
+    }
+
+    onSelectRow(rowIndex, !wasSelected);
+    fireSelectionCountChange();
+  }
+
   public void setBodyBorderWidth(Edges borderWidth) {
     getBodyComponent().setBorderWidth(borderWidth);
   }
@@ -3787,6 +3815,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return getActiveRowIndex() > 0 || getPageStart() > 0;
   }
 
+  private void refreshSelectionHeader() {
+    for (int col = 0; col < getColumnCount(); col++) {
+      if (getColumnInfo(col).isSelection()) {
+        refreshHeader(col);
+      }
+    }
+  }
+  
   private void hideResizer() {
     Element resizerContainer = getResizerContainer();
     if (resizerContainer != null) {
@@ -4076,6 +4112,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (RenderMode.CONTENT.equals(mode)) {
       replaceContent(getRowData());
+      refreshSelectionHeader();
+
     } else {
       SafeHtmlBuilder sb = new SafeHtmlBuilder();
       if (getRowData().isEmpty()) {
@@ -4843,34 +4881,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
     }
-  }
-
-  private void selectRow(int rowIndex, IsRow rowValue) {
-    if (rowValue == null) {
-      return;
-    }
-    long rowId = rowValue.getId();
-    boolean wasSelected = isRowSelected(rowId);
-
-    if (wasSelected) {
-      getSelectedRows().remove(rowId);
-    } else {
-      getSelectedRows().put(rowId, new RowInfo(rowValue, isRowEditable(rowValue)));
-    }
-
-    for (int col = 0; col < getColumnCount(); col++) {
-      if (getColumnInfo(col).isSelection()) {
-        AbstractColumn<?> column = getColumnInfo(col).getColumn();
-        if (column instanceof SelectionColumn) {
-          ((SelectionColumn) column).update(getCellElement(rowIndex, col), !wasSelected);
-        } else {
-          refreshCell(rowIndex, col);
-        }
-      }
-    }
-
-    onSelectRow(rowIndex, !wasSelected);
-    fireSelectionCountChange();
   }
 
   private void setActiveColumnIndex(int activeColumnIndex) {
