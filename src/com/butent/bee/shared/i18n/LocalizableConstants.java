@@ -160,9 +160,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String emailType();
 
+  String enterColor();
+
   String enterDate();
+ 
+  String enterTime();
 
   String ended();
+
+  String error();
 
   String exchangeCode();
 
@@ -191,6 +197,20 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String imageUploadFailed();
 
   String initialFilter();
+
+  String invalidDate();
+
+  String invalidDateFormat();
+
+  String invalidIdValue();
+
+  String invalidNumber();
+
+  String invalidNumberFormat();
+
+  String invalidRange();
+
+  String invalidTime();
 
   String item();
 
@@ -223,6 +243,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String no();
 
   String noData();
+
+  String notANumber();
 
   String notes();
 

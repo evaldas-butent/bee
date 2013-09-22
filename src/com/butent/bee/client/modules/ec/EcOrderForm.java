@@ -88,7 +88,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        DataChangeEvent.fire(TBL_UNSUPPLIED_ITEMS, false);
+        DataChangeEvent.fireRefresh(TBL_UNSUPPLIED_ITEMS);
       }
     });
   }
@@ -174,7 +174,7 @@ class EcOrderForm extends AbstractFormInterceptor {
         
         latch.set(latch.get() + 1);
         if (BeeUtils.unbox(latch.get()) == selectedIds.size()) {
-          DataChangeEvent.fire(VIEW_ORDER_ITEMS, false);
+          DataChangeEvent.fireRefresh(VIEW_ORDER_ITEMS);
         }
       }
     };
@@ -195,7 +195,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       Queries.deleteRows(VIEW_UNSUPPLIED_ITEMS, delete, new Queries.IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          DataChangeEvent.fire(VIEW_UNSUPPLIED_ITEMS, true);
+          DataChangeEvent.fireReset(VIEW_UNSUPPLIED_ITEMS);
         }
       });
     }
@@ -354,7 +354,7 @@ class EcOrderForm extends AbstractFormInterceptor {
               restoreCommandPanel(header);
 
             } else {
-              DataChangeEvent.fire(VIEW_UNSUPPLIED_ITEMS, false);
+              DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
               
               Queries.getRow(form.getViewName(), rowId, new RowCallback() {
                 @Override

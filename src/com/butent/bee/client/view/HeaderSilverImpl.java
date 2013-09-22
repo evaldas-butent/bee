@@ -79,7 +79,6 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
 
   private static final String STYLE_CONTROL = "bee-Header-control";
-  private static final String STYLE_REMOVE = "bee-removeFilter";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
@@ -142,11 +141,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      Widget removeFilter = createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER,
-          hiddenActions);
-      removeFilter.removeStyleName(STYLE_CONTROL);
-      removeFilter.addStyleName(STYLE_REMOVE);
-      add(removeFilter);
+      add(createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
     
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {

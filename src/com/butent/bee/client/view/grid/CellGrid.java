@@ -2114,7 +2114,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           if (event.getShiftKey()) {
             selectRange(row, rowValue);
           } else {
-            selectRow(row, rowValue);
+            toggleRowSelection(row, rowValue, true);
           }
           activateCell(row, col);
 
@@ -2149,7 +2149,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           event.preventDefault();
         } else if (columnInfo.isSelection() && !hasModifiers) {
           event.preventDefault();
-          selectRow(row, rowValue);
+          toggleRowSelection(row, rowValue, true);
         } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
           event.preventDefault();
           if (!hasModifiers) {
@@ -2163,7 +2163,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         event.preventDefault();
 
         if (charCode == BeeConst.CHAR_SPACE) {
-          selectRow(row, rowValue);
+          toggleRowSelection(row, rowValue, true);
         } else if (charCode > BeeConst.CHAR_SPACE) {
           startEditing(rowValue, col, target, charCode);
         }
@@ -2228,7 +2228,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
     }
-    
+
     refreshFooters(event.getSourceName());
 
     if (checkZindex && col != null) {
@@ -2385,21 +2385,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public void refreshFooters(String sourceName) {
-    for (int i = 0; i < getColumnCount(); i++) {
-      ColumnFooter footer = getColumnInfo(i).getFooter();
+    for (int col = 0; col < getColumnCount(); col++) {
+      ColumnFooter footer = getColumnInfo(col).getFooter();
 
       if (footer != null && (BeeUtils.isEmpty(sourceName) || footer.dependsOnSource(sourceName))) {
-        SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-        CellContext context = new CellContext(0, i, null, this);
-        footer.render(context, cellBuilder);
-        SafeHtml cellHtml = cellBuilder.toSafeHtml();
-
-        Element cellElement = getFooterCellElement(i);
-        if (cellElement == null) {
-          logger.warning("footer cell not found: col", i);
-        } else {
-          cellElement.setInnerHTML(cellHtml.asString());
-        }
+        refreshFooter(footer, col);
       }
     }
   }
@@ -2433,34 +2423,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public int resizeColumn(int col, int newWidth) {
     int oldWidth = getColumnWidth(col);
     return resizeColumnWidth(col, oldWidth, newWidth - oldWidth);
-  }
-
-  public void selectRow(int rowIndex, IsRow rowValue) {
-    if (rowValue == null) {
-      return;
-    }
-    long rowId = rowValue.getId();
-    boolean wasSelected = isRowSelected(rowId);
-
-    if (wasSelected) {
-      getSelectedRows().remove(rowId);
-    } else {
-      getSelectedRows().put(rowId, new RowInfo(rowValue, isRowEditable(rowValue)));
-    }
-
-    for (int col = 0; col < getColumnCount(); col++) {
-      if (getColumnInfo(col).isSelection()) {
-        AbstractColumn<?> column = getColumnInfo(col).getColumn();
-        if (column instanceof SelectionColumn) {
-          ((SelectionColumn) column).update(getCellElement(rowIndex, col), !wasSelected);
-        } else {
-          refreshCell(rowIndex, col);
-        }
-      }
-    }
-
-    onSelectRow(rowIndex, !wasSelected);
-    fireSelectionCountChange();
   }
 
   public void setBodyBorderWidth(Edges borderWidth) {
@@ -2719,6 +2681,41 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public void setRowStyles(ConditionalStyle rowStyles) {
     this.rowStyles = rowStyles;
+  }
+
+  public void toggleRowSelection(int rowIndex, IsRow rowValue, boolean refreshSelectionHeader) {
+    if (rowValue == null) {
+      return;
+    }
+    long rowId = rowValue.getId();
+    boolean wasSelected = isRowSelected(rowId);
+
+    if (wasSelected) {
+      getSelectedRows().remove(rowId);
+    } else {
+      getSelectedRows().put(rowId, new RowInfo(rowValue, isRowEditable(rowValue)));
+    }
+
+    for (int col = 0; col < getColumnCount(); col++) {
+      ColumnInfo columnInfo = getColumnInfo(col);
+
+      if (columnInfo.isSelection()) {
+        AbstractColumn<?> column = columnInfo.getColumn();
+
+        if (column instanceof SelectionColumn) {
+          ((SelectionColumn) column).update(getCellElement(rowIndex, col), !wasSelected);
+        } else {
+          refreshCell(rowIndex, col);
+        }
+
+        if (refreshSelectionHeader && columnInfo.getHeader() != null) {
+          refreshHeader(columnInfo.getHeader(), col);
+        }
+      }
+    }
+
+    onSelectRow(rowIndex, !wasSelected);
+    fireSelectionCountChange();
   }
 
   @Override
@@ -3415,9 +3412,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
 
-      if (hasFooters()) {
-        return RenderMode.FULL;
-      }
       return RenderMode.CONTENT;
     }
   }
@@ -3815,14 +3809,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return getActiveRowIndex() > 0 || getPageStart() > 0;
   }
 
-  private void refreshSelectionHeader() {
-    for (int col = 0; col < getColumnCount(); col++) {
-      if (getColumnInfo(col).isSelection()) {
-        refreshHeader(col);
-      }
-    }
-  }
-  
   private void hideResizer() {
     Element resizerContainer = getResizerContainer();
     if (resizerContainer != null) {
@@ -4065,13 +4051,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     refreshRow(rowIndex, Sets.newHashSet(colIndex));
   }
 
-  private void refreshHeader(int col) {
-    ColumnHeader header = getColumnInfo(col).getHeader();
-    if (header == null) {
-      return;
-    }
-    SafeHtmlBuilder builder = new SafeHtmlBuilder();
+  private void refreshFooter(ColumnFooter footer, int col) {
     CellContext context = new CellContext(0, col, null, this);
+    SafeHtmlBuilder builder = new SafeHtmlBuilder();
+    footer.render(context, builder);
+
+    getFooterCellElement(col).setInnerHTML(builder.toSafeHtml().asString());
+  }
+
+  private void refreshHeader(ColumnHeader header, int col) {
+    CellContext context = new CellContext(0, col, null, this);
+    SafeHtmlBuilder builder = new SafeHtmlBuilder();
     header.render(context, builder);
 
     getHeaderCellElement(col).setInnerHTML(builder.toSafeHtml().asString());
@@ -4105,6 +4095,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  private void refreshSelectionHeader() {
+    for (int col = 0; col < getColumnCount(); col++) {
+      ColumnInfo columnInfo = getColumnInfo(col);
+
+      if (columnInfo.isSelection() && columnInfo.getHeader() != null) {
+        refreshHeader(columnInfo.getHeader(), col);
+      }
+    }
+  }
+
   private void render(boolean focus) {
     RenderingEvent.fireBefore(this);
 
@@ -4112,7 +4112,17 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (RenderMode.CONTENT.equals(mode)) {
       replaceContent(getRowData());
-      refreshSelectionHeader();
+
+      for (int col = 0; col < getColumnCount(); col++) {
+        ColumnInfo columnInfo = getColumnInfo(col);
+
+        if (columnInfo.isSelection() && columnInfo.getHeader() != null) {
+          refreshHeader(columnInfo.getHeader(), col);
+        }
+        if (columnInfo.getFooter() != null) {
+          refreshFooter(columnInfo.getFooter(), col);
+        }
+      }
 
     } else {
       SafeHtmlBuilder sb = new SafeHtmlBuilder();
@@ -4135,7 +4145,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     setZIndex(0);
 
     RenderingEvent.fireAfter(this);
-    
+
     rowChangeScheduler.scheduleEvent();
 
     if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
@@ -4668,7 +4678,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
     }
 
-    refreshHeader(col);
+    if (columnInfo.getHeader() != null) {
+      refreshHeader(columnInfo.getHeader(), col);
+    }
 
     if (col < getColumnCount() - 1) {
       for (int i = col + 1; i < getColumnCount(); i++) {
@@ -4829,7 +4841,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       DomUtils.moveVerticalBy(resizerId, incr);
     }
   }
-
+  
   private void selectRange(int rowIndex, IsRow rowValue) {
     if (rowValue == null) {
       return;
@@ -4840,7 +4852,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       for (int i = 0; i < getDataSize(); i++) {
         IsRow row = getDataItem(i);
         if (isRowSelected(row)) {
-          selectRow(i, row);
+          toggleRowSelection(i, row, false);
         }
       }
       getSelectedRows().clear();
@@ -4864,23 +4876,27 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
 
       if (lastSelectedRow == BeeConst.UNDEF) {
-        selectRow(rowIndex, rowValue);
+        toggleRowSelection(rowIndex, rowValue, false);
+
       } else if (lastSelectedRow < rowIndex) {
         for (int i = lastSelectedRow + 1; i <= rowIndex; i++) {
           IsRow row = getDataItem(i);
           if (!isRowSelected(row)) {
-            selectRow(i, row);
+            toggleRowSelection(i, row, false);
           }
         }
+
       } else {
         for (int i = rowIndex; i < lastSelectedRow; i++) {
           IsRow row = getDataItem(i);
           if (!isRowSelected(row)) {
-            selectRow(i, row);
+            toggleRowSelection(i, row, false);
           }
         }
       }
     }
+    
+    refreshSelectionHeader();
   }
 
   private void setActiveColumnIndex(int activeColumnIndex) {

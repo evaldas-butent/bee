@@ -227,7 +227,7 @@ public class GridFilterManager {
         public void accept(FilterDescription t, Action u) {
           if (t != null) {
             updateFilterValues(asValues(t.getComponents()), true);
-            onChange(null);
+            onChange(null, true);
           } else if (Action.DELETE == u) {
             buildContentPanel();
           }
@@ -318,7 +318,7 @@ public class GridFilterManager {
         filterSupplier.onRequest(button.getElement(), new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
-            onChange(columnInfo);
+            onChange(columnInfo, true);
           }
         });
       }
@@ -327,14 +327,15 @@ public class GridFilterManager {
     label.addClickHandler(clickHandler);
     button.addClickHandler(clickHandler);
 
-    Image clear = new Image(Global.getImages().closeSmall());
-    clear.addStyleName(STYLE_SUPPLIER_CLEAR);
+    CustomDiv clear = new CustomDiv(STYLE_SUPPLIER_CLEAR);
+    clear.setText(String.valueOf(BeeConst.CHAR_TIMES));
+    clear.setTitle(Action.REMOVE_FILTER.getCaption());
 
     clear.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         filterSupplier.setFilterValue(null);
-        onChange(columnInfo);
+        onChange(columnInfo, true);
       }
     });
 
@@ -411,14 +412,14 @@ public class GridFilterManager {
     return values;
   }
 
-  private void onChange(final ColumnInfo columnInfo) {
+  private void onChange(final ColumnInfo columnInfo, final boolean closeDialog) {
     final Filter filter = getFilter(null, null);
 
     filterConsumer.tryFilter(filter, new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {
-          if (columnInfo == null) {
+          if (closeDialog) {
             UiHelper.closeDialog(contentPanel);
           } else {
             retainValues();

@@ -326,7 +326,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite spalvą");
+        messages.add(Localized.getConstants().enterColor());
       }
       return messages;
     }

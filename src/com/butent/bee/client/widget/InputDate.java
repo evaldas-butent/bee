@@ -231,11 +231,11 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     String v = BeeUtils.trim(getValue());
     if (getDateTimeFormat() == null) {
       if (!willParse(v)) {
-        messages.add(BeeUtils.joinWords("Neteisinga data:", v));
+        messages.add(BeeUtils.joinWords(Localized.getConstants().invalidDate(), v));
       }
     } else {
       if (getDateTimeFormat().parseQuietly(v) == null) {
-        messages.add("Neteisingas datos formatas:");
+        messages.add(Localized.getConstants().invalidDateFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getDateTimeFormat().getPattern())));
       }
     }

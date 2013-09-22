@@ -35,6 +35,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -192,7 +193,8 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                     response.notify(presenter.getGridView());
 
                     if (!response.hasErrors()) {
-                      Data.onViewChange(presenter.getViewName(), true);
+                      Data.onViewChange(presenter.getViewName(),
+                          DataChangeEvent.CANCEL_RESET_REFRESH);
                       RowEditor.openRow(FORM_CARGO_CREDIT_INVOICE, purchaseInfo, row.getId());
                     }
                   }

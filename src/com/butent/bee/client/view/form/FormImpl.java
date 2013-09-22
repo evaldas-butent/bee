@@ -215,7 +215,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     @Override
     public void onDataChange(DataChangeEvent event) {
-      if (isEventRelevant(event)) {
+      if (isEventRelevant(event) && event.hasCancel()) {
         cancelForm();
       }
     }

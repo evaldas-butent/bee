@@ -38,6 +38,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -236,7 +237,8 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
                     if (popup != null) {
                       popup.close();
                     }
-                    Data.onViewChange(presenter.getViewName(), true);
+                    Data.onViewChange(presenter.getViewName(), 
+                        DataChangeEvent.CANCEL_RESET_REFRESH);
                     RowEditor.openRow(FORM_CARGO_INVOICE, saleInfo, row.getId());
                   }
                 });

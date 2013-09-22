@@ -4,6 +4,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum FilterSupplierType {
   VALUE("value"),
+  RANGE("range"),
   LIST("list"),
   ENUM("enum"),
   ID("id");

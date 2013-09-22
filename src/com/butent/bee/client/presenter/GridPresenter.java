@@ -519,7 +519,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public void tryFilter(Filter filter, Consumer<Boolean> callback, boolean notify) {
+  public void tryFilter(final Filter filter, final Consumer<Boolean> callback, boolean notify) {
     if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
       if (callback != null) {
         callback.accept(true);
@@ -527,12 +527,21 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
 
-    HeaderView header = getHeader();
-    if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
-      header.showAction(Action.REMOVE_FILTER, filter != null);
-    }
+    getDataProvider().tryFilter(filter, new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (BeeUtils.isTrue(input)) {
+          HeaderView header = getHeader();
+          if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
+            header.showAction(Action.REMOVE_FILTER, filter != null);
+          }
+        }
 
-    getDataProvider().tryFilter(filter, callback, notify);
+        if (callback != null) {
+          callback.accept(input);
+        }
+      }
+    }, notify);
   }
 
   private void addRow() {

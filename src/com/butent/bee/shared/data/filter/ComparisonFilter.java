@@ -83,8 +83,8 @@ public abstract class ComparisonFilter extends Filter {
     ValueType rightType = right.getType();
 
     if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
-      logger.warning("Incompatible column types: " + leftColumn + BeeUtils.parenthesize(leftType)
-          + " AND " + rightColumn + BeeUtils.parenthesize(rightType));
+      logger.warning("Incompatible column types:", leftColumn, BeeUtils.parenthesize(leftType),
+          "AND", rightColumn, BeeUtils.parenthesize(rightType));
       return null;
     }
     return compareWithColumn(leftColumn, op, rightColumn);
@@ -101,7 +101,7 @@ public abstract class ComparisonFilter extends Filter {
     Assert.notEmpty(value);
 
     if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
-      logger.warning("Not a numeric value: " + value);
+      logger.warning("Not a numeric value:", value);
       return null;
     }
     return compareWithValue(column.getId(), op, Value.parseValue(column.getType(), value, true));

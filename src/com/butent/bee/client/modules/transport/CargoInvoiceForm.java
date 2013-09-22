@@ -22,10 +22,10 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHandler {
@@ -87,8 +87,7 @@ public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHan
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  form.getViewPresenter().handleAction(Action.CANCEL);
-                  Data.onViewChange(form.getViewName(), true);
+                  Data.onViewChange(form.getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
                 }
               }
             });

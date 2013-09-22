@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -1393,7 +1394,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showError(String message) {
-    Global.showError("Klaida", Lists.newArrayList(message));
+    Global.showError(Localized.getConstants().error(), Lists.newArrayList(message));
   }
 
   private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,

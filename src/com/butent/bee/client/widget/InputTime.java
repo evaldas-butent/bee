@@ -23,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
@@ -215,14 +216,14 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
     if (isEmpty()) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite laiką");
+        messages.add(Localized.getConstants().enterTime());
       }
       return messages;
     }
 
     String v = BeeUtils.trim(getValue());
     if (getCharMatcher() != null && !getCharMatcher().matchesAllOf(v)) {
-      messages.add(BeeUtils.joinWords("Neteisingas laikas:", v));
+      messages.add(BeeUtils.joinWords(Localized.getConstants().invalidTime(), v));
       return messages;
     }
     
@@ -240,7 +241,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite laiką");
+        messages.add(Localized.getConstants().enterTime());
       }
       return messages;
     }

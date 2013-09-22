@@ -16,6 +16,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 
@@ -48,7 +49,7 @@ public class EcCostChangesHandler extends AbstractGridInterceptor {
                 response.notify(presenter.getGridView());
 
                 if (!response.hasErrors()) {
-                  Data.onViewChange(presenter.getViewName(), true);
+                  Data.onViewChange(presenter.getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
                 }
               }
             });

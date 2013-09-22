@@ -187,7 +187,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     if (getNumberFormat() != null) {
       Double d = Format.parseQuietly(getNumberFormat(), v);
       if (d == null) {
-        messages.add("Neteisingas skaičiaus formatas:");
+        messages.add(Localized.getConstants().invalidNumberFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getNumberFormat().getPattern())));
         return messages;
       }
@@ -196,7 +196,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     }
 
     if (!checkType(v)) {
-      messages.add(BeeUtils.joinWords("Neteisingas skaičius:", v));
+      messages.add(BeeUtils.joinWords(Localized.getConstants().invalidNumber(), v));
       return messages;
     }
 

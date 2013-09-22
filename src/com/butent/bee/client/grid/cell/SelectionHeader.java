@@ -43,7 +43,7 @@ public class SelectionHeader extends AbstractCell<String> {
         for (int i = 0; i < grid.getRowData().size(); i++) {
           IsRow row = grid.getRowData().get(i);
           if (grid.isRowSelected(row.getId()) != isChecked()) {
-            grid.selectRow(i, row);
+            grid.toggleRowSelection(i, row, false);
           }
         }
       }
@@ -86,15 +86,16 @@ public class SelectionHeader extends AbstractCell<String> {
 
   private void updateValue(CellGrid grid) {
     if (grid != null && !BeeUtils.isEmpty(grid.getRowData())) {
-      int countSelected = 0;
+      boolean value = true;
 
       for (IsRow row : grid.getRowData()) {
-        if (grid.isRowSelected(row.getId())) {
-          countSelected++;
+        if (!grid.isRowSelected(row.getId())) {
+          value = false;
+          break;
         }
       }
 
-      setChecked(countSelected > grid.getRowData().size() - countSelected);
+      setChecked(value);
     }
   }
 }

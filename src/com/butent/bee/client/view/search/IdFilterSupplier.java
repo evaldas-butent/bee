@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
@@ -88,7 +89,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     } else {
       Long id = BeeUtils.toLongOrNull(value);
       if (id == null) {
-        Global.showError(Lists.newArrayList("Neteisinga ID reikšmė", value));
+        Global.showError(Lists.newArrayList(Localized.getConstants().invalidIdValue(), value));
       } else {
         update(!id.equals(getOldValue()));
       }

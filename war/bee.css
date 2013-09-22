@@ -455,6 +455,12 @@ body {
 .bee-Header-control {
   margin-right: 1em;
 }
+.bee-Header-control.bee-Action-removeFilter {
+  margin-right: 0;
+  position: relative;
+  top: -10px;
+  left: -10px;
+}
 
 .bee-CellGrid {
   position: absolute;
@@ -1634,6 +1640,9 @@ body {
   -ms-flex-pack: justify;
 }
 
+.bee-FilterSupplier-dateTime-caption {
+  margin-bottom: 5px;
+}
 .bee-FilterSupplier-dateTime-label {
   width: 40px;
 }
@@ -1647,18 +1656,46 @@ body {
 .bee-FilterSupplier-id-editor {
   width: 80px;
 }
+
+.bee-FilterSupplier-value-caption {
+  margin-bottom: 5px;
+}
 .bee-FilterSupplier-value-editor {
-  width: 120px;
+  width: 150px;
+}
+.bee-FilterSupplier-value-error {
+  margin-top: 2px;
+  color: red;
 }
 
-.bee-FilterSupplier-value-panel .bee-FilterSupplier-value-editor {
-  width: 157px;
-}
 .bee-FilterSupplier-value-separator {
   height: 1ex;
 }
 .bee-FilterSupplier-value-empty {
-  margin-left: 1em;
+  margin: 0 0 0 1em;
+}
+.bee-FilterSupplier-value-notEmpty {
+  margin: 0;
+}
+
+.bee-FilterSupplier-range-caption {
+  margin-bottom: 5px;
+}
+.bee-FilterSupplier-range-from-wrapper {
+  margin-bottom: 2px;
+}
+.bee-FilterSupplier-range-from-label,
+.bee-FilterSupplier-range-to-label {
+  width: 40px;
+  display: inline-block;
+}
+.bee-FilterSupplier-range-from-input,
+.bee-FilterSupplier-range-to-input {
+  width: 120px;
+}
+.bee-FilterSupplier-range-emptiness {
+  margin-left: 30px;
+  margin-top: 3px;
 }
 
 .bee-GridFilter-dialog {
@@ -1695,6 +1732,12 @@ body {
 }  
 .bee-GridFilter-supplier-clear {
   margin-left: 4px;
+  font-size: 16px;
+  display: inline-block;
+}
+.bee-GridFilter-supplier-clear:hover {
+  color: red;
+  cursor: pointer;
 }
 .bee-GridFilter-supplier-empty .bee-GridFilter-supplier-clear {
   display: none;
@@ -1921,13 +1964,6 @@ body {
 .bee-Photo-embedded {
   max-width: 100%;
   max-height: 100%;
-}
-
-.bee-removeFilter{
-  position: relative;
-  top: -10px;
-  left: -10px;
-  cursor: pointer;
 }
 
 .bee-HtmlEditor-canvas {

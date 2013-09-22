@@ -11,7 +11,8 @@ import java.util.List;
 public final class FilterSupplierFactory {
 
   public static AbstractFilterSupplier getSupplier(String viewName, List<BeeColumn> dataColumns,
-      int sourceIndex, String label, List<String> searchColumns, FilterSupplierType type,
+      String idColumnName, String versionColumnName, int sourceIndex, String label,
+      List<String> searchColumns, FilterSupplierType type,
       List<String> renderColumns, List<String> orderColumns,
       String itemKey, Relation relation, String options) {
 
@@ -37,7 +38,12 @@ public final class FilterSupplierFactory {
           break;
 
         case VALUE:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, searchColumns, options);
+          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+              filterColumn, label, searchColumns, options);
+          break;
+
+        case RANGE:
+          supplier = new RangeFilterSupplier(viewName, filterColumn, label, options);
           break;
       }
     }
@@ -69,9 +75,13 @@ public final class FilterSupplierFactory {
         case INTEGER:
         case LONG:
         case NUMBER:
+          supplier = new RangeFilterSupplier(viewName, filterColumn, label, options);
+          break;
+
         case TEXT:
         case TIME_OF_DAY:
-          supplier = new ValueFilterSupplier(viewName, filterColumn, label, searchColumns, options);
+          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+              filterColumn, label, searchColumns, options);
           break;
       }
     }

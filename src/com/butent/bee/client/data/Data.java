@@ -164,15 +164,15 @@ public final class Data {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
 
-  public static void onTableChange(String tableName, boolean reset) {
+  public static void onTableChange(String tableName, Collection<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
     for (String viewName : viewNames) {
-      DataChangeEvent.fire(viewName, reset);
+      DataChangeEvent.fire(viewName, effects);
     }
   }
 
-  public static void onViewChange(String viewName, boolean reset) {
-    onTableChange(getDataInfo(viewName).getTableName(), reset);
+  public static void onViewChange(String viewName, Collection<DataChangeEvent.Effect> effects) {
+    onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 
   public static void setValue(String viewName, IsRow row, String colName, BigDecimal value) {

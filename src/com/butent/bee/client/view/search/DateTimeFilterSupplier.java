@@ -12,7 +12,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTimeOfDay;
@@ -98,12 +100,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
         return null;
 
       } else if (start == null) {
-        return Localized.getConstants().dateToShort().toLowerCase() + " "
-            + end.toCompactString();
+        return BeeUtils.joinWords(Localized.getConstants().dateToShort().toLowerCase(),
+            end.toCompactString());
 
       } else if (end == null) {
-        return Localized.getConstants().dateFromShort().toLowerCase() + " "
-            + start.toCompactString();
+        return BeeUtils.joinWords(Localized.getConstants().dateFromShort().toLowerCase(),
+            start.toCompactString());
 
       } else {
         return BeeUtils.join(" - ", start.toCompactString(), end.toCompactString());
@@ -176,7 +178,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     DateTime end = getInputEndValue(start);
 
     if (start != null && end != null && TimeUtils.isMeq(start, end)) {
-      List<String> messages = Lists.newArrayList("Neteisingas intervalas",
+      List<String> messages = Lists.newArrayList(Localized.getConstants().invalidRange(),
           start.toString(), end.toString());
       Global.showError(messages);
       return;
@@ -235,6 +237,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   }
 
   private Widget createWidget() {
+    Flow panel = new Flow(STYLE_PREFIX + "panel");
+
+    CustomDiv caption = new CustomDiv(STYLE_PREFIX + "caption");
+    caption.setHTML(getColumnLabel());
+    panel.add(caption);
+
     HtmlTable display = createDisplay(false);
 
     Html labelFrom = new Html(Localized.getConstants().dateFromShort());
@@ -295,10 +303,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       display.setWidgetAndStyle(EMPTINESS_ROW, NULL_COL, empty, STYLE_NULL);
     }
 
-    Widget wrapper = wrapDisplay(display, false);
-    wrapper.addStyleName(STYLE_PREFIX + "container");
+    panel.add(display);
 
-    return wrapper;
+    panel.add(getCommandWidgets(false));
+    
+    return panel;
   }
   
   private Value getComparisonValue(DateTime dt) {
