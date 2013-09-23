@@ -7,7 +7,8 @@ public enum FilterSupplierType {
   RANGE("range"),
   LIST("list"),
   ENUM("enum"),
-  ID("id");
+  ID("id"),
+  VERSION("version");
 
   public static FilterSupplierType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

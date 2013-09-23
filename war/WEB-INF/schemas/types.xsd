@@ -186,6 +186,7 @@
       <xs:enumeration value="list" />
       <xs:enumeration value="enum" />
       <xs:enumeration value="id" />
+      <xs:enumeration value="version" />
     </xs:restriction>
   </xs:simpleType>
 

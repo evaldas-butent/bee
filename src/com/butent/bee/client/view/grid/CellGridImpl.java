@@ -535,6 +535,9 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
         case VERSION:
           column = new RowVersionColumn();
+          if (filterSupplierType == null) {
+            filterSupplierType = FilterSupplierType.VERSION;
+          }
           break;
 
         case DATA:

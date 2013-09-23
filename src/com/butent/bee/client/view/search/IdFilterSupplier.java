@@ -27,7 +27,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     super(viewName, column, label, options);
     
     this.editor = new InputLong();
-    editor.getElement().addClassName(DEFAULT_STYLE_PREFIX + "id-editor");
+    editor.addStyleName(DEFAULT_STYLE_PREFIX + "id-editor");
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override

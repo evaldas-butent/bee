@@ -24,12 +24,13 @@ public final class FilterSupplierFactory {
 
     if (type != null) {
       switch (type) {
-        case ENUM:
-          supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
+        case VALUE:
+          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+              filterColumn, label, searchColumns, options);
           break;
-
-        case ID:
-          supplier = new IdFilterSupplier(viewName, filterColumn, label, options);
+         
+        case RANGE:
+          supplier = new RangeFilterSupplier(viewName, filterColumn, label, options);
           break;
 
         case LIST:
@@ -37,13 +38,18 @@ public final class FilterSupplierFactory {
               renderColumns, orderColumns, relation, options);
           break;
 
-        case VALUE:
-          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
-              filterColumn, label, searchColumns, options);
+        case ENUM:
+          supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
           break;
 
-        case RANGE:
-          supplier = new RangeFilterSupplier(viewName, filterColumn, label, options);
+        case ID:
+          supplier = new IdFilterSupplier(viewName, BeeColumn.forRowId(idColumnName), label,
+              options);
+          break;
+
+        case VERSION:
+          supplier = new VersionFilterSupplier(viewName, BeeColumn.forRowVersion(versionColumnName),
+              label, options);
           break;
       }
     }
