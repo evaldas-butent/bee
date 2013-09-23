@@ -6,12 +6,12 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
-    <Date name="DateFrom" />
-    <Date name="DateTo" />
-    <Numeric name="Summer" precision="6" scale="2" notNull="true" />
-    <Numeric name="Winter" precision="6" scale="2" notNull="true" />
-    <Numeric name="TonneKilometer" precision="6" scale="4" />
-    <Numeric name="MotoHour" precision="6" scale="2" />
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" label="=trVehicle" />
+    <Date name="DateFrom" label="=trDateFrom" />
+    <Date name="DateTo" label="=trDateTo"/>
+    <Numeric name="Summer" precision="6" scale="2" notNull="true" label="=trFuelConsumptionsSummer" />
+    <Numeric name="Winter" precision="6" scale="2" notNull="true" label="=trFuelConsumptionsWinter"/>
+    <Numeric name="TonneKilometer" precision="6" scale="4" label="=trTonneKilometer" />
+    <Numeric name="MotoHour" precision="6" scale="2" label="=trMotoHour" />
   </Fields>
 </Table>

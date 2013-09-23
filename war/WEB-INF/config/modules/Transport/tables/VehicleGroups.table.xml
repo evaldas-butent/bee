@@ -5,8 +5,8 @@
   idName="VehicleGroupID"
   >
   <Fields>
-    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
-    <Relation name="Group" notNull="true" relation="TransportGroups" cascade="DELETE" />
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" label="=trVehicle" />
+    <Relation name="Group" notNull="true" relation="TransportGroups" cascade="DELETE" label="=group" />
   </Fields>
   
   <Constraints>

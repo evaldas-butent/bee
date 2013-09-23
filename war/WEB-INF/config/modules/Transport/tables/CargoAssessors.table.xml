@@ -8,9 +8,9 @@
   <Fields>
     <Integer name="Status" notNull="true" defValue="0" label="=status" />
     <DateTime name="Date" defExpr="CURRENT_TIME" notNull="true" label="=date" />
-    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="Manager" relation="Users" label="=manager" notNull="true" defExpr="CURRENT_USER" />
-    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
-    <Text name="Notes" label="Komentaras" />
+    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" label="=trAssessor" />
+    <Text name="Notes" label="=trComment" />
   </Fields>
 </Table>

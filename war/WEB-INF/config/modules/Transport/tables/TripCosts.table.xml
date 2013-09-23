@@ -7,15 +7,15 @@
   >
   <Fields>
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
-    <Date name="Date" notNull="true" defExpr="CURRENT_DATE" />
-    <Relation name="Item" notNull="true" relation="Items" />
-    <Relation name="Unit" notNull="true" relation="Units" />
-    <Double name="Quantity" notNull="true" />
-    <Numeric name="Price" precision="15" scale="5" />
-    <Relation name="Currency" relation="Currencies" />
-    <String name="Number" precision="20" />
-    <Relation name="Supplier" relation="Companies" />
-    <Relation name="Country" relation="Countries" />
-    <String name="Note" precision="50" />
+    <Date name="Date" notNull="true" defExpr="CURRENT_DATE" label="=date" />
+    <Relation name="Item" notNull="true" relation="Items" label="=trProductService" />
+    <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
+    <Double name="Quantity" notNull="true" label="=quantity" />
+    <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+    <String name="Number" precision="20" label="=number"/>
+    <Relation name="Supplier" relation="Companies" label="=trSupplier" />
+    <Relation name="Country" relation="Countries" label="=country" />
+    <String name="Note" precision="50" label="=note" />
   </Fields>
 </Table>

@@ -6,14 +6,14 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
-    <Relation name="Type" notNull="true" relation="ServiceTypes" />
-    <Date name="Date" notNull="true" />
-    <Date name="DateTo" />
-    <Integer name="Run" />
-    <Date name="ValidUntil" />
-    <Integer name="ValidForKilometers" />
-    <Integer name="ValidForHours" />
-    <String name="Notes" precision="100" />
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" label="=trVehicle" />
+    <Relation name="Type" notNull="true" relation="ServiceTypes" label="=trServiceTypeName" />
+    <Date name="Date" notNull="true" label="=date" />
+    <Date name="DateTo" label="=dateTo" />
+    <Integer name="Run" label="=trVehicleRun" />
+    <Date name="ValidUntil" label="=trVehicleServiceValid" />
+    <Integer name="ValidForKilometers" label="=trVehicleServiceValidKilometers" />
+    <Integer name="ValidForHours" label="=trVehicleServiceValidMotohours" />
+    <String name="Notes" precision="100" label="=notes" />
   </Fields>
 </Table>

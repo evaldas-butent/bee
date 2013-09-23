@@ -5,8 +5,8 @@
   idName="ExpenseID"
   >
   <Fields>
-    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo"/>
+    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" label="=trAssessor"/>
     <Date name="Date" label="=date" />
 
     <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />

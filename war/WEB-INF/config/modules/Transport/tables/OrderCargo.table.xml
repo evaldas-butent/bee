@@ -6,7 +6,7 @@
   x="741" y="101"
   >
   <Fields>
-    <Relation name="Order" relation="TransportationOrders" cascade="DELETE" />
+    <Relation name="Order" relation="TransportationOrders" cascade="DELETE" label="=trOrder" />
     <Text name="Description" notNull="true" label="=cargo" />
     <Numeric name="Price" precision="12" scale="2" label="=trTransportationPrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />

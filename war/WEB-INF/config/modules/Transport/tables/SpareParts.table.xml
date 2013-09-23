@@ -6,12 +6,12 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Type" notNull="true" relation="SparePartTypes" />
-    <String name="Number" precision="20" unique="true" notNull="true" />
-    <String name="Description" precision="50" />
-    <Integer name="Run" />
-    <Date name="Obtained" />
-    <Date name="WrittenOff" />
-    <String name="Notes" precision="100" />
+    <Relation name="Type" notNull="true" relation="SparePartTypes" label="=type"/>
+    <String name="Number" precision="20" unique="true" notNull="true" label="number" />
+    <String name="Description" precision="50" label="=description"/>
+    <Integer name="Run" label="=trVehicleRun" />
+    <Date name="Obtained" label="=trObtained" />
+    <Date name="WrittenOff"  label="=trWrittenOff" />
+    <String name="Notes" precision="100" label="=notes" />
   </Fields>
 </Table>
