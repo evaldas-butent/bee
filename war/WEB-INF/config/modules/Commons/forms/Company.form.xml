@@ -105,7 +105,7 @@
             editEnabled="false" />
           <InputInteger source="CreditDays" caption="=creditDays" style="width: 40px;"
             d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 275px; top: 45px;" />
-          <DataSelector source="FinancialState" caption="Mokumas" style="width: 145px;"
+          <DataSelector source="FinancialState" caption="=financialState" style="width: 145px;"
             d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 70px;" />
         </FlowPanel>
       </page>
