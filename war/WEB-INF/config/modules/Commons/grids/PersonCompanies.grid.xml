@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="PersonCompanies" viewName="CompaniesAndPersons"
-  newRowForm="PersonCompany" newRowCaption="Nauja asmens įmonė"
+  newRowForm="PersonCompany" newRowCaption="=newPersonCompany"
   editForm="PersonCompany"
   flexGrow="1" flexShrink="1" flexBasis="100"
   >

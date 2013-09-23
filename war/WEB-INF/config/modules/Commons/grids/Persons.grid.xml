@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Persons" viewName="Persons" caption="Asmenys"
+  name="Persons" viewName="Persons" caption="=persons"
   editForm="Person" flexGrow="1" flexShrink="1"
   >
   <g:body height="30" /> 

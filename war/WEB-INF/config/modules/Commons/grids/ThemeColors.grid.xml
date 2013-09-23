@@ -5,14 +5,14 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja temos spalva"
+  name="ThemeColors" viewName="ThemeColors" caption="=colors" newRowCaption="=newThemeColor"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <RelColumn name="ColorName" caption="Pavadinimas" visible="true" />
+    <RelColumn name="ColorName" caption="=name" visible="true" />
 
-    <DataColumn name="Background" caption="Fono spalva">&dyn;</DataColumn>
-    <DataColumn name="Foreground" caption="Teksto spalva">&dyn;</DataColumn>
+    <DataColumn name="Background" caption="=backgroundColor">&dyn;</DataColumn>
+    <DataColumn name="Foreground" caption="=foregroundColor">&dyn;</DataColumn>
   </g:columns>
 </g:Grid>
 

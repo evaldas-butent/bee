@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
       xmlns:ui="http://www.butent.com/ui"
   
-  name="CurrencyRates" viewName="CurrencyRates" caption="Kursai" minColumnWidth="100"
+  name="CurrencyRates" viewName="CurrencyRates" caption="=currencyRates" minColumnWidth="100"
   >
   <g:columns>
     <DataColumn name="Date" source="Date" visible="true" />

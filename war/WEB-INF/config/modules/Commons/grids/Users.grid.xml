@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Users" viewName="Users" caption="Vartotojai"
+  name="Users" viewName="Users" caption="=users"
   newRowPopup="true"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
     <IdColumn name="Id" caption="ID" flexGrow="0" />
-    <DataColumn name="Login" caption="Prisijungimo vardas" visible="true" />
-    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
-    <DataColumn name="CompanyName" caption="Įmonė" />
+    <DataColumn name="Login" caption="=userLogin" visible="true" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName" />
+    <DataColumn name="CompanyName" caption="=company" />
     <DataColumn name="Position" />
   </g:columns>
 </g:Grid>

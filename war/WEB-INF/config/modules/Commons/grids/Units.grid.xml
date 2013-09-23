@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Units" viewName="Units" caption="Mato vienetai"
+  name="Units" viewName="Units" caption="=units"
   >
   <g:columns>
-    <DataColumn name="Unit" source="Name" caption="Mato vienetas" visible="true" />
-    <DataColumn name="Factor" caption="Koeficientas" />
-    <RelColumn  name="BaseUnit" caption="Pagrindinis mv." newRowEnabled="false" />
-    <DataColumn name="Caption" caption="Pavadinimas" />
+    <DataColumn name="Unit" source="Name" caption="=unitName" visible="true" />
+    <DataColumn name="Factor" caption="=unitFactor" />
+    <RelColumn  name="BaseUnit" caption="=baseUnit" newRowEnabled="false" />
+    <DataColumn name="Caption" caption="=caption" />
   </g:columns>
 </g:Grid>

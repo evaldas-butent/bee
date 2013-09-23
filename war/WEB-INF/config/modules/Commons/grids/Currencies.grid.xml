@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Currencies" viewName="Currencies" caption="Valiutos"
-  newRowForm="Currency" newRowCaption="Nauja valiuta" editForm="Currency"
+  name="Currencies" viewName="Currencies" caption="=currencies"
+  newRowForm="Currency" newRowCaption="=newCurrency" editForm="Currency"
   newRowPopup="true" editPopup="true"
   >
   <g:columns>
-    <DataColumn name="Currency" source="Name" caption="Valiuta" visible="true" />
-    <DataColumn name="Caption" source="Caption" caption="Pavadinimas" />
-    <DataColumn name="MinorName" source="MinorName" caption="Smulki" />
-    <DataColumn name="MinorCaption" source="MinorCaption" caption="Smulkios pav." />
+    <DataColumn name="Currency" source="Name" caption="=currency" visible="true" />
+    <DataColumn name="Caption" source="Caption" caption="=caption"  />
+    <DataColumn name="MinorName" source="MinorName" caption="=minorName" />
+    <DataColumn name="MinorCaption" source="MinorCaption" caption="=minorCaption" />
   </g:columns>
 </g:Grid>

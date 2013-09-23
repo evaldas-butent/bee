@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Positions" viewName="Positions" caption="Pareigos"
+  name="Positions" viewName="Positions" caption="=personPosition"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" maxWidth="200" visible="true" />
+    <DataColumn name="Name" caption="=name" minWidth="100" maxWidth="200" visible="true" />
   </g:columns>
 </g:Grid>

@@ -2,15 +2,15 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Themes" viewName="Themes" caption="Spalvų temos" newRowCaption="Nauja tema"
+  name="Themes" viewName="Themes" caption="=colorThemes" newRowCaption="=newTheme"
   editForm="Theme" flexGrow="1" flexShrink="1"
   >
   <g:body height="40" />
   <g:columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" visible="true" />
-    <DataColumn name="Description" caption="Aprašymas" flexShrink="3" />
+    <DataColumn name="Name" caption="=name" minWidth="100" visible="true" />
+    <DataColumn name="Description" caption="=description" flexShrink="3" />
 
-    <RelColumn name="DefaultColorName" caption="Pagrindinė spalva">
+    <RelColumn name="DefaultColorName" caption="=defaultColor">
       <dynStyle>
         <ui:inline>background-color: [row.DefaultBackground] !important; color: [row.DefaultForeground];</ui:inline>
         <ui:expression>row.DefaultColor > 0</ui:expression>

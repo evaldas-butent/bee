@@ -2,13 +2,13 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="RoleRights" viewName="Rights" caption="Teisės"
+  name="RoleRights" viewName="Rights" caption="=roleRights"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <DataColumn name="ObjectType" caption="Tipas" readOnly="true" itemKey="RightsObjectType" visible="true" />
-    <RelColumn name="ObjectName" caption="Objektas" visible="true" />
-    <DataColumn name="State" caption="Būsena" itemKey="RightsState" visible="true">
+    <DataColumn name="ObjectType" caption="=objectType" readOnly="true" itemKey="RightsObjectType" visible="true" />
+    <RelColumn name="ObjectName" caption="=object" visible="true" />
+    <DataColumn name="State" caption="=roleState" itemKey="RightsState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
       </style>
