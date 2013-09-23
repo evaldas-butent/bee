@@ -12,7 +12,7 @@
     <DataColumn name="ForwarderName" caption="=carrier" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <ActionColumn element="button" name="Contract" caption="=print" width="70">
-      <render><ui:expression>'Sutartis'</ui:expression></render>
+      <render><ui:expression>$wnd.Bee_maybeLocalize("=trContract")</ui:expression></render>
     </ActionColumn>
   </g:columns>
 </g:Grid>
