@@ -6,8 +6,8 @@
    x="82" y="13"
   >
   <Fields>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <Relation name="Role" notNull="true" relation="Roles" cascade="DELETE" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Relation name="Role" notNull="true" relation="Roles" cascade="DELETE" label="=role" />
   </Fields>
 
   <Constraints>

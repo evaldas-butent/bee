@@ -5,8 +5,8 @@
   idName="ThemeColorID"
   >
   <Fields>
-    <Relation name="Theme" notNull="true" relation="Themes" cascade="DELETE" />
-    <Relation name="Color" notNull="true" relation="Colors" cascade="DELETE" />
+    <Relation name="Theme" notNull="true" relation="Themes" cascade="DELETE" label="=colorTheme" />
+    <Relation name="Color" notNull="true" relation="Colors" cascade="DELETE" label="=color" />
   </Fields>
 
   <Constraints>

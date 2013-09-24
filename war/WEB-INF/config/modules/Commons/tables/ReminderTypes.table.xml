@@ -5,14 +5,14 @@
   idName="ReminderTypeID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
-    <Integer name="Method" notNull="true" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=reminderName"/>
+    <Integer name="Method" notNull="true" label="=reminderMethod" />
 
-    <Integer name="Hours" />
-    <Integer name="Minutes" />
-    <String name="Caption" precision="15" />
-    <Text name="Template" />
+    <Integer name="Hours" label="=unitHours" />
+    <Integer name="Minutes" label="=unitMinutes" />
+    <String name="Caption" precision="15" label="=reminderCaption" />
+    <Text name="Template" label="=reminderTemplate" />
 
-    <Text name="Description" />
+    <Text name="Description" label="=description" />
   </Fields>
 </Table>

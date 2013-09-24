@@ -5,6 +5,6 @@
   idName="CompanyPriorityID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="Sąryšio tipas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=companyRelationType" />
   </Fields>
 </Table>

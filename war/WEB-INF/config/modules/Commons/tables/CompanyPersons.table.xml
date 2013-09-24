@@ -6,10 +6,10 @@
   x="501" y="339"
   >
   <Fields>
-    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
-    <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="Vardas, pavardė" />
-    <Relation name="Position" relation="Positions" label="Pareigos" />
-    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />
+    <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="=personFullName" />
+    <Relation name="Position" relation="Positions" label="=personPosition" />
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts"/>
   </Fields>
 
   <Constraints>

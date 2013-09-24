@@ -6,9 +6,9 @@
   x="501" y="339"
   >
   <Fields>
-    <Relation name="Company" relation="Companies" notNull="true" label="Įmonė"/>
-    <Relation name="User" relation="Users" notNull="true" label="Atsakingas vartotojas"/>
-    <Relation name="Responsibility" relation="Responsibilities" notNull="true" label="Atsakomybė"/>
+    <Relation name="Company" relation="Companies" notNull="true" label="=company"/>
+    <Relation name="User" relation="Users" notNull="true" label="=companyResponsibleUser"/>
+    <Relation name="Responsibility" relation="Responsibilities" notNull="true" label="=responsibility"/>
   </Fields>
 
   <Constraints>

@@ -6,12 +6,12 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Module" precision="20" notNull="true" />
-    <String name="Name" precision="30" notNull="true" />
-    <String name="Type" precision="20" notNull="true" />
-    <Text name="Description" />
-    <Boolean name="UserMode" />
-    <Text name="Value" />
+    <String name="Module" precision="20" notNull="true" label="=module"/>
+    <String name="Name" precision="30" notNull="true" label="=parameterName" />
+    <String name="Type" precision="20" notNull="true" label="=parameterType"/>
+    <Text name="Description" label="=description"/>
+    <Boolean name="UserMode" label="=userMode" />
+    <Text name="Value" label="=valueParameter"/>
   </Fields>
  
    <Constraints>

@@ -5,6 +5,6 @@
   idName="InfoSourceID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="Informacijos šatinio pavadinimas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=informationSourceName" />
   </Fields>
 </Table>

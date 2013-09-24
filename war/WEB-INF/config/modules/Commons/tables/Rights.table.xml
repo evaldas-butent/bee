@@ -6,9 +6,9 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Object" relation="Objects" notNull="true" cascade="DELETE" />
-    <Relation name="Role" relation="Roles" cascade="DELETE" />
-    <Integer name="State" notNull="true" />
+    <Relation name="Object" relation="Objects" notNull="true" cascade="DELETE" label="=object"/>
+    <Relation name="Role" relation="Roles" cascade="DELETE" label="=role"/>
+    <Integer name="State" notNull="true" label="=roleState" />
   </Fields>
 
   <Constraints>

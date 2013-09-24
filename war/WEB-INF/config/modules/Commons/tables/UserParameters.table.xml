@@ -6,9 +6,9 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Parameter" relation="Parameters" notNull="true" cascade="DELETE" />
-    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
-    <Text name="Value" />
+    <Relation name="Parameter" relation="Parameters" notNull="true" cascade="DELETE" label="=parameter" />
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user"/>
+    <Text name="Value" label="=value" />
   </Fields>
 
   <Constraints>

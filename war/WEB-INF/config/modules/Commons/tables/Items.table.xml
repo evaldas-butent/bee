@@ -5,14 +5,14 @@
   idName="ItemID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
-    <Relation name="Unit" notNull="true" relation="Units" label="Mato vienetas" />
-    <String name="Article" precision="30" unique="true" label="Artikulas" />
-    <String name="Barcode" precision="30" unique="true" label="Barkodas" />
-    <Numeric name="Price" precision="15" scale="5" label="Pard.kaina" />
-    <Relation name="Currency" relation="Currencies" label="Valiuta" />
+    <String name="Name" precision="100" notNull="true" label="=itemsName" />
+    <Relation name="Unit" notNull="true" relation="Units" label="=unitName" />
+    <String name="Article" precision="30" unique="true" label="=article" />
+    <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
+    <Numeric name="Price" precision="15" scale="5" label="=sellingPrice" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
     <Boolean name="Vat" label="PVM" />
-    <Numeric name="VatPercent" precision="3" label="PVM %" />
+    <Numeric name="VatPercent" precision="3" label="=vatPercent" />
     <Boolean name="IsService" />
     <String name="ExternalCode" precision="10" label="ERPCode" />
   </Fields>

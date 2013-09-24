@@ -12,6 +12,6 @@
     <String name="SupplierCode" precision="10" unique="true" label="=ecSupplierWarehouse" />
     <Text name="Description" label="=description" />
 
-    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts"/>
   </Fields>
 </Table>
