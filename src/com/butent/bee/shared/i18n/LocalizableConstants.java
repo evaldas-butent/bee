@@ -334,6 +334,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String tabControl();
 
+  String time();
+
   String tooLittleData();
 
   String totalOf();

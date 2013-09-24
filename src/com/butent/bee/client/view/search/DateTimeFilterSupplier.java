@@ -13,6 +13,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Html;
@@ -68,6 +70,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       return Range.closedOpen(start, end);
     }
   }
+
   private static InputDate getInputDate(HtmlTable display, int row) {
     Widget widget = display.getWidget(row, DATE_COL);
     if (widget instanceof InputDate) {
@@ -174,7 +177,10 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
-    openDialog(target, createWidget(), onChange);
+    Widget widget = createWidget();
+    openDialog(target, widget, onChange);
+    
+    UiHelper.focus(widget);
   }
 
   @Override
@@ -296,9 +302,13 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     InputDate dateFrom = new InputDate();
     display.setWidgetAndStyle(START_ROW, DATE_COL, dateFrom, STYLE_DATE);
 
+    SimpleEditorHandler.observe(null, dateFrom);
+    
     if (isDateTime()) {
       InputTime timeFrom = createInputTime();
       display.setWidgetAndStyle(START_ROW, TIME_COL, timeFrom, STYLE_TIME);
+
+      SimpleEditorHandler.observe(null, timeFrom);
     }
 
     Html labelTo = new Html(Localized.getConstants().dateToShort());
@@ -307,9 +317,13 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     InputDate dateTo = new InputDate();
     display.setWidgetAndStyle(END_ROW, DATE_COL, dateTo, STYLE_DATE);
 
+    SimpleEditorHandler.observe(null, dateTo);
+    
     if (isDateTime()) {
       InputTime timeTo = createInputTime();
       display.setWidgetAndStyle(END_ROW, TIME_COL, timeTo, STYLE_TIME);
+      
+      SimpleEditorHandler.observe(null, timeTo);
     }
 
     if (getRange() != null) {

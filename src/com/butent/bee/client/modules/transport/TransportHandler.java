@@ -391,7 +391,8 @@ public final class TransportHandler {
 
   private static class TripFormHandler extends AbstractFormInterceptor {
     @Override
-    public void afterCreateEditableWidget(EditableWidget editableWidget) {
+    public void afterCreateEditableWidget(EditableWidget editableWidget,
+        IdentifiableWidget widget) {
       if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
         String viewName = getFormView().getViewName();
         final int dateIndex = Data.getColumnIndex(viewName, "Date");

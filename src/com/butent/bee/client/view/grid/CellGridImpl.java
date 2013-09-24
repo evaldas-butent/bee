@@ -1560,7 +1560,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     form.create(formDescription, gridDescription.getViewName(), getDataColumns(), true,
         new AbstractFormInterceptor() {
           @Override
-          public void afterCreateEditableWidget(EditableWidget editableWidget) {
+          public void afterCreateEditableWidget(EditableWidget editableWidget,
+              IdentifiableWidget widget) {
             EditableColumn ec = getEditableColumn(editableWidget.getWidgetName(), true);
             editableWidget.setValidationDelegate(ec);
           }

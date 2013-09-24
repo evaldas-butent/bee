@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Html;
@@ -72,6 +73,8 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
   private Boolean emptiness;
 
   private final Pair<String, String> oldValue = Pair.of(null, null);
+  
+  private Widget widget;
   
   public RangeFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);
@@ -136,7 +139,14 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     oldValue.setA(getLowerValue());
     oldValue.setB(getUpperValue());
 
-    openDialog(target, createWidget(), onChange);
+    if (getWidget() == null) {
+      setWidget(createWidget());
+
+      SimpleEditorHandler.observe(null, inputFrom, getWidget());
+      SimpleEditorHandler.observe(null, inputTo, getWidget());
+    }
+
+    openDialog(target, getWidget(), onChange);
     
     inputFrom.setFocus(true);
   }
@@ -278,6 +288,10 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     return BeeUtils.trim(inputTo.getValue());
   }
 
+  private Widget getWidget() {
+    return widget;
+  }
+
   private void onEmptiness(Boolean value) {
     boolean changed = !BeeUtils.isEmpty(oldValue.getA()) || !BeeUtils.isEmpty(oldValue.getB())
         || !Objects.equal(getEmptiness(), value);
@@ -296,5 +310,9 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     }
 
     this.emptiness = empt;
+  }
+
+  private void setWidget(Widget widget) {
+    this.widget = widget;
   }
 }

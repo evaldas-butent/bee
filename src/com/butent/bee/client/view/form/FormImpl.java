@@ -190,7 +190,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         result.setHasDefaults(editableWidget.hasDefaults());
 
         if (getFormInterceptor() != null) {
-          getFormInterceptor().afterCreateEditableWidget(editableWidget);
+          getFormInterceptor().afterCreateEditableWidget(editableWidget, widget);
         }
       }
 

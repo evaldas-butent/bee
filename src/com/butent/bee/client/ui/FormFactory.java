@@ -63,7 +63,7 @@ public final class FormFactory {
 
     void afterCreate(FormView form);
 
-    void afterCreateEditableWidget(EditableWidget editableWidget);
+    void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
 
     void afterRefresh(FormView form, IsRow row);
 

@@ -1113,7 +1113,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static int defaultResizerMoveSensitivityMillis;
   private static int defaultRowChangeSensitivityMillis;
 
-  private static int pageSizeCalculationReserve = 3;
+  private static final int PAGE_SIZE_CALCULATION_RESERVE = 3;
+  private static final int LINE_WIDTH_RESERVE = 1;
 
   public static final String STYLE_EVEN_ROW = "bee-CellGridEvenRow";
   public static final String STYLE_ODD_ROW = "bee-CellGridOddRow";
@@ -1643,6 +1644,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int width = Rulers.getLineWidth(font, cellHtml.asString(), true);
 
     if (width > 0) {
+      width += LINE_WIDTH_RESERVE;
       if (addMargins) {
         if (columnInfo.getColumn().isSortable()) {
           width += HeaderCell.SORT_INFO_WIDTH;
@@ -1676,7 +1678,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int bodyRowHeight = getBodyCellHeight() + getBodyCellHeightIncrement();
     if (bodyRowHeight > 0 && availableBodyHeight >= bodyRowHeight) {
       int ps = availableBodyHeight / bodyRowHeight;
-      if (ps > 1 && availableBodyHeight % bodyRowHeight < pageSizeCalculationReserve) {
+      if (ps > 1 && availableBodyHeight % bodyRowHeight < PAGE_SIZE_CALCULATION_RESERVE) {
         ps--;
       }
       return ps;
@@ -3065,6 +3067,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     if (width > 0) {
+      width += LINE_WIDTH_RESERVE;
       if (ensure) {
         columnInfo.ensureBodyWidth(width);
       } else {

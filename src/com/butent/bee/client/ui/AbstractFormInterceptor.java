@@ -34,7 +34,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public void afterCreateEditableWidget(EditableWidget editableWidget) {
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
   }
 
   @Override
