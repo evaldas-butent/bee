@@ -9,8 +9,9 @@
   width="800" height="600"
   caption="=trCreditInvoice"
   >
+  <f:properties reports="PrintCargoCreditInvoice" />
+
   <FlowPanel class="flexBox-vertical">
-    <properties printing="PrintCargoCreditInvoice, Indulgencija" />
     <Table>
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl;" />
@@ -25,7 +26,7 @@
           <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
           <DataSelector source="CurrencyName" placeholder="=currencyShort"
             style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" text="=trdVatIncluded" readOnly="true" />
+          <CheckBox name="VatIncluded" source="VatIncluded" text="=trdVatIncluded" />
         </HorizontalPanel>
 
         <Label text="=trdInvoicePrefix" style="&lbl;" />

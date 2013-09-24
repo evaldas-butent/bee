@@ -2013,11 +2013,14 @@ body {
   white-space: pre;
 }
 
+
+.companyInfo-name .companyInfo-label {
+  display: none;
+}
 .companyInfo-label, .companyInfo-item {
   display: inline-block;
   margin-right: 4px;
 }
-
 .companyInfo-label:after {
   content: ":";
 }

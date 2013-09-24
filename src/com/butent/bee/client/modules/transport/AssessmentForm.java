@@ -78,11 +78,11 @@ public class AssessmentForm extends AbstractFormInterceptor {
     public void beforeRefresh(FormView form, IsRow row) {
       Widget w = form.getWidgetByName("CustomerInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), (HasWidgets) w);
+        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
       }
       w = form.getWidgetByName("ForwarderInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), (HasWidgets) w);
+        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
       }
     }
 
@@ -606,10 +606,10 @@ public class AssessmentForm extends AbstractFormInterceptor {
         if (AssessmentStatus.in(status, AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED)) {
           header.addCommandItem(new Button(Localized.getConstants().trPreInvoice(),
               new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-            }
-          }));
+                @Override
+                public void onClick(ClickEvent event) {
+                }
+              }));
         }
         if (AssessmentStatus.in(status, AssessmentStatus.NEW, AssessmentStatus.ANSWERED)) {
           header.addCommandItem(cmdLost);

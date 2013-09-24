@@ -45,9 +45,9 @@ public final class TradeUtils {
   private static final String STYLE_ITEMS_FOOTER = STYLE_ITEMS + "footer";
 
   private static final String COL_TOTAL = "Total";
-  private static final String COL_CURRENCY_AMOUNT = COL_CURRENCY + COL_TRADE_AMOUNT;
-  private static final String COL_CURRENCY_VAT = COL_CURRENCY + COL_TRADE_ITEM_VAT;
-  private static final String COL_CURRENCY_TOTAL = COL_CURRENCY + COL_TOTAL;
+  private static final String COL_RATE_AMOUNT = COL_RATES_RATE + COL_TRADE_AMOUNT;
+  private static final String COL_RATE_VAT = COL_RATES_RATE + COL_TRADE_ITEM_VAT;
+  private static final String COL_RATE_TOTAL = COL_RATES_RATE + COL_TOTAL;
 
   public static void getDocumentItems(String viewName, long tradeId, final HtmlTable table) {
     Assert.notNull(table);
@@ -59,10 +59,11 @@ public final class TradeUtils {
     args.addDataItem("view_name", viewName);
     args.addDataItem("id", tradeId);
 
-    final String currencyTo = DomUtils.getDataProperty(table.getElement(), COL_CURRENCY);
-    final boolean currencyExists = !BeeUtils.isEmpty(currencyTo);
+    final String currencyTo = DomUtils.getDataProperty(table.getElement(),
+        COL_RATES_RATE + COL_CURRENCY);
+    final boolean rateExists = !BeeUtils.isEmpty(currencyTo);
 
-    if (currencyExists) {
+    if (rateExists) {
       args.addDataItem(COL_CURRENCY, currencyTo);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -83,8 +84,8 @@ public final class TradeUtils {
           cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
           cols.put(COL_TRADE_ITEM_VAT, Localized.getConstants().trdVat());
 
-          if (currencyExists) {
-            cols.put(COL_CURRENCY_AMOUNT,
+          if (rateExists) {
+            cols.put(COL_RATE_AMOUNT,
                 BeeUtils.joinWords(Localized.getConstants().trdAmount(), currencyTo));
           }
           int j = 0;
@@ -128,11 +129,11 @@ public final class TradeUtils {
           table.setWidget(1, 2, val);
           table.setWidget(1, 3, curr);
 
-          if (currencyExists) {
+          if (rateExists) {
             FlowPanel flow = new FlowPanel();
 
-            for (String name : new String[] {COL_CURRENCY_AMOUNT + COL_TOTAL,
-                COL_CURRENCY_VAT + COL_TOTAL, COL_CURRENCY_TOTAL}) {
+            for (String name : new String[] {COL_RATE_AMOUNT + COL_TOTAL,
+                COL_RATE_VAT + COL_TOTAL, COL_RATE_TOTAL}) {
 
               cell = new CustomDiv();
               DomUtils.setDataProperty(cell.getElement(), COL_NAME, name);
@@ -151,6 +152,7 @@ public final class TradeUtils {
         double qtyTotal = 0;
         double vatTotal = 0;
         double sumTotal = 0;
+        String rateCurrency = null;
         double currVatTotal = 0;
         double currSumTotal = 0;
 
@@ -181,7 +183,10 @@ public final class TradeUtils {
           sumTotal += sum;
           vatTotal += vat;
 
-          if (currencyExists) {
+          if (rateExists) {
+            if (BeeUtils.isEmpty(rateCurrency)) {
+              rateCurrency = row.getValue(COL_RATES_RATE + COL_CURRENCY);
+            }
             double rate = BeeUtils.unbox(row.getDouble(COL_RATES_RATE));
             currSum = BeeUtils.round(sum * rate, 2);
             currSumTotal += currSum;
@@ -216,7 +221,7 @@ public final class TradeUtils {
                 } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT)) {
                   value = formater.format(sum);
 
-                } else if (BeeUtils.same(fld, COL_CURRENCY_AMOUNT)) {
+                } else if (BeeUtils.same(fld, COL_RATE_AMOUNT)) {
                   value = formater.format(currSum);
 
                 } else if (!rs.hasColumn(fld)) {
@@ -285,14 +290,17 @@ public final class TradeUtils {
               } else if (BeeUtils.same(fld, COL_CURRENCY)) {
                 value = currency;
 
-              } else if (BeeUtils.same(fld, COL_CURRENCY_AMOUNT + COL_TOTAL)) {
+              } else if (BeeUtils.same(fld, COL_RATE_AMOUNT + COL_TOTAL)) {
                 value = formater.format(currSumTotal);
 
-              } else if (BeeUtils.same(fld, COL_CURRENCY_VAT + COL_TOTAL)) {
+              } else if (BeeUtils.same(fld, COL_RATE_VAT + COL_TOTAL)) {
                 value = formater.format(currVatTotal);
 
-              } else if (BeeUtils.same(fld, COL_CURRENCY_TOTAL)) {
+              } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
                 value = formater.format(currSumTotal + currVatTotal);
+
+              } else if (BeeUtils.same(fld, COL_RATES_RATE + COL_CURRENCY)) {
+                value = rateCurrency;
 
               } else {
                 value = null;
@@ -310,9 +318,9 @@ public final class TradeUtils {
   }
 
   public static void getTotalInWords(Double amount, final String currencyName,
-      final String minorName, final Element total) {
+      final String minorName, final Widget total) {
     Assert.notNull(total);
-    String locale = DomUtils.getDataProperty(total, "locale");
+    String locale = DomUtils.getDataProperty(total.getElement(), "locale");
 
     if (amount == null || amount <= 0) {
       return;
@@ -334,8 +342,8 @@ public final class TradeUtils {
         if (response.hasErrors()) {
           return;
         }
-        total.setInnerText(BeeUtils.joinWords(response.getResponse(), currencyName, fraction,
-            minorName));
+        total.getElement().setInnerText(BeeUtils.joinWords(response.getResponse(), currencyName,
+            fraction, minorName));
       }
     });
   }

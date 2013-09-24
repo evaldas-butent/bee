@@ -28,5 +28,6 @@
     <DataColumn name="SupplierName" caption="=trdSupplier" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
+    <DataColumn name="Exported" />
   </g:columns>
 </g:Grid>

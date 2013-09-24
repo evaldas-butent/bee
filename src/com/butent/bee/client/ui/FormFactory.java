@@ -119,7 +119,7 @@ public final class FormFactory {
   private static final String ATTR_TYPE = "type";
 
   private static final Map<String, FormDescription> descriptionCache = Maps.newHashMap();
-  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors = 
+  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors =
       Maps.newHashMap();
 
   public static void clearDescriptionCache() {
@@ -244,6 +244,37 @@ public final class FormFactory {
 
   public static FormDescription getFormDescription(String formName) {
     return descriptionCache.get(getFormKey(Assert.notEmpty(formName)));
+  }
+
+  public static void getFormDescription(final String formName,
+      final Callback<FormDescription> callback) {
+    Assert.notEmpty(formName);
+    Assert.notNull(callback);
+
+    final String key = getFormKey(formName);
+    if (descriptionCache.containsKey(key)) {
+      callback.onSuccess(descriptionCache.get(key));
+      return;
+    }
+
+    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(formName), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(String.class)) {
+          FormDescription fd = parseFormDescription((String) response.getResponse());
+          if (fd == null) {
+            callback.onFailure("form", formName, "decription not created");
+          } else {
+            if (fd.cacheDescription()) {
+              descriptionCache.put(key, fd);
+            }
+            callback.onSuccess(fd);
+          }
+        } else {
+          callback.onFailure("get form description", formName, "response not a string");
+        }
+      }
+    });
   }
 
   public static FormInterceptor getFormInterceptor(String formName) {
@@ -420,37 +451,6 @@ public final class FormFactory {
   public static void registerFormInterceptor(String formName, FormInterceptor interceptor) {
     Assert.notEmpty(formName);
     formInterceptors.put(getFormKey(formName), Pair.of(interceptor, 0));
-  }
-
-  private static void getFormDescription(final String formName,
-      final Callback<FormDescription> callback) {
-    Assert.notEmpty(formName);
-    Assert.notNull(callback);
-
-    final String key = getFormKey(formName);
-    if (descriptionCache.containsKey(key)) {
-      callback.onSuccess(descriptionCache.get(key));
-      return;
-    }
-
-    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(formName), new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(String.class)) {
-          FormDescription fd = parseFormDescription((String) response.getResponse());
-          if (fd == null) {
-            callback.onFailure("form", formName, "decription not created");
-          } else {
-            if (fd.cacheDescription()) {
-              descriptionCache.put(key, fd);
-            }
-            callback.onSuccess(fd);
-          }
-        } else {
-          callback.onFailure("get form description", formName, "response not a string");
-        }
-      }
-    });
   }
 
   private static String getFormKey(String formName) {

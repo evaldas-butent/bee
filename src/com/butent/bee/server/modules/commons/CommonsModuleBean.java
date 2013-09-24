@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.commons;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -20,6 +21,8 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -30,15 +33,18 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
-import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -48,6 +54,8 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -124,7 +132,8 @@ public class CommonsModuleBean implements BeeModule {
       response = doParameterEvent(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
-      response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
+      response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
+          reqInfo.getParameter("locale"));
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -354,11 +363,11 @@ public class CommonsModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject getCompanyInfo(Long companyId) {
+  private ResponseObject getCompanyInfo(Long companyId, String locale) {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.error("Wrong company ID");
     }
-    SimpleRowSet res = qs.getRow(new SqlSelect()
+    SimpleRow row = qs.getRow(new SqlSelect()
         .addFields(TBL_COMPANIES, COL_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
         .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
@@ -369,9 +378,31 @@ public class CommonsModuleBean implements BeeModule {
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
         .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId))).getRowSet();
+        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
-    return ResponseObject.response(res);
+    Locale loc = I18nUtils.toLocale(locale);
+    LocalizableConstants constants = (loc == null)
+        ? Localized.getConstants() : Localizations.getConstants(loc);
+
+    Map<String, String> translations = Maps.newHashMap();
+    translations.put(COL_NAME, constants.company());
+    translations.put(COL_COMPANY_CODE, constants.companyCode());
+    translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
+    translations.put(COL_ADDRESS, constants.address());
+    translations.put(COL_POST_INDEX, constants.postIndex());
+    translations.put(COL_PHONE, constants.phone());
+    translations.put(COL_MOBILE, constants.mobile());
+    translations.put(COL_FAX, constants.fax());
+    translations.put(COL_EMAIL_ADDRESS, constants.address());
+    translations.put(COL_CITY, constants.city());
+    translations.put(COL_COUNTRY, constants.country());
+
+    Map<String, Pair<String, String>> info = Maps.newHashMap();
+
+    for (String col : translations.keySet()) {
+      info.put(col, Pair.of(translations.get(col), row.getValue(col)));
+    }
+    return ResponseObject.response(info);
   }
 
   private static Collection<? extends BeeParameter> getSqlEngineParameters() {

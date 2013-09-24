@@ -5,6 +5,16 @@
   >
   <Columns>
     <SimpleColumn name="Cargo" />
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleColumn name="Cmr" />
+      <SimpleColumn name="Order" />
+      <SimpleJoin name="Order" joinType="INNER">
+        <SimpleColumn name="Status" />
+        <SimpleColumn name="Date" alias="OrderDate" />
+        <SimpleColumn name="OrderNo" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
 

@@ -3,6 +3,7 @@ package com.butent.webservice;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -42,9 +43,12 @@ public class WSDocument {
   private final DateTime date;
   private final String operation;
   private final String warehouse;
-
   private final String company;
+
+  private JustDate term;
+
   private String supplier;
+  private String customer;
   private String payer;
 
   private final List<WSDocumentItem> items = Lists.newArrayList();
@@ -72,10 +76,12 @@ public class WSDocument {
           .append(ButentWS.tag("apyv_id", documentId))
           .append(ButentWS.tag("data", date))
           .append(ButentWS.tag("operacija", operation))
-          .append(ButentWS.tag("tiekejas", supplier))
-          .append(ButentWS.tag("klientas", company))
-          .append(ButentWS.tag("moketojas", payer))
           .append(ButentWS.tag("sandelis", warehouse))
+          .append(ButentWS.tag("klientas", company))
+          .append(ButentWS.tag("tiekejas", supplier))
+          .append(ButentWS.tag("gavejas", customer))
+          .append(ButentWS.tag("moketojas", payer))
+          .append(ButentWS.tag("terminas", term))
           .append(ButentWS.tag("preke", item.itemId))
           .append(ButentWS.tag("kiekis", item.quantity))
           .append(ButentWS.tag("pastaba", item.note));
@@ -94,11 +100,19 @@ public class WSDocument {
     return sb.append("</VFPData>").toString();
   }
 
+  public void setCustomer(String customer) {
+    this.customer = customer;
+  }
+
   public void setPayer(String payer) {
     this.payer = payer;
   }
 
   public void setSupplier(String supplier) {
     this.supplier = supplier;
+  }
+
+  public void setTerm(JustDate term) {
+    this.term = term;
   }
 }

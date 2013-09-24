@@ -36,15 +36,10 @@ public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHan
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof ChildGrid) {
-      ChildGrid grid = (ChildGrid) widget;
-
-      if (BeeUtils.same(name, TBL_SALE_ITEMS)) {
-        grid.setGridInterceptor(new InvoiceItemsGrid(getFormView()));
-
-      } else if (BeeUtils.same(name, VIEW_CARGO_INVOICE_INCOMES)) {
-        grid.setGridInterceptor(new AbstractGridInterceptor());
-      }
+    if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_CARGO_INVOICE_INCOMES)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor());
+    } else {
+      super.afterCreateWidget(name, widget, callback);
     }
   }
 
@@ -93,5 +88,10 @@ public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHan
             });
       }
     });
+  }
+
+  @Override
+  protected String getTradeItemsName() {
+    return TBL_SALE_ITEMS;
   }
 }

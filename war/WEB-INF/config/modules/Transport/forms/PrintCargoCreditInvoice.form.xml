@@ -6,13 +6,24 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" 
+  xmlns:ui="http://www.butent.com/ui"
   
   name="&form;" caption="Kreditinė sąskaita" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
   <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form; .itemsInfo-data .itemsInfo-Amount:before,
+      .&form; .itemsInfo-AmountTotal:before,
+      .&form; .itemsInfo-VatTotal:before,
+      .&form; .itemsInfo-Total:before,
+      .&form; .itemsInfo-data .itemsInfo-RateAmount:before,
+      .&form; .itemsInfo-RateAmountTotal:before,
+      .&form; .itemsInfo-RateVatTotal:before,
+      .&form; .itemsInfo-RateTotal:before {content: "-"}
+    </css>
+
     <HorizontalPanel>
       <Image  url="images/logo.gif" />
       <cell width="100" widthUnit="%">
@@ -30,13 +41,13 @@
       <Table style="width:100%;">
         <row>
           <cell style="vertical-align:top;">
-            <Label html="Tiekėjas:" />
+            <Label html="Siuntėjas:" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
             <FlowPanel name="Supplier" />
           </cell>
           <cell style="vertical-align:top;">
-            <Label html="Pirkėjas:" horizontalAlignment="right" />
+            <Label html="Gavėjas:" horizontalAlignment="right" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
             <FlowPanel name="Customer" />
@@ -45,10 +56,10 @@
       </Table>
     </FlowPanel>
 
-    <DateTimeLabel source="Date" format="DATE_SHORT" horizontalAlignment="right" />
+    <DateTimeLabel source="Date" format="DATE_LONG" horizontalAlignment="right" />
 
-    <Table name="InvoiceDetails" style="&section; width:100%">
-      <properties currency="EUR" />
+    <Table name="InvoiceDetails" class="&form;" style="&section; width:100%">
+      <properties rateCurrency="EUR" />
       <row>
         <Label text="Paslauga">
           <properties name="Name" />
@@ -66,7 +77,7 @@
           <properties name="Vat" />
         </Label>
         <FlowPanel>
-          <properties name="CurrencyAmount" />
+          <properties name="RateAmount" />
           <InlineLabel text="=trdAmount" />
           <InlineLabel html="EUR" style="padding-left:3px;" />
         </FlowPanel>
@@ -103,13 +114,13 @@
         </FlowPanel>
         <FlowPanel>
           <Label>
-            <properties name="CurrencyAmountTotal" />
+            <properties name="RateAmountTotal" />
           </Label>
           <Label>
-            <properties name="CurrencyVatTotal" />
+            <properties name="RateVatTotal" />
           </Label>
           <Label>
-            <properties name="CurrencyTotal" />
+            <properties name="RateTotal" />
           </Label>
         </FlowPanel>
       </row>
@@ -124,35 +135,35 @@
       <cell style="vertical-align:top;">
         <Label html="Papildoma informacija:" style="&bold;" />
       </cell>
-      <TextLabel source="Notes" style="white-space:pre-wrap;" />
+      <TextLabel source="Term" style="white-space:pre-wrap;">
+        <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
+      </TextLabel>
     </HorizontalPanel>
 
     <HtmlPanel style="&section;">
       <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
-Pastaba: Šios nuorodos negalioja sąskaitoms su 21% PVM
-0% PVM tarifais: pagal PVM įst. 45 str.
 Be PVM: Pagal PVM įst. 13 (1) str.
-Without VAT: "Reverse Charge Regime" - according Directive 2006/112/EB
       </span>
       <span style="font-size:smaller; display:block; white-space:pre-wrap;">
-Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /
-After the due period of payment the fine of 0.2% will be calculated for each day.
-Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
-Please fax teh copy of Your banking documents after the transaction will be made.
+Pagal LR CK 6.210 (1) straipsnį: „Terminą įvykdyti piniginę prievolę praleidęs skolininkas privalo mokėti 0,02 procentų dydžio delspinigius per dieną už sumą, kurią sumokėti praleistas terminas, jeigu įstatymai ar sutartis nenustato kitokio delspinigių dydžio“.
+      </span>
+      <span style="font-style:italic; display:block;">
+Kreditinės sąskaitos priežastis:
       </span>
     </HtmlPanel>
 
+    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+
     <Table style="width:100%; margin-top:10px;">
       <row style="&bold;">
-        <Label html="Sąskaitą priėmė" />
-        <Label html="Sąskaitą išrašė" />
+        <Label html="Išdavė" />
+        <Label html="Priėmė" />
       </row>
       <row style="font-size:xx-small;">
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
       </row>
       <row>
-        <FlowPanel />
         <TextLabel source="Manager" style="margin-top:5px;">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />

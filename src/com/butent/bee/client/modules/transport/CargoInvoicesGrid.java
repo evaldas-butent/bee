@@ -56,6 +56,7 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
         header.addCommandItem(new Image(Global.getImages().loading()));
 
         ParameterList args = TransportHandler.createArgs(SVC_SEND_TO_ERP);
+        args.addDataItem("view_name", getGridPresenter().getViewName());
         args.addDataItem("IdList", DataUtils.buildIdList(ids));
 
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

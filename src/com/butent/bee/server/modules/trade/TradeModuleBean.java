@@ -187,7 +187,9 @@ public class TradeModuleBean implements BeeModule {
           SqlUtils.field(trade, COL_TRADE_DATE),
           SqlUtils.field(currAlias, sys.getIdName(ExchangeUtils.TBL_CURRENCIES)));
 
-      query.addExpr(xpr, ExchangeUtils.COL_RATES_RATE);
+      query.addExpr(xpr, ExchangeUtils.COL_RATES_RATE)
+          .addField(currAlias, ExchangeUtils.COL_CURRENCY_NAME,
+              ExchangeUtils.COL_RATES_RATE + ExchangeUtils.COL_CURRENCY);
     }
     return ResponseObject.response(qs.getData(query));
   }

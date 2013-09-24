@@ -190,7 +190,8 @@ public class TransportModuleBean implements BeeModule {
             currency, ids, item);
       }
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
-      response = sendToERP(DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
+      response = sendToERP(reqInfo.getParameter("view_name"),
+          DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -203,6 +204,8 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
+        new BeeParameter(TRANSPORT_MODULE, "ERPCreditOperation", ParameterType.TEXT,
+            "Credit document operation name in ERP system", false, null),
         new BeeParameter(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, ParameterType.NUMBER,
             "Interval of ERP payments renewal in minutes", false, null));
   }
@@ -1744,25 +1747,52 @@ public class TransportModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject sendToERP(Set<Long> ids) {
+  private ResponseObject sendToERP(String viewName, Set<Long> ids) {
+    if (!sys.isView(viewName)) {
+      return ResponseObject.error("Wrong view name");
+    }
+    String trade = sys.getView(viewName).getSourceName();
+    String tradeItems;
+    String itemsRelation;
+
+    SqlSelect query = new SqlSelect()
+        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
+            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY, COL_TRADE_VAT_INCL,
+            COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
+        .addFrom(trade)
+        .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
+            sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
+                COL_TRADE_WAREHOUSE_FROM))
+        .setWhere(sys.idInList(trade, ids));
+
+    if (BeeUtils.same(trade, TBL_SALES)) {
+      tradeItems = TBL_SALE_ITEMS;
+      itemsRelation = COL_SALE;
+      query.addFields(trade, COL_SALE_PAYER);
+
+    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
+      tradeItems = TBL_PURCHASE_ITEMS;
+      itemsRelation = COL_PURCHASE;
+      query.addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
+          .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
+              sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
+                  COL_PURCHASE_WAREHOUSE_TO));
+    } else {
+      return ResponseObject.error("View source not supported:", trade);
+    }
     String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
-    SimpleRowSet invoices = qs.getData(new SqlSelect()
-        .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
-        .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY, COL_TRADE_VAT_INCL,
-            COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER)
-        .addFrom(TBL_SALES)
-        .setWhere(sys.idInList(TBL_SALES, ids)));
+    SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
     Map<Long, String> companies = Maps.newHashMap();
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {
       for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
-        Long id = invoice.getLong(col);
+        Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
 
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
           SimpleRow data = qs.getRow(new SqlSelect()
@@ -1792,21 +1822,36 @@ public class TransportModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      WSDocument doc = new WSDocument(invoice.getValue(COL_SALE),
-          invoice.getDateTime(COL_TRADE_DATE), prm.getText(COMMONS_MODULE, "ERPOperation"),
-          companies.get(invoice.getLong(COL_TRADE_CUSTOMER)),
-          prm.getText(COMMONS_MODULE, "ERPWarehouse"));
+      String operation;
+      String warehouse;
+      String client;
 
-      doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
+      if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
+        operation = prm.getText(TRANSPORT_MODULE, "ERPCreditOperation");
+        warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
+        client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
+      } else {
+        operation = prm.getText(COMMONS_MODULE, "ERPOperation");
+        warehouse = prm.getText(COMMONS_MODULE, "ERPWarehouse");
+        client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
+      }
+      WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
+          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
+
+      if (invoices.hasColumn(COL_SALE_PAYER)) {
+        doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
+      }
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
+      doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
+      doc.setTerm(invoice.getDate(COL_TRADE_TERM));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
-          .addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+          .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
               COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC, COL_TRADE_ITEM_NOTE)
-          .addFrom(TBL_SALE_ITEMS)
-          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
-          .setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, invoice.getLong(COL_SALE))));
+          .addFrom(tradeItems)
+          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
+          .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
 
       for (SimpleRow item : items) {
         if (BeeUtils.isEmpty(item.getValue(COL_ITEM_EXTERNAL_CODE))) {
@@ -1831,9 +1876,9 @@ public class TransportModuleBean implements BeeModule {
         response.addErrorsFrom(resp);
         break;
       }
-      qs.updateData(new SqlUpdate(TBL_SALES)
+      qs.updateData(new SqlUpdate(trade)
           .addConstant("Exported", System.currentTimeMillis())
-          .setWhere(sys.idEquals(TBL_SALES, invoice.getLong(COL_SALE))));
+          .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
     }
     if (response.hasErrors()) {
       response.log(logger);
