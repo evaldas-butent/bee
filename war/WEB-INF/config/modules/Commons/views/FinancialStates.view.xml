@@ -3,8 +3,8 @@
 
   name="FinancialStates"
   source="FinancialStates"
-  caption="Klientų mokumo požymiai"
-  newRowCaption="Naujas mokumo požymis"
+  caption="=clientsFinancialStates"
+  newRowCaption="=newClientsFinancialState"
   >
   <Columns>
     <SimpleColumn name="Name" />

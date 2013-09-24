@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Users" caption="Sistemos vartotojai" source="Users"
-  editForm="User" newRowForm="User" newRowCaption="Naujas vartotojas" rowCaption="Login"
+  name="Users" caption="=systemUsers" source="Users"
+  editForm="User" newRowForm="User" newRowCaption="=newUser" rowCaption="Login"
   >
   <Columns>
     <SimpleColumn name="Login" />

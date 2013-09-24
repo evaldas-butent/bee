@@ -3,8 +3,8 @@
 
   name="Positions"
   source="Positions"
-  caption="Pareigos"
-  newRowCaption="Naujos pareigos"
+  caption="=personPosition"
+  newRowCaption="=newPersonPosition"
   >
   <Columns>
     <SimpleColumn name="Name" />

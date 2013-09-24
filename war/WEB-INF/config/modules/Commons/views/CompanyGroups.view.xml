@@ -3,8 +3,8 @@
 
   name="CompanyGroups"
   source="CompanyGroups"
-  caption="Klientų grupės"
-  newRowCaption="Nauja klientų grupė"
+  caption="=clientsGroups"
+  newRowCaption="=newClientsGroups"
   >
   <Columns>
     <SimpleColumn name="Name" />

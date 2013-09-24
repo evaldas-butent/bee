@@ -3,8 +3,8 @@
 
   name="Responsibilities"
   source="Responsibilities"
-  caption="Atsakomybės"
-  newRowCaption="Nauja atsakomybė"
+  caption="=responsibilities"
+  newRowCaption="=newResponsibility"
   >
   <Columns>
     <SimpleColumn name="Name" />

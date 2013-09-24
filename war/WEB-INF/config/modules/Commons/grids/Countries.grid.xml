@@ -6,7 +6,7 @@
   <g:columns>
     <DataColumn name="Name" minWidth="100" visible="true" />
     <DataColumn name="Code" />
-    <DataColumn name="EUMember" caption="ES" />
+    <DataColumn name="EUMember" caption="=countryEUMemberShort" />
     <CalcColumn type="string" name="Flag" source="Code" cellType="html" width="30" caption="-"
       label="=countryFlag" sortable="false" horizontalAlignment="center" filterOptions="-" >
       <renderer type="flag" />

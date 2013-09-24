@@ -3,8 +3,8 @@
 
   name="CompanyTypes"
   source="CompanyTypes"
-  caption="Klientų tipai"
-  newRowCaption="Naujas klientų tipas"
+  caption="=clientStatus"
+  newRowCaption="=newClientsStatus"
   >
   <Columns>
     <SimpleColumn name="Name" />
