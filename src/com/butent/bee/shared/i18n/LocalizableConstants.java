@@ -190,6 +190,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String filterRemove();
 
+  String goods();
+
   String group();
 
   String height();
@@ -230,11 +232,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String newEmailAccount();
 
+  String newItem();
+
   String newPassword();
 
   String newPasswordIsRequired();
 
   String newPasswordsDoesNotMatch();
+
+  String newService();
 
   String newTab();
 
@@ -317,6 +323,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
+
+  String services();
 
   String settings();
 
