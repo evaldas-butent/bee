@@ -23,13 +23,7 @@
 
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="=notes">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

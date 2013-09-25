@@ -19,13 +19,7 @@
     <DataColumn name="Quantity" caption="=quantity" />
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="=notes">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
       minWidth="140" flexBasis="120" />

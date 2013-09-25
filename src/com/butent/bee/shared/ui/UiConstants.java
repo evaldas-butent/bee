@@ -21,6 +21,8 @@ public final class UiConstants {
 
   public static final String ATTR_HORIZONTAL_ALIGNMENT = "horizontalAlignment";
   public static final String ATTR_VERTICAL_ALIGNMENT = "verticalAlignment";
+
+  public static final String ATTR_WHITE_SPACE = "whiteSpace";
   
   public static final String ATTR_FORMAT = "format";
   public static final String ATTR_SCALE = "scale";

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="ShipmentRequests"
+  idName="ShipmentRequestID"
+  >
+  <Fields>
+    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" />
+  
+    <String name="CustomerName" precision="100" notNull="true" label="=companyName" />
+    <String name="CustomerCode" precision="30" label="=companyCode" />
+    <String name="CustomerVATCode" precision="30" label="=companyVATCode" />
+
+    <String name="CustomerAddress" precision="100" label="=address" />
+    <String name="CustomerPhone" precision="50" label="=phone" />
+    <String name="CustomerEmail" precision="255" label="=email" />
+
+    <String name="CustomerContact" precision="50" label="=personContact" />
+    <String name="CustomerContactPosition" precision="50" label="=personPosition" />
+
+    <String name="CustomerExchangeCode" precision="30" label="=exchangeCode" />
+
+    <String name="LoadingCompanyName" precision="100" label="=trLoadingCompanyName" />
+    <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
+    <String name="LoadingCity" precision="30" label="=trLoadingCity" />
+
+    <String name="UnloadingCompanyName" precision="100" label="=trUnloadingCompanyName" />
+    <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
+    <String name="UnloadingCity" precision="30" label="=trUnloadingCity" />
+
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
+
+    <DateTime name="DeliveryTime" label="=trERdeliveryTime" />
+    <String name="TermsOfDelivery" precision="30" label="=trERtermsOfDelivery" />
+    
+    <Boolean name="CustomsBrokerage" label="=trERcustomsBrokerage" />
+    <Boolean name="FreightInsurance" label="=trERfreightInsurance" />
+
+    <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
+
+    <Relation name="Manager" relation="Users" label="=manager" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

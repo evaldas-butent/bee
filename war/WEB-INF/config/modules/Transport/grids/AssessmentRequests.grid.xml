@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
@@ -20,13 +19,7 @@
     <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
-    <DataColumn name="CustomerName" caption="=customer" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="CustomerName" caption="=customer" minWidth="100" whiteSpace="nowrap" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       caption="=from" horizontalAlignment="center">
@@ -38,21 +31,8 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="=route" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
-
-    <DataColumn name="Description" caption="=cargo" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />

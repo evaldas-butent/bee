@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="ShipmentRequests" source="ShipmentRequests"
+  >
+<!--   newRowForm="ShipmentRequest" editForm="ShipmentRequest" -->
+  <Columns>
+    <SimpleColumn name="Created" />
+
+    <SimpleColumn name="CustomerName" />
+    <SimpleColumn name="CustomerCode" />
+    <SimpleColumn name="CustomerVATCode" />
+
+    <SimpleColumn name="CustomerAddress" />
+    <SimpleColumn name="CustomerPhone" />
+    <SimpleColumn name="CustomerEmail" />
+
+    <SimpleColumn name="CustomerContact" />
+    <SimpleColumn name="CustomerContactPosition" />
+
+    <SimpleColumn name="CustomerExchangeCode" />
+
+    <SimpleColumn name="LoadingCompanyName" />
+    <SimpleColumn name="LoadingEmail" />
+    <SimpleColumn name="LoadingCity" />
+
+    <SimpleColumn name="UnloadingCompanyName" />
+    <SimpleColumn name="UnloadingEmail" />
+    <SimpleColumn name="UnloadingCity" />
+
+    <SimpleJoin name="Expedition" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DeliveryTime" />
+    <SimpleColumn name="TermsOfDelivery" />
+
+    <SimpleColumn name="CustomsBrokerage" />
+    <SimpleColumn name="FreightInsurance" />
+
+    <SimpleColumn name="Cargo" />
+    <SimpleJoin name="Cargo" joinType="LEFT">
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
+        <SimpleColumn name="Address" alias="LoadingAddress" label="=cargoLoadingAddress" editable="true" />
+
+        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="LoadingCountryName" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        </SimpleJoin>
+
+        <SimpleColumn name="Phone" alias="LoadingPhone" editable="true" label="=trLoadingPhone" />
+        <SimpleColumn name="Fax" alias="LoadingFax" editable="true" label="=trLoadingFax" />
+        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" label="=trLoadingNumber" />
+      </SimpleJoin>
+
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" label="=cargoUnloadingAddress" editable="true" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="UnloadingCountryName" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        </SimpleJoin>
+
+        <SimpleColumn name="Phone" alias="UnloadingPhone" editable="true" label="=trUnloadingPhone" />
+        <SimpleColumn name="Fax" alias="UnloadingFax" editable="true" label="=trUnloadingFax" />
+        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" label="=trUnloadingNumber" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Description" editable="true" />
+      <SimpleColumn name="Quantity" editable="true" />
+
+      <SimpleColumn name="Weight" editable="true" />
+      <SimpleColumn name="Volume" editable="true" />
+      <SimpleColumn name="LDM" editable="true" />
+      <SimpleColumn name="Length" editable="true" />
+      <SimpleColumn name="Width" editable="true" />
+      <SimpleColumn name="Height" editable="true" />
+
+      <SimpleColumn name="Palettes" editable="true" />
+
+      <SimpleColumn name="Value" editable="true" />
+
+      <SimpleColumn name="ValueCurrency" editable="true" />
+      <SimpleJoin joinType="LEFT" name="ValueCurrency">
+        <SimpleColumn name="Name" alias="ValueCurrencyName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="ShippingTerm" />
+      <SimpleJoin joinType="LEFT" name="ShippingTerm">
+        <SimpleColumn name="Name" alias="ShippingTermName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+
+  </Columns>
+</View>

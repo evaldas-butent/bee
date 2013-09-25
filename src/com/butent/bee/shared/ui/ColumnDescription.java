@@ -69,7 +69,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, NAME, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
@@ -109,6 +109,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String format;
   private String horAlign;
+  private String whiteSpace;
 
   private Calculation validation;
   private Calculation editable;
@@ -247,6 +248,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case HOR_ALIGN:
           setHorAlign(value);
+          break;
+        case WHITE_SPACE:
+          setWhiteSpace(value);
           break;
         case MAX_VALUE:
           setMaxValue(value);
@@ -435,6 +439,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Visible", getVisible(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
+        "White Space", getWhiteSpace(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", getRequired(),
@@ -626,6 +631,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return visible;
   }
 
+  public String getWhiteSpace() {
+    return whiteSpace;
+  }
+
   public Integer getWidth() {
     return width;
   }
@@ -705,6 +714,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case HOR_ALIGN:
           arr[i++] = getHorAlign();
+          break;
+        case WHITE_SPACE:
+          arr[i++] = getWhiteSpace();
           break;
         case MAX_VALUE:
           arr[i++] = getMaxValue();
@@ -963,6 +975,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setVisible(Boolean visible) {
     this.visible = visible;
+  }
+
+  public void setWhiteSpace(String whiteSpace) {
+    this.whiteSpace = whiteSpace;
   }
 
   public void setWidth(Integer width) {

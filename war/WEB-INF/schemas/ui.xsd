@@ -461,4 +461,15 @@
       <xs:enumeration value="button" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="whiteSpaceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="normal" />
+      <xs:enumeration value="nowrap" />
+      <xs:enumeration value="pre" />
+      <xs:enumeration value="pre-line" />
+      <xs:enumeration value="pre-wrap" />
+    </xs:restriction>
+  </xs:simpleType>
+  
 </xs:schema>

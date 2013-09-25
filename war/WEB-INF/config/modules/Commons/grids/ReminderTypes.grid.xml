@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ReminderTypes" viewName="ReminderTypes"
   caption="=reminderTypes" newRowCaption="=newReminderType"
@@ -15,20 +15,8 @@
     <DataColumn name="Minutes" caption="=unitMinutes" />
 
     <DataColumn name="Caption" caption="=reminderCaption" />
-    <DataColumn name="Template" caption="=reminderTemplate" minWidth="200">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Template" caption="=reminderTemplate" minWidth="200" whiteSpace="pre-wrap" />
     
-    <DataColumn name="Description" caption="=description">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Description" caption="=description" whiteSpace="pre-wrap" />
   </g:columns>
 </g:Grid>

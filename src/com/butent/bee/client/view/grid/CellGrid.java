@@ -59,6 +59,7 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleDescriptor;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -4332,7 +4333,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           result.add(renderCell(rowIdx, col, StyleUtils.buildClasses(cellClasses), left, top,
               cellWidth, cellHeight, defaultStyles, extraStylesBuilder.toSafeStyles(),
-              column.getHorizontalAlignment(), cellHtml, true));
+              column.getHorizontalAlignment(), column.getWhiteSpace(), cellHtml, true));
         }
         left += columnWidth + defaultWidthIncr;
         col++;
@@ -4344,7 +4345,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private RenderInfo renderCell(String rowIdx, int col, String classes, int left, int top,
       int width, int height, SafeStyles styles, SafeStyles extraStyles,
-      HorizontalAlignmentConstant hAlign, SafeHtml content, boolean focusable) {
+      HorizontalAlignmentConstant hAlign, WhiteSpace whiteSpace, SafeHtml content,
+      boolean focusable) {
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
     stylesBuilder.append(StyleUtils.PREFAB_POSITION_ABSOLUTE);
@@ -4355,9 +4357,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (extraStyles != null) {
       stylesBuilder.append(extraStyles);
     }
+
     if (hAlign != null) {
       stylesBuilder.append(StyleUtils.buildStyle(StyleUtils.CSS_TEXT_ALIGN,
           hAlign.getTextAlignString()));
+    }
+    if (whiteSpace != null) {
+      stylesBuilder.append(StyleUtils.buildStyle(StyleUtils.CSS_WHITE_SPACE,
+          whiteSpace.getCssName()));
     }
 
     stylesBuilder.append(StyleUtils.buildLeft(left));
@@ -4484,8 +4491,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
 
       SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
-          width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(), hAlign,
-          cellBuilder.toSafeHtml(), false).render();
+          width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(),
+          hAlign, null, cellBuilder.toSafeHtml(), false).render();
       sb.append(contents);
 
       left += width + xIncr;

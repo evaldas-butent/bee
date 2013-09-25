@@ -26,13 +26,7 @@
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="CargoNotes" caption="=cargoNotes" maxWidth="200">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="CargoNotes" caption="=cargoNotes" maxWidth="200" whiteSpace="pre-wrap" />
 
     <ActionColumn name="TripNo" element="link" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />

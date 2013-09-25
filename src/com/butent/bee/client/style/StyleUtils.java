@@ -365,8 +365,8 @@ public final class StyleUtils {
   public static final String WHITE_SPACE_NORMAL = "normal";
   public static final String WHITE_SPACE_NOWRAP = "nowrap";
   public static final String WHITE_SPACE_PRE = "pre";
-  public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
   public static final String WHITE_SPACE_PRE_LINE = "pre-line";
+  public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
 
   public static final String BORDER_COLLAPSE = "collapse";
   public static final String BORDER_SEPARATE = "separate";
@@ -396,6 +396,8 @@ public final class StyleUtils {
   public static final String CSS_BORDER_BOTTOM_WIDTH = "border-bottom-width";
 
   public static final String CSS_TEXT_ALIGN = "text-align";
+  public static final String CSS_WHITE_SPACE = "white-space";
+
   public static final String CSS_Z_INDEX = "z-index";
 
   public static final String CSS_FONT_STYLE = "font-style";
@@ -1483,6 +1485,10 @@ public final class StyleUtils {
 
   public static VerticalAlign parseVerticalAlign(String input) {
     return parseCssName(VerticalAlign.class, input);
+  }
+
+  public static WhiteSpace parseWhiteSpace(String input) {
+    return parseCssName(WhiteSpace.class, input);
   }
 
   public static int removeClassName(NodeList<Element> nodes, String className) {

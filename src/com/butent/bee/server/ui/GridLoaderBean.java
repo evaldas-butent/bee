@@ -550,10 +550,13 @@ public class GridLoaderBean {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
+
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
           dst.setHorAlign(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_WHITE_SPACE)) {
+          dst.setWhiteSpace(value.trim());
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
           dst.setSource(value.trim());

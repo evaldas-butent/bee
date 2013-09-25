@@ -34,6 +34,6 @@
     
     <Relation name="FinancialState" relation="FinancialStates" label="Mokumas" />
 
-    <Text name="Notes" label="Pastabos" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

@@ -24,7 +24,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.form.FormView;
@@ -630,6 +632,15 @@ public final class UiHelper {
     VerticalAlignmentConstant align = parseVerticalAlignment(text);
     if (align != null) {
       obj.setVerticalAlignment(align);
+    }
+  }
+
+  public static void setWhiteSpace(HasWhiteSpace obj, String input) {
+    Assert.notNull(obj);
+
+    WhiteSpace whiteSpace = StyleUtils.parseWhiteSpace(input);
+    if (whiteSpace != null) {
+      obj.setWhiteSpace(whiteSpace);
     }
   }
 

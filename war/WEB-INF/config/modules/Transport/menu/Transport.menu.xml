@@ -4,7 +4,9 @@
 name="Transport" label="=transport" order="60"
 >
   <Item name="CargoRequests" label="=trCargoRequests" service="grid" parameters="CargoRequests" />
-  <Item name="Orders" label="=transportationOrders" service="grid" parameters="TransportationOrders" />
+  <Item name="ShipmentRequests" label="=trERmenu" service="grid" parameters="ShipmentRequests" />
+
+  <Item name="Orders" label="=transportationOrders" service="grid" parameters="TransportationOrders" separator="true" />
   <Item name="Cargo" label="=cargos" service="grid" parameters="AllCargo" />
 
   <Item name="AssessmentRequests" label="=trAssessmentRequests" service="grid" parameters="AssessmentRequests" separator="true" />

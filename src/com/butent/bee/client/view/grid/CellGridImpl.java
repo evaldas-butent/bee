@@ -624,8 +624,12 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       if (!BeeUtils.isEmpty(columnDescr.getFormat())) {
         Format.setFormat(column, column.getValueType(), columnDescr.getFormat());
       }
+
       if (!BeeUtils.isEmpty(columnDescr.getHorAlign())) {
         UiHelper.setHorizontalAlignment(column, columnDescr.getHorAlign());
+      }
+      if (!BeeUtils.isEmpty(columnDescr.getWhiteSpace())) {
+        UiHelper.setWhiteSpace(column, columnDescr.getWhiteSpace());
       }
 
       if (!BeeUtils.isEmpty(columnDescr.getOptions())) {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
@@ -16,13 +15,7 @@
     <DataColumn name="Date" caption="=date" width="100" />
     <DataColumn name="Finished" caption="=trRequestFinished" width="100" format="DATE_TIME_SHORT" />
     
-    <RelColumn name="Customer" caption="=customer" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </RelColumn>
+    <RelColumn name="Customer" caption="=customer" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
 
@@ -36,32 +29,13 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="=route" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
-
-    <DataColumn name="Description" caption="=cargo" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
 
-    <RelColumn name="Manager" caption="=manager" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </RelColumn>
+    <RelColumn name="Manager" caption="=manager" minWidth="100" whiteSpace="nowrap" />
   </g:columns>
 </g:Grid>

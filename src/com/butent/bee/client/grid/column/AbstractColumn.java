@@ -5,6 +5,8 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.user.cellview.client.Column;
 
+import com.butent.bee.client.style.HasWhiteSpace;
+import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
@@ -18,10 +20,12 @@ import java.util.List;
  */
 
 public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType,
-    HasOptions {
+    HasOptions, HasWhiteSpace {
 
   private List<String> searchBy;
   private List<String> sortBy;
+  
+  private WhiteSpace whiteSpace;
 
   private String options;
 
@@ -58,12 +62,17 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
     return sortBy;
   }
 
-  public abstract String getString(Context context, IsRow row);
-
   public abstract String getStyleSuffix();
+
+  public abstract String getString(Context context, IsRow row);
 
   @Override
   public abstract C getValue(IsRow row);
+
+  @Override
+  public WhiteSpace getWhiteSpace() {
+    return whiteSpace;
+  }
 
   public boolean instantKarma(IsRow row) {
     return instantKarma && getValue(row) != null;
@@ -84,5 +93,10 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
 
   public void setSortBy(List<String> sortBy) {
     this.sortBy = sortBy;
+  }
+
+  @Override
+  public void setWhiteSpace(WhiteSpace whiteSpace) {
+    this.whiteSpace = whiteSpace;
   }
 }

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Grid [
-  <!ENTITY nowrap "<style><bodyStyle><ui:inline>white-space: pre-wrap;</ui:inline></bodyStyle></style>">
-]>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentTypes" viewName="AppointmentTypes"
   caption="=appointmentTypes" newRowCaption="=newAppointmentType"
@@ -10,19 +7,19 @@
   <g:body height="100" /> 
   <g:columns>
     <DataColumn name="Name" caption="Pavadinimas" visible="true" />
-    <DataColumn name="Description" caption="Aprašymas">&nowrap;</DataColumn>
+    <DataColumn name="Description" caption="Aprašymas" whiteSpace="pre-wrap" />
 
     <RelColumn name="ThemeName" caption="Spalvų tema" />
     <RelColumn name="StyleName" caption="=appointmentStyle" />
 
-    <DataColumn name="SimpleHeader" caption="=appointmentRenderSimpleHeader">&nowrap;</DataColumn>
-    <DataColumn name="SimpleBody" caption="=appointmentRenderSimpleBody">&nowrap;</DataColumn>
+    <DataColumn name="SimpleHeader" caption="=appointmentRenderSimpleHeader" whiteSpace="pre-wrap" />
+    <DataColumn name="SimpleBody" caption="=appointmentRenderSimpleBody" whiteSpace="pre-wrap" />
 
-    <DataColumn name="MultiHeader" caption="=appointmentRenderMultiHeader">&nowrap;</DataColumn>
-    <DataColumn name="MultiBody" caption="=appointmentRenderMultiBody">&nowrap;</DataColumn>
+    <DataColumn name="MultiHeader" caption="=appointmentRenderMultiHeader" whiteSpace="pre-wrap" />
+    <DataColumn name="MultiBody" caption="=appointmentRenderMultiBody" whiteSpace="pre-wrap" />
    
-    <DataColumn name="AppointmentCompact" caption="Kompaktiška forma">&nowrap;</DataColumn>
-    <DataColumn name="AppointmentTitle" caption="Išplaukiantis tekstas">&nowrap;</DataColumn>
+    <DataColumn name="AppointmentCompact" caption="Kompaktiška forma" whiteSpace="pre-wrap" />
+    <DataColumn name="AppointmentTitle" caption="Išplaukiantis tekstas" whiteSpace="pre-wrap" />
 
     <DataColumn name="AppointmentCreator" caption="=appointmentCreator" />
     <DataColumn name="AppointmentEditor" caption="=appointmentEditor" />
