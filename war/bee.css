@@ -1941,6 +1941,12 @@ body {
 .bee-GridSettings-dialog {
   background-color: white;
 }
+.bee-GridSettings-wrapper {
+  width: 100%;
+  max-height: 500px;
+  overflow: auto;
+  margin-right: 20px;
+}
 .bee-GridSettings-table {
   border-collapse: collapse;
 }

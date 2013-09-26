@@ -151,6 +151,8 @@ public class GridLoaderBean {
 
   private static final String ATTR_ROW_CHANGE_SENSITIVITY_MILLIS = "rowChangeSensitivityMillis";
 
+  private static final String ATTR_DYNAMIC = "dynamic";
+
   @EJB
   SystemBean sys;
 
@@ -606,6 +608,9 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
+
+        } else if (BeeUtils.same(key, ATTR_DYNAMIC)) {
+          dst.setDynamic(BeeUtils.toBooleanOrNull(value));
 
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;

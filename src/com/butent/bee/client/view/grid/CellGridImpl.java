@@ -370,327 +370,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       interceptor.beforeCreateColumns(dataCols, columnDescriptions);
     }
 
+    String viewName = gridDescr.getViewName();
+
     String idName = gridDescr.getIdName();
     String versionName = gridDescr.getVersionName();
 
-    AbstractColumn<?> column;
-
-    int dataIndex;
-    EditableColumn editableColumn = null;
-
-    final String viewName = gridDescr.getViewName();
-
-    for (ColumnDescription cd : columnDescriptions) {
-      ColumnDescription columnDescr;
-      if (interceptor == null) {
-        columnDescr = cd;
-      } else {
-        columnDescr = interceptor.beforeCreateColumn(this, cd);
-      }
-      if (columnDescr == null) {
-        continue;
-      }
-
-      String columnName = columnDescr.getName();
-
-      ColType colType = columnDescr.getColType();
-      if (BeeUtils.isEmpty(columnName) || colType == null) {
-        continue;
-      }
-
-      List<String> renderColumns = columnDescr.getRenderColumns();
-      if (BeeUtils.isEmpty(renderColumns) && !BeeUtils.isEmpty(columnDescr.getRenderTokens())) {
-        if (renderColumns == null) {
-          renderColumns = Lists.newArrayList();
-        }
-        for (RenderableToken renderableToken : columnDescr.getRenderTokens()) {
-          if (DataUtils.contains(dataCols, renderableToken.getSource())) {
-            renderColumns.add(renderableToken.getSource());
-          }
-        }
-      }
-
-      String source = columnDescr.getSource();
-      String originalSource;
-      boolean relationEditable;
-
-      if (colType == ColType.RELATED && columnDescr.getRelation() != null) {
-        if (!columnDescr.isRelationInitialized()) {
-          Holder<String> sourceHolder = Holder.of(source);
-          Holder<List<String>> listHolder = Holder.of(renderColumns);
-
-          columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
-              sourceHolder, listHolder, Relation.RenderMode.TARGET);
-
-          source = sourceHolder.get();
-          renderColumns = listHolder.get();
-
-          columnDescr.setSource(source);
-          columnDescr.setRenderColumns(renderColumns);
-          columnDescr.setRelationInitialized(true);
-        }
-
-        originalSource = columnDescr.getRelation().getOriginalTarget();
-        relationEditable = columnDescr.getRelation().isEditEnabled(false);
-
-      } else {
-        originalSource = null;
-        relationEditable = false;
-      }
-
-      dataIndex = BeeConst.UNDEF;
-      if (!BeeUtils.isEmpty(source)) {
-        String normalized = DataUtils.getColumnName(source, dataCols, idName, versionName);
-        if (BeeUtils.isEmpty(normalized)) {
-          logger.warning("columnName:", columnName, "source:", source, "not found");
-          continue;
-        } else {
-          if (!source.equals(normalized)) {
-            source = normalized;
-          }
-          dataIndex = DataUtils.getColumnIndex(source, dataCols);
-        }
-      }
-
-      String caption = LocaleUtils.maybeLocalize(columnDescr.getCaption());
-      if (BeeUtils.isEmpty(caption)) {
-        int index;
-        if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
-          index = DataUtils.getColumnIndex(originalSource, dataCols);
-        } else {
-          index = dataIndex;
-        }
-
-        if (!BeeConst.isUndef(index)) {
-          caption = LocaleUtils.getLabel(dataCols.get(index));
-        }
-      }
-
-      String label;
-      if (Captions.isCaption(caption)) {
-        label = caption;
-      } else {
-        label = BeeUtils.notEmpty(LocaleUtils.maybeLocalize(columnDescr.getLabel()), columnName);
-      }
-
-      CellSource cellSource;
-
-      switch (colType) {
-        case ID:
-          source = idName;
-          cellSource = CellSource.forRowId(idName);
-          break;
-
-        case VERSION:
-          source = versionName;
-          cellSource = CellSource.forRowVersion(versionName);
-          break;
-
-        case PROPERTY:
-          String property = BeeUtils.notEmpty(columnDescr.getProperty(), columnName);
-          cellSource = CellSource.forProperty(property, columnDescr.getValueType());
-
-          if (columnDescr.getPrecision() != null) {
-            cellSource.setPrecision(columnDescr.getPrecision());
-          }
-          if (columnDescr.getScale() != null) {
-            cellSource.setScale(columnDescr.getScale());
-          }
-          break;
-
-        default:
-          if (dataIndex >= 0) {
-            cellSource = CellSource.forColumn(dataCols.get(dataIndex), dataIndex);
-          } else {
-            cellSource = null;
-          }
-      }
-
-      AbstractCellRenderer renderer = null;
-      if (interceptor != null) {
-        renderer = interceptor.getRenderer(columnName, dataCols, columnDescr);
-      }
-      if (renderer == null) {
-        renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnName, dataCols,
-            columnDescr);
-      }
-      if (renderer == null) {
-        renderer = RendererFactory.getRenderer(columnDescr.getRendererDescription(),
-            columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
-            renderColumns, dataCols, cellSource, columnDescr.getRelation());
-      }
-
-      FilterSupplierType filterSupplierType = columnDescr.getFilterSupplierType();
-
-      CellType cellType = columnDescr.getCellType();
-      column = null;
-
-      switch (colType) {
-        case ID:
-          column = new RowIdColumn();
-          if (filterSupplierType == null) {
-            filterSupplierType = FilterSupplierType.ID;
-          }
-          break;
-
-        case VERSION:
-          column = new RowVersionColumn();
-          if (filterSupplierType == null) {
-            filterSupplierType = FilterSupplierType.VERSION;
-          }
-          break;
-
-        case DATA:
-        case RELATED:
-          if (dataIndex >= 0) {
-            column = GridFactory.createColumn(cellSource, cellType, renderer);
-
-            if (relationEditable) {
-              column.addClass(RowEditor.EDITABLE_RELATION_STYLE);
-              column.setInstantKarma(true);
-            }
-
-            editableColumn = new EditableColumn(viewName, dataCols, dataIndex, column, label,
-                columnDescr);
-            editableColumn.setNotificationListener(this);
-            getEditableColumns().put(BeeUtils.normalize(columnName), editableColumn);
-          }
-          break;
-
-        case CALCULATED:
-          Cell<String> cell =
-              (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
-          CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),
-              renderer);
-
-          if (columnDescr.getPrecision() != null) {
-            calcColumn.setPrecision(columnDescr.getPrecision());
-          }
-          if (columnDescr.getScale() != null) {
-            calcColumn.setScale(columnDescr.getScale());
-            if (ValueType.DECIMAL.equals(columnDescr.getValueType())) {
-              calcColumn.setNumberFormat(Format.getDecimalFormat(columnDescr.getScale()));
-            }
-          }
-          column = calcColumn;
-          break;
-
-        case SELECTION:
-          column = new SelectionColumn(getGrid());
-          source = null;
-          break;
-
-        case ACTION:
-          if (renderer == null && cellSource != null) {
-            renderer = new SimpleRenderer(cellSource);
-          }
-          if (renderer != null) {
-            column = new ActionColumn(ActionCell.create(viewName, columnDescr), renderer);
-          }
-          break;
-
-        case PROPERTY:
-          column = GridFactory.createColumn(cellSource, cellType, renderer);
-          break;
-      }
-
-      if (column == null) {
-        logger.warning("cannot create column:", columnName, colType);
-        continue;
-      }
-
-      if (!BeeUtils.isEmpty(columnDescr.getSortBy())) {
-        column.setSortBy(DataUtils.parseColumns(columnDescr.getSortBy(), dataCols,
-            idName, versionName));
-      } else if (!BeeUtils.isEmpty(renderColumns)) {
-        column.setSortBy(Lists.newArrayList(renderColumns));
-      } else if (!BeeUtils.isEmpty(source)) {
-        column.setSortBy(Lists.newArrayList(source));
-      }
-
-      if (!BeeUtils.isEmpty(columnDescr.getSearchBy())) {
-        column.setSearchBy(DataUtils.parseColumns(columnDescr.getSearchBy(), dataCols,
-            idName, versionName));
-      } else if (!BeeUtils.isEmpty(column.getSortBy())) {
-        column.setSearchBy(Lists.newArrayList(column.getSortBy()));
-      } else if (!BeeUtils.isEmpty(source)) {
-        column.setSearchBy(Lists.newArrayList(source));
-      }
-
-      if (BeeUtils.isTrue(columnDescr.getSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
-        column.setSortable(true);
-      }
-
-      if (!BeeUtils.isEmpty(columnDescr.getFormat())) {
-        Format.setFormat(column, column.getValueType(), columnDescr.getFormat());
-      }
-
-      if (!BeeUtils.isEmpty(columnDescr.getHorAlign())) {
-        UiHelper.setHorizontalAlignment(column, columnDescr.getHorAlign());
-      }
-      if (!BeeUtils.isEmpty(columnDescr.getWhiteSpace())) {
-        UiHelper.setWhiteSpace(column, columnDescr.getWhiteSpace());
-      }
-
-      if (!BeeUtils.isEmpty(columnDescr.getOptions())) {
-        column.setOptions(columnDescr.getOptions());
-      }
-
-      ColumnHeader header = null;
-      if (hasHeaders) {
-        String headerCaption = null;
-        if (interceptor != null) {
-          headerCaption = interceptor.getColumnCaption(columnName);
-        }
-        if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
-          headerCaption = BeeUtils.notEmpty(caption, columnName);
-        }
-
-        if (interceptor != null) {
-          header = interceptor.getHeader(columnName, headerCaption);
-        }
-        if (header == null) {
-          if (colType == ColType.SELECTION) {
-            header = new ColumnHeader(columnName, new SelectionHeader());
-          } else {
-            header = new ColumnHeader(columnName, headerCaption);
-          }
-        }
-      }
-
-      ColumnFooter footer = null;
-      if (hasFooters) {
-        if (interceptor != null) {
-          footer = interceptor.getFooter(columnName, columnDescr);
-        }
-        if (footer == null && columnDescr.getFooterDescription() != null) {
-          footer = new ColumnFooter(cellSource, column, columnDescr, dataCols);
-        }
-      }
-
-      if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
-          header, footer, editableColumn)) {
-        continue;
-      }
-
-      AbstractFilterSupplier filterSupplier = null;
-      if (interceptor != null) {
-        filterSupplier = interceptor.getFilterSupplier(columnName, columnDescr);
-      }
-
-      if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(columnDescr.getFilterOptions())
-          && (filterSupplierType != null
-              || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
-
-        filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataCols, 
-            idName, versionName, dataIndex, label, column.getSearchBy(), filterSupplierType,
-            renderColumns, column.getSortBy(), columnDescr.getItemKey(), columnDescr.getRelation(),
-            columnDescr.getFilterOptions());
-      }
-
-      ColumnInfo columnInfo = getGrid().addColumn(columnName, label, cellSource, column,
-          header, footer, filterSupplier, columnDescr.getVisible());
-      columnInfo.initProperties(columnDescr, gridDescr, dataCols);
+    for (ColumnDescription columnDescription : columnDescriptions) {
+      addColumn(gridDescr, columnDescription, viewName, dataCols, idName, versionName,
+          hasHeaders, hasFooters, interceptor);
     }
 
     if (interceptor != null) {
@@ -761,7 +448,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       interceptor.afterCreate(this);
     }
   }
-
+  
   @Override
   public boolean createParentRow(final NotificationListener notificationListener,
       final Callback<IsRow> callback) {
@@ -1338,6 +1025,322 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     super.onUnload();
+  }
+
+  private void addColumn(GridDescription gridDescription, ColumnDescription columnDescription,
+      String viewName, List<BeeColumn> dataCols, String idName, String versionName,
+      boolean hasHeaders, boolean hasFooters, GridInterceptor interceptor) {
+
+    ColumnDescription cd;
+    if (interceptor == null) {
+      cd = columnDescription;
+    } else {
+      cd = interceptor.beforeCreateColumn(this, columnDescription);
+    }
+    if (cd == null) {
+      return;
+    }
+
+    String columnName = cd.getName();
+
+    ColType colType = cd.getColType();
+    if (BeeUtils.isEmpty(columnName) || colType == null) {
+      return;
+    }
+
+    List<String> renderColumns = cd.getRenderColumns();
+    if (BeeUtils.isEmpty(renderColumns) && !BeeUtils.isEmpty(cd.getRenderTokens())) {
+      if (renderColumns == null) {
+        renderColumns = Lists.newArrayList();
+      }
+      for (RenderableToken renderableToken : cd.getRenderTokens()) {
+        if (DataUtils.contains(dataCols, renderableToken.getSource())) {
+          renderColumns.add(renderableToken.getSource());
+        }
+      }
+    }
+
+    String source = cd.getSource();
+    String originalSource;
+    boolean relationEditable;
+
+    if (colType == ColType.RELATED && cd.getRelation() != null) {
+      if (!cd.isRelationInitialized()) {
+        Holder<String> sourceHolder = Holder.of(source);
+        Holder<List<String>> listHolder = Holder.of(renderColumns);
+
+        cd.getRelation().initialize(Data.getDataInfoProvider(), viewName,
+            sourceHolder, listHolder, Relation.RenderMode.TARGET);
+
+        source = sourceHolder.get();
+        renderColumns = listHolder.get();
+
+        cd.setSource(source);
+        cd.setRenderColumns(renderColumns);
+        cd.setRelationInitialized(true);
+      }
+
+      originalSource = cd.getRelation().getOriginalTarget();
+      relationEditable = cd.getRelation().isEditEnabled(false);
+
+    } else {
+      originalSource = null;
+      relationEditable = false;
+    }
+
+    int dataIndex = BeeConst.UNDEF;
+    if (!BeeUtils.isEmpty(source)) {
+      String normalized = DataUtils.getColumnName(source, dataCols, idName, versionName);
+      if (BeeUtils.isEmpty(normalized)) {
+        logger.warning("columnName:", columnName, "source:", source, "not found");
+        return;
+      } else {
+        if (!source.equals(normalized)) {
+          source = normalized;
+        }
+        dataIndex = DataUtils.getColumnIndex(source, dataCols);
+      }
+    }
+
+    String caption = LocaleUtils.maybeLocalize(cd.getCaption());
+    if (BeeUtils.isEmpty(caption)) {
+      int index;
+      if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
+        index = DataUtils.getColumnIndex(originalSource, dataCols);
+      } else {
+        index = dataIndex;
+      }
+
+      if (!BeeConst.isUndef(index)) {
+        caption = LocaleUtils.getLabel(dataCols.get(index));
+      }
+    }
+
+    String label;
+    if (Captions.isCaption(caption)) {
+      label = caption;
+    } else {
+      label = BeeUtils.notEmpty(LocaleUtils.maybeLocalize(cd.getLabel()), columnName);
+    }
+
+    CellSource cellSource;
+
+    switch (colType) {
+      case ID:
+        source = idName;
+        cellSource = CellSource.forRowId(idName);
+        break;
+
+      case VERSION:
+        source = versionName;
+        cellSource = CellSource.forRowVersion(versionName);
+        break;
+
+      case PROPERTY:
+        String property = BeeUtils.notEmpty(cd.getProperty(), columnName);
+        cellSource = CellSource.forProperty(property, cd.getValueType());
+
+        if (cd.getPrecision() != null) {
+          cellSource.setPrecision(cd.getPrecision());
+        }
+        if (cd.getScale() != null) {
+          cellSource.setScale(cd.getScale());
+        }
+        break;
+
+      default:
+        if (dataIndex >= 0) {
+          cellSource = CellSource.forColumn(dataCols.get(dataIndex), dataIndex);
+        } else {
+          cellSource = null;
+        }
+    }
+
+    AbstractCellRenderer renderer = null;
+    if (interceptor != null) {
+      renderer = interceptor.getRenderer(columnName, dataCols, cd);
+    }
+    if (renderer == null) {
+      renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnName, dataCols,
+          cd);
+    }
+    if (renderer == null) {
+      renderer = RendererFactory.getRenderer(cd.getRendererDescription(),
+          cd.getRender(), cd.getRenderTokens(), cd.getItemKey(),
+          renderColumns, dataCols, cellSource, cd.getRelation());
+    }
+
+    FilterSupplierType filterSupplierType = cd.getFilterSupplierType();
+
+    CellType cellType = cd.getCellType();
+
+    AbstractColumn<?> column = null;
+    EditableColumn editableColumn = null;
+    
+    switch (colType) {
+      case ID:
+        column = new RowIdColumn();
+        if (filterSupplierType == null) {
+          filterSupplierType = FilterSupplierType.ID;
+        }
+        break;
+
+      case VERSION:
+        column = new RowVersionColumn();
+        if (filterSupplierType == null) {
+          filterSupplierType = FilterSupplierType.VERSION;
+        }
+        break;
+
+      case DATA:
+      case RELATED:
+        if (dataIndex >= 0) {
+          column = GridFactory.createColumn(cellSource, cellType, renderer);
+
+          if (relationEditable) {
+            column.addClass(RowEditor.EDITABLE_RELATION_STYLE);
+            column.setInstantKarma(true);
+          }
+
+          editableColumn = new EditableColumn(viewName, dataCols, dataIndex, column, label, cd);
+          editableColumn.setNotificationListener(this);
+          getEditableColumns().put(BeeUtils.normalize(columnName), editableColumn);
+        }
+        break;
+
+      case CALCULATED:
+        Cell<String> cell =
+            (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
+        CalculatedColumn calcColumn = new CalculatedColumn(cell, cd.getValueType(), renderer);
+
+        if (cd.getPrecision() != null) {
+          calcColumn.setPrecision(cd.getPrecision());
+        }
+        if (cd.getScale() != null) {
+          calcColumn.setScale(cd.getScale());
+          if (ValueType.DECIMAL.equals(cd.getValueType())) {
+            calcColumn.setNumberFormat(Format.getDecimalFormat(cd.getScale()));
+          }
+        }
+        column = calcColumn;
+        break;
+
+      case SELECTION:
+        column = new SelectionColumn(getGrid());
+        source = null;
+        break;
+
+      case ACTION:
+        if (renderer == null && cellSource != null) {
+          renderer = new SimpleRenderer(cellSource);
+        }
+        if (renderer != null) {
+          column = new ActionColumn(ActionCell.create(viewName, cd), renderer);
+        }
+        break;
+
+      case PROPERTY:
+        column = GridFactory.createColumn(cellSource, cellType, renderer);
+        break;
+    }
+
+    if (column == null) {
+      logger.warning("cannot create column:", columnName, colType);
+      return;
+    }
+
+    if (!BeeUtils.isEmpty(cd.getSortBy())) {
+      column.setSortBy(DataUtils.parseColumns(cd.getSortBy(), dataCols, idName, versionName));
+    } else if (!BeeUtils.isEmpty(renderColumns)) {
+      column.setSortBy(Lists.newArrayList(renderColumns));
+    } else if (!BeeUtils.isEmpty(source)) {
+      column.setSortBy(Lists.newArrayList(source));
+    }
+
+    if (!BeeUtils.isEmpty(cd.getSearchBy())) {
+      column.setSearchBy(DataUtils.parseColumns(cd.getSearchBy(), dataCols, idName, versionName));
+    } else if (!BeeUtils.isEmpty(column.getSortBy())) {
+      column.setSearchBy(Lists.newArrayList(column.getSortBy()));
+    } else if (!BeeUtils.isEmpty(source)) {
+      column.setSearchBy(Lists.newArrayList(source));
+    }
+
+    if (BeeUtils.isTrue(cd.getSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
+      column.setSortable(true);
+    }
+
+    if (!BeeUtils.isEmpty(cd.getFormat())) {
+      Format.setFormat(column, column.getValueType(), cd.getFormat());
+    }
+
+    if (!BeeUtils.isEmpty(cd.getHorAlign())) {
+      UiHelper.setHorizontalAlignment(column, cd.getHorAlign());
+    }
+    if (!BeeUtils.isEmpty(cd.getWhiteSpace())) {
+      UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
+    }
+
+    if (!BeeUtils.isEmpty(cd.getOptions())) {
+      column.setOptions(cd.getOptions());
+    }
+
+    ColumnHeader header = null;
+    if (hasHeaders) {
+      String headerCaption = null;
+      if (interceptor != null) {
+        headerCaption = interceptor.getColumnCaption(columnName);
+      }
+      if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
+        headerCaption = BeeUtils.notEmpty(caption, columnName);
+      }
+
+      if (interceptor != null) {
+        header = interceptor.getHeader(columnName, headerCaption);
+      }
+      if (header == null) {
+        if (colType == ColType.SELECTION) {
+          header = new ColumnHeader(columnName, new SelectionHeader());
+        } else {
+          header = new ColumnHeader(columnName, headerCaption);
+        }
+      }
+    }
+
+    ColumnFooter footer = null;
+    if (hasFooters) {
+      if (interceptor != null) {
+        footer = interceptor.getFooter(columnName, cd);
+      }
+      if (footer == null && cd.getFooterDescription() != null) {
+        footer = new ColumnFooter(cellSource, column, cd, dataCols);
+      }
+    }
+
+    if (interceptor != null && !interceptor.afterCreateColumn(columnName, dataCols, column,
+        header, footer, editableColumn)) {
+      return;
+    }
+
+    AbstractFilterSupplier filterSupplier = null;
+    if (interceptor != null) {
+      filterSupplier = interceptor.getFilterSupplier(columnName, cd);
+    }
+
+    if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(cd.getFilterOptions())
+        && (filterSupplierType != null
+            || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
+
+      filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataCols, 
+          idName, versionName, dataIndex, label, column.getSearchBy(), filterSupplierType,
+          renderColumns, column.getSortBy(), cd.getItemKey(), cd.getRelation(),
+          cd.getFilterOptions());
+    }
+    
+    String dynGroup = BeeUtils.isTrue(cd.getDynamic()) ? columnName : null;
+
+    ColumnInfo columnInfo = getGrid().addColumn(columnName, label, cellSource, column,
+        header, footer, filterSupplier, dynGroup, cd.getVisible());
+    columnInfo.initProperties(cd, gridDescription, dataCols);
   }
 
   private void closeEditForm() {

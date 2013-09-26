@@ -108,6 +108,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     SettingsChangeEvent.HasSettingsChangeHandlers, RenderingEvent.HasRenderingHandlers {
 
   public final class ColumnInfo implements HasValueType, Flexible {
+
     private final String columnId;
     private final String label;
 
@@ -118,6 +119,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private final ColumnFooter footer;
 
     private final AbstractFilterSupplier filterSupplier;
+
+    private final String dynGroup;
 
     private int initialWidth = BeeConst.UNDEF;
     private int minWidth = BeeConst.UNDEF;
@@ -146,7 +149,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private boolean hidable = true;
 
     private ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
-        ColumnHeader header, ColumnFooter footer, AbstractFilterSupplier filterSupplier) {
+        ColumnHeader header, ColumnFooter footer, AbstractFilterSupplier filterSupplier,
+        String dynGroup) {
 
       this.columnId = columnId;
       this.label = label;
@@ -157,6 +161,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       this.footer = footer;
 
       this.filterSupplier = filterSupplier;
+      
+      this.dynGroup = dynGroup;
     }
 
     @Override
@@ -225,6 +231,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     String getColumnId() {
       return columnId;
+    }
+
+    String getDynGroup() {
+      return dynGroup;
     }
 
     AbstractFilterSupplier getFilterSupplier() {
@@ -1450,18 +1460,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
-    return addColumn(columnId, columnId, source, column, header, null, null, true);
+    return addColumn(columnId, columnId, source, column, header, null, null, null, true);
   }
 
   public ColumnInfo addColumn(String columnId, String label, CellSource source,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
-      AbstractFilterSupplier filterSupplier, Boolean visible) {
+      AbstractFilterSupplier filterSupplier, String dynGroup, Boolean visible) {
 
     Assert.notEmpty(columnId);
     Assert.notNull(column);
 
     ColumnInfo columnInfo = new ColumnInfo(columnId, label, source, column, header, footer,
-        filterSupplier);
+        filterSupplier, dynGroup);
     if (BeeUtils.isTrue(visible)) {
       columnInfo.setHidable(false);
     }

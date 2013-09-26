@@ -74,7 +74,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
-    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
@@ -155,6 +155,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String options;
 
+  private Boolean dynamic;
+  
   private boolean relationInitialized;
 
   public ColumnDescription(ColType colType, String name) {
@@ -341,6 +343,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case FOOTER_DESCRIPTION:
           setFooterDescription(FooterDescription.restore(value));
           break;
+        case DYNAMIC:
+          setDynamic(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -371,6 +376,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public ColType getColType() {
     return colType;
+  }
+
+  public Boolean getDynamic() {
+    return dynamic;
   }
 
   public Collection<ConditionalStyleDeclaration> getDynStyles() {
@@ -456,7 +465,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Update Mode", getUpdateMode(),
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
-        "Options", getOptions());
+        "Options", getOptions(),
+        "Dynamic", getDynamic());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -793,6 +803,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case FOOTER_DESCRIPTION:
           arr[i++] = getFooterDescription();
           break;
+        case DYNAMIC:
+          arr[i++] = getDynamic();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -820,6 +833,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setCellType(CellType cellType) {
     this.cellType = cellType;
+  }
+
+  public void setDynamic(Boolean dynamic) {
+    this.dynamic = dynamic;
   }
 
   public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {
